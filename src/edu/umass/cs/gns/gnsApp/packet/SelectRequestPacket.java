@@ -5,10 +5,10 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
 import edu.umass.cs.gns.utils.Base64;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
 
@@ -23,7 +23,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
+public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
 
   /**
    * The select operation.

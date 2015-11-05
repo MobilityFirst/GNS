@@ -11,16 +11,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceApplication;
-import edu.umass.cs.gigapaxos.InterfaceClientRequest;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gigapaxos.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.Application;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.nio.StringifiableDefault;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOHeader;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -39,7 +39,7 @@ public class ReconfigurableAppClientAsync {
 	private static final long MIN_RTX_INTERVAL = 1000;
 	private static final long GC_TIMEOUT = 60000;
 
-	final InterfaceApplication app;
+	final Application app;
 	final MessageNIOTransport<String, String> niot;
 	final InetSocketAddress[] reconfigurators;
 
@@ -87,7 +87,7 @@ public class ReconfigurableAppClientAsync {
 	 * @param reconfigurators
 	 * @throws IOException
 	 */
-	public ReconfigurableAppClientAsync(InterfaceApplication app,
+	public ReconfigurableAppClientAsync(Application app,
 			Set<InetSocketAddress> reconfigurators) throws IOException {
 		this.app = app;
 		this.niot = (new MessageNIOTransport<String, String>(null, null,
@@ -100,7 +100,7 @@ public class ReconfigurableAppClientAsync {
 	 * @param app
 	 * @throws IOException
 	 */
-	public ReconfigurableAppClientAsync(InterfaceApplication app)
+	public ReconfigurableAppClientAsync(Application app)
 			throws IOException {
 		this(app, ReconfigurationConfig.getReconfiguratorAddresses());
 	}
@@ -128,20 +128,20 @@ public class ReconfigurableAppClientAsync {
 					: null;
 		}
 
-		private InterfaceRequest parseAsAppRequest(String strMsg) {
-			InterfaceRequest request = null;
+		private Request parseAsAppRequest(String strMsg) {
+			Request request = null;
 			try {
 				request = app.getRequest(strMsg);
 			} catch (RequestParseException e) {
 				// e.printStackTrace();
 			}
-			assert (request == null || request instanceof InterfaceClientRequest);
+			assert (request == null || request instanceof ClientRequest);
 			return request;
 		}
 
 		@Override
 		public boolean handleMessage(String strMsg) {
-			InterfaceRequest response = null;
+			Request response = null;
 			// first try parsing as app request
 			if ((response = this.parseAsAppRequest(strMsg)) == null)
 				// else try parsing as ClientReconfigurationPacket
@@ -152,11 +152,11 @@ public class ReconfigurableAppClientAsync {
 			RequestCallback callback = null;
 			if (response != null) {
 				// execute registered callback
-				if ((response instanceof InterfaceClientRequest)
+				if ((response instanceof ClientRequest)
 						&& (callback = callbacks
-								.remove(((InterfaceClientRequest) response)
+								.remove(((ClientRequest) response)
 										.getRequestID())) != null)
-					callback.handleResponse(((InterfaceClientRequest) response));
+					callback.handleResponse(((ClientRequest) response));
 				// ActiveReplicaError has to be dealt with separately
 				else if ((response instanceof ActiveReplicaError)
 						&& (callback = callbacks
@@ -197,7 +197,7 @@ public class ReconfigurableAppClientAsync {
 			if (SHORT_CUT_TYPE_CHECK)
 				return ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME
 						.getInt();
-			InterfaceRequest request = this.parseAsAppRequest(strMsg);
+			Request request = this.parseAsAppRequest(strMsg);
 			if (request == null)
 				request = this.parseAsClientReconfigurationPacket(strMsg);
 			return request != null ? request.getRequestType().getInt() : null;
@@ -226,7 +226,7 @@ public class ReconfigurableAppClientAsync {
 	 * @return Request ID.
 	 * @throws IOException
 	 */
-	public Long sendRequest(InterfaceClientRequest request,
+	public Long sendRequest(ClientRequest request,
 			InetSocketAddress server, RequestCallback callback)
 			throws IOException {
 		int sent = -1;
@@ -303,10 +303,10 @@ public class ReconfigurableAppClientAsync {
 	}
 
 	class RequestAndCallback {
-		final InterfaceClientRequest request;
+		final ClientRequest request;
 		final RequestCallback callback;
 
-		RequestAndCallback(InterfaceClientRequest request,
+		RequestAndCallback(ClientRequest request,
 				RequestCallback callback) {
 			this.request = request;
 			this.callback = callback;
@@ -320,7 +320,7 @@ public class ReconfigurableAppClientAsync {
 	 * @throws IOException
 	 * @throws JSONException
 	 */
-	public Long sendRequest(InterfaceClientRequest request,
+	public Long sendRequest(ClientRequest request,
 			RequestCallback callback) throws IOException, JSONException {
 		if (request instanceof ClientReconfigurationPacket)
 			return this

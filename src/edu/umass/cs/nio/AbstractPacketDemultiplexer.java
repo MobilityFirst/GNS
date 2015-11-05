@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.PacketDemultiplexer;
 import edu.umass.cs.nio.nioutils.NIOHeader;
 
 import java.util.logging.Level;
@@ -41,7 +43,7 @@ import java.util.logging.Level;
  *            demultiplexer.
  */
 public abstract class AbstractPacketDemultiplexer<MessageType> implements
-		InterfacePacketDemultiplexer<MessageType> {
+		PacketDemultiplexer<MessageType> {
 
 	/**
 	 * The default thread pool size.
@@ -84,7 +86,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	}
 
 	private final ScheduledExecutorService executor;
-	private final HashMap<Integer, InterfacePacketDemultiplexer<MessageType>> demuxMap = new HashMap<Integer, InterfacePacketDemultiplexer<MessageType>>();
+	private final HashMap<Integer, PacketDemultiplexer<MessageType>> demuxMap = new HashMap<Integer, PacketDemultiplexer<MessageType>>();
 	private final Set<Integer> orderPreservingTypes = new HashSet<Integer>();
 	protected static final Logger log = NIOTransport.getLogger();
 
@@ -200,7 +202,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	 * @param pd
 	 */
 	public void register(IntegerPacketType type,
-			InterfacePacketDemultiplexer<MessageType> pd) {
+			PacketDemultiplexer<MessageType> pd) {
 		if (pd == null)
 			return;
 		if(this.demuxMap.containsKey(type)) throw new RuntimeException("re-regitering type " +type);
@@ -222,7 +224,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	 * @param pd
 	 */
 	public void register(Set<IntegerPacketType> types,
-			InterfacePacketDemultiplexer<MessageType> pd) {
+			PacketDemultiplexer<MessageType> pd) {
 		log.info("Registering types " + types + " for " + pd);
 		for (IntegerPacketType type : types)
 			register(type, pd);
@@ -244,7 +246,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	 * @param pd
 	 */
 	public void register(IntegerPacketType[] types,
-			InterfacePacketDemultiplexer<MessageType> pd) {
+			PacketDemultiplexer<MessageType> pd) {
 		log.info("Registering types "
 				+ (new HashSet<Object>(Arrays.asList(types))) + " for " + pd);
 		for (Object type : types)
@@ -284,9 +286,9 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	protected class Tasker implements Runnable {
 
 		private final MessageType json;
-		private final InterfacePacketDemultiplexer<MessageType> pd;
+		private final PacketDemultiplexer<MessageType> pd;
 
-		Tasker(MessageType json, InterfacePacketDemultiplexer<MessageType> pd) {
+		Tasker(MessageType json, PacketDemultiplexer<MessageType> pd) {
 			this.json = json;
 			this.pd = pd;
 		}

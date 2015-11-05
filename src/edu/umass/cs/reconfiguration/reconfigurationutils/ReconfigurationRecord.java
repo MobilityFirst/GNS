@@ -28,8 +28,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.nio.StringifiableDefault;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;

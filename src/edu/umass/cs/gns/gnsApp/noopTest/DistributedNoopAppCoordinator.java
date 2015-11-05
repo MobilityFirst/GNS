@@ -12,15 +12,15 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.reconfiguration.PaxosReplicaCoordinator;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
@@ -60,12 +60,12 @@ public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<Strin
 
   private final HashMap<String, CoordData> groups = new HashMap<String, CoordData>();
 
-  DistributedNoopAppCoordinator(InterfaceReplicable app) {
+  DistributedNoopAppCoordinator(Replicable app) {
     this(app, CoordType.LAZY, null, null);
   }
 
-  DistributedNoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
-          Stringifiable<String> unstringer, InterfaceSSLMessenger<String, JSONObject> msgr) {
+  DistributedNoopAppCoordinator(Replicable app, CoordType coordType,
+          Stringifiable<String> unstringer, SSLMessenger<String, JSONObject> msgr) {
     super(app, msgr.getMyID(), unstringer, msgr);
     this.coordType = coordType;
     this.registerCoordination(DistributedNoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
@@ -75,12 +75,12 @@ public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<Strin
   }
 
   @Override
-  public boolean coordinateRequest(InterfaceRequest request)
+  public boolean coordinateRequest(Request request)
           throws IOException, RequestParseException {
     try {
       // coordinate exactly once, and set self to entry replica
-      if (request instanceof InterfaceReplicableRequest) {
-        ((InterfaceReplicableRequest) request)
+      if (request instanceof ReplicableRequest) {
+        ((ReplicableRequest) request)
                 .setNeedsCoordination(false);
       }
       if (request instanceof DistributedNoopAppRequest) {
@@ -144,9 +144,9 @@ public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<Strin
   }
 
   @Override
-  public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-    if (this.app instanceof InterfaceReconfigurable) {
-      return ((InterfaceReconfigurable) this.app).getStopRequest(name,
+  public ReconfigurableRequest getStopRequest(String name, int epoch) {
+    if (this.app instanceof Reconfigurable) {
+      return ((Reconfigurable) this.app).getStopRequest(name,
               epoch);
     }
     throw new RuntimeException(

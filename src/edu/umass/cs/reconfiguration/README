@@ -70,5 +70,5 @@ default value of this property is true.
 
 To disable reconfiguration altogether, the simplest way is to write
 an AbstractDemandProfile class that just returns null as the set of new
-active replicas. The default DemandProfile reconfigures after every 
-request, so you probably want to use a different policy.
+active replicas. Note that the default DemandProfile reconfigures after 
+every request, so you probably want to use a different policy.

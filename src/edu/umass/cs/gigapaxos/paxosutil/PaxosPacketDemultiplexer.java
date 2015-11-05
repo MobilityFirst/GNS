@@ -37,7 +37,7 @@ import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxospackets.StatePacket;
 import edu.umass.cs.gigapaxos.paxospackets.SyncDecisionsPacket;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.utils.Config;
 
 /**

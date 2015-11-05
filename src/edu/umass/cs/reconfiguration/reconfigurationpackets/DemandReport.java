@@ -20,10 +20,10 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.nio.StringifiableDefault;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.utils.Util;
 
@@ -33,7 +33,7 @@ import edu.umass.cs.utils.Util;
  */
 public class DemandReport<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> implements
-		InterfaceReplicableRequest {
+		ReplicableRequest {
 	private enum Keys {
 		STATS
 	};

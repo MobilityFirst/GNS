@@ -19,7 +19,7 @@ package edu.umass.cs.gigapaxos.deprecated;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
 
 import java.util.Set;
 
@@ -41,7 +41,7 @@ public abstract class AbstractPaxosManager<NodeIdType> {
    * @return true if paxos instance is created. false if another instance with same ID and version already exists, or
    * size of nodeIDs is less than 3.
    */
-  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIdType> nodeIDs, InterfaceReplicable paxosInterface);
+  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIdType> nodeIDs, Replicable paxosInterface);
 
   /**
  * @param paxosID

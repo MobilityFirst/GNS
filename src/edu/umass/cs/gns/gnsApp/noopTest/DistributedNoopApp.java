@@ -15,20 +15,20 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author Westy adapted from code originally by V. Arun
  */
-public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfigurable {
+public class DistributedNoopApp implements Replicable, Reconfigurable {
 
   private static final String DEFAULT_INIT_STATE = "";
 
@@ -54,7 +54,7 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
   private final String myID;
   private final HashMap<String, AppData> appData = new HashMap<String, AppData>();
   // only address based communication needed in app
-  private InterfaceSSLMessenger<?, JSONObject> messenger;
+  private SSLMessenger<?, JSONObject> messenger;
 
   /**
    * @param id
@@ -69,13 +69,13 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
    * Need a messenger mainly to send back responses to the client.
    * @param msgr
    */
-  protected void setMessenger(InterfaceSSLMessenger<?, JSONObject> msgr) {
+  protected void setMessenger(SSLMessenger<?, JSONObject> msgr) {
     this.messenger = msgr;
   }
 
   // FIXME: return response to client
   @Override
-  public boolean handleRequest(InterfaceRequest request,
+  public boolean handleRequest(Request request,
           boolean doNotReplyToClient) {
     switch ((AppRequest.PacketType) (request.getRequestType())) {
       case DEFAULT_APP_REQUEST:
@@ -132,10 +132,10 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
   }
 
   @Override
-  public InterfaceRequest getRequest(String stringified)
+  public Request getRequest(String stringified)
           throws RequestParseException {
     DistributedNoopAppRequest request = null;
-    if (stringified.equals(InterfaceRequest.NO_OP)) {
+    if (stringified.equals(Request.NO_OP)) {
       return this.getNoopRequest();
     }
     try {
@@ -151,8 +151,8 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
   /*
    * This is a special no-op request unlike any other DistributedNoopAppRequest.
    */
-  private InterfaceRequest getNoopRequest() {
-    return new DistributedNoopAppRequest(null, 0, 0, InterfaceRequest.NO_OP,
+  private Request getNoopRequest() {
+    return new DistributedNoopAppRequest(null, 0, 0, Request.NO_OP,
             AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
   }
 
@@ -166,7 +166,7 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
   }
 
   @Override
-  public boolean handleRequest(InterfaceRequest request) {
+  public boolean handleRequest(Request request) {
     return this.handleRequest(request, false);
   }
 
@@ -206,7 +206,7 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
   }
 
   @Override
-  public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+  public ReconfigurableRequest getStopRequest(String name, int epoch) {
     return null;/*
      * new DistributedNoopAppRequest(name, epoch, (int) (Math.random() *
      * Integer.MAX_VALUE), "",

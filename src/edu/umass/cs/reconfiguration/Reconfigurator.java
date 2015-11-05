@@ -31,21 +31,21 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.InterfaceAddressMessenger;
-import edu.umass.cs.nio.InterfaceMessenger;
-import edu.umass.cs.nio.InterfacePacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.MessageNIOTransport;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.AddressMessenger;
+import edu.umass.cs.nio.interfaces.Messenger;
+import edu.umass.cs.nio.interfaces.PacketDemultiplexer;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorCallback;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorCallback;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -102,10 +102,10 @@ import edu.umass.cs.utils.MyLogger;
  * 
  */
 public class Reconfigurator<NodeIDType> implements
-		InterfacePacketDemultiplexer<JSONObject>,
-		InterfaceReconfiguratorCallback {
+		PacketDemultiplexer<JSONObject>,
+		ReconfiguratorCallback {
 
-	private final InterfaceSSLMessenger<NodeIDType, JSONObject> messenger;
+	private final SSLMessenger<NodeIDType, JSONObject> messenger;
 	private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
 	protected final ReconfiguratorProtocolTask<NodeIDType> protocolTask;
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
@@ -129,8 +129,8 @@ public class Reconfigurator<NodeIDType> implements
 	 * the former may be a subset of the NodeConfig used by the latter, so they
 	 * are separate arguments.
 	 */
-	protected Reconfigurator(InterfaceReconfigurableNodeConfig<NodeIDType> nc,
-			InterfaceSSLMessenger<NodeIDType, JSONObject> m,
+	protected Reconfigurator(ReconfigurableNodeConfig<NodeIDType> nc,
+			SSLMessenger<NodeIDType, JSONObject> m,
 			boolean startCleanSlate) {
 		this.messenger = m;
 		this.consistentNodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
@@ -617,7 +617,7 @@ public class Reconfigurator<NodeIDType> implements
 	 * committed but unexecuted requests. This naturally happens with paxos.
 	 */
 	@Override
-	public void executed(InterfaceRequest request, boolean handled) {
+	public void executed(Request request, boolean handled) {
 		if (this.isRecovering())
 			return; // no messaging during recovery
 		BasicReconfigurationPacket<?> rcPacket = null;
@@ -625,7 +625,7 @@ public class Reconfigurator<NodeIDType> implements
 			rcPacket = ReconfigurationPacket.getReconfigurationPacket(request,
 					getUnstringer());
 		} catch (JSONException e) {
-			if (!request.toString().equals(InterfaceRequest.NO_OP))
+			if (!request.toString().equals(Request.NO_OP))
 				e.printStackTrace();
 		}
 		if (rcPacket == null
@@ -743,7 +743,7 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	@Override
-	public void preExecuted(InterfaceRequest request) {
+	public void preExecuted(Request request) {
 		if (this.isRecovering())
 			return;
 		// checked right above
@@ -770,7 +770,7 @@ public class Reconfigurator<NodeIDType> implements
 
 	@SuppressWarnings("unchecked")
 	private RCRecordRequest<NodeIDType> requestToRCRecordRequest(
-			InterfaceRequest request) {
+			Request request) {
 		if (request instanceof RCRecordRequest<?>)
 			return (RCRecordRequest<NodeIDType>) request;
 		BasicReconfigurationPacket<?> rcPacket = null;
@@ -778,7 +778,7 @@ public class Reconfigurator<NodeIDType> implements
 			rcPacket = ReconfigurationPacket.getReconfigurationPacket(request,
 					getUnstringer());
 		} catch (JSONException e) {
-			if (!request.toString().equals(InterfaceRequest.NO_OP))
+			if (!request.toString().equals(Request.NO_OP))
 				e.printStackTrace();
 		}
 		if (rcPacket == null
@@ -879,7 +879,7 @@ public class Reconfigurator<NodeIDType> implements
 		}
 	}
 
-	private InterfaceAddressMessenger<JSONObject> getClientMessenger() {
+	private AddressMessenger<JSONObject> getClientMessenger() {
 		return this.messenger.getClientMessenger();
 	}
 
@@ -970,9 +970,9 @@ public class Reconfigurator<NodeIDType> implements
 	 * We may need to use a separate messenger for end clients if we use two-way
 	 * authentication between servers.
 	 */
-	private InterfaceAddressMessenger<JSONObject> initClientMessenger() {
+	private AddressMessenger<JSONObject> initClientMessenger() {
 		AbstractPacketDemultiplexer<JSONObject> pd = null;
-		InterfaceMessenger<InetSocketAddress, JSONObject> cMsgr = null;
+		Messenger<InetSocketAddress, JSONObject> cMsgr = null;
 		try {
 			int myPort = (this.consistentNodeConfig.getNodePort(getMyID()));
 			if (getClientFacingPort(myPort) != myPort) {
@@ -989,7 +989,7 @@ public class Reconfigurator<NodeIDType> implements
 			e.printStackTrace();
 		}
 		return cMsgr != null ? cMsgr
-				: (InterfaceAddressMessenger<JSONObject>) this.messenger;
+				: (AddressMessenger<JSONObject>) this.messenger;
 	}
 
 	private boolean isTaskRunning(String key) {
@@ -1373,7 +1373,7 @@ public class Reconfigurator<NodeIDType> implements
 	 * There are only two messengers in all, so if it is not my node config
 	 * socket address, it must be client messenger.
 	 */
-	private InterfaceAddressMessenger<JSONObject> getMessenger(
+	private AddressMessenger<JSONObject> getMessenger(
 			InetSocketAddress receiver) {
 		if (receiver.equals(this.consistentNodeConfig.getBindSocketAddress(this
 				.getMyID()))) {

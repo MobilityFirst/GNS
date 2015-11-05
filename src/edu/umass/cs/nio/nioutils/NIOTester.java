@@ -5,8 +5,8 @@ import java.net.InetSocketAddress;
 
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 

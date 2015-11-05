@@ -26,9 +26,9 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableActiveConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableRCConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ModifiableActiveConfig;
+import edu.umass.cs.reconfiguration.interfaces.ModifiableRCConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 /**
  * @author arun
@@ -46,10 +46,10 @@ import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig
  *            called here.
  */
 public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
-		InterfaceModifiableActiveConfig<NodeIDType>,
-		InterfaceModifiableRCConfig<NodeIDType> {
+		ModifiableActiveConfig<NodeIDType>,
+		ModifiableRCConfig<NodeIDType> {
 
-	private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
+	private final ReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	private int version = 0;
 	private final HashMap<NodeIDType, InetSocketAddress> rcMap = new HashMap<NodeIDType, InetSocketAddress>();
         // Just for getBindAddress below
@@ -59,7 +59,7 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	 * @param nc
 	 */
 	public SimpleReconfiguratorNodeConfig(
-			InterfaceReconfigurableNodeConfig<NodeIDType> nc) {
+			ReconfigurableNodeConfig<NodeIDType> nc) {
 		this.nodeConfig = nc;
 		for (NodeIDType node : nc.getReconfigurators()) {
 			this.rcMap.put(node, new InetSocketAddress(nc.getNodeAddress(node),
@@ -135,8 +135,8 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	public synchronized InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress prevSockAddr = this.rcMap.put(id, sockAddr);
-		if (this.nodeConfig instanceof InterfaceModifiableRCConfig)
-			((InterfaceModifiableRCConfig<NodeIDType>) this.nodeConfig)
+		if (this.nodeConfig instanceof ModifiableRCConfig)
+			((ModifiableRCConfig<NodeIDType>) this.nodeConfig)
 					.addReconfigurator(id, sockAddr);
                 // FIXME - need to add an entry in rcBindMap as well
 		return prevSockAddr;
@@ -146,8 +146,8 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	public synchronized InetSocketAddress removeReconfigurator(NodeIDType id) {
 		InetSocketAddress removed = this.rcMap.remove(id);
                 this.rcBindMap.remove(id);
-		if (this.nodeConfig instanceof InterfaceModifiableRCConfig)
-			((InterfaceModifiableRCConfig<NodeIDType>) this.nodeConfig)
+		if (this.nodeConfig instanceof ModifiableRCConfig)
+			((ModifiableRCConfig<NodeIDType>) this.nodeConfig)
 					.removeReconfigurator(id);
                 
 		return removed;
@@ -159,8 +159,8 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 		InetSocketAddress old = (this.nodeConfig.getActiveReplicas().contains(
 				id) ? new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
 				this.nodeConfig.getNodePort(id)) : null);
-		if (this.nodeConfig instanceof InterfaceModifiableActiveConfig)
-			((InterfaceModifiableActiveConfig<NodeIDType>) this.nodeConfig)
+		if (this.nodeConfig instanceof ModifiableActiveConfig)
+			((ModifiableActiveConfig<NodeIDType>) this.nodeConfig)
 					.addActiveReplica(id, sockAddr);
 		else
 			throw new RuntimeException(
@@ -173,8 +173,8 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 		InetSocketAddress old = (this.nodeConfig.getActiveReplicas().contains(
 				id) ? new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
 				this.nodeConfig.getNodePort(id)) : null);
-		if (this.nodeConfig instanceof InterfaceModifiableActiveConfig)
-			((InterfaceModifiableActiveConfig<NodeIDType>) this.nodeConfig)
+		if (this.nodeConfig instanceof ModifiableActiveConfig)
+			((ModifiableActiveConfig<NodeIDType>) this.nodeConfig)
 					.removeActiveReplica(id);
 		else
 			throw new RuntimeException(

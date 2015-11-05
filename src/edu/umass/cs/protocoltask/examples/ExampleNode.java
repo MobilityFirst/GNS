@@ -25,10 +25,10 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.TESTProtocolTaskConfig;
@@ -48,7 +48,7 @@ public class ExampleNode {
 	
 	private Logger log = Logger.getLogger(getClass().getName());
 
-	ExampleNode(int id, InterfaceNodeConfig<Integer> nc) throws IOException {
+	ExampleNode(int id, NodeConfig<Integer> nc) throws IOException {
 		// Setting my ID and NIO with packet demultiplexer
 		this.myID = id;
 		this.nodeIDs = (nc.getNodeIDs());

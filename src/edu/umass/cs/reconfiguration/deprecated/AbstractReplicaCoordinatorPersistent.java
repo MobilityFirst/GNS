@@ -19,10 +19,10 @@ package edu.umass.cs.reconfiguration.deprecated;
 
 import java.util.Set;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 
 /**
@@ -45,7 +45,7 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 
 	private final PaxosManager<NodeIDType> paxosManager;
 
-	public AbstractReplicaCoordinatorPersistent(InterfaceReplicable app,
+	public AbstractReplicaCoordinatorPersistent(Replicable app,
 			JSONMessenger<NodeIDType> messenger,
 			Stringifiable<NodeIDType> unstringer) {
 		super(app, messenger);

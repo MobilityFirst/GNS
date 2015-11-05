@@ -4,11 +4,11 @@ import java.io.IOException;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gigapaxos.InterfaceClientRequest;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosClientAsync;
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gigapaxos.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 
 /**
  * @author arun
@@ -42,12 +42,12 @@ public class NoopPaxosClient extends PaxosClientAsync {
 					requestValue, new RequestCallback() {
 				long createTime = System.currentTimeMillis();
 				@Override
-				public void handleResponse(InterfaceRequest response) {
+				public void handleResponse(Request response) {
 					System.out
 							.println("Response for request ["
 									+ requestValue
 									+ "] = "
-									+ (response instanceof InterfaceClientRequest ? ((InterfaceClientRequest) response)
+									+ (response instanceof ClientRequest ? ((ClientRequest) response)
 											.getResponse() : null)
 									+ " received in "
 									+ (System.currentTimeMillis() - createTime)

@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 
 /**
  * @author V. Arun
@@ -60,7 +60,7 @@ public class AggregateDemandProfiler {
 	 * @return AbstractDemandProfile after registering {@code request}.
 	 */
 	public synchronized AbstractDemandProfile register(
-			InterfaceRequest request, InetAddress sender) {
+			Request request, InetAddress sender) {
 		String name = request.getServiceName();
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)

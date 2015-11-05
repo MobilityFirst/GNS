@@ -21,16 +21,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceClientRequest;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.RequestBatcher;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gigapaxos.paxosutil.IntegerMap;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 
@@ -46,13 +46,13 @@ import java.util.Random;
  *
  */
 @SuppressWarnings("javadoc")
-public class RequestPacket extends PaxosPacket implements InterfaceRequest,
-		InterfaceClientRequest {
+public class RequestPacket extends PaxosPacket implements Request,
+		ClientRequest {
 	static {
 		PaxosConfig.load();
 	}
 	private static final boolean DEBUG = Config.getGlobalBoolean(PC.DEBUG);
-	public static final String NO_OP = InterfaceRequest.NO_OP;
+	public static final String NO_OP = Request.NO_OP;
 
 	/**
 	 * These JSON keys are rather specific to RequestPacket or for debugging, so
@@ -952,7 +952,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	}
 
 	@Override
-	public InterfaceClientRequest getResponse() {
+	public ClientRequest getResponse() {
 		return this.getACK();
 	}
 

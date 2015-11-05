@@ -9,7 +9,7 @@ package edu.umass.cs.gns.gnsApp;
 
 import com.google.common.net.InetAddresses;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 
 import java.util.ArrayList;
 
@@ -17,7 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.utils.Util;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 
@@ -165,7 +165,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public void register(InterfaceRequest request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
+  public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
     if (!request.getServiceName().equals(this.name)) {
       return;
     }
@@ -187,8 +187,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
       this.votesMap.increment(findActiveReplicaClosestToSender(sender, nodeConfig.getActiveIPs()));
     }
 
-    if (request instanceof InterfaceReplicableRequest
-            && ((InterfaceReplicableRequest) request).needsCoordination()) {
+    if (request instanceof ReplicableRequest
+            && ((ReplicableRequest) request).needsCoordination()) {
       updateCount++;
     } else {
       lookupCount++;

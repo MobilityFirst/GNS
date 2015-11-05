@@ -20,7 +20,7 @@ package edu.umass.cs.protocoltask.json;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.protocoltask.ThresholdProtocolEvent;
 
 /**

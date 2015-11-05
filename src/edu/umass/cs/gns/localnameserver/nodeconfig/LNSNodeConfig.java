@@ -12,7 +12,7 @@ import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.utils.Shutdownable;
-import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -49,7 +49,7 @@ import org.json.JSONException;
  * how those are generated.
  */
 public class LNSNodeConfig implements
-        InterfaceNodeConfig<InetSocketAddress>,
+        NodeConfig<InetSocketAddress>,
         GNSInterfaceNodeConfig<InetSocketAddress>,
         Shutdownable {
 

@@ -29,9 +29,9 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableActiveConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableRCConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ModifiableActiveConfig;
+import edu.umass.cs.reconfiguration.interfaces.ModifiableRCConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 /**
  * @author arun
@@ -47,8 +47,8 @@ import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig
  */
 public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		ConsistentNodeConfig<NodeIDType> implements
-		InterfaceModifiableActiveConfig<NodeIDType>,
-		InterfaceModifiableRCConfig<NodeIDType>, InterfaceGetActiveIPs {
+		ModifiableActiveConfig<NodeIDType>,
+		ModifiableRCConfig<NodeIDType>, InterfaceGetActiveIPs {
 	private final SimpleReconfiguratorNodeConfig<NodeIDType> nodeConfig;
 	private Set<NodeIDType> activeReplicas; // most recent cached copy
 	private Set<NodeIDType> reconfigurators; // most recent cached copy
@@ -73,7 +73,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	 * @param nc
 	 */
 	public ConsistentReconfigurableNodeConfig(
-			InterfaceReconfigurableNodeConfig<NodeIDType> nc) {
+			ReconfigurableNodeConfig<NodeIDType> nc) {
 		super(nc);
 		this.nodeConfig = new SimpleReconfiguratorNodeConfig<NodeIDType>(nc);
 		this.activeReplicas = this.nodeConfig.getActiveReplicas();
@@ -244,7 +244,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	 * 
 	 * @return Underlying node config object.
 	 */
-	public InterfaceReconfigurableNodeConfig<NodeIDType> getUnderlyingNodeConfig() {
+	public ReconfigurableNodeConfig<NodeIDType> getUnderlyingNodeConfig() {
 		return this.nodeConfig;
 	}
 

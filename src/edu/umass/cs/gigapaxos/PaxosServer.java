@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
+
 package edu.umass.cs.gigapaxos;
 
 import java.io.IOException;
@@ -8,11 +26,13 @@ import java.util.Set;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.InterfaceMessenger;
-import edu.umass.cs.nio.InterfaceNodeConfig;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
+import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.interfaces.Messenger;
+import edu.umass.cs.nio.interfaces.NodeConfig;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 /**
@@ -20,14 +40,14 @@ import edu.umass.cs.reconfiguration.ReconfigurationConfig;
  *
  */
 public class PaxosServer {
-	private final InterfaceSSLMessenger<String, JSONObject> messenger;
+	private final SSLMessenger<String, JSONObject> messenger;
 
-	PaxosServer(String myID, InterfaceNodeConfig<String> nodeConfig)
+	PaxosServer(String myID, NodeConfig<String> nodeConfig)
 			throws IOException {
 		this.messenger = (new JSONMessenger<String>(
 				(new MessageNIOTransport<String, JSONObject>(myID, nodeConfig,
 						ReconfigurationConfig.getServerSSLMode()))));
-		InterfaceReplicable app = this.createApp();
+		Replicable app = this.createApp();
 		PaxosManager<String> pm = startPaxosManager(this.messenger, app,
 				new InetSocketAddress(nodeConfig.getNodeAddress(myID),
 						nodeConfig.getNodePort(myID)));
@@ -38,8 +58,8 @@ public class PaxosServer {
 	}
 
 	private PaxosManager<String> startPaxosManager(
-			InterfaceMessenger<String, JSONObject> messenger,
-			InterfaceReplicable app, InetSocketAddress myAddress) {
+			Messenger<String, JSONObject> messenger,
+			Replicable app, InetSocketAddress myAddress) {
 		return new PaxosManager<String>(messenger.getMyID(),
 				PaxosConfig.getDefaultNodeConfig(), this.messenger, app, null,
 				true).initClientMessenger(myAddress);
@@ -47,7 +67,7 @@ public class PaxosServer {
 
 	protected static Set<InetSocketAddress> getDefaultServers() {
 		Set<InetSocketAddress> servers = new HashSet<InetSocketAddress>();
-		InterfaceNodeConfig<String> nodeConfig = PaxosConfig
+		NodeConfig<String> nodeConfig = PaxosConfig
 				.getDefaultNodeConfig();
 		for (String id : nodeConfig.getNodeIDs())
 			servers.add(new InetSocketAddress(nodeConfig.getNodeAddress(id),
@@ -55,12 +75,12 @@ public class PaxosServer {
 		return servers;
 	}
 
-	private InterfaceReplicable createApp() {
-		InterfaceReplicable curApp = null;
+	private Replicable createApp() {
+		Replicable curApp = null;
 		if (PaxosConfig.application != null) {
 			try {
 
-				curApp = (InterfaceReplicable) PaxosConfig.application
+				curApp = (Replicable) PaxosConfig.application
 						.getConstructor().newInstance();
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException
@@ -74,14 +94,14 @@ public class PaxosServer {
 					"Node" + messenger.getMyID()
 							+ " unable to create paxos application replica");
 		}
-		if (curApp instanceof InterfaceClientMessenger) {
-			((InterfaceClientMessenger) curApp).setClientMessenger(messenger);
+		if (curApp instanceof ClientMessenger) {
+			((ClientMessenger) curApp).setClientMessenger(messenger);
 		} 
 		return curApp;
 	}
 
 	private static Set<String> processArgs(String[] args,
-			InterfaceNodeConfig<String> nodeConfig) {
+			NodeConfig<String> nodeConfig) {
 		// -c options => start with clean DB
 		for (String arg : args)
 			if (arg.trim().equals("-c"))
@@ -104,7 +124,7 @@ public class PaxosServer {
 					"At least one node ID must be specified as a command-line argument for starting "
 							+ PaxosServer.class.getSimpleName());
 		PaxosConfig.setConsoleHandler();
-		InterfaceNodeConfig<String> nodeConfig = PaxosConfig
+		NodeConfig<String> nodeConfig = PaxosConfig
 				.getDefaultNodeConfig();
 		System.out.print("Starting paxos servers [ ");
 		for (String server : processArgs(args, nodeConfig)) {

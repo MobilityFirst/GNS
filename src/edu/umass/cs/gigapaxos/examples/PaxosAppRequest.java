@@ -6,11 +6,11 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -25,7 +25,7 @@ import edu.umass.cs.utils.Util;
  *         using app-specific request types.
  */
 public class PaxosAppRequest extends JSONPacket implements
-		InterfaceReplicableRequest, InterfaceClientRequest {
+		ReplicableRequest, ClientRequest {
 
 	/**
 	 * Packet type class for NoopApp requests.
@@ -231,7 +231,7 @@ public class PaxosAppRequest extends JSONPacket implements
 	}
 
 	@Override
-	public InterfaceClientRequest getResponse() {
+	public ClientRequest getResponse() {
 		return new PaxosAppRequest(this.name, this.epoch, this.id,
 				Keys.ACK.toString(), PacketType.getPacketType(type), this.stop);
 	}

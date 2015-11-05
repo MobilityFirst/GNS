@@ -26,7 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.reconfiguration.ActiveReplica;

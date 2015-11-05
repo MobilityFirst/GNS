@@ -20,15 +20,15 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 /**
 @author V. Arun
  * @param <NodeIDType> 
  */
-public class AckStartEpoch<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements InterfaceReplicableRequest{
+public class AckStartEpoch<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements ReplicableRequest{
 
 	private boolean coordType = false;
 	/**

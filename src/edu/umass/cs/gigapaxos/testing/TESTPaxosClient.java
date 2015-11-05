@@ -36,9 +36,9 @@ import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -113,7 +113,7 @@ public class TESTPaxosClient {
 	}
 
 	private  JSONNIOTransport<Integer> niot;
-	private final InterfaceNodeConfig<Integer> nc;
+	private final NodeConfig<Integer> nc;
 	private final int myID;
 	private int totReqCount = 0;
 	private int totReplyCount = 0;
@@ -278,7 +278,7 @@ public class TESTPaxosClient {
 		}
 	}
 
-	protected TESTPaxosClient(int id, InterfaceNodeConfig<Integer> nc) throws IOException {
+	protected TESTPaxosClient(int id, NodeConfig<Integer> nc) throws IOException {
 		this.myID = id;
 		this.nc = (nc==null ? TESTPaxosConfig.getNodeConfig() : nc);
 		niot = (new JSONNIOTransport<Integer>(id, this.nc,
@@ -411,7 +411,7 @@ public class TESTPaxosClient {
 		return this.sendRequest(req);
 	}
 
-	protected static TESTPaxosClient[] setupClients(InterfaceNodeConfig<Integer> nc) {
+	protected static TESTPaxosClient[] setupClients(NodeConfig<Integer> nc) {
 		System.out.println("\n\nInitiating paxos clients setup");
 		TESTPaxosClient[] clients = new TESTPaxosClient[Config
 				.getGlobalInt(TC.NUM_CLIENTS)];

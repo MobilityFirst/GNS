@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nodeconfig;
 
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import java.util.Set;
 
@@ -14,7 +14,7 @@ import java.util.Set;
  * @param <NodeIDType>
  */
 public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeIDType>,
-        InterfaceReconfigurableNodeConfig<NodeIDType> {
+        ReconfigurableNodeConfig<NodeIDType> {
 
   @Override
   public Set<NodeIDType> getReconfigurators();

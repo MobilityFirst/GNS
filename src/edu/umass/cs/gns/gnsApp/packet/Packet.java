@@ -11,8 +11,8 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 //import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 //import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.utils.ResultValue;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -18,8 +18,8 @@ import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.utils.MovingAverage;
 import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
@@ -76,7 +76,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
   private final ConsistentReconfigurableNodeConfig<String> nodeConfig;
 
-  private final InterfaceSSLMessenger<String, JSONObject> messenger;
+  private final SSLMessenger<String, JSONObject> messenger;
 
   private final Random random;
 

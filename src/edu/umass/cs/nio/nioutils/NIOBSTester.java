@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
-import edu.umass.cs.nio.InterfaceDataProcessingWorker;
 import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.interfaces.DataProcessingWorker;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -55,7 +55,7 @@ public class NIOBSTester {
 
 		final int batchSize = 1;
 
-		class DPWEcho implements InterfaceDataProcessingWorker {
+		class DPWEcho implements DataProcessingWorker {
 			int count = 0;
 			int msgCount = 0;
 
@@ -99,7 +99,7 @@ public class NIOBSTester {
 			}
 
 		}
-		class DPWSender implements InterfaceDataProcessingWorker {
+		class DPWSender implements DataProcessingWorker {
 			int count = 0;
 			int msgCount = 0;
 

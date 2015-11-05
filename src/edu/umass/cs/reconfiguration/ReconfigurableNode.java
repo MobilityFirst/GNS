@@ -19,15 +19,15 @@ package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
 
-import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
-import edu.umass.cs.gigapaxos.InterfaceClientRequest;
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 
@@ -47,7 +47,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDe
 public abstract class ReconfigurableNode<NodeIDType> {
 
 	protected final NodeIDType myID;
-	protected final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
+	protected final ReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	protected final JSONMessenger<NodeIDType> messenger;
 
 	protected abstract AbstractReplicaCoordinator<NodeIDType> createAppCoordinator();
@@ -61,7 +61,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 	 * @throws IOException
 	 */
 	public ReconfigurableNode(NodeIDType id,
-			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig)
+			ReconfigurableNodeConfig<NodeIDType> nodeConfig)
 			throws IOException {
 		this(id, nodeConfig, false);
 	}
@@ -78,18 +78,18 @@ public abstract class ReconfigurableNode<NodeIDType> {
 
 	private AbstractReplicaCoordinator<NodeIDType> createApp() {
 		if (ReconfigurationConfig.application != null) {
-			InterfaceReplicable app = ReconfigurationConfig.createApp();
-			if (app instanceof InterfaceClientMessenger)
-				((InterfaceClientMessenger) app).setClientMessenger(messenger);
+			Replicable app = ReconfigurationConfig.createApp();
+			if (app instanceof ClientMessenger)
+				((ClientMessenger) app).setClientMessenger(messenger);
 			else
 				Reconfigurator
 						.getLogger()
 						.info(app.getClass().getSimpleName()
 								+ " does not implement "
-								+ InterfaceClientMessenger.class
+								+ ClientMessenger.class
 										.getSimpleName()
 								+ ", which means the app should either rely on "
-								+ InterfaceClientRequest.class.getSimpleName()
+								+ ClientRequest.class.getSimpleName()
 								+ " or not expect to send "
 								+ " responses back to clients or rely on alternate means for messaging.");
 			PaxosReplicaCoordinator<NodeIDType> prc = new PaxosReplicaCoordinator<NodeIDType>(app, myID,
@@ -119,7 +119,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 	 *             not present at all in the supplied 'nodeConfig' argument.
 	 */
 	public ReconfigurableNode(NodeIDType id,
-			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
+			ReconfigurableNodeConfig<NodeIDType> nodeConfig,
 			boolean startCleanSlate) throws IOException {
 		this.myID = id;
 		this.nodeConfig = nodeConfig;
@@ -166,7 +166,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 	static class DefaultReconfigurableNode extends ReconfigurableNode<String> {
 
 		public DefaultReconfigurableNode(String id,
-				InterfaceReconfigurableNodeConfig<String> nodeConfig,
+				ReconfigurableNodeConfig<String> nodeConfig,
 				boolean startCleanSlate) throws IOException {
 			super(id, nodeConfig, startCleanSlate);
 		}
@@ -192,7 +192,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 					"At least one node ID must be specified as a command-line argument for starting "
 							+ ReconfigurableNode.class);
 		ReconfigurationConfig.setConsoleHandler();
-		InterfaceReconfigurableNodeConfig<String> nodeConfig = new DefaultNodeConfig<String>(
+		ReconfigurableNodeConfig<String> nodeConfig = new DefaultNodeConfig<String>(
 				PaxosConfig.getActives(),
 				ReconfigurationConfig.getReconfigurators());
 		System.out.print("Creating node(s) [ ");

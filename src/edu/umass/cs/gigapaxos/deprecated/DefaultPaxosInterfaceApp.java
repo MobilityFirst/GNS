@@ -24,11 +24,11 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
@@ -40,7 +40,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  * replication invariant. It also sends the reply to the client
  * if the flag is set in RequestPacket (used by the coordinator).
  */
-public class DefaultPaxosInterfaceApp implements Replicable, InterfaceReplicable {
+public class DefaultPaxosInterfaceApp implements Replicable {
 	private static final int MAX_STORED_REQUESTS = 1000;
 	private static MessageDigest md ;
 
@@ -57,7 +57,12 @@ public class DefaultPaxosInterfaceApp implements Replicable, InterfaceReplicable
 			md = MessageDigest.getInstance("SHA");
 		} catch(Exception e) {e.printStackTrace();}
 	}
-	@Override
+	/**
+	 * @param paxosID
+	 * @param req
+	 * @param recovery
+	 * @return True if successfully executed.
+	 */
 	public synchronized boolean handleDecision(String paxosID, String req, boolean recovery) {
 		boolean executed = false;
 		try {
@@ -137,12 +142,12 @@ public class DefaultPaxosInterfaceApp implements Replicable, InterfaceReplicable
 		this.wait();
 	}
 	@Override
-	public boolean handleRequest(InterfaceRequest request) {
+	public boolean handleRequest(Request request) {
 		return handleRequest(request, false);
 	}
 
 	@Override
-	public InterfaceRequest getRequest(String stringified)
+	public Request getRequest(String stringified)
 			throws RequestParseException {
 		throw new RuntimeException("Method not yet implemented");
 	}
@@ -153,7 +158,7 @@ public class DefaultPaxosInterfaceApp implements Replicable, InterfaceReplicable
 	}
 
 	@Override
-	public boolean handleRequest(InterfaceRequest request,
+	public boolean handleRequest(Request request,
 			boolean doNotReplyToClient) {
 		throw new RuntimeException("Method not yet implemented");
 	}

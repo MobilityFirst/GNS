@@ -5,9 +5,9 @@
  */
 package edu.umass.cs.gns.gnsApp;
 
-import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.activecode.ActiveCodeHandler;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gns.database.ColumnField;
@@ -17,9 +17,9 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-
 import static edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.ClientCommandProcessor;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,13 +42,13 @@ import edu.umass.cs.gns.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.gnsApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import java.io.IOException;
@@ -65,8 +65,8 @@ import java.util.concurrent.ConcurrentMap;
  * @author Westy
  */
 public class GnsApp extends AbstractReconfigurablePaxosApp<String>
-        implements GnsApplicationInterface<String>, InterfaceReplicable, InterfaceReconfigurable,
-        InterfaceClientMessenger {
+        implements GnsApplicationInterface<String>, Replicable, Reconfigurable,
+        ClientMessenger {
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private final String nodeID;
@@ -79,7 +79,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   /**
    * The Nio server
    */
-  private final InterfaceSSLMessenger<String, JSONObject> messenger;
+  private final SSLMessenger<String, JSONObject> messenger;
   private final ClientCommandProcessor clientCommandProcessor;
 
   // Keep track of commands that are coming in
@@ -145,7 +145,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     PacketType.COMMAND_RETURN_VALUE};
 
   @Override
-  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+  public boolean handleRequest(Request request, boolean doNotReplyToClient) {
     boolean executed = false;
     try {
       //IntegerPacketType intPacket = request.getRequestType();
@@ -221,7 +221,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   @Override
-  public void setClientMessenger(InterfaceSSLMessenger<?, JSONObject> messenger) {
+  public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
@@ -246,19 +246,19 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 
   // For InterfaceApplication
   @Override
-  public InterfaceRequest getRequest(String string)
+  public Request getRequest(String string)
           throws RequestParseException {
     //GNS.getLogger().info(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     }
     // Special case handling of NoopPacket packets
-    if (InterfaceRequest.NO_OP.toString().equals(string)) {
+    if (Request.NO_OP.toString().equals(string)) {
       return new NoopPacket();
     }
     try {
       JSONObject json = new JSONObject(string);
-      InterfaceRequest request = (InterfaceRequest) Packet.createInstance(json, nodeConfig);
+      Request request = (Request) Packet.createInstance(json, nodeConfig);
 //      if (request instanceof InterfaceReplicableRequest) {
 //        GNS.getLogger().info(">>>>>>>>>>>>>>>UPDATE PACKET********* needsCoordination is "
 //                + ((InterfaceReplicableRequest) request).needsCoordination());
@@ -275,7 +275,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   @Override
-  public boolean handleRequest(InterfaceRequest request) {
+  public boolean handleRequest(Request request) {
     return this.handleRequest(request, false);
   }
 
@@ -368,7 +368,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
    * @return the stop request packet
    */
   @Override
-  public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+  public ReconfigurableRequest getStopRequest(String name, int epoch) {
     return new StopPacket(name, epoch);
   }
 
@@ -406,7 +406,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   @Override
-  public InterfaceReconfigurableNodeConfig<String> getGNSNodeConfig() {
+  public ReconfigurableNodeConfig<String> getGNSNodeConfig() {
     return nodeConfig;
   }
 

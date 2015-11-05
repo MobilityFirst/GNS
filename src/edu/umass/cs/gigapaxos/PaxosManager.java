@@ -18,6 +18,8 @@
 package edu.umass.cs.gigapaxos;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxospackets.FailureDetectionPacket;
 import edu.umass.cs.gigapaxos.paxospackets.FindReplicaGroupPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
@@ -28,7 +30,7 @@ import edu.umass.cs.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gigapaxos.paxosutil.IntegerMap;
 import edu.umass.cs.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.MessagingTask;
-import edu.umass.cs.gigapaxos.paxosutil.Messenger;
+import edu.umass.cs.gigapaxos.paxosutil.PaxosMessenger;
 import edu.umass.cs.gigapaxos.paxosutil.OverloadException;
 import edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexer;
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
@@ -37,15 +39,15 @@ import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosApp;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceMessenger;
-import edu.umass.cs.nio.InterfaceNIOTransport;
-import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Messenger;
+import edu.umass.cs.nio.interfaces.InterfaceNIOTransport;
+import edu.umass.cs.nio.interfaces.NodeConfig;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
@@ -106,9 +108,9 @@ public class PaxosManager<NodeIDType> {
 	// final
 	private final AbstractPaxosLogger paxosLogger; // logging
 	private final FailureDetection<NodeIDType> FD; // failure detection
-	private final Messenger<NodeIDType> messenger; // messaging
+	private final PaxosMessenger<NodeIDType> messenger; // messaging
 	private final int myID;
-	private final InterfaceReplicable myApp; // default app for all paxosIDs
+	private final Replicable myApp; // default app for all paxosIDs
 
 	// background deactivation/cremation tasks, all else event-driven
 	private final ScheduledExecutorService executor;
@@ -223,7 +225,7 @@ public class PaxosManager<NodeIDType> {
 	 */
 	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> unstringer,
 			InterfaceNIOTransport<NodeIDType, JSONObject> niot,
-			InterfaceReplicable pi, String paxosLogFolder,
+			Replicable pi, String paxosLogFolder,
 			boolean enableNullCheckpoints) {
 		this.myID = this.integerMap.put(id);// id.hashCode();
 		this.executor = Executors.newScheduledThreadPool(1,
@@ -244,7 +246,7 @@ public class PaxosManager<NodeIDType> {
 				Config.getGlobalInt(PC.PINSTANCES_CAPACITY));
 		this.corpses = new HashMap<String, PaxosInstanceStateMachine>();
 		// this.activePaxii = new HashMap<String, ActivePaxosState>();
-		this.messenger = (new Messenger<NodeIDType>(niot, this.integerMap));
+		this.messenger = (new PaxosMessenger<NodeIDType>(niot, this.integerMap));
 		this.paxosLogger = new SQLPaxosLogger(this.myID, id.toString(),
 				paxosLogFolder, this.wrapMessenger(this.messenger));
 		this.nullCheckpointsEnabled = enableNullCheckpoints;
@@ -294,7 +296,7 @@ public class PaxosManager<NodeIDType> {
 
 	/**
 	 * Refer
-	 * {@link #PaxosManager(Object, Stringifiable, InterfaceNIOTransport, InterfaceReplicable, String)}
+	 * {@link #PaxosManager(Object, Stringifiable, InterfaceNIOTransport, Replicable, String)}
 	 * .
 	 * 
 	 * @param id
@@ -305,7 +307,7 @@ public class PaxosManager<NodeIDType> {
 	 */
 	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc,
 			InterfaceNIOTransport<NodeIDType, JSONObject> niot,
-			InterfaceReplicable app, String paxosLogFolder) {
+			Replicable app, String paxosLogFolder) {
 		this(id, nc, niot, (app), paxosLogFolder,
 				PaxosInstanceStateMachine.ENABLE_NULL_CHECKPOINT_STATE);
 	}
@@ -439,13 +441,13 @@ public class PaxosManager<NodeIDType> {
 	 * @return Whether this paxos instance or higher got created.
 	 */
 	public boolean createPaxosInstance(String paxosID, int version,
-			Set<NodeIDType> gms, InterfaceReplicable app, String initialState) {
+			Set<NodeIDType> gms, Replicable app, String initialState) {
 		return this.createPaxosInstance(paxosID, version, gms, app,
 				initialState, null, true)!=null;
 	}
 
 	private synchronized PaxosInstanceStateMachine createPaxosInstance(String paxosID,
-			int version, Set<NodeIDType> gms, InterfaceReplicable app,
+			int version, Set<NodeIDType> gms, Replicable app,
 			String initialState, HotRestoreInfo hri, boolean tryRestore) {
 		return this.createPaxosInstance(paxosID, version, gms, app,
 				initialState, hri, tryRestore, false);
@@ -487,7 +489,7 @@ public class PaxosManager<NodeIDType> {
 	 * not both true.
 	 */
 	private synchronized PaxosInstanceStateMachine createPaxosInstance(String paxosID,
-			int version, Set<NodeIDType> gms, InterfaceReplicable app,
+			int version, Set<NodeIDType> gms, Replicable app,
 			String initialState, HotRestoreInfo hri, boolean tryRestore,
 			boolean missedBirthing) {
 
@@ -583,20 +585,20 @@ public class PaxosManager<NodeIDType> {
 	private Set<InetAddress> servers = new HashSet<InetAddress>();
 	private boolean isServer(InetAddress isa) {
 		// play safe if we can't distinguish servers from clients
-		if(!(this.unstringer instanceof InterfaceNodeConfig)) return true;
+		if(!(this.unstringer instanceof NodeConfig)) return true;
 		return servers.contains(isa);
 	}
 	protected void addServers(Set<NodeIDType> nodes) {
-		if (this.unstringer instanceof InterfaceNodeConfig)
+		if (this.unstringer instanceof NodeConfig)
 			for (NodeIDType node : nodes) {
 				this.servers
-						.add(((InterfaceNodeConfig<NodeIDType>) this.unstringer)
+						.add(((NodeConfig<NodeIDType>) this.unstringer)
 								.getNodeAddress(node));
 			}
 	}
 	private void removeServer(NodeIDType node) {
-		if(this.unstringer instanceof InterfaceNodeConfig)
-			servers.remove(((InterfaceNodeConfig<NodeIDType>)this.unstringer).getNodeAddress(node));
+		if(this.unstringer instanceof NodeConfig)
+			servers.remove(((NodeConfig<NodeIDType>)this.unstringer).getNodeAddress(node));
 	}
 
 
@@ -886,7 +888,7 @@ public class PaxosManager<NodeIDType> {
 	 * @param request
 	 * @return Refer {@link #propose(String, String)}.
 	 */
-	public String propose(String paxosID, InterfaceRequest request) {
+	public String propose(String paxosID, Request request) {
 		if (request instanceof RequestPacket)
 			try {
 				return this.propose(paxosID, (RequestPacket) request);
@@ -902,7 +904,7 @@ public class PaxosManager<NodeIDType> {
 	 * @param request
 	 * @return Refer {@link #proposeStop(String, String)}.
 	 */
-	public String proposeStop(String paxosID, InterfaceRequest request) {
+	public String proposeStop(String paxosID, Request request) {
 		if (request instanceof RequestPacket)
 			try {
 				return this.propose(paxosID, (RequestPacket) request);
@@ -917,10 +919,10 @@ public class PaxosManager<NodeIDType> {
 	 * @param paxosID
 	 * @param version
 	 * @param request
-	 * @return Refer {@link #proposeStop(String, int, InterfaceRequest)}.
+	 * @return Refer {@link #proposeStop(String, int, Request)}.
 	 */
 	public String proposeStop(String paxosID, int version,
-			InterfaceRequest request) {
+			Request request) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version) {
 			RequestPacket requestPacket = request instanceof RequestPacket ? (RequestPacket) request
@@ -1076,7 +1078,7 @@ public class PaxosManager<NodeIDType> {
 	 */
 	public PaxosManager<NodeIDType> initClientMessenger(
 			InetSocketAddress myAddress) {
-		InterfaceMessenger<InetSocketAddress, JSONObject> cMsgr = null;
+		Messenger<InetSocketAddress, JSONObject> cMsgr = null;
 
 		try {
 			int clientPortOffset = Config.getGlobalInt(PC.CLIENT_PORT_OFFSET);
@@ -1564,8 +1566,8 @@ public class PaxosManager<NodeIDType> {
 	private static final boolean BATCHED_ACCEPT_REPLIES = Config
 			.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES);
 
-	private Messenger<NodeIDType> wrapMessenger(Messenger<NodeIDType> msgr) {
-		return new Messenger<NodeIDType>(PaxosManager.this.messenger) {
+	private PaxosMessenger<NodeIDType> wrapMessenger(PaxosMessenger<NodeIDType> msgr) {
+		return new PaxosMessenger<NodeIDType>(PaxosManager.this.messenger) {
 			public void send(MessagingTask mtask) throws JSONException,
 					IOException {
 				PaxosManager.this.send(mtask, BATCHED_ACCEPT_REPLIES, false);
@@ -1616,7 +1618,7 @@ public class PaxosManager<NodeIDType> {
 		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}
 
-	protected void send(InetSocketAddress sockAddr, InterfaceRequest request)
+	protected void send(InetSocketAddress sockAddr, Request request)
 			throws JSONException, IOException {
 		this.messenger.send(sockAddr, request);
 	}
@@ -1900,7 +1902,7 @@ public class PaxosManager<NodeIDType> {
 	 * forward.
 	 */
 	private PaxosInstanceStateMachine recover(String paxosID, int version,
-			int id, Set<NodeIDType> members, InterfaceReplicable app,
+			int id, Set<NodeIDType> members, Replicable app,
 			String state) {
 		log.log(Level.FINE, "{0} {1}:{2} {3} recovering", new Object[] { this,
 				paxosID, version, members });
@@ -1910,7 +1912,7 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	private PaxosInstanceStateMachine recover(String paxosID, int version,
-			int id, Set<NodeIDType> members, InterfaceReplicable app) {
+			int id, Set<NodeIDType> members, Replicable app) {
 		// state will be auto-recovered if it exists
 		return this.recover(paxosID, version, id, members, app, null);
 	}
@@ -2007,7 +2009,7 @@ public class PaxosManager<NodeIDType> {
 		return paxosLogger;
 	}
 
-	protected Messenger<NodeIDType> getMessenger() {
+	protected PaxosMessenger<NodeIDType> getMessenger() {
 		return this.messenger;
 	}
 
@@ -2108,7 +2110,7 @@ public class PaxosManager<NodeIDType> {
 	 *         number was successfully created.
 	 */
 	public boolean createPaxosInstanceForcibly(String paxosID, int version,
-			Set<NodeIDType> gms, InterfaceReplicable app, String state,
+			Set<NodeIDType> gms, Replicable app, String state,
 			long timeout) {
 		if (timeout < Config.getGlobalInt(PC.CAN_CREATE_TIMEOUT))
 			timeout = Config.getGlobalInt(PC.CAN_CREATE_TIMEOUT);
@@ -2448,7 +2450,7 @@ public class PaxosManager<NodeIDType> {
 	// convert string -> NodeIDType -> int (can *NOT* convert string directly to
 	// int)
 	private JSONObject fixNodeStringToInt(JSONObject json) throws JSONException {
-		if(!Messenger.ENABLE_INT_STRING_CONVERSION) return json;
+		if(!PaxosMessenger.ENABLE_INT_STRING_CONVERSION) return json;
 		// FailureDetectionPacket already has generic NodeIDType
 		if (PaxosPacket.getPaxosPacketType(json) == PaxosPacket.PaxosPacketType.FAILURE_DETECT)
 			return json;
@@ -2857,5 +2859,9 @@ public class PaxosManager<NodeIDType> {
 		execpool.shutdownNow();
 		for (PaxosManager<Integer> pm : pms)
 			pm.close();
+	}
+
+	protected Replicable getApp(String paxosID) {
+		return this.myApp;
 	}
 }

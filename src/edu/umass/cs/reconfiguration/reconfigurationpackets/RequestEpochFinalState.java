@@ -20,7 +20,7 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 /**
 @author V. Arun

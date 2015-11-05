@@ -57,14 +57,14 @@ import org.json.JSONObject;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.SQLPaxosLogger;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxosutil.SQL;
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorDB;
+import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
@@ -86,7 +86,7 @@ import edu.umass.cs.utils.MyLogger;
 
 public class SQLReconfiguratorDB<NodeIDType> extends
 		AbstractReconfiguratorDB<NodeIDType> implements
-		InterfaceReconfiguratorDB<NodeIDType> {
+		ReconfiguratorDB<NodeIDType> {
 	/* ********************************************************************
 	 * DB related parameters to be changed to use a different database service.
 	 */
@@ -1674,8 +1674,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 				+ retrievedRecord;
 	}
 
-	private static InterfaceRequest getRandomInterfaceRequest(final String name) {
-		return new InterfaceRequest() {
+	private static Request getRandomInterfaceRequest(final String name) {
+		return new Request() {
 
 			@Override
 			public IntegerPacketType getRequestType() {

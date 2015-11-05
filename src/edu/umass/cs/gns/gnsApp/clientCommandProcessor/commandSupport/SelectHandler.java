@@ -11,7 +11,7 @@ import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket.GroupBehavior;
 import edu.umass.cs.gns.gnsApp.packet.SelectResponsePacket;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import org.json.JSONArray;
 import org.json.JSONException;

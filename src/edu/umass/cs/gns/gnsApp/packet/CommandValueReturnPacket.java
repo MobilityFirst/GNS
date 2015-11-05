@@ -1,10 +1,10 @@
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gns.gnsApp.packet.Packet.PacketType;
-
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,7 +18,7 @@ import org.json.JSONObject;
  * insofar as the fields in the JOSN Object is concerned.
  *
  */
-public class CommandValueReturnPacket extends BasicPacket implements InterfaceRequest {
+public class CommandValueReturnPacket extends BasicPacket implements Request {
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";

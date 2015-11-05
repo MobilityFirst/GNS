@@ -22,8 +22,8 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 
 /**
  * 

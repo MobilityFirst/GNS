@@ -1,24 +1,24 @@
 package edu.umass.cs.reconfiguration.examples;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.reconfiguration.PaxosReplicaCoordinator;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 
 /**
  * @author arun
  * 
  *         This class can be extended to implement a simple reconfigurable-paxos
  *         application. It allows the application to just implement
- *         {@link InterfaceReplicable} and yet be reconfigurable provided
+ *         {@link Replicable} and yet be reconfigurable provided
  *         {@link PaxosReplicaCoordinator} is used as the replica coordinator.
  * 
  * @param <NodeIDType>
  *
  */
 public abstract class AbstractReconfigurablePaxosApp<NodeIDType> implements
-		InterfaceReplicable, InterfaceReconfigurable {
+		Replicable, Reconfigurable {
 
 	/**
 	 * This class returns a default no-op stop request. It is probably not a
@@ -27,7 +27,7 @@ public abstract class AbstractReconfigurablePaxosApp<NodeIDType> implements
 	 * collection or other app-specific activities when an epoch is stopped.
 	 */
 	@Override
-	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+	public ReconfigurableRequest getStopRequest(String name, int epoch) {
 		return AppRequest.getObliviousPaxosStopRequest(name, epoch);
 	}
 
@@ -52,7 +52,7 @@ public abstract class AbstractReconfigurablePaxosApp<NodeIDType> implements
 	}
 
 	@Override
-	public boolean handleRequest(InterfaceRequest request,
+	public boolean handleRequest(Request request,
 			boolean doNotReplyToClient) {
 		throw new RuntimeException("This method should not have been called");
 	}

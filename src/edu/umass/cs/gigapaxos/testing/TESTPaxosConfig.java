@@ -39,7 +39,7 @@ import org.json.JSONException;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
-import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
@@ -600,13 +600,13 @@ public class TESTPaxosConfig {
 		}
 		return found;
 	}
-	protected static InterfaceNodeConfig<Integer> getFromPaxosConfig() {
+	protected static NodeConfig<Integer> getFromPaxosConfig() {
 		return getFromPaxosConfig(false);
 	}
-	protected static InterfaceNodeConfig<Integer> getFromPaxosConfig(final boolean clientFacing) {
-		final InterfaceNodeConfig<String> defaultNC = PaxosConfig
+	protected static NodeConfig<Integer> getFromPaxosConfig(final boolean clientFacing) {
+		final NodeConfig<String> defaultNC = PaxosConfig
 				.getDefaultNodeConfig();
-		return new InterfaceNodeConfig<Integer>() {
+		return new NodeConfig<Integer>() {
 
 			@Override
 			public Integer valueOf(String strValue) {
@@ -732,7 +732,7 @@ public class TESTPaxosConfig {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		InterfaceNodeConfig<Integer> nc = TESTPaxosConfig.getFromPaxosConfig();
+		NodeConfig<Integer> nc = TESTPaxosConfig.getFromPaxosConfig();
 		for(Integer i : nc.getNodeIDs())
 		System.out.println(i + ":" + nc.getNodeAddress(i)+":"+nc.getNodePort(i));
 	}

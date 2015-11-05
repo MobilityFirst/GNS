@@ -36,7 +36,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.paxospackets.FailureDetectionPacket;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.nio.InterfaceNIOTransport;
+import edu.umass.cs.nio.interfaces.InterfaceNIOTransport;
 import edu.umass.cs.utils.Config;
 
 /**

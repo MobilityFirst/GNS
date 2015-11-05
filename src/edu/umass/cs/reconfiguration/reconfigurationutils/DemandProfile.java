@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -23,14 +23,14 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
  * 
- * This class maintains the deman profile for a single name and returns it into a JSONObject via its
- * getStats() method.
+ *         This class maintains the deman profile for a single name and returns
+ *         it into a JSONObject via its getStats() method.
  */
 public class DemandProfile extends AbstractDemandProfile {
 	protected enum Keys {
@@ -83,11 +83,12 @@ public class DemandProfile extends AbstractDemandProfile {
 	}
 
 	/*
-	 * FIXME: Ignoring sender argument for now. Need to use it to develop a demand geo-distribution
-	 * profile.
+	 * FIXME: Ignoring sender argument for now. Need to use it to develop a
+	 * demand geo-distribution profile.
 	 */
 	@Override
-	public void register(InterfaceRequest request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
+	public void register(Request request, InetAddress sender,
+			InterfaceGetActiveIPs nodeConfig) {
 		if (!request.getServiceName().equals(this.name))
 			return;
 		this.numRequests++;
@@ -163,13 +164,14 @@ public class DemandProfile extends AbstractDemandProfile {
 				update.lastRequestTime);
 		this.interArrivalTime = Util.movingAverage(update.interArrivalTime,
 				this.interArrivalTime, update.getNumRequests());
-		this.numRequests += update.numRequests; // this number is not meaningful at RC
+		this.numRequests += update.numRequests; // this number is not meaningful
+												// at RC
 		this.numTotalRequests += update.numTotalRequests;
 	}
 
 	@Override
-	public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
-               InterfaceGetActiveIPs nodeConfig) {
+	public ArrayList<InetAddress> shouldReconfigure(
+			ArrayList<InetAddress> curActives, InterfaceGetActiveIPs nodeConfig) {
 		if (this.lastReconfiguredProfile != null) {
 			if (System.currentTimeMillis()
 					- this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL)
@@ -178,6 +180,12 @@ public class DemandProfile extends AbstractDemandProfile {
 					- this.lastReconfiguredProfile.numTotalRequests < MIN_REQUESTS_BEFORE_RECONFIGURATION)
 				return null;
 		}
+		/**
+		 * This example simply returns curActives as this policy trivially
+		 * reconfigures to the same set of locations after every call. In
+		 * general, AbstractDemandProfile implementations should return a new
+		 * list different from curActives.
+		 */
 		return curActives;
 	}
 

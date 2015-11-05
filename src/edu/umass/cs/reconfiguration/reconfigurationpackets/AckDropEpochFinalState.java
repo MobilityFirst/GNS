@@ -20,15 +20,15 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 /**
 @author V. Arun
  * @param <NodeIDType> 
  */
-public class AckDropEpochFinalState<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements InterfaceRequest{
+public class AckDropEpochFinalState<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements Request{
 
 	/**
 	 * @param sender

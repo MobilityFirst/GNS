@@ -2,7 +2,7 @@ package edu.umass.cs.gns.gnsApp.packet.admin;
 
 import edu.umass.cs.gns.gnsApp.packet.BasicPacketWithCCPAddress;
 import edu.umass.cs.gns.gnsApp.packet.Packet;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
 

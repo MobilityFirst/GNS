@@ -23,11 +23,11 @@ import java.util.Set;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
-import edu.umass.cs.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.deprecated.ReplicableDeprecated;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
-import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
@@ -44,7 +44,7 @@ public class TESTPaxosNode {
 	private TESTPaxosApp app = null;
 
 	// A server must have an id
-	TESTPaxosNode(int id, InterfaceNodeConfig<Integer> nc, boolean local) throws IOException {
+	TESTPaxosNode(int id, NodeConfig<Integer> nc, boolean local) throws IOException {
 		this.myID = id;
 		pm = startPaxosManagerAndApp(id, nc, local);
 		assert (pm != null);
@@ -58,7 +58,7 @@ public class TESTPaxosNode {
 		this(id, TESTPaxosConfig.getNodeConfig(), true);
 	}
 
-	private PaxosManager<Integer> startPaxosManagerAndApp(int id, InterfaceNodeConfig<Integer> nc, boolean local) {
+	private PaxosManager<Integer> startPaxosManagerAndApp(int id, NodeConfig<Integer> nc, boolean local) {
 		try {
 			// shared between app and paxos manager only for testing
 			JSONNIOTransport<Integer> niot = null;
@@ -107,7 +107,7 @@ public class TESTPaxosNode {
 							.getGroup(groupID));
 					System.out.print(groupID + ":" + group + " ");
 					created = this.getPaxosManager().createPaxosInstance(
-							groupID, 0, group, (Replicable) null,
+							groupID, 0, group, (ReplicableDeprecated) null,
 							"default_initial_state_string");
 					if (!created)
 						System.out
@@ -135,7 +135,7 @@ public class TESTPaxosNode {
 						.getGroup(groupID));
 				if (id == myID)
 					this.getPaxosManager().createPaxosInstance(groupID, 0,
-							group, (Replicable) null, null);
+							group, (ReplicableDeprecated) null, null);
 			}
 			if (i % j == 0 && ((j *= 2) > 1) || (i % 100000 == 0)) {
 				System.out.print(i + " ");

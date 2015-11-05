@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nodeconfig;
 
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.*;
 
 import java.net.InetAddress;
@@ -25,9 +25,9 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
  */
 public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
         GNSConsistentNodeConfig<NodeIDType> implements
-        InterfaceReconfigurableNodeConfig<NodeIDType> {
+        ReconfigurableNodeConfig<NodeIDType> {
 
-  private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
+  private final ReconfigurableNodeConfig<NodeIDType> nodeConfig;
   private Set<NodeIDType> activeReplicas; // most recent cached copy
   private Set<NodeIDType> reconfigurators; // most recent cached copy
 

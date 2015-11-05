@@ -17,6 +17,7 @@
  */
 package edu.umass.cs.nio;
 
+import edu.umass.cs.nio.interfaces.InterfaceMessageExtractor;
 import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.utils.Util;

@@ -24,10 +24,10 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 
@@ -50,7 +50,7 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 	 * @param nodeConfig
 	 * @param messenger
 	 */
-	public DynamoReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
+	public DynamoReplicaCoordinator(Replicable app, NodeIDType myID,
 			ConsistentNodeConfig<NodeIDType> nodeConfig,
 			JSONMessenger<NodeIDType> messenger) {
 		super(app, messenger);
@@ -66,7 +66,7 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 
 	// FIXME: implement durability. Currently lazily propagates.
 	@Override
-	public boolean coordinateRequest(InterfaceRequest request)
+	public boolean coordinateRequest(Request request)
 			throws IOException, RequestParseException {
 		try {
 			log.log(Level.INFO, "{0} lazily coordinating {1}: {2}",

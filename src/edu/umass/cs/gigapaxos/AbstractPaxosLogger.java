@@ -39,7 +39,7 @@ import edu.umass.cs.gigapaxos.paxosutil.ConsumerBatchTask;
 import edu.umass.cs.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.MessagingTask;
-import edu.umass.cs.gigapaxos.paxosutil.Messenger;
+import edu.umass.cs.gigapaxos.paxosutil.PaxosMessenger;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
@@ -77,7 +77,7 @@ public abstract class AbstractPaxosLogger {
 	private static ArrayList<AbstractPaxosLogger> myInstances = new ArrayList<AbstractPaxosLogger>();
 
 	private final BatchedLogger batchLogger;
-	private final Messenger<?> messenger;
+	private final PaxosMessenger<?> messenger;
 	private final Checkpointer collapsingCheckpointer;
 	
 	private AbstractPaxosLogger.PaxosPacketizer packetizer = null;
@@ -85,7 +85,7 @@ public abstract class AbstractPaxosLogger {
 	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class
 			.getName());
 
-	protected AbstractPaxosLogger(int id, String logDir, Messenger<?> msgr) {
+	protected AbstractPaxosLogger(int id, String logDir, PaxosMessenger<?> msgr) {
 		this.myID = id;
 		logDirectory = (logDir == null ? SQLPaxosLogger.LOG_DIRECTORY : logDir) + "/";
 		this.messenger = msgr;
@@ -197,7 +197,7 @@ public abstract class AbstractPaxosLogger {
 	 * logger could actually be any implementation, e.g., DerbyPaxosLogger.
 	 */
 	protected final static void rollForward(AbstractPaxosLogger logger,
-			String paxosID, Messenger<?> messenger) {
+			String paxosID, PaxosMessenger<?> messenger) {
 		if (logger.isAboutToClose())
 			return;
 
@@ -587,11 +587,11 @@ public abstract class AbstractPaxosLogger {
 	private class BatchedLogger extends ConsumerBatchTask<LogMessagingTask> {
 
 		private final AbstractPaxosLogger logger;
-		private final Messenger<?> messenger;
+		private final PaxosMessenger<?> messenger;
 		private final LinkedList<LogMessagingTask> logMessages;
 
 		BatchedLogger(LinkedList<LogMessagingTask> lock,
-				AbstractPaxosLogger logger, Messenger<?> messenger) {
+				AbstractPaxosLogger logger, PaxosMessenger<?> messenger) {
 			super(lock, new LogMessagingTask[0]);
 			this.logMessages = lock;
 			this.logger = logger;

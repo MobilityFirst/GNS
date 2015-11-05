@@ -11,7 +11,7 @@ import edu.umass.cs.gns.nodeconfig.HostSpec;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -25,7 +25,7 @@ import org.json.JSONException;
  * @author Westy adapted from code originally by V. Arun
  */
 public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
-        implements InterfaceReconfigurableNodeConfig<String> {
+        implements ReconfigurableNodeConfig<String> {
 
   private static final String RC_SUFFIX = "recon";
   private static final int RC_PORT_OFFSET = 1;

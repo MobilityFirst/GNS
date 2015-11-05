@@ -5,11 +5,13 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.utils.JSONUtils;
 import edu.umass.cs.gns.utils.ResultValue;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+
 import java.net.InetSocketAddress;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +35,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements InterfaceRequest {
+public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements Request {
 
   private final static String NAME = "name";
   private final static String FIELD = "field";

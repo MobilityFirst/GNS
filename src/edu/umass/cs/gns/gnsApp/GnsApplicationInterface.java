@@ -10,7 +10,7 @@ package edu.umass.cs.gns.gnsApp;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.ClientCommandProcessor;
 import edu.umass.cs.gns.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -45,7 +45,7 @@ public interface GnsApplicationInterface<NodeIDType> {
    * 
    * @return the node config
    */
-  InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
+  ReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
   
   /**
    * Sends a JSON packet to a client.

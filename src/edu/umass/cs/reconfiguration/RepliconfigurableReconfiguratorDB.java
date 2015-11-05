@@ -28,11 +28,11 @@ import java.util.logging.Level;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
-import edu.umass.cs.nio.InterfaceMessenger;
+import edu.umass.cs.nio.interfaces.Messenger;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB.RecordNames;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
@@ -71,7 +71,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			AbstractReconfiguratorDB<NodeIDType> app,
 			NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig,
-			InterfaceMessenger<NodeIDType, JSONObject> niot,
+			Messenger<NodeIDType, JSONObject> niot,
 			boolean startCleanSlate) {
 		// setting paxosManager out-of-order limit to 1
 		super(app, myID, consistentNodeConfig, niot, 1);
@@ -99,14 +99,14 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	 * in the first place to prevent the severe log below.
 	 */
 	@Override
-	public boolean coordinateRequest(InterfaceRequest request)
+	public boolean coordinateRequest(Request request)
 			throws IOException, RequestParseException {
 		String rcGroupName = this.getRCGroupName(request.getServiceName());
 		// can only send stop request to own RC group
 		if (!rcGroupName.equals(request.getServiceName())
-				&& (request instanceof InterfaceReconfigurableRequest)
-				&& ((InterfaceReconfigurableRequest) request).isStop()) {
-			InterfaceReconfigurableRequest stop = ((InterfaceReconfigurableRequest) request);
+				&& (request instanceof ReconfigurableRequest)
+				&& ((ReconfigurableRequest) request).isStop()) {
+			ReconfigurableRequest stop = ((ReconfigurableRequest) request);
 			log.log(Level.INFO,
 					"{0} received stop request for RC group {1}:{2} that is not (yet) "
 							+ " node config likely because this node has fallen behind.",
@@ -121,9 +121,9 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	/**
 	 * @param request
 	 * @return Returns the result of
-	 *         {@link #coordinateRequest(InterfaceRequest)}.
+	 *         {@link #coordinateRequest(Request)}.
 	 */
-	public boolean coordinateRequestSuppressExceptions(InterfaceRequest request) {
+	public boolean coordinateRequestSuppressExceptions(Request request) {
 		try {
 			return this.coordinateRequest(request);
 		} catch (RequestParseException | IOException e) {

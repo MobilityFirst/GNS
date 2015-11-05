@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.gnsApp.packet;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 
 import org.json.JSONException;
 

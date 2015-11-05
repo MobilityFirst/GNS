@@ -37,6 +37,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 
+import edu.umass.cs.nio.interfaces.DataProcessingWorker;
+import edu.umass.cs.nio.interfaces.HandshakeCallback;
+import edu.umass.cs.nio.interfaces.InterfaceMessageExtractor;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -76,14 +79,14 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 
 	private static final int DEFAULT_PER_CONNECTION_IO_BUFFER_SIZE = 64 * 1024;
 	// to handle incoming decrypted data
-	private final InterfaceDataProcessingWorker decryptedWorker;
+	private final DataProcessingWorker decryptedWorker;
 
 	private final ExecutorService taskWorkers = Executors.newFixedThreadPool(4);
 
 	private ConcurrentHashMap<SelectableChannel, AbstractNIOSSL> sslMap = new ConcurrentHashMap<SelectableChannel, AbstractNIOSSL>();
 
 	// to signal connection handshake completion to transport
-	private InterfaceHandshakeCallback callbackTransport = null;
+	private HandshakeCallback callbackTransport = null;
 
 	protected final SSLDataProcessingWorker.SSL_MODES sslMode;
 
@@ -98,7 +101,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	 * @throws NoSuchAlgorithmException
 	 * @throws SSLException
 	 */
-	protected SSLDataProcessingWorker(InterfaceDataProcessingWorker worker)
+	protected SSLDataProcessingWorker(DataProcessingWorker worker)
 			throws NoSuchAlgorithmException, SSLException {
 		this.decryptedWorker = worker;
 		this.sslMode = NIOTransport.DEFAULT_SSL_MODE;
@@ -110,7 +113,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	 * @throws NoSuchAlgorithmException
 	 * @throws SSLException
 	 */
-	protected SSLDataProcessingWorker(InterfaceDataProcessingWorker worker,
+	protected SSLDataProcessingWorker(DataProcessingWorker worker,
 			SSLDataProcessingWorker.SSL_MODES sslMode)
 			throws NoSuchAlgorithmException, SSLException {
 		this.decryptedWorker = worker;
@@ -118,7 +121,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	}
 
 	protected SSLDataProcessingWorker setHandshakeCallback(
-			InterfaceHandshakeCallback callback) {
+			HandshakeCallback callback) {
 		this.callbackTransport = callback;
 		return this;
 	}

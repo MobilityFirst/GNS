@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.localnameserver.nodeconfig;
 
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Set;
@@ -8,7 +9,7 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 /**
@@ -17,7 +18,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 public abstract class LNSConsistentNodeConfig implements
         GNSInterfaceNodeConfig<InetSocketAddress> {
 
-  private final InterfaceNodeConfig<InetSocketAddress> nodeConfig;
+  private final NodeConfig<InetSocketAddress> nodeConfig;
   private Set<InetSocketAddress> nodes; // most recent cached copy
 
   private final ConsistentHashing<InetSocketAddress> CH; // need to refresh when nodeConfig changes
@@ -27,7 +28,7 @@ public abstract class LNSConsistentNodeConfig implements
    * 
    * @param nc
    */
-  public LNSConsistentNodeConfig(InterfaceNodeConfig<InetSocketAddress> nc) {
+  public LNSConsistentNodeConfig(NodeConfig<InetSocketAddress> nc) {
     this.nodeConfig = nc;
     this.nodes = this.nodeConfig.getNodeIDs();
     this.CH = new ConsistentHashing<InetSocketAddress>(this.nodes);

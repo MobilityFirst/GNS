@@ -33,7 +33,7 @@ import edu.umass.cs.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gigapaxos.paxosutil.LogIndex;
 import edu.umass.cs.gigapaxos.paxosutil.LogIndex.LogIndexEntry;
 import edu.umass.cs.gigapaxos.paxosutil.LogMessagingTask;
-import edu.umass.cs.gigapaxos.paxosutil.Messenger;
+import edu.umass.cs.gigapaxos.paxosutil.PaxosMessenger;
 import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.SQL;
@@ -258,7 +258,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 	private static Logger log = PaxosManager.getLogger();
 
-	SQLPaxosLogger(int id, String strID, String dbPath, Messenger<?> messenger) {
+	SQLPaxosLogger(int id, String strID, String dbPath, PaxosMessenger<?> messenger) {
 		super(id, dbPath, messenger);
 		this.strID = strID;
 		GC = Executors.newScheduledThreadPool(2, new ThreadFactory() {
@@ -311,7 +311,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * @param dbPath
 	 * @param messenger
 	 */
-	public SQLPaxosLogger(int id, String dbPath, Messenger<?> messenger) {
+	public SQLPaxosLogger(int id, String dbPath, PaxosMessenger<?> messenger) {
 		this(id, "" + id, dbPath, messenger);
 
 	}
@@ -2086,6 +2086,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 					byte[] logIndexBytes = logIndex != null ? deflate(logIndex
 							.toString().getBytes(CHARSET)) : null;
+					if (logIndexBytes != null && Util.oneIn(Integer.MAX_VALUE))
+						DelayProfiler.updateMovAvg(
+								"logindex_size",
+								logIndexBytes.length);
 					Blob blob = conn.createBlob();
 					if (logIndexBytes != null)
 						blob.setBytes(1, logIndexBytes);

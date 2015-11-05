@@ -2,11 +2,11 @@ package edu.umass.cs.gigapaxos.examples.noop;
 
 import java.util.Set;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.examples.PaxosAppRequest;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.examples.noop.NoopApp;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
@@ -14,10 +14,10 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  * @author arun
  *
  */
-public class NoopPaxosApp implements InterfaceReplicable {
+public class NoopPaxosApp implements Replicable {
 
 	@Override
-	public boolean handleRequest(InterfaceRequest request) {
+	public boolean handleRequest(Request request) {
 		// execute request here
 
 		// set response if request instanceof InterfaceClientRequest
@@ -35,7 +35,7 @@ public class NoopPaxosApp implements InterfaceReplicable {
 	}
 
 	@Override
-	public boolean handleRequest(InterfaceRequest request,
+	public boolean handleRequest(Request request,
 			boolean doNotReplyToClient) {
 		// execute request without replying back to client
 
@@ -60,7 +60,7 @@ public class NoopPaxosApp implements InterfaceReplicable {
 	 * {@link NoopApp} for a more detailed example.
 	 */
 	@Override
-	public InterfaceRequest getRequest(String stringified)
+	public Request getRequest(String stringified)
 			throws RequestParseException {
 		// TODO Auto-generated method stub
 		return null;

@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gigapaxos.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 
@@ -32,7 +32,7 @@ public class NoopAppClient extends ReconfigurableAppClientAsync {
 					new RequestCallback() {
 
 						@Override
-						public void handleResponse(InterfaceRequest response) {
+						public void handleResponse(Request response) {
 							System.out
 									.println("Received response: " + response);
 						}
@@ -69,7 +69,7 @@ public class NoopAppClient extends ReconfigurableAppClientAsync {
 					new RequestCallback() {
 
 						@Override
-						public void handleResponse(InterfaceRequest response) {
+						public void handleResponse(Request response) {
 							try {
 								client.testSendBunchOfRequests(name, numReqs);
 							} catch (IOException | JSONException e) {

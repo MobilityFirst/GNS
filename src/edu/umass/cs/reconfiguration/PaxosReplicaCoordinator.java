@@ -24,17 +24,17 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Messenger;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
@@ -57,9 +57,9 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	 * @param enableNullCheckpoints
 	 */
 	@SuppressWarnings("unchecked")
-	private PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
+	private PaxosReplicaCoordinator(Replicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceMessenger<NodeIDType, ?> niot, String paxosLogFolder,
+			Messenger<NodeIDType, ?> niot, String paxosLogFolder,
 			boolean enableNullCheckpoints) {
 		super(app, niot);
 		assert (niot instanceof JSONMessenger);
@@ -82,9 +82,9 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	 * @param unstringer
 	 * @param niot
 	 */
-	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
+	public PaxosReplicaCoordinator(Replicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceMessenger<NodeIDType, ?> niot) {
+			Messenger<NodeIDType, ?> niot) {
 		this(app, myID, unstringer, niot, null, true);
 	}
 
@@ -96,9 +96,9 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	 * @param outOfOrderLimit
 	 */
 	@SuppressWarnings("unchecked")
-	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
+	public PaxosReplicaCoordinator(Replicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceMessenger<NodeIDType, ?> niot, int outOfOrderLimit) {
+			Messenger<NodeIDType, ?> niot, int outOfOrderLimit) {
 		this(app, myID, unstringer, (JSONMessenger<NodeIDType>) niot);
 		assert (niot instanceof JSONMessenger);
 		this.paxosManager.setOutOfOrderLimit(outOfOrderLimit);
@@ -110,18 +110,18 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	}
 
 	@Override
-	public boolean coordinateRequest(InterfaceRequest request)
+	public boolean coordinateRequest(Request request)
 			throws IOException, RequestParseException {
 		return this.coordinateRequest(request.getServiceName(), request);
 	}
 
-	private String propose(String paxosID, InterfaceRequest request) {
+	private String propose(String paxosID, Request request) {
 		String proposee = null;
-		if (request instanceof InterfaceReconfigurableRequest
-				&& ((InterfaceReconfigurableRequest) request).isStop())
+		if (request instanceof ReconfigurableRequest
+				&& ((ReconfigurableRequest) request).isStop())
 			proposee = this.paxosManager
 					.proposeStop(paxosID,
-							((InterfaceReconfigurableRequest) request)
+							((ReconfigurableRequest) request)
 									.getEpochNumber(), request);
 		else
 			proposee = this.paxosManager.propose(paxosID, request);
@@ -136,7 +136,7 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	 * @throws RequestParseException
 	 */
 	public boolean coordinateRequest(String paxosGroupID,
-			InterfaceRequest request) throws RequestParseException {
+			Request request) throws RequestParseException {
 		String proposee = this.propose(paxosGroupID, request);
 		log.log(Level.INFO,
 				"{0} {1} request {2}:{3} [{4}] {5} to {6}",
@@ -145,12 +145,12 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 						(proposee != null ? "paxos-coordinated"
 								: "failed to paxos-coordinate"),
 						request.getServiceName(),
-						(request instanceof InterfaceReconfigurableRequest ? ((InterfaceReconfigurableRequest) request)
+						(request instanceof ReconfigurableRequest ? ((ReconfigurableRequest) request)
 								.getEpochNumber() : "[]"),
 						(request instanceof BasicReconfigurationPacket<?>) ? ((BasicReconfigurationPacket<?>) request)
 								.getSummary() : request.getRequestType(),
-						(request instanceof InterfaceReconfigurableRequest
-								&& ((InterfaceReconfigurableRequest) request)
+						(request instanceof ReconfigurableRequest
+								&& ((ReconfigurableRequest) request)
 										.isStop() ? "[STOPPING]" : ""),
 						proposee });
 		return proposee != null;
@@ -273,9 +273,9 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	}
 
 	@Override
-	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-		InterfaceReconfigurableRequest stop = super.getStopRequest(name, epoch);
-		if (stop != null && !(stop instanceof InterfaceReplicableRequest))
+	public ReconfigurableRequest getStopRequest(String name, int epoch) {
+		ReconfigurableRequest stop = super.getStopRequest(name, epoch);
+		if (stop != null && !(stop instanceof ReplicableRequest))
 			throw new RuntimeException(
 					"Stop requests for Paxos apps must implement InterfaceReplicableRequest "
 							+ "and their needsCoordination() method must return true by default "

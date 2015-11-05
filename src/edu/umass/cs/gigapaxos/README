@@ -33,12 +33,15 @@ change the schema of existing tables because they would conflict with recovery l
  
 (2) Testing gigapaxos in a distributed setting
 
-A distributed test requires two or more machines to run servers and clients. The servers 
-and other gigapaxos parameters need to be specified in a config file called 
-"gigapaxos.properties" in the same directory where the servers are being run. This file 
-should contain entries as shown below. Each line should start with the constant string 
-"active." followed by a string, e.g., "100", that is the server name. The part 
-following the "=" symbol is a host:port value. 
+A distributed test needs two or more machines to run servers and clients. Each server is 
+an <IP,port> socket address, so you can run servers and clients on overlapping physical 
+machines;  the single machine test above is a special case of a "distributed" test where 
+all server and client IP addresses are the loopback address. The server addresses and 
+other gigapaxos parameters need to be specified in a config file called "gigapaxos.properties" 
+in the same directory where the servers are being run.  This file should contain entries 
+as shown below. Each line should start with the constant string "active." followed by a 
+string, e.g., "100", that is the server name. The part following the "=" symbol is a 
+host:port value. 
 
 APPLICATION=edu.umass.cs.gigapaxos.testing.TESTPaxosApp
 
@@ -52,7 +55,9 @@ is the top-level GNS directory.
 The clients can run on any machine and do not have to be specified in the config file. The name 
 and path of the testing config file used by clients can be specified in a file called 
 "testing.properties" in the directory ./conf/gigapaxos/. An example of such a file is in 
-GNS/conf/gigapaxos/testing.properties where "GNS" is the top-level GNS directory. 
+GNS/conf/gigapaxos/testing.properties where "GNS" is the top-level GNS directory. You can use
+this file to control the load, number of clients, request size, number of paxos groups, etc. 
+to test gigapaxos' performance numbers.
  
 The servers must be started first in any order and can be started as follows:
 
@@ -60,16 +65,16 @@ The servers must be started first in any order and can be started as follows:
 [plum$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.PaxosServer 101 2>/tmp/log101
 [pear$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.PaxosServer 102 2>/tmp/log102
 
-The client should be started only after at least a majority of the above servers are up. 
-A server is up after it has stopped printing console output for more than a few seconds. 
-The clients are started as follows:
+The client should be started only after at least a majority of the above servers are up
+and ready. A server is ready after it has stopped printing console output for more than 
+a few seconds. The clients are started as follows:
 
 [fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.TESTPaxosClient 
 
 If the test is successful, the console output should print a sequence of "SUCCESS" just as 
-in the single machine test.
+in the single machine test and the client should terminate gracefully.
 
-(3) Writing a simple application using gigapaxos
+(3) Writing a simple distributed application using gigapaxos
 
 To write a simple "hello world" application using gigapaxos, follow 
 edu.umass.cs.gigapaxos.examples.noop.NoopPaxosApp as an example. This application is also the 
@@ -91,5 +96,4 @@ The application itself must be an instance of InterfaceReplicable. See NoopPaxos
 simple example that simply echoes back the request. The application can delegate messaging 
 of responses back to clients to gigapaxos if it also implements InterfaceClientMessenger
 and its requests implement InterfaceClientRequest. Again, see NooPaxosApp for an example.
-
 

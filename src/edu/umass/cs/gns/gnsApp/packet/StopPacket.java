@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,8 +11,8 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class StopPacket extends BasicPacket implements InterfaceReconfigurableRequest,
-        InterfaceReplicableRequest {
+public class StopPacket extends BasicPacket implements ReconfigurableRequest,
+        ReplicableRequest {
 
   private final static String NAME = "name";
   private final static String VERSION = "version";

@@ -7,8 +7,8 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableActiveConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableRCConfig;
+import edu.umass.cs.reconfiguration.interfaces.ModifiableActiveConfig;
+import edu.umass.cs.reconfiguration.interfaces.ModifiableRCConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 /**
@@ -21,7 +21,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
  */
 public class LNSConsistentReconfigurableNodeConfig extends
         LNSConsistentNodeConfig implements
-        InterfaceModifiableActiveConfig<InetSocketAddress>, InterfaceModifiableRCConfig<InetSocketAddress> {
+        ModifiableActiveConfig<InetSocketAddress>, ModifiableRCConfig<InetSocketAddress> {
 
   private final LNSNodeConfig nodeConfig;
   private Set<InetSocketAddress> activeReplicas; // most recent cached copy

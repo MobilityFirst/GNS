@@ -20,17 +20,17 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.nio.StringifiableDefault;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
 
 
 /**
 @author V. Arun
  * @param <NodeIDType> 
  */
-public abstract class BasicReconfigurationPacket<NodeIDType> extends ReconfigurationPacket<NodeIDType> implements InterfaceRequest  {
+public abstract class BasicReconfigurationPacket<NodeIDType> extends ReconfigurationPacket<NodeIDType> implements Request  {
 
 	protected enum Keys {SERVICE_NAME, EPOCH_NUMBER, IS_COORDINATION};
 

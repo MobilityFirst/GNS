@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
@@ -13,7 +13,7 @@ import edu.umass.cs.gns.utils.JSONUtils;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.utils.ValuesMap;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * @param <NodeIDType>
  */
-public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAddress implements InterfaceRequest {
+public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAddress implements Request {
 
   private final static String HEADER = "dns_header";
   private final static String GUID = "dns_guid";

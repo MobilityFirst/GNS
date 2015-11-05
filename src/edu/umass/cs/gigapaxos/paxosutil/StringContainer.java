@@ -23,13 +23,15 @@ package edu.umass.cs.gigapaxos.paxosutil;
  *         A silly container for a string to distinguish between null state and
  *         no state when we retrieve paxos checkpoint state.
  */
-@SuppressWarnings("javadoc")
 public class StringContainer {
 	/**
 	 * The contained string.
 	 */
 	public final String state;
 
+	/**
+	 * @param s
+	 */
 	public StringContainer(String s) {
 		this.state = s;
 	}

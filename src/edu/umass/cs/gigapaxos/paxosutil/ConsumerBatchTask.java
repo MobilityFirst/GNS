@@ -28,7 +28,6 @@ import java.util.Map;
  * 
  *            A utility task to "consume" batched requests.
  */
-@SuppressWarnings("javadoc")
 public abstract class ConsumerBatchTask<TaskType> extends
 		ConsumerTask<TaskType> {
 
@@ -36,14 +35,27 @@ public abstract class ConsumerBatchTask<TaskType> extends
 
 	private final boolean peek;
 
+	/**
+	 * @param lock
+	 * @param dummy
+	 */
 	public ConsumerBatchTask(Collection<TaskType> lock, TaskType[] dummy) {
 		this(lock, dummy, false);
 	}
 
+	/**
+	 * @param lock
+	 * @param dummy
+	 */
 	public ConsumerBatchTask(Map<?, TaskType> lock, TaskType[] dummy) {
 		this(lock, dummy, false);
 	}
 
+	/**
+	 * @param lock
+	 * @param dummy
+	 * @param peek
+	 */
 	public ConsumerBatchTask(Collection<TaskType> lock, TaskType[] dummy,
 			boolean peek) {
 		super(lock);
@@ -51,6 +63,11 @@ public abstract class ConsumerBatchTask<TaskType> extends
 		this.peek = peek;
 	}
 
+	/**
+	 * @param lock
+	 * @param dummy
+	 * @param peek
+	 */
 	public ConsumerBatchTask(Map<?, TaskType> lock, TaskType[] dummy,
 			boolean peek) {
 		super(lock);
@@ -64,6 +81,9 @@ public abstract class ConsumerBatchTask<TaskType> extends
 
 	public abstract void process(TaskType task);
 
+	/**
+	 * @param tasks
+	 */
 	public abstract void process(TaskType[] tasks);
 
 	@SuppressWarnings("unchecked")
@@ -127,6 +147,9 @@ public abstract class ConsumerBatchTask<TaskType> extends
 		}
 	}
 
+	/**
+	 * @param task
+	 */
 	public void enqueueAndWait(TaskType task) {
 		this.enqueue(task);
 		synchronized (this.lock) {

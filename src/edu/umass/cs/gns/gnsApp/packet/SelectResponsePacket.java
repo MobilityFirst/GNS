@@ -5,8 +5,8 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
 
@@ -21,7 +21,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
+public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
 
   /**
    * The possible response codes for select packets.

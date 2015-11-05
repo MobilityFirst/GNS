@@ -352,6 +352,7 @@ public class PaxosAcceptor {
 	}
 
 	protected synchronized void assertSlotInvariant() {
+		if(!this.isStopped())
 		assert (!this.committedRequests.containsKey(this.getSlot()) || !this.committedRequests
 				.get(this.getSlot()).hasRequestValue());
 	}

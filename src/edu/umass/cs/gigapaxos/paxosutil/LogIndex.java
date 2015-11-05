@@ -11,13 +11,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.SQLPaxosLogger;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Keyable;
 import edu.umass.cs.utils.Pausable;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author arun
@@ -40,10 +39,8 @@ public class LogIndex implements Keyable<String>, Serializable, Pausable {
 
 	private Integer gcSlot = -1;
 	private String minLogfile = null;
-
 	private long lastActive = System.currentTimeMillis();
 
-	// FIXME:
 	private ArrayList<LogIndexEntry> log = null;
 
 	/**
@@ -197,6 +194,7 @@ public class LogIndex implements Keyable<String>, Serializable, Pausable {
 		if (this.log == null)
 			this.log = new ArrayList<LogIndexEntry>();
 		this.lastActive = System.currentTimeMillis();
+
 		synchronized (this.log) {
 			return this.log.add(entry);
 		}
@@ -285,9 +283,6 @@ public class LogIndex implements Keyable<String>, Serializable, Pausable {
 				logArray.put(logEntryArray);
 			}
 		jArray.put(logArray); // 5
-		if (Util.oneIn(10))
-			DelayProfiler.updateMovAvg("logindex_size", jArray.toString()
-					.length());
 		return jArray.toString();
 	}
 
@@ -387,6 +382,8 @@ public class LogIndex implements Keyable<String>, Serializable, Pausable {
 				.deflate(logIndex.toString().getBytes("ISO-8859-1"))),
 				"ISO-8859-1"));
 	}
+	
+	static {PaxosConfig.load();}
 
 	private static final long DEACTIVATION_PERIOD = Config
 			.getGlobalLong(PC.DEACTIVATION_PERIOD);

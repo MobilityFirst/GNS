@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 
 import java.util.HashSet;
 
@@ -24,7 +24,7 @@ import org.json.JSONException;
  *
  */
 public class TestNodeConfig<NodeIDType> implements
-        InterfaceNodeConfig<NodeIDType> {
+        NodeConfig<NodeIDType> {
 
   /**
    * The default starting port number beyond which nodes automatically get

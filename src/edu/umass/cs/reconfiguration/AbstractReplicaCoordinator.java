@@ -25,17 +25,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceMessenger;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorCallback;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicaCoordinator;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceRepliconfigurable;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Messenger;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorCallback;
+import edu.umass.cs.reconfiguration.interfaces.ReplicaCoordinator;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.Repliconfigurable;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.TrivialRepliconfigurable;
 
@@ -64,21 +64,21 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.TrivialRepliconfigurabl
  * 
  */
 public abstract class AbstractReplicaCoordinator<NodeIDType> implements
-		InterfaceRepliconfigurable, InterfaceReplicaCoordinator<NodeIDType> {
-	protected final InterfaceRepliconfigurable app;
+		Repliconfigurable, ReplicaCoordinator<NodeIDType> {
+	protected final Repliconfigurable app;
 	private final ConcurrentHashMap<IntegerPacketType, Boolean> coordinationTypes = new ConcurrentHashMap<IntegerPacketType, Boolean>();
 
-	private InterfaceReconfiguratorCallback callback = null;
-	private InterfaceReconfiguratorCallback stopCallback = null; // for stops
+	private ReconfiguratorCallback callback = null;
+	private ReconfiguratorCallback stopCallback = null; // for stops
 	private boolean largeCheckpoints = false;
-	protected InterfaceMessenger<NodeIDType, ?> messenger;
+	protected Messenger<NodeIDType, ?> messenger;
 
 	/********************* Start of abstract methods **********************************************/
 	/*
 	 * This method performs whatever replica coordination action is necessary to
 	 * handle the request.
 	 */
-	public abstract boolean coordinateRequest(InterfaceRequest request)
+	public abstract boolean coordinateRequest(Request request)
 			throws IOException, RequestParseException;
 
 	/*
@@ -105,7 +105,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	/********************* End of abstract methods ***********************************************/
 
 	// A replica coordinator is meaningless without an underlying app
-	protected AbstractReplicaCoordinator(InterfaceReplicable app) {
+	protected AbstractReplicaCoordinator(Replicable app) {
 		this.app = new TrivialRepliconfigurable(app);
 		this.messenger = null;
 	}
@@ -114,17 +114,17 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	 * @param app
 	 * @param messenger
 	 */
-	public AbstractReplicaCoordinator(InterfaceReplicable app,
-			InterfaceMessenger<NodeIDType, ?> messenger) {
+	public AbstractReplicaCoordinator(Replicable app,
+			Messenger<NodeIDType, ?> messenger) {
 		this(app);
 		this.messenger = messenger;
 	}
 
-	protected void setMessenger(InterfaceMessenger<NodeIDType, ?> messenger) {
+	protected void setMessenger(Messenger<NodeIDType, ?> messenger) {
 		this.messenger = messenger;
 	}
 
-	protected InterfaceMessenger<NodeIDType, ?> getMessenger(
+	protected Messenger<NodeIDType, ?> getMessenger(
 			) {
 		return this.messenger;
 	}
@@ -140,17 +140,17 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	}
 
 	protected final AbstractReplicaCoordinator<NodeIDType> setCallback(
-			InterfaceReconfiguratorCallback callback) {
+			ReconfiguratorCallback callback) {
 		this.callback = callback;
 		return this;
 	}
 
-	protected final InterfaceReconfiguratorCallback getCallback() {
+	protected final ReconfiguratorCallback getCallback() {
 		return this.callback;
 	}
 
 	protected final AbstractReplicaCoordinator<NodeIDType> setStopCallback(
-			InterfaceReconfiguratorCallback callback) {
+			ReconfiguratorCallback callback) {
 		this.stopCallback = callback;
 		return this;
 	}
@@ -162,12 +162,12 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	 * @return True if coordinated successfully or handled successfully
 	 *         (locally), false otherwise.
 	 */
-	public boolean handleIncoming(InterfaceRequest request) {
+	public boolean handleIncoming(Request request) {
 		boolean handled = false;
 		if (needsCoordination(request)) {
 			try {
-				if (request instanceof InterfaceReplicableRequest)
-					((InterfaceReplicableRequest) request)
+				if (request instanceof ReplicableRequest)
+					((ReplicableRequest) request)
 						.setNeedsCoordination(false);
 				handled = coordinateRequest(request);
 			} catch (IOException ioe) {
@@ -181,7 +181,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 		return handled;
 	}
 
-	public boolean handleRequest(InterfaceRequest request) {
+	public boolean handleRequest(Request request) {
 		return this.handleRequest(request, false);
 	}
 
@@ -197,12 +197,12 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	 * app's support for stop requests even though a stop request is really
 	 * meaningless to an app.
 	 */
-	public boolean handleRequest(InterfaceRequest request,
+	public boolean handleRequest(Request request,
 			boolean noReplyToClient) {
 
 		if (this.callback != null)
 			this.callback.preExecuted(request);
-		boolean handled = ((this.app instanceof InterfaceReplicable) ? ((InterfaceReplicable) (this.app))
+		boolean handled = ((this.app instanceof Replicable) ? ((Replicable) (this.app))
 				.handleRequest(request, noReplyToClient) : this.app
 				.handleRequest(request));
 		callCallback(request, handled);
@@ -215,7 +215,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 		return true;
 	}
 
-	public InterfaceRequest getRequest(String stringified)
+	public Request getRequest(String stringified)
 			throws RequestParseException {
 		return this.app.getRequest(stringified);
 	}
@@ -232,7 +232,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	}
 
 	@Override
-	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+	public ReconfigurableRequest getStopRequest(String name, int epoch) {
 		return this.app.getStopRequest(name, epoch);
 	}
 
@@ -268,18 +268,18 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 
 	/*********************** Start of private helper methods **********************/
 	// Call back active replica for stop requests, else call default callback
-	private void callCallback(InterfaceRequest request, boolean handled) {
+	private void callCallback(Request request, boolean handled) {
 		if (this.stopCallback != null
-				&& request instanceof InterfaceReconfigurableRequest
-				&& ((InterfaceReconfigurableRequest) request).isStop()) {
+				&& request instanceof ReconfigurableRequest
+				&& ((ReconfigurableRequest) request).isStop()) {
 			this.stopCallback.executed(request, handled);
 		} else if (this.callback != null)
 			this.callback.executed(request, handled);
 	}
 
-	private boolean needsCoordination(InterfaceRequest request) {
-		if (request instanceof InterfaceReplicableRequest
-				&& ((InterfaceReplicableRequest) request).needsCoordination()) {
+	private boolean needsCoordination(Request request) {
+		if (request instanceof ReplicableRequest
+				&& ((ReplicableRequest) request).needsCoordination()) {
 			return true; 
 		}
 		/* No need for setNeedsCoordination as a request will necessarily get 
@@ -347,7 +347,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	 * JSONObject is not needed anywhere else in this class and should ideally
 	 * not be in this class at all.
 	 */
-	protected void sendAllLazy(InterfaceRequest request) throws IOException,
+	protected void sendAllLazy(Request request) throws IOException,
 			RequestParseException, JSONException {
 		assert (request.getServiceName() != null);
 		assert (this.getReplicaGroup(request.getServiceName()) != null) : "ARC"

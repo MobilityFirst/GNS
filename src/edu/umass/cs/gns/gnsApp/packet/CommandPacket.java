@@ -3,7 +3,7 @@ package edu.umass.cs.gns.gnsApp.packet;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.gnsApp.packet.Packet.PacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,7 +12,7 @@ import org.json.JSONObject;
  * Packet format sent from a client and handled by a local name server.
  *
  */
-public class CommandPacket extends BasicPacket implements InterfaceReplicableRequest {
+public class CommandPacket extends BasicPacket implements ReplicableRequest {
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";

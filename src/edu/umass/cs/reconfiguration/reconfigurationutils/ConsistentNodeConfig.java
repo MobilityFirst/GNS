@@ -24,7 +24,7 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 
 /**
  *  This class isn't really used for anything other than as 
@@ -34,9 +34,9 @@ import edu.umass.cs.nio.InterfaceNodeConfig;
  * @param <NodeIDType> 
  */
 public abstract class ConsistentNodeConfig<NodeIDType> implements
-		InterfaceNodeConfig<NodeIDType> {
+		NodeConfig<NodeIDType> {
 
-	private final InterfaceNodeConfig<NodeIDType> nodeConfig;
+	private final NodeConfig<NodeIDType> nodeConfig;
 	private Set<NodeIDType> nodes; // most recent cached copy
 
 	private final ConsistentHashing<NodeIDType> CH; // need to refresh when nodeConfig changes
@@ -44,7 +44,7 @@ public abstract class ConsistentNodeConfig<NodeIDType> implements
 	/**
 	 * @param nc
 	 */
-	public ConsistentNodeConfig(InterfaceNodeConfig<NodeIDType> nc) {
+	public ConsistentNodeConfig(NodeConfig<NodeIDType> nc) {
 		this.nodeConfig = nc;
 		this.nodes = this.nodeConfig.getNodeIDs();
 		this.CH = new ConsistentHashing<NodeIDType>(this.nodes);

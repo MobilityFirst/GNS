@@ -12,9 +12,9 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.nio.interfaces.JSONNIOTransport;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 
 import org.json.JSONObject;
 
@@ -32,7 +32,7 @@ import java.util.*;
 
 @Deprecated
 @SuppressWarnings("unchecked")
-public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTransport<NodeIDType> {
+public class NioServer<NodeIDType> implements Runnable, JSONNIOTransport<NodeIDType> {
 
   public static String Version = "$Revision: 838 $";
   public static final boolean DEBUG = false;
@@ -64,13 +64,13 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
   private int numberOfConnectionsInitiated = 0;
   Timer t = new Timer();
   //    private HashMap<Integer, InetAddress> IDToIPMappings;
-  private InterfaceNodeConfig nodeConfig;
+  private NodeConfig nodeConfig;
 
   private boolean emulateDelay = false;
   private double variation = 0.1;
   private GNSNodeConfig<NodeIDType> gnsNodeConfig = null;
 
-  public NioServer(NodeIDType ID, ByteStreamToJSONObjects worker, InterfaceNodeConfig nodeConfig) throws IOException {
+  public NioServer(NodeIDType ID, ByteStreamToJSONObjects worker, NodeConfig nodeConfig) throws IOException {
     
     connectedIDs = new HashMap<NodeIDType, SocketChannel>();
     //connectedIDs = new SocketChannel[nodeConfig.getNodeIDs().size()];
@@ -565,7 +565,7 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
   }
 
 @Override
-public InterfaceNodeConfig<NodeIDType> getNodeConfig() {
+public NodeConfig<NodeIDType> getNodeConfig() {
 	// TODO Auto-generated method stub
 	return null;
 }

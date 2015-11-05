@@ -5,8 +5,8 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
 
@@ -27,7 +27,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
+public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
 
   private final static String REQUESTID = "reqID";
   private final static String CCPREQID = "ccpreqID";

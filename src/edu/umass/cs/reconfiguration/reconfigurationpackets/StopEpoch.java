@@ -20,9 +20,9 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 /**
  * @author V. Arun
@@ -30,7 +30,7 @@ import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
  */
 public class StopEpoch<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> implements
-		InterfaceReconfigurableRequest, InterfaceReplicableRequest {
+		ReconfigurableRequest, ReplicableRequest {
 
 	private static enum Keys {
 		GET_FINALSTATE

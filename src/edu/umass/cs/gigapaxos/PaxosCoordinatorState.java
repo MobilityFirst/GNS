@@ -55,7 +55,7 @@ import edu.umass.cs.utils.NullIfEmptyMap;
  * 
  *         Testing: It is unit-testable by running the main method.
  */
-public class PaxosCoordinatorState {
+public class PaxosCoordinatorState extends PaxosCoordinator {
 	private static final String NO_OP = RequestPacket.NO_OP;
 	private static final String STOP = "STOP";
 	private static final int PREPARE_TIMEOUT = 60000; // ms
@@ -96,6 +96,7 @@ public class PaxosCoordinatorState {
 
 	private int nextProposalSlotNumber = 0; // next free slot number to propose
 
+	//private static enum STATES {PREACTIVE, ACTIVE, RESIGNED};
 	/*
 	 * After this coordinator becomes active, it remains active until it no
 	 * longer exists. That is, we never set active back to false again. Instead,
@@ -176,6 +177,7 @@ public class PaxosCoordinatorState {
 			// wasteful to drop these preactives
 			this.copyOverPrevious(prev.myProposals,
 					prev.nextProposalSlotNumber, members);
+		//this.pcs = this;
 	}
 
 	private void copyOverPrevious(
@@ -986,7 +988,7 @@ public class PaxosCoordinatorState {
 		return this.myProposals.containsKey(slot) || !this.isActive();
 	}
 
-	static void main(String[] args) {
+	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		int myID = 21;
 		int ballotnum = 2;

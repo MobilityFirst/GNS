@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,7 +10,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
  */
-public class NoopPacket extends BasicPacket implements InterfaceReconfigurableRequest {
+public class NoopPacket extends BasicPacket implements ReconfigurableRequest {
 
   /**
    * Constructs a new NoopPacket.

@@ -28,14 +28,14 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorDB;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceRepliconfigurable;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorDB;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.Repliconfigurable;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
@@ -57,7 +57,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * Need to add fault tolerance support via paxos here.
  */
 public abstract class AbstractReconfiguratorDB<NodeIDType> implements
-		InterfaceRepliconfigurable, InterfaceReconfiguratorDB<NodeIDType> {
+		Repliconfigurable, ReconfiguratorDB<NodeIDType> {
 
 	/**
 	 * Constant RC record name keys. Currently there is only one, for the set of
@@ -110,11 +110,11 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 	/***************** Paxos related methods below ***********/
 	@Override
-	public boolean handleRequest(InterfaceRequest request,
+	public boolean handleRequest(Request request,
 			boolean doNotReplyToClient) {
 		log.log(Level.FINE, "{0} executing {1}", new Object[] { this, request });
-		if (request.getServiceName().equals(InterfaceRequest.NO_OP)
-				&& request.toString().equals(InterfaceRequest.NO_OP))
+		if (request.getServiceName().equals(Request.NO_OP)
+				&& request.toString().equals(Request.NO_OP))
 			return true;
 		assert (request instanceof BasicReconfigurationPacket<?>) : request;
 		boolean handled = false;
@@ -410,15 +410,15 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	 * only reflects state changes.
 	 */
 	@Override
-	public boolean handleRequest(InterfaceRequest request) {
+	public boolean handleRequest(Request request) {
 		return this.handleRequest(request, false);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public InterfaceRequest getRequest(String stringified)
+	public Request getRequest(String stringified)
 			throws RequestParseException {
-		if (stringified.equals(InterfaceRequest.NO_OP))
+		if (stringified.equals(Request.NO_OP))
 			return getNoopRequest(stringified);
 		BasicReconfigurationPacket<NodeIDType> rcPacket = null;
 		try {
@@ -433,9 +433,9 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		return rcPacket;
 	}
 
-	protected static InterfaceRequest getNoopRequest(String stringified) {
-		if (stringified.equals(InterfaceRequest.NO_OP)) {
-			return new InterfaceRequest() {
+	protected static Request getNoopRequest(String stringified) {
+		if (stringified.equals(Request.NO_OP)) {
+			return new Request() {
 				@Override
 				public IntegerPacketType getRequestType() {
 					return new IntegerPacketType() {
@@ -448,12 +448,12 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 				@Override
 				public String getServiceName() {
-					return InterfaceRequest.NO_OP;
+					return Request.NO_OP;
 				}
 
 				@Override
 				public String toString() {
-					return InterfaceRequest.NO_OP;
+					return Request.NO_OP;
 				}
 			};
 		}
@@ -478,10 +478,10 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 	// Reconfigurable methods below
 	@Override
-	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+	public ReconfigurableRequest getStopRequest(String name, int epoch) {
 		StopEpoch<NodeIDType> stop = new StopEpoch<NodeIDType>(this.getMyID(),
 				name, epoch);
-		assert (stop instanceof InterfaceReplicableRequest);
+		assert (stop instanceof ReplicableRequest);
 		return stop;
 	}
 

@@ -2,7 +2,7 @@ package edu.umass.cs.utils;
 
 import java.util.HashMap;
 
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 
 /**
  * @author V. Arun

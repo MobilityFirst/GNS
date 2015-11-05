@@ -20,12 +20,12 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceSummarizableRequest;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.gigapaxos.interfaces.SummarizableRequest;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 /*
  * @author arun
@@ -38,7 +38,7 @@ import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 @SuppressWarnings("javadoc")
 public class RCRecordRequest<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> implements
-		InterfaceReplicableRequest, InterfaceReconfigurableRequest, InterfaceSummarizableRequest {
+		ReplicableRequest, ReconfigurableRequest, SummarizableRequest {
 
 	private static enum Keys {
 		REQUEST_TYPE, START_EPOCH

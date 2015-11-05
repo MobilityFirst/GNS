@@ -5,9 +5,9 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.gnsApp.packet.Packet.PacketType;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * @author Abhigyan
  * @param <NodeIDType>
  */
-public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
+public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
 
   /** NAME */
   public static final String NAME = "name";

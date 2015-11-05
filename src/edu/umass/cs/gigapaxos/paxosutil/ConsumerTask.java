@@ -20,6 +20,7 @@ package edu.umass.cs.gigapaxos.paxosutil;
 import java.util.Collection;
 import java.util.Map;
 
+
 /**
  * @author arun
  *
@@ -27,25 +28,36 @@ import java.util.Map;
  * 
  * A utility for a standard "consumer" task in a producer/consumer setup.
  */
-@SuppressWarnings("javadoc")
 public abstract class ConsumerTask<TaskType> implements Runnable {
 	
 	protected final Object lock;
 	private boolean processing = false;
 	private boolean stopped = false;
 
+	/**
+	 * @param lock
+	 */
 	public ConsumerTask(Object lock) {
 		this.lock = lock;
 	}
 
+	/**
+	 * @param task
+	 */
 	public abstract void enqueueImpl(TaskType task);
 
+	/**
+	 * @return Task to be consumed.
+	 */
 	public abstract TaskType dequeueImpl();
 
+	/**
+	 * @param task
+	 */
 	public abstract void process(TaskType task);
 
 	private TaskType dequeue() {
-		//if (Util.oneIn(10)) DelayProfiler.updateMovAvg("sleep", this.sleepDuration);
+		//if (Util.oneIn(20)) DelayProfiler.updateMovAvg("sleep", this.sleepDuration);
 
 		long millis = sleepDuration >= 1 ? (long) sleepDuration : (Math
 				.random() < sleepDuration ? 1 : 0);		
@@ -60,6 +72,9 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 		}
 	}
 
+	/**
+	 * @param task
+	 */
 	public void enqueue(TaskType task) {
 		synchronized (lock) {
 			try {
@@ -70,9 +85,15 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public void start() {
 		(new Thread(this)).start();
 	}
+	/**
+	 * @param name
+	 */
 	public void start(String name) {
 		Thread me = new Thread(this);
 		me.setName(name);
@@ -107,6 +128,9 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public void waitToFinish() {
 		synchronized (this.lock) {
 			while (!this.isEmpty() || this.getProcessing())
@@ -148,6 +172,9 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	public void stop() {
 		synchronized (this.lock) {
 			this.stopped = true;

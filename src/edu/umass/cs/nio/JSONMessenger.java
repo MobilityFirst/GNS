@@ -30,6 +30,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.nio.interfaces.AddressMessenger;
+import edu.umass.cs.nio.interfaces.InterfaceNIOTransport;
+import edu.umass.cs.nio.interfaces.NodeConfig;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 
 /**
  * @author V. Arun
@@ -41,7 +45,7 @@ import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
  *            overloaded, so you must just reduce the load.
  */
 public class JSONMessenger<NodeIDType> implements
-		InterfaceSSLMessenger<NodeIDType, JSONObject> {
+		SSLMessenger<NodeIDType, JSONObject> {
 
 	/**
 	 * The JSON key for the time when the message was sent. Used only for
@@ -55,7 +59,7 @@ public class JSONMessenger<NodeIDType> implements
 
 	private final InterfaceNIOTransport<NodeIDType, JSONObject> nioTransport;
 	protected final ScheduledExecutorService execpool;
-	private InterfaceAddressMessenger<JSONObject> clientMessenger;
+	private AddressMessenger<JSONObject> clientMessenger;
 	
 	private final InterfaceNIOTransport<NodeIDType,JSONObject>[] workers;
 
@@ -323,18 +327,18 @@ public class JSONMessenger<NodeIDType> implements
 	}
 
 	@Override
-	public InterfaceAddressMessenger<JSONObject> getClientMessenger() {
+	public AddressMessenger<JSONObject> getClientMessenger() {
 		return this.clientMessenger;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void setClientMessenger(
-			InterfaceAddressMessenger<?> clientMessenger) {
+			AddressMessenger<?> clientMessenger) {
 		if (this.clientMessenger != null)
 			throw new IllegalStateException(
 					"Can not change client messenger once set");
-		this.clientMessenger = (InterfaceAddressMessenger<JSONObject>) clientMessenger;
+		this.clientMessenger = (AddressMessenger<JSONObject>) clientMessenger;
 	}
 	
 	class JSONObjectWrapper extends JSONObject {
@@ -364,14 +368,14 @@ public class JSONMessenger<NodeIDType> implements
 	 */
 	public void send(InetSocketAddress sockAddr, Object message)
 			throws JSONException, IOException {
-		InterfaceAddressMessenger<JSONObject> msgr = this.getClientMessenger();
+		AddressMessenger<JSONObject> msgr = this.getClientMessenger();
 		if (msgr == null && this.nioTransport instanceof JSONMessenger)
 			msgr = ((JSONMessenger<?>) this.nioTransport).getClientMessenger();
 		(msgr != null ? msgr : this).sendToAddress(sockAddr,
 				new JSONObjectWrapper(message));
 	}
 	@Override
-	public InterfaceNodeConfig<NodeIDType> getNodeConfig() {
+	public NodeConfig<NodeIDType> getNodeConfig() {
 		return this.nioTransport.getNodeConfig();
 	}
 	@Override

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.gnsApp;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 
@@ -72,7 +72,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public void register(InterfaceRequest request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
+  public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
   }
 
   @Override

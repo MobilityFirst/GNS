@@ -31,11 +31,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import edu.umass.cs.gigapaxos.examples.noop.NoopPaxosApp;
-import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.MultiArrayMap;
 import edu.umass.cs.utils.Util;
@@ -81,7 +81,6 @@ public class PaxosConfig {
 		load(PC.class);
 	}
 
-
 	static {
 		load();
 		NIOTransport.setCompressionThreshold(Config
@@ -105,7 +104,7 @@ public class PaxosConfig {
 		}
 		return map;
 	}
-	
+
 	private static Class<?> getClassSuppressExceptions(String className) {
 		Class<?> clazz = null;
 		try {
@@ -136,8 +135,8 @@ public class PaxosConfig {
 		/**
 		 * Default offset for the client facing port.
 		 */
-		CLIENT_PORT_OFFSET (00),
-		
+		CLIENT_PORT_OFFSET(00),
+
 		/**
 		 * Verbose debugging and request instrumentation
 		 */
@@ -155,11 +154,11 @@ public class PaxosConfig {
 		ENABLE_JOURNALING(true),
 
 		/**
-		 * True means no checkpointing. If logging is enabled (as is the default), the
-		 * logs will grow unbounded. So either both should be true or both should be
-		 * false.
+		 * True means no checkpointing. If logging is enabled (as is the
+		 * default), the logs will grow unbounded. So either both should be true
+		 * or both should be false.
 		 */
-		DISABLE_CHECKPOINTING (false),
+		DISABLE_CHECKPOINTING(false),
 
 		/**
 		 * 
@@ -206,10 +205,11 @@ public class PaxosConfig {
 		DEACTIVATION_PERIOD(60000), // 30s default
 
 		/**
-		 * Limits the rate of pausing to not interfere with request processing. But
-		 * it has the downside of increasing the total pause time as well as limiting
-		 * the paxos instance creation rate. For example, pausing a million instances
-		 * will take 1000s with the default rate limit of 1000/s.
+		 * Limits the rate of pausing to not interfere with request processing.
+		 * But it has the downside of increasing the total pause time as well as
+		 * limiting the paxos instance creation rate. For example, pausing a
+		 * million instances will take 1000s with the default rate limit of
+		 * 1000/s.
 		 */
 		PAUSE_RATE_LIMIT(1000), // /s
 
@@ -221,11 +221,11 @@ public class PaxosConfig {
 		 * Whether request batching is enabled.
 		 */
 		BATCHING_ENABLED(true),
-		
+
 		/**
 		 * 
 		 */
-		MAX_LOG_FILE_SIZE (64*1024*1024),
+		MAX_LOG_FILE_SIZE(64 * 1024 * 1024),
 
 		/**
 		 * Wait period for forcibly killing a lower paxos instance version in
@@ -254,7 +254,7 @@ public class PaxosConfig {
 		 * sizes.
 		 */
 		MAX_CHECKPOINT_SIZE(32672),
-		
+
 		/**
 		 * Number of checkpoints after which log messages will be garbage
 		 * collected for a paxos group. We really don't need to do garbage
@@ -263,38 +263,38 @@ public class PaxosConfig {
 		 * indexing overhead to become high at insertion time; the latter is
 		 * unlikely as we maintain an index on the paxosID key.
 		 */
-		LOG_GC_FREQUENCY (10),
+		LOG_GC_FREQUENCY(10),
 
 		/**
 		 * Number of log files after which GC will be attempted.
 		 */
-		JOURNAL_GC_FREQUENCY (10),
+		JOURNAL_GC_FREQUENCY(10),
 
 		/**
 		 * Number of log files after which compaction will be attempted.
 		 */
-		COMPACTION_FREQUENCY (10),
-		
+		COMPACTION_FREQUENCY(10),
+
 		/**
 		 * The number of log messages after which they are indexed into the DB.
 		 * Indexing every log message doubles the logging overhead and doesn't
-		 * have to be done (unless #SYNC_INDEX_JOURNAL is enabled). Upon 
-		 * recovery however, we need to do slightly more work to ensure that
-		 * all uncommitted log messages are indexed into the DB.
+		 * have to be done (unless #SYNC_INDEX_JOURNAL is enabled). Upon
+		 * recovery however, we need to do slightly more work to ensure that all
+		 * uncommitted log messages are indexed into the DB.
 		 */
-		LOG_INDEX_FREQUENCY (100),
-		
+		LOG_INDEX_FREQUENCY(100),
+
 		/**
 		 * Whether fields in the log messages table in the DB should be indexed.
 		 * This index refers to the DB's internal index as opposed to
 		 * {@link #DB_INDEX_JOURNAL} that is an explicit index of log messages
 		 * journaled on the file system.
 		 */
-		INDEX_LOG_TABLE (true),
+		INDEX_LOG_TABLE(true),
 
 		/**
-		 * A tiny amount of minimum sleep imposed on every request in order
-		 * to improve batching benefits. Also refer to {@link #BATCH_OVERHEAD}.
+		 * A tiny amount of minimum sleep imposed on every request in order to
+		 * improve batching benefits. Also refer to {@link #BATCH_OVERHEAD}.
 		 */
 		BATCH_SLEEP_DURATION(0),
 
@@ -304,15 +304,15 @@ public class PaxosConfig {
 		 * {@value #BATCH_SLEEP_DURATION}.
 		 */
 		BATCH_OVERHEAD(0.01),
-		
+
 		/**
 		 * 
 		 */
-		DISABLE_SYNC_DECISIONS (false),
+		DISABLE_SYNC_DECISIONS(false),
 
 		/**
-		 * Maximum number of batched requests. Setting it to infinity means
-		 * that the log message size will still limit it.
+		 * Maximum number of batched requests. Setting it to infinity means that
+		 * the log message size will still limit it.
 		 */
 		MAX_BATCH_SIZE(2000),
 
@@ -328,12 +328,12 @@ public class PaxosConfig {
 		 * may not preserve the order of client requests while processing them.
 		 */
 		PACKET_DEMULTIPLEXER_THREADS(4),
-		
+
 		/**
 		 * Whether request order is preserved for requests sent by the same
 		 * replica and committed by the same coordinator.
 		 */
-		ORDER_PRESERVING_REQUESTS (true),
+		ORDER_PRESERVING_REQUESTS(true),
 
 		/**
 		 * The replica receiving the request will simply send the request to the
@@ -347,7 +347,7 @@ public class PaxosConfig {
 		 * execute the request upon receiving an ACCEPT. This option will break
 		 * RSM safety.
 		 */
-		EXECUTE_UPON_ACCEPT (false),
+		EXECUTE_UPON_ACCEPT(false),
 
 		/**
 		 * Also used for testing. Lazily propagates requests to other replicas
@@ -367,11 +367,11 @@ public class PaxosConfig {
 		 * persistent logging can cause liveness problems.
 		 */
 		BATCHED_COMMITS(true),
-		
+
 		/**
 		 * Whether to store compressed logs in the DB.
 		 */
-		DB_COMPRESSION (true),
+		DB_COMPRESSION(true),
 
 		/**
 		 * Instrumentation at various places. Should be enabled only during
@@ -388,41 +388,41 @@ public class PaxosConfig {
 		 * Default location for paxos logs when an embedded DB is used.
 		 */
 		PAXOS_LOGS_DIR("./paxos_logs"),
-		
+
 		/**
-		 * Prefix of the paxos DB's name. The whole name is obtained
-		 * by concatenating this prefix with the node ID.
+		 * Prefix of the paxos DB's name. The whole name is obtained by
+		 * concatenating this prefix with the node ID.
 		 */
-		PAXOS_DB_PREFIX ("paxos_logs"),
-		
+		PAXOS_DB_PREFIX("paxos_logs"),
+
 		/**
 		 * Maximum length in characters of a paxos group name.
 		 */
-		MAX_PAXOS_ID_SIZE (40),
-		
+		MAX_PAXOS_ID_SIZE(40),
+
 		/**
 		 * {@link edu.umass.cs.gigapaxos.paxosutil.SQL.SQLType} type. Currently,
-		 * the only other alternative is "MYSQL". Refer the above class to 
-		 * specify the user name and password. 
+		 * the only other alternative is "MYSQL". Refer the above class to
+		 * specify the user name and password.
 		 */
-		SQL_TYPE ("EMBEDDED_DERBY"),
-		
+		SQL_TYPE("EMBEDDED_DERBY"),
+
 		/**
 		 * Maximum size of a paxos replica group.
 		 */
-		MAX_GROUP_SIZE (16), 
-		
+		MAX_GROUP_SIZE(16),
+
 		/**
-		 * Threshold for throttling client request load. 
+		 * Threshold for throttling client request load.
 		 */
-		MAX_OUTSTANDING_REQUESTS(8000), 
-		
+		MAX_OUTSTANDING_REQUESTS(8000),
+
 		/**
-		 * Sleep millis to throttle client requests if overloaded. Used only for 
+		 * Sleep millis to throttle client requests if overloaded. Used only for
 		 * testing.
 		 */
 		THROTTLE_SLEEP(0),
-		
+
 		/**
 		 * Client-server SSL mode.
 		 */
@@ -431,88 +431,91 @@ public class PaxosConfig {
 		/**
 		 * Server-server SSL mode.
 		 */
-		SERVER_SSL_MODE(SSLDataProcessingWorker.SSL_MODES.CLEAR), 
-		
+		SERVER_SSL_MODE(SSLDataProcessingWorker.SSL_MODES.CLEAR),
+
 		/**
 		 * Number of additional sending connections used by paxos. We need this
 		 * because the sending throughput of a single TCP connection is limited
 		 * and can become a bottleneck at the coordinator.
 		 */
-		NUM_MESSENGER_WORKERS(1), 
-		
+		NUM_MESSENGER_WORKERS(1),
+
 		/**
 		 * 
 		 */
 		USE_NIO_SENDER_TASK(false),
-		
+
 		/**
 		 * Disable congestion pushback.
 		 */
-		DISABLE_CC(false), 
-		
+		DISABLE_CC(false),
+
 		/**
-		 * If true, we just approximately count outstanding instead of maintaining an
-		 * exact map with callbacks. Flag used for testing overhead. 
+		 * If true, we just approximately count outstanding instead of
+		 * maintaining an exact map with callbacks. Flag used for testing
+		 * overhead.
 		 */
-		COUNT_OUTSTANDING(false), 
-		
+		COUNT_OUTSTANDING(false),
+
 		/**
-		 * If true, we use a garbage collected map that has higher overhead than a
-		 * regular map, but is still not a bottleneck.
+		 * If true, we use a garbage collected map that has higher overhead than
+		 * a regular map, but is still not a bottleneck.
 		 */
-		USE_GC_MAP(true), 
-		
+		USE_GC_MAP(true),
+
 		/**
-		 * Only log meta decisions if corresponding accept was previously received.
+		 * Only log meta decisions if corresponding accept was previously
+		 * received.
 		 */
-		LOG_META_DECISIONS (true),
-		
-		/** FIXME: The options below only exist for testing stringification overhead.
-		 * They should probably be moved to {@link TESTPaxosConfig}. Most of these
-		 * will compromise safety.
+		LOG_META_DECISIONS(true),
+
+		/**
+		 * FIXME: The options below only exist for testing stringification
+		 * overhead. They should probably be moved to {@link TESTPaxosConfig}.
+		 * Most of these will compromise safety.
 		 */
 
 		/******************* Start of testing options *******************/
 		/**
-		 * Testing option. 
+		 * Testing option.
 		 */
-		JOURNAL_COMPRESSION(false), 
+		JOURNAL_COMPRESSION(false),
 
 		/**
 		 * Testing option.
 		 */
-		STRINGIFY_WO_JOURNALING(false), 
-		
-		/**
-		 * Testing option.
-		 */
-		NON_COORD_ONLY(false), 
+		STRINGIFY_WO_JOURNALING(false),
 
 		/**
 		 * Testing option.
 		 */
-		COORD_ONLY(false), 
+		NON_COORD_ONLY(false),
 
 		/**
-		 * Testing option. 
+		 * Testing option.
 		 */
-		NO_STRINGIFY_JOURNALING(false), 
-		
+		COORD_ONLY(false),
+
 		/**
 		 * Testing option.
 		 */
-		MESSENGER_CACHES_ACCEPT(false), 
-				
+		NO_STRINGIFY_JOURNALING(false),
+
 		/**
 		 * Testing option.
 		 */
-		COORD_STRINGIFIES_WO_JOURNALING(false), 
-		
+		MESSENGER_CACHES_ACCEPT(false),
+
+		/**
+		 * Testing option.
+		 */
+		COORD_STRINGIFIES_WO_JOURNALING(false),
+
 		/**
 		 * Testing option.
 		 */
 		DONT_LOG_DECISIONS(false),
-		
+
 		/**
 		 * Testing option.
 		 */
@@ -526,20 +529,20 @@ public class PaxosConfig {
 		/**
 		 * Testing option.
 		 */
-		COORD_JOURNALS_WO_STRINGIFYING(false), 
+		COORD_JOURNALS_WO_STRINGIFYING(false),
 
 		/**
 		 * Testing option
 		 */
 		ALL_BUT_APPEND(false),
-		
+
 		/**
 		 * Testing option. Implies no coordinator fault-tolerance.
 		 */
-		DISABLE_GET_LOGGED_MESSAGES (false), 
+		DISABLE_GET_LOGGED_MESSAGES(false),
 
 		/*********** End of testing options *****************/
-		
+
 		/**
 		 * Whether journal entries should be synchronously indexed in the DB.
 		 * Makes journaling (and overall throughput) slower but makes safe
@@ -552,69 +555,69 @@ public class PaxosConfig {
 		 * the last message logged in the DB and put the rest in a pending queue
 		 * for logging into the DB.
 		 */
-		PAUSABLE_INDEX_JOURNAL(true), 
-		
+		PAUSABLE_INDEX_JOURNAL(true),
+
 		/**
 		 * Whether more than one thread is used to log messages.
 		 */
-		MULTITHREAD_LOGGER(false), 
-		
+		MULTITHREAD_LOGGER(false),
+
 		/**
 		 * False for testing only. We do need to index the journal files in the
 		 * DB. But this option for now emulates the (unimplemented) strategy of
 		 * maintaining a memory log and only infrequently inserting the index
 		 * entries into the DB.
 		 */
-		DB_INDEX_JOURNAL(false), 
-		
+		DB_INDEX_JOURNAL(false),
+
 		/**
-		 * Failure detection timeout in seconds after which a node will be considered dead
-		 * if no keepalives have been received from it. Used to detect 
-		 * coordinator failures.
+		 * Failure detection timeout in seconds after which a node will be
+		 * considered dead if no keepalives have been received from it. Used to
+		 * detect coordinator failures.
 		 */
-		FAILURE_DETECTION_TIMEOUT(6), 
-		
+		FAILURE_DETECTION_TIMEOUT(6),
+
 		/**
-		 * Request timeout in seconds after which the request will be deleted from the outstanding
-		 * queue. Currently, there is no effort to remove any other state for that request from
-		 * the system.
+		 * Request timeout in seconds after which the request will be deleted
+		 * from the outstanding queue. Currently, there is no effort to remove
+		 * any other state for that request from the system.
 		 */
-		REQUEST_TIMEOUT (10),
-		
+		REQUEST_TIMEOUT(10),
+
 		/**
 		 * Whether the mapdb package should be used. It seems too slow for our
 		 * purposes, so we don
 		 */
-		USE_MAP_DB(false), 
-		
+		USE_MAP_DB(false),
+
 		/**
-		 * If true, the checkpoints table will be used to also store paused 
+		 * If true, the checkpoints table will be used to also store paused
 		 * state as opposed to storing paused state in its own table. The reason
 		 * to store paused state in the same table as checkpoints is that we can
 		 * easily compute FIXME:
 		 */
-		USE_CHECKPOINTS_AS_PAUSE_TABLE(true), 
-		
+		USE_CHECKPOINTS_AS_PAUSE_TABLE(true),
+
 		/**
 		 * 
 		 */
-		USE_DISK_MAP(true), 
-		
+		USE_DISK_MAP(true),
+
 		/**
 		 * 
 		 */
-		USE_HEX_TIMESTAMP(true), 
-		
+		USE_HEX_TIMESTAMP(true),
+
 		/**
 		 * 
 		 */
-		LAZY_COMPACTION(true), 
-		
+		LAZY_COMPACTION(true),
+
 		/**
 		 * 
 		 */
-		PAUSE_BATCH_SIZE(100), 
-		
+		PAUSE_BATCH_SIZE(100),
+
 		/**
 		 * 
 		 */
@@ -633,28 +636,43 @@ public class PaxosConfig {
 		/**
 		 * 
 		 */
-		FLUSH_FCLOSE(true), 
-		
+		FLUSH_FCLOSE(true),
+
 		/**
-		 * Minimum seconds after last modification when a compaction
-		 * attempt can be made.
+		 * Minimum seconds after last modification when a compaction attempt can
+		 * be made.
 		 */
-		LOGFILE_AGE_THRESHOLD(10*60), 
-		
+		LOGFILE_AGE_THRESHOLD(10 * 60),
+
 		/**
 		 * Percentage variation around mean in checkpoint interval.
 		 */
-		CPI_NOISE(0), 
-		
+		CPI_NOISE(0),
+
 		/**
 		 * 
 		 */
-		BATCH_CHECKPOINTS(true), 
+		BATCH_CHECKPOINTS(true),
 
 		/**
 		 * 
 		 */
 		MAX_DB_BATCH_SIZE(10000),
+
+		/**
+		 * Number of milliseconds after which
+		 * {@link edu.umass.cs.gigapaxos.interfaces.Replicable#handleRequest(edu.umass.cs.gigapaxos.interfaces.Request)}
+		 * will be re-attempted until it returns true.
+		 */
+		HANDLE_REQUEST_RETRY_INTERVAL(100),
+
+		/**
+		 * Maximum number of retry attempts for
+		 * {@link edu.umass.cs.gigapaxos.interfaces.Replicable#handleRequest(edu.umass.cs.gigapaxos.interfaces.Request)}
+		 * . After these many unsuccessful attempts, the paxos instance will be
+		 * killed.
+		 */
+		HANDLE_REQUEST_RETRY_LIMIT(10),
 
 		;
 
@@ -669,21 +687,22 @@ public class PaxosConfig {
 			return this.defaultValue;
 		}
 	}
-	
+
 	/**
 	 * @param level
 	 */
 	public static void setConsoleHandler(Level level) {
-		 ConsoleHandler handler = new ConsoleHandler();
-		 handler.setLevel(level);
-		 PaxosManager.getLogger().setLevel(level);
-		 PaxosManager.getLogger().addHandler(handler);
-		 PaxosManager.getLogger().setUseParentHandlers(false);
-		 //NIOTransport.getLogger().setLevel(level);
-		 //NIOTransport.getLogger().addHandler(handler);
-		 //NIOTransport.getLogger().setUseParentHandlers(false);
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setLevel(level);
+		PaxosManager.getLogger().setLevel(level);
+		PaxosManager.getLogger().addHandler(handler);
+		PaxosManager.getLogger().setUseParentHandlers(false);
+		// NIOTransport.getLogger().setLevel(level);
+		// NIOTransport.getLogger().addHandler(handler);
+		// NIOTransport.getLogger().setUseParentHandlers(false);
 
 	}
+
 	protected static void setConsoleHandler() {
 		setConsoleHandler(Level.INFO);
 	}
@@ -691,10 +710,10 @@ public class PaxosConfig {
 	/**
 	 * @return Default node config.
 	 */
-	public static InterfaceNodeConfig<String> getDefaultNodeConfig() {
+	public static NodeConfig<String> getDefaultNodeConfig() {
 		final Map<String, InetSocketAddress> actives = PaxosConfig.getActives();
 
-		return new InterfaceReconfigurableNodeConfig<String>() {
+		return new ReconfigurableNodeConfig<String>() {
 
 			@Override
 			public boolean nodeExists(String id) {

@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.gnsApp.noopTest;
 
 import edu.umass.cs.reconfiguration.examples.*;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -24,8 +24,8 @@ import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
@@ -43,14 +43,14 @@ import edu.umass.cs.utils.MyLogger;
  */
 public class TestReconfigurableClient {
 
-  private final InterfaceReconfigurableNodeConfig<String> nodeConfig;
+  private final ReconfigurableNodeConfig<String> nodeConfig;
   private final JSONMessenger<String> messenger;
   private final ConcurrentHashMap<String, Boolean> exists = new ConcurrentHashMap<String, Boolean>();
   private Set<InetSocketAddress> activeReplicas = null;
 
   private Logger log = Logger.getLogger(getClass().getName());
 
-  TestReconfigurableClient(InterfaceReconfigurableNodeConfig<String> nc,
+  TestReconfigurableClient(ReconfigurableNodeConfig<String> nc,
           JSONMessenger<String> messenger) {
     this.nodeConfig = nc;
     this.messenger = messenger;

@@ -23,15 +23,15 @@ import java.util.HashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceClientRequest;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gns.utils.Util;
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 /**
  * @author V. Arun
@@ -47,8 +47,8 @@ import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
  */
 
 public class AppRequest extends JSONPacket implements
-		InterfaceReconfigurableRequest, InterfaceReplicableRequest,
-		InterfaceClientRequest {
+		ReconfigurableRequest, ReplicableRequest,
+		ClientRequest {
 
 	/**
 	 * Packet type class for NoopApp requests.
@@ -325,7 +325,7 @@ public class AppRequest extends JSONPacket implements
 	}
 
 	@Override
-	public InterfaceClientRequest getResponse() {
+	public ClientRequest getResponse() {
 		return new AppRequest(ResponseCodes.ACK.toString(), this);
 	}
 
@@ -349,7 +349,7 @@ public class AppRequest extends JSONPacket implements
 	public static AppRequest getObliviousPaxosStopRequest(String name, int epoch) {
 		return new AppRequest(name, epoch,
 				(long) (Math.random() * Long.MAX_VALUE),
-				InterfaceRequest.NO_OP,
+				Request.NO_OP,
 				AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
 	}
 

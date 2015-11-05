@@ -5,9 +5,11 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+
 import java.net.InetSocketAddress;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,7 +32,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
+public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
 
   /** The request id from the client. */
   protected final static String REQUESTID = "reqID";

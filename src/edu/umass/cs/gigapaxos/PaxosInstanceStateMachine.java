@@ -31,6 +31,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.SummarizableRequest;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptPacket;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptReplyPacket;
 import edu.umass.cs.gigapaxos.paxospackets.BatchedAcceptReply;
@@ -174,7 +178,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	private final Object paxosID;
 	private final int version;
 	private final PaxosManager<?> paxosManager;
-	private final InterfaceReplicable clientRequestHandler;
+	//private final InterfaceReplicable clientRequestHandler;
 
 	/************ Non-final paxos state that is changeable after creation *******************/
 	// uses ~125B of empty space when not actively processing requests
@@ -187,7 +191,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	private static Logger log = (PaxosManager.getLogger());
 
 	PaxosInstanceStateMachine(String groupId, int version, int id,
-			Set<Integer> gms, InterfaceReplicable app, String initialState,
+			Set<Integer> gms, Replicable app, String initialState,
 			PaxosManager<?> pm, final HotRestoreInfo hri, boolean missedBirthing) {
 
 		/*
@@ -197,7 +201,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		 */
 		this.paxosID = PAXOS_ID_AS_STRING ? groupId : groupId.getBytes();
 		this.version = version;
-		this.clientRequestHandler = app;
+		//this.clientRequestHandler = app;
 		this.paxosManager = pm;
 		assert (gms != null && gms.size() > 0);
 		Arrays.sort(this.groupMembers = Util.setToIntArray(gms));
@@ -252,7 +256,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	}
 
 	protected String toStringLong() {
-		return this.getNodeState() + this.paxosState + this.coordinator;
+		return this.getNodeState() + this.paxosState + (this.coordinator!=null ?this.coordinator:"");
 	}
 
 	/**
@@ -276,8 +280,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 				.getMyID()) : "" + getMyID();
 	}
 
-	protected InterfaceReplicable getApp() {
-		return this.clientRequestHandler;
+	protected Replicable getApp() {
+		return this.paxosManager.getApp(this.getPaxosID()); // this.clientRequestHandler;
 	}
 
 	protected PaxosManager<?> getPaxosManager() {
@@ -314,7 +318,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	protected boolean forceStop() {
 		if (!this.paxosState.isStopped())
 			decrInstanceCount(); // for instrumentation
-		this.coordinator.forceStop();
+		PaxosCoordinator.forceStop(this.coordinator);
+		this.coordinator = null;
 		this.paxosState.forceStop(); //
 		return true;
 	}
@@ -349,7 +354,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	}
 
 	private boolean updateState(String paxosID, String state) {
-		for (int i = 0; !this.clientRequestHandler.updateState(getPaxosID(),
+		for (int i = 0; !this.getApp().updateState(getPaxosID(),
 				null); i++)
 			if (waitRetry(RETRY_TIMEOUT) && i < RETRY_LIMIT)
 				log.warning(this
@@ -360,8 +365,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		return true;
 	}
 
-	private static final long RETRY_TIMEOUT = 100;
-	private static final long RETRY_LIMIT = 10;
+	private static final long RETRY_TIMEOUT = Config.getGlobalLong(PC.HANDLE_REQUEST_RETRY_INTERVAL);
+	private static final int RETRY_LIMIT = Config.getGlobalInt(PC.HANDLE_REQUEST_RETRY_LIMIT);
 
 	private static boolean waitRetry(long timeout) {
 		try {
@@ -477,9 +482,9 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		 */
 		mtasks[0] = (!recovery ?
 		// check run for coordinator if not active
-		(!this.coordinator.isActive()
+		(!PaxosCoordinator.isActive(this.coordinator)
 		// ignore pokes unless not caught up
-		&& (!isPoke || !this.coordinator.caughtUp())) ? checkRunForCoordinator()
+		&& (!isPoke || !PaxosCoordinator.caughtUp(this.coordinator))) ? checkRunForCoordinator()
 				// else reissue long waiting accepts
 				: this.pokeLocalCoordinator()
 				// neither during recovery
@@ -598,15 +603,15 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 						"Paxos instance exists with a different replica group: "
 								+ (slotBallot.members));
 			// update app state
-			if (!this.clientRequestHandler.updateState(pid, slotBallot.state))
+			if (!this.getApp().updateState(pid, slotBallot.state))
 				throw new PaxosInstanceCreationException(
 						"Unable to update app state with " + slotBallot.state);
 		}
 
-		this.coordinator = new PaxosCoordinator(); // just a shell class
+		this.coordinator = null;//new PaxosCoordinator(); // just a shell class
 		// initial coordinator is assumed, not prepared
 		if (slotBallot == null && roundRobinCoordinator(0) == this.getMyID())
-			this.coordinator.makeCoordinator(0, this.getMyID(), getMembers(),
+			this.coordinator = PaxosCoordinator.createCoordinator(0, this.getMyID(), getMembers(),
 					(initialState != null || nullCheckpointStateEnabled() ? 1
 							: 0), true); // slotBallot==null
 		/*
@@ -674,8 +679,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		assert (this.paxosState == null && this.coordinator == null);
 		log.log(Level.FINE, "{0} hot restoring with {1}", new Object[] { this,
 				hri });
-		this.coordinator = new PaxosCoordinator();
-		this.coordinator.hotRestore(hri);
+		//this.coordinator = new PaxosCoordinator();
+		this.coordinator = PaxosCoordinator.hotRestore(this.coordinator, hri);
 		this.paxosState = new PaxosAcceptor(hri.accBallot.ballotNumber,
 				hri.accBallot.coordinatorID, hri.accSlot, hri);
 		this.paxosState.setActive(); // no recovery
@@ -796,11 +801,11 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		MessagingTask[] mtasks = new MessagingTask[2];
 		RequestInstrumenter.received(proposal, proposal.getForwarderID(),
 				this.getMyID());
-		if (this.coordinator.exists(this.paxosState.getBallot())) {
+		if (PaxosCoordinator.exists(this.coordinator, this.paxosState.getBallot())) {
 			// multicast ACCEPT to all
 			AcceptPacket multicastAccept = null;
 			proposal.addDebugInfoDeep("a");
-			multicastAccept = this.coordinator.propose(this.groupMembers,
+			multicastAccept = PaxosCoordinator.propose(this.coordinator,this.groupMembers,
 					proposal);
 			mtasks[0] = multicastAccept != null ? new MessagingTask(
 					this.groupMembers, multicastAccept) : null; // multicast
@@ -929,15 +934,16 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		ArrayList<ProposalPacket> preActiveProposals = null;
 		ArrayList<AcceptPacket> acceptList = null;
 
-		if ((preActiveProposals = this.coordinator.getPreActivesIfPreempted(
+		if ((preActiveProposals = PaxosCoordinator.getPreActivesIfPreempted(this.coordinator,
 				prepareReply, this.groupMembers)) != null) {
 			log.log(Level.INFO, "{0} ({1}) election PREEMPTED by {2}",
-					new Object[] { this, this.coordinator.getBallotStr(),
+					new Object[] { this, PaxosCoordinator.getBallotStr(this.coordinator),
 							prepareReply.ballot });
+			this.coordinator = null;
 			if (!preActiveProposals.isEmpty())
 				mtask = new MessagingTask(prepareReply.ballot.coordinatorID,
 						(preActiveProposals.toArray(new PaxosPacket[0])));
-		} else if ((acceptList = this.coordinator.handlePrepareReply(
+		} else if ((acceptList = PaxosCoordinator.handlePrepareReply(this.coordinator,
 				prepareReply, this.groupMembers)) != null
 				&& !acceptList.isEmpty()) {
 			mtask = new MessagingTask(this.groupMembers,
@@ -967,7 +973,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 			this.paxosManager.incrNumOutstanding(accept.addDebugInfoDeep("a")); // stats
 
 		if(EXECUTE_UPON_ACCEPT)  { // only for testing
-			PaxosInstanceStateMachine.execute(this, getPaxosManager(), clientRequestHandler, accept, false);
+			PaxosInstanceStateMachine.execute(this, getPaxosManager(), this.getApp(), accept, false);
 			if(Util.oneIn(10)) log.info(DelayProfiler.getStats());
 			//return null;
 		}
@@ -1045,8 +1051,9 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		RequestInstrumenter.received(acceptReply, acceptReply.acceptor,
 				this.getMyID());
 
-		PValuePacket committedPValue = this.coordinator.handleAcceptReply(
+		PValuePacket committedPValue = PaxosCoordinator.handleAcceptReply(this.coordinator,
 				this.groupMembers, acceptReply);
+		if(!PaxosCoordinator.exists(this.coordinator)) this.coordinator=null;
 		if (committedPValue == null)
 			return null;
 
@@ -1366,62 +1373,82 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	 * the logger after it is done logging the committed request. Having the
 	 * logger call this method is only space-efficient design alternative.
 	 */
-	protected synchronized MessagingTask extractExecuteAndCheckpoint(
+	protected /*synchronized*/ MessagingTask extractExecuteAndCheckpoint(
 			PValuePacket loggedDecision) {
 		long methodEntryTime = System.currentTimeMillis();
 		int execCount = 0;
 		if (this.paxosState.isStopped())
 			return null;
 		PValuePacket inorderDecision = null;
-		// extract next in-order decision
-		while ((inorderDecision = this.paxosState
-				.putAndRemoveNextExecutable(loggedDecision)) != null) {
-			log.log(inorderDecision.isStopRequest() ? Level.INFO : Level.FINE,
-					"{0} received in-order commit {1} {2}",
-					new Object[] { this, inorderDecision.slot,
-							inorderDecision.getSummary() });
-			String pid = this.getPaxosID();
+		synchronized (this) {
+			// extract next in-order decision
+			while ((inorderDecision = this.paxosState
+					.putAndRemoveNextExecutable(loggedDecision)) != null) {
+				log.log(inorderDecision.isStopRequest() ? Level.INFO
+						: Level.FINE, "{0} received in-order commit {1} {2}",
+						new Object[] { this, inorderDecision.slot,
+								inorderDecision.getSummary() });
+				String pid = this.getPaxosID();
 
-			/*
-			 * Execute it until successful, we are *by design* stuck otherwise.
-			 * Execution must be atomic with extraction and possible
-			 * checkpointing below.
-			 */
-			if(!EXECUTE_UPON_ACCEPT) // used for testing
-				if (execute(this, this.paxosManager, this.clientRequestHandler,
-						inorderDecision, inorderDecision.isRecovery()))
-					// +1 for each batch, not for each constituent requestValue
-					execCount++;
-				// unclean kill
-				else
-					this.paxosManager.kill(this, false);
+				/*
+				 * Execute it until successful, we are *by design* stuck
+				 * otherwise. Execution must be atomic with extraction and
+				 * possible checkpointing below.
+				 */
+				if (!EXECUTE_UPON_ACCEPT) // used for testing
+					if (execute(this, this.paxosManager,
+							this.getApp(), inorderDecision,
+							inorderDecision.isRecovery()))
+						// +1 for each batch, not for each constituent
+						// requestValue
+						execCount++;
+					// unclean kill
+					else if (this.forceStop())
+						break; // this.paxosManager.kill(this, false);
 
-			updateRequestBatcher(inorderDecision, loggedDecision == null);
+				updateRequestBatcher(inorderDecision, loggedDecision == null);
 
-			// getState must be atomic with the execution
-			if (shouldCheckpoint(inorderDecision)
-					&& !inorderDecision.isRecovery()) 
-				AbstractPaxosLogger.checkpoint(this.paxosManager
-						.getPaxosLogger(), inorderDecision.isStopRequest(),
-						pid, this.version, this.paxosManager
-								.getStringNodesFromIntArray(this.groupMembers),
-						inorderDecision.slot, this.paxosState.getBallot(),
-						this.clientRequestHandler.getState(pid),
-						this.paxosState.getGCSlot());
+				// getState must be atomic with the execution
+				if (shouldCheckpoint(inorderDecision)
+						&& !inorderDecision.isRecovery())
+					AbstractPaxosLogger
+							.checkpoint(
+									this.paxosManager.getPaxosLogger(),
+									inorderDecision.isStopRequest(),
+									pid,
+									this.version,
+									this.paxosManager
+											.getStringNodesFromIntArray(this.groupMembers),
+									inorderDecision.slot, this.paxosState
+											.getBallot(),
+									this.getApp().getState(pid),
+									this.paxosState.getGCSlot());
 
-			/*
-			 * If stop request, copy epoch final state and kill self. If copy is
-			 * not successful, we could get stuck trying to create future
-			 * versions for this paxosID.
-			 */
-			if (inorderDecision.isStopRequest()
-					&& this.paxosManager.getPaxosLogger()
-							.copyEpochFinalCheckpointState(getPaxosID(),
-									getVersion())
-					&& logStop(inorderDecision.getEntryTime()))
-				this.paxosManager.kill(this, true);
+				/*
+				 * If stop request, copy epoch final state and kill self. If
+				 * copy is not successful, we could get stuck trying to create
+				 * future versions for this paxosID.
+				 */
+				if (inorderDecision.isStopRequest()
+						&& this.paxosManager.getPaxosLogger()
+								.copyEpochFinalCheckpointState(getPaxosID(),
+										getVersion())
+						&& logStop(inorderDecision.getEntryTime()))
+					// this.paxosManager.kill(this, true);
+					break;
+			}
+			this.paxosState.assertSlotInvariant();
 		}
-		this.paxosState.assertSlotInvariant();
+		/*
+		 * The kill has been moved out of the synchronized block above as the
+		 * synchronizing on this is unecessary and creates a potential deadlock
+		 * with scenarios like pause where paxosManger is first locked and then
+		 * this instance's acceptor is locked if in the future we make the
+		 * PaxosAcceptor inherit from PaxosInstanceStateMachine.
+		 */
+		if (this.isStopped())
+			this.paxosManager.kill(this, true);
+		
 		if (loggedDecision != null && !loggedDecision.isRecovery())
 			instrumentDelay(toLog.EEC, methodEntryTime, execCount);
 		return loggedDecision != null && !loggedDecision.isRecovery() ? this
@@ -1454,7 +1481,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	 * emulateUnreplicated mode.
 	 */
 	protected static boolean execute(PaxosInstanceStateMachine pism,
-			PaxosManager<?> paxosManager, InterfaceReplicable app,
+			PaxosManager<?> paxosManager, Replicable app,
 			RequestPacket decision, boolean doNotReplyToClient) {
 
 		int myEntries = 0;
@@ -1472,7 +1499,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 					 * back to InterfaceRequest using the app's getRequest
 					 * method.
 					 */
-					InterfaceRequest request =
+					Request request =
 					// don't convert to and from string unnecessarily
 					!requestPacket.shouldReturnRequestValue() ? requestPacket
 					// ask app to translate string to InterfaceRequest
@@ -1483,8 +1510,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 							new Object[] {
 									pism,
 									PaxosManager.getLogger().isLoggable(
-											Level.FINE) ? (request instanceof InterfaceSummarizableRequest ? 
-													((InterfaceSummarizableRequest) request)
+											Level.FINE) ? (request instanceof SummarizableRequest ? 
+													((SummarizableRequest) request)
 											.getSummary() : requestPacket
 											.getSummary())
 											: null });
@@ -1513,10 +1540,10 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 							&& !doNotReplyToClient
 							// can be null if app returns null
 							&& request != null
-							&& request instanceof InterfaceClientRequest) {
+							&& request instanceof ClientRequest) {
 						RequestInstrumenter.remove(requestPacket.requestID);
-						InterfaceClientRequest clientRequest = ((InterfaceClientRequest) request);
-						InterfaceClientRequest response = clientRequest
+						ClientRequest clientRequest = ((ClientRequest) request);
+						ClientRequest response = clientRequest
 								.getResponse();
 						if (clientRequest.getClientAddress() != null
 								&& response != null) {
@@ -1559,7 +1586,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	private synchronized MessagingTask handleCheckpoint(StatePacket statePacket) {
 		if (statePacket.slotNumber >= this.paxosState.getSlot()) {
 			// put checkpoint in app (like execute)
-			if (!this.clientRequestHandler.updateState(getPaxosID(),
+			if (!this.getApp().updateState(getPaxosID(),
 					statePacket.state))
 				return null;
 			// update acceptor (like extract)
@@ -1572,7 +1599,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 					this.paxosManager.getStringNodesFromIntArray(groupMembers),
 					statePacket.slotNumber, statePacket.ballot,
 					// could also just use statePacket.state here
-					this.clientRequestHandler.getState(getPaxosID()),
+					this.getApp().getState(getPaxosID()),
 					this.paxosState.getGCSlot());
 			/*
 			 * A transferred checkpoint is almost definitely not a final
@@ -1601,9 +1628,9 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		boolean checkpointed = false;
 		// Ugly nesting, not sure how else to do this correctly
 		synchronized (this.paxosState) {
-			synchronized (this.coordinator) {
+			synchronized (this.coordinator!=null ? this.coordinator : this.paxosState) {
 				int cpSlot = this.paxosState.getSlot() - 1;
-				if (this.paxosState.caughtUp() && this.coordinator.caughtUp()) {
+				if (this.paxosState.caughtUp() && PaxosCoordinator.caughtUp(this.coordinator)) {
 					String pid = this.getPaxosID();
 					AbstractPaxosLogger.checkpoint(this.paxosManager
 							.getPaxosLogger(), true, 
@@ -1612,7 +1639,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 									this.paxosManager
 											.getStringNodesFromIntArray(this.groupMembers),
 									cpSlot, this.paxosState.getBallot(),
-									this.clientRequestHandler.getState(pid),
+									this.getApp().getState(pid),
 									this.paxosState.getGCSlot());
 					checkpointed = true;
 					log.log(Level.INFO,
@@ -1625,8 +1652,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 									this.paxosState.getMaxCommittedSlot(),
 									(this.paxosState.getBallotCoordLog() == this
 											.getMyID() ? "; maxCommittedFrontier="
-											+ this.coordinator
-													.getMajorityCommittedSlot()
+											+ PaxosCoordinator
+													.getMajorityCommittedSlot(this.coordinator)
 											: "") });
 					this.forceStop();
 				}
@@ -1648,14 +1675,14 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 						this.paxosManager
 								.getStringNodesFromIntArray(this.groupMembers),
 						cpSlot, this.paxosState.getBallot(),
-						this.clientRequestHandler.getState(pid),
+						this.getApp().getState(pid),
 						this.paxosState.getGCSlot());
 		// need to acquire these without locking
 		int gcSlot = this.paxosState.getGCSlot();
 		int maxCommittedSlot = this.paxosState.getMaxCommittedSlot();
 		String maxCommittedFrontier = (this.paxosState.getBallotCoordLog() == this
 				.getMyID() ? "; maxCommittedFrontier="
-				+ this.coordinator.getMajorityCommittedSlot() : "");
+				+ PaxosCoordinator.getMajorityCommittedSlot(this.coordinator) : "");
 		log.log(Level.INFO,
 				"{0} forcing checkpoint at slot {1}; garbage collected accepts up to slot {2}; max committed slot = {3} {4}",
 				new Object[] { this, cpSlot, gcSlot, maxCommittedSlot,
@@ -1722,16 +1749,16 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		HotRestoreInfo hri = null;
 		synchronized (this.paxosState) {
 			// Ugly nesting, not sure how else to do this correctly
-			synchronized (this.coordinator) {
-				if (this.paxosState.caughtUp() && this.coordinator.caughtUp()) {
+			synchronized (this.coordinator !=null ? this.coordinator : this.paxosState) {
+				if (this.paxosState.caughtUp() && PaxosCoordinator.caughtUp(this.coordinator)) {
 					 hri = new HotRestoreInfo(this.getPaxosID(),
 							this.getVersion(), this.groupMembers,
 							this.paxosState.getSlot(),
 							this.paxosState.getBallot(),
 							this.paxosState.getGCSlot(),
-							this.coordinator.getBallot(),
-							this.coordinator.getNextProposalSlot(),
-							this.coordinator.getNodeSlots());
+							PaxosCoordinator.getBallot(this.coordinator),
+							PaxosCoordinator.getNextProposalSlot(this.coordinator),
+							PaxosCoordinator.getNodeSlots(this.coordinator));
 					log.log(Level.FINE, "{0} pausing [{1}]", new Object[] {
 							this, hri });
 					//if (paused = this.paxosManager.getPaxosLogger().pause(
@@ -1754,8 +1781,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 						decision.getPaxosID()) == 0 || decision.isStopRequest());
 	}
 
-	private static InterfaceRequest getInterfaceRequest(
-			InterfaceReplicable app, String value) {
+	private static Request getInterfaceRequest(
+			Replicable app, String value) {
 		try {
 			return app.getRequest(value);
 		} catch (RequestParseException e) {
@@ -1822,7 +1849,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		 * I am not already a coordinator with a ballot at least as high as my
 		 * acceptor's ballot's coordinator && I didn't run too recently
 		 */
-		!this.coordinator.exists(curBallot) && !this.coordinator.ranRecently() &&
+		!PaxosCoordinator.exists(this.coordinator, curBallot) && !PaxosCoordinator.ranRecently(this.coordinator) &&
 		// I am my acceptor's coordinator (can happen during recovery)
 		(curBallot.coordinatorID == this.getMyID() ||
 		// my acceptor's coordinator is dead
@@ -1864,26 +1891,26 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 									: " has not yet initialized its coordinator") });
 			Ballot newBallot = new Ballot(curBallot.ballotNumber + 1,
 					this.getMyID());
-			if (this.coordinator.makeCoordinator(newBallot.ballotNumber,
+			if ((this.coordinator = PaxosCoordinator.makeCoordinator(this.coordinator, newBallot.ballotNumber,
 					newBallot.coordinatorID, this.groupMembers,
-					this.paxosState.getSlot(), false) != null) {
+					this.paxosState.getSlot(), false)) != null) {
 				multicastPrepare = new MessagingTask(this.groupMembers,
 						new PreparePacket(newBallot, this.paxosState.getSlot()));
 			}
-		} else if (this.coordinator.waitingTooLong()) {
-			assert (!this.coordinator.waitingTooLong()) : this + " "
+		} else if (PaxosCoordinator.waitingTooLong(this.coordinator)) {
+			assert (!PaxosCoordinator.waitingTooLong(this.coordinator)) : this + " "
 					+ this.coordinator;
 			log.log(Level.WARNING,
 					"{0} resending timed out PREPARE {1}; "
 							+ "this is only needed under high congestion or reconfigurations",
-					new Object[] { this, this.coordinator.getBallot() });
-			Ballot newBallot = this.coordinator.remakeCoordinator(groupMembers);
+					new Object[] { this, PaxosCoordinator.getBallot(this.coordinator) });
+			Ballot newBallot = PaxosCoordinator.remakeCoordinator(this.coordinator, groupMembers);
 			if (newBallot != null) {
 				multicastPrepare = new MessagingTask(this.groupMembers,
 						new PreparePacket(newBallot, this.paxosState.getSlot()));
 			}
 		} else if (!this.paxosManager.isNodeUp(curBallot.coordinatorID)
-				&& !this.coordinator.exists(curBallot)) // not my job
+				&& !PaxosCoordinator.exists(this.coordinator,curBallot)) // not my job
 			log.log(Level.FINE,
 					"{0} thinks current coordinator {1} is {2} dead, the next-in-line is {3}{4}",
 					new Object[] {
@@ -1892,7 +1919,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 							(lastCoordinatorLongDead ? "*long*" : ""),
 							getNextCoordinator(curBallot.ballotNumber + 1,
 									this.groupMembers),
-							(this.coordinator.ranRecently() ? ", and I ran too recently to try again"
+							(PaxosCoordinator.ranRecently(this.coordinator) ? ", and I ran too recently to try again"
 									: "") });
 		return multicastPrepare;
 	}
@@ -1960,8 +1987,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	 */
 
 	private MessagingTask pokeLocalCoordinator() {
-		AcceptPacket accept = this.coordinator
-				.reissueAcceptIfWaitingTooLong(this.paxosState.getSlot());
+		AcceptPacket accept = PaxosCoordinator
+				.reissueAcceptIfWaitingTooLong(this.coordinator, this.paxosState.getSlot());
 		if (accept != null)
 			log.log(Level.INFO, "{0} resending timed out ACCEPT {1}",
 					new Object[] { this, accept.getSummary() });
@@ -2317,8 +2344,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 					new Object[] { this, syncReply.nodeID,
 							statePacket.getSummary() });
 		else {
-			String myStatus = (!this.coordinator.exists() ? "[acceptor]"
-					: this.coordinator.isActive() ? "[coordinator]"
+			String myStatus = (!PaxosCoordinator.exists(this.coordinator) ? "[acceptor]"
+					: PaxosCoordinator.isActive(this.coordinator) ? "[coordinator]"
 							: "[preactive-coordinator]");
 			log.info(this + myStatus + " has no state (yet) for "
 					+ syncReply.getSummary());
@@ -2337,9 +2364,9 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	 */
 	private void testingNoRecovery() {
 		int initSlot = 0;
-		this.coordinator = new PaxosCoordinator();
+		this.coordinator = null;//new PaxosCoordinator();
 		if (this.groupMembers[0] == this.getMyID())
-			coordinator.makeCoordinator(0, this.groupMembers[0], groupMembers,
+			this.coordinator = PaxosCoordinator.makeCoordinator(this.coordinator, 0, this.groupMembers[0], groupMembers,
 					initSlot, true);
 		this.paxosState = new PaxosAcceptor(0, this.groupMembers[0], initSlot,
 				null);

@@ -26,9 +26,9 @@ import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
@@ -433,10 +433,10 @@ public class ReconfigurationConfig {
 		return new HashSet<String>(getReconfigurators().keySet());
 	}
 
-	protected static InterfaceReplicable createApp() {
+	protected static Replicable createApp() {
 		if (ReconfigurationConfig.application != null) {
 			try {
-				return (InterfaceReplicable) ReconfigurationConfig.application
+				return (Replicable) ReconfigurationConfig.application
 						.getConstructor().newInstance();
 			} catch (InstantiationException | IllegalAccessException
 					| IllegalArgumentException | InvocationTargetException

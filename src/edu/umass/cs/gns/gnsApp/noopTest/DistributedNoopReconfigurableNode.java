@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 /**
  * @author Westy adapted from code originally by V. Arun
@@ -22,7 +22,7 @@ public class DistributedNoopReconfigurableNode extends ReconfigurableNode<String
    * @throws IOException
    */
   public DistributedNoopReconfigurableNode(String id,
-          InterfaceReconfigurableNodeConfig<String> nc) throws IOException {
+          ReconfigurableNodeConfig<String> nc) throws IOException {
     super(id, nc);
     System.out.println("Starting node " + id + " at " + nc.getNodeAddress(id) + ":" + nc.getNodePort(id));
   }

@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.InterfaceMessenger;
+import edu.umass.cs.nio.interfaces.Messenger;
 import edu.umass.cs.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.utils.MultiArrayMap;
 
@@ -43,7 +43,6 @@ import edu.umass.cs.utils.MultiArrayMap;
  *            The purpose of this class is to store ProtocolTasks and activate
  *            them when a corresponding event arrives.
  */
-@SuppressWarnings("javadoc")
 public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	protected static final int MAX_TASKS = 10000;
 	protected static final int MAX_THREADS = 10;
@@ -64,7 +63,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	protected static final long TOO_MANY_TASKS_CHECK_PERIOD = 300; // seconds
 
 	private final NodeIDType myID;
-	private final InterfaceMessenger<NodeIDType, ?> messenger;
+	private final Messenger<NodeIDType, ?> messenger;
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
 			MAX_THREADS);
 	private static final HashSet<Object> canceledKeys = new HashSet<Object>();
@@ -76,11 +75,17 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	private static final Logger log = Logger.getLogger(ProtocolExecutor.class
 			.getName());
 
+	/**
+	 * @return Logger.
+	 */
 	public static Logger getLogger() {
 		return log;
 	}
 
-	public ProtocolExecutor(InterfaceMessenger<NodeIDType, ?> messenger) {
+	/**
+	 * @param messenger
+	 */
+	public ProtocolExecutor(Messenger<NodeIDType, ?> messenger) {
 		this.messenger = messenger;
 		this.myID = messenger.getMyID();
 		this.executor.scheduleWithFixedDelay(new TooManyTasksWarner(), 0,
@@ -91,6 +96,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * The register methods tell ProtocolExecutor which events to demultiplex to
 	 * which queued tasks.
 	 */
+	/**
+	 * @param event
+	 * @param task
+	 */
 	public void register(EventType event,
 			ProtocolTask<NodeIDType, EventType, KeyType> task) {
 		this.defaultTasks.put(event,
@@ -98,6 +107,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		assert (this.defaultTasks.size() > 0);
 	}
 
+	/**
+	 * @param events
+	 * @param task
+	 */
 	public void register(Set<EventType> events,
 			ProtocolTask<NodeIDType, EventType, KeyType> task) {
 		for (EventType event : events) {
@@ -108,6 +121,9 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		assert (this.defaultTasks.size() > 0);
 	}
 
+	/**
+	 * @param task
+	 */
 	public void register(ProtocolTask<NodeIDType, EventType, KeyType> task) {
 		for (EventType event : task.getEventTypes()) {
 			this.defaultTasks.put(event,
@@ -117,6 +133,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		assert (this.defaultTasks.size() > 0);
 	}
 
+	/**
+	 * @param event
+	 * @param task
+	 */
 	public void unRegister(EventType event,
 			ProtocolTask<NodeIDType, EventType, KeyType> task) {
 		if (this.defaultTasks.get(event) == task) {
@@ -130,6 +150,9 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * 
 	 * Refer also to schedule.
 	 */
+	/**
+	 * @param actualTask
+	 */
 	public void spawn(ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		if (actualTask instanceof SchedulableProtocolTask)
 			schedule((SchedulableProtocolTask<NodeIDType, EventType, KeyType>) actualTask);
@@ -137,6 +160,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 			wrapSpawn(actualTask);
 	}
 
+	/**
+	 * @param actualTask
+	 * @return True if spawned.
+	 */
 	public synchronized boolean spawnIfNotRunning(
 			ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		if (this.isRunning(actualTask.getKey())) {
@@ -173,20 +200,40 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		});
 	}
 
+	/**
+	 * 
+	 */
 	public void stop() {
 		this.messenger.stop();
 		this.executor.shutdown();
 	}
 
 	// can also ask executor to act like a simple execpool
+	/**
+	 * @param task
+	 * @return Future corresponding to scheduled task.
+	 */
 	public Future<?> submit(Runnable task) {
 		return this.executor.submit(task);
 	}
 	// can also ask executor to act like a simple execpool
+	/**
+	 * @param task
+	 * @param initialDelay
+	 * @param period
+	 * @param unit
+	 * @return Future corresponding to scheduled task.
+	 */
 	public Future<?> scheduleWithFixedDelay(Runnable task, long initialDelay, long period, TimeUnit unit) {
 		return this.executor.scheduleWithFixedDelay(task, 0, period, unit);
 	}
 	// can also ask executor to act like a simple execpool
+	/**
+	 * @param task
+	 * @param initialDelay
+	 * @param unit
+	 * @return Future corresponding to scheduled task.
+	 */
 	public Future<?> scheduleSimple(Runnable task, long initialDelay, TimeUnit unit) {
 		return this.executor.schedule(task, initialDelay, unit);
 	}
@@ -236,6 +283,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * 
 	 * FIXME: why synchronized?
 	 */
+	/**
+	 * @param actualTask
+	 * @param period
+	 */
 	public synchronized void schedule(
 			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask,
 			long period) {
@@ -248,11 +299,18 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 				period, TimeUnit.MILLISECONDS));
 	}
 
+	/**
+	 * @param actualTask
+	 */
 	public void schedule(
 			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		this.schedule(actualTask, actualTask.getPeriod());
 	}
 
+	/**
+	 * @param key
+	 * @return ProtocolTask if any mapped to {@code key}.
+	 */
 	public ProtocolTask<NodeIDType, EventType, KeyType> getTask(KeyType key) {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> wrapper = this
 				.retrieve(key);
@@ -289,6 +347,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		return this.protocolTasks.remove(task.getKey());
 	}
 
+	/**
+	 * @param key
+	 * @return The removed task if any.
+	 */
 	public synchronized ProtocolTask<?, ?, ?> remove(KeyType key) {
 		return remove(this.retrieve(key));
 	}
@@ -311,6 +373,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * When an event arrives, (1) call the corresponding task's action, (2) send
 	 * any messages specified in the return value, and (3) schedule a new
 	 * protocol task if one is spawned.
+	 */
+	/**
+	 * @param event
+	 * @return True if handled.
 	 */
 	public boolean handleEvent(ProtocolEvent<EventType, KeyType> event) {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = null;
@@ -349,10 +415,16 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		return true;
 	}
 
+	/**
+	 * @return True if no scheduled tasks.
+	 */
 	public boolean isEmpty() {
 		return size() == 0;
 	}
 
+	/**
+	 * @param key
+	 */
 	public synchronized static void enqueueCancel(Object key) {
 		canceledKeys.add(key);
 	}
@@ -365,23 +437,38 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * We only check in protocolTasks, not defaultTasks, as the latter is
 	 * supposed to be always running.
 	 */
+	/**
+	 * @param key
+	 * @return True if task corresponding to {@code key} is running.
+	 */
 	public boolean isRunning(KeyType key) {
 		return this.protocolTasks.containsKey(key);
 	}
 
-	// FIXME: Throw exception in order to cancel a task
+	/**
+	 * @param task
+	 */
 	public static void cancel(ProtocolTask<?, ?, ?> task) {
 		if (task != null)
 			throw new CancelProtocolTaskException("Canceling task "
 					+ task.getClass() + " with key " + task.getKey());
 	}
 	
+	/**
+	 * @return Number of active tasks.
+	 */
 	public int getActiveCount() {
 		return this.executor.getActiveCount();
 	}
+	/**
+	 * @return Number of tasks in underlying Executor. 
+	 */
 	public long getTaskCount() {
 		return this.executor.getTaskCount();
 	}
+	/**
+	 * @return Completed task count in underlying Executor.
+	 */
 	public long getCompletedTaskCount() {
 		return this.executor.getCompletedTaskCount();
 	}
@@ -435,6 +522,9 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		return mtasks;
 	}
 
+	/**
+	 * @return Number of scheduled tasks.
+	 */
 	public int size() {
 		return this.protocolTasks.size();
 	}

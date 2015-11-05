@@ -5,14 +5,16 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.utils.JSONUtils;
 import edu.umass.cs.gns.utils.Util;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +37,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements InterfaceRequest {
+public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements Request {
 
   private final static String NAMES = "names";
   private final static String VALUES = "values";

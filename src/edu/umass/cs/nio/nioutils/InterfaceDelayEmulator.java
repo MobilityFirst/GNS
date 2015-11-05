@@ -17,14 +17,14 @@
  */
 package edu.umass.cs.nio.nioutils;
 
-import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 
 /**
  * @author arun
  *
  * @param <NodeIDType>
  */
-public interface InterfaceDelayEmulator<NodeIDType> extends InterfaceNodeConfig<NodeIDType> {
+public interface InterfaceDelayEmulator<NodeIDType> extends NodeConfig<NodeIDType> {
 
 	/**
 	 * @param node2

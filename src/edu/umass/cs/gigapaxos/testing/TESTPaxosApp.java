@@ -32,19 +32,19 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
-import edu.umass.cs.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
+import edu.umass.cs.gigapaxos.interfaces.Replicable;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceNIOTransport;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.InterfaceNIOTransport;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Keyable;
@@ -58,8 +58,8 @@ import edu.umass.cs.utils.Util;
  *         back the request to the client. But it does a number of other
  *         instrumentations and asserts for testing.
  */
-public class TESTPaxosApp implements InterfaceReplicable,
-		InterfaceClientMessenger {
+public class TESTPaxosApp implements Replicable,
+		ClientMessenger {
 	private static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
 	private InterfaceNIOTransport<Integer, JSONObject> niot = null;
@@ -488,12 +488,12 @@ public class TESTPaxosApp implements InterfaceReplicable,
 	}
 
 	@Override
-	public boolean handleRequest(InterfaceRequest request) {
+	public boolean handleRequest(Request request) {
 		return handleRequest(request, false);
 	}
 
 	@Override
-	public InterfaceRequest getRequest(String stringified)
+	public Request getRequest(String stringified)
 			throws RequestParseException {
 		try {
 			JSONObject json = new JSONObject(stringified);
@@ -516,7 +516,7 @@ public class TESTPaxosApp implements InterfaceReplicable,
 	}
 
 	@Override
-	public boolean handleRequest(InterfaceRequest request,
+	public boolean handleRequest(Request request,
 			boolean doNotReplyToClient) {
 		// no need to again stringify and unstringify
 		if (request instanceof ProposalPacket)
@@ -546,7 +546,7 @@ public class TESTPaxosApp implements InterfaceReplicable,
 
 	@Override
 	public void setClientMessenger(
-			InterfaceSSLMessenger<?, JSONObject> messenger) {
+			SSLMessenger<?, JSONObject> messenger) {
 		// do nothing
 	}
 }

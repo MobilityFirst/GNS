@@ -23,7 +23,7 @@ import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 
 /**
@@ -43,7 +43,7 @@ public class NoopReconfigurableNode extends ReconfigurableNode<String> {
 	 * @throws IOException
 	 */
 	public NoopReconfigurableNode(String id,
-			InterfaceReconfigurableNodeConfig<String> nc, boolean cleanSlate)
+			ReconfigurableNodeConfig<String> nc, boolean cleanSlate)
 			throws IOException {
 		super(id, nc, cleanSlate);
 	}
@@ -54,7 +54,7 @@ public class NoopReconfigurableNode extends ReconfigurableNode<String> {
 	 * @throws IOException
 	 */
 	public NoopReconfigurableNode(String id,
-			InterfaceReconfigurableNodeConfig<String> nc) throws IOException {
+			ReconfigurableNodeConfig<String> nc) throws IOException {
 		super(id, nc);
 	}
 
@@ -80,7 +80,7 @@ public class NoopReconfigurableNode extends ReconfigurableNode<String> {
 		// PaxosManager.getLogger().addHandler(handler);
 		// PaxosManager.getLogger().setUseParentHandlers(false);
 
-		InterfaceReconfigurableNodeConfig<String> nc = new DefaultNodeConfig<String>(
+		ReconfigurableNodeConfig<String> nc = new DefaultNodeConfig<String>(
 				PaxosConfig.getActives(),
 				ReconfigurationConfig.getReconfigurators());
 		try {

@@ -20,6 +20,7 @@ package edu.umass.cs.nio;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.nio.interfaces.PacketDemultiplexer;
 import edu.umass.cs.nio.nioutils.NIOHeader;
 
 /**
@@ -27,7 +28,7 @@ import edu.umass.cs.nio.nioutils.NIOHeader;
  */
 public abstract class AbstractJSONPacketDemultiplexer extends
 		AbstractPacketDemultiplexer<JSONObject> implements
-		InterfacePacketDemultiplexer<JSONObject> {
+		PacketDemultiplexer<JSONObject> {
 
 	/**
 	 * 

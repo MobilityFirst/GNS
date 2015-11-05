@@ -10,8 +10,8 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.utils.JSONUtils;
 import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.utils.ValuesMap;
-import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 import java.net.InetSocketAddress;
 
@@ -50,7 +50,7 @@ import org.json.JSONObject;
  * @param <NodeIDType>
  */
 public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndCCP implements
-        InterfaceReplicableRequest {
+        ReplicableRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String CCPREQUESTID = "CCPreqID";

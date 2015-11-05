@@ -21,7 +21,7 @@ import java.util.TreeSet;
 import java.util.Set;
 
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,7 +30,7 @@ import org.json.JSONException;
  * @author V. Arun
  */
 public class ReconfigurableSampleNodeConfig extends SampleNodeConfig<Integer>
-		implements InterfaceReconfigurableNodeConfig<Integer> {
+		implements ReconfigurableNodeConfig<Integer> {
 
 	private static final int AR_OFFSET = 100;
 	private static final int RC_OFFSET = 1100;

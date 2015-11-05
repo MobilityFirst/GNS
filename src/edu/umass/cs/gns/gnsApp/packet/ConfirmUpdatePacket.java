@@ -5,9 +5,10 @@
  */
 package edu.umass.cs.gns.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,7 +23,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
+public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Request {
 
   private final static String REQUESTID = "reqid";
   private final static String CCPREQUESTID = "ccpreqid";

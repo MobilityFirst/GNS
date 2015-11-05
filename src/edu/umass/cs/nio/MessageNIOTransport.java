@@ -20,6 +20,9 @@ package edu.umass.cs.nio;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.nio.interfaces.InterfaceMessageExtractor;
+import edu.umass.cs.nio.interfaces.InterfaceNIOTransport;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
@@ -103,7 +106,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * @throws IOException
 	 */
 	public MessageNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig) throws IOException {
+			NodeConfig<NodeIDType> nodeConfig) throws IOException {
 		// Note: Default extractor will not do any useful demultiplexing
 		super(id, nodeConfig, new MessageExtractor());
 	}
@@ -115,7 +118,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * @throws IOException
 	 */
 	public MessageNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			NodeConfig<NodeIDType> nodeConfig,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		// Note: Default extractor will not do any useful demultiplexing
 		super(id, nodeConfig, new MessageExtractor(), true, sslMode);
@@ -137,7 +140,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * @throws IOException
 	 */
 	public MessageNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			NodeConfig<NodeIDType> nodeConfig,
 			AbstractPacketDemultiplexer<?> pd, boolean start)
 			throws IOException {
 		// Switched order of the latter two arguments
@@ -157,7 +160,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * @throws IOException
 	 */
 	public MessageNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			NodeConfig<NodeIDType> nodeConfig,
 			AbstractPacketDemultiplexer<?> pd, boolean start,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		// Switched order of the latter two arguments
@@ -193,7 +196,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * @throws IOException
 	 */
 	private MessageNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig, MessageExtractor worker)
+			NodeConfig<NodeIDType> nodeConfig, MessageExtractor worker)
 			throws IOException {
 		// Switched order of the latter two arguments
 		super(id, nodeConfig, worker);
@@ -667,7 +670,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	}
 
 	@Override
-	public InterfaceNodeConfig<NodeIDType> getNodeConfig() {
+	public NodeConfig<NodeIDType> getNodeConfig() {
 		return this.nodeConfig;
 	}
 

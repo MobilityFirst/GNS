@@ -19,6 +19,8 @@ package edu.umass.cs.nio;
 
 import org.json.JSONObject;
 
+import edu.umass.cs.nio.interfaces.NodeConfig;
+
 import java.io.IOException;
 
 /**
@@ -56,7 +58,7 @@ public class JSONNIOTransport<NodeIDType> extends
 	 * @throws IOException
 	 */
 	public JSONNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig) throws IOException {
+			NodeConfig<NodeIDType> nodeConfig) throws IOException {
 		// Note: Default demultiplexer will not do any useful demultiplexing
 		super(id, nodeConfig);
 	}
@@ -68,7 +70,7 @@ public class JSONNIOTransport<NodeIDType> extends
 	 * @throws IOException
 	 */
 	public JSONNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			NodeConfig<NodeIDType> nodeConfig,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		// Note: Default multiplexer will not do any useful demultiplexing
 		super(id, nodeConfig, sslMode);
@@ -90,7 +92,7 @@ public class JSONNIOTransport<NodeIDType> extends
 	 * @throws IOException
 	 */
 	public JSONNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			NodeConfig<NodeIDType> nodeConfig,
 			AbstractPacketDemultiplexer<?> pd, boolean start)
 			throws IOException {
 		super(id, nodeConfig, pd, start);
@@ -104,7 +106,7 @@ public class JSONNIOTransport<NodeIDType> extends
 	 * @throws IOException
 	 */
 	public JSONNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			NodeConfig<NodeIDType> nodeConfig,
 			AbstractPacketDemultiplexer<?> pd, SSLDataProcessingWorker.SSL_MODES sslMode)
 			throws IOException {
 		super(id, nodeConfig, pd, true, sslMode);

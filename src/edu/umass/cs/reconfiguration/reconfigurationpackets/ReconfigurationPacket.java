@@ -24,10 +24,10 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.reconfiguration.Reconfigurator;
@@ -283,7 +283,7 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 	public static BasicReconfigurationPacket<?> getReconfigurationPacket(JSONObject json, Stringifiable<?> unstringer) throws JSONException {
 		return getReconfigurationPacket(json, typeMap, unstringer);
 	}
-	public static BasicReconfigurationPacket<?> getReconfigurationPacket(InterfaceRequest request, Stringifiable<?> unstringer) throws JSONException {
+	public static BasicReconfigurationPacket<?> getReconfigurationPacket(Request request, Stringifiable<?> unstringer) throws JSONException {
 		if(request instanceof BasicReconfigurationPacket<?>) return (BasicReconfigurationPacket<?>)request;
 		return getReconfigurationPacket(new JSONObject(request.toString()), typeMap, unstringer);
 	}

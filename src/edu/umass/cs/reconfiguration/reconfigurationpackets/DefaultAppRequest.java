@@ -20,10 +20,10 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 /**
  * @author V. Arun
@@ -33,7 +33,7 @@ import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
  * the network, but only passed internally within a single node.
  */
 public class DefaultAppRequest implements
-		InterfaceReplicableRequest, InterfaceReconfigurableRequest {
+		ReplicableRequest, ReconfigurableRequest {
 	protected enum Keys {STOP, SERVICE_NAME, EPOCH_NUMBER, REQUEST_VALUE};
 	
 	private final boolean stop;
@@ -51,7 +51,7 @@ public class DefaultAppRequest implements
 		this.stop = stop;
 		this.serviceName = serviceName;
 		this.epochNumber = epochNumber;
-		this.requestValue = InterfaceRequest.NO_OP;
+		this.requestValue = Request.NO_OP;
 	}
 	/**
 	 * @param json

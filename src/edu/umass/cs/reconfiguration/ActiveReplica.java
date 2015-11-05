@@ -28,8 +28,8 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.InterfaceClientRequest;
-import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.OverloadException;
@@ -37,19 +37,19 @@ import edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexer;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceAddressMessenger;
-import edu.umass.cs.nio.InterfaceMessenger;
-import edu.umass.cs.nio.InterfacePacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.AddressMessenger;
+import edu.umass.cs.nio.interfaces.Messenger;
+import edu.umass.cs.nio.interfaces.PacketDemultiplexer;
+import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorCallback;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfiguratorCallback;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckDropEpochFinalState;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStopEpoch;
@@ -97,8 +97,8 @@ import edu.umass.cs.utils.Util;
  *            active replica placement.
  */
 public class ActiveReplica<NodeIDType> implements
-		InterfaceReconfiguratorCallback,
-		InterfacePacketDemultiplexer<JSONObject> {
+		ReconfiguratorCallback,
+		PacketDemultiplexer<JSONObject> {
 	/**
 	 * Offset for client facing port that may in general be different from
 	 * server-to-server communication as we may need different transport-layer
@@ -114,7 +114,7 @@ public class ActiveReplica<NodeIDType> implements
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
 	private final ActiveReplicaProtocolTask<NodeIDType> protocolTask;
-	private final InterfaceSSLMessenger<NodeIDType, ?> messenger;
+	private final SSLMessenger<NodeIDType, ?> messenger;
 
 	private final AggregateDemandProfiler demandProfiler;
 	private final boolean noReporting;
@@ -130,10 +130,10 @@ public class ActiveReplica<NodeIDType> implements
 	private final CallbackMap<NodeIDType> callbackMap = new CallbackMap<NodeIDType>();
 
 	private ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
-			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
-			InterfaceSSLMessenger<NodeIDType, ?> messenger, boolean noReporting) {
+			ReconfigurableNodeConfig<NodeIDType> nodeConfig,
+			SSLMessenger<NodeIDType, ?> messenger, boolean noReporting) {
 		this.appCoordinator = appC
-				.setStopCallback((InterfaceReconfiguratorCallback) this);
+				.setStopCallback((ReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nodeConfig);
 		this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
@@ -155,8 +155,8 @@ public class ActiveReplica<NodeIDType> implements
 	}
 
 	protected ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
-			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
-			InterfaceSSLMessenger<NodeIDType, JSONObject> messenger) {
+			ReconfigurableNodeConfig<NodeIDType> nodeConfig,
+			SSLMessenger<NodeIDType, JSONObject> messenger) {
 		this(appC, nodeConfig, messenger, false);
 	}
 
@@ -176,7 +176,7 @@ public class ActiveReplica<NodeIDType> implements
 			}
 			// else check if app request
 			else if (isAppRequest(jsonObject)) {
-				InterfaceRequest request = this.getRequest(jsonObject);
+				Request request = this.getRequest(jsonObject);
 				// send to app via its coordinator
 				boolean handled = this.handRequestToApp(request);
 				// if handled, update demand stats (for reconfigurator) 
@@ -186,14 +186,14 @@ public class ActiveReplica<NodeIDType> implements
 									.getSenderInetAddress(jsonObject));
 				// else send error message to sender
 				else {
-					if (request instanceof InterfaceClientRequest) {
+					if (request instanceof ClientRequest) {
 						this.send(
 								MessageNIOTransport
 										.getSenderAddress(jsonObject),
 								new ActiveReplicaError(this.nodeConfig
 										.getNodeSocketAddress(getMyID()),
 										request.getServiceName(),
-										((InterfaceClientRequest) request)
+										((ClientRequest) request)
 												.getRequestID()).toJSONObject());
 					}
 				}
@@ -207,7 +207,7 @@ public class ActiveReplica<NodeIDType> implements
 	}
 
 	// special case optimization for RequestPacket
-	private InterfaceRequest getRequest(JSONObject jsonObject)
+	private Request getRequest(JSONObject jsonObject)
 			throws RequestParseException, JSONException {
 		if (JSONPacket.getPacketType(jsonObject) == PaxosPacket.PaxosPacketType.REQUEST
 				.getInt())
@@ -216,10 +216,10 @@ public class ActiveReplica<NodeIDType> implements
 	}
 
 	@Override
-	public void executed(InterfaceRequest request, boolean handled) {
+	public void executed(Request request, boolean handled) {
 		if (this.isRecovering())
 			return;
-		assert (request instanceof InterfaceReconfigurableRequest);
+		assert (request instanceof ReconfigurableRequest);
 		assert (handled);
 		/*
 		 * We need to handle the callback in a separate thread, otherwise we
@@ -254,15 +254,15 @@ public class ActiveReplica<NodeIDType> implements
 	 * replica group. It deletes the replica group and then sends the ackStop.
 	 */
 	class AckStopNotifier implements Runnable {
-		InterfaceRequest request;
+		Request request;
 
-		AckStopNotifier(InterfaceRequest request) {
+		AckStopNotifier(Request request) {
 			this.request = request;
 		}
 
 		public void run() {
 			StopEpoch<NodeIDType> stopEpoch = null;
-			int epoch = ((InterfaceReconfigurableRequest) request)
+			int epoch = ((ReconfigurableRequest) request)
 					.getEpochNumber();
 			while ((stopEpoch = callbackMap.notifyStop(
 					request.getServiceName(), epoch)) != null) {
@@ -415,7 +415,7 @@ public class ActiveReplica<NodeIDType> implements
 			return this.sendAckStopEpoch(stopEpoch).toArray(); // still send ack
 		// else coordinate stop with callback
 		this.callbackMap.addStopNotifiee(stopEpoch);
-		InterfaceReconfigurableRequest appStop = this.getAppStopRequest(
+		ReconfigurableRequest appStop = this.getAppStopRequest(
 				stopEpoch.getServiceName(), stopEpoch.getEpochNumber());
 		log.log(Level.FINE,
 				"{0} coordinating {1} as {2}:{3}",
@@ -522,7 +522,7 @@ public class ActiveReplica<NodeIDType> implements
 	 * ****************** Private methods below *******************
 	 */
 
-	private boolean handRequestToApp(InterfaceRequest request) {
+	private boolean handRequestToApp(Request request) {
 		long t1 = System.currentTimeMillis();
 		boolean handled = false;
 		try {
@@ -616,13 +616,13 @@ public class ActiveReplica<NodeIDType> implements
 	 * stats based on a threshold number of requests before reporting to
 	 * reconfigurators.
 	 */
-	private void updateDemandStats(InterfaceRequest request, InetAddress sender) {
+	private void updateDemandStats(Request request, InetAddress sender) {
 		if (this.noReporting)
 			return;
 
 		String name = request.getServiceName();
-		if (request instanceof InterfaceReconfigurableRequest
-				&& ((InterfaceReconfigurableRequest) request).isStop())
+		if (request instanceof ReconfigurableRequest
+				&& ((ReconfigurableRequest) request).isStop())
 			return; // no reporting on stop
 		if (this.demandProfiler.register(request, sender).shouldReport())
 			report(this.demandProfiler.pluckDemandProfile(name));
@@ -681,7 +681,7 @@ public class ActiveReplica<NodeIDType> implements
 	@SuppressWarnings("unchecked")
 	private void send(InetSocketAddress isa, JSONObject msg) {
 		try {
-			((InterfaceAddressMessenger<JSONObject>) this.messenger)
+			((AddressMessenger<JSONObject>) this.messenger)
 					.sendToAddress(isa, msg);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -710,9 +710,9 @@ public class ActiveReplica<NodeIDType> implements
 		return mtask;
 	}
 
-	private InterfaceReconfigurableRequest getAppStopRequest(String name,
+	private ReconfigurableRequest getAppStopRequest(String name,
 			int epoch) {
-		InterfaceReconfigurableRequest appStop = this.appCoordinator
+		ReconfigurableRequest appStop = this.appCoordinator
 				.getStopRequest(name, epoch);
 		return appStop == null ? new DefaultAppRequest(name, epoch, true)
 				: appStop;
@@ -726,9 +726,9 @@ public class ActiveReplica<NodeIDType> implements
 	 * to really support generic message types.
 	 */
 	@SuppressWarnings("unchecked")
-	private InterfaceAddressMessenger<JSONObject> initClientMessenger() {
+	private AddressMessenger<JSONObject> initClientMessenger() {
 		AbstractPacketDemultiplexer<JSONObject> pd = null;
-		InterfaceMessenger<InetSocketAddress, JSONObject> cMsgr = null;
+		Messenger<InetSocketAddress, JSONObject> cMsgr = null;
 		if (this.appCoordinator.getAppRequestTypes().isEmpty())
 			return null;
 		try {
@@ -755,8 +755,8 @@ public class ActiveReplica<NodeIDType> implements
 									(pd = new ReconfigurationPacketDemultiplexer(
 											0)), ReconfigurationConfig
 											.getClientSSLMode()));
-				else if (this.messenger.getClientMessenger() instanceof InterfaceMessenger)
-					((InterfaceMessenger<NodeIDType, ?>) this.messenger
+				else if (this.messenger.getClientMessenger() instanceof Messenger)
+					((Messenger<NodeIDType, ?>) this.messenger
 							.getClientMessenger())
 							.addPacketDemultiplexer(pd = new ReconfigurationPacketDemultiplexer(
 									0));
@@ -766,7 +766,7 @@ public class ActiveReplica<NodeIDType> implements
 			e.printStackTrace();
 		}
 		return cMsgr != null ? cMsgr
-				: (InterfaceAddressMessenger<JSONObject>) this.messenger;
+				: (AddressMessenger<JSONObject>) this.messenger;
 	}
 
 	private boolean isRecovering() {
@@ -793,7 +793,7 @@ public class ActiveReplica<NodeIDType> implements
 	}
 
 	@Override
-	public void preExecuted(InterfaceRequest request) {
+	public void preExecuted(Request request) {
 		throw new RuntimeException("This method should not have gotten called");
 	}
 }

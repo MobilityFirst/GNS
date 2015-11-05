@@ -18,6 +18,9 @@
 package edu.umass.cs.nio;
 
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.nio.interfaces.DataProcessingWorker;
+import edu.umass.cs.nio.interfaces.HandshakeCallback;
+import edu.umass.cs.nio.interfaces.NodeConfig;
 import edu.umass.cs.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
@@ -110,7 +113,7 @@ import java.util.zip.Inflater;
  *            encounters an exception.
  */
 public class NIOTransport<NodeIDType> implements Runnable,
-		InterfaceHandshakeCallback {
+		HandshakeCallback {
 
 	/**
 	 * Number of sends that can be queued because the connection was established
@@ -177,10 +180,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	protected final NodeIDType myID;
 
 	// data processing worker to hand off received messages
-	protected final InterfaceDataProcessingWorker worker;
+	protected final DataProcessingWorker worker;
 
 	// Maps id to socket address
-	protected final InterfaceNodeConfig<NodeIDType> nodeConfig;
+	protected final NodeConfig<NodeIDType> nodeConfig;
 
 	// selector we'll be monitoring
 	private Selector selector = null;
@@ -236,8 +239,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	}
 
 	// private constructor must remain private
-	private NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
-			InetSocketAddress mySockAddr, InterfaceDataProcessingWorker worker,
+	private NIOTransport(NodeIDType id, NodeConfig<NodeIDType> nc,
+			InetSocketAddress mySockAddr, DataProcessingWorker worker,
 			boolean start, SSLDataProcessingWorker.SSL_MODES sslMode)
 			throws IOException {
 		this.myID = id;
@@ -275,8 +278,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @param worker
 	 * @throws IOException
 	 */
-	public NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
-			InterfaceDataProcessingWorker worker) throws IOException {
+	public NIOTransport(NodeIDType id, NodeConfig<NodeIDType> nc,
+			DataProcessingWorker worker) throws IOException {
 		this(id, nc, (id == null ? new InetSocketAddress(0) : null), worker,
 				true, DEFAULT_SSL_MODE);
 	}
@@ -289,8 +292,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @param sslMode
 	 * @throws IOException
 	 */
-	public NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
-			InterfaceDataProcessingWorker worker, boolean start,
+	public NIOTransport(NodeIDType id, NodeConfig<NodeIDType> nc,
+			DataProcessingWorker worker, boolean start,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		this(id, nc, (id == null ? new InetSocketAddress(0) : null), worker,
 				true, sslMode);
@@ -303,8 +306,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @param sslMode
 	 * @throws IOException
 	 */
-	public NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
-			InterfaceDataProcessingWorker worker,
+	public NIOTransport(NodeIDType id, NodeConfig<NodeIDType> nc,
+			DataProcessingWorker worker,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		this(id, nc, (id == null ? new InetSocketAddress(0) : null), worker,
 				true, sslMode);
@@ -315,7 +318,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @param worker
 	 * @throws IOException
 	 */
-	public NIOTransport(int port, InterfaceDataProcessingWorker worker)
+	public NIOTransport(int port, DataProcessingWorker worker)
 			throws IOException {
 		this(null, null, new InetSocketAddress(port), worker, true,
 				DEFAULT_SSL_MODE);
@@ -329,7 +332,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @throws IOException
 	 */
 	public NIOTransport(InetAddress address, int port,
-			InterfaceDataProcessingWorker worker,
+			DataProcessingWorker worker,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		this(null, null, new InetSocketAddress(address, port), worker, true,
 				sslMode);
@@ -341,8 +344,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		this.worker = niot.worker;
 	}
 
-	private InterfaceDataProcessingWorker getWorker(
-			InterfaceDataProcessingWorker worker,
+	private DataProcessingWorker getWorker(
+			DataProcessingWorker worker,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		try {
 			if (sslMode.equals(SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH)

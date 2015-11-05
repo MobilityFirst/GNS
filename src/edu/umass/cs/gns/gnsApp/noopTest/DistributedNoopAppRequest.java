@@ -8,15 +8,15 @@ package edu.umass.cs.gns.gnsApp.noopTest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 /**
  * @author Westy adapted from code originally by V. Arun
  */
-public class DistributedNoopAppRequest extends AppRequest implements InterfaceReconfigurableRequest, InterfaceReplicableRequest {
+public class DistributedNoopAppRequest extends AppRequest implements ReconfigurableRequest, ReplicableRequest {
 
   private static enum Keys {
 

@@ -20,7 +20,7 @@ package edu.umass.cs.nio.nioutils;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import edu.umass.cs.nio.InterfaceDataProcessingWorker;
+import edu.umass.cs.nio.interfaces.DataProcessingWorker;
 
 /**
  * @author V. Arun
@@ -29,7 +29,7 @@ import edu.umass.cs.nio.InterfaceDataProcessingWorker;
  *         standard output.
  */
 public class DataProcessingWorkerDefault implements
-		InterfaceDataProcessingWorker {
+		DataProcessingWorker {
 	public void processData(SocketChannel socket, ByteBuffer incoming) {
 		byte[] rcvd = new byte[incoming.remaining()];
 		incoming.get(rcvd);
