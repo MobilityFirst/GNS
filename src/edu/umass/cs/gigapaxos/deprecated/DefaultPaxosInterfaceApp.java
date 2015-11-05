@@ -97,14 +97,14 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 	}
 
 	@Override
-	public String getState(String paxosID) {
+	public String checkpoint(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state!=null) return state.value;
 		return null;
 	}
 
 	@Override
-	public boolean updateState(String paxosID, String value) {
+	public boolean restore(String paxosID, String value) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state==null) state = new PaxosState();
 		state.value = value;
@@ -142,8 +142,8 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 		this.wait();
 	}
 	@Override
-	public boolean handleRequest(Request request) {
-		return handleRequest(request, false);
+	public boolean execute(Request request) {
+		return execute(request, false);
 	}
 
 	@Override
@@ -158,7 +158,7 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 	}
 
 	@Override
-	public boolean handleRequest(Request request,
+	public boolean execute(Request request,
 			boolean doNotReplyToClient) {
 		throw new RuntimeException("Method not yet implemented");
 	}

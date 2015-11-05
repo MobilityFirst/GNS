@@ -354,7 +354,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	}
 
 	private boolean updateState(String paxosID, String state) {
-		for (int i = 0; !this.getApp().updateState(getPaxosID(),
+		for (int i = 0; !this.getApp().restore(getPaxosID(),
 				null); i++)
 			if (waitRetry(RETRY_TIMEOUT) && i < RETRY_LIMIT)
 				log.warning(this
@@ -603,7 +603,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 						"Paxos instance exists with a different replica group: "
 								+ (slotBallot.members));
 			// update app state
-			if (!this.getApp().updateState(pid, slotBallot.state))
+			if (!this.getApp().restore(pid, slotBallot.state))
 				throw new PaxosInstanceCreationException(
 						"Unable to update app state with " + slotBallot.state);
 		}
@@ -1421,7 +1421,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 											.getStringNodesFromIntArray(this.groupMembers),
 									inorderDecision.slot, this.paxosState
 											.getBallot(),
-									this.getApp().getState(pid),
+									this.getApp().checkpoint(pid),
 									this.paxosState.getGCSlot());
 
 				/*
@@ -1525,7 +1525,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 								new Object[] { DelayProfiler.getStats() });
 
 					executed = app
-							.handleRequest(
+							.execute(
 									request,
 									// do not reply if recovery or not entry replica
 									(doNotReplyToClient
@@ -1586,7 +1586,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 	private synchronized MessagingTask handleCheckpoint(StatePacket statePacket) {
 		if (statePacket.slotNumber >= this.paxosState.getSlot()) {
 			// put checkpoint in app (like execute)
-			if (!this.getApp().updateState(getPaxosID(),
+			if (!this.getApp().restore(getPaxosID(),
 					statePacket.state))
 				return null;
 			// update acceptor (like extract)
@@ -1599,7 +1599,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 					this.paxosManager.getStringNodesFromIntArray(groupMembers),
 					statePacket.slotNumber, statePacket.ballot,
 					// could also just use statePacket.state here
-					this.getApp().getState(getPaxosID()),
+					this.getApp().checkpoint(getPaxosID()),
 					this.paxosState.getGCSlot());
 			/*
 			 * A transferred checkpoint is almost definitely not a final
@@ -1639,7 +1639,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 									this.paxosManager
 											.getStringNodesFromIntArray(this.groupMembers),
 									cpSlot, this.paxosState.getBallot(),
-									this.getApp().getState(pid),
+									this.getApp().checkpoint(pid),
 									this.paxosState.getGCSlot());
 					checkpointed = true;
 					log.log(Level.INFO,
@@ -1675,7 +1675,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 						this.paxosManager
 								.getStringNodesFromIntArray(this.groupMembers),
 						cpSlot, this.paxosState.getBallot(),
-						this.getApp().getState(pid),
+						this.getApp().checkpoint(pid),
 						this.paxosState.getGCSlot());
 		// need to acquire these without locking
 		int gcSlot = this.paxosState.getGCSlot();

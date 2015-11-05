@@ -174,7 +174,7 @@ public class SendUpdatesTask extends TimerTask {
 
     // and send it off
     if (!reallySendUpdatesToReplica) {
-      handler.getApp().handleRequest(pkt);
+      handler.getApp().execute(pkt);
     } else {
       // This is not normally used except in the case of updates happening during
       // creation of guids which need to be explicitly coordinated by ARs 

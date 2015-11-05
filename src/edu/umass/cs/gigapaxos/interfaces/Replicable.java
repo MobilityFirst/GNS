@@ -37,9 +37,9 @@ public interface Replicable extends Application {
 	 *            or the "entry replica" that received the request from the
 	 *            client is expected to respond back. If false, the application
 	 *            is expected to either send a response (if any) back to the
-	 *            client via the {@link ClientMessenger} interface or
-	 *            delegate response messaging to paxos via the
-	 *            {@link ClientRequest} and interface.
+	 *            client via the {@link ClientMessenger} interface or delegate
+	 *            response messaging to paxos via the {@link ClientRequest} and
+	 *            interface.
 	 * 
 	 * @return Returns true if the application handled the request successfully.
 	 *         If the request is bad and is to be discarded, the application
@@ -58,11 +58,9 @@ public interface Replicable extends Application {
 	 *         return value could be used in protocol-specific ways, e.g., a
 	 *         primary-backup protocol might normally execute a request at just
 	 *         one replica but relay the request to one or more backups if the
-	 *         return value of {@link #handleRequest(Request)} is
-	 *         false.
+	 *         return value of {@link #execute(Request)} is false.
 	 */
-	public boolean handleRequest(Request request,
-			boolean doNotReplyToClient);
+	public boolean execute(Request request, boolean doNotReplyToClient);
 
 	/**
 	 * Checkpoints the current application state and returns it.
@@ -73,13 +71,23 @@ public interface Replicable extends Application {
 	 *         successful or throw a RuntimeException. Returning a null value
 	 *         will be interpreted to mean that the application state is indeed
 	 *         null.
+	 *         <p>
+	 *         Note that {@code state} may simply be an app-specific handle,
+	 *         e.g., a file name, representing the state as opposed to the
+	 *         actual state. The application is responsible for interpreting the
+	 *         state returned by {@link #checkpoint(String)} and that supplied
+	 *         in {@link #restore(String, String)} in a consistent manner.
 	 */
-	public String getState(String name);
+	public String checkpoint(String name);
 
 	/**
 	 * Resets the current application state for {@code name} to {@code state}.
+	 * <p>
 	 * Note that {@code state} may simply be an app-specific handle, e.g., a
-	 * file name, representing the state as opposed to the actual state.
+	 * file name, representing the state as opposed to the actual state. The
+	 * application is responsible for interpreting the state returned by
+	 * {@link #checkpoint(String)} and that supplied in
+	 * {@link #restore(String, String)} in a consistent manner.
 	 * 
 	 * @param name
 	 * @param state
@@ -88,5 +96,5 @@ public interface Replicable extends Application {
 	 *         coordination protocol may try to repeat the operation until
 	 *         successful causing the application to get stuck.
 	 */
-	public boolean updateState(String name, String state);
+	public boolean restore(String name, String state);
 }

@@ -75,7 +75,7 @@ public class DistributedNoopApp implements Replicable, Reconfigurable {
 
   // FIXME: return response to client
   @Override
-  public boolean handleRequest(Request request,
+  public boolean execute(Request request,
           boolean doNotReplyToClient) {
     switch ((AppRequest.PacketType) (request.getRequestType())) {
       case DEFAULT_APP_REQUEST:
@@ -166,18 +166,18 @@ public class DistributedNoopApp implements Replicable, Reconfigurable {
   }
 
   @Override
-  public boolean handleRequest(Request request) {
-    return this.handleRequest(request, false);
+  public boolean execute(Request request) {
+    return this.execute(request, false);
   }
 
   @Override
-  public String getState(String name) {
+  public String checkpoint(String name) {
     AppData data = this.appData.get(name);
     return data != null ? data.getState() : null;
   }
 
   @Override
-  public boolean updateState(String name, String state) {
+  public boolean restore(String name, String state) {
     AppData data = this.appData.get(name);
     /*
      * If no previous state, set epoch to initial epoch, otherwise

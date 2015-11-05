@@ -384,7 +384,7 @@ public class Reconfigurator<NodeIDType> implements
 							getOthers(this.consistentNodeConfig.getReplicatedReconfigurators(rcRecReq
 									.getServiceName())), rcRecReq);
 				// no coordination
-				boolean handled = this.DB.handleRequest(rcRecReq);
+				boolean handled = this.DB.execute(rcRecReq);
 				if(handled) this.garbageCollectPendingTasks(rcRecReq);
 			}
 		} else
@@ -1058,7 +1058,7 @@ public class Reconfigurator<NodeIDType> implements
 			DemandReport<NodeIDType> report = new DemandReport<NodeIDType>(
 					this.getMyID(), profile.getName(), 0, profile);
 			// will update stats in DB
-			this.DB.handleRequest(report);
+			this.DB.execute(report);
 		}
 	}
 
@@ -1900,7 +1900,7 @@ public class Reconfigurator<NodeIDType> implements
 				if (newRCGroup.equals(oldGroupName))
 					continue; // no trivial splits
 
-				this.DB.handleRequest(new RCRecordRequest<NodeIDType>(this
+				this.DB.execute(new RCRecordRequest<NodeIDType>(this
 						.getMyID(), new StartEpoch<NodeIDType>(this.getMyID(),
 						newRCGroup, ncRecord.getRCEpoch(newRCGroup),
 						newRCGroups.get(newRCGroup),

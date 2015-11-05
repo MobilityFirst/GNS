@@ -266,7 +266,7 @@ public class TESTPaxosApp implements Replicable,
 	}
 
 	@Override
-	public synchronized String getState(String paxosID) {
+	public synchronized String checkpoint(String paxosID) {
 		if (ABSOLUTE_NOOP)
 			return paxosID
 					+ ":"
@@ -278,7 +278,7 @@ public class TESTPaxosApp implements Replicable,
 	}
 
 	@Override
-	public synchronized boolean updateState(String paxosID, String value) {
+	public synchronized boolean restore(String paxosID, String value) {
 		if(ABSOLUTE_NOOP) return true;
 		if (!allState.containsKey(paxosID))
 			allState.putIfAbsent(paxosID, new PaxosState(paxosID));
@@ -488,8 +488,8 @@ public class TESTPaxosApp implements Replicable,
 	}
 
 	@Override
-	public boolean handleRequest(Request request) {
-		return handleRequest(request, false);
+	public boolean execute(Request request) {
+		return execute(request, false);
 	}
 
 	@Override
@@ -516,7 +516,7 @@ public class TESTPaxosApp implements Replicable,
 	}
 
 	@Override
-	public boolean handleRequest(Request request,
+	public boolean execute(Request request,
 			boolean doNotReplyToClient) {
 		// no need to again stringify and unstringify
 		if (request instanceof ProposalPacket)

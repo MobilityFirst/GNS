@@ -52,7 +52,7 @@ public abstract class AbstractReconfigurablePaxosApp<NodeIDType> implements
 	}
 
 	@Override
-	public boolean handleRequest(Request request,
+	public boolean execute(Request request,
 			boolean doNotReplyToClient) {
 		throw new RuntimeException("This method should not have been called");
 	}

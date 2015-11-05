@@ -17,7 +17,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 public class NoopPaxosApp implements Replicable {
 
 	@Override
-	public boolean handleRequest(Request request) {
+	public boolean execute(Request request) {
 		// execute request here
 
 		// set response if request instanceof InterfaceClientRequest
@@ -35,22 +35,22 @@ public class NoopPaxosApp implements Replicable {
 	}
 
 	@Override
-	public boolean handleRequest(Request request,
+	public boolean execute(Request request,
 			boolean doNotReplyToClient) {
 		// execute request without replying back to client
 
 		// identical to above unless app manages its own messaging
-		return this.handleRequest(request);
+		return this.execute(request);
 	}
 
 	@Override
-	public String getState(String name) {
+	public String checkpoint(String name) {
 		// should return checkpoint state here
 		return null;
 	}
 
 	@Override
-	public boolean updateState(String name, String state) {
+	public boolean restore(String name, String state) {
 		// should update checkpoint state here for name
 		return true;
 	}

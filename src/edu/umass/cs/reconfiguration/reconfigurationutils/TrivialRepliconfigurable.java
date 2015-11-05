@@ -45,8 +45,8 @@ public class TrivialRepliconfigurable implements Repliconfigurable {
 	}
 
 	@Override
-	public boolean handleRequest(Request request) {
-		return this.app.handleRequest(request);
+	public boolean execute(Request request) {
+		return this.app.execute(request);
 	}
 
 	@Override
@@ -62,11 +62,11 @@ public class TrivialRepliconfigurable implements Repliconfigurable {
 
 
 	@Override
-	public boolean handleRequest(Request request,
+	public boolean execute(Request request,
 			boolean doNotReplyToClient) {
 		return (this.app instanceof Replicable ? 
-				((Replicable)this.app).handleRequest(request, doNotReplyToClient): 
-					this.app.handleRequest(request));
+				((Replicable)this.app).execute(request, doNotReplyToClient): 
+					this.app.execute(request));
 	}
 
 	@Override
@@ -103,16 +103,16 @@ public class TrivialRepliconfigurable implements Repliconfigurable {
 	}
 
 	@Override
-	public String getState(String name) {
+	public String checkpoint(String name) {
 		if(this.app instanceof Replicable) return 
-				((Replicable)this.app).getState(name); 
+				((Replicable)this.app).checkpoint(name); 
 		throw new RuntimeException("Can not get stop request for a non-replicable app");
 	}
 
 	@Override
-	public boolean updateState(String name, String state) {
+	public boolean restore(String name, String state) {
 		if(this.app instanceof Replicable) 
-				return ((Replicable)this.app).updateState(name, state);
+				return ((Replicable)this.app).restore(name, state);
 		throw new RuntimeException("Can not get stop request for a non-replicable app");
 	}
 }

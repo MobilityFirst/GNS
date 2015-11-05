@@ -176,13 +176,13 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 				rpe.printStackTrace();
 			}
 		} else {
-			handled = this.handleRequest(request);
+			handled = this.execute(request);
 		}
 		return handled;
 	}
 
-	public boolean handleRequest(Request request) {
-		return this.handleRequest(request, false);
+	public boolean execute(Request request) {
+		return this.execute(request, false);
 	}
 
 	/*
@@ -197,14 +197,14 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	 * app's support for stop requests even though a stop request is really
 	 * meaningless to an app.
 	 */
-	public boolean handleRequest(Request request,
+	public boolean execute(Request request,
 			boolean noReplyToClient) {
 
 		if (this.callback != null)
 			this.callback.preExecuted(request);
 		boolean handled = ((this.app instanceof Replicable) ? ((Replicable) (this.app))
-				.handleRequest(request, noReplyToClient) : this.app
-				.handleRequest(request));
+				.execute(request, noReplyToClient) : this.app
+				.execute(request));
 		callCallback(request, handled);
 		/*
 		 * We always return true because the return value here is a no-op. It
@@ -257,13 +257,13 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	}
 
 	@Override
-	public String getState(String name) {
-		return app.getState(name);
+	public String checkpoint(String name) {
+		return app.checkpoint(name);
 	}
 
 	@Override
-	public boolean updateState(String name, String state) {
-		return app.updateState(name, state);
+	public boolean restore(String name, String state) {
+		return app.restore(name, state);
 	}
 
 	/*********************** Start of private helper methods **********************/

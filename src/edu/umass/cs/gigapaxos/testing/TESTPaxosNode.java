@@ -86,7 +86,7 @@ public class TESTPaxosNode {
 	}
 
 	protected String getAppState(String paxosID) {
-		return app.getState(paxosID);
+		return app.checkpoint(paxosID);
 	}
 
 	public String toString() {

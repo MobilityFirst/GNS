@@ -81,7 +81,7 @@ public class CreateDelete {
         valuesMap = new ValuesMap(addRecordPacket.getValues());
       }
       NRState newState = new NRState(valuesMap, 0);
-      handler.getApp().updateState(addRecordPacket.getName(), newState.toString());
+      handler.getApp().restore(addRecordPacket.getName(), newState.toString());
       // and send a confirmation back
       ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<>(NSResponseCode.NO_ERROR, addRecordPacket);
       Update.sendConfirmUpdatePacketBackToSource(confirmPacket, handler);
@@ -106,7 +106,7 @@ public class CreateDelete {
     } else {
       // If we're running standalone just delete the record.
       RemoveRecordPacket<String> removeRecordPacket = new RemoveRecordPacket<>(json, handler.getGnsNodeConfig());
-      handler.getApp().updateState(removeRecordPacket.getName(), null);
+      handler.getApp().restore(removeRecordPacket.getName(), null);
       // and send a confirmation back
       ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, removeRecordPacket);
       Update.sendConfirmUpdatePacketBackToSource(confirmPacket, handler);

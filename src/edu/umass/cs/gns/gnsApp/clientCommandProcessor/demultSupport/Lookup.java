@@ -50,7 +50,7 @@ public class Lookup {
     JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
     incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
     DelayProfiler.updateDelay("handlePacketLookupRequestSetup", startTime);
-    handler.getApp().handleRequest(new DNSPacket<String>(outgoingJSON, handler.getGnsNodeConfig()));
+    handler.getApp().execute(new DNSPacket<String>(outgoingJSON, handler.getGnsNodeConfig()));
     DelayProfiler.updateDelay("handlePacketLookupRequest", startTime);
   }
 

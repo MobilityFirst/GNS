@@ -145,7 +145,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     PacketType.COMMAND_RETURN_VALUE};
 
   @Override
-  public boolean handleRequest(Request request, boolean doNotReplyToClient) {
+  public boolean execute(Request request, boolean doNotReplyToClient) {
     boolean executed = false;
     try {
       //IntegerPacketType intPacket = request.getRequestType();
@@ -275,8 +275,8 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   @Override
-  public boolean handleRequest(Request request) {
-    return this.handleRequest(request, false);
+  public boolean execute(Request request) {
+    return this.execute(request, false);
   }
 
   private final static ArrayList<ColumnField> curValueRequestFields = new ArrayList<>();
@@ -287,7 +287,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   @Override
-  public String getState(String name) {
+  public String checkpoint(String name) {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
       NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
@@ -315,7 +315,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
    * @return true if we were able to update the state
    */
   @Override
-  public boolean updateState(String name, String state) {
+  public boolean restore(String name, String state) {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
     }

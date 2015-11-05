@@ -30,9 +30,9 @@ public interface ReplicableDeprecated extends Application, Replicable {
 	public boolean handleDecision(String name, String value,
 			boolean doNotReplyToClient);
 
-	public String getState(String name);
+	public String checkpoint(String name);
 
 	@Override
-	public boolean updateState(String name, String state);
+	public boolean restore(String name, String state);
 
 }

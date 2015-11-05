@@ -712,7 +712,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 
 	// write records to a file and return filename
 	@Override
-	public String getState(String rcGroup) {
+	public String checkpoint(String rcGroup) {
 		synchronized (this.stringLocker.get(rcGroup)) {
 			String cpFilename = getCheckpointFile(rcGroup);
 			if (!this.createCheckpointFile(cpFilename))
@@ -779,7 +779,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public boolean updateState(String rcGroup, String state) {
+	public boolean restore(String rcGroup, String state) {
 		return this.updateState(rcGroup, state, null);
 	}
 

@@ -65,7 +65,7 @@ public class Update {
 
   private static void handlePacketLocally(int ccpReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID) {
-    handler.getApp().handleRequest(makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID));
+    handler.getApp().execute(makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID));
   }
 
   /**

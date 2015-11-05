@@ -30,7 +30,7 @@ public interface Application {
 	 * @param request
 	 * @return True if the request is executed successfully. 
 	 */
-	public boolean handleRequest(Request request);
+	public boolean execute(Request request);
 
 	/**
 	 * App must support string-to-InterfaceRequest conversion and back.
