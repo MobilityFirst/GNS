@@ -6,7 +6,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
-import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gnsserver.main.GNS;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

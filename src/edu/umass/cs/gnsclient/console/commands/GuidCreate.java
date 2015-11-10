@@ -1,0 +1,153 @@
+/**
+ * Mobility First - Global Name Service (GNS)
+ * Copyright (C) 2015 University of Massachusetts
+ * Contact: support@gns.name
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. 
+ *
+ * Initial developer(s): Emmanuel Cecchet.
+ * Contributor(s): ______________________.
+ */
+
+package edu.umass.cs.gnsclient.console.commands;
+
+import java.security.PublicKey;
+
+import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnsclient.console.ConsoleModule;
+import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
+
+/**
+ * Command that creates a new proxy group
+ * 
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
+ * @version 1.0
+ */
+public class GuidCreate extends ConsoleCommand
+{
+
+  /**
+   * Creates a new <code>GuidCreate</code> object
+   * 
+   * @param module
+   */
+  public GuidCreate(ConsoleModule module)
+  {
+    super(module);
+  }
+
+  @Override
+  public String getCommandDescription()
+  {
+    return "Create a new GUID, associate an alias and register it in the GNS.";
+  }
+
+  @Override
+  public String getCommandName()
+  {
+    return "guid_create";
+  }
+
+  @Override
+  public String getCommandParameters()
+  {
+    return "alias";
+  }
+
+  /**
+   * Override execute to check for existing connectivity
+   */
+  @Override
+  public void execute(String commandText) throws Exception
+  {
+    if (!module.isCurrentGuidSetAndVerified())
+    {
+      return;
+    }
+    super.execute(commandText);
+  }
+
+  @Override
+  public void parse(String commandText) throws Exception
+  {
+    GuidEntry accountGuid = module.getCurrentGuid();
+    String aliasName = commandText.trim();
+    try
+    {
+      UniversalTcpClient gnsClient = module.getGnsClient();
+
+      try
+      {
+        gnsClient.lookupGuid(aliasName);
+        printString("Alias " + aliasName + " already exists.\n");
+        return;
+      }
+      catch (Exception expected)
+      {
+        // The alias does not exists, that's good, let's create it
+      }
+
+      if (!module.isSilent())
+      {
+        printString("Looking for alias " + aliasName + " GUID and certificates...\n");
+      }
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+
+      if (myGuid != null)
+      {
+        try
+        {
+          PublicKey pk = gnsClient.publicKeyLookupFromGuid(myGuid.getGuid());
+          if (myGuid.getPublicKey().equals(pk))
+          { // We already have the key but the alias is missing in the GNS,
+            // re-add the alias
+            printString("Alias info found locally but missing in GNS, re-adding alias to the GNS\n");
+            gnsClient.guidCreate(myGuid, aliasName);
+          }
+          else
+          {
+            printString("Old certificates found locally and not matching key in GNS, deleting local keys\n");
+            KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+          }
+        }
+        catch (GnsInvalidGuidException e)
+        {
+          KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+        }
+      }
+
+      if (!module.isSilent())
+      {
+        printString("Generating new GUID and keys for account " + accountGuid.getEntityName() + " \n");
+      }
+      myGuid = gnsClient.guidCreate(accountGuid, aliasName);
+
+      if (!module.isSilent())
+      {
+        printString("Created GUID " + myGuid.getGuid() + "\n");
+      }
+      if (module.getCurrentGuid() == null)
+      {
+        module.setCurrentGuidAndCheckForVerified(myGuid);
+        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsHostPort() + "|" + aliasName + ">");
+      }
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      printString("Failed to create new guid ( " + e + ")\n");
+    }
+  }
+}

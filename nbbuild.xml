@@ -94,7 +94,8 @@
       </manifest>
       <fileset dir="${build.dir}/classes" includes="**/*.class" excludes="**/*Test.class"/>
       <fileset dir="conf" includes="**/*.xml, **/*.conf" />
-      <zipgroupfileset dir="lib" includes="**/*.jar" excludes="lib/junit-4.10.jar"/>
+      <zipgroupfileset dir="lib" includes="**/*.jar" 
+                       excludes="android.jar, hamcrest*.jar, junit*.jar"/>
     </jar>
   </target>
     

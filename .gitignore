@@ -48,3 +48,4 @@ build.number
 /scripts/singlenodetests/LNSlogfile
 /scripts/singlenodetests/derby.log
 /scripts/singlenodetests/log/
+/derbyDB/

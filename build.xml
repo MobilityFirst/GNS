@@ -1,110 +1,271 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project default="jar" name="Build file for GNS">
+<project 
+  name="Build file for GNS"
+  basedir="."
+  default="jar" >
 
-  <property name="src" value="src"/>
-  <property name="testsrc" location="test"/>
-  <property name="build" value="build"/>
-  <property name="build.classes" value="${build}/classes"/>
-  <property name="build.jar" value="${build}/jars"/>
-  <property name="lib" value="lib"/>
-  <property name="junit" value="${lib}/junit-4.10.jar"/>
-  <property name="dist" value="dist"/>
-  <property name="conf" value="conf"/>
+  <property name="src.dir" value="src"/>
+  <property name="testsrc.dir" location="test"/>
+  <property name="build.dir" value="build"/>
+  <property name="build.classes.dir" value="${build.dir}/classes"/>
+  <property name="build.test.classes.dir" value="${build.dir}/test/classes"/>
+  <property name="test.dir" value="test" />
+  <property name="build.test.dir" value="${build.dir}/test"/>
+  <property name="build.jar.dir" value="${build.dir}/jars"/>
+  <property name="lib.dir" value="lib"/>
+  <property name="dist.dir" value="dist"/>
+  <property name="jars.dir" value="jars"/>
+  <property name="conf.dir" value="conf"/>
+  <property name="scripts.dir" value="scripts"/>
     
   <!-- Properties -->
   <property file="build.properties" />
   
   <path id="classpath.base">
-    <pathelement location="${build}"/>
-    <pathelement location="${build.classes}"/>
-    <pathelement location="${conf}"/>
-    <fileset dir="${lib}">
+    <fileset dir="${lib.dir}">
       <include name="*.jar"/>
     </fileset>
   </path>
 
   <target name="init">
     <tstamp/>
-    <mkdir dir="${build}"/>
-    <mkdir dir="${build.classes}"/>
+    <mkdir dir="${build.dir}"/>
+    <mkdir dir="${build.classes.dir}"/>
   </target>
 
   <target name="compile" depends="init, buildnumber" description="compile java files">
-    <javac srcdir="${src}" destdir="${build.classes}" debug="true" debuglevel="lines,vars,source"
+    <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
       <compilerarg value="-Xlint:unchecked"/>
       <classpath refid="classpath.base"/>
     </javac>
   </target>
   
-  <target name="main_jarbuild" depends="compile" description="generate jar files">
-    <mkdir dir="${build.jar}"/>
-    <jar destfile="${build.jar}/GNS.jar" filesetmanifest="mergewithoutmain">
+  <target name="server_jarbuild" depends="compile" description="generate jar files">
+    <mkdir dir="${build.jar.dir}"/>
+    <jar destfile="${build.jar.dir}/GNS.jar" filesetmanifest="mergewithoutmain">
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="edu.umass.cs.gns.httpserver.GnsHttpServer"/>
         <attribute name="Class-Path" value="."/>
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
-      <fileset dir="${build.classes}" includes="**/*.class"/>
-      <fileset dir="${conf}" includes="trustStore/**, keystore/**" />
-      <fileset dir="${conf}" includes="**" />
-      <zipgroupfileset dir="${lib}" includes="**/*.jar" excludes="${junit}"/>
+      <fileset dir="${build.classes.dir}" 
+               includes="**/*.class"
+               excludes="edu/umass/cs/gnsclient/**"
+      />
+      <fileset dir="${conf.dir}" includes="trustStore/**, keystore/**" />
+      <fileset dir="${conf.dir}" includes="**" />
+      <zipgroupfileset dir="${lib.dir}" 
+                       includes="**/*.jar" 
+                       excludes="android.jar, hamcrest*.jar, junit*.jar"/>
     </jar>
   </target>
     
   <target name="nio_jarbuild" depends="compile" description="generate jar files">
-    <mkdir dir="${build.jar}"/>
-    <jar destfile="${build.jar}/nio-1.2.jar" filesetmanifest="mergewithoutmain">
+    <mkdir dir="${build.jar.dir}"/>
+    <jar destfile="${build.jar.dir}/nio-1.2.jar" filesetmanifest="mergewithoutmain">
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor"
-                     value="University of Massachusetts" />
+                   value="University of Massachusetts" />
         <attribute name="Implementation-Title" value="GNS Nio Library" />
         <attribute name="Implementation-Version"
                    value="${VERSION}-${RELEASE}" />
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
-      <fileset dir="${build.classes}" includes="edu/umass/cs/nio/*.class"/>
-      <fileset dir="${build.classes}" includes="edu/umass/cs/nio/nioutils/*.class"/>
-      <fileset dir="${build.classes}" includes="edu/umass/cs/utils/*.class"/>
-      <fileset dir="${build.classes}" includes="org/json/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/nioutils/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/utils/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="org/json/*.class"/>
       <!-- interesting special cases here added because of one use of ReconfigurableClient in NIOInstrumenter -->
-      <fileset dir="${build.classes}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
-      <fileset dir="${build.classes}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
-      <fileset dir="${build.classes}" includes="edu/umass/cs/protocoltask/**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/protocoltask/**/*.class"/>
       
-      <fileset dir="${conf}" includes="trustStore/**, keystore/**" />
+      <fileset dir="${conf.dir}" includes="trustStore/**, keystore/**" />
+    </jar>
+  </target>
+  
+  <target name="gigapaxos_jarbuild" depends="compile" description="generate jar files">
+    <mkdir dir="${build.jar.dir}"/>
+    <jar destfile="${build.jar.dir}/gigapaxos-1.0.jar" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Implementation-Vendor"
+                   value="University of Massachusetts" />
+        <attribute name="Implementation-Title" value="GNS Gigapaxos Library" />
+        <attribute name="Implementation-Version"
+                   value="${VERSION}-${RELEASE}" />
+        <attribute name="Build-Version" value="${version.code}" />
+      </manifest>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/nioutils/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/utils/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="org/json/*.class"/>
+      <!-- interesting special cases here added because of one use of ReconfigurableClient in NIOInstrumenter -->
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
+      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/protocoltask/**/*.class"/>
+      
+      <fileset dir="${conf.dir}" includes="trustStore/**, keystore/**" />
+    </jar>
+  </target>
+  
+  <fileset id="client.includes" dir="${build.classes.dir}"
+           includes="edu/umass/cs/gnsclient/**/*.class, 
+                         edu/umass/cs/nio/**/*.class, 
+                         edu/umass/cs/utils/*.class,
+                         edu/umass/cs/reconfiguration/**/*.class, 
+                         edu/umass/cs/gigapaxos/**/*.class,
+                         edu/umass/cs/protocoltask/**/*.class,
+                         org/**/*.class"
+  />
+  
+  <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
+  
+  <zipfileset id="client.lib" dir="${lib.dir}" 
+              includes="derby.jar, jline*.jar, commons-cli*.jar, commons-lang*.jar, nio*.jar"
+  />
+  <!--                       excludes="android.jar, hamcrest*.jar, junit*.jar"-->
+      
+  <!--                       includes="jline*.jar,mail.jar,commons*.jar,nio*.jar" -->
+
+  <target name="client_jarbuild" depends="compile" description="generate jar files">
+    <mkdir dir="${dist.dir}"/>
+    <jar jarfile="${dist.dir}/gnsclient-${VERSION}-${RELEASE}.jar">
+      <!--        <jar destfile="${dist.dir}/GNSClient.jar" filesetmanifest="mergewithoutmain">-->
+      <manifest>
+        <attribute name="Built-By" value="Westy"/>
+        <attribute name="Implementation-Vendor"
+                   value="University of Massachusetts" />
+        <attribute name="Implementation-Title" value="GNS" />
+        <attribute name="Implementation-Version"
+                   value="${VERSION}-${RELEASE}" />
+        <!--        <attribute name="Class-Path" value="${jar.classpath}"/>-->
+        <attribute name="Build-Version" value="${version.code}" />
+      </manifest>
+      <fileset refid="client.includes"/>
+      <fileset refid="client.keystore" />
+      <zipgroupfileset refid="client.lib" />
+
+    </jar>
+  </target>
+
+  <target name="client_console_jarbuild" depends="compile">
+    <!--  <target name="console-jar" depends="library-jar">-->
+    <jar jarfile="${dist.dir}/gns-cli-${VERSION}-${RELEASE}.jar">
+      <manifest>
+        <attribute name="Built-By" value="Westy" />
+        <!-- Information about the program itself -->
+        <attribute name="Implementation-Vendor"
+                   value="University of Massachusetts" />
+        <attribute name="Implementation-Title" value="GNS CLI" />
+        <attribute name="Implementation-Version"
+                   value="${VERSION}-${RELEASE}" />
+        <attribute name="Main-Class" value="edu.umass.cs.gnsclient.console.GnsCli" />
+        <!--       <attribute name="Class-Path" value="${jar.classpath}" />-->
+        <attribute name="Build-Version" value="${version.code}" />
+      </manifest>
+      <fileset refid="client.includes"/>
+      <fileset refid="client.keystore" />
+      <zipgroupfileset refid="client.lib" />
+      <fileset dir="${src.dir}">
+        <include name="edu/umass/cs/gnsclient/console/console.properties" />
+      </fileset>
     </jar>
   </target>
 
   <target name="clean" description="remove generated files">
-    <delete dir="${build}"/>
-    <delete dir="${dist}"/>
+    <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
   </target>
 
   <target name="doc" description="generate javadoc">
-    <mkdir dir="${build}/doc"/>
-    <javadoc packagenames="edu.umass.cs.gns.*" sourcepath="${src}" destdir="${build}/doc">
+    <mkdir dir="${build.dir}/doc"/>
+    <javadoc packagenames="edu.umass.cs.gns.*" sourcepath="${src.dir}" destdir="${build.dir}/doc">
       <classpath refid="classpath.base"/>
       <link href="http://java.sun.com/javase/6/docs/api/"/>
     </javadoc>
-    <mkdir dir="${dist}/doc"/>
-    <copy todir="${dist}/doc">
-      <fileset dir="${build}/doc" includes="**"/>
+    <mkdir dir="${dist.dir}/doc"/>
+    <copy todir="${dist.dir}/doc">
+      <fileset dir="${build.dir}/doc" includes="**"/>
     </copy> 
   </target>
     
-  <target name="jar" depends="main_jarbuild, nio_jarbuild">
-    <mkdir dir="${dist}"/>
-    <copy todir="${dist}">
-      <fileset dir="${build.jar}" includes="**"/>
+  <target name="jar" depends="server_jarbuild, nio_jarbuild, gigapaxos_jarbuild, client_jarbuild, client_console_jarbuild">
+    <mkdir dir="${dist.dir}"/>
+    <copy todir="${dist.dir}">
+      <fileset dir="${build.jar.dir}" includes="**"/>
     </copy>  
-    <mkdir dir="${dist}/conf"/>
-    <copy todir="${dist}/conf">
-      <fileset dir="${conf}" includes="**" />  
+    <mkdir dir="${dist.dir}/conf"/>
+    <copy todir="${dist.dir}/conf">
+      <fileset dir="${conf.dir}" includes="**" />  
     </copy>
-    <copy file="${build.jar}/GNS.jar" tofile="${dist}/gnsserver-${VERSION}-${RELEASE}.jar"/>
+    <mkdir dir="${jars.dir}"/>
+    <copy todir="${jars.dir}">
+      <fileset dir="${dist.dir}" includes="*.jar"/>
+    </copy> 
+    <!--    add this back in when we figure out a good way to anchor the scripts-->
+    <!--    <mkdir dir="${dist.dir}/scripts"/>
+    <copy todir="${dist.dir}/scripts">
+      <fileset dir="${scripts.dir}" 
+               excludes="paxos_logs, reconfiguration_DB, log, derby.log"/>  
+    </copy>
+        make scripts executable
+    <chmod perm="ug+x">
+      <fileset dir="${dist.dir}/scripts">
+        <exclude name="*.properties"/>
+      </fileset>
+    </chmod>-->
+    <copy file="${build.jar.dir}/GNS.jar" tofile="${dist.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>
+  </target>
+  
+  <path id="classpath.test">
+    <pathelement location="${build.classes.dir}"/>
+    <pathelement location="${lib.dir}/junit-4.11.jar"/>
+    <pathelement location="${lib.dir}/hamcrest-all-1.3.jar"/>
+    <pathelement location="${lib.dir}/android.jar"/>
+    <pathelement location="${lib.dir}/jline-1.0.jar"/>
+    <pathelement location="${lib.dir}/commons-lang3-3.3.1.jar"/>
+    <pathelement location="${lib.dir}/commons-cli-1.1.jar"/>
+    <pathelement location="${lib.dir}/derby.jar"/>
+    <pathelement location="${conf.dir}"/>
+  </path>
+  
+  <target name="ensure-test-name" unless="test">
+    <fail message="You must run this target with -Dtest=TestName"/>
+  </target>
+
+  <target name="compiletest" depends="compile" description="Compile all the test files">
+    <mkdir dir="${build.test.dir}" />
+    <mkdir dir="${build.test.classes.dir}" />
+    <javac srcdir="${test.dir}" 
+           destdir="${build.test.classes.dir}" 
+           debug="on"
+           includeantruntime="false">
+      <classpath refid="classpath.test"/>
+    </javac>
+  </target>
+  
+  <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
+          depends="compiletest, ensure-test-name">
+    <junit printsummary="withOutAndErr" fork="yes"> 
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Djavax.net.debug=ssl"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+      <formatter type="plain" usefile="false"/>
+      <batchtest>
+        <fileset dir="${test.dir}">
+          <include name="**/${test}.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
   </target>
     
 
