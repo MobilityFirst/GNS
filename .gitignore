@@ -50,3 +50,4 @@ build.number
 /scripts/singlenodetests/log/
 /derbyDB/
 /jars/
+/paxos_logs/

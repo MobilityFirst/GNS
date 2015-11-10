@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.deprecated.nio;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.JSONNIOTransport;

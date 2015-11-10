@@ -1,3 +1,5 @@
-#
-./reset-server.sh
-./run.sh
+#!/bin/bash
+SCRIPTS="`dirname \"$0\"`"
+#echo $SCRIPTS
+$SCRIPTS/reset-server.sh
+$SCRIPTS/run.sh

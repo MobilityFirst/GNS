@@ -43,7 +43,7 @@
   
   <target name="server_jarbuild" depends="compile" description="generate jar files">
     <mkdir dir="${build.jar.dir}"/>
-    <jar destfile="${build.jar.dir}/GNS.jar" filesetmanifest="mergewithoutmain">
+    <jar destfile="${build.jar.dir}/gnsserver-${VERSION}-${RELEASE}.jar" filesetmanifest="mergewithoutmain">
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Main-Class" value="edu.umass.cs.gns.httpserver.GnsHttpServer"/>
@@ -132,9 +132,8 @@
   <!--                       includes="jline*.jar,mail.jar,commons*.jar,nio*.jar" -->
 
   <target name="client_jarbuild" depends="compile" description="generate jar files">
-    <mkdir dir="${dist.dir}"/>
-    <jar jarfile="${dist.dir}/gnsclient-${VERSION}-${RELEASE}.jar">
-      <!--        <jar destfile="${dist.dir}/GNSClient.jar" filesetmanifest="mergewithoutmain">-->
+    <mkdir dir="${build.jar.dir}"/>
+    <jar jarfile="${build.jar.dir}/gnsclient-${VERSION}-${RELEASE}.jar">
       <manifest>
         <attribute name="Built-By" value="Westy"/>
         <attribute name="Implementation-Vendor"
@@ -153,8 +152,8 @@
   </target>
 
   <target name="client_console_jarbuild" depends="compile">
-    <!--  <target name="console-jar" depends="library-jar">-->
-    <jar jarfile="${dist.dir}/gns-cli-${VERSION}-${RELEASE}.jar">
+    <mkdir dir="${build.jar.dir}"/>
+    <jar jarfile="${build.jar.dir}/gns-cli-${VERSION}-${RELEASE}.jar">
       <manifest>
         <attribute name="Built-By" value="Westy" />
         <!-- Information about the program itself -->
@@ -195,31 +194,53 @@
   </target>
     
   <target name="jar" depends="server_jarbuild, nio_jarbuild, gigapaxos_jarbuild, client_jarbuild, client_console_jarbuild">
-    <mkdir dir="${dist.dir}"/>
-    <copy todir="${dist.dir}">
-      <fileset dir="${build.jar.dir}" includes="**"/>
+    <!-- copy jars into dist/jars -->
+    <mkdir dir="${dist.dir}/jars"/>
+    <copy todir="${dist.dir}/jars">
+      <fileset dir="${build.jar.dir}" includes="*.jar"/>
     </copy>  
+    <!--    make a copy of the latest server and put it in GNS.jar-->
+    <copy file="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNS.jar" />
+    <!--    make a copy of the latest client and put it in GNSClient.jar-->
+    <copy file="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNSClient.jar" />
+    <copy file="${dist.dir}/jars/gns-cli-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNS-CLI.jar" />
+    <!--    make a symlink of the latest server and put it in GNS.jar-->
+<!--    <symlink link="${dist.dir}/jars/GNS.jar" resource="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar"/>-->
+    <!--    make a symlink of the latest server and put it in GNSClient.jar-->
+<!--    <symlink link="${dist.dir}/jars/GNSClient.jar" resource="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar"/>-->
+    <!-- copy jars into top level jars directory -->
+    <mkdir dir="${jars.dir}"/>
+    <copy todir="${jars.dir}">
+      <fileset dir="${build.jar.dir}" includes="*.jar"/>
+    </copy>
+    <!--    make a copy of the latest server and put it in GNS.jar-->
+    <copy file="${jars.dir}/gnsserver-${VERSION}-${RELEASE}.jar" tofile="${jars.dir}/GNS.jar" />
+    <!--    make a copy of the latest client and put it in GNSClient.jar-->
+    <copy file="${jars.dir}/gnsclient-${VERSION}-${RELEASE}.jar" tofile="${jars.dir}/GNSClient.jar" />
+    <copy file="${jars.dir}/gns-cli-${VERSION}-${RELEASE}.jar" tofile="${jars.dir}/GNS-CLI.jar" />
+    <!--    make a symlink of the latest server and put it in GNS.jar-->
+<!--    <symlink link="${jars.dir}/GNS.jar" resource="${jars.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>-->
+    <!--    make a symlink of the latest server and put it in GNSClient.jar-->
+<!--    <symlink link="${jars.dir}/GNSClient.jar" resource="${jars.dir}/gnsclient-${VERSION}-${RELEASE}.jar"/>-->
+     
+    <!-- copy all of conf into dist/conf -->
     <mkdir dir="${dist.dir}/conf"/>
     <copy todir="${dist.dir}/conf">
       <fileset dir="${conf.dir}" includes="**" />  
     </copy>
-    <mkdir dir="${jars.dir}"/>
-    <copy todir="${jars.dir}">
-      <fileset dir="${dist.dir}" includes="*.jar"/>
-    </copy> 
-    <!--    add this back in when we figure out a good way to anchor the scripts-->
-    <!--    <mkdir dir="${dist.dir}/scripts"/>
+    <!-- copy scripts into dist/scripts -->
+    <mkdir dir="${dist.dir}/scripts"/>
     <copy todir="${dist.dir}/scripts">
       <fileset dir="${scripts.dir}" 
                excludes="paxos_logs, reconfiguration_DB, log, derby.log"/>  
     </copy>
-        make scripts executable
+<!--    make scripts executable-->
     <chmod perm="ug+x">
       <fileset dir="${dist.dir}/scripts">
         <exclude name="*.properties"/>
       </fileset>
-    </chmod>-->
-    <copy file="${build.jar.dir}/GNS.jar" tofile="${dist.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>
+    </chmod>
+   
   </target>
   
   <path id="classpath.test">
