@@ -68,7 +68,9 @@ public class ReconfigurationConfig {
 	private static Class<?> getClassSuppressExceptions(String className) {
 		Class<?> clazz = null;
 		try {
-			clazz = Class.forName(className);
+                     if (className != null && !"null".equals(className)) {
+			  clazz = Class.forName(className);
+                     }
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
