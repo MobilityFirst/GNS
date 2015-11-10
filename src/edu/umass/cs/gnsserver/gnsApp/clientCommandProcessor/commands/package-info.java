@@ -1,19 +1,20 @@
-/**
- * All the GNS Client Commands which can be invoked by a client are defined using this package. 
- *<p>
- * Provides a means for defining commands that inherit behavior from other commands,
- * a listing of all the commands and methods for instantiating and looking up 
- * all the command classes. Also provides methods for generating command documentation.
- *<p> 
- * {@link GnsCommand} is the superclass for all commands.
- * {@link CommandDefs} list all the supported commands.
- * {@link CommandModule} instantiates all the commands from CommandDefs which are
- * all subclasses of {@link GnsCommand} as well as command search and documentation.
- *<p>
- * The commands are group into sub packages based on the type of the command:
- * account (record creation, deletion and lookup), acl (access control), admin (server control), 
- * data (lookup, update, select), group (group guid).
- * 
+/*
+ *
+ *  Copyright (c) 2015 University of Massachusetts
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you
+ *  may not use this file except in compliance with the License. You
+ *  may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ *  implied. See the License for the specific language governing
+ *  permissions and limitations under the License.
+ *
+ *  Initial developer(s): Abhigyan Sharma, Westy
+ *
  */
-
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands;

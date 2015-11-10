@@ -49,3 +49,4 @@ build.number
 /scripts/singlenodetests/derby.log
 /scripts/singlenodetests/log/
 /derbyDB/
+/jars/
