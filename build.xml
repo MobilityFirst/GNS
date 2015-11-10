@@ -179,6 +179,7 @@
   <target name="clean" description="remove generated files">
     <delete dir="${build.dir}"/>
     <delete dir="${dist.dir}"/>
+    <delete dir="${jars.dir}"/>
   </target>
 
   <target name="doc" description="generate javadoc">
