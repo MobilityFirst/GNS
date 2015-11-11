@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp;
 
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import java.io.Serializable;
 
 /**
@@ -44,28 +44,28 @@ public enum NSResponseCode implements Serializable{
   /** NO ERROR. */
   NO_ERROR(0, "", false),
   /** ERROR. This should be used sparingly, if at all because it doesn't convey enough information. */
-  ERROR(1, GnsProtocolDefs.GENERICERROR, true),
+  ERROR(1, GnsProtocol.GENERIC_ERROR, true),
   /**  FIELD_NOT_FOUND_ERROR. Field in a record was not found. */
-  FIELD_NOT_FOUND_ERROR(2, GnsProtocolDefs.FIELDNOTFOUND, true),
+  FIELD_NOT_FOUND_ERROR(2, GnsProtocol.FIELD_NOT_FOUND, true),
   /** FAIL_ACTIVE_NAMESERVER. */
-  FAIL_ACTIVE_NAMESERVER(3, GnsProtocolDefs.FAIL_ACTIVE_NAMESERVER, true),
+  FAIL_ACTIVE_NAMESERVER(3, GnsProtocol.FAIL_ACTIVE_NAMESERVER, true),
   /** ERROR_INVALID_ACTIVE_NAMESERVER. */
-  ERROR_INVALID_ACTIVE_NAMESERVER(4, GnsProtocolDefs.INVALID_ACTIVE_NAMESERVER, true),
+  ERROR_INVALID_ACTIVE_NAMESERVER(4, GnsProtocol.INVALID_ACTIVE_NAMESERVER, true),
   // These next four following are access or signature errors
   /** SIGNATURE_ERROR. */
-  SIGNATURE_ERROR(5, GnsProtocolDefs.BADSIGNATURE, true),
+  SIGNATURE_ERROR(5, GnsProtocol.BAD_SIGNATURE, true),
   /** ACCESS_ERROR. */
-  ACCESS_ERROR(6, GnsProtocolDefs.ACCESSDENIED, true),
+  ACCESS_ERROR(6, GnsProtocol.ACCESS_DENIED, true),
   /** BAD_GUID_ERROR. */
-  BAD_GUID_ERROR(7, GnsProtocolDefs.BADGUID, true),
+  BAD_GUID_ERROR(7, GnsProtocol.BAD_GUID, true),
   /** BAD_ACCESSOR_ERROR. */
-  BAD_ACCESSOR_ERROR(8, GnsProtocolDefs.BADACCESSORGUID, true),
+  BAD_ACCESSOR_ERROR(8, GnsProtocol.BAD_ACCESSOR_GUID, true),
   /** VERIFICATION_ERROR. An error during account guid verification. */
-  VERIFICATION_ERROR(9, GnsProtocolDefs.VERIFICATIONERROR, true),
+  VERIFICATION_ERROR(9, GnsProtocol.VERIFICATION_ERROR, true),
   /** UPDATE_TIMEOUT. */
-  UPDATE_TIMEOUT(10, GnsProtocolDefs.UPDATETIMEOUT, true),
+  UPDATE_TIMEOUT(10, GnsProtocol.UPDATE_TIMEOUT, true),
   /** DUPLICATE_ERROR. */
-  DUPLICATE_ERROR(11, GnsProtocolDefs.DUPLICATENAME, true)
+  DUPLICATE_ERROR(11, GnsProtocol.DUPLICATE_NAME, true)
   ;
   
   //

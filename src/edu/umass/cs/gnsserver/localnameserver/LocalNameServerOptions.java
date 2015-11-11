@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
+import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import static edu.umass.cs.gnsserver.utils.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;

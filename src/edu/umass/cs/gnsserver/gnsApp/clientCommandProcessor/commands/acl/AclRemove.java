@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.acl;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldMetaData;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
@@ -52,12 +52,12 @@ public class AclRemove extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACCESSER, WRITER, ACLTYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, ACCESSER, WRITER, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandName() {
-    return ACLREMOVE;
+    return ACL_REMOVE;
   }
 
   @Override
@@ -69,12 +69,12 @@ public class AclRemove extends GnsCommand {
     String accesser = json.getString(ACCESSER);
     // allows someone other than guid to change the acl, defaults to guid
     String writer = json.optString(WRITER, guid);
-    String accessType = json.getString(ACLTYPE);
+    String accessType = json.getString(ACL_TYPE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse<String>(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     NSResponseCode responseCode;
     // We need the public key
@@ -85,14 +85,14 @@ public class AclRemove extends GnsCommand {
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accesser);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
     if (!(responseCode = FieldMetaData.remove(access, guid, field, accessorPublicKey,
             writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse<String>(OKRESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(responseCode.getProtocolCode());
     }

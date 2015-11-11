@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -64,9 +64,9 @@ public abstract class AbstractUpdate extends GnsCommand {
     String guid = json.getString(GUID);
     String field = json.optString(FIELD, null);
     String value = json.optString(VALUE, null);
-    String oldValue = json.optString(OLDVALUE, null);
+    String oldValue = json.optString(OLD_VALUE, null);
     int index = json.optInt(N, -1);
-    JSONObject userJSON = json.has(USERJSON) ? new JSONObject(json.getString(USERJSON)) : null;
+    JSONObject userJSON = json.has(USER_JSON) ? new JSONObject(json.getString(USER_JSON)) : null;
     // writer might be unspecified so we use the guid
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
@@ -76,9 +76,9 @@ public abstract class AbstractUpdate extends GnsCommand {
       // full JSON object update
       if (!(responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
               getUpdateOperation(), writer, signature, message, false)).isAnError()) {
-         return new CommandResponse<String>(OKRESPONSE);
+         return new CommandResponse<String>(OK_RESPONSE);
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
     } else {
       // single field update 
@@ -89,9 +89,9 @@ public abstract class AbstractUpdate extends GnsCommand {
               index,
               getUpdateOperation(),
               writer, signature, message, handler)).isAnError()) {
-        return new CommandResponse<String>(OKRESPONSE);
+        return new CommandResponse<String>(OK_RESPONSE);
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
     }
   }

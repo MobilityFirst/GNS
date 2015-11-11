@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -48,12 +48,12 @@ public class ConnectionCheck extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return CONNECTIONCHECK;
+    return CONNECTION_CHECK;
   }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    return new CommandResponse<String>(OKRESPONSE);
+    return new CommandResponse<String>(OK_RESPONSE);
   }
 
   @Override

@@ -28,7 +28,6 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gnsserver.main.GNS;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,7 +38,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
@@ -48,7 +47,7 @@ import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.utils.Format;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.util.Date;
@@ -150,7 +149,7 @@ public class GnsHttpServer {
             }
             response = processQuery(host, action, query);
           } else {
-            response = GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.NOACTIONFOUND;
+            response = BAD_RESPONSE + " " + NO_ACTION_FOUND;
           }
           if (debuggingEnabled) {
             GNS.getLogger().finer("Response: " + response);
@@ -162,7 +161,7 @@ public class GnsHttpServer {
         GNS.getLogger().severe("Error: " + e);
         e.printStackTrace();
         try {
-          String response = GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.QUERYPROCESSINGERROR + " " + e;
+          String response = BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e;
           OutputStream responseBody = exchange.getResponseBody();
           responseBody.write(response.getBytes());
           responseBody.close();

@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -57,7 +57,7 @@ public class ClearTagged extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return CLEARTAGGED;
+    return CLEAR_TAGGED;
   }
 
   @Override
@@ -72,7 +72,7 @@ public class ClearTagged extends GnsCommand {
         AccountAccess.removeAccount(accountInfo, handler);
       }
     }
-    return new CommandResponse<String>(OKRESPONSE);
+    return new CommandResponse<String>(OK_RESPONSE);
   }
 
   @Override

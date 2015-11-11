@@ -17,7 +17,10 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnscommon;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class defines a GnsProtocol. Which is to say that
@@ -36,6 +39,7 @@ public class GnsProtocol {
   public final static String LOOKUP_PRIMARY_GUID = "lookupPrimaryGuid";
   public final static String LOOKUP_GUID_RECORD = "lookupGuidRecord";
   public final static String LOOKUP_ACCOUNT_RECORD = "lookupAccountRecord";
+  public final static String RESET_KEY = "resetKey";
   public final static String ADD_ALIAS = "addAlias";
   public final static String REMOVE_ALIAS = "removeAlias";
   public final static String RETRIEVE_ALIASES = "retrieveAliases";
@@ -65,6 +69,7 @@ public class GnsProtocol {
   public final static String SET_FIELD_NULL = "setFieldNull";
   public final static String CLEAR = "clear";
   public final static String READ = "newRead";
+  public final static String NEWREAD = "newRead";
   public final static String READ_ARRAY = "readArray";
   public final static String READ_ARRAY_ONE = "readArrayOne";
   public final static String SELECT = "select";
@@ -83,6 +88,7 @@ public class GnsProtocol {
   public final static String ADD_TAG = "addTag";
   public final static String REMOVE_TAG = "removeTag";
   public final static String CLEAR_TAGGED = "clearTagged";
+  public final static String GET_TAGGED = "getTagged";
   public final static String CREATE_GROUP = "createGroup";
   public final static String LOOKUP_GROUP = "lookupGroup";
   public final static String ADD_TO_GROUP = "addToGroup";
@@ -103,6 +109,7 @@ public class GnsProtocol {
   public final static String DELETE_ALL_RECORDS = "deleteAllRecords";
   public final static String RESET_DATABASE = "resetDatabase";
   public final static String CLEAR_CACHE = "clearCache";
+  public final static String DUMPCACHE = "dumpCache";
   public final static String DELETE_ALL_GUID_RECORDS = "deleteAllGuidRecords";
   public final static String DUMP = "dump";
   public final static String CONNECTION_CHECK = "connectionCheck";
@@ -113,6 +120,8 @@ public class GnsProtocol {
   public final static String GET_PARAMETER = "getParameter";
   public final static String LIST_PARAMETERS = "listParameters";
   public final static String BATCH_TEST = "batchTest";
+  public final static String RTT_TEST = "rttTest";
+  public final static String LEVEL = "level";
   public final static String GUIDCNT = "guidCnt";
   //
   public final static String OK_RESPONSE = "+OK+";
@@ -130,6 +139,8 @@ public class GnsProtocol {
   public final static String BAD_USER = "+BADUSER+";
   public final static String BAD_GROUP = "+BADGROUP+";
   public final static String BAD_FIELD = "+BADFIELD+";
+  public final static String BAD_ALIAS = "+BADALIAS+";
+  public final static String BAD_ACL_TYPE = "+BADACLTYPE+";
   public final static String FIELD_NOT_FOUND = "+FIELDNOTFOUND+";
   public final static String DUPLICATE_USER = "+DUPLICATEUSER+";
   public final static String DUPLICATE_GUID = "+DUPLICATEGUID+";
@@ -139,12 +150,16 @@ public class GnsProtocol {
   public final static String JSON_PARSE_ERROR = "+JSONPARSEERROR+";
   public final static String TOO_MANY_ALIASES = "+TOMANYALIASES+";
   public final static String TOO_MANY_GUIDS = "+TOMANYGUIDS+";
+  public final static String UPDATE_ERROR = "+UPDATEERROR+";
+  public final static String UPDATE_TIMEOUT = "+UPDATETIMEOUT+";
+  public final static String SELECTERROR = "+SELECTERROR+";
   public final static String GENERIC_ERROR = "+GENERICERROR+";
   public final static String FAIL_ACTIVE_NAMESERVER = "+FAIL_ACTIVE+";
   public final static String INVALID_ACTIVE_NAMESERVER = "+INVALID_ACTIVE+";
   public final static String TIMEOUT = "+TIMEOUT+";
   public final static String ALL_FIELDS = "+ALL+";
   public final static String ALL_USERS = "+ALL+";
+  public final static String EVERYONE = "+ALL+";
   //
   public static final String RSA_ALGORITHM = "RSA";
   public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
@@ -162,6 +177,7 @@ public class GnsProtocol {
   public final static String VALUE = "value";
   public final static String OLD_VALUE = "oldvalue";
   public final static String USER_JSON = "userjson";
+  public final static String ARGUMENT = "argument";
   public final static String N = "n";
   public final static String N2 = "n2";
   public final static String MEMBER = "member";
@@ -173,6 +189,7 @@ public class GnsProtocol {
   public final static String CODE = "code";
   public final static String SIGNATURE = "signature";
   public final static String PASSKEY = "passkey";
+  public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
   // Special fields for ACL
   public final static String GUID_ACL = "+GUID_ACL+";
   public final static String GROUP_ACL = "+GROUP_ACL+";
@@ -197,16 +214,17 @@ public class GnsProtocol {
 
   // Blessed field names
   public static final String LOCATION_FIELD_NAME = "geoLocation";
+  public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   // This one is special, used for the action part of the command
   public final static String COMMANDNAME = "COMMANDNAME"; // aka "action"
 
    // Active code actions and fields
-  public final static String  ACSET                        = "acSet";
-  public final static String  ACGET                        = "acGet";
-  public final static String  ACCLEAR                      = "acClear";
-  public final static String  ACACTION                     = "acAction";
-  public final static String  ACCODE                       = "acCode";
+  public final static String  AC_SET                        = "acSet";
+  public final static String  AC_GET                        = "acGet";
+  public final static String  AC_CLEAR                      = "acClear";
+  public final static String  AC_ACTION                     = "acAction";
+  public final static String  AC_CODE                       = "acCode";
  //
   /**
    * This class defines AccessType for ACLs
@@ -265,4 +283,32 @@ public class GnsProtocol {
   public static boolean isInternalField(String key) {
     return key.startsWith(INTERNAL_PREFIX);
   }
+  
+  /**
+   * The list of command types that are updated commands.
+   */
+  public final static List<String> UPDATE_COMMANDS
+          = Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
+                  APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
+                  APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
+                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON,
+                  //
+                  //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
+                  VERIFY_ACCOUNT, SET_PASSWORD,
+                  //
+                  ACL_ADD, ACL_REMOVE,
+                  //ADDTOGROUP, REMOVEFROMGROUP,
+                  //
+                  ADD_TAG, REMOVE_TAG
+          );
+  // Currently unused
+
+  /**
+   * The list of command types that are read commands.
+   */
+  public final static List<String> READ_COMMANDS
+          = Arrays.asList(READ_ARRAY, NEWREAD, READ_ARRAY_ONE);
+  //
+  
+  public final static String NEWLINE = System.getProperty("line.separator");
 }

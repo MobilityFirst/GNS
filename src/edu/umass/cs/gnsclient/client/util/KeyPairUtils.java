@@ -38,7 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 
-import edu.umass.cs.gnsclient.client.GnsProtocol;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 
 /**

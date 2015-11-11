@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 
 /**
@@ -49,17 +49,17 @@ public class SubstituteList extends AbstractUpdateList {
 
   @Override
   public String getCommandName() {
-    return SUBSTITUTELIST;
+    return SUBSTITUTE_LIST;
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, OLDVALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, VALUE, OLD_VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Replaces oldvalue with newvalue in the key value pair for the given GUID. "
+    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
             + "Value is a list of items formated as a JSON list."
             + " Field must be writeable by the WRITER guid.";
 

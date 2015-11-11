@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -148,7 +149,7 @@ public class PerformanceTests {
 
   private static int getComparisonPingValue(String node, ClientRequestHandlerInterface handler) {
     String result = handler.getAdmintercessor().sendPingValue(null, node, handler);
-    if (result.startsWith(GnsProtocolDefs.BADRESPONSE)) {
+    if (result.startsWith(GnsProtocol.BAD_RESPONSE)) {
       return 999;
     } else {
       return Integer.parseInt(result);

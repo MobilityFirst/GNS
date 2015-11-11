@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -50,7 +50,7 @@ public class LookupGuid extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return LOOKUPGUID;
+    return LOOKUP_GUID;
   }
 
   @Override
@@ -64,7 +64,7 @@ public class LookupGuid extends GnsCommand {
       if (result != null) {
         return new CommandResponse<String>(result);
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
       }
     //}
   }
@@ -72,6 +72,6 @@ public class LookupGuid extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Returns the guid associated with for the human readable name. "
-            + "Returns " + BADACCOUNT + " if the GUID has not been registered.";
+            + "Returns " + BAD_ACCOUNT + " if the GUID has not been registered.";
   }
 }

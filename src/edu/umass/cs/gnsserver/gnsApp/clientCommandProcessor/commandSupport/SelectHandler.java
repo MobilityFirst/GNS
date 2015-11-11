@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
@@ -153,7 +154,7 @@ public class SelectHandler {
         return null;
       }
     } else {
-      return GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.SELECTERROR + " " + packet.getErrorMessage();
+      return GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.SELECTERROR + " " + packet.getErrorMessage();
     }
   }
 

@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import java.io.File;
+import edu.umass.cs.gnscommon.utils.LogFormatter;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
@@ -170,7 +170,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         // and if it is a READ command
         // FIXME: THIS ISN'T GOING TO WORK WITHOUT MORE INFO ABOUT THE REQUEST
         if (!CommandPacket.BOGUS_SERVICE_NAME.equals(serviceName)
-                && sentInfo.getCommandType().equals(GnsProtocolDefs.NEWREAD)) {
+                && sentInfo.getCommandType().equals(GnsProtocol.NEWREAD)) {
           handler.updateCacheEntry(serviceName, returnPacket.getReturnValue());
         }
         // send the response back

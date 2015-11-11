@@ -79,13 +79,13 @@ public class GNS {
      */
     NS_ADMIN_PORT(1),
     /**
-     * Port used to pings requests to a name server.
+     * Port used to send pings requests to a name server.
      */
     NS_PING_PORT(2),
     // sub ports
 
     /**
-     * Port used to requests to an active replica.
+     * Port used to send requests to an active replica.
      */
     ACTIVE_REPLICA_PORT(3),
     /**
@@ -93,11 +93,11 @@ public class GNS {
      */
     RECONFIGURATOR_PORT(4),
     /**
-     * Port used to requests to a command pre processor.
+     * Port used to send requests to a command pre processor.
      */
     CCP_PORT(5),
     /**
-     * Port used to admin requests to a command pre processor.
+     * Port used to send admin requests to a command pre processor.
      */
     CCP_ADMIN_PORT(6),
     /**

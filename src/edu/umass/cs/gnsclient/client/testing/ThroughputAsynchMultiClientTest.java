@@ -20,10 +20,10 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
-import edu.umass.cs.gnsclient.client.GnsProtocol;
-import static edu.umass.cs.gnsclient.client.GnsProtocol.GUID;
-import static edu.umass.cs.gnsclient.client.GnsProtocol.GUIDCNT;
-import static edu.umass.cs.gnsclient.client.GnsProtocol.LOOKUP_ACCOUNT_RECORD;
+import edu.umass.cs.gnscommon.GnsProtocol;
+import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
+import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
+import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_ACCOUNT_RECORD;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.Format;

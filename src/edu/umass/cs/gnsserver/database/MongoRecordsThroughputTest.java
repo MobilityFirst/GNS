@@ -25,7 +25,7 @@ import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.utils.Format;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import java.util.ArrayList;

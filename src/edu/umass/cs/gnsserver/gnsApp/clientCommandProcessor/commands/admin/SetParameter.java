@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SystemParameter;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -53,7 +53,7 @@ public class SetParameter extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return SETPARAMETER;
+    return SET_PARAMETER;
   }
 
   @Override
@@ -64,12 +64,12 @@ public class SetParameter extends GnsCommand {
     if (module.isAdminMode()) {
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldValue(value);
-        return new CommandResponse<String>(OKRESPONSE);
+        return new CommandResponse<String>(OK_RESPONSE);
       } catch (Exception e) {
         System.out.println("Problem setting parameter: " + e);
       }
     }
-    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + SETPARAMETER + " " + parameterString + " " + VALUE + " " + value);
+    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + SET_PARAMETER + " " + parameterString + " " + VALUE + " " + value);
   }
 
   @Override

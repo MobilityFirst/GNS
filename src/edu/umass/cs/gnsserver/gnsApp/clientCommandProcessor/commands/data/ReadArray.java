@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -56,7 +56,7 @@ public class ReadArray extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return READARRAY;
+    return READ_ARRAY;
   }
 
   @Override
@@ -71,14 +71,14 @@ public class ReadArray extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
 
-    if (getCommandName().equals(READARRAYONE)) {
-      if (ALLFIELDS.equals(field)) {
+    if (getCommandName().equals(READ_ARRAY_ONE)) {
+      if (ALL_FIELDS.equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, handler);
       } else {
         return FieldAccess.lookupOne(guid, field, reader, signature, message, handler);
       }
     } else {
-      if (ALLFIELDS.equals(field)) {
+      if (ALL_FIELDS.equals(field)) {
         return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
       } else {
         return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, handler);
@@ -90,6 +90,6 @@ public class ReadArray extends GnsCommand {
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS for the given guid after authenticating that READER making request has access authority."
             + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
   }
 }

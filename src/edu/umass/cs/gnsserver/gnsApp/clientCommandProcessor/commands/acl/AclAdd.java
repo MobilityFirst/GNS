@@ -25,7 +25,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
@@ -52,12 +52,12 @@ public class AclAdd extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACCESSER, WRITER, ACLTYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, ACCESSER, WRITER, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandName() {
-    return ACLADD;
+    return ACL_ADD;
   }
 
   @Override
@@ -69,12 +69,12 @@ public class AclAdd extends GnsCommand {
     String accesser = json.getString(ACCESSER);
     // allows someone other than guid to change the acl, defaults to guid
     String writer = json.optString(WRITER, guid);
-    String accessType = json.getString(ACLTYPE);
+    String accessType = json.getString(ACL_TYPE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse<String>(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     String accessorPublicKey;
     if (EVERYONE.equals(accesser)) {
@@ -82,14 +82,14 @@ public class AclAdd extends GnsCommand {
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accesser);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
     NSResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(access, guid, field, accessorPublicKey, writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse<String>(OKRESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(responseCode.getProtocolCode());
     }
@@ -99,7 +99,7 @@ public class AclAdd extends GnsCommand {
   public String getCommandDescription() {
     return "Updates the access control list of the given GUID's field to include the accesser guid. " + NEWLINE
             + "Accessor guid can be guid or group guid or " + EVERYONE + " which means anyone." + NEWLINE
-            + "Field can be also be " + ALLFIELDS + " which means all fields can be read by the accessor." + NEWLINE
+            + "Field can be also be " + ALL_FIELDS + " which means all fields can be read by the accessor." + NEWLINE
             + "See below for description of ACL type and signature.";
   }
 }

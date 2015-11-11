@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -60,7 +60,7 @@ public class SetFieldNull extends AbstractUpdate {
 
   @Override
   public String getCommandName() {
-    return SETFIELDNULL;
+    return SET_FIELD_NULL;
   }
 
   @Override

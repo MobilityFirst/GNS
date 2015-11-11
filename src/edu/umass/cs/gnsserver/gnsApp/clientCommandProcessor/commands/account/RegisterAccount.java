@@ -23,11 +23,11 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Acces
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.utils.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -58,7 +58,7 @@ public class RegisterAccount extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return REGISTERACCOUNT;
+    return REGISTER_ACCOUNT;
   }
 
   @Override
@@ -74,16 +74,16 @@ public class RegisterAccount extends GnsCommand {
 
     if (signature != null && message != null) { //FIXME: this is for temporary backward compatability... remove it. 
       if (!AccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
 //      } else {
 //        GNS.getLogger().info("########SIGNATURE VERIFIED FOR CREATE " + name);
       }
     }
     CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
             password, handler);
-    if (result.getReturnValue().equals(OKRESPONSE)) {
+    if (result.getReturnValue().equals(OK_RESPONSE)) {
       // set up the default read access
-      //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, handler);
+      //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALL_FIELDS, EVERYONE, handler);
       return new CommandResponse<String>(guid);
     } else {
       return result;

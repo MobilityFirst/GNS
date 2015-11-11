@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Acces
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -58,7 +58,7 @@ public class RemoveGuid extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return REMOVEGUID;
+    return REMOVE_GUID;
   }
 
   @Override
@@ -74,11 +74,11 @@ public class RemoveGuid extends GnsCommand {
       GuidInfo accountGuidInfo = null;
       GuidInfo guidInfoToRemove;
       if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guidToRemove);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
       }
       if (accountGuid != null) {
         if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-          return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accountGuid);
+          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
         }
       }
       if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey() 
@@ -87,12 +87,12 @@ public class RemoveGuid extends GnsCommand {
         if (accountGuid != null) {
           accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
           if (accountInfo == null) {
-            return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
+            return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
           }
         }
         return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     //}
   }
@@ -101,7 +101,7 @@ public class RemoveGuid extends GnsCommand {
   public String getCommandDescription() {
     return "Removes the GUID from the account associated with the ACCOUNT_GUID. "
             + "Must be signed by the account guid or the guid if account guid is not provided. "
-            + "Returns " + BADGUID + " if the GUID has not been registered.";
+            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
 
   }
 }

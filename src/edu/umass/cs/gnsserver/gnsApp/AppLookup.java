@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -149,7 +149,7 @@ public class AppLookup {
         // But before we continue handle the group guid indirection case, but only
         // if the name record doesn't contain the field we are looking for
         // and only for single field lookups.
-        if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null && !GnsProtocolDefs.ALLFIELDS.equals(field)
+        if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null && !GnsProtocol.ALL_FIELDS.equals(field)
                 && nameRecord != null && !nameRecord.containsKey(field) && !doNotReplyToClient) {
           if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
             // We got the values and sent them out above so we're done here.
@@ -269,7 +269,7 @@ public class AppLookup {
     // Try to look up the value in the database
     try {
       // Check for the case where we're returning all the fields the entire record.
-      if (GnsProtocolDefs.ALLFIELDS.equals(field)) {
+      if (GnsProtocol.ALL_FIELDS.equals(field)) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().fine("Field=" + field + " Format=" + dnsPacket.getReturnFormat());
         }
@@ -344,7 +344,7 @@ public class AppLookup {
               }
             }
             // or we're supposed to return all the keys so return the entire record
-          } else if (dnsPacket.getKeys() != null || GnsProtocolDefs.ALLFIELDS.equals(key)) {
+          } else if (dnsPacket.getKeys() != null || GnsProtocol.ALL_FIELDS.equals(key)) {
             // Changed for active code
             if (newResult != null) {
               dnsPacket.setRecordValue(newResult);

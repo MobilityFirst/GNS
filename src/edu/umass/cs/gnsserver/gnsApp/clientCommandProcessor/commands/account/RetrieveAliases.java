@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Acces
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -60,7 +60,7 @@ public class RetrieveAliases extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return RETRIEVEALIASES;
+    return RETRIEVE_ALIASES;
   }
 
   @Override
@@ -74,14 +74,14 @@ public class RetrieveAliases extends GnsCommand {
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
       }
       if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
         ArrayList<String> aliases = accountInfo.getAliases();
         return new CommandResponse<String>(new JSONArray(aliases).toString());
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     //}
   }
@@ -89,7 +89,7 @@ public class RetrieveAliases extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Retrieves all aliases for the account associated with the GUID. Must be signed by the guid. Returns "
-            + BADGUID + " if the GUID has not been registered.";
+            + BAD_GUID + " if the GUID has not been registered.";
 
   }
 }

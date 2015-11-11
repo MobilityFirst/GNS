@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import java.security.InvalidKeyException;
@@ -71,7 +71,7 @@ public class Read extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
 
-    if (ALLFIELDS.equals(field)) {
+    if (ALL_FIELDS.equals(field)) {
       return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
     } else if (field != null) {
       return FieldAccess.lookup(guid, field, null, reader, signature, message, handler);
@@ -84,6 +84,6 @@ public class Read extends GnsCommand {
   public String getCommandDescription() {
     return "Returns a key value pair from the GNS for the given guid after authenticating that READER making request has access authority."
             + " Field can use dot notation to access subfields."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
   }
 }

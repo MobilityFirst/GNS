@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SystemParameter;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -48,7 +48,7 @@ public class ListParameters extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return LISTPARAMETERS;
+    return LIST_PARAMETERS;
   }
 
   @Override
@@ -56,7 +56,7 @@ public class ListParameters extends GnsCommand {
     if (module.isAdminMode()) {
       return new CommandResponse<String>(SystemParameter.listParameters());
     }
-    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + LISTPARAMETERS);
+    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + LIST_PARAMETERS);
   }
 
   @Override

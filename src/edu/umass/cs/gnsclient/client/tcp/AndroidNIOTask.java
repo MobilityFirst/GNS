@@ -27,7 +27,7 @@ import org.json.JSONObject;
 import android.os.AsyncTask;
 import android.util.Log;
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.GnsProtocol;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
 import edu.umass.cs.nio.GenericMessagingTask;

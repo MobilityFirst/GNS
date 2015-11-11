@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -54,7 +54,7 @@ public class RemoveTag extends GnsCommand {
   
   @Override
   public String getCommandName() {
-    return REMOVETAG;
+    return REMOVE_TAG;
   }
   
   @Override
@@ -67,7 +67,7 @@ public class RemoveTag extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     return AccountAccess.removeTag(guidInfo, tag, guid, signature, message, handler);
   }
@@ -75,6 +75,6 @@ public class RemoveTag extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Removes a tag from the guid. Must be signed by the guid. "
-            + "Returns " + BADGUID + " if the GUID has not been registered.";
+            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
   }
 }

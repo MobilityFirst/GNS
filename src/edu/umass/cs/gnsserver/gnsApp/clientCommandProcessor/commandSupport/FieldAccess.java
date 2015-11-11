@@ -19,21 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADACCOUNT;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADGUID;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.OKRESPONSE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.TOMANYGUIDS;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.VERIFICATIONERROR;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.utils.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import java.util.ArrayList;
@@ -72,7 +68,7 @@ public class FieldAccess {
    * @return true if the field doesn't use dot notation or is the all-fields indicator
    */
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
-    return GnsProtocolDefs.ALLFIELDS.equals(field) || !isKeyDotNotation(field);
+    return GnsProtocol.ALL_FIELDS.equals(field) || !isKeyDotNotation(field);
   }
 
   /**
@@ -100,7 +96,7 @@ public class FieldAccess {
       result = handler.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
     }
     if (result.isError()) {
-      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ValuesMap valuesMap = result.getValuesMapSansInternalFields();
       try {
@@ -110,7 +106,7 @@ public class FieldAccess {
           resultString = valuesMap.toString();
         }
       } catch (JSONException e) {
-        resultString = GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.JSONPARSEERROR + " " + e;
+        resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e;
       }
     }
     DelayProfiler.updateDelay("FieldAccessreadLookup", startTime);
@@ -146,7 +142,7 @@ public class FieldAccess {
     QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, 
             ColumnFieldType.LIST_STRING);
     if (result.isError()) {
-      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ResultValue value = result.getArray(field);
       if (value != null) {
@@ -178,9 +174,9 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocol.ALL_FIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
-      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       // pull out all the key pairs ignoring "system" (ie., non-user) fields
       resultString = result.getValuesMapSansInternalFields().toString();
@@ -210,7 +206,7 @@ public class FieldAccess {
     String resultString;
     QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
-      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ResultValue value = result.getArray(field);
       if (value != null && !value.isEmpty()) {
@@ -251,9 +247,9 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocol.ALL_FIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
-      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       try {
         // pull out the first value of each key pair ignoring "system" (ie., non-user) fields
@@ -427,22 +423,22 @@ public class FieldAccess {
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accountGuid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
       if (accountInfo == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNS.MAXGUIDS) {
-        return new CommandResponse<String>(BADRESPONSE + " " + TOMANYGUIDS);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
         CommandResponse<String> groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo, 
                 name, guid, publicKey, handler);
-        if (!groupGuidCreateresult.getReturnValue().equals(OKRESPONSE)) {
+        if (!groupGuidCreateresult.getReturnValue().equals(OK_RESPONSE)) {
           return groupGuidCreateresult;
         }
       }

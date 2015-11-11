@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -55,7 +55,7 @@ public class SetPassword extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return SETPASSWORD;
+    return SET_PASSWORD;
   }
 
   @Override
@@ -67,14 +67,14 @@ public class SetPassword extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
     if (accountInfo == null) {
-      return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     }
     return AccountAccess.setPassword(accountInfo, password, guid, signature, message, handler);
   }
 
   @Override
   public String getCommandDescription() {
-    return "Sets the password. Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered.";
+    return "Sets the password. Must be signed by the guid. Returns " + BAD_GUID + " if the GUID has not been registered.";
 
   }
 }

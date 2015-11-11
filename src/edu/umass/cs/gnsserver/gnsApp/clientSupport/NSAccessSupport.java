@@ -27,14 +27,14 @@ import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.utils.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.utils.ByteUtils;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -62,8 +62,8 @@ public class NSAccessSupport {
 
   static {
     try {
-      keyFactory = KeyFactory.getInstance(RSAALGORITHM);
-      sig = Signature.getInstance(SIGNATUREALGORITHM);
+      keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
+      sig = Signature.getInstance(SIGNATURE_ALGORITHM);
     } catch (NoSuchAlgorithmException e) {
       GNS.getLogger().severe("Unable to initialize for authentication:" + e);
     }
@@ -144,7 +144,7 @@ public class NSAccessSupport {
       return true; // accessor can see this field
 //    } else if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
 //      return true; // accessor can see this field
-    } else if (checkForAccess(access, guid, ALLFIELDS, accessorGuid, activeReplica, lnsAddress)) {
+    } else if (checkForAccess(access, guid, ALL_FIELDS, accessorGuid, activeReplica, lnsAddress)) {
       return true; // accessor can see all fields
     } else {
       if (debuggingEnabled) {
@@ -202,7 +202,7 @@ public class NSAccessSupport {
       if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica, lnsAddress)) {
         if (debuggingEnabled) {
           GNS.getLogger().info("User " + accessorGuid + " allowed to access "
-                  + (field != ALLFIELDS ? ("user " + guid + "'s " + field + " field") : ("all of user " + guid + "'s fields")));
+                  + (field != ALL_FIELDS ? ("user " + guid + "'s " + field + " field") : ("all of user " + guid + "'s fields")));
         }
         return true;
       }
@@ -247,7 +247,7 @@ public class NSAccessSupport {
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
       return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica).contains(EVERYONE)
-              || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALLFIELDS, activeReplica).contains(EVERYONE);
+              || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALL_FIELDS, activeReplica).contains(EVERYONE);
     } catch (FieldNotFoundException e) {
       // This is actually a normal result.. so no warning here.
       return false;

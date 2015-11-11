@@ -32,7 +32,7 @@ import edu.umass.cs.aws.support.InstanceStateRecord;
 import edu.umass.cs.aws.support.RegionRecord;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.GEOLocator;
-import edu.umass.cs.gnsserver.utils.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;

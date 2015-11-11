@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -63,7 +63,7 @@ public abstract class AbstractUpdateList extends GnsCommand {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
     String value = json.getString(VALUE);
-    String oldValue = json.optString(OLDVALUE, null);
+    String oldValue = json.optString(OLD_VALUE, null);
     int argument = json.optInt(ARGUMENT, -1);
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
@@ -75,9 +75,9 @@ public abstract class AbstractUpdateList extends GnsCommand {
             argument,
             getUpdateOperation(),
             writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse<String>(OKRESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE);
     } else {
-      return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
 
   }

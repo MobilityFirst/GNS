@@ -19,9 +19,9 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.utils.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.utils.ByteUtils;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -45,8 +45,8 @@ public class AccessSupport {
 
   static {
     try {
-      keyFactory = KeyFactory.getInstance(RSAALGORITHM);
-      sig = Signature.getInstance(SIGNATUREALGORITHM);
+      keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
+      sig = Signature.getInstance(SIGNATURE_ALGORITHM);
     } catch (NoSuchAlgorithmException e) {
       GNS.getLogger().severe("Unable to initialize for authentication:" + e);
     }

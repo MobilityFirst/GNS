@@ -19,17 +19,18 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
 import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApp;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gnsserver.utils.CanonicalJSON;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -181,21 +182,21 @@ public class CommandHandler {
         GNS.getLogger().fine("Executing command: " + command.toString() + " with " + json);
         return command.execute(json, handler);
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + json.toString());
+        return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " - Don't understand " + json.toString());
       }
     } catch (JSONException e) {
       e.printStackTrace();
-      return new CommandResponse<String>(BADRESPONSE + " " + JSONPARSEERROR + " " + e + " while executing command.");
+      return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e + " while executing command.");
     } catch (NoSuchAlgorithmException e) {
-      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     } catch (InvalidKeySpecException e) {
-      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     } catch (SignatureException e) {
-      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     } catch (InvalidKeyException e) {
-      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     } catch (UnsupportedEncodingException e) {
-      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     }
   }
 

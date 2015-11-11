@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 
 /**
  *
@@ -43,7 +43,7 @@ public class CreateListSelf extends CreateList {
 
   @Override
   public String getCommandName() {
-    return CREATELIST;
+    return CREATE_LIST;
   }
   
   @Override

@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 
 /**
  *
@@ -49,7 +49,7 @@ public class ReplaceListSelf extends AbstractUpdateList {
 
   @Override
   public String getCommandName() {
-    return REPLACELIST;
+    return REPLACE_LIST;
   }
 
   @Override

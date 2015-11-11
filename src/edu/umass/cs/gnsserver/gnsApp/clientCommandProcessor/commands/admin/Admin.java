@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -61,12 +61,12 @@ public class Admin extends GnsCommand {
     String passkey = json.getString(PASSKEY);
     if (module.getHTTPHost().equals(passkey) || "shabiz".equals(passkey)) {
       module.setAdminMode(true);
-      return new CommandResponse<String>(OKRESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE);
     } else if ("off".equals(passkey)) {
       module.setAdminMode(false);
-      return new CommandResponse<String>(OKRESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE);
     }
-    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName() + " " + passkey);
+    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName() + " " + passkey);
   }
   
   @Override

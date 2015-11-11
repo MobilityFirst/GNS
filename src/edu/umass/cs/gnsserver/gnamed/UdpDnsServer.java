@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnamed;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
-import edu.umass.cs.gnsserver.utils.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;

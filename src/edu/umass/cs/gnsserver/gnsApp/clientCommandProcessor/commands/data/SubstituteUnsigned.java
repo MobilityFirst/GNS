@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 
 /**
@@ -54,12 +54,12 @@ public class SubstituteUnsigned extends AbstractUpdate {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, OLDVALUE};
+    return new String[]{GUID, FIELD, VALUE, OLD_VALUE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Replaces oldvalue with newvalue in the key value pair for the given GUID. See below for more on the signature."
+    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. See below for more on the signature."
             + " Field must be world writeable as this command does not specify the writer and is not signed.";
   }
 }

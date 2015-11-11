@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.group;
 
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 
 /**
@@ -43,7 +43,7 @@ public class RemoveFromGroupSelf extends RemoveFromGroup {
 
   @Override
   public String getCommandName() {
-    return REMOVEFROMGROUP;
+    return REMOVE_FROM_GROUP;
   }
 
   @Override

@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ResultValueString;
-import edu.umass.cs.gnsserver.utils.Format;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;

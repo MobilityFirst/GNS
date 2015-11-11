@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
@@ -169,7 +169,7 @@ public class NSAuthentication {
     }
     if (publicKey == null) {
       // also catch all the keys that are stored in the +ALL+ record
-      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALLFIELDS, gnsApp));
+      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALL_FIELDS, gnsApp));
       publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("================> " + access.toString() + " Lookup with +ALL+ returned: " + publicKey + " public keys=" + publicKeys);

@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Acces
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -62,7 +62,7 @@ public class AddMultipleGuids extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return ADDGUID;
+    return ADD_GUID;
   }
 
   @Override
@@ -79,17 +79,17 @@ public class AddMultipleGuids extends GnsCommand {
 
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-      return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accountGuid);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
     }
     if (AccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
       if (accountInfo == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNS.MAXGUIDS) {
-        return new CommandResponse<String>(BADRESPONSE + " " + TOMANYGUIDS);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
 
         CommandResponse<String> result
@@ -105,7 +105,7 @@ public class AddMultipleGuids extends GnsCommand {
         return result;
       }
     } else {
-      return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
     }
     //}
   }
@@ -113,7 +113,7 @@ public class AddMultipleGuids extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Adds guids to the account associated with the account guid. Must be signed by the account guid. "
-            + "Returns " + BADGUID + " if the account guid has not been registered.";
+            + "Returns " + BAD_GUID + " if the account guid has not been registered.";
 
   }
 }

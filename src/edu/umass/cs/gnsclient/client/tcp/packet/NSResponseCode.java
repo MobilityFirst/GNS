@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.client.tcp.packet;
 
 
-import edu.umass.cs.gnsclient.client.GnsProtocol;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import java.io.Serializable;
 
 /**

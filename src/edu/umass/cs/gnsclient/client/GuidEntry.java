@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -32,7 +33,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-import edu.umass.cs.gnsclient.client.util.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.exceptions.EncryptionException;
 
 /**

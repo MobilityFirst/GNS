@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.GnsProtocol;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 

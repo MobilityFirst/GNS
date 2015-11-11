@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 
 /**
  *
@@ -49,12 +49,12 @@ public class ReplaceUserJSON extends AbstractUpdate {
 
   @Override
   public String getCommandName() {
-    return REPLACEUSERJSON;
+    return REPLACE_USER_JSON;
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, USERJSON, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, USER_JSON, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override

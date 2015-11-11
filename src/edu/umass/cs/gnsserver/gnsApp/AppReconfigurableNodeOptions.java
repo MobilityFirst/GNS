@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp;
 
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
+import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.Logging;

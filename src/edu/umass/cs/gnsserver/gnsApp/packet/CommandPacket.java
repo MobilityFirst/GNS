@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
@@ -183,11 +183,11 @@ public class CommandPacket extends BasicPacket implements ReplicableRequest {
   public String getServiceName() {
     try {
       if (command != null) {
-        if (command.has(GnsProtocolDefs.GUID)) {
-          return command.getString(GnsProtocolDefs.GUID);
+        if (command.has(GnsProtocol.GUID)) {
+          return command.getString(GnsProtocol.GUID);
         }
-        if (command.has(GnsProtocolDefs.NAME)) {
-          return command.getString(GnsProtocolDefs.NAME);
+        if (command.has(GnsProtocol.NAME)) {
+          return command.getString(GnsProtocol.NAME);
         }
       }
     } catch (JSONException e) {
@@ -204,8 +204,8 @@ public class CommandPacket extends BasicPacket implements ReplicableRequest {
   public String getCommandName() {
     try {
       if (command != null) {
-        if (command.has(GnsProtocolDefs.COMMANDNAME)) {
-          return command.getString(GnsProtocolDefs.COMMANDNAME);
+        if (command.has(GnsProtocol.COMMANDNAME)) {
+          return command.getString(GnsProtocol.COMMANDNAME);
         }
       }
     } catch (JSONException e) {
@@ -221,7 +221,7 @@ public class CommandPacket extends BasicPacket implements ReplicableRequest {
     } else {
       // Cache it.
       needsCoordinationExplicitlySet = true;
-      needsCoordination = GnsProtocolDefs.UPDATE_COMMANDS.contains(getCommandName());
+      needsCoordination = GnsProtocol.UPDATE_COMMANDS.contains(getCommandName());
       return needsCoordination;
     }
   }

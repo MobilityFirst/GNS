@@ -25,7 +25,7 @@ import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
-import edu.umass.cs.gnsserver.utils.Format;
+import edu.umass.cs.gnscommon.utils.Format;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;

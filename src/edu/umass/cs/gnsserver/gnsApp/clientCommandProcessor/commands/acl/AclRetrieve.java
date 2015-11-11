@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.acl;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldMetaData;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
@@ -51,12 +51,12 @@ public class AclRetrieve extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACLTYPE, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, ACL_TYPE, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandName() {
-    return ACLRETRIEVE;
+    return ACL_RETRIEVE;
   }
 
   @Override
@@ -64,14 +64,14 @@ public class AclRetrieve extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
-    String accessType = json.getString(ACLTYPE);
+    String accessType = json.getString(ACL_TYPE);
     // allows someone other than guid to change the acl, defaults to guid
     String reader = json.optString(READER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse<String>(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     JSONArray guids = ClientUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(access,
             guid, field, reader, signature, message, handler)));

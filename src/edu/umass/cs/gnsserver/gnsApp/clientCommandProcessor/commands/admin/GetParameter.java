@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SystemParameter;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -53,7 +53,7 @@ public class GetParameter extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return GETPARAMETER;
+    return GET_PARAMETER;
   }
 
   @Override
@@ -67,13 +67,13 @@ public class GetParameter extends GnsCommand {
         System.out.println("Problem getting parameter: " + e);
       }
     }
-    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + GETPARAMETER + " " + parameterString);
+    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + GET_PARAMETER + " " + parameterString);
   }
 
   @Override
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
             + " Values are always returned as a JSON list."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields as a JSON object.";
+            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
   }
 }

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.acl;
 
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 
 /**
@@ -38,12 +38,12 @@ public class AclRetrieveSelf extends AclRetrieve {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACLTYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandName() {
-    return ACLRETRIEVE;
+    return ACL_RETRIEVE;
   }
 
   @Override

@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
+import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.CCPListenerAdmin;
 import edu.umass.cs.gnsserver.main.GNS;
@@ -35,7 +37,6 @@ import java.text.ParseException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
 import edu.umass.cs.gnsserver.utils.Util;
@@ -185,7 +186,7 @@ public class Admintercessor {
       JSONObject json = adminResult.get(id);
       if (json != null) {
         if (json.optString("ERROR", null) != null) {
-          return BADRESPONSE + " " + json.getString("ERROR");
+          return BAD_RESPONSE + " " + json.getString("ERROR");
         }
         return json.getString("PINGTABLE");
       } else {
@@ -228,7 +229,7 @@ public class Admintercessor {
       JSONObject json = adminResult.get(id);
       if (json != null) {
         if (json.optString("ERROR", null) != null) {
-          return BADRESPONSE + " " + json.getString("ERROR");
+          return BAD_RESPONSE + " " + json.getString("ERROR");
         }
         return json.getString("PINGVALUE");
       } else {
@@ -312,7 +313,7 @@ public class Admintercessor {
   public CommandResponse<String> sendDump(ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
-      return new CommandResponse<String>(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
+      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
     Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
@@ -320,7 +321,7 @@ public class Admintercessor {
     if (result != null) {
       return new CommandResponse<String>(formatDumpRecords(result, handler));
     } else {
-      return new CommandResponse<String>(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.QUERYPROCESSINGERROR + " " + "No response to dump command!");
+      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.QUERY_PROCESSING_ERROR + " " + "No response to dump command!");
     }
   }
 

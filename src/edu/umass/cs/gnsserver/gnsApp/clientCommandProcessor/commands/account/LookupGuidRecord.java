@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -51,7 +51,7 @@ public class LookupGuidRecord extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return LOOKUPGUIDRECORD;
+    return LOOKUP_GUID_RECORD;
   }
 
   @Override
@@ -62,16 +62,16 @@ public class LookupGuidRecord extends GnsCommand {
       String guid = json.getString(GUID);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
       }
       if (guidInfo != null) {
         try {
           return new CommandResponse<String>(guidInfo.toJSONObject().toString());
         } catch (JSONException e) {
-          return new CommandResponse<String>(BADRESPONSE + " " + JSONPARSEERROR);
+          return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
         }
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
       }
    // }
   }
@@ -79,7 +79,7 @@ public class LookupGuidRecord extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Returns human readable name and public key associated with the given GUID. "
-            + "Returns " + BADGUID + " if the GUID has not been registered.";
+            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
 
   }
 }

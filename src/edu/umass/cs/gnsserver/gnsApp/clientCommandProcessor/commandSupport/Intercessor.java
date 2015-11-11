@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.IntercessorInterface;
@@ -318,7 +319,7 @@ public class Intercessor implements IntercessorInterface {
    * @return a {@link QueryResult}
    */
   public QueryResult<String> sendFullQueryBypassingAuthentication(String name, String field) {
-    return sendSingleFieldQuery(name, GnsProtocolDefs.ALLFIELDS, null, null, null, ColumnFieldType.USER_JSON);
+    return sendSingleFieldQuery(name, GnsProtocol.ALL_FIELDS, null, null, null, ColumnFieldType.USER_JSON);
   }
 
   /**

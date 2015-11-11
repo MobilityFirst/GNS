@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -49,7 +49,7 @@ public class LookupPrimaryGuid extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return LOOKUPPRIMARYGUID;
+    return LOOKUP_PRIMARY_GUID;
   }
 
   @Override
@@ -62,7 +62,7 @@ public class LookupPrimaryGuid extends GnsCommand {
       if (result != null) {
         return new CommandResponse<String>(result);
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID);
       }
     //}
   }
@@ -70,6 +70,6 @@ public class LookupPrimaryGuid extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Returns the account guid associated the guid. "
-            + "Returns " + BADGUID + " if the GUID does not exist.";
+            + "Returns " + BAD_GUID + " if the GUID does not exist.";
   }
 }

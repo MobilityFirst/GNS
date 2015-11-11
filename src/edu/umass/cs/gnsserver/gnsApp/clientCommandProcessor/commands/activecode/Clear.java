@@ -19,25 +19,16 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.activecode;
 
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.ACACTION;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.ACCLEAR;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.GUID;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.OKRESPONSE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.SIGNATURE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.WRITER;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -59,12 +50,12 @@ public class Clear extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, WRITER, ACACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, WRITER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandName() {
-    return ACCLEAR;
+    return AC_CLEAR;
   }
 
   @Override
@@ -74,16 +65,16 @@ public class Clear extends GnsCommand {
           SignatureException {
     String accountGuid = json.getString(GUID);
     String writer = json.getString(WRITER);
-    String action = json.getString(ACACTION);
+    String action = json.getString(AC_ACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
 
     NSResponseCode response = ActiveCode.clearCode(accountGuid, action, writer, signature, message, handler);
 
     if (response.isAnError()) {
-      return new CommandResponse<>(BADRESPONSE + " " + response.getProtocolCode());
+      return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
-      return new CommandResponse<>(OKRESPONSE);
+      return new CommandResponse<>(OK_RESPONSE);
     }
   }
 

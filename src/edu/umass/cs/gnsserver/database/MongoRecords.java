@@ -35,7 +35,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
@@ -104,12 +104,12 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     // add location as another index
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.LOCATION_FIELD_NAME, "2d"));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocol.LOCATION_FIELD_NAME, "2d"));
     // The good thing is that indexes are not required for 2dsphere fields, but they will make things faster
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocol.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.IPADDRESS_FIELD_NAME, 1));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocol.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
       dbName = DBROOTNAME + "-" + nodeID.toString().replace('.', '-');

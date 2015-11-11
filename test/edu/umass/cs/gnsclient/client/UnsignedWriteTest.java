@@ -21,8 +21,8 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.GnsProtocol;
-import edu.umass.cs.gnsclient.client.GnsProtocol.AccessType;
+import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnsclient.client.util.Utils;

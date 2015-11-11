@@ -27,8 +27,8 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.COMMANDNAME;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.NEWLINE;
+import static edu.umass.cs.gnscommon.GnsProtocol.COMMANDNAME;
+import static edu.umass.cs.gnscommon.GnsProtocol.NEWLINE;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

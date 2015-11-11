@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 
 /**
  *
@@ -38,7 +38,7 @@ public class ReadArrayOne extends ReadArray {
 
   @Override
   public String getCommandName() {
-    return READARRAYONE;
+    return READ_ARRAY_ONE;
   }
 
   @Override
@@ -50,6 +50,6 @@ public class ReadArrayOne extends ReadArray {
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS for the given guid after authenticating that the READER has access authority. "
             + "Treats the value of key value pair as a singleton item and returns that item."
-            + " Specify " + ALLFIELDS + " as the <field> to return all fields. ";
+            + " Specify " + ALL_FIELDS + " as the <field> to return all fields. ";
   }
 }

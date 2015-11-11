@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
+import edu.umass.cs.gnscommon.utils.Format;
 import com.sun.mail.smtp.SMTPTransport;
 import com.sun.mail.util.MailSSLSocketFactory;
 import edu.umass.cs.gnsserver.main.GNS;

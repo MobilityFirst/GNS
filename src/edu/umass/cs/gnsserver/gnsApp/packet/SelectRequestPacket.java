@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
-import edu.umass.cs.gnsserver.utils.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;

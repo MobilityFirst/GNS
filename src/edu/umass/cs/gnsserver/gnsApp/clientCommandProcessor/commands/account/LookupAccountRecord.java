@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -51,7 +51,7 @@ public class LookupAccountRecord extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return LOOKUPACCOUNTRECORD;
+    return LOOKUP_ACCOUNT_RECORD;
   }
 
   @Override
@@ -62,16 +62,16 @@ public class LookupAccountRecord extends GnsCommand {
       String guid = json.getString(GUID);
       AccountInfo acccountInfo;
       if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
-        return new CommandResponse<>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
       }
       if (acccountInfo != null) {
         try {
           return new CommandResponse<>(acccountInfo.toJSONObject().toString());
         } catch (JSONException e) {
-          return new CommandResponse<>(BADRESPONSE + " " + JSONPARSEERROR);
+          return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
         }
       } else {
-        return new CommandResponse<>(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
       }
    // }
   }
@@ -79,7 +79,7 @@ public class LookupAccountRecord extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Returns the account info associated with the given GUID. "
-            + "Returns " + BADGUID + " if the GUID has not been registered.";
+            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
 
   }
 }

@@ -19,7 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.util.Base64;
+import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.exceptions.EncryptionException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;

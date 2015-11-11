@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -367,8 +368,8 @@ public class UniversalTcpClient extends BasicUniversalTcpClient implements GNSCl
   }
 
   public void activeCodeClear(String guid, String action, GuidEntry writerGuid) throws GnsException, IOException {
-    JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), GnsProtocol.ACCLEAR,
-            GnsProtocol.GUID, guid, GnsProtocol.ACACTION, action,
+    JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), GnsProtocol.AC_CLEAR,
+            GnsProtocol.GUID, guid, GnsProtocol.AC_ACTION, action,
             GnsProtocol.WRITER, writerGuid.getGuid());
     String response = sendCommand(command);
 
@@ -376,17 +377,17 @@ public class UniversalTcpClient extends BasicUniversalTcpClient implements GNSCl
   }
 
   public void activeCodeSet(String guid, String action, String code64, GuidEntry writerGuid) throws GnsException, IOException {
-    JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), GnsProtocol.ACSET,
-            GnsProtocol.GUID, guid, GnsProtocol.ACACTION, action,
-            GnsProtocol.ACCODE, code64, GnsProtocol.WRITER, writerGuid.getGuid());
+    JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), GnsProtocol.AC_SET,
+            GnsProtocol.GUID, guid, GnsProtocol.AC_ACTION, action,
+            GnsProtocol.AC_CODE, code64, GnsProtocol.WRITER, writerGuid.getGuid());
     String response = sendCommand(command);
 
     checkResponse(command, response);
   }
 
   public String activeCodeGet(String guid, String action, GuidEntry readerGuid) throws Exception {
-    JSONObject command = createAndSignCommand(readerGuid.getPrivateKey(), GnsProtocol.ACGET, 
-            GnsProtocol.GUID, guid, GnsProtocol.ACACTION, action,
+    JSONObject command = createAndSignCommand(readerGuid.getPrivateKey(), GnsProtocol.AC_GET, 
+            GnsProtocol.GUID, guid, GnsProtocol.AC_ACTION, action,
             GnsProtocol.READER, readerGuid.getGuid());
     String response = sendCommand(command);
 

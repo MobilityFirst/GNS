@@ -21,8 +21,7 @@ package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
-import edu.umass.cs.gnsclient.client.GnsProtocol;
-import static edu.umass.cs.gnsclient.client.GnsProtocol.SELECT_GROUP;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,13 +41,11 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
-import edu.umass.cs.gnsclient.client.util.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;

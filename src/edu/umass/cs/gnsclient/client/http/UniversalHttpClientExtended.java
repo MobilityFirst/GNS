@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.http;
 
-import edu.umass.cs.gnsclient.client.GnsProtocol;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import java.io.IOException;
 import org.json.JSONArray;

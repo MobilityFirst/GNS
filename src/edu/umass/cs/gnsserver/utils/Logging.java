@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
+import edu.umass.cs.gnscommon.utils.LogFormatter;
 import java.io.File;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;

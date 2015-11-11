@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.group;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -55,7 +55,7 @@ public class AddMembersToGroup extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return ADDTOGROUP;
+    return ADD_TO_GROUP;
   }
 
   @Override
@@ -70,9 +70,9 @@ public class AddMembersToGroup extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     NSResponseCode responseCode;
     if (!(responseCode = GroupAccess.addToGroup(guid, new ResultValue(members), writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse<String>(OKRESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE);
     } else {
-      return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
   }
 

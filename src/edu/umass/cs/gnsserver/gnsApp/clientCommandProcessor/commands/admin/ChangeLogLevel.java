@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -53,7 +53,7 @@ public class ChangeLogLevel extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return CHANGELOGLEVEL;
+    return CHANGE_LOG_LEVEL;
   }
 
   @Override
@@ -65,15 +65,15 @@ public class ChangeLogLevel extends GnsCommand {
       try {
         Level level = Level.parse(levelString);
         if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
-          return new CommandResponse<String>(OKRESPONSE);
+          return new CommandResponse<String>(OK_RESPONSE);
         } else {
-          return new CommandResponse<String>(BADRESPONSE);
+          return new CommandResponse<String>(BAD_RESPONSE);
         }
       } catch (IllegalArgumentException e) {
-        return new CommandResponse<String>(BADRESPONSE + " " + GENERICERROR + " Bad level " + levelString);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " Bad level " + levelString);
       }
     }
-    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
   }
 
   @Override

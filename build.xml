@@ -22,6 +22,9 @@
   <property file="build.properties" />
   
   <path id="classpath.base">
+    <pathelement location="${build.dir}"/>
+    <pathelement location="${build.classes.dor}"/>
+    <pathelement location="${conf.dir}"/>
     <fileset dir="${lib.dir}">
       <include name="*.jar"/>
     </fileset>
@@ -113,7 +116,8 @@
   </target>
   
   <fileset id="client.includes" dir="${build.classes.dir}"
-           includes="edu/umass/cs/gnsclient/**/*.class, 
+           includes="edu/umass/cs/gnsclient/**/*.class,
+                     edu/umass/cs/gnscommon/**/*.class, 
                          edu/umass/cs/nio/**/*.class, 
                          edu/umass/cs/utils/*.class,
                          edu/umass/cs/reconfiguration/**/*.class, 
@@ -183,9 +187,12 @@
 
   <target name="doc" description="generate javadoc">
     <mkdir dir="${build.dir}/doc"/>
-    <javadoc packagenames="edu.umass.cs.gns.*" sourcepath="${src.dir}" destdir="${build.dir}/doc">
+    <javadoc packagenames="edu.umass.cs.*" 
+             sourcepath="${src.dir}" 
+             destdir="${build.dir}/doc"
+             additionalparam="-Xdoclint:none">
       <classpath refid="classpath.base"/>
-      <link href="http://java.sun.com/javase/6/docs/api/"/>
+      <!--      <link href="http://java.sun.com/javase/6/docs/api/"/>-->
     </javadoc>
     <mkdir dir="${dist.dir}/doc"/>
     <copy todir="${dist.dir}/doc">
@@ -205,9 +212,9 @@
     <copy file="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNSClient.jar" />
     <copy file="${dist.dir}/jars/gns-cli-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNS-CLI.jar" />
     <!--    make a symlink of the latest server and put it in GNS.jar-->
-<!--    <symlink link="${dist.dir}/jars/GNS.jar" resource="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar"/>-->
+    <!--    <symlink link="${dist.dir}/jars/GNS.jar" resource="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar"/>-->
     <!--    make a symlink of the latest server and put it in GNSClient.jar-->
-<!--    <symlink link="${dist.dir}/jars/GNSClient.jar" resource="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar"/>-->
+    <!--    <symlink link="${dist.dir}/jars/GNSClient.jar" resource="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar"/>-->
     <!-- copy jars into top level jars directory -->
     <mkdir dir="${jars.dir}"/>
     <copy todir="${jars.dir}">
@@ -219,9 +226,9 @@
     <copy file="${jars.dir}/gnsclient-${VERSION}-${RELEASE}.jar" tofile="${jars.dir}/GNSClient.jar" />
     <copy file="${jars.dir}/gns-cli-${VERSION}-${RELEASE}.jar" tofile="${jars.dir}/GNS-CLI.jar" />
     <!--    make a symlink of the latest server and put it in GNS.jar-->
-<!--    <symlink link="${jars.dir}/GNS.jar" resource="${jars.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>-->
+    <!--    <symlink link="${jars.dir}/GNS.jar" resource="${jars.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>-->
     <!--    make a symlink of the latest server and put it in GNSClient.jar-->
-<!--    <symlink link="${jars.dir}/GNSClient.jar" resource="${jars.dir}/gnsclient-${VERSION}-${RELEASE}.jar"/>-->
+    <!--    <symlink link="${jars.dir}/GNSClient.jar" resource="${jars.dir}/gnsclient-${VERSION}-${RELEASE}.jar"/>-->
      
     <!-- copy all of conf into dist/conf -->
     <mkdir dir="${dist.dir}/conf"/>
@@ -234,7 +241,7 @@
       <fileset dir="${scripts.dir}" 
                excludes="paxos_logs, reconfiguration_DB, log, derby.log"/>  
     </copy>
-<!--    make scripts executable-->
+    <!--    make scripts executable-->
     <chmod perm="ug+x">
       <fileset dir="${dist.dir}/scripts">
         <exclude name="*.properties"/>

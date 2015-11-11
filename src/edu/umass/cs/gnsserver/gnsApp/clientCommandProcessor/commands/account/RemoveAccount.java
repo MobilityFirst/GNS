@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Acces
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -58,7 +58,7 @@ public class RemoveAccount extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return REMOVEACCOUNT;
+    return REMOVE_ACCOUNT;
   }
 
   @Override
@@ -73,17 +73,17 @@ public class RemoveAccount extends GnsCommand {
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
       }
       if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler);
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
         } else {
-          return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT);
+          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
         }
       } else {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     //}
   }

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -151,7 +152,7 @@ public class ActiveCode {
       }
     } catch (JSONException e) {
     }
-    return GnsProtocolDefs.NULLRESPONSE;
+    return GnsProtocol.NULL_RESPONSE;
 //    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
 //    if (!result.isError()) {
 //      return new ResultValue(result.getArray(field));

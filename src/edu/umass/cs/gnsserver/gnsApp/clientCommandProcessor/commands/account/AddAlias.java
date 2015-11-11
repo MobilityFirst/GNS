@@ -19,10 +19,11 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
 
+import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -57,7 +58,7 @@ public class AddAlias extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return ADDALIAS;
+    return ADD_ALIAS;
   }
 
   @Override
@@ -72,38 +73,38 @@ public class AddAlias extends GnsCommand {
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
         if (accountInfo == null) {
-          return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
         }
         if (!accountInfo.isVerified()) {
-          return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+          return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
         } else if (accountInfo.getAliases().size() > GNS.MAXALIASES) {
-          return new CommandResponse<String>(BADRESPONSE + " " + TOMANYALIASES);
+          return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_ALIASES);
         } else {
           return AccountAccess.addAlias(accountInfo, name, guid, signature, message, handler);
         }
     
 //      GuidInfo guidInfo;
 //      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
+//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
 //      }
 //      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
 //        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
 //        if (accountInfo == null) {
-//          return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+//          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
 //        }
 //        if (!accountInfo.isVerified()) {
-//          return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+//          return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
 //        } else if (accountInfo.getAliases().size() > GnsProtocolDefs.MAXALIASES) {
-//          return new CommandResponse<String>(BADRESPONSE + " " + TOMANYALIASES);
+//          return new CommandResponse<String>(BAD_RESPONSE + " " + TOMANYALIASES);
 //        } else {
 //          return AccountAccess.addAlias(accountInfo, name);
 //        }
 //      } else {
-//        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
+//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
 //      }
    // }
   }
@@ -111,7 +112,7 @@ public class AddAlias extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Adds a additional human readble name to the account associated with the GUID. "
-            + "Must be signed by the guid. Returns " + BADGUID + " if the GUID has not been registered.";
+            + "Must be signed by the guid. Returns " + BAD_GUID + " if the GUID has not been registered.";
 
   }
 }

@@ -30,15 +30,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.ACACTION;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.ACCODE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.ACSET;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.GUID;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.OKRESPONSE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.SIGNATURE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.WRITER;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -61,12 +53,12 @@ public class Set extends GnsCommand {
   @Override
   public String[] getCommandParameters() {
     // TODO Auto-generated method stub
-    return new String[]{GUID, WRITER, ACACTION, ACCODE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, WRITER, AC_ACTION, AC_CODE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandName() {
-    return ACSET;
+    return AC_SET;
   }
 
   @Override
@@ -76,17 +68,17 @@ public class Set extends GnsCommand {
           SignatureException {
     String accountGuid = json.getString(GUID);
     String writer = json.getString(WRITER);
-    String action = json.getString(ACACTION);
-    String code = json.getString(ACCODE);
+    String action = json.getString(AC_ACTION);
+    String code = json.getString(AC_CODE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
 
     NSResponseCode response = ActiveCode.setCode(accountGuid, action, code, writer, signature, message, handler);
 
     if (response.isAnError()) {
-      return new CommandResponse<>(BADRESPONSE + " " + response.getProtocolCode());
+      return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
-      return new CommandResponse<>(OKRESPONSE);
+      return new CommandResponse<>(OK_RESPONSE);
     }
   }
 
