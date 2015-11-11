@@ -23,8 +23,8 @@ import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.ThreadUtils;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.util.Random;
@@ -150,7 +150,7 @@ public class ReplicaLatencyTest {
    */
   public void createSubGuid() {
     try {
-      subGuidEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, guidHRN + Utils.randomString(6));
+      subGuidEntry = GuidUtils.lookupOrCreateGuid(client, masterGuid, guidHRN + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);

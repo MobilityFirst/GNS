@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.nodeconfig;
 
-import edu.umass.cs.gnsserver.utils.NetworkUtils;
+import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import java.net.UnknownHostException;
 
 /**

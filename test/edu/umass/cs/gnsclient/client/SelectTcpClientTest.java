@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import java.net.InetSocketAddress;
@@ -66,7 +66,7 @@ public class SelectTcpClientTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
        JSONArray array = new JSONArray(Arrays.asList(25));
        client.fieldReplaceOrCreateList(testEntry, fieldName, array);
       }

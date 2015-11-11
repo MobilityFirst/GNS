@@ -19,9 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.BasicGuidEntry;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -29,8 +26,8 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.ThreadUtils;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnsclient.exceptions.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
@@ -85,7 +82,7 @@ public class UniversalTcpClientWithSSLTest {
 
   @Test
   public void test_01_CreateEntity() {
-    String alias = "testGUID" + Utils.randomString(6);
+    String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
       guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);
@@ -98,7 +95,7 @@ public class UniversalTcpClientWithSSLTest {
 
   @Test
   public void test_02_RemoveGuid() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
@@ -139,7 +136,7 @@ public class UniversalTcpClientWithSSLTest {
 
   @Test
   public void test_03_RemoveGuidSansAccountInfo() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
@@ -163,7 +160,7 @@ public class UniversalTcpClientWithSSLTest {
 
   @Test
   public void test_04_LookupPrimaryGuid() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
@@ -180,7 +177,7 @@ public class UniversalTcpClientWithSSLTest {
   @Test
   public void test_05_CreateSubGuid() {
     try {
-      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + Utils.randomString(6));
+      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -230,8 +227,8 @@ public class UniversalTcpClientWithSSLTest {
   @Test
   public void test_10_CreateFields() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -294,7 +291,7 @@ public class UniversalTcpClientWithSSLTest {
   @Test
   public void test_12_ACLPartTwo() {
     try {
-      String barneyName = "barney" + Utils.randomString(6);
+      String barneyName = "barney" + RandomString.randomString(6);
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
@@ -354,7 +351,7 @@ public class UniversalTcpClientWithSSLTest {
   @Test
   public void test_13_ACLALLFields() {
     //testACL();
-    String superUserName = "superuser" + Utils.randomString(6);
+    String superUserName = "superuser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(superUserName);
@@ -493,7 +490,7 @@ public class UniversalTcpClientWithSSLTest {
 
   @Test
   public void test_16_Substitute() {
-    String testSubstituteGuid = "testSubstituteGUID" + Utils.randomString(6);
+    String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -535,7 +532,7 @@ public class UniversalTcpClientWithSSLTest {
 
   @Test
   public void test_17_SubstituteList() {
-    String testSubstituteListGuid = "testSubstituteListGUID" + Utils.randomString(6);
+    String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -580,14 +577,14 @@ public class UniversalTcpClientWithSSLTest {
 
   @Test
   public void test_18_Group() {
-    String mygroupName = "mygroup" + Utils.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
       } catch (GnsException e) {
       }
-      guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + Utils.randomString(6));
+      guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
 
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
@@ -636,7 +633,7 @@ public class UniversalTcpClientWithSSLTest {
   @Test
   public void test_19_GroupAndACL() {
     //testGroup();
-    String groupAccessUserName = "groupAccessUser" + Utils.randomString(6);
+    String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(groupAccessUserName);
@@ -703,7 +700,7 @@ public class UniversalTcpClientWithSSLTest {
     }
   }
 
-  private static final String alias = "ALIAS-" + Utils.randomString(4) + "@blah.org";
+  private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
   @Test
   public void test_20_AliasAdd() {
@@ -778,7 +775,7 @@ public class UniversalTcpClientWithSSLTest {
   public void test_32_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "geoTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "geoTest-" + RandomString.randomString(6));
         client.setLocation(testEntry, 0.0, 0.0);
       }
     } catch (Exception e) {
@@ -821,7 +818,7 @@ public class UniversalTcpClientWithSSLTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
@@ -982,7 +979,7 @@ public class UniversalTcpClientWithSSLTest {
   @Test
   public void test_48_ListOrderAndSetElement() {
 //    try {
-//      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+//      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
 //    } catch (Exception e) {
 //      fail("Exception during creation of westyEntry: " + e);
 //    }
@@ -1039,12 +1036,12 @@ public class UniversalTcpClientWithSSLTest {
   public void test_51_QuerySetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(10));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
@@ -1055,7 +1052,7 @@ public class UniversalTcpClientWithSSLTest {
       // the HRN is a hash of the query
       String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne.getBytes()), false);
       groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, client.getGnsRemoteHost(), client.getGnsRemotePort());
-      //groupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupGuidName + Utils.randomString(6));
+      //groupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);
@@ -1064,7 +1061,7 @@ public class UniversalTcpClientWithSSLTest {
       // the HRN is a hash of the query
       String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo.getBytes()), false);
       groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, client.getGnsRemoteHost(), client.getGnsRemotePort());
-      //groupTwoGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupTwoGuidName + Utils.randomString(6));
+      //groupTwoGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupTwoGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);
@@ -1223,7 +1220,7 @@ public class UniversalTcpClientWithSSLTest {
   public void test_70_SetFieldNull() {
     String field = "fieldToSetToNull";
 //    try {
-//      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+//      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
 //      System.out.println("Created: " + westyEntry);
 //    } catch (Exception e) {
 //      fail("Exception when we were not expecting it: " + e);
@@ -1257,7 +1254,7 @@ public class UniversalTcpClientWithSSLTest {
   @Test
   public void test_71_JSONUpdate() {
     try {
-      updateEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+      updateEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + updateEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -1526,7 +1523,7 @@ public class UniversalTcpClientWithSSLTest {
   public void test_75_IndirectionSetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
         indirectionGroupMembers.put(testEntry.getGuid());
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry, indirectionGroupTestFieldName, array);
@@ -1535,7 +1532,7 @@ public class UniversalTcpClientWithSSLTest {
       fail("Exception while trying to create the guids: " + e);
     }
     try {
-      indirectionGroupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTestGroup-" + Utils.randomString(6));
+      indirectionGroupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTestGroup-" + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);

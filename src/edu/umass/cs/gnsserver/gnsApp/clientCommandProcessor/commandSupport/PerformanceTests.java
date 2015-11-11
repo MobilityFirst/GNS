@@ -25,7 +25,7 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.Stats;
-import edu.umass.cs.gnsserver.utils.Util;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -107,7 +107,7 @@ public class PerformanceTests {
     ArrayList<String> result = new ArrayList<String>();
 
     for (int i = 0; i < count; i++) {
-      String name = "RTT-" + Util.randomString(6);
+      String name = "RTT-" + RandomString.randomString(6);
       String publicKey = name + "-KEY";
       String guid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
       AccountAccess.addGuid(info, accountGuidInfo, name, guid, publicKey, handler);
@@ -122,8 +122,8 @@ public class PerformanceTests {
       // Create n random fields with random values first. Do all of them before we do the reads
       // so the GNS has time to "settle".
       for (int i = 0; i < numFields; i++) {
-        String field = "RTT-" + Util.randomString(7);
-        if (!FieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))),
+        String field = "RTT-" + RandomString.randomString(7);
+        if (!FieldAccess.create(guid, field, new ResultValue(Arrays.asList(RandomString.randomString(7))),
                 // ignore signature for now
                 null, null, null, handler).isAnError()) {
           fields.add(field);

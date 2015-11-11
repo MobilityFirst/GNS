@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.net.InetSocketAddress;
 import org.json.JSONObject;
@@ -71,7 +71,7 @@ public class BasicUniversalTcpClientTest {
   @Test
   public void test_1_JSONUpdate() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -330,7 +330,7 @@ public class BasicUniversalTcpClientTest {
     }
     
     try {
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + Utils.randomString(6));
+      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
       fail("Exception while creating Sam: " + e);

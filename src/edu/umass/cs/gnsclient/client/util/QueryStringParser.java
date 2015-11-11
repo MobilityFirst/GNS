@@ -40,6 +40,7 @@ package edu.umass.cs.gnsclient.client.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
 
 
 /**

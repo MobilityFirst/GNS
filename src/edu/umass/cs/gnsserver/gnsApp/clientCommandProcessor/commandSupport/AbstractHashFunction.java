@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnsserver.utils.ByteUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 /**
  *

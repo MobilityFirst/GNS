@@ -28,7 +28,7 @@ import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.utils.ByteUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;

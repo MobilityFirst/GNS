@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.awt.HeadlessException;
 import java.net.InetSocketAddress;
 import org.apache.commons.cli.CommandLine;
@@ -81,7 +81,7 @@ public class CreateGuidTest {
   }
 
   public void CreateEntity() {
-    String alias = "testGUID" + Utils.randomString(6);
+    String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
       guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);

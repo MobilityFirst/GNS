@@ -24,7 +24,7 @@ import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnsclient.exceptions.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
@@ -79,7 +79,7 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_01_CreateEntity() {
-    String alias = "testGUID" + Utils.randomString(6);
+    String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
       guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);
@@ -92,7 +92,7 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_02_RemoveGuid() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
@@ -116,7 +116,7 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_03_RemoveGuidSansAccountInfo() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
@@ -140,7 +140,7 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_04_LookupPrimaryGuid() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
@@ -157,7 +157,7 @@ public class UniversalCoreWithSSLTest {
   @Test
   public void test_05_CreateSubGuid() {
     try {
-      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + Utils.randomString(6));
+      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -207,8 +207,8 @@ public class UniversalCoreWithSSLTest {
   @Test
   public void test_10_CreateFields() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -271,7 +271,7 @@ public class UniversalCoreWithSSLTest {
   @Test
   public void test_12_ACLPartTwo() {
     try {
-      String barneyName = "barney" + Utils.randomString(6);
+      String barneyName = "barney" + RandomString.randomString(6);
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
@@ -331,7 +331,7 @@ public class UniversalCoreWithSSLTest {
   @Test
   public void test_13_ACLALLFields() {
     //testACL();
-    String superUserName = "superuser" + Utils.randomString(6);
+    String superUserName = "superuser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(superUserName);
@@ -470,7 +470,7 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_16_Substitute() {
-    String testSubstituteGuid = "testSubstituteGUID" + Utils.randomString(6);
+    String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -512,7 +512,7 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_17_SubstituteList() {
-    String testSubstituteListGuid = "testSubstituteListGUID" + Utils.randomString(6);
+    String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -557,14 +557,14 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_18_Group() {
-    String mygroupName = "mygroup" + Utils.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
       } catch (GnsException e) {
       }
-      guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + Utils.randomString(6));
+      guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
 
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
@@ -613,7 +613,7 @@ public class UniversalCoreWithSSLTest {
   @Test
   public void test_19_GroupAndACL() {
     //testGroup();
-    String groupAccessUserName = "groupAccessUser" + Utils.randomString(6);
+    String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(groupAccessUserName);
@@ -682,7 +682,7 @@ public class UniversalCoreWithSSLTest {
 
   @Test
   public void test_20_Alias() {
-    String alias = "ALIAS-" + Utils.randomString(4) + "@blah.org";
+    String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
     try {
       //
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
@@ -834,7 +834,7 @@ public class UniversalCoreWithSSLTest {
   @Test
   public void test_28_ListOrderAndSetElement() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
     } catch (Exception e) {
       fail("Exception during creation of westyEntry: " + e);
     }
@@ -868,7 +868,7 @@ public class UniversalCoreWithSSLTest {
   public void test_40_SetFieldNull() {
     String field = "fieldToSetToNull";
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -900,7 +900,7 @@ public class UniversalCoreWithSSLTest {
   @Test
   public void test_41_JSONUpdate() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

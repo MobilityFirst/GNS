@@ -37,7 +37,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
-
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 

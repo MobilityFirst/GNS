@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -63,7 +63,7 @@ public class RemoveGuidTcpTest {
   @Test
   @Order(1)
   public void test_01_RemoveGuidUsingAccount() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
@@ -91,7 +91,7 @@ public class RemoveGuidTcpTest {
   @Test
   @Order(2)
   public void test_02_RemoveGuid() {
-    String testGuidName = "testGUID" + Utils.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);

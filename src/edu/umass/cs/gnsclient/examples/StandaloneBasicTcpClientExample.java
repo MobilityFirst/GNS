@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.ByteUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;

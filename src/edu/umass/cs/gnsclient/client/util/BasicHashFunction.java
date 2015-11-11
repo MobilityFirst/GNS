@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
+import edu.umass.cs.gnscommon.utils.ByteUtils;
+
 
 /**
  *

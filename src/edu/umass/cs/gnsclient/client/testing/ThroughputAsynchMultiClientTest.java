@@ -29,7 +29,7 @@ import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.Format;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;

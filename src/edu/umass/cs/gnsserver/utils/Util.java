@@ -215,22 +215,6 @@ public class Util {
     return result;
   }
 
-  private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-  private static final Random rnd = new Random(System.currentTimeMillis());
-
-  /**
-   * Returns a random string of length.
-   * @param length
-   * @return a random string of the given length
-   */
-  public static String randomString(int length) {
-    StringBuilder sb = new StringBuilder(length);
-    for (int i = 0; i < length; i++) {
-      sb.append(CHARACTERS.charAt(rnd.nextInt(CHARACTERS.length())));
-    }
-    return sb.toString();
-  }
-
   /**
    * Returns a InetSocketAddress parsed from a string.
    * 

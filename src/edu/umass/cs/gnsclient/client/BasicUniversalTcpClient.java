@@ -45,7 +45,7 @@ import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
 import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.tcp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gnsclient.client.util.ByteUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.DelayProfiler;

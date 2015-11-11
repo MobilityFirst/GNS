@@ -23,6 +23,7 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import javax.swing.JOptionPane;
+import edu.umass.cs.gnscommon.utils.NetworkUtils;
 
 /**
  *
@@ -87,7 +88,7 @@ public class ServerSelectDialog {
 
   private static String getLocalHostAddressString() {
     try {
-      return Utils.getLocalHostLANAddress().getHostAddress();
+      return NetworkUtils.getLocalHostLANAddress().getHostAddress();
     } catch (UnknownHostException e) {
       return "127.0.0.1";
     }

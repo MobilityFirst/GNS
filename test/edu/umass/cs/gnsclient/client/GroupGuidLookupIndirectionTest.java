@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -69,7 +69,7 @@ public class GroupGuidLookupIndirectionTest {
   public void test_01_SetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
         IndirectionGroupMembers.put(testEntry.getGuid());
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry, indirectionGroupTestFieldName, array);
@@ -78,7 +78,7 @@ public class GroupGuidLookupIndirectionTest {
       fail("Exception while trying to create the guids: " + e);
     }
     try {
-      indirectionGroupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTestGroup-" + Utils.randomString(6));
+      indirectionGroupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTestGroup-" + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);

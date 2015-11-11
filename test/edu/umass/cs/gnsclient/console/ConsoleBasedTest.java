@@ -19,24 +19,19 @@
  */
 package edu.umass.cs.gnsclient.console;
 
-import edu.umass.cs.gnsclient.console.ConsoleModule;
 import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.io.StringBufferInputStream;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-
 import jline.ConsoleReader;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-
 import edu.umass.cs.gnsclient.client.GNSClient;
-import edu.umass.cs.gnsclient.client.util.ByteUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import java.util.Arrays;
 

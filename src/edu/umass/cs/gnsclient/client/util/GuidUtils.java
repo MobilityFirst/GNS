@@ -20,6 +20,8 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.exceptions.GnsException;

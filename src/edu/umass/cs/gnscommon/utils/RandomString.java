@@ -17,25 +17,25 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.util;
+package edu.umass.cs.gnscommon.utils;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+import java.util.Random;
 
 /**
  *
  * @author westy
  */
-public class ThreadUtils {
+public class RandomString {
 
-  /**
-   * Sleep for ms millesconds
-   * @param ms
-   */
-  public static void sleep(long ms) {
-    try {
-      Thread.sleep(ms);
-    } catch (Exception c) {
-      GNSClient.getLogger().severe("Error sleeping :" + c);
+  private static Random rnd = new Random(System.currentTimeMillis());
+  private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  public static String randomString(int len) {
+    StringBuilder sb = new StringBuilder(len);
+    for (int i = 0; i < len; i++) {
+      sb.append(CHARACTERS.charAt(rnd.nextInt(CHARACTERS.length())));
     }
+    return sb.toString();
   }
+  
 }

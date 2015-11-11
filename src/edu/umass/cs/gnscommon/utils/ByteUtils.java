@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.utils;
+package edu.umass.cs.gnscommon.utils;
 
 /**
  *

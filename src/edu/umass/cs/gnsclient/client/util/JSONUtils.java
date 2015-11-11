@@ -21,13 +21,9 @@ package edu.umass.cs.gnsclient.client.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -123,24 +119,4 @@ public class JSONUtils {
     return set;
   }
   
-//  /**
-//   * Returns a JSON Object string sorted by keys. 
-//   * This is only canonical one level deep. You've been warned.
-//   * @param json
-//   * @return 
-//   */
-//  public static String getCanonicalJSONString(JSONObject json) {
-//    SortedMap map = new TreeMap<String, Object>();
-//    Iterator<String> nameItr = json.keys();
-//    while (nameItr.hasNext()) {
-//      String key = nameItr.next();
-//      try {
-//        map.put(key, json.get(key));
-//      } catch (JSONException e) {
-//        // punt on any fields that hose us
-//      }
-//    }
-//    return map.toString();
-//  }
-
 }

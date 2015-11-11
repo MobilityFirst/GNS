@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
@@ -56,15 +56,15 @@ public class WriteSizeTest {
     System.out.println("Writing values to field with sizes from " + valueSizeIncrement + " to " + valueSizeIncrement * 100 +
             " by increments of " + valueSizeIncrement);
     try {
-      String guidName = "testGUID" + Utils.randomString(20);
+      String guidName = "testGUID" + RandomString.randomString(20);
       System.out.println("Creating guid: " + guidName);
       tempEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, guidName);
     } catch (Exception e) {
       fail("Exception creating guid: " + e);
     }
 
-    String fieldName = "testField" + Utils.randomString(10);
-    String fieldValue = Utils.randomString(10);
+    String fieldName = "testField" + RandomString.randomString(10);
+    String fieldValue = RandomString.randomString(10);
     System.out.println("Creating field: " + fieldName);
     try {
       client.fieldCreateOneElementList(tempEntry, fieldName, fieldValue);
@@ -77,7 +77,7 @@ public class WriteSizeTest {
       fail("Exception reading field: " + e);
     }
     for (int k = 0; k < numValues - 1; k++) {
-      String value = Utils.randomString(valueSizeIncrement * k + 1);
+      String value = RandomString.randomString(valueSizeIncrement * k + 1);
       System.out.println("Writing value of length " + value.length());
       try {
         client.fieldReplace(tempEntry, fieldName, value);

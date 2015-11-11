@@ -26,7 +26,7 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import static org.hamcrest.Matchers.*;
@@ -91,12 +91,12 @@ public class SelectAutoGroupTest {
   public void test_02_QuerySetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + Utils.randomString(6));
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(10));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
@@ -107,7 +107,7 @@ public class SelectAutoGroupTest {
       // the HRN is a hash of the query
       String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne.getBytes()), false);
       groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, client.getGnsRemoteHost(), client.getGnsRemotePort());
-      //groupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupGuidName + Utils.randomString(6));
+      //groupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);
@@ -116,7 +116,7 @@ public class SelectAutoGroupTest {
       // the HRN is a hash of the query
       String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo.getBytes()), false);
       groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, client.getGnsRemoteHost(), client.getGnsRemotePort());
-      //groupTwoGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupTwoGuidName + Utils.randomString(6));
+      //groupTwoGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupTwoGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);
@@ -214,7 +214,7 @@ public class SelectAutoGroupTest {
 //      // change ALL BUT ONE to be ZERO
 //      for (int i = 0; i < result.length() - 1; i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = Utils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
 //        JSONArray array = new JSONArray(Arrays.asList(0));
 //        client.fieldReplaceOrCreateList(entry, fieldName, array);
 //      }
@@ -234,7 +234,7 @@ public class SelectAutoGroupTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = Utils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
 //        String value = client.fieldReadArrayFirstElement(entry, fieldName);
 //        assertEquals("25", value);
 //      }
@@ -255,7 +255,7 @@ public class SelectAutoGroupTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = Utils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
 //        String value = client.fieldReadArrayFirstElement(entry, fieldName);
 //        assertEquals("0", value);
 //      }

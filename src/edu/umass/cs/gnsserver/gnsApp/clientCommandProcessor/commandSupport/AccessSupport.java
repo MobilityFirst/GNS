@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.utils.ByteUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;

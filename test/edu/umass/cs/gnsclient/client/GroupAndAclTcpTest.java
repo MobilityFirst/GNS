@@ -26,7 +26,7 @@ import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -70,8 +70,8 @@ public class GroupAndAclTcpTest {
   @Test
   public void test_01_testCreateGuids() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -81,7 +81,7 @@ public class GroupAndAclTcpTest {
 
   @Test
   public void test_02_testGroup() {
-    String mygroupName = "mygroup" + Utils.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(mygroupName);
@@ -104,7 +104,7 @@ public class GroupAndAclTcpTest {
 
   @Test
   public void test_03_testGroupAndACL() {
-    String groupAccessUserName = "groupAccessUser" + Utils.randomString(6);
+    String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(groupAccessUserName);

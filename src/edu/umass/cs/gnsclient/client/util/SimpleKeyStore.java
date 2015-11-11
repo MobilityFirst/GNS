@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -350,7 +351,7 @@ public class SimpleKeyStore {
       } finally {
         keyStore.suppressUpdateRead = false;
       }
-      String value = "value-" + Utils.randomString(6);
+      String value = "value-" + RandomString.randomString(6);
       GNSClient.getLogger().info("Putting " + value);
       keyStore.put("frank", value);
       GNSClient.getLogger().info("New value is " + keyStore.get("frank", null));

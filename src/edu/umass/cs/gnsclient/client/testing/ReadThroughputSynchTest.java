@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -150,7 +150,7 @@ public class ReadThroughputSynchTest {
    */
   public void createSubGuidAndWriteValue() {
     try {
-      subGuidEntry = client.guidCreate(masterGuid, "subGuid" + Utils.randomString(6));
+      subGuidEntry = client.guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       System.out.println("Exception creating the subguid: " + e);

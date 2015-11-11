@@ -25,7 +25,7 @@ import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
@@ -67,7 +67,7 @@ public class UnsignedWriteTest {
   @Order(1)
   public void test_01_CreateField() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

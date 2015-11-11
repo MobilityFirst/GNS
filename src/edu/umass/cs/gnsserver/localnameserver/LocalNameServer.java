@@ -32,7 +32,7 @@ import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
-import edu.umass.cs.gnsserver.utils.NetworkUtils;
+import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnsserver.utils.ParametersAndOptions;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;

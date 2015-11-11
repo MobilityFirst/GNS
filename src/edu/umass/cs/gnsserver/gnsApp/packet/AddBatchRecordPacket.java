@@ -20,9 +20,9 @@
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
-import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
@@ -97,7 +97,7 @@ public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<No
       GNS.getLogger().severe("??????????????????????????? AddBatchRecordPacket SERVICE NAME: " + this.serviceName);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem getting names from AddBatchRecordPacket: " + e);
-      this.serviceName = "BAD" + Util.randomString(6);
+      this.serviceName = "BAD" + RandomString.randomString(6);
     }
   }
 

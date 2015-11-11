@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnscommon.utils.Base64;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
@@ -28,10 +27,10 @@ import edu.umass.cs.gnsserver.exceptions.GnsRuntimeException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.utils.ByteUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -654,7 +653,7 @@ public class AccountAccess {
     List<String> names = new ArrayList<>();
     List<String> publicKeys = new ArrayList<>();
     for (int i = 0; i < count; i++) {
-      String name = "N" + Util.randomString(10);
+      String name = "N" + RandomString.randomString(10);
       names.add(name);
       String publicKey = "P" + name;
       publicKeys.add(publicKey);

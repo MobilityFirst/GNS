@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
+import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 

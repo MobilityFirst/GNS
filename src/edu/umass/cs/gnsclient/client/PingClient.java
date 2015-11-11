@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

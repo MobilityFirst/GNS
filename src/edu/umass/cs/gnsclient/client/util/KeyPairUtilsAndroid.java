@@ -35,9 +35,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
-
 import android.os.Environment;
 import android.util.Log;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 

@@ -23,8 +23,8 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
-import edu.umass.cs.gnsclient.client.util.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -60,7 +60,7 @@ public class SingleReadTest {
   @Order(1)
   public void test_01_CreateEntity() {
     try {
-      GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID" + Utils.randomString(6));
+      GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID" + RandomString.randomString(6));
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }
@@ -70,7 +70,7 @@ public class SingleReadTest {
   @Order(3)
   public void test_02_CreateSubGuid() {
     try {
-      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + Utils.randomString(6));
+      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

@@ -24,8 +24,8 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.ThreadUtils;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -50,7 +50,7 @@ public class AliasTest {
    * The address of the GNS server we will contact
    */
   private static GuidEntry masterGuid;
-  private static final String alias = "ALIAS-" + Utils.randomString(4) + "@blah.org";
+  private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
   public AliasTest() {
     if (client == null) {

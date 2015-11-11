@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import org.json.JSONArray;
@@ -60,7 +60,7 @@ public class PerformanceTest {
     for (int i = 0; i < numGuids; i++) {
       GuidEntry tempEntry = null;
       try {
-        String guidName = "testGUID" + Utils.randomString(20);
+        String guidName = "testGUID" + RandomString.randomString(20);
         System.out.println("Creating guid: " + guidName);
         tempEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, guidName);
       } catch (Exception e) {
@@ -68,8 +68,8 @@ public class PerformanceTest {
       }
 
       for (int j = 0; j < numFields; j++) {
-        String fieldName = Utils.randomString(10);
-        String fieldValue = Utils.randomString(10);
+        String fieldName = RandomString.randomString(10);
+        String fieldValue = RandomString.randomString(10);
         System.out.println("Creating field #" + j + " : " + fieldName);
         try {
           client.fieldCreateOneElementList(tempEntry, fieldName, fieldValue);
@@ -83,7 +83,7 @@ public class PerformanceTest {
         }
         ArrayList<String> allValues = new ArrayList<String>();
         for (int k = 0; k < numValues; k++) {
-          allValues.add(Utils.randomString(valueSizeIncrement));
+          allValues.add(RandomString.randomString(valueSizeIncrement));
         }
         try {
           client.fieldAppend(tempEntry.getGuid(), fieldName, new JSONArray(allValues), tempEntry);

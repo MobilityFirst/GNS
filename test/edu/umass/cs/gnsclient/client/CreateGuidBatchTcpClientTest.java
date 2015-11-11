@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
@@ -67,7 +67,7 @@ public class CreateGuidBatchTcpClientTest {
   public void test_01_CreateBatch() {
     Set<String> aliases = new HashSet<>();
     for (int i = 0; i < 50; i++) {
-      aliases.add("testGUID" + Utils.randomString(6));
+      aliases.add("testGUID" + RandomString.randomString(6));
     }
     String result = null;
     int oldTimeout = client.getReadTimeout();

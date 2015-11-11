@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -62,7 +62,7 @@ public class CreateGuidTcpClientTest {
 
   @Test
   public void test_01_CreateEntity() {
-    String alias = "testGUID" + Utils.randomString(6);
+    String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
       guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);

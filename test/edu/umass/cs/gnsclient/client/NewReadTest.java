@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.client.util.Utils;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class NewReadTest {
   @Test
   public void test_10_CreateFields() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + Utils.randomString(6));
+      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
