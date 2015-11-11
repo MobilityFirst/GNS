@@ -440,7 +440,7 @@ public class PaxosConfig {
 		 * because the sending throughput of a single TCP connection is limited
 		 * and can become a bottleneck at the coordinator.
 		 */
-		NUM_MESSENGER_WORKERS(1),
+		NUM_MESSENGER_WORKERS(0),
 
 		/**
 		 * 

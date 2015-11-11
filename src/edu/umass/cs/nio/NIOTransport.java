@@ -352,7 +352,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					|| sslMode
 							.equals(SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH)) {
 				return (worker instanceof SSLDataProcessingWorker ? (SSLDataProcessingWorker) worker
-						: new SSLDataProcessingWorker((worker)))
+						: new SSLDataProcessingWorker(worker, sslMode))
 						.setHandshakeCallback(this);
 				// CLEAR is not a legitimate SSLDataProcessingWorker type
 			}
