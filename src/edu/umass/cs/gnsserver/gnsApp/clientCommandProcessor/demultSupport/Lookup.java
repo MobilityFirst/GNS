@@ -53,7 +53,7 @@ public class Lookup {
           throws JSONException, UnknownHostException {
     long startTime = System.currentTimeMillis();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + json);
+      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + json.toReasonableString());
     }
     int ccpReqID = handler.getUniqueRequestID();
     DNSRequestInfo<String> requestInfo = new DNSRequestInfo<String>(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
@@ -77,7 +77,7 @@ public class Lookup {
    */
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + json);
+      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + json.toReasonableString());
     }
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
@@ -148,12 +148,12 @@ public class Lookup {
   public static void sendDNSResponseBackToSource(DNSPacket<String> packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
+        GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toReasonableString());
       }
       handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
+        GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toReasonableString());
       }
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());
     }

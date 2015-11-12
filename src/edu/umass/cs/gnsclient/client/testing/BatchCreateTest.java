@@ -59,7 +59,7 @@ public class BatchCreateTest {
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
-  private static boolean disableSSL = true;
+  private static boolean disableSSL = false;
 
   /**
    * Creates a SimpleLatencyTest with the given arguments.
@@ -103,16 +103,18 @@ public class BatchCreateTest {
       client.setReadTimeout(2 * 60 * 1000); // set the timeout to 2 minutes
 
       while (guidCnt > 0) {
-        System.out.println("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
+        System.out.print("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
         command = client.createCommand(GnsProtocol.BATCH_TEST,
                 GnsProtocol.NAME, alias,
                 GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
         result = client.checkResponse(command, client.sendCommand(command));
         if (!result.equals(GnsProtocol.OK_RESPONSE)) {
+          System.out.println();
           System.out.println("Batch test command saw bad reponse " + result);
           return;
         }
         guidCnt = guidCnt - MAX_BATCH_SIZE;
+        System.out.println("... " + guidCnt + " left to create");
       }
     } catch (GnsException | IOException e) {
       System.out.println("Problem sending command " + command + e);

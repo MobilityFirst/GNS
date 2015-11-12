@@ -80,9 +80,9 @@ public class ResultValue extends ArrayList<Object> {
    */
   public ResultValueString toResultValueString() {
     ResultValueString result = new ResultValueString();
-    for (Object element : this) {
+    this.stream().forEach((element) -> {
       result.add((String) element);
-    }
+    });
     return result;
   }
 
@@ -92,10 +92,22 @@ public class ResultValue extends ArrayList<Object> {
    * @return 
    */
   public Set<String> toStringSet() {
-    Set<String> result = new HashSet<String>();
-    for (Object element : this) {
+    Set<String> result = new HashSet<>();
+    this.stream().forEach((element) -> {
       result.add((String) element);
-    }
+    });
     return result;
   }
+  
+  // FIXME: CALLING THIS SOMETIMES HANGS THINGS!
+//  /**
+//   * Limits the size of fields printed by toReasonableString.
+//   */
+//  public static int reasonableFieldSize = 1500;
+//
+//  public String toReasonableString() {
+//    return Util.ellipsize(this.toString(), reasonableFieldSize);
+//  }
+  
+  
 }

@@ -176,5 +176,11 @@ public class QueryResult<NodeIDType> implements Serializable{
   public String toString() {
     return "QueryResult{" + "valuesMap=" + valuesMap + ", errorCode=" + errorCode + ", roundTripTime=" + roundTripTime + ", responder=" + responder + '}';
   }
+  
+  public String toReasonableString() {
+    return "QueryResult{" + "valuesMap=" + valuesMap.toReasonableString() 
+            + ", errorCode=" + errorCode + ", roundTripTime=" + roundTripTime 
+            + ", responder=" + responder + '}';
+  }
 
 }

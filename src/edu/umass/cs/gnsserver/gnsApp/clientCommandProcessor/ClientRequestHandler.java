@@ -412,7 +412,8 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
       String x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Closest Primary Name Server: " + x.toString() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
+        GNS.getLogger().info("Closest Primary Name Server: " + x.toString() 
+                + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
       return x;
     } catch (Exception e) {
@@ -465,7 +466,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   public void sendToNS(JSONObject json, String id) {
     try {
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Send to: " + id + " json: " + json);
+        GNS.getLogger().info("Send to: " + id + " json: " + json.toReasonableString());
       }
       messenger.sendToID(id, json);
     } catch (IOException e) {

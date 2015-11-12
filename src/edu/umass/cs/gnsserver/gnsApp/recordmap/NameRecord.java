@@ -218,7 +218,23 @@ public class NameRecord implements Comparable<NameRecord> {
     }
     return null;
   }
+  
+  /**
+   * A version of toString for logging that limits the output length.
+   * Obviously this can't be used to read things back in.
+   * 
+   * @return a string
+   */
+  public String toReasonableString() {
+    try {
+      return toJSONObject().toReasonableString();
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
 
+  
   /**
    * Convert the name record to a JSON Object.
    * 

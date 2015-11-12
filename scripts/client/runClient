@@ -1,0 +1,3 @@
+#!/bin/bash
+#echo $PWD
+java -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp jars/GNSClient.jar $*

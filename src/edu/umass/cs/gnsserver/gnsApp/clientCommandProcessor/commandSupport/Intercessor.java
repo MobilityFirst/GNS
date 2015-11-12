@@ -41,6 +41,7 @@ import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
 import edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
+import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -292,7 +293,8 @@ public class Intercessor implements IntercessorInterface {
     long rtt = receiptTime - sentTime;
     if (debuggingEnabled) {
       GNS.getLogger().fine("Query (" + id + ") RTT = " + rtt + "ms");
-      GNS.getLogger().info("Query (" + id + "): " + name + "/" + field + "\n  Returning: " + result.toString());
+      GNS.getLogger().info("Query (" + id + "): " + name + "/" 
+              + field + "\n  Returning: " + result.toReasonableString());
     }
     result.setRoundTripTime(rtt);
     DelayProfiler.updateDelay("sendQueryInternal", startTime);
@@ -400,12 +402,9 @@ public class Intercessor implements IntercessorInterface {
    */
   public NSResponseCode sendAddBatchRecord(Set<String> names, Map<String, JSONObject> values) {
     int id = nextUpdateRequestID();
-    if (debuggingEnabled) {
-      GNS.getLogger().info("Sending add: " + names + values);
-    }
     AddBatchRecordPacket<String> pkt = new AddBatchRecordPacket<>(null, id, names, values, nodeAddress);
     if (debuggingEnabled) {
-      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
+      GNS.getLogger().fine("#####PACKET: " + pkt.toReasonableString());
     }
     try {
       JSONObject json = pkt.toJSONObject();
@@ -420,7 +419,7 @@ public class Intercessor implements IntercessorInterface {
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     if (debuggingEnabled) {
-      GNS.getLogger().info("Add (" + id + "): " + names + "\n  Returning: " + result);
+      GNS.getLogger().info("Add (" + id + "): " + Util.ellipsize(names.toString(), 500) + "\n  Returning: " + result);
     }
     return result;
   }
@@ -636,11 +635,12 @@ public class Intercessor implements IntercessorInterface {
 
     if (userJSON != null) {
       if (debuggingEnabled) {
-        GNS.getLogger().finer("Sending userJSON update: " + name + " : " + userJSON);
+        GNS.getLogger().finer("Sending userJSON update: " + name + " : " + userJSON.toReasonableString());
       }
     } else {
       if (debuggingEnabled) {
-        GNS.getLogger().finer("Sending single field update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
+        GNS.getLogger().finer("Sending single field update: " + name + " : "
+                + key + " newValue: " + newValue + " oldValue: " + oldValue);
       }
     }
     UpdatePacket<String> packet = new UpdatePacket<String>(

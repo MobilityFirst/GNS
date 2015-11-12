@@ -167,7 +167,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name()
-                + " packet: " + json.toString());
+                + " packet: " + json.toReasonableString());
       }
       switch (packetType) {
         case DNS:
@@ -206,7 +206,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
           CommandHandler.handleCommandReturnValuePacketForApp(json, this);
           break;
         default:
-          GNS.getLogger().severe(" Packet type not found: " + json);
+          GNS.getLogger().severe(" Packet type not found: " + json.toReasonableString());
           return false;
       }
       executed = true;

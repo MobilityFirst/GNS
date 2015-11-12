@@ -36,7 +36,6 @@ import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSRecordType;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
@@ -84,7 +83,8 @@ public class AppLookup {
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() + "; DNS Query Packet: " + dnsPacket.toString());
+      GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() 
+              + "; DNS Query Packet: " + dnsPacket.toReasonableString());
     }
     // FIX THIS!
     // META COMMENT ABOUT THE COMMENT BELOW: 
@@ -156,9 +156,10 @@ public class AppLookup {
             return;
           }
         }
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("Name record read is: " + nameRecord);
-        }
+        // FIXME: THIS STATEMENT CAUSES THIS TO HANG!
+//        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//          GNS.getLogger().info("Name record read is: " + nameRecord.toReasonableString());
+//        }
       } catch (FieldNotFoundException e) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
@@ -191,11 +192,11 @@ public class AppLookup {
 //          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
 //          String code64 = codeResult.get(0).toString();
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
-              GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+              GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toReasonableString());
             }
             newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
-              GNS.getLogger().info("AC--->>> " + newResult.toString());
+              GNS.getLogger().info("AC--->>> " + newResult.toReasonableString());
             }
           } catch (Exception e) {
             GNS.getLogger().info("Active code error: " + e.getMessage());
@@ -340,7 +341,8 @@ public class AppLookup {
               // we return the single value of the key (old array-based return format)
               dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));
               if (AppReconfigurableNodeOptions.debuggingEnabled) {
-                GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue());
+                GNS.getLogger().info("NS sending DNS lookup response: Name = " 
+                        + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue().toReasonableString());
               }
             }
             // or we're supposed to return all the keys so return the entire record
@@ -358,7 +360,8 @@ public class AppLookup {
             // or we don't actually have the field
           } else { // send error msg.
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
-              GNS.getLogger().info("Record doesn't contain field: " + key + " guid = " + guid + " record = " + nameRecord.toString());
+              GNS.getLogger().info("Record doesn't contain field: " + key + " guid = "
+                      + guid + " record = " + nameRecord.toReasonableString());
             }
             dnsPacket.getHeader().setResponseCode(NSResponseCode.FIELD_NOT_FOUND_ERROR);
           }

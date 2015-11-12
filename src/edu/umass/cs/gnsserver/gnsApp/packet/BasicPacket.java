@@ -45,6 +45,15 @@ public abstract class BasicPacket implements PacketInterface {
       return "BasicPacket{" + "type=" + getType() + '}';
     }
   }
+  
+  public String toReasonableString() {
+    try {
+      return this.toJSONObject().toReasonableString();
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to string:" + e);
+      return "BasicPacket{" + "type=" + getType() + '}';
+    }
+  }
 
   /**
    * @return the type

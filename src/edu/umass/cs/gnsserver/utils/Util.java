@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -38,6 +37,7 @@ public class Util {
 
   private static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
   private static final double ALPHA = 0.05;
+ 
 
   /**
    * Format as "#.#".
@@ -228,6 +228,43 @@ public class Util {
       return null;
     }
     return new InetSocketAddress(tokens[0], Integer.valueOf(tokens[1]));
+  }
+  
+  private static final String NON_THIN = "[^iIl1\\.,']";
+
+  private static int textWidth(String str) {
+    return (int) (str.length() - str.replaceAll(NON_THIN, "").length() / 2);
+  }
+  
+  // close enough
+  private static String sampleExplanation = " [555000 more chars] ...";
+  private static int explanationSize = sampleExplanation.length();
+
+  /**
+   * Clips the text at length.
+   * Max should be more than 20 or so or you'll have issues. You've been warned.
+   * 
+   * @param text
+   * @param max
+   * @return 
+   */
+  public static String ellipsize(String text, int max) {
+    if (textWidth(text) <= max) {
+      return text;
+    }
+    int end = text.lastIndexOf(' ', max - explanationSize);
+    if (end == -1) {
+      return text.substring(0, max - explanationSize) + " [" + (text.length() - max) + " more chars] ...";
+    }
+    int newEnd = end;
+    do {
+      end = newEnd;
+      newEnd = text.indexOf(' ', end + 1);
+      if (newEnd == -1) {
+        newEnd = text.length();
+      }
+    } while (textWidth(text.substring(0, newEnd) + sampleExplanation) < max);
+    return text.substring(0, end) + " [" + (text.length() - max) + " more chars] ...";
   }
 
   /**
