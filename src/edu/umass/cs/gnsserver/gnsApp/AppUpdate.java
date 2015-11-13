@@ -76,6 +76,7 @@ public class AppUpdate {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Processing UPDATE with " + " "
               + "doNotReplyToClient= " + doNotReplyToClient
+              //+ " packet: " + updatePacket.toString());
               + " packet: " + updatePacket.toReasonableString());
     }
 
@@ -117,6 +118,7 @@ public class AppUpdate {
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " 
+                //+ guid + " Packet = " + updatePacket.toString());
                 + guid + " Packet = " + updatePacket.toReasonableString());
         e.printStackTrace();
         @SuppressWarnings("unchecked")
@@ -158,6 +160,7 @@ public class AppUpdate {
 //        String code64 = codeResult.get(0).toString();
           //String code64 = NSFieldAccess.lookupListFieldOnThisServer(guid, ActiveCode.ON_WRITE, app).get(0).toString();
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
+            //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toString());
             GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toReasonableString());
           }
           newValue = activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
@@ -172,10 +175,14 @@ public class AppUpdate {
 
     // END ACTIVE CODE HANDLING
     // Apply update
+    // FIXME: THIS CAUSES US TO HANG.
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       if (field != null) {
         GNS.getLogger().info("****** field= " + field + " operation= " + updatePacket.getOperation().toString()
-                + " value= " + Util.ellipsize(updatePacket.getUpdateValue().toString(), 500)
+                + " value= " + updatePacket.getUpdateValue().toString()
+                //FIXME: THIS CAUSES US TO HANG!
+                //+ " value= " + Util.ellipsize(updatePacket.getUpdateValue().toString(), 500)
+                //+ " name Record=" + nameRecord.toString());
                 + " name Record=" + nameRecord.toReasonableString());
       }
     }
@@ -194,6 +201,7 @@ public class AppUpdate {
 
       if (!result) { // update failed
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          //GNS.getLogger().info("Update operation failed " + updatePacket.toString());
           GNS.getLogger().info("Update operation failed " + updatePacket.toReasonableString());
         }
         if (updatePacket.getNameServerID().equals(app.getNodeID())) {
@@ -203,6 +211,7 @@ public class AppUpdate {
                           updatePacket.getSourceId(),
                           updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.ERROR);
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
+            //GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket.toString());
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket.toReasonableString());
           }
           if (!doNotReplyToClient) {
@@ -212,6 +221,7 @@ public class AppUpdate {
 
       } else {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          //GNS.getLogger().info("Update applied" + updatePacket.toString());
           GNS.getLogger().info("Update applied" + updatePacket.toReasonableString());
         }
 

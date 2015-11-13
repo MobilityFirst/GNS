@@ -466,6 +466,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   public void sendToNS(JSONObject json, String id) {
     try {
       if (parameters.isDebugMode()) {
+        //GNS.getLogger().info("Send to: " + id + " json: " + json.toString());
         GNS.getLogger().info("Send to: " + id + " json: " + json.toReasonableString());
       }
       messenger.sendToID(id, json);

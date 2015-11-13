@@ -84,6 +84,7 @@ public class AppLookup {
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() 
+              //+ "; DNS Query Packet: " + dnsPacket.toString());
               + "; DNS Query Packet: " + dnsPacket.toReasonableString());
     }
     // FIX THIS!
@@ -192,10 +193,12 @@ public class AppLookup {
 //          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
 //          String code64 = codeResult.get(0).toString();
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
+              //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
               GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toReasonableString());
             }
             newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
+              //GNS.getLogger().info("AC--->>> " + newResult.toString());
               GNS.getLogger().info("AC--->>> " + newResult.toReasonableString());
             }
           } catch (Exception e) {
@@ -342,6 +345,7 @@ public class AppLookup {
               dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));
               if (AppReconfigurableNodeOptions.debuggingEnabled) {
                 GNS.getLogger().info("NS sending DNS lookup response: Name = " 
+                        //+ guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue().toString());
                         + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue().toReasonableString());
               }
             }
@@ -361,7 +365,8 @@ public class AppLookup {
           } else { // send error msg.
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("Record doesn't contain field: " + key + " guid = "
-                      + guid + " record = " + nameRecord.toReasonableString());
+                      + guid + " record = " + nameRecord.toString());
+                      //+ guid + " record = " + nameRecord.toReasonableString());
             }
             dnsPacket.getHeader().setResponseCode(NSResponseCode.FIELD_NOT_FOUND_ERROR);
           }

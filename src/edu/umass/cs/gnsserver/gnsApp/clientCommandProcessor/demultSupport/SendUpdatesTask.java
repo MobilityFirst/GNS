@@ -122,7 +122,8 @@ public class SendUpdatesTask extends TimerTask {
     if (info == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("UpdateInfo<String> not found. Update complete. Cancel task. " 
-                + ccpReqID + "\t" + updatePacket.toReasonableString());
+                + ccpReqID + "\t" + updatePacket.toString());
+                //+ ccpReqID + "\t" + updatePacket.toReasonableString());
       }
       return true;
     } else if (requestActivesCount == -1) {
@@ -131,7 +132,8 @@ public class SendUpdatesTask extends TimerTask {
       // invalid active response received in this case
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Invalid active response received. Cancel task. "
-                + ccpReqID + "\t" + updatePacket.toReasonableString());
+                + ccpReqID + "\t" + updatePacket.toString());
+                //+ ccpReqID + "\t" + updatePacket.toReasonableString());
       }
       return true;
     }
@@ -194,6 +196,7 @@ public class SendUpdatesTask extends TimerTask {
       // creation of guids which need to be explicitly coordinated by ARs 
       try {
         if (handler.getParameters().isDebugMode()) {
+          //GNS.getLogger().info("++++++++++++++++++ REALLY SENDING " + pkt.toString() + " TO " + nameServerID);
           GNS.getLogger().info("++++++++++++++++++ REALLY SENDING " + pkt.toReasonableString() + " TO " + nameServerID);
         }
         handler.sendToNS(pkt.toJSONObject(), nameServerID);
@@ -209,6 +212,7 @@ public class SendUpdatesTask extends TimerTask {
     }
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + ccpReqID
+              //+ " Time:" + System.currentTimeMillis() + " --> " + pkt.toString());
               + " Time:" + System.currentTimeMillis() + " --> " + pkt.toReasonableString());
     }
   }

@@ -292,9 +292,10 @@ public class Intercessor implements IntercessorInterface {
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime - sentTime;
     if (debuggingEnabled) {
-      GNS.getLogger().fine("Query (" + id + ") RTT = " + rtt + "ms");
-      GNS.getLogger().info("Query (" + id + "): " + name + "/" 
-              + field + "\n  Returning: " + result.toReasonableString());
+      GNS.getLogger().finer("Query (" + id + ") RTT = " + rtt + "ms");
+      GNS.getLogger().fine("Query (" + id + "): " + name + "/" 
+              + field + "\n  Returning: " + result.toString());
+              //+ field + "\n  Returning: " + result.toReasonableString());
     }
     result.setRoundTripTime(rtt);
     DelayProfiler.updateDelay("sendQueryInternal", startTime);
@@ -404,6 +405,7 @@ public class Intercessor implements IntercessorInterface {
     int id = nextUpdateRequestID();
     AddBatchRecordPacket<String> pkt = new AddBatchRecordPacket<>(null, id, names, values, nodeAddress);
     if (debuggingEnabled) {
+      //GNS.getLogger().fine("#####PACKET: " + pkt.toString());
       GNS.getLogger().fine("#####PACKET: " + pkt.toReasonableString());
     }
     try {
@@ -419,7 +421,7 @@ public class Intercessor implements IntercessorInterface {
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     if (debuggingEnabled) {
-      GNS.getLogger().info("Add (" + id + "): " + Util.ellipsize(names.toString(), 500) + "\n  Returning: " + result);
+      GNS.getLogger().info("Add (" + id + "): " + names.size() + " names\n  Returning: " + result);
     }
     return result;
   }
@@ -635,6 +637,7 @@ public class Intercessor implements IntercessorInterface {
 
     if (userJSON != null) {
       if (debuggingEnabled) {
+        //GNS.getLogger().finer("Sending userJSON update: " + name + " : " + userJSON.toString());
         GNS.getLogger().finer("Sending userJSON update: " + name + " : " + userJSON.toReasonableString());
       }
     } else {

@@ -230,11 +230,11 @@ public class Util {
     return new InetSocketAddress(tokens[0], Integer.valueOf(tokens[1]));
   }
   
-  private static final String NON_THIN = "[^iIl1\\.,']";
-
-  private static int textWidth(String str) {
-    return (int) (str.length() - str.replaceAll(NON_THIN, "").length() / 2);
-  }
+//  private static final String NON_THIN = "[^iIl1\\.,']";
+//
+//  private static int textWidth(String str) {
+//    return (int) (str.length() - str.replaceAll(NON_THIN, "").length() / 2);
+//  }
   
   // close enough
   private static String sampleExplanation = " [555000 more chars] ...";
@@ -249,22 +249,23 @@ public class Util {
    * @return 
    */
   public static String ellipsize(String text, int max) {
-    if (textWidth(text) <= max) {
-      return text;
-    }
-    int end = text.lastIndexOf(' ', max - explanationSize);
-    if (end == -1) {
-      return text.substring(0, max - explanationSize) + " [" + (text.length() - max) + " more chars] ...";
-    }
-    int newEnd = end;
-    do {
-      end = newEnd;
-      newEnd = text.indexOf(' ', end + 1);
-      if (newEnd == -1) {
-        newEnd = text.length();
-      }
-    } while (textWidth(text.substring(0, newEnd) + sampleExplanation) < max);
-    return text.substring(0, end) + " [" + (text.length() - max) + " more chars] ...";
+    return text.substring(0, max - explanationSize) + " [" + (text.length() - max) + " more chars] ...";
+//    if (textWidth(text) <= max) {
+//      return text;
+//    }
+//    int end = text.lastIndexOf(' ', max - explanationSize);
+//    if (end == -1) {
+//      return text.substring(0, max - explanationSize) + " [" + (text.length() - max) + " more chars] ...";
+//    }
+//    int newEnd = end;
+//    do {
+//      end = newEnd;
+//      newEnd = text.indexOf(' ', end + 1);
+//      if (newEnd == -1) {
+//        newEnd = text.length();
+//      }
+//    } while (textWidth(text.substring(0, newEnd) + sampleExplanation) < max);
+//    return text.substring(0, end) + " [" + (text.length() - max) + " more chars] ...";
   }
 
   /**

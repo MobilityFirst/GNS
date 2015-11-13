@@ -114,13 +114,13 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
             switch (incomingPacketType) {
               // Lookup
               case DNS_SUBTYPE_QUERY:
-                Lookup.handlePacketLookupRequest(json, dnsPacket, handler);
+                Lookup.handlePacketLookupRequest(dnsPacket, handler);
                 return true;
               case DNS_SUBTYPE_RESPONSE:
-                Lookup.handlePacketLookupResponse(json, dnsPacket, handler);
+                Lookup.handlePacketLookupResponse(dnsPacket, handler);
                 return true;
               case DNS_SUBTYPE_ERROR_RESPONSE:
-                Lookup.handlePacketLookupErrorResponse(json, dnsPacket, handler);
+                Lookup.handlePacketLookupErrorResponse(dnsPacket, handler);
                 return true;
               default:
                 GNS.getLogger().warning("Unknown DNS packet subtype: " + incomingPacketType);

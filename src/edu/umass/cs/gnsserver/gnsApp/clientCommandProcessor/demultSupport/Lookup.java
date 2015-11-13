@@ -49,11 +49,12 @@ public class Lookup {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  public static void handlePacketLookupRequest(JSONObject json, DNSPacket<String> incomingPacket, ClientRequestHandlerInterface handler)
+  public static void handlePacketLookupRequest(DNSPacket<String> incomingPacket, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     long startTime = System.currentTimeMillis();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + json.toReasonableString());
+      //GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + incomingPacket.toString());
+      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + incomingPacket.toReasonableString());
     }
     int ccpReqID = handler.getUniqueRequestID();
     DNSRequestInfo<String> requestInfo = new DNSRequestInfo<String>(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
@@ -75,9 +76,10 @@ public class Lookup {
    * @param handler
    * @throws JSONException
    */
-  public static void handlePacketLookupResponse(JSONObject json, DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void handlePacketLookupResponse(DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + json.toReasonableString());
+      //GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + dnsPacket.toString());
+      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + dnsPacket.toReasonableString());
     }
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
@@ -116,10 +118,10 @@ public class Lookup {
    * @param handler
    * @throws JSONException
    */
-  public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void handlePacketLookupErrorResponse(DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("Recvd Lookup Error Response" + jsonObject);
+      GNS.getLogger().info("Recvd Lookup Error Response" + dnsPacket.toReasonableString());
     }
     @SuppressWarnings("unchecked")
     DNSRequestInfo<String> requestInfo = (DNSRequestInfo<String>) handler.removeRequestInfo(dnsPacket.getQueryId());
@@ -148,11 +150,13 @@ public class Lookup {
   public static void sendDNSResponseBackToSource(DNSPacket<String> packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == null) {
       if (handler.getParameters().isDebugMode()) {
+        //GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
         GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toReasonableString());
       }
       handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
       if (handler.getParameters().isDebugMode()) {
+        //GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
         GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toReasonableString());
       }
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());
