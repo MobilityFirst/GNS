@@ -73,6 +73,9 @@
 	<classpathentry kind="lib" path="lib/mchange-commons-java-0.2.7.jar"/>
 	<classpathentry kind="lib" path="lib/mongo-java-driver-2.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/dnsjava-2.1.6.jar"/>
-	<classpathentry kind="lib" path="/Users/mbadov/Documents/Code/UMass/mobility-first-new/lib/luaj-jse-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/json-smart-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/android.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/mapdb-2.0.0-20151103.120435-149.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
