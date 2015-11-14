@@ -48,7 +48,6 @@ public class DefaultGNSClient
 	private static GuidEntry myGuidEntry 	      	= null;
 	
 	
-	
 	private DefaultGNSClient()
 	{
 		try
@@ -57,7 +56,7 @@ public class DefaultGNSClient
 			String[] parsed = gnsString.split(":");
 			gnsHostPort = parsed[0]+":"+parsed[1];
 			System.out.println("gnsHostPort "+gnsHostPort);
-			gnsClient = new UniversalTcpClient(parsed[0], Integer.parseInt(parsed[1]));
+			gnsClient = new UniversalTcpClient(parsed[0], Integer.parseInt(parsed[1]), Boolean.parseBoolean(parsed[2]));
 			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(gnsHostPort);
 			System.out.println("myGuidEntry "+myGuidEntry.getEntityName()+ " "+myGuidEntry.getGuid());
 		}
@@ -94,8 +93,8 @@ public class DefaultGNSClient
 		return myGuidEntry;
 	}
 	
-	  private static void createSingleton()
-	  {
+	private static void createSingleton()
+	{
 		synchronized(lockObj)
 		{
 			if (defualtObj == null)
@@ -103,5 +102,5 @@ public class DefaultGNSClient
 				defualtObj = new DefaultGNSClient();
 		    }
 		}
-	  }
+	}
 }

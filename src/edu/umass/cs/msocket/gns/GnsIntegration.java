@@ -105,8 +105,7 @@ public class GnsIntegration
 	      // Put the IP address in the GNS
 	      String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
 	      log.trace("Updating " + GnsConstants.SERVER_REG_ADDR + " GNSValue " + ipPort);
-	      DefaultGNSClient.getGnsClient()
-	          .fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.SERVER_REG_ADDR, new JSONArray().put(ipPort), myGuid);
+	      DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.SERVER_REG_ADDR, new JSONArray().put(ipPort), myGuid);
 	    }
 	} catch(Exception ex)
 	{
