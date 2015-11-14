@@ -91,9 +91,8 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
     JSONArray guids;
     try
     {
-      guids = DefaultGNSClient.gnsClient.fieldReadArray
-    		  (proxyGroupName, GnsConstants.ACTIVE_LOCATION_FIELD, DefaultGNSClient.myGuidEntry);
-    }
+      guids = DefaultGNSClient.getGnsClient().fieldReadArray
+   (proxyGroupName, GnsConstants.ACTIVE_LOCATION_FIELD, DefaultGNSClient.getMyGuidEntry() ); }
     catch (Exception e)
     {
       throw new GnsException("Could not find active location services (" + e + ")");
@@ -104,8 +103,8 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
     {
       // Retrieve the location service IP and connect to it
       String locationGuid = guids.getString(i);
-      String locationIP = DefaultGNSClient.gnsClient.fieldReadArray
-    		  (locationGuid, GnsConstants.LOCATION_SERVICE_IP, DefaultGNSClient.myGuidEntry).getString(0);
+      String locationIP = DefaultGNSClient.getGnsClient().fieldReadArray
+    		  (locationGuid, GnsConstants.LOCATION_SERVICE_IP, DefaultGNSClient.getMyGuidEntry()).getString(0);
       logger.fine("Contacting location service " + locationIP + " to request " + numProxies + " proxies");
 
       // Location IP is stored as host:port

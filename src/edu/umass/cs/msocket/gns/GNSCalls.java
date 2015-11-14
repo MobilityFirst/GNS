@@ -36,14 +36,14 @@ public class GNSCalls
 		{
 			log.trace("Looking for entity " + localAlias + " GUID and certificates...");
 			
-			GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.defaultGns, localAlias);
+			GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), localAlias);
 		    /*
 		     * Take a lock on the GNS connection object to prevent concurrent queries to
 		     * the GNS on the same connection as the library is not thread-safe from
 		     * that standpoint.
 		     */
 		     log.trace("Updating location for " + localAlias + " to " + Longi+" " + Lat);
-		     DefaultGNSClient.gnsClient.setLocation(myGuid, Longi, Lat);
+		     DefaultGNSClient.getGnsClient().setLocation(myGuid, Longi, Lat);
 		} catch(Exception ex)
 		{
 			ex.printStackTrace();
@@ -65,14 +65,14 @@ public class GNSCalls
 		//String queryHash = getSHA1(query);
 		//String guidString = gnsClient.lookupGuid(queryHash);
 		// group should be read by all, atleast for now
-		grpMem = DefaultGNSClient.gnsClient.groupGetMembers(groupGUID, DefaultGNSClient.myGuidEntry);
+		grpMem = DefaultGNSClient.getGnsClient().groupGetMembers(groupGUID, DefaultGNSClient.getMyGuidEntry());
 		return grpMem;
 	}
 	
 	public static String getGroupGUID(String query) throws UnsupportedEncodingException, IOException, GnsException
 	{
 		String queryHash = getSHA1(query);
-		String guidString = DefaultGNSClient.gnsClient.lookupGuid(queryHash);
+		String guidString = DefaultGNSClient.getGnsClient().lookupGuid(queryHash);
 		return guidString;
 	}
 	
@@ -86,7 +86,7 @@ public class GNSCalls
 		    {
 				log.trace("Looking for entity " + localName + " GUID and certificates...");
 				
-				GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.defaultGns, localName);
+				GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), localName);
 				
 			    /*
 			     * Take a lock on the GNS connection object to prevent concurrent queries to
@@ -97,17 +97,17 @@ public class GNSCalls
 			      {
 			        log.trace("No keys found for service " + localName + ". Generating new GUID and keys");
 			        // Create a new GUID
-			        myGuid = DefaultGNSClient.gnsClient.guidCreate(DefaultGNSClient.myGuidEntry, localName);
+			        myGuid = DefaultGNSClient.getGnsClient().guidCreate(DefaultGNSClient.getMyGuidEntry(), localName);
 			        
 			        // storing alias in gns record, need it to find it when we have GUID
 			        // from group members
-			        DefaultGNSClient.gnsClient.fieldCreateList(myGuid.getGuid(), GnsConstants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
+			        DefaultGNSClient.getGnsClient().fieldCreateList(myGuid.getGuid(), GnsConstants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
 			        
 			        JSONArray valJSONArray = new JSONArray();
 			        valJSONArray.put(GNSValue);
 			        valJSONArray.put(System.currentTimeMillis());
 			        
-			        DefaultGNSClient.gnsClient
+			        DefaultGNSClient.getGnsClient()
 			        	.fieldReplaceOrCreateList(myGuid.getGuid(), GNSKey, valJSONArray, myGuid);
 			      }
 			      else
@@ -121,7 +121,7 @@ public class GNSCalls
 				        
 			    	  long start = System.currentTimeMillis();
 			        
-			    	  DefaultGNSClient.gnsClient
+			    	  DefaultGNSClient.getGnsClient()
 		        	.fieldReplaceOrCreateList(myGuid.getGuid(), GNSKey, valJSONArray, myGuid);
 			        long end = System.currentTimeMillis();
 			        
@@ -146,7 +146,7 @@ public class GNSCalls
 		    {
 				log.trace("Looking for entity " + localName + " GUID and certificates...");
 				
-				GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.defaultGns, localName);
+				GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), localName);
 				
 			    /*
 			     * Take a lock on the GNS connection object to prevent concurrent queries to
@@ -157,13 +157,13 @@ public class GNSCalls
 			      {
 			        log.trace("No keys found for service " + localName + ". Generating new GUID and keys");
 			        // Create a new GUID
-			        myGuid = DefaultGNSClient.gnsClient.guidCreate(DefaultGNSClient.myGuidEntry, localName);
+			        myGuid = DefaultGNSClient.getGnsClient().guidCreate(DefaultGNSClient.getMyGuidEntry(), localName);
 			        
 			        // storing alias in gns record, need it to find it when we have GUID
 			        // from group members
-			        DefaultGNSClient.gnsClient.fieldCreateList(myGuid.getGuid(), GnsConstants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
+			        DefaultGNSClient.getGnsClient().fieldCreateList(myGuid.getGuid(), GnsConstants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
 			        
-			        DefaultGNSClient.gnsClient
+			        DefaultGNSClient.getGnsClient()
 			        	.fieldReplaceOrCreateList(myGuid.getGuid(), GNSKey, new JSONArray().put(GNSValue), myGuid);
 			      }
 			      else
@@ -173,7 +173,7 @@ public class GNSCalls
 			    	  
 			    	  long start = System.currentTimeMillis();
 			        
-			    	  DefaultGNSClient.gnsClient
+			    	  DefaultGNSClient.getGnsClient()
 		        	.fieldReplaceOrCreateList(myGuid.getGuid(), GNSKey, new JSONArray().put(GNSValue), myGuid);
 			        long end = System.currentTimeMillis();
 			        
@@ -191,7 +191,7 @@ public class GNSCalls
 	  
 	  public static String getKeyValue(String guid, String field) throws Exception
 	  {
-	        JSONArray queryResult = DefaultGNSClient.gnsClient.fieldReadArray(guid, field, null);
+	        JSONArray queryResult = DefaultGNSClient.getGnsClient().fieldReadArray(guid, field, null);
 	        if(queryResult.length() > 0)
 	        {
 	        	return queryResult.getString(0);
@@ -203,7 +203,7 @@ public class GNSCalls
 	  
 	  public static String getAlias(String guid) throws Exception
 	  {
-		  JSONObject record = DefaultGNSClient.gnsClient.lookupGuidRecord(guid);
+		  JSONObject record = DefaultGNSClient.getGnsClient().lookupGuidRecord(guid);
 	      return record.getString("name");
 	  }
 	  
@@ -259,7 +259,7 @@ public class GNSCalls
 			    	  // exception. Exception shoudl be caught and notification set updated.
 			    	  try
 			    	  {
-				    	  JSONArray notSet = DefaultGNSClient.gnsClient.fieldReadArray(groupGUID,NOTIFICATION_SET, DefaultGNSClient.myGuidEntry);
+				    	  JSONArray notSet = DefaultGNSClient.getGnsClient().fieldReadArray(groupGUID,NOTIFICATION_SET, DefaultGNSClient.getMyGuidEntry());
 				    	  System.out.println("\n\n notSet size "+notSet.length());
 				    	  for(int i=0;i < notSet.length();i++)
 				    	  {
@@ -278,7 +278,7 @@ public class GNSCalls
 			    	  if(!alreadyThere)
 			    	  {
 			    		  System.out.println("addrString "+addrString+" added to the notification set");
-			    		  DefaultGNSClient.gnsClient.fieldAppend(groupGUID, NOTIFICATION_SET, arr, DefaultGNSClient.myGuidEntry);
+			    		  DefaultGNSClient.getGnsClient().fieldAppend(groupGUID, NOTIFICATION_SET, arr, DefaultGNSClient.getMyGuidEntry());
 			    	  }
 			      } 
 			} catch(Exception ex)
@@ -297,7 +297,7 @@ public class GNSCalls
 	   */
 	  public static JSONArray selectNear(JSONArray coordJson, double radius) throws Exception
 	  {
-		  JSONArray queryResult = DefaultGNSClient.gnsClient.selectNear(GnsProtocol.LOCATION_FIELD_NAME, coordJson, radius);
+		  JSONArray queryResult = DefaultGNSClient.getGnsClient().selectNear(GnsProtocol.LOCATION_FIELD_NAME, coordJson, radius);
 		  log.trace("size of selected GUIDs "+ queryResult.length() );
 		        
         // returns the list of GUIDs, read whole records and return 

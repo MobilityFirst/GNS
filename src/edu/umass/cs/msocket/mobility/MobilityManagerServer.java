@@ -82,7 +82,7 @@ public class MobilityManagerServer implements Runnable
     running = false;
     TemporaryTasksES.shutdownES();
     KeepAliveStaticThread.stopKeepAlive();
-    DefaultGNSClient.gnsClient.stop(); 
+    DefaultGNSClient.getGnsClient().stop(); 
   }
 
   /**

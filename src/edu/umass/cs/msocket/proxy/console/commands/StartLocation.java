@@ -100,7 +100,7 @@ public class StartLocation extends ConsoleCommand
       {
         if (!module.isSilent())
           console.printString("No keys found for location service " + serviceName + ". Generating new GUID and keys\n");
-        myGuid = DefaultGNSClient.gnsClient.guidCreate(module.getAccountGuid(), serviceName);
+        myGuid = DefaultGNSClient.getGnsClient().guidCreate(module.getAccountGuid(), serviceName);
       }
 
       if (myGuid == null)

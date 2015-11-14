@@ -36,13 +36,68 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
  */
 public class DefaultGNSClient
 {
-	public static final String defaultGns = KeyPairUtils.getDefaultGns();
-	public static final UniversalTcpClient gnsClient 
-				= new UniversalTcpClient(defaultGns.split(":")[0], Integer.parseInt(defaultGns.split(":")[1]));
+	public static final int proxyPort			  	= 11989;
+	public static final String proxyName 		  	= "ec2-52-4-163-224.compute-1.amazonaws.com";
 	
-	public static final GuidEntry myGuidEntry = KeyPairUtils.getDefaultGuidEntry(defaultGns);
+	private static DefaultGNSClient defualtObj    	= null;
+	private static final Object lockObj 	      	= new Object();
 	
-	public static final int proxyPort			  = 11989;
-	public static final String proxyName 		  = "ec2-52-4-163-224.compute-1.amazonaws.com";
+	private static String defaultGns			    = null;
+	private static UniversalTcpClient gnsClient    	= null;
 	
+	private static GuidEntry myGuidEntry 	      	= null;
+	
+	
+	
+	private DefaultGNSClient()
+	{
+		try
+		{
+			defaultGns = KeyPairUtils.getDefaultGns();
+			gnsClient = new UniversalTcpClient(defaultGns.split(":")[0], Integer.parseInt(defaultGns.split(":")[1]));
+			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(defaultGns);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+	
+	public static String getDefaultGNSName()
+	{
+		if(defualtObj == null)
+		{
+			createSingleton();	
+		}
+		return defaultGns;
+	}
+	
+	public static UniversalTcpClient getGnsClient()
+	{
+		if(defualtObj == null)
+		{
+			createSingleton();	
+		}
+		return gnsClient;
+	}
+	
+	public static GuidEntry getMyGuidEntry()
+	{
+		if(defualtObj == null)
+		{
+			createSingleton();	
+		}
+		return myGuidEntry;
+	}
+	
+	  private static void createSingleton()
+	  {
+		synchronized(lockObj)
+		{
+			if (defualtObj == null)
+		    {
+				defualtObj = new DefaultGNSClient();
+		    }
+		}
+	  }
 }

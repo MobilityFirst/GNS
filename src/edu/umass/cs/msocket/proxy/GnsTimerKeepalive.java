@@ -62,13 +62,13 @@ public class GnsTimerKeepalive extends Thread
     this.publishFrequency = publishFrequency;
     logger.fine("Publishing start time");
     final long now = System.currentTimeMillis();
-    DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.START_TIME, new JSONArray().put(now), myGuid);
-    DefaultGNSClient.gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.START_TIME, null);
-    DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.TIME_REFRESH_INTERVAL,
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.START_TIME, new JSONArray().put(now), myGuid);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.START_TIME, null);
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.TIME_REFRESH_INTERVAL,
         new JSONArray().put(publishFrequency), myGuid);
-    DefaultGNSClient.gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.TIME_REFRESH_INTERVAL, null);
-    DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(guid.getGuid(), GnsConstants.CURRENT_TIME, new JSONArray().put(now), myGuid);
-    DefaultGNSClient.gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.CURRENT_TIME, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.TIME_REFRESH_INTERVAL, null);
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(guid.getGuid(), GnsConstants.CURRENT_TIME, new JSONArray().put(now), myGuid);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.CURRENT_TIME, null);
     logger.setLevel(Level.FINE);
   }
 
@@ -102,7 +102,7 @@ public class GnsTimerKeepalive extends Thread
       last = System.currentTimeMillis();
       try
       {
-    	  DefaultGNSClient.gnsClient.fieldReplaceList(guid.getGuid(), GnsConstants.CURRENT_TIME,
+    	  DefaultGNSClient.getGnsClient().fieldReplaceList(guid.getGuid(), GnsConstants.CURRENT_TIME,
             new JSONArray().put(last), guid);
         logger.fine("Updated current time to " + last);
       }

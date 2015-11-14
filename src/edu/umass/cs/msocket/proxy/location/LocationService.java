@@ -84,12 +84,12 @@ public class LocationService extends Thread
   {
     logger.info("Looking for location service " + locationServiceName + " GUID and certificates...");
     GuidEntry locationServiceGuid = KeyPairUtils.getGuidEntry(
-    		DefaultGNSClient.defaultGns, locationServiceName);
+    		DefaultGNSClient.getDefaultGNSName(), locationServiceName);
 
     if (locationServiceGuid == null)
     {
       logger.info("No keys found for location service " + locationServiceName + ". Generating new GUID and keys");
-      locationServiceGuid = DefaultGNSClient.gnsClient.guidCreate(DefaultGNSClient.myGuidEntry, locationServiceName);
+      locationServiceGuid = DefaultGNSClient.getGnsClient().guidCreate(DefaultGNSClient.getMyGuidEntry(), locationServiceName);
     }
     logger.info("We are guid " + locationServiceGuid.getGuid());
     
@@ -164,10 +164,10 @@ public class LocationService extends Thread
     }
 
     // Look for the group GUID
-    String groupGuid = DefaultGNSClient.gnsClient.lookupGuid(proxyGroupName);
+    String groupGuid = DefaultGNSClient.getGnsClient().lookupGuid(proxyGroupName);
 
     // Check if we are a member of the group
-    JSONArray members = DefaultGNSClient.gnsClient.groupGetMembers(groupGuid, locationServiceGuid);
+    JSONArray members = DefaultGNSClient.getGnsClient().groupGetMembers(groupGuid, locationServiceGuid);
     boolean isVerified = false;
     for (int i = 0; i < members.length(); i++)
     {
@@ -180,12 +180,12 @@ public class LocationService extends Thread
 
     // Make sure we advertise ourselves as a location service (readable for
     // everyone)
-    DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(locationServiceGuid.getGuid(), GnsConstants.SERVICE_TYPE_FIELD,
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(locationServiceGuid.getGuid(), GnsConstants.SERVICE_TYPE_FIELD,
         new JSONArray().put(GnsConstants.LOCATION_SERVICE), locationServiceGuid);
-    DefaultGNSClient.gnsClient.aclAdd(AccessType.READ_WHITELIST, locationServiceGuid, GnsConstants.SERVICE_TYPE_FIELD, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, locationServiceGuid, GnsConstants.SERVICE_TYPE_FIELD, null);
 
     // Update our location
-    DefaultGNSClient.gnsClient.setLocation(locationServiceGuid, locationServiceInfo.getLatLong().getLongitude(), locationServiceInfo.getLatLong()
+    DefaultGNSClient.getGnsClient().setLocation(locationServiceGuid, locationServiceInfo.getLatLong().getLongitude(), locationServiceInfo.getLatLong()
         .getLatitude());
 
     if (!isVerified)
@@ -230,9 +230,9 @@ public class LocationService extends Thread
         final String ipPort = locationServiceInfo.getIpAddress() + ":" + ss.getLocalPort();
         logger.info("Publishing Location service IP (" + ipPort + ") in GNS.");
         //final GuidEntry guidEntry = gnsCredentials.getGuidEntry();
-        DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(locationServiceGuid.getGuid(), GnsConstants.LOCATION_SERVICE_IP,
+        DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(locationServiceGuid.getGuid(), GnsConstants.LOCATION_SERVICE_IP,
             new JSONArray().put(ipPort), locationServiceGuid);
-        DefaultGNSClient.gnsClient.aclAdd(AccessType.READ_WHITELIST, locationServiceGuid, GnsConstants.LOCATION_SERVICE_IP, null);
+        DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, locationServiceGuid, GnsConstants.LOCATION_SERVICE_IP, null);
 
         // Start the thread that collect information about proxy status
         statusThread = new ProxyStatusThread(proxyGroupName);

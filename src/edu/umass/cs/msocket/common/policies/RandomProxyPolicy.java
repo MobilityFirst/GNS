@@ -82,23 +82,23 @@ public class RandomProxyPolicy extends ProxySelectionPolicy
 
     // Lookup proxies in proxy group list
     //UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
-    String groupGuid = DefaultGNSClient.gnsClient.lookupGuid(proxyGroupName);
-    JSONArray members = DefaultGNSClient.gnsClient.groupGetMembers
-    		(groupGuid, DefaultGNSClient.myGuidEntry);
+    String groupGuid = DefaultGNSClient.getGnsClient().lookupGuid(proxyGroupName);
+    JSONArray members = DefaultGNSClient.getGnsClient().groupGetMembers
+    		(groupGuid, DefaultGNSClient.getMyGuidEntry());
 
     for (int i = 0; i < members.length(); i++)
     { // Add each proxy to the list
       String proxyGuid = members.getString(i);
 
       // Check first that this member is a proxy and not another service
-      String serviceType = DefaultGNSClient.gnsClient.fieldReadArray
-    		  (proxyGuid, GnsConstants.SERVICE_TYPE_FIELD, DefaultGNSClient.myGuidEntry).getString(0);
+      String serviceType = DefaultGNSClient.getGnsClient().fieldReadArray
+    		  (proxyGuid, GnsConstants.SERVICE_TYPE_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
       if (!GnsConstants.PROXY_SERVICE.equals(serviceType))
         continue; // This is not a proxy, ignore
 
       // Grab the proxy IP address
-      String proxyIp = DefaultGNSClient.gnsClient.fieldReadArray
-    		  (proxyGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.myGuidEntry).getString(0);
+      String proxyIp = DefaultGNSClient.getGnsClient().fieldReadArray
+    		  (proxyGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
       String[] parsed = proxyIp.split(":");
       InetSocketAddress addr = new InetSocketAddress(parsed[0], Integer.parseInt(parsed[1]));
       result.add(addr);

@@ -81,13 +81,13 @@ public class ProxyStatusThread extends Thread
     JSONArray guids;
     try
     {
-      guids = DefaultGNSClient.gnsClient.fieldReadArray(proxyGroupName, GnsConstants.ACTIVE_PROXY_FIELD, DefaultGNSClient.myGuidEntry);
+      guids = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGroupName, GnsConstants.ACTIVE_PROXY_FIELD, DefaultGNSClient.getMyGuidEntry());
     }
     catch (GnsInvalidGuidException e)
     {
       logger
           .info("Cannot read the list of active proxies, this location service is probably still not approved in the proxy group (using GUID "
-              + DefaultGNSClient.myGuidEntry.getGuid() + ")");
+              + DefaultGNSClient.getMyGuidEntry().getGuid() + ")");
       return;
     }
 
@@ -96,9 +96,9 @@ public class ProxyStatusThread extends Thread
     for (int i = 0; i < guids.length(); i++)
     {
       String proxyGuid = guids.getString(i);
-      String proxyIP = DefaultGNSClient.gnsClient.fieldReadArray(proxyGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.myGuidEntry).getString(0);
-      JSONArray proxyLoad = DefaultGNSClient.gnsClient.fieldReadArray(proxyGuid, GnsConstants.PROXY_LOAD, DefaultGNSClient.myGuidEntry);
-      JSONArray proxyLocation = DefaultGNSClient.gnsClient.getLocation(proxyGuid, DefaultGNSClient.myGuidEntry);
+      String proxyIP = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
+      JSONArray proxyLoad = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, GnsConstants.PROXY_LOAD, DefaultGNSClient.getMyGuidEntry());
+      JSONArray proxyLocation = DefaultGNSClient.getGnsClient().getLocation(proxyGuid, DefaultGNSClient.getMyGuidEntry());
       double lontitude = Double.parseDouble(proxyLocation.getString(0));
       double latitude = Double.parseDouble(proxyLocation.getString(1));
       ProxyStatusInfo proxyInfo = new ProxyStatusInfo(proxyGuid, proxyIP, proxyLoad, lontitude, latitude);

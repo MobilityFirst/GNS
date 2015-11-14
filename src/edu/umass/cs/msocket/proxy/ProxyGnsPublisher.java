@@ -90,12 +90,12 @@ public class ProxyGnsPublisher extends Thread
   {
     logger.info("Looking for proxy " + proxyName + " GUID and certificates...");
     GuidEntry myGuid = KeyPairUtils.getGuidEntry(
-    		DefaultGNSClient.defaultGns, proxyName);
+    		DefaultGNSClient.getDefaultGNSName(), proxyName);
 
     if (myGuid == null)
     {
       logger.info("No keys found for proxy " + proxyName + ". Generating new GUID and keys");
-      myGuid = DefaultGNSClient.gnsClient.guidCreate(DefaultGNSClient.myGuidEntry, proxyName);
+      myGuid = DefaultGNSClient.getGnsClient().guidCreate(DefaultGNSClient.getMyGuidEntry(), proxyName);
     }
     logger.info("Proxy has guid " + myGuid.getGuid());
 
@@ -185,13 +185,13 @@ public class ProxyGnsPublisher extends Thread
     }
 
     // Look for the group GUID
-    String groupGuid = DefaultGNSClient.gnsClient.lookupGuid(proxyGroupName);
+    String groupGuid = DefaultGNSClient.getGnsClient().lookupGuid(proxyGroupName);
 
     // Check if we are a member of the group
     boolean isVerified = false;
     try
     {
-      JSONArray members = DefaultGNSClient.gnsClient.groupGetMembers(groupGuid, myGuid);
+      JSONArray members = DefaultGNSClient.getGnsClient().groupGetMembers(groupGuid, myGuid);
       for (int i = 0; i < members.length(); i++)
       {
         if (myGuid.getGuid().equals(members.get(i)))
@@ -214,18 +214,18 @@ public class ProxyGnsPublisher extends Thread
 
     // Make sure we advertise ourselves as a proxy and make the field readable
     // by everyone
-    DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.SERVICE_TYPE_FIELD,
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.SERVICE_TYPE_FIELD,
         new JSONArray().put(GnsConstants.PROXY_SERVICE), myGuid);
-    DefaultGNSClient.gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.SERVICE_TYPE_FIELD, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.SERVICE_TYPE_FIELD, null);
     // Publish external IP (readable by everyone)
     InetSocketAddress externalIP = (InetSocketAddress) proxySocketAddres;
-    DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.PROXY_EXTERNAL_IP_FIELD,
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.PROXY_EXTERNAL_IP_FIELD,
         new JSONArray().put(externalIP.getAddress().getHostAddress() + ":" + externalIP.getPort()), myGuid);
-    DefaultGNSClient.gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, null);
 
     // Update our location if geolocation resolution worked
     if (proxyInfo.getLatLong() != null)
-    	DefaultGNSClient.gnsClient.setLocation(myGuid, proxyInfo.getLatLong().getLongitude(), proxyInfo.getLatLong().getLatitude());
+    	DefaultGNSClient.getGnsClient().setLocation(myGuid, proxyInfo.getLatLong().getLongitude(), proxyInfo.getLatLong().getLatitude());
 
     if (!isVerified)
     {
@@ -247,7 +247,7 @@ public class ProxyGnsPublisher extends Thread
    */
   public void publishNewProxyLocation(double longitude, double latitude) throws Exception
   {
-	  DefaultGNSClient.gnsClient.setLocation(DefaultGNSClient.myGuidEntry, longitude, latitude);
+	  DefaultGNSClient.getGnsClient().setLocation(DefaultGNSClient.getMyGuidEntry(), longitude, latitude);
   }
 
   /**
@@ -270,8 +270,8 @@ public class ProxyGnsPublisher extends Thread
       try
       {
         Thread.sleep(1000);
-        DefaultGNSClient.gnsClient.fieldReplaceOrCreateList(DefaultGNSClient.myGuidEntry.getGuid(), GnsConstants.PROXY_LOAD,
-            ProxyLoadStatistics.serializeLoadInformation(), DefaultGNSClient.myGuidEntry);
+        DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(DefaultGNSClient.getMyGuidEntry().getGuid(), GnsConstants.PROXY_LOAD,
+            ProxyLoadStatistics.serializeLoadInformation(), DefaultGNSClient.getMyGuidEntry());
       }
       catch (Exception e)
       {
