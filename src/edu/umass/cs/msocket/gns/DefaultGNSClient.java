@@ -42,7 +42,7 @@ public class DefaultGNSClient
 	private static DefaultGNSClient defualtObj    	= null;
 	private static final Object lockObj 	      	= new Object();
 	
-	private static String defaultGns			    = null;
+	private static String 	gnsHostPort					    = null;
 	private static UniversalTcpClient gnsClient    	= null;
 	
 	private static GuidEntry myGuidEntry 	      	= null;
@@ -53,10 +53,13 @@ public class DefaultGNSClient
 	{
 		try
 		{
-			defaultGns = KeyPairUtils.getDefaultGns();
-			System.out.println("defaultGns "+defaultGns);
-			gnsClient = new UniversalTcpClient(defaultGns.split(":")[0], Integer.parseInt(defaultGns.split(":")[1]));
-			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(defaultGns);
+			String gnsString = KeyPairUtils.getDefaultGns();
+			String[] parsed = gnsString.split(":");
+			gnsHostPort = parsed[0]+":"+parsed[1];
+			System.out.println("gnsHostPort "+gnsHostPort);
+			gnsClient = new UniversalTcpClient(parsed[0], Integer.parseInt(parsed[1]));
+			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(gnsHostPort);
+			System.out.println("myGuidEntry "+myGuidEntry.getEntityName()+ " "+myGuidEntry.getGuid());
 		}
 		catch(Exception ex)
 		{
@@ -70,7 +73,7 @@ public class DefaultGNSClient
 		{
 			createSingleton();	
 		}
-		return defaultGns;
+		return gnsHostPort;
 	}
 	
 	public static UniversalTcpClient getGnsClient()
