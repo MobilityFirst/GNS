@@ -54,6 +54,7 @@ public class DefaultGNSClient
 		try
 		{
 			defaultGns = KeyPairUtils.getDefaultGns();
+			System.out.println("defaultGns "+defaultGns);
 			gnsClient = new UniversalTcpClient(defaultGns.split(":")[0], Integer.parseInt(defaultGns.split(":")[1]));
 			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(defaultGns);
 		}
