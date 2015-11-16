@@ -66,7 +66,7 @@ public class ServerSelectDialog {
       }
       return address;
     } catch (RuntimeException e) {
-      return new InetSocketAddress(getLocalHostAddressString(), 24403);
+      return new InetSocketAddress(getLocalHostAddressString(), GNSClient.LNS_PORT);
     }
   }
 
