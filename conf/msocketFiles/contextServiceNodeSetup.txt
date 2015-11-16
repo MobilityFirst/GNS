@@ -1,0 +1,3 @@
+0 ec2-52-21-58-242.compute-1.amazonaws.com 8001
+1 ec2-52-21-58-242.compute-1.amazonaws.com 8002
+2 ec2-52-21-58-242.compute-1.amazonaws.com 8003
