@@ -23,7 +23,6 @@ package org.json;
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
-import edu.umass.cs.gnsserver.utils.Util;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -1610,7 +1609,7 @@ public class JSONObject {
         Object o = keys.next();
         sb.append(quote(o.toString()));
         sb.append(':');
-        sb.append(Util.ellipsize(valueToReasonableString(this.map.get(o)), reasonableFieldSize));
+        sb.append(ellipsize(valueToReasonableString(this.map.get(o)), reasonableFieldSize));
       }
       sb.append('}');
       return sb.toString();
@@ -1659,4 +1658,18 @@ public class JSONObject {
     return quote(value.toString());
   }
 
+  private static String sampleExplanation = " [555000 more chars] ...";
+  private static int explanationSize = sampleExplanation.length();
+
+  /**
+   * Clips the text at length.
+   * Max should be more than 20 or so or you'll have issues. You've been warned.
+   * 
+   * @param text
+   * @param max
+   * @return 
+   */
+  public static String ellipsize(String text, int max) {
+    return text.substring(0, max - explanationSize) + " [" + (text.length() - max) + " more chars] ...";
+  }
 }
