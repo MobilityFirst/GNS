@@ -29,8 +29,6 @@ import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
 import java.net.InetSocketAddress;
 
-import net.sourceforge.sizeof.SizeOf;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -485,30 +483,30 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    *
    * @param args
    */
-  @SuppressWarnings("unchecked")
-  public static void main(String[] args) {
-    ResultValue x = new ResultValue();
-    x.add("12345678");
-    //
-    UpdatePacket<String> up = new UpdatePacket(null, 32234234, 123, "12322323",
-            "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
-            GNS.DEFAULT_TTL_SECONDS, null, null, null);
-
-    SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
-    SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
-    SizeOf.skipFlyweightObject(false); //java.sizeOf will not compute well-known flyweight objects
-    printSize(up);
-    int size = 0;
-    try {
-      size = up.toJSONObject().toString().getBytes().length;
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    System.out.println("Network Size: " + size + " bytes");
-
-  }
-
-  static void printSize(Object object) {
-    System.out.println("Java Size: " + SizeOf.deepSizeOf(object) + " bytes"); //this will print the object size in bytes
-  }
+//  @SuppressWarnings("unchecked")
+//  public static void main(String[] args) {
+//    ResultValue x = new ResultValue();
+//    x.add("12345678");
+//    //
+//    UpdatePacket<String> up = new UpdatePacket(null, 32234234, 123, "12322323",
+//            "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
+//            GNS.DEFAULT_TTL_SECONDS, null, null, null);
+//
+//    SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
+//    SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
+//    SizeOf.skipFlyweightObject(false); //java.sizeOf will not compute well-known flyweight objects
+//    printSize(up);
+//    int size = 0;
+//    try {
+//      size = up.toJSONObject().toString().getBytes().length;
+//    } catch (JSONException e) {
+//      e.printStackTrace();
+//    }
+//    System.out.println("Network Size: " + size + " bytes");
+//
+//  }
+//
+//  static void printSize(Object object) {
+//    System.out.println("Java Size: " + SizeOf.deepSizeOf(object) + " bytes"); //this will print the object size in bytes
+//  }
 }

@@ -45,7 +45,7 @@ public class GnsConnect extends ConsoleCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Connects to the GNS; third argument should be true if you're connecting to a server that"
+    return "Connects to the GNS; third argument should be true if the server"
             + " isn't using SSL (AKA SSL mode = CLEAR)";
   }
 

@@ -44,7 +44,8 @@ public class SetDefaultGns extends ConsoleCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Sets the default GNS to use in the user preferences.";
+    return "Sets the default GNS to use in the user preferences. "
+            + "The third argument should be true if the server isn't using SSL (AKA SSL mode = CLEAR)";
   }
 
   @Override
