@@ -52,10 +52,10 @@ import org.apache.commons.cli.ParseException;
  * Typical uses:
  *
  * First time install:
- * java -cp GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -scriptFile conf/ec2_mongo_java_install.bash -update kittens.name
+ * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -scriptFile conf/ec2_mongo_java_install.bash -update kittens.name
  *
  * Later updates:
- * java -cp GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -update kittens.name
+ * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -update kittens.name
  *
  *
  * @author westy
@@ -103,7 +103,7 @@ public class GNSInstaller {
   private static String javaCommand = DEFAULT_JAVA_COMMAND;
   private static String javaCommandForLNS = DEFAULT_JAVA_COMMAND_FOR_LNS; // this one isn't changed by config
   // calculated from the Jar location
-  private static String distFolderPath;
+  //private static String distFolderPath;
   private static String gnsJarFileLocation;
   private static String confFolderPath;
   // these are mostly for convienence; could compute them when needed
@@ -568,12 +568,13 @@ public class GNSInstaller {
    *
    * @return true if it found them
    */
-  private static void setupJarPath() {
+  private static void determineJarAndMasterPaths() {
     File jarPath = getLocalJarPath();
     System.out.println("Jar path: " + jarPath);
     gnsJarFileLocation = jarPath.getPath();
-    distFolderPath = jarPath.getParent();
-    confFolderPath = distFolderPath + CONF_FOLDER;
+    File mainPath = jarPath.getParentFile().getParentFile();
+    System.out.println("Main path: " + mainPath);
+    confFolderPath = mainPath + CONF_FOLDER;
     System.out.println("Conf folder path: " + confFolderPath);
     gnsJarFileName = new File(gnsJarFileLocation).getName();
   }
@@ -757,7 +758,7 @@ public class GNSInstaller {
       System.out.println("Config name: " + configName);
       System.out.println("Current directory: " + System.getProperty("user.dir"));
 
-      setupJarPath();
+      determineJarAndMasterPaths();
       if (!checkAndSetConfFilePaths(configName)) {
         System.exit(1);
       }

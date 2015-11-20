@@ -280,7 +280,7 @@
     <junit printsummary="withOutAndErr" fork="yes"> 
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-Djavax.net.debug=ssl"/>
+<!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
