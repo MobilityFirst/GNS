@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class ActiveCodeExecutor extends ThreadPoolExecutor {
-	public ActiveCodeExecutor(int numCoreThreads, int numMaxThreads, int timeout,
+	protected ActiveCodeExecutor(int numCoreThreads, int numMaxThreads, int timeout,
 			TimeUnit timeUnit,
 			BlockingQueue<Runnable> queue,
 			ThreadFactory threadFactory,

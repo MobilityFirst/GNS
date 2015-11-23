@@ -23,6 +23,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * This class is the worker to run active code
+ * in an isolated process.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeWorker {
 	/**
 	 * Starts the worker listener

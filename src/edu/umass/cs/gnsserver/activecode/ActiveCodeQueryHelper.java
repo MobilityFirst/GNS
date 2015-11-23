@@ -36,11 +36,21 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Updat
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+/**
+ * This class is used for handling queries from
+ * active code worker and interact with local DB.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeQueryHelper {
 	private static final ArrayList<ColumnField> empty = new ArrayList<ColumnField>();
-	private GnsApplicationInterface app;
+	private GnsApplicationInterface<?> app;
 	
-	public ActiveCodeQueryHelper(GnsApplicationInterface app) {
+	/**
+	 * Initialize an ActiveCodeQueryHelper
+	 * @param app
+	 */
+	public ActiveCodeQueryHelper(GnsApplicationInterface<?> app) {
 		this.app = app;
 	}
 

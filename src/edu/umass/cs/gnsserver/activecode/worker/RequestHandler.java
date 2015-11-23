@@ -33,15 +33,23 @@ import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
-
+/**
+ * This class accepts the request from active client
+ * and run active code in the worker.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class RequestHandler {
 	private ActiveCodeRunner runner;
-
+	/**
+	 * Initialize a RequestHandler in ActiveCodeWorker
+	 * @param runner
+	 */
 	public RequestHandler(ActiveCodeRunner runner) {
 		this.runner = runner;
 	}
 	
-	public boolean handleRequest(Socket socket) {
+	protected boolean handleRequest(Socket socket) {
 		boolean ret = true;
 		
 		try {

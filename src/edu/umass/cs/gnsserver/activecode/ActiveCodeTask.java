@@ -24,12 +24,21 @@ import java.util.concurrent.Callable;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
-
+/**
+ * This is the task sent to active code worker.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeTask implements Callable<ValuesMap> {
 
     private ActiveCodeParams acp;
     private ClientPool clientPool;
     
+    /**
+     * Initialize a ActiveCodeTask
+     * @param acp
+     * @param clientPool
+     */
     public ActiveCodeTask(ActiveCodeParams acp, ClientPool clientPool) {
         this.acp = acp; 
         this.clientPool = clientPool;

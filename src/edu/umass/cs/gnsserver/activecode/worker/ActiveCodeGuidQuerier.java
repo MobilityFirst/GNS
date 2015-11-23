@@ -20,7 +20,12 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,11 +36,21 @@ import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+/**
+ * This class is used to send query to active code client
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeGuidQuerier {
 
   private PrintWriter out;
   private BufferedReader in;
 
+  /**
+   * Initialize an ActiveCodeGuidQuerier
+   * @param in
+   * @param out
+   */
   public ActiveCodeGuidQuerier(BufferedReader in, PrintWriter out) {
     this.out = out;
     this.in = in;
@@ -110,5 +125,42 @@ public class ActiveCodeGuidQuerier {
       e.printStackTrace();
       return false;
     }
+  }
+  /**
+   * This class is used to send a http request
+   * @param url
+   * @return response as a string
+   */
+  public String httpRequest(String url){
+	  StringBuilder response = new StringBuilder();
+	  BufferedReader br = null;
+	  try{
+		  URL obj = new URL(url);
+		  HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		  con.setRequestMethod("GET");
+		  con.setRequestProperty("User-Agent", "Mozilla/5.0");
+		  InputStream in = con.getInputStream();
+		   
+		  br = new BufferedReader(new InputStreamReader(in));
+		  
+		  String line = "";
+		  
+		  while ((line = br.readLine()) != null) {
+				response.append(line);
+		  }
+		
+	  }catch(IOException e){
+		  e.printStackTrace();
+	  }finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+	  }
+	  
+	  return response.toString();
   }
 }
