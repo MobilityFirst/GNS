@@ -36,16 +36,30 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+/**
+ * This class is the entry of activecode, it provides
+ * the interface for GNS to run active code. It's creates
+ * a threadpool to connect the real isolated active worker 
+ * to run active code. It also handles the misbehaviours.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeHandler {	
-	GnsApplicationInterface gnsApp;
+	GnsApplicationInterface<?> gnsApp;
 	ClientPool clientPool;
 	ThreadPoolExecutor executorPool;
 	Map<String, Long> blacklist;
 	long blacklistSeconds;
 	
-	public static final int NANOSECONDS_PER_SEC = 1000000000;
+	protected static final int NANOSECONDS_PER_SEC = 1000000000;
 	
-	public ActiveCodeHandler(GnsApplicationInterface app, int numProcesses, long blacklistSeconds) {
+	/**
+	 * Initializes an ActiveCodeHandler
+	 * @param app
+	 * @param numProcesses
+	 * @param blacklistSeconds
+	 */
+	public ActiveCodeHandler(GnsApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
 		gnsApp = app;
 		clientPool = new ClientPool(app); 
 	    // Get the ThreadFactory implementation to use

@@ -30,7 +30,18 @@ import java.util.Base64;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 
+/**
+ * This class is used to serialize and deserialize, send 
+ * and receive message between active worker and active client.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeUtils {
+	/**
+	 * Serialize an object, ready to send
+	 * @param o
+	 * @return a byte array ready to send
+	 */
 	public static byte[] serializeObject(Object o) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
@@ -47,6 +58,11 @@ public class ActiveCodeUtils {
 		return baos.toByteArray();
 	}
 	
+	/**
+	 * Deserialize a byte array, ready to cast
+	 * @param data
+	 * @return a object, ready to cast
+	 */
 	public static Object deserializeObject(byte[] data) {
 		ByteArrayInputStream bais = new ByteArrayInputStream(data);
 	    Object o = null;
@@ -60,12 +76,22 @@ public class ActiveCodeUtils {
 	    return o;
 	}
 	
+	/**
+	 * Send the serialized message
+	 * @param out
+	 * @param acm
+	 */
 	public static void sendMessage(PrintWriter out, ActiveCodeMessage acm) {
 		byte[] data = serializeObject(acm);
 		String data64 = Base64.getEncoder().encodeToString(data);
 		out.println(data64);
 	}
 	
+	/**
+	 * Receive the serialize the message
+	 * @param in
+	 * @return an {@link ActiveCodeMessage} ready to cast
+	 */
 	public static ActiveCodeMessage getMessage(BufferedReader in) {
 		String res64 = null;
 		

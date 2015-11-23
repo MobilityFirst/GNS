@@ -41,19 +41,27 @@ import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+/**
+ * This class is used to communicate with active worker.
+ * It sends active code to the worker, receives request
+ * from the worker, and gets the execution result from
+ * the worker.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeClient {
 	private String hostname;
 	private int port;
 	private boolean restartOnCrash;
 	private Process process;
-	private final GnsApplicationInterface app;
+	private final GnsApplicationInterface<?> app;
 	private boolean killed;
 	
 	/**
 	 * @param app the gns app
          * @param launchWorker
 	 */
-	public ActiveCodeClient(GnsApplicationInterface app, boolean launchWorker) {
+	public ActiveCodeClient(GnsApplicationInterface<?> app, boolean launchWorker) {
 		if(launchWorker)
 			startServer();
 		

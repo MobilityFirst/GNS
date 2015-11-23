@@ -21,6 +21,11 @@ package edu.umass.cs.gnsserver.activecode.protocol;
 
 import java.io.Serializable;
 
+/**
+ * This is the data structure for active code response
+ * 
+ * @author mbadov
+ */
 public class ActiveCodeQueryResponse implements Serializable {
 	public boolean success;
 	public String valuesMapString;
@@ -50,7 +55,5 @@ public class ActiveCodeQueryResponse implements Serializable {
   public void setValuesMapString(String valuesMapString) {
     this.valuesMapString = valuesMapString;
   }
-        
-        
-	
+        	
 }

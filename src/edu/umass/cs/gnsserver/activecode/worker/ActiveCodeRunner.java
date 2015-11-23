@@ -28,13 +28,21 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
+/**
+ * This class is used to run active code
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeRunner {
 
   private final ScriptEngine engine;
   private final Invocable invocable;
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
-
+  /**
+   * Intialize an ActiveCodeRunner with nashorn script engine
+   * by default.
+   */
   public ActiveCodeRunner() {
     ScriptEngineManager engineManager = new ScriptEngineManager();
     engine = engineManager.getEngineByName("nashorn");

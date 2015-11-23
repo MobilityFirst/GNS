@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadFactory;
 public class ActiveCodeThreadFactory implements ThreadFactory {
 	ClientPool clientPool;
 	
-	public ActiveCodeThreadFactory(ClientPool clientPool) {
+	protected ActiveCodeThreadFactory(ClientPool clientPool) {
 		this.clientPool = clientPool;
 	}
 	

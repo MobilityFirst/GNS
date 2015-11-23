@@ -21,15 +21,46 @@ package edu.umass.cs.gnsserver.activecode.protocol;
 
 import java.io.Serializable;
 
-
+/**
+ * This class is used to pass in the parameters
+ * into activecode task.
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeParams implements Serializable {
+	/**
+	 * Use guid getter to get its value
+	 */
 	public String guid;
+	/**
+	 * Use field getter to get its value
+	 */
 	public String field;
+	/**
+	 * Use action getter to get its value
+	 */
 	public String action;
+	/**
+	 * Use code getter to get its value
+	 */
 	public String code;
+	/**
+	 * Use valueMap getter to get its value
+	 */
 	public String valuesMapString;
+	/**
+	 * Use limit getter to get its value
+	 */
 	public int hopLimit;
-	
+	/**
+	 * Initialize ActiveCodeParams
+	 * @param guid
+	 * @param field
+	 * @param action
+	 * @param code
+	 * @param valuesMap
+	 * @param hopLimit
+	 */
 	public ActiveCodeParams(String guid, String field, String action, String code, String valuesMap, int hopLimit) {
 		this.guid = guid;
 		this.field = field;
@@ -38,7 +69,10 @@ public class ActiveCodeParams implements Serializable {
 		this.valuesMapString = valuesMap;
 		this.hopLimit = hopLimit;
 	}
-
+	
+	/**
+	 * Initialize ActiveCodeParams
+	 */
 	public ActiveCodeParams() {
 		this.guid = null;
 		this.field = null;
@@ -48,50 +82,98 @@ public class ActiveCodeParams implements Serializable {
 		this.hopLimit = 0;
 	}
 
+  /**
+   * guid getter
+   * @return guid
+   */
   public String getGuid() {
     return guid;
   }
-
+  
+  /**
+   * guid setter
+   * @param guid
+   */
   public void setGuid(String guid) {
     this.guid = guid;
   }
-
+  
+  /**
+   * field getter
+   * @return field
+   */
   public String getField() {
     return field;
   }
 
+  /**
+   * field setter
+   * @param field
+   */
   public void setField(String field) {
     this.field = field;
   }
 
+  /**
+   * action getter
+   * @return action
+   */
   public String getAction() {
     return action;
   }
 
+  /**
+   * action setter
+   * @param action
+   */
   public void setAction(String action) {
     this.action = action;
   }
 
+  /**
+   * code getter
+   * @return code
+   */
   public String getCode() {
     return code;
   }
 
+  /**
+   * code setter
+   * @param code
+   */
   public void setCode(String code) {
     this.code = code;
   }
 
+  /**
+   * result getter
+   * @return result
+   */
   public String getValuesMapString() {
     return valuesMapString;
   }
 
+  /**
+   * result setter
+   * @param valuesMapString
+   */
   public void setValuesMapString(String valuesMapString) {
     this.valuesMapString = valuesMapString;
   }
 
+  /**
+   * hot getter
+   * @return number of hops
+   */
   public int getHopLimit() {
     return hopLimit;
   }
 
+  /**
+   * hop setter
+   * @param hopLimit
+   */
   public void setHopLimit(int hopLimit) {
     this.hopLimit = hopLimit;
   }

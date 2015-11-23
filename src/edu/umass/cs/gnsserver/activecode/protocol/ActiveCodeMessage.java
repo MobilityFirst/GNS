@@ -65,58 +65,114 @@ public class ActiveCodeMessage implements Serializable {
    */
   public ActiveCodeQueryResponse acqresp;
 
+  /**
+   * shutdown getter
+   * @return true if has been shutdown
+   */
   public boolean isShutdown() {
     return shutdown;
   }
 
+  /**
+   * shutdown setter
+   * @param shutdown
+   */
   public void setShutdown(boolean shutdown) {
     this.shutdown = shutdown;
   }
 
+  /**
+   * finished getter
+   * @return true if it's finished
+   */
   public boolean isFinished() {
     return finished;
   }
 
+  /**
+   * finished setter
+   * @param finished
+   */
   public void setFinished(boolean finished) {
     this.finished = finished;
   }
 
+  /**
+   * crashed getter
+   * @return true if worker crashed
+   */
   public boolean isCrashed() {
     return crashed;
   }
 
+  /**
+   * crashed setter
+   * @param crashed
+   */
   public void setCrashed(boolean crashed) {
     this.crashed = crashed;
   }
 
+  /**
+   * parameter getter
+   * @return active code params
+   */
   public ActiveCodeParams getAcp() {
     return acp;
   }
 
+  /**
+   * params setter
+   * @param acp
+   */
   public void setAcp(ActiveCodeParams acp) {
     this.acp = acp;
   }
 
+  /**
+   * result getter
+   * @return result
+   */
   public String getValuesMapString() {
     return valuesMapString;
   }
 
+  /**
+   * result setter
+   * @param valuesMapString
+   */
   public void setValuesMapString(String valuesMapString) {
     this.valuesMapString = valuesMapString;
   }
 
+  /**
+   * request getter
+   * @return request
+   */
   public ActiveCodeQueryRequest getAcqreq() {
     return acqreq;
   }
 
+  /**
+   * request setter
+   * @param acqreq
+   */
   public void setAcqreq(ActiveCodeQueryRequest acqreq) {
     this.acqreq = acqreq;
   }
 
+  /**
+   * response getter
+   * @return response
+   */
   public ActiveCodeQueryResponse getAcqresp() {
     return acqresp;
   }
 
+  /**
+   * response setter
+   * @param acqresp
+   */
   public void setAcqresp(ActiveCodeQueryResponse acqresp) {
     this.acqresp = acqresp;
   }

@@ -21,7 +21,11 @@ package edu.umass.cs.gnsserver.activecode.protocol;
 
 import java.io.Serializable;
 
-
+/**
+ * This is the data structure for active code request
+ * 
+ * @author Zhaoyu Gao
+ */
 public class ActiveCodeQueryRequest implements Serializable {
 	public String guid;
 	public String field;

@@ -32,22 +32,26 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
  */
 public class ClientPool {
 	Map<Long, ActiveCodeClient> clients;
-	GnsApplicationInterface app;
+	GnsApplicationInterface<?> app;
 	
-	public ClientPool(GnsApplicationInterface app) {
+	/**
+	 * Initialize a ClientPool
+	 * @param app
+	 */
+	public ClientPool(GnsApplicationInterface<?> app) {
 		clients = new HashMap<>();
 		this.app = app;
 	}
 	
-	public void addClient(Thread t) {
+	protected void addClient(Thread t) {
 		clients.put(t.getId(), new ActiveCodeClient(app, true));
 	}
 	
-	public ActiveCodeClient getClient(Thread t) {
+	protected ActiveCodeClient getClient(Thread t) {
 		return clients.get(t.getId());
 	}
 
-	public void shutdown() {
+	protected void shutdown() {
 		for(ActiveCodeClient client : clients.values()) {
 		    client.shutdownServer();
 		}
