@@ -141,7 +141,8 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     AppReconfigurableNodeOptions.initializeFromOptions(options);
     if (options.containsKey(STANDALONE) && options.get(NS_FILE) != null) {
       startStandalone(options.get(NS_FILE));
-    } else if (options.get(TEST) != null && options.get(NS_FILE) != null) { // for testing
+      // run multiple nodes on a single machine
+    } else if (options.get(TEST) != null && options.get(NS_FILE) != null) {
       startTestNodes(options.get(NS_FILE));
     } else if (options.get(ID) != null && options.get(NS_FILE) != null) {
       startNodePair(options.get(ID), options.get(NS_FILE));

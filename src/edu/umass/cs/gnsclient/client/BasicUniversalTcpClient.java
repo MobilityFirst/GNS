@@ -1491,7 +1491,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
         throw new IOException(results.length == 2 ? results[1] : commandResult);
       }
     } catch (GnsException e) {
-      throw new IOException("Unable create connectivity.");
+      throw new IOException("Unable to create connectivity command.");
     } finally {
       setReadTimeout(originalReadTimeout);
     }
