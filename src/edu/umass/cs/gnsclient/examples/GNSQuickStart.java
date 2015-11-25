@@ -57,7 +57,7 @@ public class GNSQuickStart {
   
   // *** REPLACE THIS WITH THE VALUE YOU USED TO CREATE YOUR ACCOUNT ***
   // The email you used to create your GNS account guid
-  private static final String accountId = "david@westy.org";
+  private static final String accountId = "support@gns.name";
   //
   // *** REPLACE THIS WITH THE LOCATION OF YOUR PRIVATE KEY FILE ***
   // The location of your private key file. 

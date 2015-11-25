@@ -328,6 +328,6 @@ public class Email {
   }
 
   public static void main(String[] args) {
-    simpleMail("hello", "david@westy.org", "this is another test on " + Format.formatPrettyDateUTC(new Date()));
+    simpleMail("hello", "support@gns.name", "this is another test on " + Format.formatPrettyDateUTC(new Date()));
   }
 }
