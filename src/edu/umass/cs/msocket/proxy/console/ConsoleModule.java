@@ -220,12 +220,12 @@ public class ConsoleModule
    *          to instantiate
    * @param commands Set where the commands are added
    */
-  protected void addCommands(String[] commandClasses, Set commands)
+  protected void addCommands(String[] commandClasses, Set<ConsoleCommand> commands)
   {
     for (int i = 0; i < commandClasses.length; i++)
     {
       String commandClass = commandClasses[i].trim();
-      Class clazz;
+      Class<?> clazz;
       try
       {
         clazz = Class.forName(commandClass);
@@ -277,11 +277,11 @@ public class ConsoleModule
    */
   protected void loadCompletor()
   {
-    List completors = new LinkedList();
+    List<Completor> completors = new LinkedList<>();
     int size = commands.size();
     if (size > 0)
     {
-      TreeSet set = new TreeSet();
+      TreeSet<String> set = new TreeSet<>();
       Iterator it = commands.iterator();
       while (it.hasNext())
       {
@@ -375,7 +375,7 @@ public class ConsoleModule
     while (!quit)
     {
 
-      Hashtable hashCommands = getHashCommands();
+      Hashtable<String,ConsoleCommand> hashCommands = getHashCommands();
       try
       {
         String commandLine;
@@ -432,7 +432,7 @@ public class ConsoleModule
   }
 
   boolean           lastWasCR   = false;
-  List              currentLine = new ArrayList();
+  List<Byte>        currentLine = new ArrayList<>();
   private GuidEntry currentGuid;
   private boolean   accountVerified;
 
@@ -480,7 +480,7 @@ public class ConsoleModule
     // it looks good.
     while (ch != -1 && ch != '\n' && ch != '\r')
     {
-      currentLine.add(new Byte((byte) ch));
+      currentLine.add((byte) ch);
       ch = jlineInternal.read();
     }
 
@@ -491,9 +491,9 @@ public class ConsoleModule
 
     // "cast" byte List into a primitive byte array
     byte[] encoded = new byte[currentLine.size()];
-    Iterator it = currentLine.iterator();
+    Iterator<Byte> it = currentLine.iterator();
     for (int i = 0; it.hasNext(); i++)
-      encoded[i] = ((Byte) it.next()).byteValue();
+      encoded[i] = it.next();
 
     /**
      * This String ctor is using the "default" java.nio.Charset encoding which

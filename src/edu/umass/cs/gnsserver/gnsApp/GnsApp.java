@@ -83,7 +83,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
         ClientMessenger {
 
   private final static int INITIAL_RECORD_VERSION = 0;
-  private final String nodeID;
+  private String nodeID;
   private final GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
   private final PingManager<String> pingManager;
   /**
@@ -93,7 +93,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   /**
    * The Nio server
    */
-  private final SSLMessenger<String, JSONObject> messenger;
+  private SSLMessenger<String, JSONObject> messenger;
   private final ClientCommandProcessor clientCommandProcessor;
 
   // Keep track of commands that are coming in
@@ -143,6 +143,13 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
 
+  }
+  
+  
+  @Override
+  public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
+    this.messenger = (SSLMessenger<String, JSONObject>)messenger;
+    this.nodeID = messenger.getMyID().toString();
   }
 
   private static PacketType[] types = {
@@ -234,11 +241,6 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
       e.printStackTrace();
     }
     return executed;
-  }
-
-  @Override
-  public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   class CommandQuery {
@@ -442,7 +444,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   public void sendToID(String id, JSONObject msg) throws IOException {
     messenger.sendToID(id, msg);
   }
-
+  
   @Override
   public PingManager<String> getPingManager() {
     return pingManager;
