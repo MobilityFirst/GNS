@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -29,6 +30,7 @@ import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 
 import org.json.JSONException;
@@ -44,7 +46,8 @@ import java.util.Set;
  *
  * @param <NodeIDType>
  */
-public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAddress implements Request {
+public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAddress 
+implements Request, ClientRequest {
 
   private final static String HEADER = "dns_header";
   private final static String GUID = "dns_guid";
@@ -525,5 +528,20 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   @Override
   public String getServiceName() {
     return this.guid;
+  }
+
+  @Override
+  public InetSocketAddress getClientAddress() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public ClientRequest getResponse() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long getRequestID() {
+     return (long) getHeader().getId();
   }
 }

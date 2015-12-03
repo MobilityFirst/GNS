@@ -89,7 +89,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Requ
   public static ConfirmUpdatePacket<String> createFailPacket(UpdatePacket<String>updatePacket, NSResponseCode code) {
     assert code != NSResponseCode.NO_ERROR; // that would be stupid
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
-            updatePacket.getRequestID(), updatePacket.getCCPRequestID(), code);
+            updatePacket.getRequestIDInteger(), updatePacket.getCCPRequestID(), code);
   }
 
   /**
@@ -102,7 +102,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Requ
   @SuppressWarnings("unchecked")
   public static ConfirmUpdatePacket<String> createSuccessPacket(UpdatePacket<String>updatePacket) {
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
-            updatePacket.getRequestID(), updatePacket.getCCPRequestID(),
+            updatePacket.getRequestIDInteger(), updatePacket.getCCPRequestID(),
             NSResponseCode.NO_ERROR);
   }
 
@@ -114,7 +114,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Requ
    */
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.ADD_CONFIRM, packet.getSourceId(),
-            packet.getRequestID(), packet.getCCPRequestID(), code);
+            packet.getRequestIDInteger(), packet.getCCPRequestID(), code);
   }
   
   /**
@@ -125,7 +125,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Requ
    */
   public ConfirmUpdatePacket(NSResponseCode code, AddBatchRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.ADD_CONFIRM, packet.getSourceId(),
-            packet.getRequestID(), packet.getCCPRequestID(), code);
+            packet.getRequestIDInteger(), packet.getCCPRequestID(), code);
   }
 
   /**

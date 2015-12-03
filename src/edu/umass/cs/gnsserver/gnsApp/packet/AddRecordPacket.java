@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -49,7 +49,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements Request {
+public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> {
 
   private final static String NAME = "name";
   private final static String FIELD = "field";
@@ -206,6 +206,16 @@ public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDT
    */
   public JSONObject getValues() {
     return values;
+  }
+
+  @Override
+  public InetSocketAddress getClientAddress() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public ClientRequest getResponse() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
 }

@@ -96,7 +96,7 @@ public class Update {
           UpdatePacket<String> updatePacket, String nameServerID) {
     UpdatePacket<String> pkt = new UpdatePacket<String>(
             updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
-            updatePacket.getRequestID(),
+updatePacket.getRequestIDInteger(),
             ccpReqID, // the id used by the CCP (that would be us here)
             updatePacket.getName(),
             updatePacket.getKey(),

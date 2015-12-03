@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -51,7 +51,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements Request {
+public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> {
 
   private final static String NAMES = "names";
   private final static String VALUES = "values";
@@ -161,6 +161,16 @@ public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<No
   @Override
   public String getServiceName() {
     return serviceName;
+  }
+
+  @Override
+  public InetSocketAddress getClientAddress() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public ClientRequest getResponse() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
 }

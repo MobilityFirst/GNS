@@ -136,7 +136,7 @@ public class CCPProtocolTask<NodeIDType> implements
         ConfirmUpdatePacket<String> confirmPacket = 
                 new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM, 
         originalPacket.getSourceId(),
-        originalPacket.getRequestID(), originalPacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
+        originalPacket.getRequestIDInteger(), originalPacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
 //        ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, 
 //                originalPacket);
         try {

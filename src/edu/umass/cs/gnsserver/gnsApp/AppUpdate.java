@@ -209,7 +209,7 @@ public class AppUpdate {
           ConfirmUpdatePacket<String> failPacket
                   = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
                           updatePacket.getSourceId(),
-                          updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.ERROR);
+                          updatePacket.getRequestIDInteger(), updatePacket.getCCPRequestID(), NSResponseCode.ERROR);
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
             //GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket.toString());
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket.toReasonableString());
@@ -229,7 +229,7 @@ public class AppUpdate {
         if (updatePacket.getNameServerID().equals(app.getNodeID())) {
           ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
                   updatePacket.getSourceId(),
-                  updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
+                  updatePacket.getRequestIDInteger(), updatePacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
 
           if (!doNotReplyToClient) {
             app.getClientCommandProcessor().injectPacketIntoCCPQueue(confirmPacket.toJSONObject());

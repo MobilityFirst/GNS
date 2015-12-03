@@ -19,8 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -62,7 +62,7 @@ import org.json.JSONObject;
  * @param <NodeIDType>
  */
 public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndCCP implements
-        ReplicableRequest {
+        ReplicableRequest, ClientRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String CCPREQUESTID = "CCPreqID";
@@ -340,13 +340,13 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     //json.put(NAMESERVER_ID, nameServerId.toString());
     json.put(TTL, ttl);
   }
-
+  
   /**
    * Return the id used the client support for bookkeeping.
    *
    * @return an int
    */
-  public int getRequestID() {
+  public int getRequestIDInteger() {
     return requestID;
   }
 
@@ -475,38 +475,19 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     this.needsCoordination = needsCoordination;
   }
 
-  //
-  // TEST CODE
-  //
-  /**
-   * The main routine. For testing.
-   *
-   * @param args
-   */
-//  @SuppressWarnings("unchecked")
-//  public static void main(String[] args) {
-//    ResultValue x = new ResultValue();
-//    x.add("12345678");
-//    //
-//    UpdatePacket<String> up = new UpdatePacket(null, 32234234, 123, "12322323",
-//            "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
-//            GNS.DEFAULT_TTL_SECONDS, null, null, null);
-//
-//    SizeOf.skipStaticField(true); //java.sizeOf will not compute static fields
-//    SizeOf.skipFinalField(false); //java.sizeOf will not compute final fields
-//    SizeOf.skipFlyweightObject(false); //java.sizeOf will not compute well-known flyweight objects
-//    printSize(up);
-//    int size = 0;
-//    try {
-//      size = up.toJSONObject().toString().getBytes().length;
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//    }
-//    System.out.println("Network Size: " + size + " bytes");
-//
-//  }
-//
-//  static void printSize(Object object) {
-//    System.out.println("Java Size: " + SizeOf.deepSizeOf(object) + " bytes"); //this will print the object size in bytes
-//  }
+  @Override
+  public InetSocketAddress getClientAddress() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public ClientRequest getResponse() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long getRequestID() {
+    return (long) requestID;
+  }
+
 }

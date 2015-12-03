@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
@@ -46,15 +47,22 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
+public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType>
+        implements Request, ClientRequest {
 
-  /** The request id from the client. */
+  /**
+   * The request id from the client.
+   */
   protected final static String REQUESTID = "reqID";
 
-  /** The id maintained by the LNS. */
+  /**
+   * The id maintained by the LNS.
+   */
   protected final static String LNSREQID = "lnreqID";
 
-  /** The source node. */
+  /**
+   * The source node.
+   */
   protected final static String SOURCE_ID = "sourceId";
 
   /**
@@ -92,8 +100,6 @@ public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWit
     this.requestID = requestID;
   }
 
-  
-
   /**
    * Constructs a new AddRecordPacket from a JSONObject
    *
@@ -122,32 +128,33 @@ public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWit
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
     json.put(SOURCE_ID, sourceId);
-    json.put(REQUESTID, getRequestID());
+    json.put(REQUESTID, getRequestIDInteger());
     json.put(LNSREQID, getCCPRequestID());
     return json;
   }
 
   /**
    * Return the request id.
-   * 
+   *
    * @return the request id
    */
-  public int getRequestID() {
+  public int getRequestIDInteger() {
     return requestID;
   }
-
+  
   /**
-   * Set the request id.
-   * 
-   * @param requestID
+   * Return the request id.
+   *
+   * @return the request id
    */
-  public void setRequestID(int requestID) {
-    this.requestID = requestID;
+  @Override
+  public long getRequestID() {
+    return (long) requestID;
   }
 
   /**
    * Return the CCP request id.
-   * 
+   *
    * @return the CCP request id
    */
   public int getCCPRequestID() {
@@ -165,13 +172,11 @@ public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWit
 
   /**
    * Returns the source ID.
-   * 
-   * @return 
+   *
+   * @return
    */
   public NodeIDType getSourceId() {
     return sourceId;
   }
-  
-  
 
 }
