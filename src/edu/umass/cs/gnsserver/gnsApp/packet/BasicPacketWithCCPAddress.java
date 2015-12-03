@@ -24,22 +24,26 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Provides an LNS address to packets. Address can be null.
+ * Provides an CCP (ClientCommandProcessor) address to packets. Address can be null.
  *
  * @author westy
  */
-public abstract class BasicPacketWithCCPAddress extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithCCPAddress extends BasicPacketWithClientAddress {
 
-  /** ccpAddress */
-  public final static String CCP_ADDRESS = "ccpAddress";
+  /**
+   * ccpAddress
+   */
+  private final static String CCP_ADDRESS = "ccpAddress";
 
-  /** ccpPort */
-  public final static String CCP_PORT = "ccpPort";
+  /**
+   * ccpPort
+   */
+  private final static String CCP_PORT = "ccpPort";
 
   /**
    * An invalid port.
    */
-  public final static int INVALID_PORT = -1;
+  protected final static int INVALID_PORT = -1;
   //
   /**
    * This is used by the Nameservers so they know which CCP to send the packet back to.
@@ -48,26 +52,39 @@ public abstract class BasicPacketWithCCPAddress extends BasicPacket implements P
   private InetSocketAddress ccpAddress = null;
 
   /**
-   * Creates a BasicPacketWithLnsAddress.
+   * Creates a BasicPacketWithCCPAddress from a JSONObject.
+   * 
+   * @param json
+   * @throws JSONException 
+   */
+  public BasicPacketWithCCPAddress(JSONObject json) throws JSONException {
+    super(json);
+    String address = json.optString(CCP_ADDRESS, null);
+    int port = json.optInt(CCP_PORT, INVALID_PORT);
+    this.ccpAddress = address != null && port != INVALID_PORT
+            ? new InetSocketAddress(address, port) : null;
+  }
+  
+  /**
+   * Creates a BasicPacketWithCCPAddress with a null CPP address.
+   */
+  public BasicPacketWithCCPAddress() {
+    this.ccpAddress = null;
+  }
+  
+  /**
+   * Creates a BasicPacketWithCCPAddress using address as the CPP address.
    *
    * @param address
    */
   public BasicPacketWithCCPAddress(InetSocketAddress address) {
     this.ccpAddress = address;
   }
-
-  /**
-   * Creates a BasicPacketWithLnsAddress.
-   *
-   * @param address
-   * @param port
-   */
-  public BasicPacketWithCCPAddress(String address, Integer port) {
-    this(address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null);
-  }
+  
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
+    super.addToJSONObject(json);
     if (ccpAddress != null) {
       json.put(CCP_ADDRESS, ccpAddress.getHostString());
       json.put(CCP_PORT, ccpAddress.getPort());
@@ -79,7 +96,7 @@ public abstract class BasicPacketWithCCPAddress extends BasicPacket implements P
    *
    * @return an address
    */
-  public InetSocketAddress getCCPAddress() {
+  public InetSocketAddress getCppAddress() {
     return ccpAddress;
   }
 
@@ -88,7 +105,7 @@ public abstract class BasicPacketWithCCPAddress extends BasicPacket implements P
    *
    * @param lnsAddress
    */
-  public void setCCPAddress(InetSocketAddress lnsAddress) {
+  public void setCppAddress(InetSocketAddress lnsAddress) {
     this.ccpAddress = lnsAddress;
   }
 

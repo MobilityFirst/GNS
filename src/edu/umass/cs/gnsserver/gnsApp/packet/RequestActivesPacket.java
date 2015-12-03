@@ -93,8 +93,9 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    */
   @SuppressWarnings("unchecked")
   public RequestActivesPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
+    super(json, unstringer);
+//    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
+//            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     this.name = json.getString(NAME);
     this.activeNameServers = json.has(ACTIVES) ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVES)) : null;
     //this.activeNameServers = json.has(ACTIVES) ? Util.stringToSetOfNodeId(json.getString(ACTIVES)) : null;

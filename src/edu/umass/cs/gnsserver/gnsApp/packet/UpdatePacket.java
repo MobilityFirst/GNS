@@ -274,9 +274,10 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   @SuppressWarnings("unchecked")
   public UpdatePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     // include the address and signature info
-    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT),
-            json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
+    super(json, unstringer);
+//    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
+//            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT),
+//            json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
     this.requestID = json.getInt(REQUESTID);
@@ -473,11 +474,6 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   @Override
   public void setNeedsCoordination(boolean needsCoordination) {
     this.needsCoordination = needsCoordination;
-  }
-
-  @Override
-  public InetSocketAddress getClientAddress() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override

@@ -209,11 +209,6 @@ public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDT
   }
 
   @Override
-  public InetSocketAddress getClientAddress() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
   public ClientRequest getResponse() {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }

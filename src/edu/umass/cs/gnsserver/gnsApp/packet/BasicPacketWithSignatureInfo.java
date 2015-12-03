@@ -27,44 +27,31 @@ import org.json.JSONObject;
  * 
  * @author westy
  */
-public abstract class BasicPacketWithSignatureInfo extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithSignatureInfo extends BasicPacketWithClientAddress {
 
   /** accessor */
-  public final static String ACCESSOR = "si_accessor";
+  private final static String ACCESSOR = "si_accessor";
 
   /** signature */
-  public final static String SIGNATURE = "si_signature";
+  private final static String SIGNATURE = "si_signature";
 
   /** message */
-  public final static String MESSAGE = "si_message";
+  private final static String MESSAGE = "si_message";
   //
-  private String accessor;
-  private String signature;
-  private String message;
+  private final String accessor;
+  private final String signature;
+  private final String message;
 
-  /**
-   * Construct this guy with no signature info.
-   */
-  public BasicPacketWithSignatureInfo() {
-    this(null, null, null);
-  }
-  
-  
-  /**
-   * Construct this with all the signature info.
-   * 
-   * @param accessor
-   * @param signature
-   * @param message 
-   */
-  public BasicPacketWithSignatureInfo(String accessor, String signature, String message) {
-    this.accessor = accessor;
-    this.signature = signature;
-    this.message = message;
+  public BasicPacketWithSignatureInfo(JSONObject json) throws JSONException {
+    super(json);
+    this.accessor = json.optString(ACCESSOR, null);
+    this.signature = json.optString(SIGNATURE, null);
+    this.message = json.optString(MESSAGE, null);
   }
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
+    super.addToJSONObject(json);
     if (accessor != null) {
       json.put(ACCESSOR, accessor);
     }

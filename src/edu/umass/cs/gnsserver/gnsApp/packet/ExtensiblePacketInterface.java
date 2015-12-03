@@ -29,7 +29,7 @@ import org.json.JSONObject;
 public interface ExtensiblePacketInterface {
   
   /**
-   * Add the fields from this packet to the JSON object.
+   * Add the fields from this JSON packet to the JSON object.
    * 
    * @param json
    * @throws org.json.JSONException

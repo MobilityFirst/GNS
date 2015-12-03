@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.packet.admin;
 
 import edu.umass.cs.gnsserver.main.GNS.PortType;
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
 import edu.umass.cs.gnscommon.utils.Format;
@@ -38,7 +38,7 @@ import java.util.Date;
  * @param <NodeIDType> 
  * 
  */
-public class TrafficStatusPacket<NodeIDType> extends BasicPacket {
+public class TrafficStatusPacket<NodeIDType> extends BasicPacketWithClientAddress {
 
   /** fromID */
   public final static String FROMID = "fromID";

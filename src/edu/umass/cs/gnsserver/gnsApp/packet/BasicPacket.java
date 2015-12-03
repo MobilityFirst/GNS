@@ -26,10 +26,10 @@ import org.json.JSONException;
 
 /**
  * Provides the basics for Packets including a type field.
- * 
+ *
  * @author westy
  */
-public abstract class BasicPacket implements PacketInterface {
+public abstract class BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
   /**
    * The packet type *
@@ -45,7 +45,7 @@ public abstract class BasicPacket implements PacketInterface {
       return "BasicPacket{" + "type=" + getType() + '}';
     }
   }
-  
+
   public String toReasonableString() {
     try {
       return this.toJSONObject().toReasonableString();
@@ -61,21 +61,20 @@ public abstract class BasicPacket implements PacketInterface {
   public Packet.PacketType getType() {
     return type;
   }
-  
-  // For InterfaceRequest
 
+  // For InterfaceRequest
   /**
    * Return the request type.
-   * 
+   *
    * @return the request type
    */
-    public IntegerPacketType getRequestType() {
-     return type;
+  public IntegerPacketType getRequestType() {
+    return type;
   }
 
   /**
    * Set the packet type.
-   * 
+   *
    * @param type the type to set
    */
   public void setType(Packet.PacketType type) {

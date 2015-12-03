@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
+import edu.umass.cs.nio.interfaces.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,22 +30,27 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public abstract class BasicPacketWithSignatureInfoAndNSAndCCP<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> 
-implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithSignatureInfoAndNSAndCCP<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> {
 
   /** accessor */
-  public final static String ACCESSOR = "si_accessor";
+  private final static String ACCESSOR = "si_accessor";
 
   /** signature */
-  public final static String SIGNATURE = "si_signature";
+  private final static String SIGNATURE = "si_signature";
 
   /** message */
-  public final static String MESSAGE = "si_message";
+  private final static String MESSAGE = "si_message";
   //
-  private String accessor;
-  private String signature;
-  private String message;
+  private final String accessor;
+  private final String signature;
+  private final String message;
 
+  public BasicPacketWithSignatureInfoAndNSAndCCP(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    super(json, unstringer);
+    this.accessor = json.optString(ACCESSOR, null);
+    this.signature = json.optString(SIGNATURE, null);
+    this.message = json.optString(MESSAGE, null);
+  }
   /**
    * Construct this guy with the address, but no signature info.
    *
@@ -71,28 +77,16 @@ implements PacketInterface, ExtensiblePacketInterface {
     this.message = message;
   }
 
-  /**
-   * Construct this with all the address and signature info.
-   *
-   * @param nameServerID
-   * @param address
-   * @param port
-   * @param accessor
-   * @param signature
-   * @param message
-   */
-  public BasicPacketWithSignatureInfoAndNSAndCCP(NodeIDType nameServerID, String address, Integer port, String accessor, String signature, String message) {
-    this(nameServerID, address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null,
-            accessor, signature, message);
-  }
-
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
+    super.addToJSONObject(json);
     addToJSONObject(json, true);
   }
 
   /**
-   * Add this packets fields to a Json object.
+   * Add this packets fields to a JSON object.
+   * Optionally include the signature section.
+   * 
    * @param json
    * @param includeSignatureSection
    * @throws JSONException

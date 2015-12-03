@@ -30,7 +30,7 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class StopPacket extends BasicPacket implements ReconfigurableRequest,
+public class StopPacket extends BasicPacketWithClientAddress implements ReconfigurableRequest,
         ReplicableRequest {
 
   private final static String NAME = "name";

@@ -108,8 +108,10 @@ public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWit
    * @throws org.json.JSONException
    */
   public AbstractAddRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
+    super(json, unstringer);
+//    
+//    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
+//            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
     this.requestID = json.getInt(REQUESTID);

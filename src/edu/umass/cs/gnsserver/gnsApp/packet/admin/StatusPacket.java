@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet.admin;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.gnscommon.utils.Format;
 import org.json.JSONException;
@@ -34,7 +34,7 @@ import java.util.Date;
  * @author Westy
  * @param <NodeIDType>
  */
-public class StatusPacket<NodeIDType> extends BasicPacket {
+public class StatusPacket<NodeIDType> extends BasicPacketWithClientAddress {
 
   /** id */
   public final static String ID = "id";

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet.admin;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
  */
-public class StatusInitPacket extends BasicPacket {
+public class StatusInitPacket extends BasicPacketWithClientAddress {
 
   /**
    * Constructs a new status init packet

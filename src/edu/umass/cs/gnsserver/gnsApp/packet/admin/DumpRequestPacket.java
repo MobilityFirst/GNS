@@ -106,7 +106,8 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCCPAddress {
    * @throws org.json.JSONException
    */
   public DumpRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
+    super(json);
+    //super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.DUMP_REQUEST) {
       Exception e = new Exception("DumpRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();

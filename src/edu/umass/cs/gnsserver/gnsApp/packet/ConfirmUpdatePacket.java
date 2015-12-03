@@ -37,7 +37,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Request {
+public class ConfirmUpdatePacket<NodeIDType> extends BasicPacketWithClientAddress implements Request {
 
   private final static String REQUESTID = "reqid";
   private final static String CCPREQUESTID = "ccpreqid";

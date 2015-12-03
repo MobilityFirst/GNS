@@ -171,7 +171,7 @@ implements Request, ClientRequest {
    * @param activeNameServers
    */
   public DNSPacket(NodeIDType sourceId, int id, String name, String key, List<String> keys, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
-    super(null); // lnsAddress is null and no sigs for this baby
+    super(); // lnsAddress is null and no sigs for this baby
     this.type = Packet.PacketType.DNS;
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
@@ -195,8 +195,9 @@ implements Request, ClientRequest {
    * @throws org.json.JSONException
    */
   public DNSPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT),
-            json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
+    super(json);
+//    super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT),
+//            json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
     this.header = new Header(json.getJSONObject(HEADER));
     this.guid = json.getString(GUID);
@@ -528,11 +529,6 @@ implements Request, ClientRequest {
   @Override
   public String getServiceName() {
     return this.guid;
-  }
-
-  @Override
-  public InetSocketAddress getClientAddress() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override

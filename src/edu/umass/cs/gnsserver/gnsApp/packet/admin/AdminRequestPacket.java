@@ -124,7 +124,7 @@ public class AdminRequestPacket extends BasicPacketWithCCPAddress {
    * @param argument2
    */
   public AdminRequestPacket(int id, AdminOperation operation, String argument, String argument2) {
-    super(null); // implies that it came from a client, not an NS or LNS
+    super(); // implies that it came from a client, not an NS or LNS
     this.type = PacketType.ADMIN_REQUEST;
     this.id = id;
     this.operation = operation;
@@ -140,7 +140,8 @@ public class AdminRequestPacket extends BasicPacketWithCCPAddress {
    * @throws org.json.JSONException
    */
   public AdminRequestPacket(JSONObject json) throws JSONException {
-    super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
+    super(json);
+    //super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != PacketType.ADMIN_REQUEST) {
       Exception e = new Exception("AdminRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();

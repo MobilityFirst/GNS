@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.packet.AddRecordPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
 import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType.*;
 import edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket;
@@ -49,7 +49,7 @@ import java.util.TimerTask;
 public class SendAddRemoveTask extends TimerTask {
 
   private final String name;
-  private final BasicPacket packet;
+  private final BasicPacketWithClientAddress packet;
   private final int lnsRequestID;
   private final HashSet<String> replicaControllersQueried;
   private int timeoutCount = -1;
@@ -64,7 +64,7 @@ public class SendAddRemoveTask extends TimerTask {
    * @param name
    * @param requestRecvdTime
    */
-  public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface handler, BasicPacket packet, String name, long requestRecvdTime) {
+  public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface handler, BasicPacketWithClientAddress packet, String name, long requestRecvdTime) {
     this.name = name;
     this.handler = handler;
     this.packet = packet;
@@ -183,18 +183,18 @@ public class SendAddRemoveTask extends TimerTask {
     }
   }
 
-  // Special case code like this screams for using a super class other than BasicPacket
-  private void updatePacketWithRequestID(BasicPacket packet, int requestID) {
+  // Special case code like this screams for using a super class other than BasicPacketWithClientAddress
+  private void updatePacketWithRequestID(BasicPacketWithClientAddress packet, int requestID) {
     switch (packet.getType()) {
       case ADD_RECORD:
         AddRecordPacket addRecordPacket = (AddRecordPacket) packet;
         addRecordPacket.setCCPRequestID(requestID);
-        addRecordPacket.setCcpAddress(handler.getNodeAddress());
+        addRecordPacket.setCppAddress(handler.getNodeAddress());
         break;
       case REMOVE_RECORD:
         RemoveRecordPacket removeRecordPacket = (RemoveRecordPacket) packet;
         removeRecordPacket.setCCPRequestID(requestID);
-        removeRecordPacket.setCcpAddress(handler.getNodeAddress());
+        removeRecordPacket.setCppAddress(handler.getNodeAddress());
         break;
     }
   }
@@ -213,7 +213,7 @@ public class SendAddRemoveTask extends TimerTask {
    * 
    * @return the packet
    */
-  public BasicPacket getPacket() {
+  public BasicPacketWithClientAddress getPacket() {
     return packet;
   }
 

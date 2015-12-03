@@ -60,7 +60,7 @@ public class Lookup {
     DNSRequestInfo<String> requestInfo = new DNSRequestInfo<String>(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
     handler.addRequestInfo(ccpReqID, requestInfo);
     int clientQueryID = incomingPacket.getQueryId(); // BS: save the value because we reuse the field in the packet
-    incomingPacket.setCCPAddress(handler.getNodeAddress());
+    incomingPacket.setCppAddress(handler.getNodeAddress());
     incomingPacket.getHeader().setId(ccpReqID);
     JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
     incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet

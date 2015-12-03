@@ -37,7 +37,7 @@ import org.json.JSONObject;
  * insofar as the fields in the JOSN Object is concerned.
  *
  */
-public class CommandValueReturnPacket extends BasicPacket implements Request {
+public class CommandValueReturnPacket extends BasicPacketWithClientAddress implements Request {
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";

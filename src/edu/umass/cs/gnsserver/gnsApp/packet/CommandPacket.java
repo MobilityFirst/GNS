@@ -31,7 +31,7 @@ import org.json.JSONObject;
  * Packet format sent from a client and handled by a local name server.
  *
  */
-public class CommandPacket extends BasicPacket implements ReplicableRequest {
+public class CommandPacket extends BasicPacketWithClientAddress implements ReplicableRequest {
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";

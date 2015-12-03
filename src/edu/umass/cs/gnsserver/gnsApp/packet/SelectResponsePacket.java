@@ -148,8 +148,9 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    * @throws org.json.JSONException
    */
   public SelectResponsePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
+    super(json, unstringer);
+//    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
+//            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {;
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
     }

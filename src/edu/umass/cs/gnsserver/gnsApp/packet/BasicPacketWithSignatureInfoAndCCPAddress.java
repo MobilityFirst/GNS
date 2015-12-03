@@ -28,21 +28,28 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPacketWithCCPAddress implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPacketWithCCPAddress {
 
   /** accessor */
-  public final static String ACCESSOR = "si_accessor";
+  private final static String ACCESSOR = "si_accessor";
 
   /** signature */
-  public final static String SIGNATURE = "si_signature";
+  private final static String SIGNATURE = "si_signature";
 
   /** message */
-  public final static String MESSAGE = "si_message";
+  private final static String MESSAGE = "si_message";
   //
-  private String accessor;
-  private String signature;
-  private String message;
+  private final String accessor;
+  private final String signature;
+  private final String message;
 
+  /**
+   * Create a BasicPacketWithSignatureInfoAndCCPAddress instance.
+   */
+  public BasicPacketWithSignatureInfoAndCCPAddress() {
+    this(null, null, null, null);
+  }
+  
   /**
    * Construct this guy with the address, but no signature info.
    *
@@ -50,6 +57,13 @@ public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPac
    */
   public BasicPacketWithSignatureInfoAndCCPAddress(InetSocketAddress ccpAddress) {
     this(ccpAddress, null, null, null);
+  }
+  
+  public BasicPacketWithSignatureInfoAndCCPAddress(JSONObject json) throws JSONException {
+    super(json);
+    this.accessor = json.optString(ACCESSOR, null);
+    this.signature = json.optString(SIGNATURE, null);
+    this.message = json.optString(MESSAGE, null);
   }
 
   /**
@@ -67,27 +81,15 @@ public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPac
     this.message = message;
   }
 
-  /**
-   * Construct this with all the address and signature info.
-   *
-   * @param address
-   * @param port
-   * @param accessor
-   * @param signature
-   * @param message
-   */
-  public BasicPacketWithSignatureInfoAndCCPAddress(String address, Integer port, String accessor, String signature, String message) {
-    this(address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null,
-            accessor, signature, message);
-  }
-
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
+    super.addToJSONObject(json);
     addToJSONObject(json, true);
   }
 
   /**
-   * Add this packets fields to a Json object. 
+   * Add this packets fields to a JSON object. 
+   * Optionally include the signature section.
    * 
    * @param json
    * @param includeSignatureSection

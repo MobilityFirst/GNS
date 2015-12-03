@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
 import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType.*;
 import edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket;
@@ -45,7 +45,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
    */
   private NodeIDType nameserverID;
 
-  private final BasicPacket basicPacket;
+  private final BasicPacketWithClientAddress basicPacket;
   
   private final ClientRequestHandlerInterface handler;
 
@@ -57,7 +57,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
    * @param packet
    * @param handler
    */
-  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface handler) {
+  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacketWithClientAddress packet, ClientRequestHandlerInterface handler) {
     this.ccpReqID = lnsRequestID;
     this.name = name;
     this.startTime = System.currentTimeMillis();
@@ -115,7 +115,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
    * 
    * @return the basicPacket
    */
-  public synchronized BasicPacket getUpdatePacket() {
+  public synchronized BasicPacketWithClientAddress getUpdatePacket() {
     return basicPacket;
   }
 

@@ -29,7 +29,6 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationP
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.Set;
 import org.json.JSONObject;
 import java.util.concurrent.ScheduledThreadPoolExecutor;

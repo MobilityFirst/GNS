@@ -29,7 +29,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
  */
-public class NoopPacket extends BasicPacket implements ReconfigurableRequest {
+public class NoopPacket extends BasicPacketWithClientAddress implements ReconfigurableRequest {
 
   /**
    * Constructs a new NoopPacket.

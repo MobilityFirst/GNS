@@ -115,12 +115,12 @@ public class AppLookup {
     if (reader != null) { // reader will be null for internal system reads
       if (field != null) {// single field check
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message,
-                MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress());
+                MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCppAddress());
       } else { //multi field check - return an error if any field doesn't pass
         for (String key : fields) {
           NSResponseCode code;
           if ((code = NSAuthentication.signatureAndACLCheck(guid, key, reader, signature,
-                  message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress())).isAnError()) {
+                  message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCppAddress())).isAnError()) {
             errorCode = code;
           }
         }
@@ -134,12 +134,12 @@ public class AppLookup {
       dnsPacket.getHeader().setResponseCode(errorCode);
       dnsPacket.setResponder(gnsApp.getNodeID());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet "
+        GNS.getLogger().fine("Sending to " + dnsPacket.getCppAddress() + " this error packet "
                 + dnsPacket.toJSONObjectForErrorResponse());
       }
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObjectForErrorResponse());
-        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCppAddress(), dnsPacket.toJSONObjectForErrorResponse());
       }
     } else {
         // All signature and ACL checks passed see if we can find the field to return;
@@ -214,7 +214,7 @@ public class AppLookup {
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp, newResult);
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCppAddress(), dnsPacket.toJSONObject());
       }
       DelayProfiler.updateDelay("totalLookup", receiptTime);
     }
@@ -241,7 +241,7 @@ public class AppLookup {
   private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket<String> dnsPacket, String guid, String field, NameRecord nameRecord,
           GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException, IOException, JSONException {
     if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
-      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getCCPAddress());
+      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getCppAddress());
       // Set up the response packet
       dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
       dnsPacket.setResponder(gnsApp.getNodeID());
@@ -249,7 +249,7 @@ public class AppLookup {
       dnsPacket.setRecordValue(valuesMap);
       // .. and send it
       gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-      //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+      //gnsApp.getMessenger().sendToAddress(dnsPacket.getCppAddress(), dnsPacket.toJSONObject());
       return true;
     }
     return false;

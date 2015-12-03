@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet.admin;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * @author Westy
  *
  */
-public class SentinalPacket extends BasicPacket {
+public class SentinalPacket extends BasicPacketWithClientAddress {
 
   /**
    * id

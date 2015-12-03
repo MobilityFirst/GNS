@@ -164,11 +164,6 @@ public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<No
   }
 
   @Override
-  public InetSocketAddress getClientAddress() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
   public ClientRequest getResponse() {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
