@@ -51,3 +51,4 @@ build.number
 /derbyDB/
 /jars/
 /paxos_logs/
+!/.travis.yml

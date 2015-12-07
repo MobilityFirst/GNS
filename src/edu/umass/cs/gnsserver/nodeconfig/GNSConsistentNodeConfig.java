@@ -23,7 +23,6 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 import java.net.InetAddress;
 import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 

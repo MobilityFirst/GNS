@@ -84,7 +84,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private String nodeID;
-  private final GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
+  private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
   private final PingManager<String> pingManager;
   /**
    * Object provides interface to the database table storing name records
@@ -150,6 +150,8 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
     this.messenger = (SSLMessenger<String, JSONObject>)messenger;
     this.nodeID = messenger.getMyID().toString();
+//    this.nodeConfig 
+//            = new GNSConsistentReconfigurableNodeConfig<String>(((SSLMessenger<String, JSONObject>)messenger).getNodeConfig());
   }
 
   private static PacketType[] types = {
