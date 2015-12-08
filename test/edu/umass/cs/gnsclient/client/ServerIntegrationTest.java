@@ -80,16 +80,16 @@ public class ServerIntegrationTest {
     address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNSClient.LNS_PORT);
     System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
     client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
-    int tries = 6;
+    int tries = 10;
     boolean connected = false;
     do {
       try {
         System.out.println("Connectivity check: " +  (tries - 1) + " attempt remaining.");
-        client.checkConnectivity(); // this will throw an error if we cannot connect
+        client.checkConnectivity(); // this will throw the IOException if we cannot connect
         connected = true;
-      } catch (IOException e) {
+      } catch (IOException e) {  
+        ThreadUtils.sleep((10 - tries) * 2000);
       }
-      ThreadUtils.sleep((6 - tries) * 2000);
     } while (!connected && --tries > 0);
     if (connected == false) {
       fail("Server startup failure: ; aborting all tests.");
