@@ -43,6 +43,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 
 /**
  * Functionality test for core elements in the client using the UniversalGnsClientFull.
@@ -83,11 +84,12 @@ public class ServerIntegrationTest {
     boolean connected = false;
     do {
       try {
-         System.out.println("Connectivity check: " +  (tries - 1) + " attempt remaining.");
+        System.out.println("Connectivity check: " +  (tries - 1) + " attempt remaining.");
         client.checkConnectivity(); // this will throw an error if we cannot connect
         connected = true;
       } catch (IOException e) {
       }
+      ThreadUtils.sleep((6 - tries) * 2000);
     } while (!connected && --tries > 0);
     if (connected == false) {
       fail("Server startup failure: ; aborting all tests.");
