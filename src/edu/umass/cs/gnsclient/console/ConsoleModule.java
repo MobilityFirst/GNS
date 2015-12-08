@@ -82,7 +82,7 @@ public class ConsoleModule {
    */
   public static String DEFAULT_COMMAND_PROPERTIES_FILE = "edu/umass/cs/gnsclient/console/console.properties";
 
-  private static boolean debuggingEnabled = false;
+  private static boolean debuggingEnabled = true;
 
   /**
    * Creates a new <code>ConsoleModule.java</code> object

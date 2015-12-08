@@ -79,10 +79,11 @@ public class ServerIntegrationTest {
     address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNSClient.LNS_PORT);
     System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
     client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
-    int tries = 4;
+    int tries = 6;
     boolean connected = false;
     do {
       try {
+         System.out.println("Connectivity check: " +  (tries - 1) + " attempt remaining.");
         client.checkConnectivity(); // this will throw an error if we cannot connect
         connected = true;
       } catch (IOException e) {
