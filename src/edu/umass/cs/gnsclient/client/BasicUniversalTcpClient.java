@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -36,10 +37,14 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import org.json.JSONArray;
+
 import java.util.ArrayList;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
@@ -72,6 +77,7 @@ import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -169,7 +175,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   public BasicUniversalTcpClient(String remoteHost, int remotePort, boolean disableSSL) {
     this.disableSSL = disableSSL;
     try {
-      this.remoteAddress = new InetSocketAddress(remoteHost, remotePort);
+      this.remoteAddress = new InetSocketAddress(InetAddress.getByName(remoteHost), remotePort);
       SSLDataProcessingWorker.SSL_MODES sslMode = disableSSL ? CLEAR : SERVER_AUTH;
       if (!disableSSL) {
         ReconfigurationConfig.setClientPortOffset(100);

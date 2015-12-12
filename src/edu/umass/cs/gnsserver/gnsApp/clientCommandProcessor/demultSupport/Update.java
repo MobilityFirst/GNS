@@ -22,7 +22,9 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
+import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,6 +62,14 @@ public class Update {
           throws JSONException, UnknownHostException {
 
     UpdatePacket<String> updatePacket = new UpdatePacket<String>(json, handler.getGnsNodeConfig());
+    // send trigger to context service
+    
+    if(AppReconfigurableNodeOptions.enableContextService)
+    {
+    	// create appropriate JSON
+    	//handler.getApp().getContextServiceClient().sendUpdate(arg0);
+    }
+    
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     }

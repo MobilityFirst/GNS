@@ -19,10 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnsApp;
 
+import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
-
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -34,6 +34,7 @@ import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import static edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientCommandProcessor;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -107,6 +108,11 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
    * Active code handler
    */
   private ActiveCodeHandler activeCodeHandler;
+  
+  /**
+   * context service client
+   */
+  private ContextServiceClient csClient;
 
   /**
    * Creates the application.
@@ -142,9 +148,17 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     this.activeCodeHandler = new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
-
+    
+    if(AppReconfigurableNodeOptions.enableContextService)
+    {
+    	csClient = new ContextServiceClient();
+    }
   }
   
+  public ContextServiceClient getContextServiceClient()
+  {
+	  return csClient;
+  }
   
   @Override
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {

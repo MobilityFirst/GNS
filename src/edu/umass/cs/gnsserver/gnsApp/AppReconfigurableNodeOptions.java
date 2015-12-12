@@ -116,6 +116,8 @@ public class AppReconfigurableNodeOptions {
    * How long (in seconds) to blacklist active code.
    */
   public static long activeCodeBlacklistSeconds = 10;
+  
+  public static boolean enableContextService = false;
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -198,6 +200,11 @@ public class AppReconfigurableNodeOptions {
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
   
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
+  
+  /**
+   * enable ContextService
+   */
+  public static final String ENABLE_CONTEXT_SERVICE = "enableContextService";
 
   /**
    * Returns all the options.
@@ -398,6 +405,11 @@ public class AppReconfigurableNodeOptions {
     
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
     	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
+    }
+    
+    if(allValues.containsKey(ENABLE_CONTEXT_SERVICE))
+    {
+    	enableContextService = true;
     }
 
   }
