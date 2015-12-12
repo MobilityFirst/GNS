@@ -63,11 +63,11 @@ public class Update {
     UpdatePacket<String> updatePacket = new UpdatePacket<String>(json, handler.getGnsNodeConfig());
     // send trigger to context service
     
-    System.out.println("\n\n handlePacketUpdate "+AppReconfigurableNodeOptions.enableContextService+" "+json);
-    
     if( AppReconfigurableNodeOptions.enableContextService )
     {
-    	System.out.println("\n\n handlePacketUpdate "+json);
+    	System.out.println("\n\n handlePacketUpdate userJSON "+updatePacket.getUserJSON()+" old Value "+
+    			updatePacket.getOldValue()+" new value "+updatePacket.getUpdateValue()+" name "+updatePacket.getName()
+    			+" key "+updatePacket.getKey()+" operation "+updatePacket.getOperation());
     	// create appropriate JSON
     	//handler.getApp().getContextServiceClient().sendUpdate(arg0);
     }

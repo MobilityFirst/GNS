@@ -208,7 +208,6 @@ public class AppReconfigurableNodeOptions {
 
   /**
    * Returns all the options.
-   *
    * @return all the options
    */
   public static Options getAllOptions() {
@@ -411,7 +410,6 @@ public class AppReconfigurableNodeOptions {
     {
     	enableContextService = true;
     }
-
   }
 
 }
