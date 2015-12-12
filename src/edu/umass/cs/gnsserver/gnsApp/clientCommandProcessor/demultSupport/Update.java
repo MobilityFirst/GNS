@@ -52,7 +52,6 @@ public class Update {
 
   /**
    * Handles incoming Update packets.
-   *
    * @param json
    * @param handler
    * @throws JSONException
@@ -64,8 +63,9 @@ public class Update {
     UpdatePacket<String> updatePacket = new UpdatePacket<String>(json, handler.getGnsNodeConfig());
     // send trigger to context service
     
-    if(AppReconfigurableNodeOptions.enableContextService)
+    if( AppReconfigurableNodeOptions.enableContextService )
     {
+    	System.out.println("\n\n handlePacketUpdate "+json);
     	// create appropriate JSON
     	//handler.getApp().getContextServiceClient().sendUpdate(arg0);
     }
