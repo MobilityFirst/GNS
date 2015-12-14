@@ -25,11 +25,14 @@ import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,6 +71,8 @@ public class Update {
     	System.out.println("\n\n handlePacketUpdate userJSON "+updatePacket.getUserJSON()+" old Value "+
     			updatePacket.getOldValue()+" new value "+updatePacket.getUpdateValue()+" name "+updatePacket.getName()
     			+" key "+updatePacket.getKey()+" operation "+updatePacket.getOperation());
+    	
+    	sendTriggerToContextService(updatePacket, handler);
     	// create appropriate JSON
     	//handler.getApp().getContextServiceClient().sendUpdate(arg0);
     }
@@ -87,6 +92,44 @@ public class Update {
               handler.getActiveReplicaID(), handler.reallySendUpdateToReplica());
       handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
     }
+  }
+  
+  private static void sendTriggerToContextService(UpdatePacket<String> updatePacket, 
+		  ClientRequestHandlerInterface handler)
+  {
+	  switch( updatePacket.getOperation() )
+	  {
+		  case SINGLE_FIELD_CREATE:
+		  {
+			  String GUID           = updatePacket.getName();
+			  String fieldName      = updatePacket.getKey();
+			  Set<String> newValue  = updatePacket.getUpdateValue().toStringSet();
+			  
+			  Iterator<String> setIter = newValue.iterator();
+			  JSONArray valueArray = new JSONArray();
+			  
+			  while( setIter.hasNext() )
+			  {
+				  valueArray.put(setIter.next());
+			  }
+			  
+			  JSONObject attrValPairJSON = new JSONObject();
+			  try 
+			  {
+				  attrValPairJSON.put(fieldName, valueArray);
+				  
+			  } catch (JSONException e) 
+			  {
+				  e.printStackTrace();
+			  }
+			  
+			  // for the lack of any versionnum currently it is set to -1
+			  // will be changed later on
+			  handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
+			  break;
+		  }
+		  //FIXME: handle other types of updates
+	  }
   }
 
   private static void handlePacketLocally(int ccpReqID, ClientRequestHandlerInterface handler,
