@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -21,7 +22,7 @@ public class ActiveCodeScheduler implements Runnable{
 	private ArrayList<String> guidList = new ArrayList<String>();
 	private int ptr = 0;
 	private Lock lock = new ReentrantLock();
-	
+		
 	protected ActiveCodeScheduler(ThreadPoolExecutor executorPool){
 		this.executorPool = executorPool;
 	}
