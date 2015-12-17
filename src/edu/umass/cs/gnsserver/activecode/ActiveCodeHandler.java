@@ -29,6 +29,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
+
+import edu.umass.cs.gnsserver.activecode.ActiveCodeScheduler;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeTask;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
@@ -48,6 +51,7 @@ public class ActiveCodeHandler {
 	GnsApplicationInterface<?> gnsApp;
 	ClientPool clientPool;
 	ThreadPoolExecutor executorPool;
+	ActiveCodeScheduler scheduler;
 	Map<String, Long> blacklist;
 	long blacklistSeconds;
 	
@@ -71,6 +75,9 @@ public class ActiveCodeHandler {
 	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy());
 	    // Start the processes
 	    executorPool.prestartAllCoreThreads();
+	    
+	    scheduler = new ActiveCodeScheduler(executorPool);
+	    (new Thread(scheduler)).start();
 	    // Blacklist init
 		blacklist = new HashMap<>();
 		this.blacklistSeconds = blacklistSeconds;
@@ -134,26 +141,44 @@ public class ActiveCodeHandler {
 	 * @return a Valuesmap
 	 */
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
-		String code = new String(Base64.decodeBase64(code64));
-		String values = valuesMap.toString();
-		ValuesMap result = null;
-		
-		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
-		FutureTask<ValuesMap> futureTask = new FutureTask<>(new ActiveCodeTask(acp, clientPool));
-		
 		// If the guid is blacklisted, just return immediately
+		/*
 		if(isBlacklisted(guid)) {
 			System.out.println("Guid " + guid + " is blacklisted from running code!");
 			return valuesMap;
 		}
+		*/
 		
+		//Construct Value parameters
+		String code = new String(Base64.decodeBase64(code64));
+		String values = valuesMap.toString();		
+		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
+		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
+		
+		
+		scheduler.submit(futureTask, guid);
+		
+		ValuesMap result = null;
+		
+		try {
+			result = futureTask.get();
+		} catch (ExecutionException e) {
+			System.out.println("Added " + guid + " to blacklist!");
+			//addToBlacklist(guid);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		//System.out.println("Result got from task:"+result);
+		scheduler.release();
+		
+		// This is an best effort implementation
 		// Only run if there are free workers and queue space
 		// This prevents excessive CPU usage
+		/*
 		if(executorPool.getPoolSize() > 0 &&
 				executorPool.getQueue().remainingCapacity() > 0) {
 			executorPool.execute(futureTask);
-	    
-		    try {
+			try {
 				result = futureTask.get();
 			} catch (ExecutionException e) {
 				System.out.println("Added " + guid + " to blacklist!");
@@ -164,6 +189,11 @@ public class ActiveCodeHandler {
 		} else {
 			System.out.println("Rejecting task!");
 		}
+		
+		if(result == null){
+			return valuesMap;
+		}
+		*/
 		
 	    return result;
 	}

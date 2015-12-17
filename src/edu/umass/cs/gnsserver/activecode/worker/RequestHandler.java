@@ -66,6 +66,8 @@ public class RequestHandler {
 		    } else {
 		    	// Run the active code
 			    ActiveCodeParams params = acm.getAcp();
+			    querier.setParam(params.getHopLimit(), params.getGuid());
+			    
 			    ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
 			    ValuesMap result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
 			    // Send the results back

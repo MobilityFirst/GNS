@@ -45,7 +45,10 @@ public class ActiveCodeGuidQuerier {
 
   private PrintWriter out;
   private BufferedReader in;
-
+  private int breadth = 5;
+  private int depth = 5;
+  private String guid = "";
+  
   /**
    * Initialize an ActiveCodeGuidQuerier
    * @param in
@@ -55,7 +58,33 @@ public class ActiveCodeGuidQuerier {
     this.out = out;
     this.in = in;
   }
-
+  
+  
+  /**
+   * 
+   * @param depth the left depth for this code's execution
+   */
+  protected void setParam(int depth, String guid){
+	  this.depth = depth;
+	  this.guid = guid;
+  }
+  
+  private synchronized boolean accounting(String obj_guid){
+	  System.out.println("The breadth is "+breadth+" "+depth);
+	  if(guid.equals(obj_guid) || obj_guid.equals(null)){
+		  if(this.breadth <= 0){
+			  return false;
+		  }
+		  this.breadth--;
+	  }else{
+		  if(this.depth <= 0){
+			  return false;
+		  }
+		  this.depth--;
+	  }
+	  return true;
+  }
+  
   /**
    * Queries (read or write) a guid
    *
@@ -88,6 +117,10 @@ public class ActiveCodeGuidQuerier {
    * @return the ValuesMap response
    */
   public ValuesMap readGuid(String guid, String field) {
+	  if (!accounting(guid)){
+		  //System.out.println("out of money");
+		  return null;
+	  }
     ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read");
     ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
 
@@ -98,7 +131,7 @@ public class ActiveCodeGuidQuerier {
     } catch (JSONException e) {
       e.printStackTrace();
     }
-
+    
     return vm;
   }
 
@@ -112,6 +145,9 @@ public class ActiveCodeGuidQuerier {
    * @return whether or not the write succeeded
    */
   public boolean writeGuid(String guid, String field, Object newValue) {
+	  if (!accounting(guid)){
+		  return false;
+	  }
     try {
       if (!(newValue instanceof ValuesMap)) {
         ValuesMap valuesMap = new ValuesMap();
@@ -132,6 +168,9 @@ public class ActiveCodeGuidQuerier {
    * @return response as a string
    */
   public String httpRequest(String url){
+	  if (!accounting(guid)){
+		  return null;
+	  }
 	  StringBuilder response = new StringBuilder();
 	  BufferedReader br = null;
 	  try{

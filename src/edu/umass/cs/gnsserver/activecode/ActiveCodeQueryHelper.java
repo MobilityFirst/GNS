@@ -122,6 +122,10 @@ public class ActiveCodeQueryHelper {
 		else {
 			if(acqreq.getAction().equals("read")) {
 				// TODO
+				return readLocalGuid(acqreq.getGuid(), acqreq.getField());
+			} else if(acqreq.getAction().equals("write")){
+				// TODO
+				return writeLocalGuid(acqreq.getGuid(), acqreq.getField(), acqreq.getValuesMapString());
 			}
 		}
 		
