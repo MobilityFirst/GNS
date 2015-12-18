@@ -101,6 +101,10 @@ public class Update {
 	  {
 		  case SINGLE_FIELD_CREATE:
 		  {
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Entering Context client UPDATE : ");
+			    }
+			  
 			  String GUID           = updatePacket.getName();
 			  String fieldName      = updatePacket.getKey();
 			  Set<String> newValue  = updatePacket.getUpdateValue().toStringSet();
@@ -122,10 +126,12 @@ public class Update {
 			  {
 				  e.printStackTrace();
 			  }
-			  
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Context client UPDATE : " + attrValPairJSON.toString());
+			    }
 			  // for the lack of any versionnum currently it is set to -1
 			  // will be changed later on
-			  handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
+			  //handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
 			  break;
 		  }
 		  //FIXME: handle other types of updates

@@ -452,7 +452,9 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     if (!disableSSL) {
       messenger.getClientMessenger().sendToAddress(isa, msg);
     } else {
-      messenger.sendToAddress(isa, msg);
+       System.out.println("sendToClient returnVal msg "+msg.length()+" isa "+isa);
+      int returnVal = messenger.sendToAddress(isa, msg);
+      System.out.println("sendToClient returnVal"+returnVal+" msg "+msg.length()+" isa "+isa);
     }
   }
 
