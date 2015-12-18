@@ -21,9 +21,7 @@ package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -38,14 +36,10 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import org.json.JSONArray;
-
 import java.util.ArrayList;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
@@ -78,11 +72,8 @@ import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -178,22 +169,14 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   public BasicUniversalTcpClient(String remoteHost, int remotePort, boolean disableSSL) {
     this.disableSSL = disableSSL;
     try {
-      this.remoteAddress = new InetSocketAddress(InetAddress.getByName(remoteHost), remotePort);
+      this.remoteAddress = new InetSocketAddress(remoteHost, remotePort);
       SSLDataProcessingWorker.SSL_MODES sslMode = disableSSL ? CLEAR : SERVER_AUTH;
       if (!disableSSL) {
         ReconfigurationConfig.setClientPortOffset(100);
       }
-      
-      int sourcePort = 2000+(new Random()).nextInt(60000);
-      SampleNodeConfig<InetSocketAddress> sNodeConf = new SampleNodeConfig<InetSocketAddress>();
-		
-      InetAddress sourceIP =  getActiveInterfaceInetAddresses().get(0);
-		
-      sNodeConf.add(new InetSocketAddress(sourceIP, sourcePort), sourceIP);
-		
-		
-      this.messenger = new JSONMessenger<InetSocketAddress>(
-              (new JSONNIOTransport<InetSocketAddress>(new InetSocketAddress(sourceIP, sourcePort), sNodeConf, new PacketDemultiplexer(this),
+      this.messenger = new JSONMessenger<>(
+              (new JSONNIOTransport<>(null, new SampleNodeConfig<InetSocketAddress>(),
+                      new PacketDemultiplexer(this),
                       sslMode)));
       if (debuggingEnabled) {
         System.out.println("SSL Mode is " + sslMode.name());
@@ -205,42 +188,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
       e.printStackTrace();
     }
   }
-  
-  public static Vector<InetAddress> getActiveInterfaceInetAddresses()
-  {
-    Vector<InetAddress> CurrentInterfaceIPs = new Vector<InetAddress>();
-    try
-    {
-      for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();)
-      {
-        NetworkInterface intf = en.nextElement();
-        for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements();)
-        {
-          InetAddress inetAddress = enumIpAddr.nextElement();
-          if (!inetAddress.isLoopbackAddress())
-          {
-            // FIXME: find better method to get ipv4 address
-            String IP = inetAddress.getHostAddress();
-            if (IP.contains(":")) // means IPv6
-            {
-              continue;
-            }
-            else
-            {
-              CurrentInterfaceIPs.add(inetAddress);
-            }
-          }
-        }
-      }
-    }
-    catch (Exception ex)
-    {
-      ex.printStackTrace();
-    }
-    return CurrentInterfaceIPs;
-  }
 
-  
   /**
    * Returns the remote host.
    *

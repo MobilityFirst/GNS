@@ -160,9 +160,10 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 	  return csClient;
   }
   
-  @Override
+  @SuppressWarnings("unchecked")
+@Override
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
-    this.messenger = (SSLMessenger<String, JSONObject>)messenger;
+    this.messenger = (SSLMessenger<String, JSONObject>) messenger;
     this.nodeID = messenger.getMyID().toString();
 //    this.nodeConfig 
 //            = new GNSConsistentReconfigurableNodeConfig<String>(((SSLMessenger<String, JSONObject>)messenger).getNodeConfig());
@@ -452,9 +453,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     if (!disableSSL) {
       messenger.getClientMessenger().sendToAddress(isa, msg);
     } else {
-       System.out.println("sendToClient returnVal msg "+msg.length()+" isa "+isa);
-      int returnVal = messenger.sendToAddress(isa, msg);
-      System.out.println("sendToClient returnVal"+returnVal+" msg "+msg.length()+" isa "+isa);
+      ((JSONMessenger<String>)messenger).sendToAddress(isa, msg);
     }
   }
 
