@@ -25,8 +25,8 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class CreateMultiGuidClient {
 	private static String ACCOUNT_ALIAS = "@cs.umass.edu";
 	private static UniversalTcpClient client;
-	private final static String filename =  "/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js";
-	private final static String key_folder = "/Users/zhaoyugao/gns_key/";
+	private final static String filename =  "/home/ubuntu/test.js";
+	private final static String key_folder = "/home/ubuntu/gns_key/";
 	
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
@@ -59,12 +59,12 @@ public class CreateMultiGuidClient {
 			
 			JSONObject result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
-		    if(i%2 == 0){
-		    	client.activeCodeSet(guid, "read", code64, guidAccount);
 		    
-		    	result = client.read(guidAccount);
-		    	System.out.println("Retrieved JSON from guid: " + result.toString());
-		    }
+		    client.activeCodeSet(guid, "read", code64, guidAccount);
+		    
+		    result = client.read(guidAccount);
+		    System.out.println("Retrieved JSON from guid: " + result.toString());
+		    
 		    //JSONObject obj = client.lookupAccountRecord("test"+(node*10+i)+ACCOUNT_ALIAS);
 		    //System.out.println(obj.toString());
 		    
