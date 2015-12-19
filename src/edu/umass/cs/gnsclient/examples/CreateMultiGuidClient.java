@@ -40,7 +40,7 @@ public class CreateMultiGuidClient {
 		InetSocketAddress address = new InetSocketAddress("0.0.0.0", 24398);
 		
 		client = new UniversalTcpClient(address.getHostName(), address.getPort());
-		for (int i=0; i<2; i++){
+		for (int i=0; i<10; i++){
 			GuidEntry guidAccount = null;
 			try{
 				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*10+i)+ACCOUNT_ALIAS, "password");

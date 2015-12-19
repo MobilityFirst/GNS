@@ -26,6 +26,8 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 10;
     private static long start = 0;
     protected static int TOTAL_SECOND = 1;
+    private static final int NUM_CLIENT = 10;
+    
     
     private UniversalTcpClient client;
     private String guid;
@@ -54,12 +56,15 @@ public class CapacityTestClient {
     	//(new Thread(new ClientThread())).start();
     }
     
-    private static void sendRequests(int numRequest, int rate, CapacityTestClient client){
+    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients){
+    	int reqPerClient = numRequest / NUM_CLIENT;
     	RateLimiter r = new RateLimiter(rate);
-    	System.out.println("Start sending rate at "+rate+" req/sec ...");
-    	for (int i=0; i<numRequest; i++){
-    		client.sendSingleRequest();
-    		r.record();
+    	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" clients...");
+    	for (int i=0; i<reqPerClient; i++){
+    		for(int j=0; j<NUM_CLIENT; j++){
+    			clients[j].sendSingleRequest();
+    			r.record();
+    		}
     	}
     }
 	
@@ -102,28 +107,28 @@ public class CapacityTestClient {
     InvalidKeyException, SignatureException, Exception {
 		int rate =  Integer.parseInt(args[0]);
 		int node = Integer.parseInt(args[1]);
-		int index = Integer.parseInt(args[2]);	
-
-		UniversalTcpClient client = new UniversalTcpClient("0.0.0.0", 24398);
-		String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
-		System.out.println("The account is "+account);
 		
-		//String guid = client.lookupGuid(account);
-		GuidEntry accountGuid = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), account);
-		String guid = accountGuid.getGuid();
+		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		
-		System.out.println("The GUID is "+guid);
+		for (int index=0; index<10; index++){
+			UniversalTcpClient client = new UniversalTcpClient("0.0.0.0", 24398);
+			String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
+			System.out.println("The account is "+account);
 		
-		//PublicKey publicKey = client.publicKeyLookupFromGuid("test"+(node*10+index)+ACCOUNT_ALIAS);
-		//PrivateKey privateKey = KeyPairUtils.getPrivateKeyFromPKCS8File(key_folder+"test"+(node*10+index));
+			//String guid = client.lookupGuid(account);
+			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), account);
+			String guid = accountGuid.getGuid();
 		
-		//GuidEntry accountGuid = new GuidEntry(guid, guid, publicKey, privateKey);
+			System.out.println("The GUID is "+guid);
+			
+			clients[index] = new CapacityTestClient(client, guid, accountGuid);
+		}
 		
 		int TOTAL = rate * 30;
 		
 		start = System.currentTimeMillis();
     	long t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, new CapacityTestClient(client, guid, accountGuid));
+    	sendRequests(TOTAL, rate, clients);
     	long t2 = System.currentTimeMillis();
     	long elapsed = t2 - t1;
     	
