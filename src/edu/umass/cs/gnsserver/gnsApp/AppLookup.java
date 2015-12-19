@@ -190,7 +190,7 @@ public class AppLookup {
           try {
             String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
             ValuesMap originalValues = nameRecord.getValuesMap();
-            System.out.println("The original value is "+originalValues.toString());
+            
 //          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
 //          String code64 = codeResult.get(0).toString();
             if (AppReconfigurableNodeOptions.debuggingEnabled) {

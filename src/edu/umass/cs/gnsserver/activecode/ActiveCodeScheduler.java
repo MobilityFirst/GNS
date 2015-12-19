@@ -3,12 +3,12 @@ package edu.umass.cs.gnsserver.activecode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -18,25 +18,21 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveCodeScheduler implements Runnable{
 	private ThreadPoolExecutor executorPool;
-	private HashMap<String, ArrayList<FutureTask<ValuesMap>>> queue = new HashMap<String, ArrayList<FutureTask<ValuesMap>>>();
+	//private HashMap<String, ArrayList<FutureTask<ValuesMap>>> queue = new HashMap<String, ArrayList<FutureTask<ValuesMap>>>();
 	private ArrayList<String> guidList = new ArrayList<String>();
+	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
 	private int ptr = 0;
+	
 	private Lock lock = new ReentrantLock();
-		
+	private Lock queueLock = new ReentrantLock();
+	
 	protected ActiveCodeScheduler(ThreadPoolExecutor executorPool){
 		this.executorPool = executorPool;
 	}
 	
-	public void run(){
-		//System.out.println("################### Start running ####################");
+	public void run(){		
 		while(true){
-			//System.out.println("################### guidlist is ####################"+guidList);
-			if(executorPool.getQueue().remainingCapacity()>0 && !guidList.isEmpty()){
-				FutureTask<ValuesMap> futureTask = getNextTask();
-				executorPool.execute(futureTask);
-				
-				//System.out.println("Task is submitted to the pool:"+futureTask);				
-			}else{
+			while(executorPool.getQueue().remainingCapacity()<=0 || guidList.isEmpty()){
 				synchronized (lock){
 					try{
 						lock.wait();
@@ -44,6 +40,10 @@ public class ActiveCodeScheduler implements Runnable{
 						e.printStackTrace();
 					}
 				}
+			}
+			FutureTask<ValuesMap> futureTask = getNextTask();
+			if (futureTask != null){
+				executorPool.execute(futureTask);
 			}
 		}
 	}
@@ -54,40 +54,57 @@ public class ActiveCodeScheduler implements Runnable{
 		}
 	}
 	
-	protected synchronized FutureTask<ValuesMap> getNextTask(){
+	protected FutureTask<ValuesMap> getNextTask(){
 		FutureTask<ValuesMap> futureTask = null;
-		String guid;
-		if (guidList.size() >= ptr){
-			guid = guidList.get(ptr);
-		}else{
-			ptr = 0;
-			guid = guidList.get(ptr);
-		}
+		String guid = null;
+		synchronized(queueLock){
+			if (guidList.size() > ptr){
+				if (ptr > 0){
+					guid = guidList.get(ptr);
+				}else{ 
+					if(guidList.isEmpty()){
+						guid = null;
+						return null;
+					}else{
+						assert(ptr == 0);
+						guid = guidList.get(ptr);
+					}
+				}
+			}else{
+				ptr = 0;
+				if(guidList.isEmpty()){
+					guid = null;
+					return null;
+				}else{
+					assert(ptr == 0);
+					guid = guidList.get(ptr);
+				}
+			}
+			
+			ptr++;
+			
+			futureTask = fairQueue.get(guid).pop();
+			if(fairQueue.get(guid).isEmpty()){
+				fairQueue.remove(guid);
+				guidList.remove(guid);
+			}
+		}		
 		
-		futureTask = queue.get(guid).remove(0);
-		if(queue.get(guid).isEmpty()){
-			queue.remove(guid);
-			guidList.remove(guid);
-			return futureTask;
-		}
-		
-		ptr++;
 		return futureTask;
 	}
 	
-	protected synchronized void submit(FutureTask<ValuesMap> futureTask, String guid){
-		if(queue.containsKey(guid)){
-			queue.get(guid).add(futureTask);
+	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
+		synchronized(queueLock){
+			if(fairQueue.containsKey(guid)){
+				fairQueue.get(guid).add(futureTask);
+				
+			}else{
+				LinkedList<FutureTask<ValuesMap>> taskList = new LinkedList<FutureTask<ValuesMap>>();
+				taskList.add(futureTask);
+				fairQueue.put(guid, taskList);
+				guidList.add(guid);
+			}	
 			release();
-		}else{
-			ArrayList<FutureTask<ValuesMap>> taskList = new ArrayList<FutureTask<ValuesMap>>();
-			taskList.add(futureTask);
-			queue.put(guid, taskList);
-			guidList.add(guid);
-			
-			release();
-						
-			//System.out.println("Task submitted:"+futureTask+"for"+guid);
-		}		
+		}
 	}
 }
