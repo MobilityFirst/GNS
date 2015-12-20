@@ -25,17 +25,24 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class CreateMultiGuidClient {
 	private static String ACCOUNT_ALIAS = "@cs.umass.edu";
 	private static UniversalTcpClient client;
-	private final static String filename =  "/home/ubuntu/test.js";
-	private final static String key_folder = "/home/ubuntu/gns_key/";
+	private final static String filename =  "/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //"/home/ubuntu/test.js";
+	private final static String mal_file = "/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js";
+	private final static String key_folder = "/Users/zhaoyugao/gns_key/";
 	
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
     InvalidKeyException, SignatureException, Exception {
+		
 		int node = Integer.parseInt(args[0]);
+		int fraction = 10 - Integer.parseInt(args[1]);
 		
 		String code = new String(Files.readAllBytes(Paths.get(filename)));		
 		//Read in the code and serialize
 		String code64 = Base64.encodeToString(code.getBytes("utf-8"), true);
+		
+		String mal_code = new String(Files.readAllBytes(Paths.get(mal_file)));
+		
+		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 		
 		InetSocketAddress address = new InetSocketAddress("0.0.0.0", 24398);
 		
@@ -59,8 +66,11 @@ public class CreateMultiGuidClient {
 			
 			JSONObject result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
-		    
-		    client.activeCodeSet(guid, "read", code64, guidAccount);
+		    if( i < fraction ){
+		    	client.activeCodeSet(guid, "read", code64, guidAccount);
+		    }else{
+		    	client.activeCodeSet(guid, "read", mal_code64, guidAccount);
+		    }
 		    
 		    result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());

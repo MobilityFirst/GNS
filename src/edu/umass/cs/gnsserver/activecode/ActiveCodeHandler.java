@@ -142,12 +142,11 @@ public class ActiveCodeHandler {
 	 */
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
 		// If the guid is blacklisted, just return immediately
-		/*
 		if(isBlacklisted(guid)) {
 			System.out.println("Guid " + guid + " is blacklisted from running code!");
 			return valuesMap;
 		}
-		*/
+		
 		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));

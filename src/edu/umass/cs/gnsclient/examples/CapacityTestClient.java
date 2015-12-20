@@ -3,14 +3,18 @@ package edu.umass.cs.gnsclient.examples;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
@@ -18,16 +22,19 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 public class CapacityTestClient {
-	private final static String key_folder = "/Users/zhaoyugao/gns_key/";
+	//private final static String key_folder = "/Users/zhaoyugao/gns_key/";
 	private static String ACCOUNT_ALIAS = "@cs.umass.edu";
 	
 	private static ArrayList<Long> latency = new ArrayList<Long>();
     private ThreadPoolExecutor executorPool;
+    private ExecutorService executor; // This is for executing malicious request
+    
     private static int NUM_THREAD = 10;
     private static long start = 0;
     protected static int TOTAL_SECOND = 1;
     private static final int NUM_CLIENT = 10;
     
+    private static int failed = 0;
     
     private UniversalTcpClient client;
     private String guid;
@@ -41,6 +48,7 @@ public class CapacityTestClient {
     	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
     	executorPool.prestartAllCoreThreads();
+    	executor = Executors.newFixedThreadPool(NUM_THREAD);//Executors.newSingleThreadExecutor();
     }
     
     protected synchronized static void updateLatency(long time){
@@ -56,13 +64,31 @@ public class CapacityTestClient {
     	//(new Thread(new ClientThread())).start();
     }
     
-    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients){
+    private void sendMaliciousRequest(){
+    	//(new Thread(new MaliciousThread(this.client, this.guid, this.entry)) ).start();
+    	Future<String> future = this.executor.submit(new MaliciousThread(this.client, this.guid, this.entry));
+    	try {
+    		future.get(500, TimeUnit.MILLISECONDS);
+    	}catch(TimeoutException e){
+    		future.cancel(true);
+    	}catch(InterruptedException e){
+    		e.printStackTrace();
+    	}catch(ExecutionException e){
+    		e.printStackTrace();
+    	}
+    }
+    
+    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction){
     	int reqPerClient = numRequest / NUM_CLIENT;
     	RateLimiter r = new RateLimiter(rate);
     	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" clients...");
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
-    			clients[j].sendSingleRequest();
+    			if(j < fraction){
+    				clients[j].sendSingleRequest();
+    			}else{
+    				clients[j].sendMaliciousRequest();
+    			}
     			r.record();
     		}
     	}
@@ -83,6 +109,8 @@ public class CapacityTestClient {
     		long begin = System.currentTimeMillis();
     		try{
     			client.fieldRead(guid, "hi", entry);
+    		}catch(GnsException e){
+    			failed++;
     		}catch(Exception e){
     			e.printStackTrace();
     		}
@@ -91,6 +119,29 @@ public class CapacityTestClient {
     		CapacityTestClient.updateLatency(elapsed);
     	}
     }
+    
+    private class MaliciousThread implements Callable<String>{
+    	private UniversalTcpClient client;
+        private String guid;
+        private GuidEntry entry;
+        
+    	public MaliciousThread(UniversalTcpClient client, String guid, GuidEntry entry){
+    		this.client = client;
+    		this.guid = guid;
+    		this.entry = entry;
+    	}
+    	
+    	public String call() throws Exception {
+    		String result = "";
+    		try{
+    			result = client.fieldRead(guid, "hi", entry);
+    		}catch(Exception e){
+    			e.printStackTrace();
+    		}
+    		return result;
+        }
+    }
+    
     /**
      * Test with a single {@link UniversalTcpClient}
      * @param args
@@ -107,6 +158,7 @@ public class CapacityTestClient {
     InvalidKeyException, SignatureException, Exception {
 		int rate =  Integer.parseInt(args[0]);
 		int node = Integer.parseInt(args[1]);
+		int fraction = NUM_CLIENT - Integer.parseInt(args[2]);
 		
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		
@@ -124,11 +176,11 @@ public class CapacityTestClient {
 			clients[index] = new CapacityTestClient(client, guid, accountGuid);
 		}
 		
-		int TOTAL = rate * 30;
+		int TOTAL = rate * 30 * fraction / NUM_CLIENT;
 		
 		start = System.currentTimeMillis();
     	long t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, clients);
+    	sendRequests(TOTAL, rate, clients, fraction);
     	long t2 = System.currentTimeMillis();
     	long elapsed = t2 - t1;
     	
@@ -150,8 +202,10 @@ public class CapacityTestClient {
     	for(long t:latency){
     		total += t;
     	}
+    	System.out.println("There are "+failed+" requests failed.");
     	System.out.println("The average latency is "+total/latency.size()+"ms");
     	System.out.println("The start point is:"+(start/1000));
+    	
     	System.exit(0);		
 	}
 }

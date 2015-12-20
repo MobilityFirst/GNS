@@ -148,6 +148,7 @@ public class ActiveCodeClient {
 			GNS.getLogger().warning("Code failed to return in allotted time!");
 			process.destroyForcibly();
 			throw new ActiveCodeException();
+			
 		}
 		
 		return vm;
