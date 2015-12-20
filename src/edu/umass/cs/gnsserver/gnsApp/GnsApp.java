@@ -157,6 +157,15 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   
   public ContextServiceClient getContextServiceClient()
   {
+	  if(csClient != null)
+	  {
+		  GNS.getLogger().fine("getContextServiceClient non null "+csClient.getMyName());
+	  }
+	  else
+	  {
+		  GNS.getLogger().fine("getContextServiceClient NULL ");
+		  assert(false);
+	  }
 	  return csClient;
   }
   
@@ -344,7 +353,6 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 
   /**
    * Updates the state for the given named record.
-   * 
    * @param name
    * @param state
    * @return true if we were able to update the state
@@ -445,7 +453,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     return nodeConfig;
   }
 
-  @Override
+@Override
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {
 //    InetSocketAddress clientAddress = new InetSocketAddress(isa.getAddress(),
 //            ActiveReplica.getClientFacingPort(isa.getPort()));
@@ -454,6 +462,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
       messenger.getClientMessenger().sendToAddress(isa, msg);
     } else {
       ((JSONMessenger<String>)messenger).sendToAddress(isa, msg);
+    	//messenger.sendToAddress(isa, msg);
     }
   }
 

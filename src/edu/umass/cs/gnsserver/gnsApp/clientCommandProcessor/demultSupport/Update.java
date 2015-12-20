@@ -107,20 +107,22 @@ public class Update {
 			  
 			  String GUID           = updatePacket.getName();
 			  String fieldName      = updatePacket.getKey();
-			  Set<String> newValue  = updatePacket.getUpdateValue().toStringSet();
+			  Set<String> newValueSet  = updatePacket.getUpdateValue().toStringSet();
 			  
-			  Iterator<String> setIter = newValue.iterator();
-			  JSONArray valueArray = new JSONArray();
+			  Iterator<String> setIter = newValueSet.iterator();
+			  //JSONArray valueArray = new JSONArray();
 			  
+			  String newValue = "";
 			  while( setIter.hasNext() )
 			  {
-				  valueArray.put(setIter.next());
+				  newValue = setIter.next();
+				  break;
 			  }
 			  
 			  JSONObject attrValPairJSON = new JSONObject();
 			  try 
 			  {
-				  attrValPairJSON.put(fieldName, valueArray);
+				  attrValPairJSON.put(fieldName, newValue);
 				  
 			  } catch (JSONException e) 
 			  {
@@ -131,7 +133,7 @@ public class Update {
 			    }
 			  // for the lack of any versionnum currently it is set to -1
 			  // will be changed later on
-			  //handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
+			  handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
 			  break;
 		  }
 		  //FIXME: handle other types of updates

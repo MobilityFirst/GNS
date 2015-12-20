@@ -281,7 +281,8 @@ public class AppReconfigurableNodeOptions {
     }
 
     // make sure this has been initialized
-    GNS.getLogger();
+    // initializing it here doesn't allow the logging levels set in the file
+    //GNS.getLogger();
 
     if (!allValues.containsKey(DISABLE_SSL)) {
       disableSSL = false;
