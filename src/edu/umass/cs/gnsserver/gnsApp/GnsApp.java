@@ -112,7 +112,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   /**
    * context service client
    */
-  private ContextServiceClient csClient;
+  private ContextServiceClient<String> csClient;
 
   /**
    * Creates the application.
@@ -151,15 +151,15 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     
     if(AppReconfigurableNodeOptions.enableContextService)
     {
-    	csClient = new ContextServiceClient();
+    	csClient = new ContextServiceClient<String>();
     }
   }
   
-  public ContextServiceClient getContextServiceClient()
+  public ContextServiceClient<String> getContextServiceClient()
   {
 	  if(csClient != null)
 	  {
-		  GNS.getLogger().fine("getContextServiceClient non null "+csClient.getMyName());
+		  GNS.getLogger().fine("getContextServiceClient non null ");
 	  }
 	  else
 	  {
