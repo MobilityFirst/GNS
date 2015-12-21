@@ -103,6 +103,7 @@ public class UpdateSearchTest {
 			  GuidEntry currGuidEntry = 
 					  GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID1" + i);
 			  
+			  Thread.sleep(10000);
 			  guidStorage.add(currGuidEntry.getGuid());
 			  
 			  JSONObject attrValuePair = new JSONObject();
@@ -113,9 +114,9 @@ public class UpdateSearchTest {
 			  attrValuePair.put("latitude", randomLat);
 			  attrValuePair.put("longitude", randomLong);
 			
-			  client.fieldCreateList(currGuidEntry.getGuid(), "latitude", new JSONArray().put((int)randomLat), currGuidEntry);
+			  client.fieldCreateList(masterGuid.getGuid(), "latitude", new JSONArray().put((int)randomLat), masterGuid);
 			  //fieldUpdate(currGuidEntry, "latitude", randomLat);
-			  client.fieldCreateList(currGuidEntry.getGuid(), "longitude", new JSONArray().put((int)randomLong), currGuidEntry);
+			  client.fieldCreateList(masterGuid.getGuid(), "longitude", new JSONArray().put((int)randomLong), masterGuid);
 			  
 			  System.out.println("Updates sent for "+i);
 		  } catch (Exception e) 

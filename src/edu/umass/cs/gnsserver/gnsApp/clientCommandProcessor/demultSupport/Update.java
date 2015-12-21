@@ -101,13 +101,16 @@ public class Update {
 	  {
 		  case SINGLE_FIELD_CREATE:
 		  {
-			  if (handler.getParameters().isDebugMode()) {
-			      GNS.getLogger().fine("Entering Context client UPDATE : ");
-			    }
+			  
 			  
 			  String GUID           = updatePacket.getName();
 			  String fieldName      = updatePacket.getKey();
 			  Set<String> newValueSet  = updatePacket.getUpdateValue().toStringSet();
+			  
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Entering Context client UPDATE : GUID "+GUID+" fieldName "
+			    		  +fieldName);
+			    }
 			  
 			  Iterator<String> setIter = newValueSet.iterator();
 			  //JSONArray valueArray = new JSONArray();
@@ -119,6 +122,10 @@ public class Update {
 				  break;
 			  }
 			  
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Entering Context client UPDATE : GUID "+GUID+" fieldName "
+			    		  +fieldName+" newValue "+newValue);
+			    }
 			  JSONObject attrValPairJSON = new JSONObject();
 			  try 
 			  {
