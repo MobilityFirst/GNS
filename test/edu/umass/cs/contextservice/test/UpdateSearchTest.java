@@ -102,14 +102,17 @@ public class UpdateSearchTest {
 			  GuidEntry currGuidEntry = 
 					  GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID1" + i);
 			  
-			  Thread.sleep(100);
 			  guidStorage.add(currGuidEntry.getGuid());
 			  
 			  JSONObject attrValuePair = new JSONObject();
 			  
 			  double randomLat = (rand.nextDouble()*180)-90;
 			  double randomLong = (rand.nextDouble()*360)-180;
-			
+			  
+
+			  randomLat = 42.466;
+			  randomLong = -72.58;
+					
 			  attrValuePair.put("latitude", randomLat);
 			  attrValuePair.put("longitude", randomLong);
 			
@@ -174,7 +177,7 @@ public class UpdateSearchTest {
 		} catch (JSONException e) 
 		{
 			e.printStackTrace();
-		}  
+		}
 	  }
 	  numGuidsRet = guidsRet.size();
 	  System.out.println("Search query num GUIDs "+numGuidsRet);
@@ -191,6 +194,7 @@ public class UpdateSearchTest {
 	  
 	  // simple search to get all the records
 	  JSONObject geoJSONObject = getGeoJSON();
+	  System.out.println("GeoJSON created "+geoJSONObject);
 	  query = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE GeojsonOverlap("+geoJSONObject.toString()+")";
 	  recvArray = contextServiceClient.sendSearchQuery(query);
 	  
@@ -213,14 +217,13 @@ public class UpdateSearchTest {
   private JSONObject getGeoJSON()
   {
 	  List<GlobalCoordinate> list = new LinkedList<GlobalCoordinate>();
-	  GlobalCoordinate e1 = new GlobalCoordinate(-88, -178);
-	  GlobalCoordinate e2 = new GlobalCoordinate(-88, 178);
-	  GlobalCoordinate e3 = new GlobalCoordinate(88, 178);
-	  GlobalCoordinate e4 = new GlobalCoordinate(-88, -178);
-		list.add(e1);
-		list.add(e2);
-		list.add(e3);
-		list.add(e4);
+	  GlobalCoordinate amherst = new GlobalCoordinate(42.340382, -72.496819);
+		GlobalCoordinate northampton = new GlobalCoordinate(42.3250896, -72.6412013);
+		GlobalCoordinate sunderland = new GlobalCoordinate(42.4663727, -72.5795115);
+		list.add(amherst);
+		list.add(sunderland);
+		list.add(northampton);
+		list.add(amherst);
 		JSONObject geoJSON = null;
 		try 
 		{
