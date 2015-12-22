@@ -25,7 +25,6 @@ import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -72,7 +71,14 @@ public class Update {
     			updatePacket.getOldValue()+" new value "+updatePacket.getUpdateValue()+" name "+updatePacket.getName()
     			+" key "+updatePacket.getKey()+" operation "+updatePacket.getOperation());
     	
-    	sendTriggerToContextService(updatePacket, handler);
+    	try
+    	{
+    		sendTriggerToContextService(updatePacket, handler);
+    	}
+    	catch(Exception | Error ex)
+    	{
+    		ex.printStackTrace();
+    	}
     	// create appropriate JSON
     	//handler.getApp().getContextServiceClient().sendUpdate(arg0);
     }
@@ -101,7 +107,9 @@ public class Update {
 	  {
 		  case SINGLE_FIELD_CREATE:
 		  {
-			  
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Entering Context client UPDATE");
+			  }
 			  
 			  String GUID           = updatePacket.getName();
 			  String fieldName      = updatePacket.getKey();
@@ -110,7 +118,7 @@ public class Update {
 			  if (handler.getParameters().isDebugMode()) {
 			      GNS.getLogger().fine("Entering Context client UPDATE : GUID "+GUID+" fieldName "
 			    		  +fieldName);
-			    }
+			  }
 			  
 			  Iterator<String> setIter = newValueSet.iterator();
 			  //JSONArray valueArray = new JSONArray();
@@ -144,6 +152,36 @@ public class Update {
 			  break;
 		  }
 		  //FIXME: handle other types of updates
+	case SINGLE_FIELD_APPEND:
+		break;
+	case SINGLE_FIELD_APPEND_OR_CREATE:
+		break;
+	case SINGLE_FIELD_APPEND_WITH_DUPLICATION:
+		break;
+	case SINGLE_FIELD_CLEAR:
+		break;
+	case SINGLE_FIELD_REMOVE:
+		break;
+	case SINGLE_FIELD_REMOVE_FIELD:
+		break;
+	case SINGLE_FIELD_REPLACE_ALL:
+		break;
+	case SINGLE_FIELD_REPLACE_ALL_OR_CREATE:
+		break;
+	case SINGLE_FIELD_REPLACE_SINGLETON:
+		break;
+	case SINGLE_FIELD_SET:
+		break;
+	case SINGLE_FIELD_SET_FIELD_NULL:
+		break;
+	case SINGLE_FIELD_SUBSTITUTE:
+		break;
+	case USER_JSON_REPLACE:
+		break;
+	case USER_JSON_REPLACE_OR_CREATE:
+		break;
+	default:
+		break;
 	  }
   }
 

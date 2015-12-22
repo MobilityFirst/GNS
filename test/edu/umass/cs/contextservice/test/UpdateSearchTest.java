@@ -21,7 +21,6 @@ package edu.umass.cs.contextservice.test;
 
 import edu.umass.cs.acs.geodesy.GlobalCoordinate;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -39,6 +38,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -66,7 +66,7 @@ public class UpdateSearchTest {
   //private static GuidEntry samEntry;
   private static ContextServiceClient<String> contextServiceClient = null;
   
-  private static final int NUM_GUIDs	= 100;
+  private static final int NUM_GUIDs	= 10;
   
 
   
@@ -77,7 +77,6 @@ public class UpdateSearchTest {
 		contextServiceClient = new ContextServiceClient<String>();
 	} catch (IOException e1) 
       {
-		// TODO Auto-generated catch block
 		e1.printStackTrace();
       }
       //client = new BasicUniversalTcpClient(address.getHostName(), address.getPort(), true);
@@ -103,7 +102,7 @@ public class UpdateSearchTest {
 			  GuidEntry currGuidEntry = 
 					  GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID1" + i);
 			  
-			  Thread.sleep(10000);
+			  Thread.sleep(100);
 			  guidStorage.add(currGuidEntry.getGuid());
 			  
 			  JSONObject attrValuePair = new JSONObject();
@@ -114,15 +113,25 @@ public class UpdateSearchTest {
 			  attrValuePair.put("latitude", randomLat);
 			  attrValuePair.put("longitude", randomLong);
 			
-			  client.fieldCreateList(masterGuid.getGuid(), "latitude", new JSONArray().put((int)randomLat), masterGuid);
+			  //client.fieldCreateList(masterGuid.getGuid(), "latitude", new JSONArray().put((int)randomLat), masterGuid);
 			  //fieldUpdate(currGuidEntry, "latitude", randomLat);
-			  client.fieldCreateList(masterGuid.getGuid(), "longitude", new JSONArray().put((int)randomLong), masterGuid);
+			  //client.fieldCreateList(masterGuid.getGuid(), "longitude", new JSONArray().put((int)randomLong), masterGuid);
+		
+			  // everything is sent as a string to GNS
+			  client.fieldCreateList(currGuidEntry.getGuid(), "latitude", new JSONArray().put(randomLat+""), currGuidEntry);
+			  //fieldUpdate(currGuidEntry, "latitude", randomLat);
+			  client.fieldCreateList(currGuidEntry.getGuid(), "longitude", new JSONArray().put(randomLong+""), currGuidEntry);
 			  
 			  System.out.println("Updates sent for "+i);
 		  } catch (Exception e) 
 		  {
 			  e.printStackTrace();
 			  fail("Exception while updating JSON: " + e);
+		  }
+		  catch(Error e)
+		  {
+			  e.printStackTrace();
+			  fail("Error while updating JSON: " + e);
 		  }
 	  }
 	  
@@ -132,7 +141,9 @@ public class UpdateSearchTest {
 	  {
 		  String currGUID = guidStorage.get(i);
 		  JSONObject recvJSON = contextServiceClient.sendGetRequest(currGUID);
+		  assert(recvJSON.length()>0);
 		  System.out.println("i "+i+" GUID "+currGUID+" JSON "+recvJSON);
+		  
 	  }
 	  
 	  // issue different types of search
@@ -143,23 +154,39 @@ public class UpdateSearchTest {
 	  JSONArray recvArray = contextServiceClient.sendSearchQuery(query);
 	  
 	  int numGuidsRet = 0;
+	  System.out.println("Search query result length "+recvArray.length());
 	  // JSONArray is an array of GUIDs 
+	  HashMap<String, Boolean> guidsRet = new HashMap<String, Boolean>();
+	  
 	  for(int i=0; i<recvArray.length(); i++)
 	  {
 		try 
 		{
 			JSONArray currArry = null;
 			currArry = recvArray.getJSONArray(i);
+			
+			for(int j=0;j<currArry.length();j++)
+			{
+				guidsRet.put(currArry.getString(j), true);
+				System.out.println("GUIDs returned "+currArry.getString(j));
+			}
 			numGuidsRet = numGuidsRet + currArry.length();
 		} catch (JSONException e) 
 		{
 			e.printStackTrace();
 		}  
 	  }
+	  numGuidsRet = guidsRet.size();
+	  System.out.println("Search query num GUIDs "+numGuidsRet);
 	  
-	  if( numGuidsRet !=  NUM_GUIDs )
+	  for(int i=0;i<guidStorage.size();i++)
 	  {
-		  fail("Failed in result size: " + numGuidsRet+" expected "+NUM_GUIDs); 
+		  String currGUID = guidStorage.get(i);
+		  if(!guidsRet.containsKey(currGUID))
+		  {
+			  System.out.println("GUID not there "+currGUID);
+			  assert(false);
+		  }
 	  }
 	  
 	  // simple search to get all the records
@@ -186,13 +213,14 @@ public class UpdateSearchTest {
   private JSONObject getGeoJSON()
   {
 	  List<GlobalCoordinate> list = new LinkedList<GlobalCoordinate>();
-	  GlobalCoordinate amherst = new GlobalCoordinate(42.340382, -72.496819);
-	  GlobalCoordinate northampton = new GlobalCoordinate(42.3250896, -72.6412013);
-	  GlobalCoordinate sunderland = new GlobalCoordinate(42.4663727, -72.5795115);
-		list.add(amherst);
-		list.add(sunderland);
-		list.add(northampton);
-		list.add(amherst);
+	  GlobalCoordinate e1 = new GlobalCoordinate(-88, -178);
+	  GlobalCoordinate e2 = new GlobalCoordinate(-88, 178);
+	  GlobalCoordinate e3 = new GlobalCoordinate(88, 178);
+	  GlobalCoordinate e4 = new GlobalCoordinate(-88, -178);
+		list.add(e1);
+		list.add(e2);
+		list.add(e3);
+		list.add(e4);
 		JSONObject geoJSON = null;
 		try 
 		{
