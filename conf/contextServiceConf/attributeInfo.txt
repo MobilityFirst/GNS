@@ -1,0 +1,3 @@
+#attrName, minValue, maxValue, defaultValue, datatype[Integer, Long, Double, String]
+latitude, -90, 90, -90, Double
+longitude, -180, 180, -180, Double

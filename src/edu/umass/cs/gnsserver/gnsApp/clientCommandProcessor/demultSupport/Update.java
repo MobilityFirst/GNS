@@ -22,12 +22,16 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
+import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -50,7 +54,6 @@ public class Update {
 
   /**
    * Handles incoming Update packets.
-   *
    * @param json
    * @param handler
    * @throws JSONException
@@ -60,6 +63,28 @@ public class Update {
           throws JSONException, UnknownHostException {
 
     UpdatePacket<String> updatePacket = new UpdatePacket<String>(json, handler.getGnsNodeConfig());
+    // send trigger to context service
+    
+    if( AppReconfigurableNodeOptions.enableContextService )
+    {
+    	if (handler.getParameters().isDebugMode()) {
+    	      GNS.getLogger().fine("\n\n handlePacketUpdate userJSON "+updatePacket.getUserJSON()+" old Value "+
+    	    			updatePacket.getOldValue()+" new value "+updatePacket.getUpdateValue()+" name "+updatePacket.getName()
+    	    			+" key "+updatePacket.getKey()+" operation "+updatePacket.getOperation());
+    	}
+    	
+    	try
+    	{
+    		sendTriggerToContextService(updatePacket, handler);
+    	}
+    	catch(Exception | Error ex)
+    	{
+    		ex.printStackTrace();
+    	}
+    	// create appropriate JSON
+    	//handler.getApp().getContextServiceClient().sendUpdate(arg0);
+    }
+    
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     }
@@ -75,6 +100,91 @@ public class Update {
               handler.getActiveReplicaID(), handler.reallySendUpdateToReplica());
       handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
     }
+  }
+  
+  private static void sendTriggerToContextService(UpdatePacket<String> updatePacket, 
+		  ClientRequestHandlerInterface handler)
+  {
+	  switch( updatePacket.getOperation() )
+	  {
+		  case SINGLE_FIELD_CREATE:
+		  {
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Entering Context client UPDATE");
+			  }
+			  
+			  String GUID           = updatePacket.getName();
+			  String fieldName      = updatePacket.getKey();
+			  Set<String> newValueSet  = updatePacket.getUpdateValue().toStringSet();
+			  
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Entering Context client UPDATE : GUID "+GUID+" fieldName "
+			    		  +fieldName);
+			  }
+			  
+			  Iterator<String> setIter = newValueSet.iterator();
+			  //JSONArray valueArray = new JSONArray();
+			  
+			  String newValue = "";
+			  while( setIter.hasNext() )
+			  {
+				  newValue = setIter.next();
+				  break;
+			  }
+			  
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Entering Context client UPDATE : GUID "+GUID+" fieldName "
+			    		  +fieldName+" newValue "+newValue);
+			    }
+			  JSONObject attrValPairJSON = new JSONObject();
+			  try 
+			  {
+				  attrValPairJSON.put(fieldName, newValue);
+				  
+			  } catch (JSONException e) 
+			  {
+				  e.printStackTrace();
+			  }
+			  if (handler.getParameters().isDebugMode()) {
+			      GNS.getLogger().fine("Context client UPDATE : " + attrValPairJSON.toString());
+			    }
+			  // for the lack of any versionnum currently it is set to -1
+			  // will be changed later on
+			  handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
+			  break;
+		  }
+		  //FIXME: handle other types of updates
+	case SINGLE_FIELD_APPEND:
+		break;
+	case SINGLE_FIELD_APPEND_OR_CREATE:
+		break;
+	case SINGLE_FIELD_APPEND_WITH_DUPLICATION:
+		break;
+	case SINGLE_FIELD_CLEAR:
+		break;
+	case SINGLE_FIELD_REMOVE:
+		break;
+	case SINGLE_FIELD_REMOVE_FIELD:
+		break;
+	case SINGLE_FIELD_REPLACE_ALL:
+		break;
+	case SINGLE_FIELD_REPLACE_ALL_OR_CREATE:
+		break;
+	case SINGLE_FIELD_REPLACE_SINGLETON:
+		break;
+	case SINGLE_FIELD_SET:
+		break;
+	case SINGLE_FIELD_SET_FIELD_NULL:
+		break;
+	case SINGLE_FIELD_SUBSTITUTE:
+		break;
+	case USER_JSON_REPLACE:
+		break;
+	case USER_JSON_REPLACE_OR_CREATE:
+		break;
+	default:
+		break;
+	  }
   }
 
   private static void handlePacketLocally(int ccpReqID, ClientRequestHandlerInterface handler,
