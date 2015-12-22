@@ -270,7 +270,7 @@ public class ActiveCodeClient {
 	}
 	
 	/**
-	 * Restart a stuck worker
+	 * Restart the worker stuck with a malicious code
 	 */
 	public void restartServer() {
 		long t1 = System.currentTimeMillis();
