@@ -49,7 +49,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UniversalCoreWithSSLTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client = null;
   /**
@@ -72,7 +72,7 @@ public class UniversalCoreWithSSLTest {
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        fail("Exception while creating account guid: " + e);
       }
     }
   }
@@ -160,7 +160,7 @@ public class UniversalCoreWithSSLTest {
       subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception creating subguid: " + e);
     }
   }
 
@@ -172,7 +172,7 @@ public class UniversalCoreWithSSLTest {
     } catch (GnsFieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
-      System.out.println("Exception when we were not expecting it: " + e);
+      System.out.println("Exception testing field not found: " + e);
     }
   }
 
@@ -181,7 +181,7 @@ public class UniversalCoreWithSSLTest {
     try {
       assertFalse(client.fieldExists(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (Exception e) {
-      System.out.println("Exception when we were not expecting it: " + e);
+      System.out.println("Exception testing field exists false: " + e);
     }
   }
 
@@ -200,7 +200,7 @@ public class UniversalCoreWithSSLTest {
     try {
       assertTrue(client.fieldExists(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (Exception e) {
-      System.out.println("Exception when we were not expecting it: " + e);
+      System.out.println("Exception testing field exists true: " + e);
     }
   }
 
@@ -212,7 +212,7 @@ public class UniversalCoreWithSSLTest {
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception registering guids for create fields: " + e);
     }
     try {
       // remove default read acces for this test
@@ -237,7 +237,7 @@ public class UniversalCoreWithSSLTest {
       } catch (GnsException e) {
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it in create fields: " + e);
     }
   }
 
@@ -263,7 +263,7 @@ public class UniversalCoreWithSSLTest {
         e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it testing ACL part one: " + e);
       e.printStackTrace();
     }
   }
@@ -323,7 +323,7 @@ public class UniversalCoreWithSSLTest {
       }
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it testing ACL part two: " + e);
       e.printStackTrace();
     }
   }
@@ -350,7 +350,7 @@ public class UniversalCoreWithSSLTest {
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it testing ACL all fields: " + e);
     }
   }
 
@@ -409,7 +409,7 @@ public class UniversalCoreWithSSLTest {
               westyEntry.getGuid(), "cats", westyEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting testing DB: " + e);
     }
   }
 

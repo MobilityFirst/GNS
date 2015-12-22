@@ -65,7 +65,7 @@ public class KeyLookup extends ConsoleCommand {
       String alias;
       if (st.countTokens() == 0) {
         alias = module.getCurrentGuid().getEntityName();
-      } else if (st.countTokens() != 1) {
+      } else if (st.countTokens() == 1) {
         alias = st.nextToken();
       } else {
         console.printString("Wrong number of arguments for this command.\n");
