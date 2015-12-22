@@ -27,7 +27,6 @@ import java.io.PrintWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +38,6 @@ import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -53,10 +51,8 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveCodeClient {
 	private String hostname;
 	private int port;
-	private boolean restartOnCrash;
 	private Process process;
 	private final GnsApplicationInterface<?> app;
-	private boolean killed;
 	
 	/**
 	 * @param app the gns app
@@ -132,24 +128,33 @@ public class ActiveCodeClient {
 	 * @param acp the parameters to send to the worker
 	 * @param useTimeout whether or not to use the timeout when waiting for a reply
 	 * @return the ValuesMap object returned by the active code
-	 * @throws ActiveCodeException
 	 */
-	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout) throws ActiveCodeException {
+	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout){
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setAcp(acp);
 		ValuesMap vm = null;
 		
-		// Send the request to the worker
-		try {
+		try{
 			int timeout = useTimeout ? 500 : 0;
 			vm = submitRequest(acm, timeout);
+		}catch(InterruptedException e){
+			e.printStackTrace();
 		}
-		catch(ActiveCodeException e) {
-			GNS.getLogger().warning("Code failed to return in allotted time!");
-			process.destroyForcibly();
-			throw new ActiveCodeException();
+		
+		/*
+		// Send the request to the worker
+		try {
 			
+		}catch(Exception e){
+			e.printStackTrace();
 		}
+		catch(Exception e) {
+			System.out.println("################################ Time out ##################################");
+			System.out.println("################################ About to terminate the worker ##################################");
+			process.destroyForcibly();
+			throw new ActiveCodeException();			
+		}
+		*/
 		
 		return vm;
 	}
@@ -175,33 +180,32 @@ public class ActiveCodeClient {
 	 * @throws IOException 
 	 * @throws ActiveCodeException 
 	 */
-	private ValuesMap submitRequest(ActiveCodeMessage acmReq, int timeoutMs) throws ActiveCodeException {
+	private ValuesMap submitRequest(ActiveCodeMessage acmReq, int timeoutMs) throws InterruptedException{
 		Socket socket = null;
 		boolean crashed = false;
 		
-		PrintWriter out;
-		BufferedReader in;
-		
-		// Create the socket and throw an exception upon failure
-		try {
-			socket = new Socket(hostname, port);
-			socket.setSoTimeout(timeoutMs);
-			
-			out = new PrintWriter(socket.getOutputStream(), true);
-			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		} catch (IOException e) {
-			System.out.println("############## Time out ############");
-			throw new ActiveCodeException();
-		} 
+		PrintWriter out = null;
+		BufferedReader in = null;
 		
 		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
-		
-		// Serialize the initial request
-		ActiveCodeUtils.sendMessage(out, acmReq);
 		
 		boolean codeFinished = false;
 		String valuesMapString = null;
 		
+		// Create the socket and throw an exception upon failure
+		try{
+			socket = new Socket(hostname, port);
+			//socket.setSoTimeout(timeoutMs);
+			
+			out = new PrintWriter(socket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+						
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		// Serialize the initial request
+		ActiveCodeUtils.sendMessage(out, acmReq);	
 		// Keeping going until we have received a 'finished' message
 		while(!codeFinished) {
 		    ActiveCodeMessage acmResp = ActiveCodeUtils.getMessage(in);
@@ -225,26 +229,28 @@ public class ActiveCodeClient {
 		    	ActiveCodeUtils.sendMessage(out, acmres);
 		    }
 		}
-		
+	
 		// Done with socket at this point
         try {
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-        
-        ValuesMap vm = null;
-        
+		
+		ValuesMap vm = null;
+	        
         // Try to convert back to a valuesMap
         if(crashed) {
-        	throw new ActiveCodeException();
-        }
-        else if(valuesMapString != null) {
+        	System.out.println("################### Crashed! ####################");
+        	//throw new ActiveCodeException();
+        }else if(valuesMapString != null) {
         	try {
         		vm = new ValuesMap(new JSONObject(valuesMapString));
  	        } catch (JSONException e) {
  	        	e.printStackTrace();
  	        }
+        }else{
+        	System.out.println("The returned value is "+valuesMapString);
         }
         
         return vm;
@@ -258,8 +264,19 @@ public class ActiveCodeClient {
 		acm.setShutdown(true);
 		try {
 			submitRequest(acm, 0);
-		} catch (ActiveCodeException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * Restart a stuck worker
+	 */
+	public void restartServer() {
+		long t1 = System.currentTimeMillis();
+		process.destroyForcibly();		
+		startServer();
+		long elapsed = System.currentTimeMillis() - t1;
+		System.out.println("It takes "+elapsed+"ms to restart this worker.");
 	}
 }

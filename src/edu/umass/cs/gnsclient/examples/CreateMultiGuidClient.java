@@ -30,7 +30,7 @@ public class CreateMultiGuidClient {
 	private final static String key_folder = "/Users/zhaoyugao/gns_key/";
 	
 	public static void main(String[] args) throws IOException,
-    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+    InvalidKeySpecException, NoSuchAlgorithmException, 
     InvalidKeyException, SignatureException, Exception {
 		
 		int node = Integer.parseInt(args[0]);
@@ -71,12 +71,12 @@ public class CreateMultiGuidClient {
 		    }else{
 		    	client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 		    }
-		    
-		    result = client.read(guidAccount);
+		    try{
+		    	result = client.read(guidAccount);
+		    }catch(GnsException e){
+		    	System.out.println("Request timed out!");
+		    }
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
-		    
-		    //JSONObject obj = client.lookupAccountRecord("test"+(node*10+i)+ACCOUNT_ALIAS);
-		    //System.out.println(obj.toString());
 		    
 		}
 		System.exit(0);

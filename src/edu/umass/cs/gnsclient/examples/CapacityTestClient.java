@@ -71,9 +71,12 @@ public class CapacityTestClient {
     		future.get(500, TimeUnit.MILLISECONDS);
     	}catch(TimeoutException e){
     		future.cancel(true);
+    		System.out.println("Timeout");
     	}catch(InterruptedException e){
+    		System.out.println("Interrupted");
     		e.printStackTrace();
     	}catch(ExecutionException e){
+    		System.out.println("Execution");
     		e.printStackTrace();
     	}
     }
@@ -87,7 +90,11 @@ public class CapacityTestClient {
     			if(j < fraction){
     				clients[j].sendSingleRequest();
     			}else{
-    				clients[j].sendMaliciousRequest();
+    				try{
+    					clients[j].sendMaliciousRequest();
+    				}catch(Exception e){
+    					System.out.println("Exception handled!");
+    				}
     			}
     			r.record();
     		}
@@ -109,6 +116,7 @@ public class CapacityTestClient {
     		long begin = System.currentTimeMillis();
     		try{
     			client.fieldRead(guid, "hi", entry);
+    			//System.out.println("The response is "+result);
     		}catch(GnsException e){
     			failed++;
     		}catch(Exception e){
@@ -176,7 +184,7 @@ public class CapacityTestClient {
 			clients[index] = new CapacityTestClient(client, guid, accountGuid);
 		}
 		
-		int TOTAL = rate * 30 * fraction / NUM_CLIENT;
+		int TOTAL = rate * 30;
 		
 		start = System.currentTimeMillis();
     	long t1 = System.currentTimeMillis();
@@ -185,6 +193,8 @@ public class CapacityTestClient {
     	long elapsed = t2 - t1;
     	
     	System.out.println("It takes "+elapsed+"ms.");
+    	
+    	TOTAL = TOTAL * fraction / NUM_CLIENT;
     	
     	System.out.println("There are "+TOTAL+" requests.");
     	while(latency.size() != TOTAL){

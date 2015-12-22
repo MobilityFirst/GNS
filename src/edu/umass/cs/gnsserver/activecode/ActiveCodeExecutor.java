@@ -23,10 +23,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * This class is a hotfix for catching exceptions when using Future
@@ -35,14 +38,30 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class ActiveCodeExecutor extends ThreadPoolExecutor {
+	private ActiveCodeHandler codeHandler;
+	
 	protected ActiveCodeExecutor(int numCoreThreads, int numMaxThreads, int timeout,
 			TimeUnit timeUnit,
 			BlockingQueue<Runnable> queue,
 			ThreadFactory threadFactory,
-			RejectedExecutionHandler handler) {
+			RejectedExecutionHandler handler,
+			ActiveCodeHandler codeHandler) {
 		super(numCoreThreads, numMaxThreads, timeout, timeUnit, queue, threadFactory, handler);
+		this.codeHandler = codeHandler;
 	}
-
+	
+	@Override
+	public void beforeExecute(Thread t, Runnable r){
+		this.codeHandler.register(r, t);
+		//System.out.println("The chosen thread for executed runnable "+r+" is "+t.getId());
+	}
+	
+	@Override
+	public void execute(Runnable r){
+		super.execute(r);
+	}
+	
+		
 	/**
 	 * This is a fix for catching exceptions when using Future
 	 * For more details see: 
@@ -58,7 +77,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 				if (future.isDone())
 					future.get();
 			} catch (CancellationException ce) {
-				t = ce;
+				t = ce.getCause();
 			} catch (ExecutionException ee) {
 				t = ee.getCause();
 				throw new RuntimeException();
@@ -66,5 +85,6 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 				Thread.currentThread().interrupt(); // ignore/reset
 			}
 		}
+		
 	}
 }

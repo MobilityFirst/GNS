@@ -65,6 +65,11 @@ public class ActiveCodeWorker {
         }
 	}
 	
+	/**
+	 * Test single worker
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException  {
 		ActiveCodeWorker acs = new ActiveCodeWorker();	
 		int port = 0, callbackPort = 0;

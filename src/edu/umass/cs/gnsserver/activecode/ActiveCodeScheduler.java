@@ -2,7 +2,6 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -18,16 +17,20 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveCodeScheduler implements Runnable{
 	private ThreadPoolExecutor executorPool;
+	private ActiveCodeGuardian guard;
+	
 	//private HashMap<String, ArrayList<FutureTask<ValuesMap>>> queue = new HashMap<String, ArrayList<FutureTask<ValuesMap>>>();
 	private ArrayList<String> guidList = new ArrayList<String>();
 	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
 	private int ptr = 0;
 	
+	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
 	
-	protected ActiveCodeScheduler(ThreadPoolExecutor executorPool){
+	protected ActiveCodeScheduler(ThreadPoolExecutor executorPool, ActiveCodeGuardian guard){
 		this.executorPool = executorPool;
+		this.guard = guard;
 	}
 	
 	public void run(){		
@@ -44,6 +47,7 @@ public class ActiveCodeScheduler implements Runnable{
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			if (futureTask != null){
 				executorPool.execute(futureTask);
+				guard.register(futureTask);
 			}
 		}
 	}

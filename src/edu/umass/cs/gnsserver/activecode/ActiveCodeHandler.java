@@ -22,20 +22,21 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.codec.binary.Base64;
 
-import edu.umass.cs.gnsserver.activecode.ActiveCodeScheduler;
-import edu.umass.cs.gnsserver.activecode.ActiveCodeTask;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -50,8 +51,12 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveCodeHandler {	
 	GnsApplicationInterface<?> gnsApp;
 	ClientPool clientPool;
-	ThreadPoolExecutor executorPool;
+	ThreadFactory threadFactory;
+	//ThreadPoolExecutor executorPool;
+	ActiveCodeExecutor executorPool;
+	ActiveCodeGuardian guard;
 	ActiveCodeScheduler scheduler;
+	ConcurrentHashMap<Runnable, Thread> threadMap;
 	Map<String, Long> blacklist;
 	long blacklistSeconds;
 	
@@ -64,23 +69,42 @@ public class ActiveCodeHandler {
 	 * @param blacklistSeconds
 	 */
 	public ActiveCodeHandler(GnsApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
-		gnsApp = app;
+		gnsApp = app;		
+	    threadMap = new ConcurrentHashMap<Runnable, Thread>();
+	    
 		clientPool = new ClientPool(app); 
 	    // Get the ThreadFactory implementation to use
-	    ThreadFactory threadFactory = new ActiveCodeThreadFactory(clientPool);
+	    threadFactory = new ActiveCodeThreadFactory(clientPool);
 	    // Create the ThreadPoolExecutor
 	    executorPool = new ActiveCodeExecutor(numProcesses, numProcesses, 0, TimeUnit.SECONDS, 
-	    		new LinkedBlockingQueue<Runnable>(100), 
-	    		// new SynchronousQueue<Runnable>(),
-	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy());
+	    		new LinkedBlockingQueue<Runnable>(1000), 
+	    		//new SynchronousQueue<Runnable>(),
+	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy(),
+	    		this);
 	    // Start the processes
 	    executorPool.prestartAllCoreThreads();
+	    System.out.println("##################### All threads have been started! ##################");
 	    
-	    scheduler = new ActiveCodeScheduler(executorPool);
+	    guard = new ActiveCodeGuardian();
+	    (new Thread(guard)).start();
+	    
+	    scheduler = new ActiveCodeScheduler(executorPool, guard);
 	    (new Thread(scheduler)).start();
 	    // Blacklist init
 		blacklist = new HashMap<>();
 		this.blacklistSeconds = blacklistSeconds;
+	}
+	
+	protected void register(Runnable r, Thread t){
+		threadMap.put(r, t);
+	}
+	
+	protected void remove(Runnable r){
+		threadMap.remove(r);
+	}
+	
+	protected Thread get(Runnable r){
+		return threadMap.get(r);
 	}
 	
 	/**
@@ -163,11 +187,23 @@ public class ActiveCodeHandler {
 		} catch (ExecutionException e) {
 			System.out.println("Added " + guid + " to blacklist!");
 			//addToBlacklist(guid);
-		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (CancellationException e){
+			// Exception because of being cancelled
+			ActiveCodeClient client = clientPool.getClient(threadMap.get(futureTask).getId());
+			// Restart the server of the corresponding thread
+			client.restartServer();
+		} catch (Exception e){
 			e.printStackTrace();
 		}
-		//System.out.println("Result got from task:"+result);
+		
+		
+		this.threadMap.remove(futureTask);
+		if(!futureTask.isCancelled()){
+			guard.remove(futureTask);
+		}
 		scheduler.release();
+		
 		
 		// This is an best effort implementation
 		// Only run if there are free workers and queue space

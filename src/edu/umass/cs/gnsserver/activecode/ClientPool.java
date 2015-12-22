@@ -47,10 +47,10 @@ public class ClientPool {
 		clients.put(t.getId(), new ActiveCodeClient(app, true));
 	}
 	
-	protected ActiveCodeClient getClient(Thread t) {
-		return clients.get(t.getId());
+	protected ActiveCodeClient getClient(long pid) {
+		return clients.get(pid);
 	}
-
+	
 	protected void shutdown() {
 		for(ActiveCodeClient client : clients.values()) {
 		    client.shutdownServer();
