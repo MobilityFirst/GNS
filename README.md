@@ -99,5 +99,5 @@ Above from from https://gns.name/wiki/index.php?title=GNS_Overview
    setups.
 
 ##TODOs
-1. I have support for update forwarding for "SINGLE_FIELD_CREATE" update types, in fucntio sendTriggerToContextService of Update.java file. But support for other types of updates needs to be added.
+1. I have added support for update forwarding for "SINGLE_FIELD_CREATE" update types, in fucntion sendTriggerToContextService of Update.java file. But support for other types of updates needs to be added.
 
