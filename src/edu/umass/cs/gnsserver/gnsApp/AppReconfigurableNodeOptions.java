@@ -233,6 +233,7 @@ public class AppReconfigurableNodeOptions {
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
+    Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -257,7 +258,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
     commandLineOptions.addOption(disableEmailVerification);
-
+    commandLineOptions.addOption(enableContextService);
     return commandLineOptions;
 
   }
@@ -407,7 +408,7 @@ public class AppReconfigurableNodeOptions {
     	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
     
-    if(allValues.containsKey(ENABLE_CONTEXT_SERVICE))
+    if (isOptionTrue(ENABLE_CONTEXT_SERVICE, allValues))
     {
     	enableContextService = true;
     }

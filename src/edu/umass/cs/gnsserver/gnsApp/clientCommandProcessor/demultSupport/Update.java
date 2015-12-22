@@ -67,9 +67,11 @@ public class Update {
     
     if( AppReconfigurableNodeOptions.enableContextService )
     {
-    	System.out.println("\n\n handlePacketUpdate userJSON "+updatePacket.getUserJSON()+" old Value "+
-    			updatePacket.getOldValue()+" new value "+updatePacket.getUpdateValue()+" name "+updatePacket.getName()
-    			+" key "+updatePacket.getKey()+" operation "+updatePacket.getOperation());
+    	if (handler.getParameters().isDebugMode()) {
+    	      GNS.getLogger().fine("\n\n handlePacketUpdate userJSON "+updatePacket.getUserJSON()+" old Value "+
+    	    			updatePacket.getOldValue()+" new value "+updatePacket.getUpdateValue()+" name "+updatePacket.getName()
+    	    			+" key "+updatePacket.getKey()+" operation "+updatePacket.getOperation());
+    	}
     	
     	try
     	{
