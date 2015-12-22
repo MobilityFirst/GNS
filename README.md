@@ -48,21 +48,21 @@ Above from from https://gns.name/wiki/index.php?title=GNS_Overview
       nodes, needed for hyperspace hashing. First column in the file is nodeID of context service node, second is IP address and third is 
       port. These ports should not conflict with local GNS ports.
 
-   c) dbNodeSetup.txt file has database connection information. It has database infomation for each context service node, which is 4 in this  
-      setup. Column names are specified in the file. If a non standard port mysql is running then that port can be changed in the file.   
+   c) dbNodeSetup.txt file has database connection information. It has database infomation for each context service node, which is 4 in this
+      setup. Column names are specified in the file. If a non standard port mysql is running then that port can be changed in the file.
       Username and password should be updated according to the mysql credentials. If a mysql is running without root, in a local directory 
       then those options can be specified as 6th argument, but not need for system and default installation of mysql.
 
    d) attributeInfo.txt contains attribute information. Currently, seach and updates can only support attributes specified in this file. 
       Seach query have a "GeojsonOverlap" function, which takes a geoJSON as input and internally converts that into these attributes, so 
       these attributes are not directly visible in geoJSON. This files also contains minimum value, maximum value, default value and data 
-      type of each attribute. Any update to an attribute's value should be between minimum and maximum value specified. Minimim, maximum, 
+      type of each attribute. Any update to an attribute's value should be between minimum and maximum value specified. Minimum, maximum, 
       default values can be changed in this file and system will incorporate that on next run.
 
    e) subspaceInfo.txt file contains the subspace info. Most of the time this file will not require any changes. Each subspace is defned by 
-      two lines in thsi file. Currently, there is just one subspace so just two lines. First line denotes the <subspaceID, nodeid1, 
-      nodeid2, ...>. It has subspace id and node ids on which that subspace is defined. Format of second line is <subpsaceId, attribute1, 
-      attribute2, ...>, subspace id and attributes of that subpsace.
+      two lines in thsi file. Currently, there is just one subspace so just two lines. First line denotes the "subspaceID, nodeid1, 
+      nodeid2, ...". It has subspace id and node ids on which that subspace is defined. Format of second line is "subpsaceId, attribute1, 
+      attribute2, ...", subspace id and attributes of that subpsace.
 
 2. MySQL Installation needed:
 
