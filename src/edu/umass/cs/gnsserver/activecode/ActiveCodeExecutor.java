@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+
 /**
  * This class is a hotfix for catching exceptions when using Future
  * See: afterExecute
@@ -38,27 +39,25 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  */
 public class ActiveCodeExecutor extends ThreadPoolExecutor {
-	private ActiveCodeHandler codeHandler;
+	private ActiveCodeGuardian guard;
 	
 	protected ActiveCodeExecutor(int numCoreThreads, int numMaxThreads, int timeout,
 			TimeUnit timeUnit,
 			BlockingQueue<Runnable> queue,
 			ThreadFactory threadFactory,
 			RejectedExecutionHandler handler,
-			ActiveCodeHandler codeHandler) {
+			ActiveCodeGuardian guard) {
 		super(numCoreThreads, numMaxThreads, timeout, timeUnit, queue, threadFactory, handler);
-		this.codeHandler = codeHandler;
+		this.guard = guard;
 	}
+	
 	
 	@Override
 	public void beforeExecute(Thread t, Runnable r){
-		this.codeHandler.register(r, t);
-		//System.out.println("The chosen thread for executed runnable "+r+" is "+t.getId());
-	}
-	
-	@Override
-	public void execute(Runnable r){
-		super.execute(r);
+		if(r instanceof FutureTask<?>){
+			this.guard.registerThread((FutureTask<ValuesMap>) r, t);
+		}	
+		super.beforeExecute(t, r);
 	}
 	
 		
@@ -80,11 +79,14 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 				t = ce.getCause();
 			} catch (ExecutionException ee) {
 				t = ee.getCause();
-				throw new RuntimeException();
+				//throw new RuntimeException();
 			} catch (InterruptedException ie) {
 				Thread.currentThread().interrupt(); // ignore/reset
 			}
 		}
 		
+		if(r instanceof FutureTask<?>){
+			this.guard.removeThread((FutureTask<ValuesMap>) r);
+		}
 	}
 }

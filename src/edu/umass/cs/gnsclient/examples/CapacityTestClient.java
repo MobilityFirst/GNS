@@ -23,8 +23,8 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 public class CapacityTestClient {
 	//private final static String key_folder = "/Users/zhaoyugao/gns_key/";
-	private static String ACCOUNT_ALIAS = "@cs.umass.edu";
-	
+	private final static String ACCOUNT_ALIAS = "@example.com";
+	private final static String EC2_ADDRESS = "172.31.40.139";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
     private ThreadPoolExecutor executorPool;
     private ExecutorService executor; // This is for executing malicious request
@@ -68,15 +68,10 @@ public class CapacityTestClient {
     	//(new Thread(new MaliciousThread(this.client, this.guid, this.entry)) ).start();
     	Future<String> future = this.executor.submit(new MaliciousThread(this.client, this.guid, this.entry));
     	try {
-    		future.get(500, TimeUnit.MILLISECONDS);
-    	}catch(TimeoutException e){
-    		future.cancel(true);
-    		System.out.println("Timeout");
+    		future.get();
     	}catch(InterruptedException e){
-    		System.out.println("Interrupted");
-    		e.printStackTrace();
+       		e.printStackTrace();
     	}catch(ExecutionException e){
-    		System.out.println("Execution");
     		e.printStackTrace();
     	}
     }
@@ -144,7 +139,7 @@ public class CapacityTestClient {
     		try{
     			result = client.fieldRead(guid, "hi", entry);
     		}catch(Exception e){
-    			e.printStackTrace();
+    			//e.printStackTrace();
     		}
     		return result;
         }
@@ -171,7 +166,7 @@ public class CapacityTestClient {
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		
 		for (int index=0; index<10; index++){
-			UniversalTcpClient client = new UniversalTcpClient("0.0.0.0", 24398);
+			UniversalTcpClient client = new UniversalTcpClient(EC2_ADDRESS, 24398);
 			String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 		

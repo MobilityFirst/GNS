@@ -48,7 +48,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     /**
      * Called by the ThreadPoolExecutor to run the active code task
      */
-    public ValuesMap call(){    	
+    public ValuesMap call() throws ActiveCodeException{    	
     	long pid = Thread.currentThread().getId();
     	
     	ActiveCodeClient client = clientPool.getClient(pid);

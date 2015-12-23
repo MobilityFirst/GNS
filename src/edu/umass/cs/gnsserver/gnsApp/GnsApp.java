@@ -142,7 +142,6 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     this.activeCodeHandler = new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
-
   }
   
   

@@ -3,6 +3,7 @@ package edu.umass.cs.gnsserver.activecode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
@@ -17,20 +18,18 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveCodeScheduler implements Runnable{
 	private ThreadPoolExecutor executorPool;
-	private ActiveCodeGuardian guard;
 	
-	//private HashMap<String, ArrayList<FutureTask<ValuesMap>>> queue = new HashMap<String, ArrayList<FutureTask<ValuesMap>>>();
 	private ArrayList<String> guidList = new ArrayList<String>();
 	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
+	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
 	
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
 	
-	protected ActiveCodeScheduler(ThreadPoolExecutor executorPool, ActiveCodeGuardian guard){
+	protected ActiveCodeScheduler(ThreadPoolExecutor executorPool){
 		this.executorPool = executorPool;
-		this.guard = guard;
 	}
 	
 	public void run(){		
@@ -47,7 +46,6 @@ public class ActiveCodeScheduler implements Runnable{
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			if (futureTask != null){
 				executorPool.execute(futureTask);
-				guard.register(futureTask);
 			}
 		}
 	}
@@ -58,24 +56,12 @@ public class ActiveCodeScheduler implements Runnable{
 		}
 	}
 	
-	protected FutureTask<ValuesMap> getNextTask(){
-		FutureTask<ValuesMap> futureTask = null;
+	protected String getNextGuid(){
 		String guid = null;
-		synchronized(queueLock){
-			if (guidList.size() > ptr){
-				if (ptr > 0){
-					guid = guidList.get(ptr);
-				}else{ 
-					if(guidList.isEmpty()){
-						guid = null;
-						return null;
-					}else{
-						assert(ptr == 0);
-						guid = guidList.get(ptr);
-					}
-				}
-			}else{
-				ptr = 0;
+		if (guidList.size() > ptr){
+			if (ptr > 0){
+				guid = guidList.get(ptr);
+			}else{ 
 				if(guidList.isEmpty()){
 					guid = null;
 					return null;
@@ -84,13 +70,39 @@ public class ActiveCodeScheduler implements Runnable{
 					guid = guidList.get(ptr);
 				}
 			}
+		}else{
+			ptr = 0;
+			if(guidList.isEmpty()){
+				guid = null;
+				return null;
+			}else{
+				assert(ptr == 0);
+				guid = guidList.get(ptr);
+			}
+		}
+		
+		ptr++;
+		return guid;
+	}
+	
+	protected FutureTask<ValuesMap> getNextTask(){
+		FutureTask<ValuesMap> futureTask = null;
+		String guid = null;
+		synchronized(queueLock){
+			guid = getNextGuid();
 			
-			ptr++;
+			while(runningGuid.containsKey(guid) && runningGuid.get(guid)>1){
+				guid = getNextGuid();
+			}
+			if (runningGuid.containsKey(guid)){
+				runningGuid.put(guid, runningGuid.get(guid)+1);
+			} else{
+				runningGuid.put(guid, 1);
+			}
 			
 			futureTask = fairQueue.get(guid).pop();
 			if(fairQueue.get(guid).isEmpty()){
-				fairQueue.remove(guid);
-				guidList.remove(guid);
+				remove(guid);
 			}
 		}		
 		
@@ -110,5 +122,15 @@ public class ActiveCodeScheduler implements Runnable{
 			}	
 			release();
 		}
+	}
+	
+	protected void remove(String guid){
+		guidList.remove(guid);
+		fairQueue.remove(guid);
+	}
+	
+	protected void finish(String guid){
+		runningGuid.put(guid, runningGuid.get(guid)-1);
+		release();
 	}
 }

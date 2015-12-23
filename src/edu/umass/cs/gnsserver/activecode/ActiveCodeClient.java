@@ -129,32 +129,19 @@ public class ActiveCodeClient {
 	 * @param useTimeout whether or not to use the timeout when waiting for a reply
 	 * @return the ValuesMap object returned by the active code
 	 */
-	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout){
+	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout) throws ActiveCodeException{
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setAcp(acp);
 		ValuesMap vm = null;
 		
 		try{
-			int timeout = useTimeout ? 500 : 0;
-			vm = submitRequest(acm, timeout);
+			vm = submitRequest(acm);
 		}catch(InterruptedException e){
 			e.printStackTrace();
+		}catch(ActiveCodeException e){			
+			//e.printStackTrace();
+			throw new ActiveCodeException();
 		}
-		
-		/*
-		// Send the request to the worker
-		try {
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		catch(Exception e) {
-			System.out.println("################################ Time out ##################################");
-			System.out.println("################################ About to terminate the worker ##################################");
-			process.destroyForcibly();
-			throw new ActiveCodeException();			
-		}
-		*/
 		
 		return vm;
 	}
@@ -180,7 +167,7 @@ public class ActiveCodeClient {
 	 * @throws IOException 
 	 * @throws ActiveCodeException 
 	 */
-	private ValuesMap submitRequest(ActiveCodeMessage acmReq, int timeoutMs) throws InterruptedException{
+	private ValuesMap submitRequest(ActiveCodeMessage acmReq) throws InterruptedException, ActiveCodeException{
 		Socket socket = null;
 		boolean crashed = false;
 		
@@ -241,8 +228,8 @@ public class ActiveCodeClient {
 	        
         // Try to convert back to a valuesMap
         if(crashed) {
-        	System.out.println("################### Crashed! ####################");
-        	//throw new ActiveCodeException();
+        	System.out.println("################### "+ acmReq.getAcp().getGuid()+" Crashed! ####################");
+        	throw new ActiveCodeException();
         }else if(valuesMapString != null) {
         	try {
         		vm = new ValuesMap(new JSONObject(valuesMapString));
@@ -263,7 +250,7 @@ public class ActiveCodeClient {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setShutdown(true);
 		try {
-			submitRequest(acm, 0);
+			submitRequest(acm);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -278,5 +265,6 @@ public class ActiveCodeClient {
 		startServer();
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms to restart this worker.");
+		
 	}
 }

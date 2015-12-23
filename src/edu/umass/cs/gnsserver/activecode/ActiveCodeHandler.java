@@ -56,11 +56,11 @@ public class ActiveCodeHandler {
 	ActiveCodeExecutor executorPool;
 	ActiveCodeGuardian guard;
 	ActiveCodeScheduler scheduler;
-	ConcurrentHashMap<Runnable, Thread> threadMap;
-	Map<String, Long> blacklist;
+	
+	ConcurrentHashMap<String, Long> blacklist;
 	long blacklistSeconds;
 	
-	protected static final int NANOSECONDS_PER_SEC = 1000000000;
+	protected static final int MILLISECONDS_PER_SEC = 1000;
 	
 	/**
 	 * Initializes an ActiveCodeHandler
@@ -69,10 +69,13 @@ public class ActiveCodeHandler {
 	 * @param blacklistSeconds
 	 */
 	public ActiveCodeHandler(GnsApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
-		gnsApp = app;		
-	    threadMap = new ConcurrentHashMap<Runnable, Thread>();
+		gnsApp = app;			    		
 	    
 		clientPool = new ClientPool(app); 
+		
+		guard = new ActiveCodeGuardian(clientPool);
+	    (new Thread(guard)).start();
+		
 	    // Get the ThreadFactory implementation to use
 	    threadFactory = new ActiveCodeThreadFactory(clientPool);
 	    // Create the ThreadPoolExecutor
@@ -80,32 +83,18 @@ public class ActiveCodeHandler {
 	    		new LinkedBlockingQueue<Runnable>(1000), 
 	    		//new SynchronousQueue<Runnable>(),
 	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy(),
-	    		this);
+	    		guard);
 	    // Start the processes
 	    executorPool.prestartAllCoreThreads();
-	    System.out.println("##################### All threads have been started! ##################");
+	    System.out.println("##################### All threads have been started! ##################");	    
 	    
-	    guard = new ActiveCodeGuardian();
-	    (new Thread(guard)).start();
-	    
-	    scheduler = new ActiveCodeScheduler(executorPool, guard);
+	    scheduler = new ActiveCodeScheduler(executorPool);
 	    (new Thread(scheduler)).start();
 	    // Blacklist init
-		blacklist = new HashMap<>();
+		blacklist = new ConcurrentHashMap<String, Long>();
 		this.blacklistSeconds = blacklistSeconds;
 	}
 	
-	protected void register(Runnable r, Thread t){
-		threadMap.put(r, t);
-	}
-	
-	protected void remove(Runnable r){
-		threadMap.remove(r);
-	}
-	
-	protected Thread get(Runnable r){
-		return threadMap.get(r);
-	}
 	
 	/**
 	 * Checks to see if this guid has active code for the specified action.
@@ -115,7 +104,7 @@ public class ActiveCodeHandler {
 	 */
 	public boolean hasCode(NameRecord nameRecord, String action) {
 		try {
-                        return nameRecord.getValuesMap().has(ActiveCode.codeField(action));
+            return nameRecord.getValuesMap().has(ActiveCode.codeField(action));
 			//ResultValue code = nameRecord.getKeyAsArray(ActiveCode.codeField(action));
 			//return code != null && !code.isEmpty();
 		} catch (FieldNotFoundException e) {
@@ -141,8 +130,8 @@ public class ActiveCodeHandler {
 			return false;
 		
 		long blacklistedAt = blacklist.get(guid);
-		
-		return (System.nanoTime() - blacklistedAt) < (blacklistSeconds * NANOSECONDS_PER_SEC);
+		//System.out.println(guid+"'s elapsed time is "+(System.currentTimeMillis() - blacklistedAt));
+		return (System.currentTimeMillis() - blacklistedAt) < (blacklistSeconds * MILLISECONDS_PER_SEC);
 	}
 	
 	/**
@@ -150,7 +139,8 @@ public class ActiveCodeHandler {
 	 * @param guid
 	 */
 	public void addToBlacklist(String guid) {
-		blacklist.put(guid, System.nanoTime());
+		blacklist.put(guid, System.currentTimeMillis());
+		scheduler.remove(guid);
 	}
 	
 	/**
@@ -167,7 +157,7 @@ public class ActiveCodeHandler {
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
 		// If the guid is blacklisted, just return immediately
 		if(isBlacklisted(guid)) {
-			System.out.println("Guid " + guid + " is blacklisted from running code!");
+			//System.out.println("Guid " + guid + " is blacklisted from running code!");
 			return valuesMap;
 		}
 		
@@ -185,24 +175,24 @@ public class ActiveCodeHandler {
 		try {
 			result = futureTask.get();
 		} catch (ExecutionException e) {
-			System.out.println("Added " + guid + " to blacklist!");
-			//addToBlacklist(guid);
-			e.printStackTrace();
+			//System.out.println("Added " + guid + " to blacklist!");
+			addToBlacklist(guid);
+			System.out.println("Execution");
+			//e.printStackTrace();
 		} catch (CancellationException e){
+			addToBlacklist(guid);
+			System.out.println("Cancellation");
 			// Exception because of being cancelled
-			ActiveCodeClient client = clientPool.getClient(threadMap.get(futureTask).getId());
+			// ActiveCodeClient client = clientPool.getClient(guard.getThread(futureTask).getId());
 			// Restart the server of the corresponding thread
-			client.restartServer();
+			// client.restartServer();
 		} catch (Exception e){
+			System.out.println("Other");
 			e.printStackTrace();
 		}
 		
+		scheduler.finish(guid);
 		
-		this.threadMap.remove(futureTask);
-		if(!futureTask.isCancelled()){
-			guard.remove(futureTask);
-		}
-		scheduler.release();
 		
 		
 		// This is an best effort implementation

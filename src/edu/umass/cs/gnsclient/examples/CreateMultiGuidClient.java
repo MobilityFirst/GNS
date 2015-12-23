@@ -23,7 +23,8 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 
 public class CreateMultiGuidClient {
-	private static String ACCOUNT_ALIAS = "@cs.umass.edu";
+	private final static String EC2_ADDRESS = "172.31.40.139";
+	private static String ACCOUNT_ALIAS = "@example.com";
 	private static UniversalTcpClient client;
 	private final static String filename =  "/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //"/home/ubuntu/test.js";
 	private final static String mal_file = "/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js";
@@ -44,14 +45,14 @@ public class CreateMultiGuidClient {
 		
 		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 		
-		InetSocketAddress address = new InetSocketAddress("0.0.0.0", 24398);
+		InetSocketAddress address = new InetSocketAddress(EC2_ADDRESS, 24398);
 		
 		client = new UniversalTcpClient(address.getHostName(), address.getPort());
 		for (int i=0; i<10; i++){
 			GuidEntry guidAccount = null;
 			try{
 				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*10+i)+ACCOUNT_ALIAS, "password");
-				System.out.println("test"+(node*10+i)+ACCOUNT_ALIAS);
+				System.out.println("test"+(node*10+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
 				
 				KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*10+i) );
 			}catch (Exception e) {
