@@ -32,7 +32,7 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 10;
     private static long start = 0;
     protected static int TOTAL_SECOND = 1;
-    private static final int NUM_CLIENT = 10;
+    private static final int NUM_CLIENT = 2;
     
     private static int failed = 0;
     
@@ -165,7 +165,7 @@ public class CapacityTestClient {
 		
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		
-		for (int index=0; index<10; index++){
+		for (int index=0; index<NUM_CLIENT; index++){
 			UniversalTcpClient client = new UniversalTcpClient(EC2_ADDRESS, 24398, true);
 			String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
@@ -178,6 +178,11 @@ public class CapacityTestClient {
 			System.out.println("The GUID is "+guid);
 			
 			clients[index] = new CapacityTestClient(client, guid, accountGuid);
+			client.activeCodeClear(guid, "read", accountGuid);
+			long t1 = System.currentTimeMillis();
+			client.fieldRead(accountGuid, "hi");
+			long elapsed = System.currentTimeMillis() - t1;
+			System.out.println("It takes "+elapsed+"ms to send a read request.");
 		}
 		
 		int TOTAL = rate * 30;
