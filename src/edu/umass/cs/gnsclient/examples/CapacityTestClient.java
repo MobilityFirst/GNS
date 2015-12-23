@@ -166,7 +166,7 @@ public class CapacityTestClient {
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		
 		for (int index=0; index<10; index++){
-			UniversalTcpClient client = new UniversalTcpClient(EC2_ADDRESS, 24398);
+			UniversalTcpClient client = new UniversalTcpClient(EC2_ADDRESS, 24398, true);
 			String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 		
