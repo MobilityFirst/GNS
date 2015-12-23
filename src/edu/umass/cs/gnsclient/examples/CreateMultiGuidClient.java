@@ -23,7 +23,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 
 public class CreateMultiGuidClient {
-	private final static String EC2_ADDRESS = "172.31.40.139";
+	private final static String EC2_ADDRESS = "172.31.46.144";
 	private static String ACCOUNT_ALIAS = "@example.com";
 	private static UniversalTcpClient client;
 	private final static String filename =  "/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //"/home/ubuntu/test.js";
@@ -44,10 +44,8 @@ public class CreateMultiGuidClient {
 		String mal_code = new String(Files.readAllBytes(Paths.get(mal_file)));
 		
 		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
-		
-		InetSocketAddress address = new InetSocketAddress(EC2_ADDRESS, 24398);
-		
-		client = new UniversalTcpClient(address.getHostName(), address.getPort());
+				
+		client = new UniversalTcpClient(EC2_ADDRESS, 24398);
 		for (int i=0; i<10; i++){
 			GuidEntry guidAccount = null;
 			try{

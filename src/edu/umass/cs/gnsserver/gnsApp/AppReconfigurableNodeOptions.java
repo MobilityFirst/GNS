@@ -111,7 +111,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * Number of active code worker.
    */
-  public static int activeCodeWorkerCount = 5;
+  public static int activeCodeWorkerCount = 10;
   /**
    * How long (in seconds) to blacklist active code.
    */

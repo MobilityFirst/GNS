@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 public class CapacityTestClient {
 	//private final static String key_folder = "/Users/zhaoyugao/gns_key/";
 	private final static String ACCOUNT_ALIAS = "@example.com";
-	private final static String EC2_ADDRESS = "172.31.40.139";
+	private final static String EC2_ADDRESS = "172.31.46.144";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
     private ThreadPoolExecutor executorPool;
     private ExecutorService executor; // This is for executing malicious request
@@ -171,7 +171,8 @@ public class CapacityTestClient {
 			System.out.println("The account is "+account);
 		
 			//String guid = client.lookupGuid(account);
-			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), account);
+			
+			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(EC2_ADDRESS + ":" + client.getGnsRemotePort(), account);
 			String guid = accountGuid.getGuid();
 		
 			System.out.println("The GUID is "+guid);
