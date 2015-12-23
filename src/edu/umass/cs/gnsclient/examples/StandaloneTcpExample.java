@@ -74,13 +74,20 @@ public class StandaloneTcpExample {
     // Get the public key from the GNS
     PublicKey publicKey = client.publicKeyLookupFromGuid(guid);
     System.out.println("Retrieved public key: " + publicKey.toString());
-
+    long t1 = System.currentTimeMillis();
     // Use the GuidEntry create an new record in the GNS
     client.fieldCreateOneElementList(accountGuid, "homestate", "Florida");
+    long elapsed = System.currentTimeMillis() - t1;
+    System.out.println("Write takes "+elapsed+"ms");
     System.out.println("Added location -> Florida record to the GNS for GUID " + accountGuid.getGuid());
-
+    
+    
+    t1 = System.currentTimeMillis();
     // Retrive that record from the GNS
     String result = client.fieldReadArrayFirstElement(accountGuid.getGuid(), "homestate", accountGuid);
+    elapsed = System.currentTimeMillis();
+    System.out.println("Read takes "+elapsed+"ms");
+    
     System.out.println("Result of read location: " + result);
     
      // Retrive that record from the GNS
