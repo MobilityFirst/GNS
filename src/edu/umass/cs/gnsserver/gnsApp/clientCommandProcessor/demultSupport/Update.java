@@ -105,6 +105,9 @@ public class Update {
   private static void sendTriggerToContextService(UpdatePacket<String> updatePacket, 
 		  ClientRequestHandlerInterface handler)
   {
+	  String GUID           = updatePacket.getName();
+	  JSONObject attrValPairJSON = new JSONObject();
+	  
 	  switch( updatePacket.getOperation() )
 	  {
 		  case SINGLE_FIELD_CREATE:
@@ -113,8 +116,7 @@ public class Update {
 			      GNS.getLogger().fine("Entering Context client UPDATE");
 			  }
 			  
-			  String GUID           = updatePacket.getName();
-			  String fieldName      = updatePacket.getKey();
+			  String fieldName      = updatePacket.getKey();	  
 			  Set<String> newValueSet  = updatePacket.getUpdateValue().toStringSet();
 			  
 			  if (handler.getParameters().isDebugMode()) {
@@ -136,7 +138,7 @@ public class Update {
 			      GNS.getLogger().fine("Entering Context client UPDATE : GUID "+GUID+" fieldName "
 			    		  +fieldName+" newValue "+newValue);
 			    }
-			  JSONObject attrValPairJSON = new JSONObject();
+			  
 			  try 
 			  {
 				  attrValPairJSON.put(fieldName, newValue);
@@ -145,12 +147,6 @@ public class Update {
 			  {
 				  e.printStackTrace();
 			  }
-			  if (handler.getParameters().isDebugMode()) {
-			      GNS.getLogger().fine("Context client UPDATE : " + attrValPairJSON.toString());
-			    }
-			  // for the lack of any versionnum currently it is set to -1
-			  // will be changed later on
-			  handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
 			  break;
 		  }
 		  //FIXME: handle other types of updates
@@ -179,11 +175,29 @@ public class Update {
 	case SINGLE_FIELD_SUBSTITUTE:
 		break;
 	case USER_JSON_REPLACE:
+	{
+		JSONObject userJSON = updatePacket.getUserJSON();
+		if(userJSON != null)
+		{
+			attrValPairJSON = userJSON;
+		}
 		break;
+	}
 	case USER_JSON_REPLACE_OR_CREATE:
 		break;
 	default:
 		break;
+	  }
+	  
+	  if (handler.getParameters().isDebugMode()) {
+	      GNS.getLogger().fine("Context client UPDATE : " + attrValPairJSON.toString());
+	    }
+	  
+	  // for the lack of any versionnum currently it is set to -1
+	  // will be changed later on
+	  if(attrValPairJSON.length() > 0)
+	  {
+		  handler.getApp().getContextServiceClient().sendUpdate(GUID, attrValPairJSON, -1);
 	  }
   }
 
