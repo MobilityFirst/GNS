@@ -58,11 +58,11 @@ public class StandaloneBasicTcpClientExample {
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
           InvalidKeyException, SignatureException, Exception {
-
+	String addr = args[0];
     // Bring up the server selection dialog
-    InetSocketAddress address = ServerSelectDialog.selectServer();
+    InetSocketAddress address = new InetSocketAddress(addr, 24398); //ServerSelectDialog.selectServer();
     // Start the client
-    client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
+    client = new BasicUniversalTcpClient(address.getHostName(), address.getPort(), false);
     try {
       // Create a guid (which is also an account guid)
       guid = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password");
