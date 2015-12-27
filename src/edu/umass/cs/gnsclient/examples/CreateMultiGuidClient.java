@@ -27,7 +27,7 @@ public class CreateMultiGuidClient {
 	private final static int NUM_CLIENT = 10;
 	private final static String filename = "/home/ubuntu/test.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //
 	private final static String mal_file = "/home/ubuntu/mal.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js"; //
-	private final static String key_folder = "/Users/zhaoyugao/gns_key/";
+	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/zhaoyugao/gns_key/";
 	
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, 
