@@ -23,8 +23,8 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 public class CapacityTestClient {
 	//private final static String key_folder = "/Users/zhaoyugao/gns_key/";
-	private final static String ACCOUNT_ALIAS = "@example.com";
-	private final static String EC2_ADDRESS = "52.88.106.121";
+	private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
+	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
     private ThreadPoolExecutor executorPool;
     private ExecutorService executor; // This is for executing malicious request
@@ -159,20 +159,21 @@ public class CapacityTestClient {
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
     InvalidKeyException, SignatureException, Exception {
-		int rate =  Integer.parseInt(args[0]);
-		int node = Integer.parseInt(args[1]);
-		int fraction = NUM_CLIENT - Integer.parseInt(args[2]);
+		String address = args[0];
+		int rate =  Integer.parseInt(args[1]);
+		int node = Integer.parseInt(args[2]);
+		int fraction = NUM_CLIENT - Integer.parseInt(args[3]);
 		
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		
 		for (int index=0; index<NUM_CLIENT; index++){
-			UniversalTcpClient client = new UniversalTcpClient(EC2_ADDRESS, 24398, true);
+			UniversalTcpClient client = new UniversalTcpClient(address, 24398, false);
 			String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 		
 			//String guid = client.lookupGuid(account);
 			
-			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(EC2_ADDRESS + ":" + client.getGnsRemotePort(), account);
+			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 			String guid = accountGuid.getGuid();
 		
 			System.out.println("The GUID is "+guid);

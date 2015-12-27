@@ -1,7 +1,6 @@
 package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
@@ -21,11 +20,11 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
-
 public class CreateMultiGuidClient {
 	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
+	private final static int NUM_CLIENT = 10;
 	private final static String filename = "/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //"/home/ubuntu/test.js"; //
 	private final static String mal_file = "/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js"; //"/home/ubuntu/mal.js"; //
 	private final static String key_folder = "/Users/zhaoyugao/gns_key/";
@@ -33,10 +32,9 @@ public class CreateMultiGuidClient {
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, 
     InvalidKeyException, SignatureException, Exception {
-		
-		int node = 0;
-
 		String address = args[0];
+		int node = Integer.parseInt(args[1]);
+		int fraction = NUM_CLIENT - Integer.parseInt(args[2]);
 		
 		String code = new String(Files.readAllBytes(Paths.get(filename)));		
 		//Read in the code and serialize
@@ -48,7 +46,7 @@ public class CreateMultiGuidClient {
 				
 		client = new UniversalTcpClient(address, 24398, false);
 		
-		for (int i=0; i<1000; i++){
+		for (int i=0; i<NUM_CLIENT; i++){
 			GuidEntry guidAccount = null;
 			try{
 				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*10+i)+ACCOUNT_ALIAS, "password");
@@ -67,7 +65,7 @@ public class CreateMultiGuidClient {
 			
 			JSONObject result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
-		    /*
+		    
 		    if( i < fraction ){
 		    	client.activeCodeSet(guid, "read", code64, guidAccount);
 		    }else{
@@ -79,7 +77,7 @@ public class CreateMultiGuidClient {
 		    	System.out.println("Request timed out!");
 		    }
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
-		    */
+		    
 		    
 		}
 		System.exit(0);
