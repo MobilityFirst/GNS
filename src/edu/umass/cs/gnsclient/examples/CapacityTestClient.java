@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 public class CapacityTestClient {
 	//private final static String key_folder = "/Users/zhaoyugao/gns_key/";
 	private final static String ACCOUNT_ALIAS = "@example.com";
-	private final static String EC2_ADDRESS = "172.31.46.144";
+	private final static String EC2_ADDRESS = "52.88.106.121";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
     private ThreadPoolExecutor executorPool;
     private ExecutorService executor; // This is for executing malicious request
@@ -107,7 +107,7 @@ public class CapacityTestClient {
     		this.entry = entry;
     	}
     	
-    	public void run(){
+    	public synchronized void run(){
     		long begin = System.currentTimeMillis();
     		try{
     			client.fieldRead(guid, "hi", entry);
@@ -178,11 +178,11 @@ public class CapacityTestClient {
 			System.out.println("The GUID is "+guid);
 			
 			clients[index] = new CapacityTestClient(client, guid, accountGuid);
-			client.activeCodeClear(guid, "read", accountGuid);
-			long t1 = System.currentTimeMillis();
-			client.fieldRead(accountGuid, "hi");
-			long elapsed = System.currentTimeMillis() - t1;
-			System.out.println("It takes "+elapsed+"ms to send a read request.");
+			//client.activeCodeClear(guid, "read", accountGuid);
+			//long t1 = System.currentTimeMillis();
+			//client.fieldRead(accountGuid, "hi");
+			//long elapsed = System.currentTimeMillis() - t1;
+			//System.out.println("It takes "+elapsed+"ms to send a read request.");
 		}
 		
 		int TOTAL = rate * 30;

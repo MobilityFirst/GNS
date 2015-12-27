@@ -51,7 +51,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
  */
 public class StandaloneBasicTcpClientExample {
 
-  private static String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static String ACCOUNT_ALIAS = "gaozy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static BasicUniversalTcpClient client;
   private static GuidEntry guid;
 
@@ -79,12 +79,16 @@ public class StandaloneBasicTcpClientExample {
             + "\"location\":\"work\",\"name\":\"frank\"}");
 
     // Write out the JSON Object
+    long t1 = System.currentTimeMillis();
     client.update(guid, json);
-    System.out.println("Wrote JSONObject :" + json);
+    long elapsed = System.currentTimeMillis() - t1;
+    System.out.println("Wrote JSONObject :" + json + ", it takes "+elapsed+"ms.");
 
     // and read the entire object back in
+    t1 = System.currentTimeMillis();
     JSONObject result = client.read(guid);
-    System.out.println("Read JSON: " + result.toString());
+    elapsed = System.currentTimeMillis() - t1;
+    System.out.println("Read JSON: " + result.toString()+", it takes "+elapsed+"ms.");
 
     // Change a field
     client.update(guid, new JSONObject("{\"occupation\":\"rocket scientist\"}"));

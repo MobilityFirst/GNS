@@ -48,7 +48,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
  */
 public class StandaloneTcpExample {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "gaozy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client;
   private static GuidEntry accountGuid;
@@ -56,9 +56,9 @@ public class StandaloneTcpExample {
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
           InvalidKeyException, SignatureException, Exception {
-    
-    InetSocketAddress address = ServerSelectDialog.selectServer();
-    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    String addr = args[0];
+    InetSocketAddress address = new InetSocketAddress(addr, 24398);//ServerSelectDialog.selectServer();
+    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
     try {
       accountGuid = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
     } catch (Exception e) {
@@ -85,7 +85,7 @@ public class StandaloneTcpExample {
     t1 = System.currentTimeMillis();
     // Retrive that record from the GNS
     String result = client.fieldReadArrayFirstElement(accountGuid.getGuid(), "homestate", accountGuid);
-    elapsed = System.currentTimeMillis();
+    elapsed = System.currentTimeMillis() - t1;
     System.out.println("Read takes "+elapsed+"ms");
     
     System.out.println("Result of read location: " + result);
