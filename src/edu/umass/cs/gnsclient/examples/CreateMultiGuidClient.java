@@ -65,12 +65,13 @@ public class CreateMultiGuidClient {
 			
 			JSONObject result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
-		    
+		    /*
 		    if( i < fraction ){
 		    	client.activeCodeSet(guid, "read", code64, guidAccount);
 		    }else{
 		    	client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 		    }
+		    */
 		    try{
 		    	result = client.read(guidAccount);
 		    }catch(GnsException e){

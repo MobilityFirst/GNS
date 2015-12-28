@@ -173,7 +173,7 @@ public class AppUpdate {
     if (newValue == null) {
       newValue = updatePacket.getUserJSON();
     }
-    DelayProfiler.updateDelay("ActiveCode", activeStartTime);
+    DelayProfiler.updateDelay("activeCode", activeStartTime);
     
     // END ACTIVE CODE HANDLING
     // Apply update

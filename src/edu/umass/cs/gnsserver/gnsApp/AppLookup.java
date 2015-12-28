@@ -209,7 +209,7 @@ public class AppLookup {
           }
         }  
         
-        DelayProfiler.updateDelay("ActiveCode", activeStartTime);
+        DelayProfiler.updateDelay("activeCode", activeStartTime);
       }
       // END ACTIVE CODE HANDLING
 
