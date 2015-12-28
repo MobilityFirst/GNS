@@ -133,6 +133,7 @@ public class AppUpdate {
     }
 
     // START ACTIVE CODE HANDLING
+    long activeStartTime = System.currentTimeMillis();
     ValuesMap newValue = null;
     // Only do this for user fields.
     if (field == null || !InternalField.isInternalField(field)) {
@@ -172,7 +173,8 @@ public class AppUpdate {
     if (newValue == null) {
       newValue = updatePacket.getUserJSON();
     }
-
+    DelayProfiler.updateDelay("ActiveCode", activeStartTime);
+    
     // END ACTIVE CODE HANDLING
     // Apply update
     // FIXME: THIS CAUSES US TO HANG.

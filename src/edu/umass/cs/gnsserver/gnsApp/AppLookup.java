@@ -171,6 +171,7 @@ public class AppLookup {
       ValuesMap newResult = null;
       // Only do this for user fields.
       if (field == null || !InternalField.isInternalField(field)) {
+    	long activeStartTime = System.currentTimeMillis(); 
         int hopLimit = 1;
 
       // Grab the code because it is of a different type
@@ -187,6 +188,7 @@ public class AppLookup {
         }
 
         if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
+        	
           try {
             String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
             ValuesMap originalValues = nameRecord.getValuesMap();
@@ -205,7 +207,9 @@ public class AppLookup {
           } catch (Exception e) {
             GNS.getLogger().info("Active code error: " + e.getMessage());
           }
-        }
+        }  
+        
+        DelayProfiler.updateDelay("ActiveCode", activeStartTime);
       }
       // END ACTIVE CODE HANDLING
 
