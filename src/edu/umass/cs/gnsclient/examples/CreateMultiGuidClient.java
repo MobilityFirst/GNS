@@ -44,7 +44,7 @@ public class CreateMultiGuidClient {
 		
 		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 				
-		client = new UniversalTcpClient(address, 24398, false);
+		client = new UniversalTcpClient(address, 24398, true);
 		
 		for (int i=0; i<NUM_CLIENT; i++){
 			GuidEntry guidAccount = null;

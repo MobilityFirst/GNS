@@ -62,7 +62,7 @@ public class StandaloneBasicTcpClientExample {
     // Bring up the server selection dialog
     InetSocketAddress address = new InetSocketAddress(addr, 24398); //ServerSelectDialog.selectServer();
     // Start the client
-    client = new BasicUniversalTcpClient(address.getHostName(), address.getPort(), false);
+    client = new BasicUniversalTcpClient(address.getHostName(), address.getPort(), true);
     try {
       // Create a guid (which is also an account guid)
       guid = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password");
