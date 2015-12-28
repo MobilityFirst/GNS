@@ -121,7 +121,7 @@ public class CapacityTestClient {
     		}
     		
     		long elapsed = System.currentTimeMillis() - begin;
-    		System.out.println(elapsed);
+    		//System.out.println(elapsed);
     		CapacityTestClient.updateLatency(elapsed);
     	}
     }
