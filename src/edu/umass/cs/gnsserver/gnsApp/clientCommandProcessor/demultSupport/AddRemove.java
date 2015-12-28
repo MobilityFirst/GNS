@@ -58,7 +58,7 @@ public class AddRemove {
                 + confirmAddPacket.getCCPRequestID());
       }
     } else {
-      DelayProfiler.updateDelay("serviceNameAdd", (System.currentTimeMillis() - addInfo.getStartTime()));
+      DelayProfiler.updateDelay("serviceNameAdd", addInfo.getStartTime());
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket, handler);
     }
   }
