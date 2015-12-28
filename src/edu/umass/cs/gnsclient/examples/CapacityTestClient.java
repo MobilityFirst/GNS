@@ -53,6 +53,10 @@ public class CapacityTestClient {
     	CapacityTestClient.latency.add(time);
     }
      
+    protected synchronized static void clearLatency(){
+    	CapacityTestClient.latency.clear();
+    }
+    
     protected synchronized static int num_received(){	
     	return latency.size();
     }    
@@ -187,11 +191,45 @@ public class CapacityTestClient {
 		
 		int TOTAL = rate * 30;
 		
+		System.out.println("1st run");
 		start = System.currentTimeMillis();
     	long t1 = System.currentTimeMillis();
     	sendRequests(TOTAL, rate, clients, fraction, client);
     	long t2 = System.currentTimeMillis();
     	long elapsed = t2 - t1;
+    	
+    	System.out.println("It takes "+elapsed+"ms.");
+    	
+    	TOTAL = TOTAL * fraction / NUM_CLIENT;
+    	
+    	System.out.println("There are "+TOTAL+" requests.");
+    	while(latency.size() != TOTAL){
+    		
+    		System.out.println("Received "+latency.size()+" messages totally");
+    		try{
+    			Thread.sleep(1000);
+    		}catch(Exception e){
+    			e.printStackTrace();
+    		}
+    		
+    	}
+
+    	long total = 0;
+    	for(long t:latency){
+    		total += t;
+    	}
+    	System.out.println("There are "+failed+" requests failed.");
+    	System.out.println("The average latency is "+total/latency.size()+"ms");
+    	System.out.println("The start point is:"+(start/1000));
+    	
+    	Thread.sleep(2000);
+    	
+    	System.out.println("2nd run");
+    	start = System.currentTimeMillis();
+    	t1 = System.currentTimeMillis();
+    	sendRequests(TOTAL, rate, clients, fraction, client);
+    	t2 = System.currentTimeMillis();
+    	elapsed = t2 - t1;
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
