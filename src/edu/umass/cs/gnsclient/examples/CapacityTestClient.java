@@ -32,16 +32,14 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 10;
     private static long start = 0;
     protected static int TOTAL_SECOND = 1;
-    private static final int NUM_CLIENT = 2;
+    private static final int NUM_CLIENT = 10;
     
     private static int failed = 0;
     
-    private UniversalTcpClient client;
     private String guid;
     private GuidEntry entry;
             
-    protected CapacityTestClient(UniversalTcpClient client, String guid, GuidEntry entry){
-    	this.client = client;
+    protected CapacityTestClient(String guid, GuidEntry entry){
     	this.guid = guid;
     	this.entry = entry;
     	
@@ -59,14 +57,14 @@ public class CapacityTestClient {
     	return latency.size();
     }    
     
-    private void sendSingleRequest(){
-    	this.executorPool.execute(new ClientThread(this.client, this.guid, this.entry));
+    private void sendSingleRequest(UniversalTcpClient client){
+    	this.executorPool.execute(new ClientThread(client, this.guid, this.entry));
     	//(new Thread(new ClientThread())).start();
     }
     
-    private void sendMaliciousRequest(){
+    private void sendMaliciousRequest(UniversalTcpClient client){
     	//(new Thread(new MaliciousThread(this.client, this.guid, this.entry)) ).start();
-    	Future<String> future = this.executor.submit(new MaliciousThread(this.client, this.guid, this.entry));
+    	Future<String> future = this.executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
     		future.get();
     	}catch(InterruptedException e){
@@ -76,17 +74,17 @@ public class CapacityTestClient {
     	}
     }
     
-    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction){
+    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction, UniversalTcpClient client){
     	int reqPerClient = numRequest / NUM_CLIENT;
     	RateLimiter r = new RateLimiter(rate);
     	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" clients...");
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
     			if(j < fraction){
-    				clients[j].sendSingleRequest();
+    				clients[j].sendSingleRequest(client);
     			}else{
     				try{
-    					clients[j].sendMaliciousRequest();
+    					clients[j].sendMaliciousRequest(client);
     				}catch(Exception e){
     					System.out.println("Exception handled!");
     				}
@@ -165,9 +163,9 @@ public class CapacityTestClient {
 		int fraction = NUM_CLIENT - Integer.parseInt(args[3]);
 		
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
+		UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
 		
-		for (int index=0; index<NUM_CLIENT; index++){
-			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
+		for (int index=0; index<NUM_CLIENT; index++){			
 			String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 		
@@ -178,7 +176,7 @@ public class CapacityTestClient {
 		
 			System.out.println("The GUID is "+guid);
 			
-			clients[index] = new CapacityTestClient(client, guid, accountGuid);
+			clients[index] = new CapacityTestClient(guid, accountGuid);
 			//client.activeCodeClear(guid, "read", accountGuid);
 			//long t1 = System.currentTimeMillis();
 			//client.fieldRead(accountGuid, "hi");
@@ -190,7 +188,7 @@ public class CapacityTestClient {
 		
 		start = System.currentTimeMillis();
     	long t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, clients, fraction);
+    	sendRequests(TOTAL, rate, clients, fraction, client);
     	long t2 = System.currentTimeMillis();
     	long elapsed = t2 - t1;
     	
