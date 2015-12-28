@@ -222,6 +222,9 @@ public class CapacityTestClient {
     	System.out.println("The average latency is "+total/latency.size()+"ms");
     	System.out.println("The start point is:"+(start/1000));
     	
+    	
+    	clearLatency();
+    	
     	Thread.sleep(2000);
     	
     	System.out.println("2nd run");
@@ -247,7 +250,7 @@ public class CapacityTestClient {
     		
     	}
 
-    	long total = 0;
+    	total = 0;
     	for(long t:latency){
     		total += t;
     	}
