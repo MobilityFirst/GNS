@@ -90,7 +90,7 @@ public class SequentialRequestClient {
 	    
 	    Collections.sort(latency);
 	    
-	    System.out.println(latency.get(latency.size()/2));
+	    System.out.print(latency.get(latency.size()/2)+" ");
 	    System.exit(0);
 	}
 	
