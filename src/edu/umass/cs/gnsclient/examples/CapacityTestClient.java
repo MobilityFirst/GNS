@@ -1,6 +1,8 @@
 package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -256,6 +258,12 @@ public class CapacityTestClient {
     	System.out.println("There are "+failed+" requests failed.");
     	System.out.println("The average latency is "+total/latency.size()+"ms");
     	System.out.println("The start point is:"+(start/1000));
+    	
+    	// connect to none server and inform it's done
+    	Socket socket = new Socket("128.119.245.5", 60001);
+    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+    	out.println(node+"\n");
+    	socket.close();
     	
     	System.exit(0);		
 	}
