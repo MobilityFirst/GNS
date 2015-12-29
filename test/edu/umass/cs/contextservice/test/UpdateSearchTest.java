@@ -71,19 +71,23 @@ public class UpdateSearchTest {
 
   
   public UpdateSearchTest() {
-    if (address == null) {
+    if (address == null) 
+    {
       address = ServerSelectDialog.selectServer();
-      try {
+      try 
+      {
 		contextServiceClient = new ContextServiceClient<String>();
-	} catch (IOException e1) 
+      } catch (IOException e1) 
       {
 		e1.printStackTrace();
       }
       //client = new BasicUniversalTcpClient(address.getHostName(), address.getPort(), true);
       client = new UniversalTcpClient(address.getHostName(), address.getPort(), true);
-      try {
+      try 
+      {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-      } catch (Exception e) {
+      } catch (Exception e) 
+      {
         fail("Exception when we were not expecting it: " + e);
       }
     }
@@ -109,24 +113,20 @@ public class UpdateSearchTest {
 			  double randomLat = (rand.nextDouble()*180)-90;
 			  double randomLong = (rand.nextDouble()*360)-180;
 			  
-
+			  
 			  randomLat = 42.466;
 			  randomLong = -72.58;
-					
-			  attrValuePair.put("latitude", randomLat);
-			  attrValuePair.put("longitude", randomLong);
-			
-			  //client.fieldCreateList(masterGuid.getGuid(), "latitude", new JSONArray().put((int)randomLat), masterGuid);
-			  //fieldUpdate(currGuidEntry, "latitude", randomLat);
-			  //client.fieldCreateList(masterGuid.getGuid(), "longitude", new JSONArray().put((int)randomLong), masterGuid);
-		
+			  
+			  attrValuePair.put("geoLocationCurrentLat", randomLat);
+			  attrValuePair.put("geoLocationCurrentLong", randomLong);
+			  
 			  // everything is sent as a string to GNS
-			  client.fieldCreateList(currGuidEntry.getGuid(), "latitude", new JSONArray().put(randomLat+""), currGuidEntry);
+			  client.fieldCreateList(currGuidEntry.getGuid(), "geoLocationCurrentLat", new JSONArray().put(randomLat+""), currGuidEntry);
 			  //fieldUpdate(currGuidEntry, "latitude", randomLat);
-			  client.fieldCreateList(currGuidEntry.getGuid(), "longitude", new JSONArray().put(randomLong+""), currGuidEntry);
+			  client.fieldCreateList(currGuidEntry.getGuid(), "geoLocationCurrentLong", new JSONArray().put(randomLong+""), currGuidEntry);
 			  
 			  System.out.println("Updates sent for "+i);
-		  } catch (Exception e) 
+		  } catch (Exception e)
 		  {
 			  e.printStackTrace();
 			  fail("Exception while updating JSON: " + e);
@@ -137,7 +137,14 @@ public class UpdateSearchTest {
 			  fail("Error while updating JSON: " + e);
 		  }
 	  }
-	  
+	  // wait till all GUIDs are stored as GNS updates are non blocking for context service. 
+	  try 
+	  {
+		  Thread.sleep(5000);
+	  } catch (InterruptedException e1) 
+	  {
+		  e1.printStackTrace();
+	  }
 	  // do gets to verify
 	  
 	  for(int i=0;i<guidStorage.size();i++)
@@ -150,38 +157,30 @@ public class UpdateSearchTest {
 	  }
 	  
 	  // issue different types of search
-	  
 	  // simple search to get all the records
-	  String query = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE latitude >= -90 AND longitude <= 180";
+	  String query = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE geoLocationCurrentLat >= -90 AND geoLocationCurrentLong <= 180";
 	  //JSONObject geoJSONObject = getGeoJSON();
 	  JSONArray recvArray = contextServiceClient.sendSearchQuery(query);
 	  
 	  int numGuidsRet = 0;
 	  System.out.println("Search query result length "+recvArray.length());
-	  // JSONArray is an array of GUIDs 
+	  // JSONArray is an array of GUIDs
 	  HashMap<String, Boolean> guidsRet = new HashMap<String, Boolean>();
 	  
 	  for(int i=0; i<recvArray.length(); i++)
 	  {
-		try 
-		{
-			JSONArray currArry = null;
-			currArry = recvArray.getJSONArray(i);
-			
-			for(int j=0;j<currArry.length();j++)
-			{
-				guidsRet.put(currArry.getString(j), true);
-				System.out.println("GUIDs returned "+currArry.getString(j));
-			}
-			numGuidsRet = numGuidsRet + currArry.length();
-		} catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
+		  try
+		  {
+			  guidsRet.put(recvArray.getString(i), true);
+			  System.out.println("GUIDs returned "+recvArray.getString(i));
+		  } catch (JSONException e)
+		  {
+			  e.printStackTrace();
+		  }
 	  }
 	  numGuidsRet = guidsRet.size();
 	  System.out.println("Search query num GUIDs "+numGuidsRet);
-	  
+	  // all guids should be there
 	  for(int i=0;i<guidStorage.size();i++)
 	  {
 		  String currGUID = guidStorage.get(i);
@@ -195,23 +194,11 @@ public class UpdateSearchTest {
 	  // simple search to get all the records
 	  JSONObject geoJSONObject = getGeoJSON();
 	  System.out.println("GeoJSON created "+geoJSONObject);
-	  query = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE GeojsonOverlap("+geoJSONObject.toString()+")";
+	  query = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE GeojsonOverlap(geoLocationCurrentLat, "
+	  		+ "geoLocationCurrentLong, "+geoJSONObject.toString()+")";
 	  recvArray = contextServiceClient.sendSearchQuery(query);
 	  
-	  numGuidsRet = 0;
-	  for(int i=0; i<recvArray.length(); i++)
-	  {
-		try 
-		{
-			JSONArray currArry = null;
-			currArry = recvArray.getJSONArray(i);
-			numGuidsRet = numGuidsRet + currArry.length();
-		} catch (JSONException e) 
-		{
-			e.printStackTrace();
-		}
-	  }
-	  System.out.println("Num guids returned by geoJSON query "+numGuidsRet);
+	  System.out.println("Num guids returned by geoJSON query "+recvArray.length());
   }
   
   private JSONObject getGeoJSON()
@@ -241,5 +228,4 @@ public class UpdateSearchTest {
 		}
 		return geoJSON;
   }
-  
 }
