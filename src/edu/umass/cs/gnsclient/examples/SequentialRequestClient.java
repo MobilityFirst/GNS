@@ -67,7 +67,7 @@ public class SequentialRequestClient {
 		//System.out.println("The string length is "+str.length());
 		client.fieldUpdate(guidAccount.getGuid(), "hi", str, guidAccount);
 		client.read(guidAccount);
-	    //System.out.println("Retrieved JSON from guid: " + result.toString());
+		client.activeCodeClear(guid, "read", guidAccount);
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
