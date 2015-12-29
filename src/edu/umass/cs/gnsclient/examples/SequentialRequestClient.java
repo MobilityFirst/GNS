@@ -11,6 +11,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.json.JSONObject;
 
@@ -87,12 +88,9 @@ public class SequentialRequestClient {
 	    	latency.add(elapsed);
 	    }
 	    
-	    long total = 0;
-	    for (long lat:latency){
-	    	total += lat;
-	    }
+	    Collections.sort(latency);
 	    
-	    System.out.println(total/latency.size());
+	    System.out.println(latency.get(latency.size()/2));
 	    System.exit(0);
 	}
 	
