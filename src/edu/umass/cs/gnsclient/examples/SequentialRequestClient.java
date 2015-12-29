@@ -50,7 +50,7 @@ public class SequentialRequestClient {
 		GuidEntry guidAccount = null;
 		try{
 			guidAccount = lookupOrCreateAccountGuid(client, "test"+ACCOUNT_ALIAS, "password");
-			System.out.println("test"+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
+			//System.out.println("test"+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
 			
 			//KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*10+i) );
 		}catch (Exception e) {
