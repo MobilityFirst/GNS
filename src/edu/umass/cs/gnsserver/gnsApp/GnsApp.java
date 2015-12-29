@@ -19,10 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnsApp;
 
+import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
-
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -34,6 +34,7 @@ import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import static edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientCommandProcessor;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -107,6 +108,11 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
    * Active code handler
    */
   private ActiveCodeHandler activeCodeHandler;
+  
+  /**
+   * context service client
+   */
+  private ContextServiceClient<String> csClient;
 
   /**
    * Creates the application.
@@ -142,13 +148,31 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     this.activeCodeHandler = new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
-
+    
+    if(AppReconfigurableNodeOptions.enableContextService)
+    {
+    	csClient = new ContextServiceClient<String>();
+    }
   }
   
+  public ContextServiceClient<String> getContextServiceClient()
+  {
+	  if(csClient != null)
+	  {
+		  GNS.getLogger().fine("getContextServiceClient non null ");
+	  }
+	  else
+	  {
+		  GNS.getLogger().fine("getContextServiceClient NULL ");
+		  assert(false);
+	  }
+	  return csClient;
+  }
   
-  @Override
+  @SuppressWarnings("unchecked")
+@Override
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
-    this.messenger = (SSLMessenger<String, JSONObject>)messenger;
+    this.messenger = (SSLMessenger<String, JSONObject>) messenger;
     this.nodeID = messenger.getMyID().toString();
 //    this.nodeConfig 
 //            = new GNSConsistentReconfigurableNodeConfig<String>(((SSLMessenger<String, JSONObject>)messenger).getNodeConfig());
@@ -329,7 +353,6 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 
   /**
    * Updates the state for the given named record.
-   * 
    * @param name
    * @param state
    * @return true if we were able to update the state
@@ -430,7 +453,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     return nodeConfig;
   }
 
-  @Override
+@Override
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {
 //    InetSocketAddress clientAddress = new InetSocketAddress(isa.getAddress(),
 //            ActiveReplica.getClientFacingPort(isa.getPort()));
@@ -438,7 +461,8 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     if (!disableSSL) {
       messenger.getClientMessenger().sendToAddress(isa, msg);
     } else {
-      messenger.sendToAddress(isa, msg);
+      ((JSONMessenger<String>)messenger).sendToAddress(isa, msg);
+    	//messenger.sendToAddress(isa, msg);
     }
   }
 
