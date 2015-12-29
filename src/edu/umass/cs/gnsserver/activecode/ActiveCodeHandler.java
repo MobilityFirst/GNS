@@ -52,7 +52,6 @@ public class ActiveCodeHandler {
 	GnsApplicationInterface<?> gnsApp;
 	ClientPool clientPool;
 	ThreadFactory threadFactory;
-	//ThreadPoolExecutor executorPool;
 	ActiveCodeExecutor executorPool;
 	ActiveCodeGuardian guard;
 	ActiveCodeScheduler scheduler;
