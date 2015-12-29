@@ -74,16 +74,16 @@ public class SequentialRequestClient {
 	    }
 	    
 	    for (int i=0; i<100; i++){
-	    	long t1 = System.currentTimeMillis();
+	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
-	    	long t2 = System.currentTimeMillis();
+	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    }
 	    
 	    for (int i=0; i<100; i++){
-	    	long t1 = System.currentTimeMillis();
+	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
-	    	long t2 = System.currentTimeMillis();
+	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);
 	    }
