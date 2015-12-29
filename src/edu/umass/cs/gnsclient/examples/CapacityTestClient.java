@@ -195,7 +195,7 @@ public class CapacityTestClient {
 		System.out.println("1st run");
 		start = System.currentTimeMillis();
     	long t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, clients, fraction, client);
+    	sendRequests(TOTAL, 100, clients, fraction, client);
     	long t2 = System.currentTimeMillis();
     	long elapsed = t2 - t1;
     	
