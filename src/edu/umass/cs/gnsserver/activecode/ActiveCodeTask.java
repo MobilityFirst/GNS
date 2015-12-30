@@ -34,7 +34,6 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 
     private ActiveCodeParams acp;
     private ClientPool clientPool;
-    
     /**
      * Initialize a ActiveCodeTask
      * @param acp

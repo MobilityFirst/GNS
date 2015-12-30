@@ -171,7 +171,7 @@ public class AppLookup {
       ValuesMap newResult = null;
       // Only do this for user fields.
       if (field == null || !InternalField.isInternalField(field)) {
-    	long activeStartTime = System.currentTimeMillis(); 
+    	long activeStartTime = System.nanoTime(); 
         int hopLimit = 1;
 
       // Grab the code because it is of a different type
@@ -186,7 +186,7 @@ public class AppLookup {
         } catch (RecordNotFoundException e) {
           //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
         }
-        DelayProfiler.updateDelay("activeReadRecord", activeStartTime);
+        DelayProfiler.updateDelayNano("activeReadRecord", activeStartTime);
         if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
         	
           try {
@@ -209,7 +209,7 @@ public class AppLookup {
           }
         }  
         
-        DelayProfiler.updateDelay("activeCode", activeStartTime);
+        DelayProfiler.updateDelayNano("activeCode", activeStartTime);
       }
       // END ACTIVE CODE HANDLING
 
