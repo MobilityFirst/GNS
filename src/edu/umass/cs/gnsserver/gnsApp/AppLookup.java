@@ -177,7 +177,7 @@ public class AppLookup {
       // Grab the code because it is of a different type
         //FIXME: Maybe change this to not use LIST_STRING?
         NameRecord codeRecord = null;
-
+        
         try {
           codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
                   ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
@@ -186,7 +186,7 @@ public class AppLookup {
         } catch (RecordNotFoundException e) {
           //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
         }
-
+        DelayProfiler.updateDelay("activeReadRecord", activeStartTime);
         if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
         	
           try {
