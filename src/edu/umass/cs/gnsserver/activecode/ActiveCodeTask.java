@@ -23,6 +23,7 @@ import java.util.concurrent.Callable;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This is the task sent to active code worker.
@@ -48,7 +49,8 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     /**
      * Called by the ThreadPoolExecutor to run the active code task
      */
-    public ValuesMap call() throws ActiveCodeException{    	
+    public ValuesMap call() throws ActiveCodeException{  
+    	long startTime = System.nanoTime();
     	long pid = Thread.currentThread().getId();
     	
     	ActiveCodeClient client = clientPool.getClient(pid);
@@ -57,7 +59,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	if(acp != null) {
     		result = client.runActiveCode(acp, false);
     	}
-    	
+    	DelayProfiler.updateDelayNano("activeTask", startTime);
     	return result;
     }
 }

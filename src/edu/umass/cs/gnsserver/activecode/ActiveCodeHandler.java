@@ -39,6 +39,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is the entry of activecode, it provides
@@ -154,6 +155,7 @@ public class ActiveCodeHandler {
 	 * @return a Valuesmap
 	 */
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
+		long startTime = System.nanoTime();
 		// If the guid is blacklisted, just return immediately
 		if(isBlacklisted(guid)) {
 			//System.out.println("Guid " + guid + " is blacklisted from running code!");
@@ -192,7 +194,7 @@ public class ActiveCodeHandler {
 		
 		scheduler.finish(guid);
 		
-		
+		DelayProfiler.updateDelayNano("activeHandler", startTime);
 		
 		// This is an best effort implementation
 		// Only run if there are free workers and queue space

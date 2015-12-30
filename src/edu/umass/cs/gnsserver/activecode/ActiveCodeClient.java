@@ -39,6 +39,7 @@ import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to communicate with active worker.
@@ -168,6 +169,7 @@ public class ActiveCodeClient {
 	 * @throws ActiveCodeException 
 	 */
 	private ValuesMap submitRequest(ActiveCodeMessage acmReq) throws InterruptedException, ActiveCodeException{
+		long startTime = System.nanoTime();
 		Socket socket = null;
 		boolean crashed = false;
 		
@@ -239,7 +241,7 @@ public class ActiveCodeClient {
         }else{
         	System.out.println("The returned value is "+valuesMapString);
         }
-        
+        DelayProfiler.updateDelayNano("communication", startTime);
         return vm;
 	}
 

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.activecode.worker;
 
+import edu.umass.cs.gnsclient.client.util.DelayProfiler;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.util.HashMap;
 import javax.script.Invocable;
@@ -135,9 +136,8 @@ public class ActiveCodeRunner {
    * @return the output of the code
    */
   public ValuesMap runCode(String guid, String action, String field, String code, ValuesMap value, ActiveCodeGuidQuerier querier) {
-		// if(true)
     //	return runLuaCode(guid, action, field, code, value, querier);
-
+	long startTime = System.nanoTime();
     try {
       // Create a guid + action pair
       String codeId = guid + "_" + action;
@@ -154,7 +154,7 @@ public class ActiveCodeRunner {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-
+    DelayProfiler.updateDelayNano("engineRunningTime", startTime);
     return null;
   }
 }
