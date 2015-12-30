@@ -51,7 +51,6 @@ public class RequestHandler {
 	}
 	
 	protected boolean handleRequest(Socket socket) {
-		long startTime = System.nanoTime();
 		boolean ret = true;
 		
 		try {
@@ -83,7 +82,7 @@ public class RequestHandler {
 			e.printStackTrace();
 			ret = false;
 		}
-		DelayProfiler.updateDelayNano("activeWorker", startTime);
+		
 		return ret;
 	}
 }
