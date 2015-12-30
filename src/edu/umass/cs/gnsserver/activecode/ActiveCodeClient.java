@@ -194,7 +194,10 @@ public class ActiveCodeClient {
 		}
 		
 		// Serialize the initial request
-		ActiveCodeUtils.sendMessage(out, acmReq);	
+		ActiveCodeUtils.sendMessage(out, acmReq);
+		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
+		
+		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
 		while(!codeFinished) {
 		    ActiveCodeMessage acmResp = ActiveCodeUtils.getMessage(in);
@@ -225,7 +228,7 @@ public class ActiveCodeClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
 		ValuesMap vm = null;
 	        
         // Try to convert back to a valuesMap
