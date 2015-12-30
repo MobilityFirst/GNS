@@ -133,7 +133,7 @@ public class AppUpdate {
     }
 
     // START ACTIVE CODE HANDLING
-    long activeStartTime = System.currentTimeMillis();
+    long activeStartTime = System.nanoTime();
     ValuesMap newValue = null;
     // Only do this for user fields.
     if (field == null || !InternalField.isInternalField(field)) {
@@ -173,7 +173,7 @@ public class AppUpdate {
     if (newValue == null) {
       newValue = updatePacket.getUserJSON();
     }
-    DelayProfiler.updateDelay("activeCode", activeStartTime);
+    DelayProfiler.updateDelayNano("activeCode", activeStartTime);
     
     // END ACTIVE CODE HANDLING
     // Apply update
