@@ -28,6 +28,7 @@ import java.net.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsclient.client.util.DelayProfiler;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
@@ -50,6 +51,7 @@ public class RequestHandler {
 	}
 	
 	protected boolean handleRequest(Socket socket) {
+		long startTime = System.nanoTime();
 		boolean ret = true;
 		
 		try {
@@ -81,7 +83,7 @@ public class RequestHandler {
 			e.printStackTrace();
 			ret = false;
 		}
-		
+		DelayProfiler.updateDelayNano("activeWorker", startTime);
 		return ret;
 	}
 }
