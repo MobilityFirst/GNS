@@ -73,15 +73,8 @@ public class SequentialRequestClient {
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
 	    
-	    while(true){
-	    	long t1 = System.nanoTime();
-	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
-	    	long t2 = System.nanoTime();
-	    	long elapsed = t2 - t1;
-	    }
-	    
-	    /*
-	    for (int i=0; i<100; i++){
+
+	    for (int i=0; i<1000; i++){
 	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
 	    	long t2 = System.nanoTime();
@@ -92,8 +85,8 @@ public class SequentialRequestClient {
 	    Collections.sort(latency);
 	    
 	    System.out.print(latency.get(latency.size()/2)+" ");
-	    */
-	    //System.exit(0);
+	    
+	    System.exit(0);
 	}
 	
 	/**
