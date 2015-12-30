@@ -168,7 +168,9 @@ public class ActiveCodeHandler {
 		String values = valuesMap.toString();		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
-				
+		
+		DelayProfiler.updateDelayNano("activeHandlerPrepare", startTime);		
+		
 		scheduler.submit(futureTask, guid);
 		
 		ValuesMap result = null;

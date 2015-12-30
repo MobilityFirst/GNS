@@ -201,6 +201,7 @@ public class AppLookup {
               GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toReasonableString());
             }
             DelayProfiler.updateDelayNano("activeBeforeRunning", activeCheckTime);
+            
             newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               //GNS.getLogger().info("AC--->>> " + newResult.toString());
