@@ -229,6 +229,8 @@ public class ActiveCodeClient {
 			e.printStackTrace();
 		}
 		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
+		
+		long convertTime = System.nanoTime();
 		ValuesMap vm = null;
 	        
         // Try to convert back to a valuesMap
@@ -244,6 +246,7 @@ public class ActiveCodeClient {
         }else{
         	System.out.println("The returned value is "+valuesMapString);
         }
+        DelayProfiler.updateDelayNano("activeConvert", convertTime);
         DelayProfiler.updateDelayNano("communication", startTime);
         return vm;
 	}

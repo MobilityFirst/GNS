@@ -187,6 +187,7 @@ public class AppLookup {
           //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
         }
         DelayProfiler.updateDelayNano("activeReadRecord", activeStartTime);
+        long activeCheckTime = System.nanoTime();
         if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
         	
           try {
@@ -199,6 +200,7 @@ public class AppLookup {
               //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
               GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toReasonableString());
             }
+            DelayProfiler.updateDelayNano("activeBeforeRunning", activeCheckTime);
             newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               //GNS.getLogger().info("AC--->>> " + newResult.toString());
