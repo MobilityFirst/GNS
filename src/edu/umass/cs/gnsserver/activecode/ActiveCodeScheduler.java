@@ -47,8 +47,8 @@ public class ActiveCodeScheduler implements Runnable{
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			if (futureTask != null){
 				//for instrument only
-				DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 				executorPool.execute(futureTask);
+				DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 			}
 		}
 	}
