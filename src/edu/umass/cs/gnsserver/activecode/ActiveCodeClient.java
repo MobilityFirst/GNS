@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -110,8 +111,8 @@ public class ActiveCodeClient {
 			//builder.redirectError(Redirect.INHERIT);
 			//builder.redirectOutput(Redirect.INHERIT);
 			//builder.redirectInput(Redirect.INHERIT);
-			
-			process = builder.inheritIO().start();
+			builder.redirectOutput(Redirect.PIPE);
+			process = builder.start();
 			
 			// Now we wait for the worker to notify us that it is ready
 			listener.accept();
