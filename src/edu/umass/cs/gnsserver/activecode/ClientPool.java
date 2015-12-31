@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.activecode;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 
 /**
@@ -44,7 +45,11 @@ public class ClientPool {
 	}
 	
 	protected void addClient(Thread t) {
-		clients.put(t.getId(), new ActiveCodeClient(app, true));
+		clients.put(t.getId(), new ActiveCodeClient(app, -1));
+	}
+	
+	protected void addClient(Thread t, int port){
+		clients.put(t.getId(), new ActiveCodeClient(app, port));
 	}
 	
 	protected ActiveCodeClient getClient(long pid) {

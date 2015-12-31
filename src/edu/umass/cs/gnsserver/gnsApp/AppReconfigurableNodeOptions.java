@@ -20,22 +20,28 @@
 package edu.umass.cs.gnsserver.gnsApp;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
-import edu.umass.cs.gigapaxos.PaxosManager;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.utils.Logging;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
-import edu.umass.cs.nio.NIOTransport;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
+import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
+import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH;
+import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
+
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+
+import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.utils.Logging;
+import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.Reconfigurator;
 
 /**
  * The command line options for AppReconfigurableNode.
@@ -116,7 +122,16 @@ public class AppReconfigurableNodeOptions {
    * How long (in seconds) to blacklist active code.
    */
   public static long activeCodeBlacklistSeconds = 60;
-
+  /**
+   * Default port numbers for active workers, the default
+   * value for each worker's port is -1, it means the worker
+   * will be launched inside the handler's pool. If it's not
+   * -1, it means the active client will keep the port number
+   * and connect to the worker through a socket, and the real
+   * worker needs to be started seperately.
+   */
+  public static ArrayList<Integer> ports = new ArrayList<Integer>();
+  
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
   /**

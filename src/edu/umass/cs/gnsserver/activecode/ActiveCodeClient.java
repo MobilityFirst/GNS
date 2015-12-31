@@ -29,8 +29,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,27 +50,27 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
-	private String hostname;
+	private final static String hostname = "0.0.0.0";
 	private int port;
 	private Process process;
 	private final GnsApplicationInterface<?> app;
 	
 	/**
 	 * @param app the gns app
-         * @param launchWorker
+     * @param port 
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<?> app, boolean launchWorker) {
-		if(launchWorker){
-			Callable<Object> callable = new Callable<Object>() {
-	            public Object call() throws Exception {
-	                return startServer();
-	            }
-	        };
-			(new FutureTask<>(callable)).run();
+	public ActiveCodeClient(GnsApplicationInterface<?> app, int port) {
+		if(port != -1){
+			startServer();
+		}else{
+			setPort(port);
 		}
 		this.app = app;
 	}
 	
+	private void setPort(int port) {
+		this.port = port;
+	}
 	
 	/**
 	 * Grab an open port
@@ -98,7 +96,7 @@ public class ActiveCodeClient {
 		try {
 			List<String> command = new ArrayList<>();
 			port = getOpenPort();
-			hostname = "0.0.0.0";
+			
 			// Get the current classpath
 			String classpath = System.getProperty("java.class.path");
 			
