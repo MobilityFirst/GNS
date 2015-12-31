@@ -29,6 +29,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,9 +62,14 @@ public class ActiveCodeClient {
          * @param launchWorker
 	 */
 	public ActiveCodeClient(GnsApplicationInterface<?> app, boolean launchWorker) {
-		if(launchWorker)
-			startServer();
-		
+		if(launchWorker){
+			Callable<Object> callable = new Callable<Object>() {
+	            public Object call() throws Exception {
+	                return startServer();
+	            }
+	        };
+			(new FutureTask<>(callable)).run();
+		}
 		this.app = app;
 	}
 	
@@ -87,7 +94,7 @@ public class ActiveCodeClient {
 	 * Starts an active code worker and waits for it to accept requests
 	 * @return true if successful
 	 */
-	public boolean startServer() {
+	public void startServer() {
 		try {
 			List<String> command = new ArrayList<>();
 			port = getOpenPort();
@@ -122,11 +129,9 @@ public class ActiveCodeClient {
 			
 			process.waitFor();
 		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+			e.printStackTrace();	
 		}
 		
-		return true;
 	}  
 	
 	/**
