@@ -94,7 +94,7 @@ public class ActiveCodeClient {
 	 * Starts an active code worker and waits for it to accept requests
 	 * @return true if successful
 	 */
-	public void startServer() {
+	public boolean startServer() {
 		try {
 			List<String> command = new ArrayList<>();
 			port = getOpenPort();
@@ -129,9 +129,11 @@ public class ActiveCodeClient {
 			
 			process.waitFor();
 		} catch (Exception e) {
-			e.printStackTrace();	
+			e.printStackTrace();
+			return false;
 		}
 		
+		return true;
 	}  
 	
 	/**
