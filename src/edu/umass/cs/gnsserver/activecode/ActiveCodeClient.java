@@ -22,9 +22,9 @@ package edu.umass.cs.gnsserver.activecode;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -66,29 +66,6 @@ public class ActiveCodeClient {
 		this.app = app;
 	}
 	
-	private class StreamGobbler extends Thread {
-	    InputStream is;
-	    String type;
-
-	    private StreamGobbler(InputStream is, String type) {
-	        this.is = is;
-	        this.type = type;
-	    }
-
-	    @Override
-	    public void run() {
-	        try {
-	            InputStreamReader isr = new InputStreamReader(is);
-	            BufferedReader br = new BufferedReader(isr);
-	            String line = null;
-	            while ((line = br.readLine()) != null)
-	                System.out.println(type + "> " + line);
-	        }
-	        catch (IOException ioe) {
-	            ioe.printStackTrace();
-	        }
-	    }
-	}
 	
 	/**
 	 * Grab an open port
@@ -132,16 +109,18 @@ public class ActiveCodeClient {
 		    ProcessBuilder builder = new ProcessBuilder(command);
 			builder.directory(new File(System.getProperty("user.dir")));
 			
-			//builder.redirectError(Redirect.INHERIT);
-			//builder.redirectOutput(Redirect.INHERIT);
-			//builder.redirectInput(Redirect.INHERIT);
+			builder.redirectError(Redirect.INHERIT);
+			builder.redirectOutput(Redirect.INHERIT);
+			builder.redirectInput(Redirect.INHERIT);
 			
 			process = builder.start();
-			StreamGobbler outputGobbler = new StreamGobbler(process.getInputStream(), "OUTPUT");
-			outputGobbler.start();
+			
+			
 			// Now we wait for the worker to notify us that it is ready
 			listener.accept();
 			listener.close();
+			
+			process.waitFor();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
