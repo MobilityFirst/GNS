@@ -28,13 +28,14 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.Base64;
 
+import edu.umass.cs.gnsclient.client.util.DelayProfiler;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 
 /**
  * This class is used to serialize and deserialize, send 
  * and receive message between active worker and active client.
  * 
- * @author Zhaoyu Gao
+ * @author mbadov
  */
 public class ActiveCodeUtils {
 	/**
@@ -82,9 +83,17 @@ public class ActiveCodeUtils {
 	 * @param acm
 	 */
 	public static void sendMessage(PrintWriter out, ActiveCodeMessage acm) {
+		long t1 = System.nanoTime();
 		byte[] data = serializeObject(acm);
+		DelayProfiler.updateDelayNano("activeSerialize", t1);
+		
+		long t2 = System.nanoTime();
 		String data64 = Base64.getEncoder().encodeToString(data);
+		DelayProfiler.updateDelayNano("activeEncode", t2);
+		
+		long t3 = System.nanoTime();
 		out.println(data64);
+		DelayProfiler.updateDelayNano("activeSendOutMsg", t3);
 	}
 	
 	/**
@@ -93,6 +102,8 @@ public class ActiveCodeUtils {
 	 * @return an {@link ActiveCodeMessage} ready to cast
 	 */
 	public static ActiveCodeMessage getMessage(BufferedReader in) {
+		
+		long t1 = System.nanoTime();
 		String res64 = null;
 		
 		try {
@@ -108,8 +119,13 @@ public class ActiveCodeUtils {
 			acm.setCrashed(true);
 			return acm;
 		}
-		
+		DelayProfiler.updateDelayNano("activeReadInMessage", t1);
+		long t2 = System.nanoTime();
 		byte[] res = Base64.getDecoder().decode(res64);
-	    return (ActiveCodeMessage) deserializeObject(res);
+		DelayProfiler.updateDelayNano("activeDecode", t2);
+		long t3 = System.nanoTime();
+		ActiveCodeMessage acm = (ActiveCodeMessage) deserializeObject(res);
+	    DelayProfiler.updateDelayNano("activeDeserialize", t3);
+	    return acm;
 	}
 }
