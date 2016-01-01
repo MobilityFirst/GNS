@@ -136,9 +136,10 @@ public class ActiveCodeRunner {
    * @return the output of the code
    */
   public ValuesMap runCode(String guid, String action, String field, String code, ValuesMap value, ActiveCodeGuidQuerier querier) {
-    //	return runLuaCode(guid, action, field, code, value, querier);
+	ValuesMap ret = null;
+	  //	return runLuaCode(guid, action, field, code, value, querier);
 	long startTime = System.nanoTime();
-    try {
+    try {    	
       // Create a guid + action pair
       String codeId = guid + "_" + action;
       // Update the script context if needed
@@ -148,7 +149,7 @@ public class ActiveCodeRunner {
       engine.setContext(sc);
 
       // Run the code
-      return (ValuesMap) invocable.invokeFunction("run", value, field, querier);
+      ret = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
 
     } catch (NoSuchMethodException | ScriptException e) {
       // TODO Auto-generated catch block
@@ -156,6 +157,6 @@ public class ActiveCodeRunner {
     }
     //DelayProfiler.updateDelayNano("activeWorker", startTime);
     System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");
-    return null;
+    return ret;
   }
 }
