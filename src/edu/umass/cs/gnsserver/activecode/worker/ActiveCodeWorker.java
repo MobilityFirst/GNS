@@ -47,11 +47,11 @@ public class ActiveCodeWorker {
         try {
         	RequestHandler handler = new RequestHandler(runner);
         	boolean keepGoing = true;
-        	
-        	// Notify the server that we are ready
-        	Socket temp = new Socket("0.0.0.0", callbackPort);
-        	temp.close();
-        	
+        	if(callbackPort != -1){
+        		// Notify the server that we are ready
+        		Socket temp = new Socket("0.0.0.0", callbackPort);
+        		temp.close();
+        	}
             while (keepGoing) {
             	Socket s = listener.accept();
             	keepGoing = handler.handleRequest(s);
@@ -72,13 +72,18 @@ public class ActiveCodeWorker {
 	 */
 	public static void main(String[] args) throws IOException  {
 		ActiveCodeWorker acs = new ActiveCodeWorker();	
-		int port = 0, callbackPort = 0;
+		int port = 0, callbackPort = -1;
 		
 		if(args.length == 2) {
 			port = Integer.parseInt(args[0]);
 			callbackPort = Integer.parseInt(args[1]);
-		}	
+			acs.run(port, callbackPort);
+		}
+		if(args.length == 1) {
+			port = Integer.parseInt(args[0]);
+			acs.run(port, callbackPort);
+		}
 		
-		acs.run(port, callbackPort);
+		
     }
 }
