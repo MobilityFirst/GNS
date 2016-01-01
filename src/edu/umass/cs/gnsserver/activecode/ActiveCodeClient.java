@@ -60,7 +60,7 @@ public class ActiveCodeClient {
      * @param port 
 	 */
 	public ActiveCodeClient(GnsApplicationInterface<?> app, int port) {
-		if(port != -1){
+		if(port == -1){
 			startServer();
 		}else{
 			setPort(port);
