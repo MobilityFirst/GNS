@@ -28,7 +28,7 @@ import java.net.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.util.DelayProfiler;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;

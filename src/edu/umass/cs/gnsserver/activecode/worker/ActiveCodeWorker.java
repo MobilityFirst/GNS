@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import edu.umass.cs.utils.DelayProfiler;
+
 /**
  * This class is the worker to run active code
  * in an isolated process.
@@ -36,6 +38,9 @@ public class ActiveCodeWorker {
 	 * @param callbackPort the port at which to ping the GNS to signal the ready state
 	 * @throws IOException
 	 */
+	
+	private static int numReqs = 0;
+	
 	public void run(int port, int callbackPort) throws IOException {	
         ServerSocket listener = new ServerSocket(port);
         ActiveCodeRunner runner = new ActiveCodeRunner();
@@ -56,6 +61,10 @@ public class ActiveCodeWorker {
             	Socket s = listener.accept();
             	keepGoing = handler.handleRequest(s);
             	s.close();
+            	numReqs++;
+            	if(numReqs%1000 == 0){
+            		System.out.println(DelayProfiler.getStats());
+            	}
             }
         } catch (Exception e) {
 			// TODO Auto-generated catch block

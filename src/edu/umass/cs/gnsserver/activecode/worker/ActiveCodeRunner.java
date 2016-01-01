@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.activecode.worker;
 
-import edu.umass.cs.gnsclient.client.util.DelayProfiler;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.util.HashMap;
 import javax.script.Invocable;
@@ -155,8 +155,8 @@ public class ActiveCodeRunner {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    
-    System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");
+    DelayProfiler.updateDelayNano("ActiveEngineExecution", startTime);
+    //System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");
     return ret;
   }
 }
