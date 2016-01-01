@@ -71,7 +71,7 @@ public class RequestHandler {
 		    	// Run the active code
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();
-			    querier.setParam(params.getHopLimit(), params.getGuid());
+			    //querier.setParam(params.getHopLimit(), params.getGuid());
 			    //FIXME: This step takes too much time
 			    ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
