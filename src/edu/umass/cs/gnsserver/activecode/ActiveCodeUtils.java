@@ -27,8 +27,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.Base64;
+import edu.umass.cs.utils.DelayProfiler;
 
-import edu.umass.cs.gnsclient.client.util.DelayProfiler;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 
 /**
@@ -65,7 +65,7 @@ public class ActiveCodeUtils {
 	 * @return a object, ready to cast
 	 */
 	public static Object deserializeObject(byte[] data) {
-		//long t = System.nanoTime();
+		long t = System.nanoTime();
 		ByteArrayInputStream bais = new ByteArrayInputStream(data);
 	    Object o = null;
 		try {
@@ -75,7 +75,7 @@ public class ActiveCodeUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//DelayProfiler.updateDelayNano("activeDeserialize", t);
+		DelayProfiler.updateDelayNano("activeDeserialize", t);
 	    return o;
 	}
 	
@@ -85,17 +85,17 @@ public class ActiveCodeUtils {
 	 * @param acm
 	 */
 	public static void sendMessage(PrintWriter out, ActiveCodeMessage acm) {
-		//long t1 = System.nanoTime();
+		long t1 = System.nanoTime();
 		byte[] data = serializeObject(acm);
-		//DelayProfiler.updateDelayNano("activeSerialize", t1);
+		DelayProfiler.updateDelayNano("activeSerialize", t1);
 		
-		//long t2 = System.nanoTime();
+		long t2 = System.nanoTime();
 		String data64 = Base64.getEncoder().encodeToString(data);
-		//DelayProfiler.updateDelayNano("activeEncode", t2);
+		DelayProfiler.updateDelayNano("activeEncode", t2);
 		
-		//long t3 = System.nanoTime();
+		long t3 = System.nanoTime();
 		out.println(data64);
-		//DelayProfiler.updateDelayNano("activeSendOutMsg", t3);
+		DelayProfiler.updateDelayNano("activeSendOutMsg", t3);
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class ActiveCodeUtils {
 	 */
 	public static ActiveCodeMessage getMessage(BufferedReader in) {
 		
-		//long t1 = System.nanoTime();
+		long t1 = System.nanoTime();
 		String res64 = null;
 		
 		try {
@@ -122,11 +122,11 @@ public class ActiveCodeUtils {
 			acm.setCrashed(true);
 			return acm;
 		}
-		//DelayProfiler.updateDelayNano("activeReadInMessage", t1);
+		DelayProfiler.updateDelayNano("activeReadInMessage", t1);
 		
-		//long t2 = System.nanoTime();
+		long t2 = System.nanoTime();
 		byte[] res = Base64.getDecoder().decode(res64);
-		//DelayProfiler.updateDelayNano("activeDecode", t2);
+		DelayProfiler.updateDelayNano("activeDecode", t2);
 		
 		return (ActiveCodeMessage) deserializeObject(res);
 	}

@@ -61,7 +61,6 @@ public class RequestHandler {
 			// Get the ActiveCodeMessage from the GNS
 		    ActiveCodeMessage acm = ActiveCodeUtils.getMessage(in);
 		    DelayProfiler.updateDelayNano("activeWorkerBeforeRun", startTime);
-		    System.out.println("Message comes in:"+acm.toString());
 		    
 		    if( acm.isShutdown()) {
 		    	out.println("OK");
