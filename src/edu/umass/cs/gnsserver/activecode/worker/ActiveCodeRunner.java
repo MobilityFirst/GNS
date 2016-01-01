@@ -155,8 +155,9 @@ public class ActiveCodeRunner {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    //DelayProfiler.updateDelayNano("activeWorker", startTime);
-    System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");
+    DelayProfiler.updateDelayNano("activeWorker", startTime);
+    
+    System.out.println(DelayProfiler.getStats());
     return ret;
   }
 }
