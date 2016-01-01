@@ -52,7 +52,7 @@ public class RequestHandler {
 	
 	protected boolean handleRequest(Socket socket) {
 		boolean ret = true;
-		
+		System.out.println("Start handling...");
 		try {
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
