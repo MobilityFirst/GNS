@@ -52,13 +52,15 @@ public class RequestHandler {
 	
 	protected boolean handleRequest(Socket socket) {
 		boolean ret = true;
-		//System.out.println("Start handling...");
+		
 		try {
+			long startTime = System.nanoTime();
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(in, out);
 			// Get the ActiveCodeMessage from the GNS
 		    ActiveCodeMessage acm = ActiveCodeUtils.getMessage(in);
+		    DelayProfiler.updateDelayNano("activeWorkerBeforeRun", startTime);
 		    
 		    if( acm.isShutdown()) {
 		    	out.println("OK");
@@ -67,17 +69,22 @@ public class RequestHandler {
 		    } else {
 		    	//System.out.println("Start running the code...");
 		    	// Run the active code
+		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    
 			    ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
+			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    ValuesMap result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
+			    
+			    long t2 = System.nanoTime();
 			    // Send the results back
 			    ActiveCodeMessage acmResp = new ActiveCodeMessage();
 			    acmResp.setFinished(true);
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
 			    ActiveCodeUtils.sendMessage(out, acmResp);
 			    //System.out.println("Finish running the code!");
+			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    
 		} catch (IOException | JSONException e) {
