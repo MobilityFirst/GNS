@@ -112,6 +112,7 @@ public class ActiveCodeUtils {
 			res64 = in.readLine();
 		} catch (IOException e) {
 			// We timed out, but that's OK
+			e.printStackTrace();
 		}
 		
 		if(res64 == null) {
@@ -122,6 +123,7 @@ public class ActiveCodeUtils {
 			return acm;
 		}
 		DelayProfiler.updateDelayNano("activeReadInMessage", t1);
+		
 		long t2 = System.nanoTime();
 		byte[] res = Base64.getDecoder().decode(res64);
 		DelayProfiler.updateDelayNano("activeDecode", t2);
