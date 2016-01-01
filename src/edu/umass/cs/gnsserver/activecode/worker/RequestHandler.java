@@ -52,7 +52,7 @@ public class RequestHandler {
 	
 	protected boolean handleRequest(Socket socket) {
 		boolean ret = true;
-		System.out.println("Start handling...");
+		//System.out.println("Start handling...");
 		try {
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -65,7 +65,7 @@ public class RequestHandler {
 		    	System.out.println("Shutting down...");
 		    	ret = false;
 		    } else {
-		    	System.out.println("Start running the code...");
+		    	//System.out.println("Start running the code...");
 		    	// Run the active code
 			    ActiveCodeParams params = acm.getAcp();
 			    querier.setParam(params.getHopLimit(), params.getGuid());
@@ -77,7 +77,7 @@ public class RequestHandler {
 			    acmResp.setFinished(true);
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
 			    ActiveCodeUtils.sendMessage(out, acmResp);
-			    System.out.println("Finish running the code!");
+			    //System.out.println("Finish running the code!");
 		    }
 		    
 		} catch (IOException | JSONException e) {
