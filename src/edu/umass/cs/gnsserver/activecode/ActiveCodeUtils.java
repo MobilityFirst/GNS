@@ -65,6 +65,7 @@ public class ActiveCodeUtils {
 	 * @return a object, ready to cast
 	 */
 	public static Object deserializeObject(byte[] data) {
+		long t = System.nanoTime();
 		ByteArrayInputStream bais = new ByteArrayInputStream(data);
 	    Object o = null;
 		try {
@@ -74,6 +75,7 @@ public class ActiveCodeUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		DelayProfiler.updateDelayNano("activeDeserialize", t);
 	    return o;
 	}
 	
@@ -123,9 +125,7 @@ public class ActiveCodeUtils {
 		long t2 = System.nanoTime();
 		byte[] res = Base64.getDecoder().decode(res64);
 		DelayProfiler.updateDelayNano("activeDecode", t2);
-		long t3 = System.nanoTime();
-		ActiveCodeMessage acm = (ActiveCodeMessage) deserializeObject(res);
-	    DelayProfiler.updateDelayNano("activeDeserialize", t3);
-	    return acm;
+		
+		return (ActiveCodeMessage) deserializeObject(res);
 	}
 }
