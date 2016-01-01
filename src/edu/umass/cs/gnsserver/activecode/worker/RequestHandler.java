@@ -61,13 +61,13 @@ public class RequestHandler {
 			// Get the ActiveCodeMessage from the GNS
 		    ActiveCodeMessage acm = ActiveCodeUtils.getMessage(in);
 		    DelayProfiler.updateDelayNano("activeWorkerBeforeRun", startTime);
+		    System.out.println("Message comes in:"+acm.toString());
 		    
 		    if( acm.isShutdown()) {
 		    	out.println("OK");
 		    	System.out.println("Shutting down...");
 		    	ret = false;
 		    } else {
-		    	//System.out.println("Start running the code...");
 		    	// Run the active code
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();
@@ -84,7 +84,6 @@ public class RequestHandler {
 			    acmResp.setFinished(true);
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
 			    ActiveCodeUtils.sendMessage(out, acmResp);
-			    //System.out.println("Finish running the code!");
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    
