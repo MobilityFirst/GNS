@@ -36,7 +36,7 @@ public class SequentialRequestClient {
 		String address = args[0];
 		
 		boolean flag = Boolean.parseBoolean(args[1]);
-		int size = 10000;
+		int size = 10;
 		if(args.length > 2){
 			size = Integer.parseInt(args[2]);
 		}
@@ -73,8 +73,8 @@ public class SequentialRequestClient {
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
 	    
-
-	    for (int i=0; i<5000; i++){
+	    
+	    for (int i=0; i<1; i++){
 	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
 	    	long t2 = System.nanoTime();
