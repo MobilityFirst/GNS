@@ -72,7 +72,7 @@ public class SequentialRequestClient {
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
-	    
+	    client.read(guidAccount);
 	    
 	    for (int i=0; i<1; i++){
 	    	long t1 = System.nanoTime();
