@@ -41,7 +41,7 @@ public class ActiveCodeThreadFactory implements ThreadFactory {
 	public Thread newThread(Runnable r) {
         long t1 = System.currentTimeMillis();
 		Thread t = new Thread(r);		
-		clientPool.addClient(t, port);
+		clientPool.addClient(t);
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms to start a worker.");
 		port++;
