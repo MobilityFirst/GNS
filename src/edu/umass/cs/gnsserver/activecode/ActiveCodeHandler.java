@@ -155,6 +155,7 @@ public class ActiveCodeHandler {
 	 * @return a Valuesmap
 	 */
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
+		System.out.println("Original value is "+valuesMap);
 		long startTime = System.nanoTime();
 		// If the guid is blacklisted, just return immediately
 		if(isBlacklisted(guid)) {

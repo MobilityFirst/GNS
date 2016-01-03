@@ -32,15 +32,14 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeWorker {
+	
+	private static int numReqs = 0;
 	/**
 	 * Starts the worker listener
 	 * @param port the port
 	 * @param callbackPort the port at which to ping the GNS to signal the ready state
 	 * @throws IOException
 	 */
-	
-	private static int numReqs = 0;
-	
 	public void run(int port, int callbackPort) throws IOException {	
         ServerSocket listener = new ServerSocket(port);
         ActiveCodeRunner runner = new ActiveCodeRunner();
@@ -91,8 +90,6 @@ public class ActiveCodeWorker {
 		if(args.length == 1) {
 			port = Integer.parseInt(args[0]);
 			acs.run(port, callbackPort);
-		}
-		
-		
+		}		
     }
 }
