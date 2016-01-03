@@ -60,7 +60,7 @@ public class SequentialRequestClient {
 		
 		String guid = client.lookupGuid("test"+ACCOUNT_ALIAS);
 		
-		JSONObject json = new JSONObject("{\"hi\":\"hello\"}");
+		JSONObject json = new JSONObject("{\"hi\":\"hello\", \"hehe\":\"hello\"}");
 		client.update(guidAccount, json);
 		
 		SecureRandom random = new SecureRandom();
