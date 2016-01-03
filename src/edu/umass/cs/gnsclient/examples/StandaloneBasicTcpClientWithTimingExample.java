@@ -86,41 +86,43 @@ public class StandaloneBasicTcpClientWithTimingExample {
     client.update(guid, json);
     System.out.println("Wrote JSONObject :" + json);
 
+    long startTime;
+    
     // and read the entire object back in
-    long startTime = System.currentTimeMillis();
-    JSONObject result = client.read(guid);
-    DelayProfiler.updateDelay("object read", startTime);
-    System.out.println("Read JSON: " + result.toString());
+//    startTime = System.currentTimeMillis();
+//    JSONObject result = client.read(guid);
+//    DelayProfiler.updateDelay("object read", startTime);
+//    System.out.println("Read JSON: " + result.toString());
 
     // Change a field
     client.update(guid, new JSONObject("{\"occupation\":\"rocket scientist\"}"));
     System.out.println("Updated \"occupation\" to \"rocket scientist\"");
 
     // and read the entire object back in
-    startTime = System.currentTimeMillis();
-    result = client.read(guid);
-    DelayProfiler.updateDelay("object read", startTime);
-    System.out.println("Retrieved JSON from guid: " + result.toString());
+//    startTime = System.currentTimeMillis();
+//    result = client.read(guid);
+//    DelayProfiler.updateDelay("object read", startTime);
+//    System.out.println("Retrieved JSON from guid: " + result.toString());
 
     // Add a field
     client.update(guid, new JSONObject("{\"ip address\":\"127.0.0.1\"}"));
     System.out.println("Added field \"ip address\" with value \"127.0.0.1\"");
 
     // and read the entire object back in
-    startTime = System.currentTimeMillis();
-    result = client.read(guid);
-    DelayProfiler.updateDelay("object read", startTime);
-    System.out.println("Retrieved JSON from guid: " + result.toString());
+//    startTime = System.currentTimeMillis();
+//    result = client.read(guid);
+//    DelayProfiler.updateDelay("object read", startTime);
+//    System.out.println("Retrieved JSON from guid: " + result.toString());
 
     // Remove a field
     client.fieldRemove(guid.getGuid(), "gibberish", guid);
     System.out.println("Removed field \"gibberish\"");
 
     // and read the entire object back in
-    startTime = System.currentTimeMillis();
-    result = client.read(guid);
-    DelayProfiler.updateDelay("object read", startTime);
-    System.out.println("Retrieved JSON from guid: " + result.toString());
+//    startTime = System.currentTimeMillis();
+//    result = client.read(guid);
+//    DelayProfiler.updateDelay("object read", startTime);
+//    System.out.println("Retrieved JSON from guid: " + result.toString());
 
     // Add some more stuff to read back
     JSONObject newJson = new JSONObject();
@@ -135,40 +137,48 @@ public class StandaloneBasicTcpClientWithTimingExample {
     client.update(guid, newJson);
     System.out.println("Added field \"flapjack\" with value " + newJson.getJSONObject("flapjack"));
 
-    // Read a single field using dot notation
-    startTime = System.currentTimeMillis();
-    String resultString = client.fieldRead(guid, "flapjack.sally.right");
-    DelayProfiler.updateDelay("field read", startTime);
-    System.out.println("Retrieved field \"flapjack.sally.right\" from guid: " + resultString);
+    String resultString;
+    
+//    // Read a single field using dot notation
+//    startTime = System.currentTimeMillis();
+//    resultString = client.fieldRead(guid, "flapjack.sally.right");
+//    DelayProfiler.updateDelay("field read", startTime);
+//    System.out.println("Retrieved field \"flapjack.sally.right\" from guid: " + resultString);
 
-    // Read a single field at the top level
-    startTime = System.currentTimeMillis();
-    resultString = client.fieldRead(guid, "flapjack");
-    DelayProfiler.updateDelay("field read", startTime);
-    System.out.println("Retrieved field \"flapjack\" from guid: " + resultString);
+    for (int i = 0; i < 5000; i++) {
+      startTime = System.currentTimeMillis();
+      resultString = client.fieldRead(guid, "flapjack.sally.right");
+      DelayProfiler.updateDelay("field read", startTime);
+    }
 
-    // Update a field using dot notation
-    JSONArray newValue = new JSONArray(Arrays.asList("One", "Ready", "Frap"));
-    client.fieldUpdate(guid, "flapjack.sammy", newValue);
-    System.out.println("Changed value of \"flapjack.sammy\" field to " + newValue);
-
-    // Read the same field using dot notation
-    startTime = System.currentTimeMillis();
-    resultString = client.fieldRead(guid, "flapjack.sammy");
-    DelayProfiler.updateDelay("field read", startTime);
-    System.out.println("Retrieved field \"flapjack.sammy\" from guid: " + resultString);
-
-    // Read the entire object back in
-    startTime = System.currentTimeMillis();
-    result = client.read(guid);
-    DelayProfiler.updateDelay("object read", startTime);
-    System.out.println("Retrieved JSON from guid: " + result.toString());
-
-    // Read two fields at a time
-    startTime = System.currentTimeMillis();
-    resultString = client.fieldRead(guid, new ArrayList<String>(Arrays.asList("name", "occupation")));
-    DelayProfiler.updateDelay("two fields read", startTime);
-    System.out.println("Retrieved field \"name\" and \"occupation\" fields from guid: " + resultString);
+//    // Read a single field at the top level
+//    startTime = System.currentTimeMillis();
+//    resultString = client.fieldRead(guid, "flapjack");
+//    DelayProfiler.updateDelay("field read", startTime);
+//    System.out.println("Retrieved field \"flapjack\" from guid: " + resultString);
+//
+//    // Update a field using dot notation
+//    JSONArray newValue = new JSONArray(Arrays.asList("One", "Ready", "Frap"));
+//    client.fieldUpdate(guid, "flapjack.sammy", newValue);
+//    System.out.println("Changed value of \"flapjack.sammy\" field to " + newValue);
+//
+//    // Read the same field using dot notation
+//    startTime = System.currentTimeMillis();
+//    resultString = client.fieldRead(guid, "flapjack.sammy");
+//    DelayProfiler.updateDelay("field read", startTime);
+//    System.out.println("Retrieved field \"flapjack.sammy\" from guid: " + resultString);
+//
+//    // Read the entire object back in
+//    startTime = System.currentTimeMillis();
+//    result = client.read(guid);
+//    DelayProfiler.updateDelay("object read", startTime);
+//    System.out.println("Retrieved JSON from guid: " + result.toString());
+//
+//    // Read two fields at a time
+//    startTime = System.currentTimeMillis();
+//    resultString = client.fieldRead(guid, new ArrayList<String>(Arrays.asList("name", "occupation")));
+//    DelayProfiler.updateDelay("two fields read", startTime);
+//    System.out.println("Retrieved field \"name\" and \"occupation\" fields from guid: " + resultString);
 
     System.out.println(DelayProfiler.getStats());
     System.exit(0);
