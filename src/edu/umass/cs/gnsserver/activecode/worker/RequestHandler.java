@@ -42,12 +42,14 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class RequestHandler {
 	private ActiveCodeRunner runner;
+	private int clientPort = 0;
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
 	 * @param runner
 	 */
-	public RequestHandler(ActiveCodeRunner runner) {
+	public RequestHandler(ActiveCodeRunner runner, int port) {
 		this.runner = runner;
+		this.clientPort = port;
 	}
 	
 	protected boolean handleRequest(DatagramSocket socket) {
@@ -83,7 +85,7 @@ public class RequestHandler {
 			    ActiveCodeMessage acmResp = new ActiveCodeMessage();
 			    acmResp.setFinished(true);
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
-			    ActiveCodeUtils.sendMessage(socket, acmResp, -1);
+			    ActiveCodeUtils.sendMessage(socket, acmResp, this.clientPort);
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    

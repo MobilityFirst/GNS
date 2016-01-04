@@ -34,10 +34,12 @@ public class ActiveCodeWorker {
 	
 	private static int numReqs = 0;
 	private DatagramSocket serverSocket;
+	private int clientPort = 0;
 	
 	public ActiveCodeWorker(int port, int callbackPort) {
 		try{
 			this.serverSocket = new DatagramSocket(port);
+			this.clientPort = callbackPort;
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -58,7 +60,7 @@ public class ActiveCodeWorker {
         		":" + serverSocket.getLocalPort());
         
         try {
-        	RequestHandler handler = new RequestHandler(runner);
+        	RequestHandler handler = new RequestHandler(runner, this.clientPort);
         	boolean keepGoing = true;
         	/*
         	if(callbackPort != -1){
