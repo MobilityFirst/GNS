@@ -90,7 +90,7 @@ public class BatchCreateTest {
     try {
       command = client.createCommand(GnsProtocol.ADMIN,
               GnsProtocol.PASSKEY, "shabiz");
-      result = client.checkResponse(command, client.sendCommand(command));
+      result = client.checkResponse(command, client.sendCommandAndWait(command));
       if (!result.equals(GnsProtocol.OK_RESPONSE)) {
         System.out.println("Admin command saw bad reponse " + result);
         return;
@@ -107,7 +107,7 @@ public class BatchCreateTest {
         command = client.createCommand(GnsProtocol.BATCH_TEST,
                 GnsProtocol.NAME, alias,
                 GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
-        result = client.checkResponse(command, client.sendCommand(command));
+        result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.equals(GnsProtocol.OK_RESPONSE)) {
           System.out.println();
           System.out.println("Batch test command saw bad reponse " + result);
@@ -125,7 +125,7 @@ public class BatchCreateTest {
     if (writeTo > 0) {
       try {
         command = client.createCommand(LOOKUP_ACCOUNT_RECORD, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
-        result = client.checkResponse(command, client.sendCommand(command));
+        result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);
