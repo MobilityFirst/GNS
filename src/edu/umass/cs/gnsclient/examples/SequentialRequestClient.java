@@ -72,7 +72,8 @@ public class SequentialRequestClient {
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
-	    client.read(guidAccount);
+	    JSONObject jobj = client.read(guidAccount);
+	    System.out.println(jobj);
 	    
 	    for (int i=0; i<5000; i++){
 	    	long t1 = System.nanoTime();
