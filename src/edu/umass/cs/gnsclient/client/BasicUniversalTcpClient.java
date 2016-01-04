@@ -124,22 +124,14 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   private final Object monitor = new Object();
 
   // Enables all the debug logging statements in the client.
-  private boolean debuggingEnabled = false;
+  protected boolean debuggingEnabled = false;
 
+  // When this is ture we don't use SSL.
   private final boolean disableSSL;
 
   // instrumentation
-  private boolean instrumentationEnabled = false;
-  private long lastRTT;
-  private String lastResponder;
-  private long lastCPPRequestCount;
-  private long lastReceivedTime;
-  private int lastCPPOpsPerSecond;
-  private long lastCCPRoundTripTime;
-  private long lastCCPProcessingTime;
-  //private int lastLookupTime;
-  // Used by the asynch part of the client
-  private double movingAvgAsynchLatency;
+  private double movingAvgLatency;
+  //private long lastLatency;
   private int totalAsynchErrors;
 
   /**
@@ -1386,7 +1378,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * number of key and value pairs with a signature parameter. The signature is
    * generated from the query signed by the given guid.
    *
-   * @param guid
+   * @param privateKey
    * @param action
    * @param keysAndValues
    * @return the query string
@@ -1403,15 +1395,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
       result.put(SIGNATURE, signature);
       DelayProfiler.updateDelay("createAndSignCommand", startTime);
       return result;
-    } catch (GnsException e) {
-      throw new GnsException("Error encoding message", e);
-    } catch (NoSuchAlgorithmException e) {
-      throw new GnsException("Error encoding message", e);
-    } catch (InvalidKeyException e) {
-      throw new GnsException("Error encoding message", e);
-    } catch (SignatureException e) {
-      throw new GnsException("Error encoding message", e);
-    } catch (JSONException e) {
+    } catch (GnsException | NoSuchAlgorithmException | InvalidKeyException 
+            | SignatureException | JSONException e) {
       throw new GnsException("Error encoding message", e);
     }
   }
@@ -1429,10 +1414,6 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   private String signDigestOfMessage(PrivateKey privateKey, String message) throws NoSuchAlgorithmException,
           InvalidKeyException, SignatureException {
     long startTime = System.currentTimeMillis();
-    //KeyPair keypair;
-    //keypair = new KeyPair(publickey, privateKey);
-
-    //PrivateKey privateKey = keypair.getPrivate();
     Signature instance = Signature.getInstance(SIGNATURE_ALGORITHM);
 
     instance.initSign(privateKey);
@@ -1444,9 +1425,6 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     return result;
   }
 
-  // /////////////////////////////////////////
-  // // PLATFORM DEPENDENT METHODS BELOW /////
-  // /////////////////////////////////////////
   /**
    * Check that the connectivity with the host:port can be established
    *
@@ -1530,42 +1508,18 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
       GNSClient.getLogger().severe("Wait for return packet was interrupted " + x);
     }
     CommandResult result = resultMap.remove(id);
-    long sentTime = queryTimeStamp.get(id); // instrumentation
-    queryTimeStamp.remove(id); // instrumentation
-    long rtt = result.getReceivedTime() - sentTime;
     if (debuggingEnabled) {
       GNSClient.getLogger().info(
               String.format(
-                      "Command name: %19s %40s %16s id: %12s RTT: %5dms "
-                      //+ "LNSRTT: %5dms LNSTot: %5dms "
-                      + "NS: %16s " //+ "LNS Rate: %4s",
-                      //+ "LNS RTT: %6sms NS: %3s LNS OPS: %6s"
+                      "Command name: %19s %40s %16s id: %12s "
+                      + "NS: %16s " 
                       ,
                       command.optString(COMMANDNAME, "Unknown"),
                       command.optString(GUID, ""),
                       command.optString(NAME, ""),
                       id,
-                      rtt,
-                      //result.getCCPRoundTripTime(),
-                      //result.getCCPProcessingTime(),
                       result.getResponder()
-              //result.getRequestRate()
               ));
-
-//       "Command name: " + command.optString(COMMANDNAME, "Unknown") + " "
-//              + command.optString(GUID, "") + " " + command.optString(NAME, "") + " id: " + id
-//              + " RTT: " + rtt + "ms" + " LNS RTT: " + result.getCCPRoundTripTime() + "ms" + " NS: "
-//              + result.getResponder() + " LNS OPS:" + result.getRequestRate()
-    }
-    if (instrumentationEnabled) {
-      lastRTT = rtt;
-      lastResponder = result.getResponder();
-      lastReceivedTime = result.getReceivedTime();
-      lastCPPRequestCount = result.getRequestCnt();
-      lastCPPOpsPerSecond = result.getRequestRate();
-      lastCCPRoundTripTime = result.getCCPRoundTripTime();
-      lastCCPProcessingTime = result.getCCPProcessingTime();
-      //lastLookupTime = result.getLookupTime();
     }
     DelayProfiler.updateDelay("desktopSendCommmand", startTime);
     if (debuggingEnabled) {
@@ -1605,41 +1559,38 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * Called when a command value return packet is received.
    *
    * @param json
+   * @param receivedTime
    * @throws JSONException
    */
   public void handleCommandValueReturnPacket(JSONObject json, long receivedTime) throws JSONException {
     long methodStartTime = System.currentTimeMillis();
     CommandValueReturnPacket packet = new CommandValueReturnPacket(json);
+    int id = packet.getRequestId();
+    // *INSTRUMENTATION*
+    long queryStartTime = queryTimeStamp.remove(id);
+    long latency = receivedTime - queryStartTime;
+    movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
+    // *END OF INSTRUMENTATION*
     if (debuggingEnabled) {
       GNSClient.getLogger().info("Handling return packet: " + json.toString());
     }
-    int id = packet.getRequestId();
-    // This differentiates between packets sent synchronus and asynchronus
+    // store the response away
+    resultMap.put(id, new CommandResult(packet, receivedTime, latency));
+    // This differentiates between packets sent synchronusly and asynchronusly
     if (!pendingAsynchPackets.containsKey(id)) {
       // for synchronus sends we notify waiting threads
       synchronized (monitor) {
-        resultMap.put(id, new CommandResult(packet, receivedTime));
         monitor.notifyAll();
       }
     } else {
       // Handle the asynchronus packets
-      // store the response away
-      resultMap.put(id, new CommandResult(packet, receivedTime));
+      // note that we have recieved the reponse
+      pendingAsynchPackets.remove(id);
+      // * INSTRUMENTATION *
+      // Record errors 
       if (packet.getErrorCode().isAnError()) {
         totalAsynchErrors++;
       }
-      // *INSTRUMENTATION*
-      long queryStartTime = queryTimeStamp.remove(id);
-      DelayProfiler.updateDelay("asynchLatency", queryStartTime);
-      DelayProfiler.updateCount("asynchLatency", 1);
-      long delay = System.currentTimeMillis() - queryStartTime;
-      System.out.println("DELAY = " + delay);
-      movingAvgAsynchLatency = Util.movingAverage(delay, movingAvgAsynchLatency);
-      // *END OF INSTRUMENTATION*
-      // note that we have recieved the reponse
-      pendingAsynchPackets.remove(id);
-      // check for errors just in case
-
     }
     DelayProfiler.updateCount("handleCommandValueReturnPacket", 1);
     DelayProfiler.updateDelay("handleCommandValueReturnPacket", methodStartTime);
@@ -1650,7 +1601,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     do {
       id = randomID.nextInt();
       // this is actually wrong because we can still generate duplicate keys
-      // because the resultMap doesn't contain pending requests until the come back
+      // because the resultMap doesn't contain pending requests until they come back
     } while (resultMap.containsKey(id));
     return id;
   }
@@ -1704,17 +1655,13 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @param packet
    * @throws IOException
    */
-  public int sendCommandPacketAsynch(CommandPacket packet) throws IOException {
+  public void sendCommandPacketAsynch(CommandPacket packet) throws IOException {
     long startTime = System.currentTimeMillis();
-    int id = generateNextRequestID();
-    packet.setRequestId(id);
-    //String headeredMsg = JSONMessageExtractor.prependHeader(packet.toString());
+    int id = packet.getRequestId();
+    pendingAsynchPackets.put(id, packet);
     queryTimeStamp.put(id, System.currentTimeMillis());
     sendCommandPacket(packet);
-    //tcpTransport.send(new InetSocketAddress(host, port), headeredMsg.getBytes(NIO_CHARSET_ENCODING));
-    pendingAsynchPackets.put(id, packet);
     DelayProfiler.updateDelay("sendAsynchTestCommand", startTime);
-    return id;
   }
 
   /**
@@ -1763,6 +1710,10 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
         InetSocketAddress clientFacingAddress = new InetSocketAddress(remoteAddress.getAddress(),
                 ActiveReplica.getClientFacingPort(remoteAddress.getPort()));
         this.messenger.sendToAddress(clientFacingAddress, packet.toJSONObject());
+        if (debuggingEnabled) {
+          GNSClient.getLogger().info("Sent packet to " + clientFacingAddress.toString()
+                  + " :" + packet.toString());
+        }
       }
       DelayProfiler.updateDelay("sendCommandPacket", startTime);
     } catch (JSONException e) {
@@ -1770,40 +1721,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     }
   }
 
-  //
-  // Stuff below here is mostly currently for testing only
-  //
-  public CommandPacket createReadCommandPacket(String targetGuid, String field, GuidEntry reader) throws Exception {
-    JSONObject command;
-    if (reader == null) {
-      command = createCommand(READ, GUID, targetGuid, FIELD, field);
-    } else {
-      command = createAndSignCommand(reader.getPrivateKey(), READ, GUID, targetGuid, FIELD, field,
-              READER, reader.getGuid());
-    }
-    int id = generateNextRequestID();
-    return new CommandPacket(id, null, -1, command);
-  }
-
-  public CommandPacket createUpdateCommandPacket(String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
-    JSONObject command;
-    command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, GUID,
-            targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
-    int id = generateNextRequestID();
-    return new CommandPacket(id, null, -1, command);
-  }
-
   public void resetInstrumentation() {
-    lastRTT = -1;
-    lastResponder = null;
-    lastReceivedTime = -1;
-    lastCPPRequestCount = -1;
-    lastCPPOpsPerSecond = -1;
-    lastCCPRoundTripTime = -1;;
-    lastCCPProcessingTime = -1;
-    //lastLookupTime = -1;
-    movingAvgAsynchLatency = 0;
-    totalAsynchErrors = 0;
+    movingAvgLatency = 0;
   }
 
   public boolean isDebuggingEnabled() {
@@ -1814,80 +1733,14 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     this.debuggingEnabled = debuggingEnabled;
   }
 
-  public void setEnableInstrumentation(boolean enableInstrumentation) {
-    this.instrumentationEnabled = enableInstrumentation;
-  }
-
   /**
-   * Instrumentation.
+   * Instrumentation. Returns the moving average of request latency
+   * as seen by the client.
    *
    * @return
    */
-  public long getLastRTT() {
-    return lastRTT;
-  }
-
-  /**
-   * Instrumentation.
-   *
-   * @return
-   */
-  public String getLastResponder() {
-    return lastResponder;
-  }
-
-  /**
-   * Instrumentation.
-   *
-   * @return
-   */
-  public long getLastCPPRequestCount() {
-    return lastCPPRequestCount;
-  }
-
-  /**
-   * Instrumentation.
-   *
-   * @return
-   */
-  public long getLastReceivedTime() {
-    return lastReceivedTime;
-  }
-
-  /**
-   * Instrumentation.
-   *
-   * @return
-   */
-  public int getLastCCPOpsPerSecond() {
-    return lastCPPOpsPerSecond;
-  }
-
-  /**
-   * Instrumentation.
-   *
-   * @return
-   */
-  public long getLastCCPRoundTripTime() {
-    return lastCCPRoundTripTime;
-  }
-
-  /**
-   * Instrumentation.
-   *
-   * @return
-   */
-  public long getLastCCPProcessingTime() {
-    return lastCCPProcessingTime;
-  }
-
-  /**
-   * Instrumentation. Currently only valid when asynch testing.
-   *
-   * @return
-   */
-  public double getMovingAvgAsynchLatency() {
-    return movingAvgAsynchLatency;
+  public double getMovingAvgLatency() {
+    return movingAvgLatency;
   }
 
   /**

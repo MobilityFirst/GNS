@@ -31,6 +31,13 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
+import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
+import static edu.umass.cs.gnscommon.GnsProtocol.READ;
+import static edu.umass.cs.gnscommon.GnsProtocol.READER;
+import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
+import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
+import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
 import java.net.InetSocketAddress;
@@ -213,10 +220,6 @@ public class ThroughputAsynchMultiClientTest {
       e.printStackTrace();
       System.exit(1);
     }
-    for (int i = 0; i < numberOfClients; i++) {
-      clients[i].setEnableInstrumentation(true); // important
-    }
-
   }
 
   /**
@@ -267,11 +270,11 @@ public class ThroughputAsynchMultiClientTest {
       // prebuild a packet for each client
       for (int i = 0; i < numberOfGuids; i++) {
         if (doingReads) {
-          commmandPackets[i] = clients[0].createReadCommandPacket(subGuids[i], updateField, masterGuid);
+          commmandPackets[i] = createReadCommandPacket(clients[i], subGuids[i], updateField, masterGuid);
         } else {
           JSONObject json = new JSONObject();
           json.put(updateField, updateValue);
-          commmandPackets[i] = clients[0].createUpdateCommandPacket(subGuids[i], json, masterGuid);
+          commmandPackets[i] = createUpdateCommandPacket(clients[i], subGuids[i], json, masterGuid);
         }
       }
       if (parser.hasOption("inc")) {
@@ -463,7 +466,7 @@ public class ThroughputAsynchMultiClientTest {
       for (int i = 0; i < numberOfClients; i++) {
         outstandingPacketCount += clients[i].outstandingAsynchPacketCount();
         totalErrors += clients[i].getTotalAsynchErrors();
-        latencySum += clients[i].getMovingAvgAsynchLatency();
+        latencySum += clients[i].getMovingAvgLatency();
       }
       System.out.println("\n" + Format.formatDateTimeOnly(new Date())
               + " Actual rate/s: " + numberSent / (elapsedTimeInMilleSeconds / 1000.0)
@@ -478,6 +481,29 @@ public class ThroughputAsynchMultiClientTest {
         break;
       }
     }
+  }
+
+  //
+  // Stuff below here is mostly currently for testing only
+  //
+  private static CommandPacket createReadCommandPacket(BasicUniversalTcpClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
+    JSONObject command;
+    if (reader == null) {
+      command = client.createCommand(READ, GUID, targetGuid, FIELD, field);
+    } else {
+      command = client.createAndSignCommand(reader.getPrivateKey(), READ, GUID, targetGuid, FIELD, field,
+              READER, reader.getGuid());
+    }
+    //int id = client.generateNextRequestID();
+    return new CommandPacket(-1, null, -1, command);
+  }
+
+  private static CommandPacket createUpdateCommandPacket(BasicUniversalTcpClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
+    JSONObject command;
+    command = client.createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, GUID,
+            targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
+    //int id = client.generateNextRequestID();
+    return new CommandPacket(-1, null, -1, command);
   }
 
   public class WorkerTask implements Runnable {
@@ -500,6 +526,8 @@ public class ThroughputAsynchMultiClientTest {
             index = rand.nextInt(numberOfGuids);
           } while (chosen.contains(index));
           chosen.add(index);
+          // important to set the request id to something unique for the client
+          commmandPackets[index].setRequestId(clients[clientNumber].generateNextRequestID());
           clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index]);
         }
       } catch (Exception e) {
