@@ -62,16 +62,16 @@ public class ActiveCodeClient {
      * @param port 
 	 */
 	public ActiveCodeClient(GnsApplicationInterface<?> app, int port) {
-		if(port == -1){
-			startServer();
-		}else{
-			setPort(port);
-		}
 		try{
 			this.clientSocket = new DatagramSocket();
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+		if(port == -1){
+			startServer();
+		}else{
+			setPort(port);
+		}		
 		this.app = app;
 	}
 	
