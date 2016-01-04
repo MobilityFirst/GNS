@@ -72,10 +72,12 @@ public class SequentialRequestClient {
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
-	    JSONObject jobj = client.read(guidAccount);
-	    System.out.println(jobj);
 	    
-	    for (int i=0; i<5000; i++){
+	    for (int i=0; i<1000; i++){
+	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
+	    }
+	    
+	    for (int i=0; i<1000; i++){
 	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
 	    	long t2 = System.nanoTime();
