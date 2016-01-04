@@ -161,7 +161,7 @@ public class ActiveCodeUtils {
 	 */
 	public static ActiveCodeMessage receiveMessage(DatagramSocket socket){
 		ActiveCodeMessage acm = null;
-		byte[] buffer = new byte[8096*16];
+		byte[] buffer = new byte[8096*10];
 		Arrays.fill(buffer, (byte) 0);
 		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
 		try{
