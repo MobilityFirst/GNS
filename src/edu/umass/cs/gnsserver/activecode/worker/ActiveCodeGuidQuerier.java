@@ -96,10 +96,10 @@ public class ActiveCodeGuidQuerier {
       ActiveCodeMessage acm = new ActiveCodeMessage();
       acm.setAcqreq(acqreq);
       // Send off the query request
-      ActiveCodeUtils.sendMessage(out, acm);
+      //ActiveCodeUtils.sendMessage(out, acm);
 
       // Wait for a response
-      ActiveCodeMessage acmqr = ActiveCodeUtils.getMessage(in);
+      ActiveCodeMessage acmqr = null;//ActiveCodeUtils.getMessage(in);
       return acmqr.getAcqresp();
 
     } catch (Exception e) {
