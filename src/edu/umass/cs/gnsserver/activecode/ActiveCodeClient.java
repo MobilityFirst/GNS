@@ -51,7 +51,6 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
-	//private final static String hostname = "127.0.0.1";
 	private int serverPort;
 	private Process process;
 	private final GnsApplicationInterface<?> app;
@@ -122,19 +121,16 @@ public class ActiveCodeClient {
 		    ProcessBuilder builder = new ProcessBuilder(command);
 			builder.directory(new File(System.getProperty("user.dir")));
 			
-			// Without calling waitFor() methond, redirect is useless
 			builder.redirectError(Redirect.INHERIT);
 			builder.redirectOutput(Redirect.INHERIT);
 			builder.redirectInput(Redirect.INHERIT);
 			
 			process = builder.start();
-			
-			
+						
 			// Now we wait for the worker to notify us that it is ready
 			//listener.accept();
 			//listener.close();
 			
-			//process.waitFor();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;

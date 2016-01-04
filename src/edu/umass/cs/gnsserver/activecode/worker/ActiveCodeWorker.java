@@ -39,6 +39,8 @@ public class ActiveCodeWorker {
 	public ActiveCodeWorker(int port, int callbackPort) {
 		try{
 			this.serverSocket = new DatagramSocket(port);
+			while(serverSocket == null)
+				;
 			this.clientPort = callbackPort;
 		}catch(IOException e){
 			e.printStackTrace();
@@ -46,19 +48,17 @@ public class ActiveCodeWorker {
 	}
 	/**
 	 * Starts the worker listener
-	 * @param port the port
-	 * @param callbackPort the port at which to ping the GNS to signal the ready state
 	 * @throws IOException
 	 */
 	public void run() throws IOException {	
         //ServerSocket listener = new ServerSocket(port);
 		
         ActiveCodeRunner runner = new ActiveCodeRunner();
-        /*
+        
         System.out.println("Starting ActiveCode Server at " + 
         		serverSocket.getInetAddress().getCanonicalHostName() + 
         		":" + serverSocket.getLocalPort());
-        */
+        
         try {
         	RequestHandler handler = new RequestHandler(runner, this.clientPort);
         	boolean keepGoing = true;
