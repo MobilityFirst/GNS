@@ -44,7 +44,6 @@ public class ActiveCodeWorker {
 		DatagramSocket serverSocket = new DatagramSocket(port);
         ActiveCodeRunner runner = new ActiveCodeRunner();
         
-        
         System.out.println("Starting ActiveCode Server at " + 
         		serverSocket.getInetAddress().getCanonicalHostName() + 
         		":" + serverSocket.getLocalPort());
