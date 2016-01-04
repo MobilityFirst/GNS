@@ -33,15 +33,24 @@ import edu.umass.cs.utils.DelayProfiler;
 public class ActiveCodeWorker {
 	
 	private static int numReqs = 0;
+	private DatagramSocket serverSocket;
+	
+	public ActiveCodeWorker(int port, int callbackPort) {
+		try{
+			this.serverSocket = new DatagramSocket(port);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * Starts the worker listener
 	 * @param port the port
 	 * @param callbackPort the port at which to ping the GNS to signal the ready state
 	 * @throws IOException
 	 */
-	public void run(int port, int callbackPort) throws IOException {	
+	public void run() throws IOException {	
         //ServerSocket listener = new ServerSocket(port);
-		DatagramSocket serverSocket = new DatagramSocket(port);
+		
         ActiveCodeRunner runner = new ActiveCodeRunner();
         
         System.out.println("Starting ActiveCode Server at " + 
@@ -81,13 +90,14 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException  {
-		ActiveCodeWorker acs = new ActiveCodeWorker();	
+		
 		int port = 0, callbackPort = -1;
 		
 		if(args.length == 2) {
 			port = Integer.parseInt(args[0]);
 			callbackPort = Integer.parseInt(args[1]);
-			acs.run(port, callbackPort);
+			ActiveCodeWorker acs = new ActiveCodeWorker(port, callbackPort);	
+			acs.run();
 		}		
     }
 }
