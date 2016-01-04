@@ -36,7 +36,7 @@ public class SequentialRequestClient {
 		String address = args[0];
 		
 		boolean flag = Boolean.parseBoolean(args[1]);
-		int size = 10;
+		int size = 10000;
 		if(args.length > 2){
 			size = Integer.parseInt(args[2]);
 		}
