@@ -20,8 +20,7 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.DatagramSocket;
 
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -41,25 +40,29 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public void run(int port, int callbackPort) throws IOException {	
-        ServerSocket listener = new ServerSocket(port);
+        //ServerSocket listener = new ServerSocket(port);
+		DatagramSocket serverSocket = new DatagramSocket(port);
         ActiveCodeRunner runner = new ActiveCodeRunner();
         
+        
         System.out.println("Starting ActiveCode Server at " + 
-        		listener.getInetAddress().getCanonicalHostName() + 
-        		":" + listener.getLocalPort());
+        		serverSocket.getInetAddress().getCanonicalHostName() + 
+        		":" + serverSocket.getLocalPort());
         
         try {
         	RequestHandler handler = new RequestHandler(runner);
         	boolean keepGoing = true;
+        	/*
         	if(callbackPort != -1){
         		// Notify the server that we are ready
         		Socket temp = new Socket("0.0.0.0", callbackPort);
         		temp.close();
         	}
+        	*/
             while (keepGoing) {
-            	Socket s = listener.accept();
-            	keepGoing = handler.handleRequest(s);
-            	s.close();
+            	//Socket s = listener.accept();
+            	keepGoing = handler.handleRequest(serverSocket);
+            	//s.close();
             	numReqs++;
             	if(numReqs%1000 == 0){
             		System.out.println(DelayProfiler.getStats());
@@ -69,7 +72,7 @@ public class ActiveCodeWorker {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-            listener.close();
+            serverSocket.close();
         }
 	}
 	
@@ -85,10 +88,6 @@ public class ActiveCodeWorker {
 		if(args.length == 2) {
 			port = Integer.parseInt(args[0]);
 			callbackPort = Integer.parseInt(args[1]);
-			acs.run(port, callbackPort);
-		}
-		if(args.length == 1) {
-			port = Integer.parseInt(args[0]);
 			acs.run(port, callbackPort);
 		}		
     }

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.ProcessBuilder.Redirect;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -50,10 +51,11 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
-	private final static String hostname = "127.0.0.1";
-	private int port;
+	//private final static String hostname = "127.0.0.1";
+	private int serverPort;
 	private Process process;
 	private final GnsApplicationInterface<?> app;
+	private DatagramSocket clientSocket;
 	
 	/**
 	 * @param app the gns app
@@ -65,11 +67,16 @@ public class ActiveCodeClient {
 		}else{
 			setPort(port);
 		}
+		try{
+			this.clientSocket = new DatagramSocket();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		this.app = app;
 	}
 	
 	private void setPort(int port) {
-		this.port = port;
+		this.serverPort = port;
 	}
 	
 	/**
@@ -96,12 +103,12 @@ public class ActiveCodeClient {
 	public boolean startServer() {
 		try {
 			List<String> command = new ArrayList<>();
-			port = getOpenPort();
+			serverPort = getOpenPort();
 			
 			// Get the current classpath
 			String classpath = System.getProperty("java.class.path");
 			
-			ServerSocket listener = new ServerSocket(0);
+			//ServerSocket listener = new ServerSocket(0);
 			
 		    command.add("java");
 		    command.add("-Xms64m");
@@ -109,8 +116,8 @@ public class ActiveCodeClient {
 		    command.add("-cp");
 		    command.add(classpath);
 		    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
-		    command.add(Integer.toString(port));
-		    command.add(Integer.toString(listener.getLocalPort()));
+		    command.add(Integer.toString(serverPort));
+		    command.add(Integer.toString(clientSocket.getLocalPort()));
 		    
 		    ProcessBuilder builder = new ProcessBuilder(command);
 			builder.directory(new File(System.getProperty("user.dir")));
@@ -124,8 +131,8 @@ public class ActiveCodeClient {
 			
 			
 			// Now we wait for the worker to notify us that it is ready
-			listener.accept();
-			listener.close();
+			//listener.accept();
+			//listener.close();
 			
 			//process.waitFor();
 		} catch (Exception e) {
@@ -182,7 +189,7 @@ public class ActiveCodeClient {
 	 */
 	private ValuesMap submitRequest(ActiveCodeMessage acmReq) throws InterruptedException, ActiveCodeException{
 		long startTime = System.nanoTime();
-		Socket socket = null;
+		//Socket socket = null;
 		boolean crashed = false;
 		
 		PrintWriter out = null;
@@ -195,24 +202,25 @@ public class ActiveCodeClient {
 		
 		// Create the socket and throw an exception upon failure
 		try{
-			socket = new Socket(hostname, port);
+			//socket = new Socket(hostname, port);
 			//socket.setSoTimeout(timeoutMs);
 			
-			out = new PrintWriter(socket.getOutputStream(), true);
-			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			//out = new PrintWriter(socket.getOutputStream(), true);
+			//in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 						
-		}catch(IOException e){
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 		
 		// Serialize the initial request
-		ActiveCodeUtils.sendMessage(out, acmReq);
+		//ActiveCodeUtils.sendMessage(out, acmReq);
+		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
 		
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
 		while(!codeFinished) {
-		    ActiveCodeMessage acmResp = ActiveCodeUtils.getMessage(in);
+		    ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(clientSocket);
 		    
 		    if(acmResp.isFinished()) {
 		    	// We are done!
@@ -230,16 +238,10 @@ public class ActiveCodeClient {
 		    	// Send the results back
 		    	ActiveCodeMessage acmres = new ActiveCodeMessage();
 		    	acmres.setAcqresp(acqresp);
-		    	ActiveCodeUtils.sendMessage(out, acmres);
+		    	ActiveCodeUtils.sendMessage(clientSocket, acmres, serverPort);
 		    }
 		}
-	
-		// Done with socket at this point
-        try {
-			socket.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
 		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
 		
 		long convertTime = System.nanoTime();

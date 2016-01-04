@@ -26,10 +26,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Base64;
-import edu.umass.cs.utils.DelayProfiler;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to serialize and deserialize, send 
@@ -84,6 +88,7 @@ public class ActiveCodeUtils {
 	 * @param out
 	 * @param acm
 	 */
+	/*
 	public static void sendMessage(PrintWriter out, ActiveCodeMessage acm) {
 		long t1 = System.nanoTime();
 		byte[] data = serializeObject(acm);
@@ -97,12 +102,14 @@ public class ActiveCodeUtils {
 		out.println(data64);
 		DelayProfiler.updateDelayNano("activeSendOutMsg", t3);
 	}
+	*/
 	
 	/**
 	 * Receive the serialize the message
 	 * @param in
 	 * @return an {@link ActiveCodeMessage} ready to cast
 	 */
+	/*
 	public static ActiveCodeMessage getMessage(BufferedReader in) {
 		
 		long t1 = System.nanoTime();
@@ -129,5 +136,46 @@ public class ActiveCodeUtils {
 		DelayProfiler.updateDelayNano("activeDecode", t2);
 		
 		return (ActiveCodeMessage) deserializeObject(res);
+	}
+	*/
+	
+	public static void sendMessage(DatagramSocket socket, ActiveCodeMessage acm, int port){
+		try{
+			InetAddress addr = InetAddress.getByName("localhost");
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			ObjectOutputStream os = new ObjectOutputStream(outputStream);
+			os.writeObject(acm);
+			byte[] data = outputStream.toByteArray();
+			DatagramPacket pkt = new DatagramPacket(data, data.length, addr, port);
+			socket.send(pkt);
+			
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * receive a datagram through a datgram socket
+	 * @param socket
+	 * @return an ActiveCodeMessage
+	 */
+	public static ActiveCodeMessage receiveMessage(DatagramSocket socket){
+		ActiveCodeMessage acm = null;
+		byte[] buffer = new byte[8096];
+		Arrays.fill(buffer, (byte) 0);
+		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
+		try{
+			socket.receive(pkt);			
+			byte[] data = pkt.getData();
+			ByteArrayInputStream in = new ByteArrayInputStream(data);
+			ObjectInputStream is = new ObjectInputStream(in);			 
+			acm = (ActiveCodeMessage) is.readObject();			
+		}catch(IOException e){
+			e.printStackTrace();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		return acm;
 	}
 }

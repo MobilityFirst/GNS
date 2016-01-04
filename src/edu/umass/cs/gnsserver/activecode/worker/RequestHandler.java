@@ -23,16 +23,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Socket;
+import java.net.DatagramSocket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class accepts the request from active client
@@ -50,43 +50,44 @@ public class RequestHandler {
 		this.runner = runner;
 	}
 	
-	protected boolean handleRequest(Socket socket) {
+	protected boolean handleRequest(DatagramSocket socket) {
 		boolean ret = true;
 		
 		try {
 			long startTime = System.nanoTime();
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(in, out);
+			//PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			//BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			//ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(in, out);
 			// Get the ActiveCodeMessage from the GNS
-		    ActiveCodeMessage acm = ActiveCodeUtils.getMessage(in);
+		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket);
 		    DelayProfiler.updateDelayNano("activeWorkerBeforeRun", startTime);
 		    
 		    if( acm.isShutdown()) {
-		    	out.println("OK");
+		    	//FIXME: the following line is used to send back a response
+		    	//out.println("OK");
 		    	System.out.println("Shutting down...");
 		    	ret = false;
 		    } else {
 		    	// Run the active code
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();
-			    querier.setParam(params.getHopLimit(), params.getGuid());
+			    //querier.setParam(params.getHopLimit(), params.getGuid());
 			    //FIXME: This step takes too much time
 			    ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
-			    ValuesMap result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
+			    ValuesMap result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, null);
 			    
 			    long t2 = System.nanoTime();
 			    // Send the results back
 			    ActiveCodeMessage acmResp = new ActiveCodeMessage();
 			    acmResp.setFinished(true);
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
-			    ActiveCodeUtils.sendMessage(out, acmResp);
+			    ActiveCodeUtils.sendMessage(socket, acmResp, -1);
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    
-		} catch (IOException | JSONException e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 			ret = false;
 		}
