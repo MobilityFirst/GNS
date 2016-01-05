@@ -30,8 +30,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-//import org.apache.commons.codec.binary.Base64;
-import java.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
@@ -165,7 +164,7 @@ public class ActiveCodeHandler {
 		
 		
 		//Construct Value parameters
-		String code = new String(Base64.getDecoder().decode(code64)); //new String(Base64.decodeBase64(code64));
+		String code = new String(Base64.decodeBase64(code64));
 		String values = valuesMap.toString();		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
