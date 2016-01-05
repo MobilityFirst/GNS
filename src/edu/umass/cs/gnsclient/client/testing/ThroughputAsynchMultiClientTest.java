@@ -21,7 +21,6 @@ package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
 import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_ACCOUNT_RECORD;
 import edu.umass.cs.gnsclient.client.GuidEntry;
@@ -176,9 +175,9 @@ public class ThroughputAsynchMultiClientTest {
   private static final long minSleepInterval = 10;
 
   /**
-   * Our command packet cache.
+   * Our command packet cache. We need a separate command packet for each client for each guid.
    */
-  private static CommandPacket commmandPackets[];
+  private static CommandPacket commmandPackets[][];
 
   private static ExecutorService execPool;
 
@@ -207,7 +206,7 @@ public class ThroughputAsynchMultiClientTest {
     }
     clients = new BasicUniversalTcpClient[numberOfClients];
     subGuids = new String[numberOfGuids];
-    commmandPackets = new CommandPacket[numberOfGuids];
+    commmandPackets = new CommandPacket[numberOfGuids][numberOfClients];
     execPool = Executors.newFixedThreadPool(numberOfClients);
     chosen = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
     for (int i = 0; i < numberOfClients; i++) {
@@ -268,14 +267,16 @@ public class ThroughputAsynchMultiClientTest {
       test.createSubGuidsAndWriteValue(parser.hasOption("useExistingGuids"));
 
       // prebuild a packet for each client
+      for (int clientIndex = 0; clientIndex < numberOfClients; clientIndex++) {
       for (int i = 0; i < numberOfGuids; i++) {
         if (doingReads) {
-          commmandPackets[i] = createReadCommandPacket(clients[i], subGuids[i], updateField, masterGuid);
+          commmandPackets[i][clientIndex] = createReadCommandPacket(clients[clientIndex], subGuids[i], updateField, masterGuid);
         } else {
           JSONObject json = new JSONObject();
           json.put(updateField, updateValue);
-          commmandPackets[i] = createUpdateCommandPacket(clients[i], subGuids[i], json, masterGuid);
+          commmandPackets[i][clientIndex] = createUpdateCommandPacket(clients[clientIndex], subGuids[i], json, masterGuid);
         }
+      }
       }
       if (parser.hasOption("inc")) {
         test.ramp(rate, increment, requestsPerClient);
@@ -491,19 +492,21 @@ public class ThroughputAsynchMultiClientTest {
     if (reader == null) {
       command = client.createCommand(READ, GUID, targetGuid, FIELD, field);
     } else {
-      command = client.createAndSignCommand(reader.getPrivateKey(), READ, GUID, targetGuid, FIELD, field,
+      command = client.createAndSignCommand(reader.getPrivateKey(), READ, 
+              GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
     //int id = client.generateNextRequestID();
-    return new CommandPacket(-1, null, -1, command);
+    return new CommandPacket(-1, command);
   }
 
   private static CommandPacket createUpdateCommandPacket(BasicUniversalTcpClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
-    command = client.createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, GUID,
-            targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
+    command = client.createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
+            GUID, targetGuid, USER_JSON, json.toString(), 
+            WRITER, writer.getGuid());
     //int id = client.generateNextRequestID();
-    return new CommandPacket(-1, null, -1, command);
+    return new CommandPacket(-1, command);
   }
 
   public class WorkerTask implements Runnable {
@@ -527,8 +530,12 @@ public class ThroughputAsynchMultiClientTest {
           } while (chosen.contains(index));
           chosen.add(index);
           // important to set the request id to something unique for the client
-          commmandPackets[index].setRequestId(clients[clientNumber].generateNextRequestID());
-          clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index]);
+          commmandPackets[index][clientNumber].setRequestId(clients[clientNumber].generateNextRequestID());
+          clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index][clientNumber]);
+          // clear this out if we have used all the guids
+          if (chosen.size() == numberOfGuids) {
+            chosen.clear();
+          }
         }
       } catch (Exception e) {
         System.out.println("Problem running field read: " + e);
