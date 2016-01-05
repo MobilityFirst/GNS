@@ -54,11 +54,7 @@ public class ActiveCodeWorker {
         //ServerSocket listener = new ServerSocket(port);
 		
         ActiveCodeRunner runner = new ActiveCodeRunner();
-        /*
-        System.out.println("Starting ActiveCode Server at " + 
-        		serverSocket.getInetAddress().getCanonicalHostName() + 
-        		":" + serverSocket.getLocalPort());
-        */
+        
         try {
         	RequestHandler handler = new RequestHandler(runner, this.clientPort);
         	boolean keepGoing = true;
