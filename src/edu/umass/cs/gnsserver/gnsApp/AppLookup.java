@@ -194,8 +194,6 @@ public class AppLookup {
             String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
             ValuesMap originalValues = nameRecord.getValuesMap();
             
-            System.out.println("nameRecord is "+nameRecord);
-            System.out.println("codeRecord is "+code64);
 //          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
 //          String code64 = codeResult.get(0).toString();
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
