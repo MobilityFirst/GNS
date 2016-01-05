@@ -39,6 +39,8 @@ public class ActiveCodeWorker {
 	public ActiveCodeWorker(int port, int callbackPort) {
 		try{
 			this.serverSocket = new DatagramSocket(port);
+			System.out.println("Starting ActiveCodeWorker at port number " +
+			serverSocket.getPort());
 			this.clientPort = callbackPort;
 		}catch(IOException e){
 			e.printStackTrace();
@@ -52,7 +54,11 @@ public class ActiveCodeWorker {
         //ServerSocket listener = new ServerSocket(port);
 		
         ActiveCodeRunner runner = new ActiveCodeRunner();
-        
+        /*
+        System.out.println("Starting ActiveCode Server at " + 
+        		serverSocket.getInetAddress().getCanonicalHostName() + 
+        		":" + serverSocket.getLocalPort());
+        */
         try {
         	RequestHandler handler = new RequestHandler(runner, this.clientPort);
         	boolean keepGoing = true;
@@ -93,9 +99,6 @@ public class ActiveCodeWorker {
 			port = Integer.parseInt(args[0]);
 			callbackPort = Integer.parseInt(args[1]);
 			ActiveCodeWorker acs = new ActiveCodeWorker(port, callbackPort);
-			System.out.println("Starting ActiveCode Server at " + 
-	        		acs.serverSocket.getInetAddress().getCanonicalHostName() + 
-	        		":" + acs.serverSocket.getLocalPort());
 			acs.run();
 		}		
     }
