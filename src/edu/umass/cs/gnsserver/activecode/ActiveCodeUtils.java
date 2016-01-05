@@ -140,6 +140,7 @@ public class ActiveCodeUtils {
 	*/
 	
 	public static void sendMessage(DatagramSocket socket, ActiveCodeMessage acm, int port){
+		long t = System.nanoTime();
 		try{
 			InetAddress addr = InetAddress.getByName("localhost");
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -152,6 +153,7 @@ public class ActiveCodeUtils {
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+		DelayProfiler.updateDelayNano("activeSend", t);
 	}
 	
 	/**
@@ -160,6 +162,7 @@ public class ActiveCodeUtils {
 	 * @return an ActiveCodeMessage
 	 */
 	public static ActiveCodeMessage receiveMessage(DatagramSocket socket, byte[] buffer){
+		long t = System.nanoTime();
 		ActiveCodeMessage acm = null;
 		//byte[] buffer = new byte[8096*10];
 		Arrays.fill(buffer, (byte) 0);
@@ -175,7 +178,7 @@ public class ActiveCodeUtils {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
+		DelayProfiler.updateDelayNano("activeReceive", t);
 		return acm;
 	}
 }
