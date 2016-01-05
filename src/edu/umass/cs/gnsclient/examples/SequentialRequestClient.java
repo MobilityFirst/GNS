@@ -88,12 +88,12 @@ public class SequentialRequestClient {
 	    
 	    Collections.sort(latency);
 	    
-	    System.out.println(latency.get(latency.size()/2)+" ");
+	    System.out.print(latency.get(latency.size()/2)+" ");
 	    long total = 0;
 	    for (long lat:latency){
 	    	total += lat;
 	    }
-	    System.out.println(total/latency.size());
+	    //System.out.println(total/latency.size());
 	    System.exit(0);
 	}
 	

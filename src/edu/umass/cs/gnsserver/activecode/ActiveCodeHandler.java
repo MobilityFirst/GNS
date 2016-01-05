@@ -166,7 +166,7 @@ public class ActiveCodeHandler {
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
 		//FIXME: this toString method takes too much time
-		String values = valuesMap.toString();	
+		String values = valuesMap.toString();
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
 		
