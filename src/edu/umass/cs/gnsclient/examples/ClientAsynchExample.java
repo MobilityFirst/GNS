@@ -41,10 +41,25 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.net.InetSocketAddress;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONObject;
 
 /**
- * In this example we demonstrate the asynchronous client.
+ * In this example we demonstrate the asynchronous client. 
+ * 
+ * It sends read or update requests for one field in a guid. 
+ * If you supply the -write arg it updates otherwise reads.
+ * You’ll want to run it once with the -write arg before running 
+ * it with read to actually put a value in the field.
+ * It runs forever so hit CTRL-C to stop it.
+ * <p>
+ * Invoke it like this:
+ * <p>
+ * ./scripts/client/runClient edu.umass.cs.gnsclient.examples.ClientAsynchExample -write
+ * <p>
+ * It prints out the latency seen by the client.
  *
  * @author westy
  */
@@ -60,10 +75,10 @@ public class ClientAsynchExample {
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
     BasicUniversalTcpClient client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
-    GuidEntry guidEntry = null;
+    GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
-      guidEntry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
+      accountGuidEntry = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
     } catch (Exception e) {
       System.out.println("Exception during accountGuid creation: " + e);
       e.printStackTrace();
@@ -77,35 +92,53 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = client.createAndSignCommand(guidEntry.getPrivateKey(), REPLACE_USER_JSON,
-              GUID, guidEntry.getGuid(), USER_JSON, json.toString(), WRITER, guidEntry.getGuid());
+      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
+              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), WRITER, accountGuidEntry.getGuid());
     } else {
-      command = client.createAndSignCommand(guidEntry.getPrivateKey(), READ,
-              GUID, guidEntry.getGuid(), FIELD, "occupation",
-              READER, guidEntry.getGuid());
+      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
+              GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
+              READER, accountGuidEntry.getGuid());
     }
-    System.out.println("Command is " + command.toString());
+    // Create the command packet with a bogus id
     CommandPacket commandPacket = new CommandPacket(-1, command);
-    System.out.println("Packet is " + commandPacket.toString());
-    do {
+    // Keep track of what we've sent for the other thread to look at.
+    Set<Integer> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+    // Create and run another thread to pick up the responses
+    Runnable companion = () -> {
+      lookForResponses(client, pendingIds);
+    };
+    new Thread(companion).start();
+    while (true) {
       int id = client.generateNextRequestID();
-      System.out.println("Generated id is " + id);
+      // Important to set the new request id each time
       commandPacket.setRequestId(id);
+      // Record what we're sending
+      pendingIds.add(id);
+      // Actually send out the packet
       client.sendCommandPacketAsynch(commandPacket);
-      System.out.println("Sent command packet ");
-    // Do busy wait until we get a reponse.
-      // This is only a good way in an example. In real code don't do this!
-      do {
-        ThreadUtils.sleep(1000);
-      } while (!client.isAsynchResponseReceived(id));
-      // Pull the reponse from the client using the id
-      CommandResult commandResult = client.removeAsynchResponse(id);
-      System.out.println("Last latency was " + commandResult.getClientLatency() + "\n"
-              + "commandResult for  " + id + " is "
-              + (commandResult.getErrorCode().equals(NSResponseCode.NO_ERROR)
-                      ? commandResult.getResult()
-                      : commandResult.getErrorCode().toString()));
-    } while (true);
-    //System.exit(0);
+      ThreadUtils.sleep(100); // if you generate them too fast you'll clog things up 
+    }
   }
+
+  // Not saying this is the best way to handle responses, but it works for this example.
+  private static void lookForResponses(BasicUniversalTcpClient client, Set<Integer> pendingIds) {
+    while (true) {
+      ThreadUtils.sleep(10);
+      // Loop through all the ones we've sent
+      for (Integer id : pendingIds) {
+        if (client.isAsynchResponseReceived(id)) {
+          pendingIds.remove(id);
+          CommandResult commandResult = client.removeAsynchResponse(id);
+          System.out.println("commandResult for  " + id + " is "
+                  + (commandResult.getErrorCode().equals(NSResponseCode.NO_ERROR)
+                          ? commandResult.getResult()
+                          : commandResult.getErrorCode().toString())
+                  + "\n"
+                  + "Latency is " + commandResult.getClientLatency()
+          );
+        }
+      }
+    }
+  }
+
 }
