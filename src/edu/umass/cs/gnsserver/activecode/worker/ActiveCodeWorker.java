@@ -40,7 +40,7 @@ public class ActiveCodeWorker {
 		try{
 			this.serverSocket = new DatagramSocket(port);
 			System.out.println("Starting ActiveCodeWorker at port number " +
-			serverSocket.getPort());
+			port);
 			this.clientPort = callbackPort;
 		}catch(IOException e){
 			e.printStackTrace();
