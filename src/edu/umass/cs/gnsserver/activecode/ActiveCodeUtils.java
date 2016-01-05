@@ -143,7 +143,6 @@ public class ActiveCodeUtils {
 		long t = System.nanoTime();
 		try{
 			InetAddress addr = InetAddress.getByName("localhost");
-			System.out.println("localhost is "+addr);
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(acm);
