@@ -75,10 +75,12 @@ public class RequestHandler {
 			    ActiveCodeParams params = acm.getAcp();
 			    //querier.setParam(params.getHopLimit(), params.getGuid());
 			    //FIXME: This step takes too much time
-			    ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
+			    //ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
+			    JSONObject vm = new JSONObject(params.getValuesMapString());
+			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
-			    ValuesMap result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, null);
+			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, null);
 			    
 			    long t2 = System.nanoTime();
 			    // Send the results back

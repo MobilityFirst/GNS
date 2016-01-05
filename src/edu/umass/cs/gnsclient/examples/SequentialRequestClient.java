@@ -67,12 +67,15 @@ public class SequentialRequestClient {
 		String str = new BigInteger(size, random).toString(32);
 		//System.out.println("The string length is "+str.length());
 		client.fieldUpdate(guidAccount.getGuid(), "hi", str, guidAccount);
-		client.read(guidAccount);
+		String result = client.fieldRead(guidAccount, "hi");
+		System.out.println("The response after setting active code is"+result);
 		client.activeCodeClear(guid, "read", guidAccount);
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
 	    
+	    result = client.fieldRead(guidAccount, "hi");
+	    System.out.println("The response after setting active code is"+result);
 	    
 	    for (int i=0; i<5000; i++){
 	    	long t1 = System.nanoTime();

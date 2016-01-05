@@ -38,7 +38,6 @@ public class ActiveCodeWorker {
 	
 	public ActiveCodeWorker(int port, int callbackPort) {
 		try{
-			System.out.println("The port number passed in is "+port);
 			this.serverSocket = new DatagramSocket(port);
 			System.out.println("Starting ActiveCodeWorker at port number " + port);
 			this.clientPort = callbackPort;

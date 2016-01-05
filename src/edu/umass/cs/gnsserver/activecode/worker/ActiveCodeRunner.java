@@ -19,15 +19,19 @@
  */
 package edu.umass.cs.gnsserver.activecode.worker;
 
-import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.util.HashMap;
+
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
+
+import org.json.JSONObject;
+
+import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to run active code
@@ -135,8 +139,8 @@ public class ActiveCodeRunner {
    * @param querier the querier object used for active code reads/writes
    * @return the output of the code
    */
-  public ValuesMap runCode(String guid, String action, String field, String code, ValuesMap value, ActiveCodeGuidQuerier querier) {
-	ValuesMap ret = null;
+  public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) {
+	JSONObject ret = null;
 	  //	return runLuaCode(guid, action, field, code, value, querier);
 	long startTime = System.nanoTime();
     try {    	
@@ -149,7 +153,7 @@ public class ActiveCodeRunner {
       engine.setContext(sc);
 
       // Run the code
-      ret = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
+      ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
 
     } catch (NoSuchMethodException | ScriptException e) {
       // TODO Auto-generated catch block

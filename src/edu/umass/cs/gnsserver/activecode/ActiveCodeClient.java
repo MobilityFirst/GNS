@@ -103,7 +103,7 @@ public class ActiveCodeClient {
 		try {
 			List<String> command = new ArrayList<>();
 			serverPort = getOpenPort();
-			System.out.println("The server listens on the port "+serverPort);
+
 			// Get the current classpath
 			String classpath = System.getProperty("java.class.path");
 			
