@@ -189,8 +189,8 @@ public class ActiveCodeClient {
 		//Socket socket = null;
 		boolean crashed = false;
 		
-		PrintWriter out = null;
-		BufferedReader in = null;
+		//PrintWriter out = null;
+		//BufferedReader in = null;
 		
 		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
 		
