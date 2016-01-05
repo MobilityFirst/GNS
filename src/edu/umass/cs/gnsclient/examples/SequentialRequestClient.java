@@ -73,10 +73,11 @@ public class SequentialRequestClient {
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
+	    client.read(guidAccount);
 	    
 	    result = client.fieldRead(guidAccount, "hi");
 	    System.out.println("The response after setting active code is "+result.length());
-	    
+	    /*
 	    for (int i=0; i<5000; i++){
 	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
@@ -84,7 +85,7 @@ public class SequentialRequestClient {
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);
 	    }
-	    
+	    */
 	    Collections.sort(latency);
 	    
 	    System.out.println(latency.get(latency.size()/2)+" ");
