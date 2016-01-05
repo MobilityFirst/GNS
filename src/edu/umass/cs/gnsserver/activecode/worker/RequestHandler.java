@@ -43,6 +43,7 @@ import edu.umass.cs.utils.DelayProfiler;
 public class RequestHandler {
 	private ActiveCodeRunner runner;
 	private int clientPort = 0;
+	private byte[] buffer = new byte[8096*10];
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
 	 * @param runner
@@ -61,8 +62,8 @@ public class RequestHandler {
 			//BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			//ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(in, out);
 			// Get the ActiveCodeMessage from the GNS
-		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket);
-		    DelayProfiler.updateDelayNano("activeWorkerBeforeRun", startTime);
+		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, this.buffer);
+		    
 		    
 		    if( acm.isShutdown()) {
 		    	//FIXME: the following line is used to send back a response

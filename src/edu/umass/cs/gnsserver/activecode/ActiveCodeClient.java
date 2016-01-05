@@ -55,6 +55,7 @@ public class ActiveCodeClient {
 	private Process process;
 	private final GnsApplicationInterface<?> app;
 	private DatagramSocket clientSocket;
+	private byte[] buffer = new byte[8096*10];
 	
 	/**
 	 * @param app the gns app
@@ -216,7 +217,7 @@ public class ActiveCodeClient {
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
 		while(!codeFinished) {
-		    ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(clientSocket);
+		    ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
 		    
 		    if(acmResp.isFinished()) {
 		    	// We are done!

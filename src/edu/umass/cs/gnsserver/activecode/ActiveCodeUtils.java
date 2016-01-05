@@ -159,9 +159,9 @@ public class ActiveCodeUtils {
 	 * @param socket
 	 * @return an ActiveCodeMessage
 	 */
-	public static ActiveCodeMessage receiveMessage(DatagramSocket socket){
+	public static ActiveCodeMessage receiveMessage(DatagramSocket socket, byte[] buffer){
 		ActiveCodeMessage acm = null;
-		byte[] buffer = new byte[8096*10];
+		//byte[] buffer = new byte[8096*10];
 		Arrays.fill(buffer, (byte) 0);
 		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
 		try{
