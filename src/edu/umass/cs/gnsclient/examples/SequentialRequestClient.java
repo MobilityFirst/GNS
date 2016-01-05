@@ -68,7 +68,7 @@ public class SequentialRequestClient {
 		//System.out.println("The string length is "+str.length());
 		client.fieldUpdate(guidAccount.getGuid(), "hi", str, guidAccount);
 		String result = client.fieldRead(guidAccount, "hi");
-		System.out.println("The response after setting active code is "+result.length());
+		//System.out.println("The response after setting active code is "+result.length());
 		client.activeCodeClear(guid, "read", guidAccount);
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
@@ -76,7 +76,7 @@ public class SequentialRequestClient {
 	    client.read(guidAccount);
 	    
 	    result = client.fieldRead(guidAccount, "hi");
-	    System.out.println("The response after setting active code is "+result.length());
+	    //System.out.println("The response after setting active code is "+result.length());
 	    
 	    for (int i=0; i<5000; i++){
 	    	long t1 = System.nanoTime();
