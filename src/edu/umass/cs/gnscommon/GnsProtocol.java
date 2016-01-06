@@ -69,7 +69,6 @@ public class GnsProtocol {
   public final static String SET_FIELD_NULL = "setFieldNull";
   public final static String CLEAR = "clear";
   public final static String READ = "newRead";
-  public final static String NEWREAD = "newRead";
   public final static String READ_ARRAY = "readArray";
   public final static String READ_ARRAY_ONE = "readArrayOne";
   public final static String SELECT = "select";
@@ -112,6 +111,7 @@ public class GnsProtocol {
   public final static String DUMPCACHE = "dumpCache";
   public final static String DELETE_ALL_GUID_RECORDS = "deleteAllGuidRecords";
   public final static String DUMP = "dump";
+  //
   public final static String CONNECTION_CHECK = "connectionCheck";
   public final static String PING_TABLE = "pingTable";
   public final static String PING_VALUE = "pingValue";
@@ -307,7 +307,7 @@ public class GnsProtocol {
    * The list of command types that are read commands.
    */
   public final static List<String> READ_COMMANDS
-          = Arrays.asList(READ_ARRAY, NEWREAD, READ_ARRAY_ONE);
+          = Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE);
   //
   
   public final static String NEWLINE = System.getProperty("line.separator");

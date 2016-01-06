@@ -30,7 +30,7 @@ import org.json.JSONObject;
 
 /**
  * This class defines an extension to {@link UniversalTcpClient} to communicate with a GNS instance
- * over HTTP. This extension contains more methods with more convenient to use invocation signatures.
+ * over HTTP. This extension contains more methods with additional invocation signatures.
  * It also has admin commands.
  *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
@@ -106,7 +106,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    */
   public void fieldCreateOneElementList(GuidEntry target, String field, String value) throws IOException,
           GnsException {
-    UniversalTcpClientExtended.this.fieldCreateOneElementList(target.getGuid(), field, value, target);
+    fieldCreateOneElementList(target.getGuid(), field, value, target);
   }
 
   /**

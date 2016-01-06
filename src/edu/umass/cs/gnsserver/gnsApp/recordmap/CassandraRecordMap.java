@@ -220,4 +220,9 @@ public class CassandraRecordMap extends BasicRecordMap {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  @Override
+  public void createIndex(String field, String index) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
 }

@@ -55,7 +55,7 @@ public class Read extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return NEWREAD;
+    return READ;
   }
 
   @Override
