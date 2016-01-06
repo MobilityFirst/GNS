@@ -290,17 +290,22 @@ public class GNSInstaller {
         makeInstallDir(hostname);
       }
       killAllServers(hostname, runAsRoot);
+      System.out.println("Kill servers complete");
       if (scriptFile != null) {
-        executeScriptFile(hostname, scriptFile);
+    	  System.out.println("Executing script file");
+    	  executeScriptFile(hostname, scriptFile);
       }
       if (removeLogs) {
+    	System.out.println("Removing logs");
         removeLogFiles(hostname, runAsRoot);
       }
       if (deleteDatabase) {
+    	System.out.println("Delete db");
         deleteDatabase(hostname);
       }
       switch (action) {
         case UPDATE:
+        	System.out.println("Executing update case");
           makeConfAndcopyJarAndConfFiles(hostname, createLNS, noopTest);
           copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
           copySSLFiles(hostname);
