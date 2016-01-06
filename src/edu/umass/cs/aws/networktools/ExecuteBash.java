@@ -72,7 +72,8 @@ public class ExecuteBash {
       argumentList.append(" ");
       argumentList.append(arg.toString());
     }
-    SSHClient.exec(username, host, keyFile, "bash " + FILESEPARATOR + scriptName + argumentList.toString());
+    //SSHClient.exec(username, host, keyFile, "bash " + FILESEPARATOR + scriptName + argumentList.toString());
+    SSHClient.exec(username, host, keyFile, "bash " + scriptName + argumentList.toString());
   }
 
   /**
