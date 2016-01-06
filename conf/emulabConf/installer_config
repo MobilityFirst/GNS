@@ -2,5 +2,5 @@ userName=ayadavum
 keyFile=id_rsa
 hostType=linux
 dataStoreName=MONGO
-installPath=gns
+installPath=/home/GNSDir/gns
 javaCommand=java -ea
