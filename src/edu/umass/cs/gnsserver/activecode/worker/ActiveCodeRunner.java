@@ -44,6 +44,8 @@ public class ActiveCodeRunner {
   private final Invocable invocable;
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
+  //private ScriptContext sc;
+  
   /**
    * Intialize an ActiveCodeRunner with nashorn script engine
    * by default.
@@ -55,6 +57,7 @@ public class ActiveCodeRunner {
     invocable = (Invocable) engine;
     contexts = new HashMap<>();
     codeHashes = new HashMap<>();
+    //sc = new SimpleScriptContext();
 
 		// uncomment to enable the lua-to-java bytecode compiler 
     // (require bcel library in class path)
@@ -147,12 +150,10 @@ public class ActiveCodeRunner {
       // Create a guid + action pair
       String codeId = guid + "_" + action;
       // Update the script context if needed
-      //updateCache(codeId, code);
+      updateCache(codeId, code);
       
       // Set the context
-      //ScriptContext sc = contexts.get(codeId);
-      
-      ScriptContext sc = new SimpleScriptContext();
+      ScriptContext sc = contexts.get(codeId);      
       engine.eval(code, sc);      
       engine.setContext(sc);
 
