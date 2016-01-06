@@ -263,7 +263,6 @@ public class GNSInstaller {
    * Copies the JAR and conf files and optionally resets some other stuff depending on the
    * update action given.
    * Then the various servers are started on the host.
-   *
    * @param nsId
    * @param createLNS
    * @param hostname
@@ -428,7 +427,7 @@ public class GNSInstaller {
     // make it executable
     SSHClient.exec(userName, hostname, keyFileName, "chmod ugo+x" + " " + buildInstallFilePath(remoteFile));
     //execute it
-    SSHClient.exec(userName, hostname, keyFileName, "." + FILESEPARATOR + buildInstallFilePath(remoteFile));
+    SSHClient.exec(userName, hostname, keyFileName, "bash " + FILESEPARATOR + buildInstallFilePath(remoteFile));
   }
 
   private static void makeInstallDir(String hostname) {
