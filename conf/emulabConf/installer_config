@@ -1,0 +1,6 @@
+userName=ayadavum
+keyFile=id_rsa
+hostType=linux
+dataStoreName=MONGO
+installPath=gns
+javaCommand=java -ea
