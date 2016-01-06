@@ -463,14 +463,20 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void killAllServers(String hostname, boolean runAsRoot) {
-    System.out.println("Killing GNS servers");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
+	  try
+	  {
+		  System.out.println("Killing GNS servers");
+		  ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
             //runAsRoot,
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + gnsJarFileName + "\""
-    );
-    //"#!/bin/bash\nkillall java");
+            );
+		  //"#!/bin/bash\nkillall java");
+	  } catch(Exception | Error ex)
+	  {
+		  ex.printStackTrace();
+	  }
   }
 
   /**
