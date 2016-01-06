@@ -49,8 +49,7 @@ public class ExecuteBash {
       argumentList.append(arg.toString());
     }
     //SSHClient.execWithSudoNoPass(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString());
-    //SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString(), withSudo, null);
-    SSHClient.exec(username, host, keyFile, "bash " + scriptName + argumentList.toString(), withSudo, null);
+    SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString(), withSudo, null);
   }
   
   public static void executeBashScriptWithSudoNoPass(String username, String host, File keyFile, String scriptName, String command, Object... arguments) {
@@ -61,8 +60,7 @@ public class ExecuteBash {
       argumentList.append(" ");
       argumentList.append(arg.toString());
     }
-    //SSHClient.execWithSudoNoPass(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString());
-    SSHClient.execWithSudoNoPass(username, host, keyFile, "bash " + scriptName + argumentList.toString());
+    SSHClient.execWithSudoNoPass(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString());
     //SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString(), withSudo, null);
   }
 
@@ -74,8 +72,7 @@ public class ExecuteBash {
       argumentList.append(" ");
       argumentList.append(arg.toString());
     }
-    //SSHClient.exec(username, host, keyFile, "bash " + FILESEPARATOR + scriptName + argumentList.toString());
-    SSHClient.exec(username, host, keyFile, "bash " + scriptName + argumentList.toString());
+    SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString());
   }
 
   /**
