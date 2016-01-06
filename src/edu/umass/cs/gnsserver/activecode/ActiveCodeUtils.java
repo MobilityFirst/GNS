@@ -168,9 +168,8 @@ public class ActiveCodeUtils {
 		Arrays.fill(buffer, (byte) 0);
 		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
 		try{
-			socket.receive(pkt);			
-			byte[] data = pkt.getData();
-			ByteArrayInputStream in = new ByteArrayInputStream(data);
+			socket.receive(pkt);
+			ByteArrayInputStream in = new ByteArrayInputStream(pkt.getData());
 			ObjectInputStream is = new ObjectInputStream(in);			 
 			acm = (ActiveCodeMessage) is.readObject();			
 		}catch(IOException e){

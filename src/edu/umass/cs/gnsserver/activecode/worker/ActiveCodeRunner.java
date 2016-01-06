@@ -147,9 +147,13 @@ public class ActiveCodeRunner {
       // Create a guid + action pair
       String codeId = guid + "_" + action;
       // Update the script context if needed
-      updateCache(codeId, code);
+      //updateCache(codeId, code);
+      
       // Set the context
-      ScriptContext sc = contexts.get(codeId);
+      //ScriptContext sc = contexts.get(codeId);
+      
+      ScriptContext sc = new SimpleScriptContext();
+      engine.eval(code, sc);      
       engine.setContext(sc);
 
       // Run the code
