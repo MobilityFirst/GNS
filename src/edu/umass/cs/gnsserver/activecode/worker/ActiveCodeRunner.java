@@ -154,7 +154,7 @@ public class ActiveCodeRunner {
       
       // Set the context
       ScriptContext sc = contexts.get(codeId);      
-      engine.eval(code, sc);      
+      //engine.eval(code, sc);      
       engine.setContext(sc);
 
       // Run the code
