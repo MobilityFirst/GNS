@@ -814,7 +814,7 @@ public class GNSInstaller {
    * The thread we use to run a copy of the updater for each host we're updating.
    */
   private static class UpdateThread extends Thread {
-
+	  
     private final String hostname;
     private final String nsId;
     private final boolean createLNS;
@@ -845,10 +845,15 @@ public class GNSInstaller {
     @Override
     public void run() {
       try {
+    	  
         GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase,
                 lnsHostsFile, nsHostsFile, scriptFile, runAsRoot, noopTest);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
+      }
+      catch(Exception | Error ex)
+      {
+    	  ex.printStackTrace();
       }
     }
   }
