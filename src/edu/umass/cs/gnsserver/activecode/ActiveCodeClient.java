@@ -95,7 +95,6 @@ public class ActiveCodeClient {
 		return port;
 	}
 	
-	
 	/**
 	 * Starts an active code worker and waits for it to accept requests
 	 * @return true if successful
