@@ -290,7 +290,7 @@ public class GNSInstaller {
         makeInstallDir(hostname);
       }
       System.out.println("Kill servers start "+runAsRoot);
-      //killAllServers(hostname, runAsRoot);
+      killAllServers(hostname, runAsRoot);
       System.out.println("Kill servers complete");
       if (scriptFile != null) {
     	  System.out.println("Executing script file");
@@ -470,7 +470,8 @@ public class GNSInstaller {
             //runAsRoot,
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
-            + "pkill -f \"" + gnsJarFileName + "\""
+            //+ "pkill -f \"" + gnsJarFileName + "\""
+            + "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | awk '{print $2}'`"
             );
 		  //"#!/bin/bash\nkillall java");
 	  } catch(Exception | Error ex)
