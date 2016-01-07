@@ -1,5 +1,4 @@
 /*
- *
  *  Copyright (c) 2015 University of Massachusetts
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you
@@ -7,7 +6,7 @@
  *  may obtain a copy of the License at
  *
  *  http://www.apache.org/licenses/LICENSE-2.0
- *
+ *  
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
@@ -50,7 +49,7 @@ public class ExecuteBash {
     }
     //SSHClient.execWithSudoNoPass(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString());
     //SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString(), withSudo, null);
-    SSHClient.exec(username, host, keyFile, FILESEPARATOR + scriptName + argumentList.toString(), withSudo, null);
+    SSHClient.exec(username, host, keyFile, "bash " + scriptName + argumentList.toString(), withSudo, null);
   }
   
   public static void executeBashScriptWithSudoNoPass(String username, String host, File keyFile, String scriptName, String command, Object... arguments) {
@@ -62,7 +61,7 @@ public class ExecuteBash {
       argumentList.append(arg.toString());
     }
     //SSHClient.execWithSudoNoPass(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString());
-    SSHClient.execWithSudoNoPass(username, host, keyFile, FILESEPARATOR + scriptName + argumentList.toString());
+    SSHClient.execWithSudoNoPass(username, host, keyFile, "bash " + scriptName + argumentList.toString());
     //SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString(), withSudo, null);
   }
 
@@ -75,7 +74,7 @@ public class ExecuteBash {
       argumentList.append(arg.toString());
     }
     //SSHClient.exec(username, host, keyFile, "." + FILESEPARATOR + scriptName + argumentList.toString());
-    SSHClient.exec(username, host, keyFile, FILESEPARATOR + scriptName + argumentList.toString());
+    SSHClient.exec(username, host, keyFile, "bash " + scriptName + argumentList.toString());
   }
 
   /**
@@ -89,18 +88,38 @@ public class ExecuteBash {
   }
 
   public static void main(String[] arg) {
-    ExecuteBash.executeBashScript("ec2-user", "23.21.160.80",
-            new File("/Users/westy/.ssh/aws.pem"),
-            true,
-            "test.sh",
-            "#!/bin/bash\n"
-            + "# make current directory the directory this script is in\n"
-            + "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"\n"
-            + "cd $DIR\n"
-            + "if [ -f testfile ]; then\n"
-            + "mv --backup=numbered testfile testfile.save\n"
-            + "fi\n"
-            + "touch testfile\n");
+//    ExecuteBash.executeBashScript("ec2-user", "23.21.160.80",
+//            new File("/Users/westy/.ssh/aws.pem"),
+//            true,
+//            "test.sh",
+//            "#!/bin/bash\n"
+//            + "# make current directory the directory this script is in\n"
+//            + "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"\n"
+//            + "cd $DIR\n"
+//            + "if [ -f testfile ]; then\n"
+//            + "mv --backup=numbered testfile testfile.save\n"
+//            + "fi\n"
+//            + "touch testfile\n");
+    
+    
+	  ExecuteBash.executeBashScriptNoSudo("ayadavum", "serv0.singlenodetest.mobilityfirst.emulab.net",
+			  new File("/home/adipc/privatekey/skuldKey"), 
+			  "/home/GNSDir/killAllServers.sh", "pkill -f \"GNS.jar\"");
+	  
+	  System.out.println("Kill complete");
+	
+//    ExecuteBash.executeBashScript("ayadavum", "serv0.singlenodetest.mobilityfirst.emulab.net",
+//    		new File("/home/adipc/privatekey/skuldKey"),
+//            false,
+//            "/home/GNSDir/test.sh",
+//            "#!/bin/bash\n"
+//            + "# make current directory the directory this script is in\n"
+//            + "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"\n"
+//            + "cd $DIR\n"
+//            + "if [ -f testfile ]; then\n"
+//            + "mv --backup=numbered testfile testfile.save\n"
+//            + "fi\n"
+//            + "touch testfile\n");
 
   }
 }

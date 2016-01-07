@@ -289,7 +289,7 @@ public class GNSInstaller {
       if (action == InstallerAction.UPDATE) {
         makeInstallDir(hostname);
       }
-      System.out.println("Kill servers start");
+      System.out.println("Kill servers start "+runAsRoot);
       killAllServers(hostname, runAsRoot);
       System.out.println("Kill servers complete");
       if (scriptFile != null) {
