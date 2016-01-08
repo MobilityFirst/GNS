@@ -34,6 +34,7 @@ public class CapacityTestClient {
     private static long start = 0;
     protected static int TOTAL_SECOND = 1;
     private static final int NUM_CLIENT = 10;
+    private static final int DURATION = 30; 
     
     private static int failed = 0;
     
@@ -190,7 +191,7 @@ public class CapacityTestClient {
 			//System.out.println("It takes "+elapsed+"ms to send a read request.");
 		}
 		
-		int TOTAL = rate * 150;
+		int TOTAL = rate * DURATION;
 		
 		System.out.println("1st run");
 		start = System.currentTimeMillis();
