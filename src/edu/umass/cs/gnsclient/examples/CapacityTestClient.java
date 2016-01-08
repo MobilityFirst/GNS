@@ -218,7 +218,7 @@ public class CapacityTestClient {
     	}
     	Collections.sort(latency);
     	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000+"ms");
+    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	System.out.println("The start point is:"+(start/1000));
     	
     	
@@ -251,7 +251,7 @@ public class CapacityTestClient {
 
     	Collections.sort(latency);
     	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000+"ms");
+    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	System.out.println("The start point is:"+(start/1000));
     	
     	// connect to none server and inform it's done
