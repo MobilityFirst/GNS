@@ -10,7 +10,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to do a fair queue across all the GUIDs
@@ -24,7 +23,7 @@ public class ActiveCodeScheduler implements Runnable{
 	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
 	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
-	private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
+	//private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
@@ -48,7 +47,7 @@ public class ActiveCodeScheduler implements Runnable{
 			if (futureTask != null){
 				//for instrument only
 				executorPool.execute(futureTask);
-				DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
+				//DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 			}
 		}
 	}
@@ -113,7 +112,7 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
-		timeMap.put(futureTask, System.nanoTime());
+		//timeMap.put(futureTask, System.nanoTime());
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);
