@@ -190,7 +190,7 @@ public class CapacityTestClient {
 			//System.out.println("It takes "+elapsed+"ms to send a read request.");
 		}
 		
-		int TOTAL = rate * 30;
+		int TOTAL = rate * 150;
 		
 		System.out.println("1st run");
 		start = System.currentTimeMillis();
@@ -240,7 +240,7 @@ public class CapacityTestClient {
     	TOTAL = TOTAL * fraction / NUM_CLIENT;
     	
     	System.out.println("There are "+TOTAL+" requests.");
-    	while(latency.size() != TOTAL){
+    	while((latency.size()+failed) != TOTAL){
     		
     		System.out.println("Received "+latency.size()+" messages totally");
     		try{
