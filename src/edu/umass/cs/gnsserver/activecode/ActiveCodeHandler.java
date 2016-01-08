@@ -159,13 +159,12 @@ public class ActiveCodeHandler {
 		// If the guid is blacklisted, just return immediately
 		if(isBlacklisted(guid)) {
 			//System.out.println("Guid " + guid + " is blacklisted from running code!");
-			return valuesMap;
+			//return valuesMap;
 		}
 		
 		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
-		//FIXME: this toString method takes too much time
 		String values = valuesMap.toString();
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
@@ -180,11 +179,11 @@ public class ActiveCodeHandler {
 			result = futureTask.get();
 		} catch (ExecutionException e) {
 			//System.out.println("Added " + guid + " to blacklist!");
-			addToBlacklist(guid);
+			//addToBlacklist(guid);
 			System.out.println("Execution");
 			//e.printStackTrace();
 		} catch (CancellationException e){
-			addToBlacklist(guid);
+			//addToBlacklist(guid);
 			System.out.println("Cancellation");
 			// Exception because of being cancelled
 			// ActiveCodeClient client = clientPool.getClient(guard.getThread(futureTask).getId());

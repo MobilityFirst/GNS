@@ -33,7 +33,7 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 10;
     private static long start = 0;
     protected static int TOTAL_SECOND = 1;
-    private static final int NUM_CLIENT = 10;
+    private static final int NUM_CLIENT = 20;
     
     private static int failed = 0;
     
@@ -201,10 +201,10 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	TOTAL = TOTAL * fraction / NUM_CLIENT;
+    	int TOTAL_NORMAL = TOTAL * fraction / NUM_CLIENT;
     	
     	System.out.println("There are "+TOTAL+" requests.");
-    	while(latency.size() != TOTAL){
+    	while((latency.size()+failed) != TOTAL_NORMAL){
     		
     		System.out.println("Received "+latency.size()+" messages totally");
     		try{
@@ -237,10 +237,10 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	TOTAL = TOTAL * fraction / NUM_CLIENT;
+    	TOTAL_NORMAL = TOTAL * fraction / NUM_CLIENT;
     	
     	System.out.println("There are "+TOTAL+" requests.");
-    	while((latency.size()+failed) != TOTAL){
+    	while((latency.size()+failed) != TOTAL_NORMAL){
     		
     		System.out.println("Received "+latency.size()+" messages totally");
     		try{
