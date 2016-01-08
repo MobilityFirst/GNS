@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -83,7 +84,7 @@ public class CapacityTestClient {
     private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction, UniversalTcpClient client){
     	int reqPerClient = numRequest / NUM_CLIENT;
     	RateLimiter r = new RateLimiter(rate);
-    	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" clients...");
+    	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" guid...");
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
     			if(j < fraction){
@@ -215,13 +216,9 @@ public class CapacityTestClient {
     		}
     		
     	}
-
-    	long total = 0;
-    	for(long t:latency){
-    		total += t;
-    	}
+    	Collections.sort(latency);
     	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The average latency is "+total/latency.size()+"ms");
+    	System.out.println("The median latency is "+latency.get(latency.size()/2)+"ms");
     	System.out.println("The start point is:"+(start/1000));
     	
     	
@@ -252,12 +249,9 @@ public class CapacityTestClient {
     		
     	}
 
-    	total = 0;
-    	for(long t:latency){
-    		total += t;
-    	}
+    	Collections.sort(latency);
     	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The average latency is "+total/latency.size()+"ms");
+    	System.out.println("The median latency is "+latency.get(latency.size()/2)+"ms");
     	System.out.println("The start point is:"+(start/1000));
     	
     	// connect to none server and inform it's done
