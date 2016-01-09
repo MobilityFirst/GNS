@@ -85,6 +85,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 			}
 		}
 		
+		System.out.println("Task is about to finish "+r);
 		if(r instanceof FutureTask<?>){
 			this.guard.removeThread((FutureTask<ValuesMap>) r);
 		}

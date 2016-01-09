@@ -52,6 +52,7 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeClient {
 	private int serverPort;
+	private boolean readyToRun = false;
 	private Process process;
 	private final GnsApplicationInterface<?> app;
 	private DatagramSocket clientSocket;
@@ -135,6 +136,8 @@ public class ActiveCodeClient {
 			e.printStackTrace();
 			return false;
 		}
+		
+		release();
 		
 		return true;
 	}  
@@ -261,7 +264,16 @@ public class ActiveCodeClient {
         DelayProfiler.updateDelayNano("communication", startTime);
         return vm;
 	}
-
+	
+	private synchronized void release(){
+		this.readyToRun = true;
+		this.notify();
+	}
+	
+	public boolean isReady(){
+		return readyToRun;
+	}
+	
 	/**
 	 * Cleanly shuts down the worker
 	 */
@@ -284,6 +296,6 @@ public class ActiveCodeClient {
 		startServer();
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms to restart this worker.");
-		
+		System.out.println("The client being stopped is "+ this.serverPort);
 	}
 }
