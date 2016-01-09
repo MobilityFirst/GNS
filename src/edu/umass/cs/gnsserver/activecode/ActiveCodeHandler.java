@@ -181,17 +181,21 @@ public class ActiveCodeHandler {
 			//System.out.println("Added " + guid + " to blacklist!");
 			//addToBlacklist(guid);
 			System.out.println("Execution");
-			//e.printStackTrace();
+			scheduler.finish(guid);
+			return valuesMap;
 		} catch (CancellationException e){
 			//addToBlacklist(guid);
 			System.out.println("Cancellation");
+			scheduler.finish(guid);
+			return valuesMap;
 			// Exception because of being cancelled
 			// ActiveCodeClient client = clientPool.getClient(guard.getThread(futureTask).getId());
 			// Restart the server of the corresponding thread
 			// client.restartServer();
 		} catch (Exception e){
 			System.out.println("Other");
-			e.printStackTrace();
+			scheduler.finish(guid);
+			return valuesMap;
 		}
 		
 		scheduler.finish(guid);
