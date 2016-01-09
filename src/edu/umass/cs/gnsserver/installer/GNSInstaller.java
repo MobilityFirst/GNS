@@ -471,7 +471,7 @@ public class GNSInstaller {
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
             //+ "pkill -f \"" + gnsJarFileName + "\""
-            + "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | awk \\'{print \\$2}\\'`"
+            + "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | awk \"{print \\$2}\"`"
             );
 		  //"#!/bin/bash\nkillall java");
 	  } catch(Exception | Error ex)
