@@ -96,6 +96,18 @@ public class ActiveCodeClient {
 		return port;
 	}
 	
+	public static int getOpenUDPPort() {
+		int port = 0;
+		try{
+			DatagramSocket serverSocket = new DatagramSocket(0);
+			port = serverSocket.getLocalPort();
+			serverSocket.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return port;
+	}
+	
 	/**
 	 * Starts an active code worker and waits for it to accept requests
 	 * @return true if successful
@@ -103,7 +115,7 @@ public class ActiveCodeClient {
 	public boolean startServer() {
 		try {
 			List<String> command = new ArrayList<>();
-			serverPort = getOpenPort();
+			serverPort = getOpenUDPPort();
 
 			// Get the current classpath
 			String classpath = System.getProperty("java.class.path");
