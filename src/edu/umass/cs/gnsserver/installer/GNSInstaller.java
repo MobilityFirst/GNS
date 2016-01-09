@@ -463,22 +463,23 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void killAllServers(String hostname, boolean runAsRoot) {
-	  try
+	  // kill not working on emulab
+	  /*try
 	  {
 		  System.out.println("Killing GNS servers");
 		  ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
             //runAsRoot,
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
-            //+ "pkill -f \"" + gnsJarFileName + "\""
+            + "pkill -f \"" + gnsJarFileName + "\""
             //+ "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | awk \"{print \\$2}\"`"
-            + "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | cut -d \" \" -f2`"
+           // + "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | cut -d \" \" -f2`"
             );
 		  //"#!/bin/bash\nkillall java");
 	  } catch(Exception | Error ex)
 	  {
 		  ex.printStackTrace();
-	  }
+	  }*/
   }
 
   /**

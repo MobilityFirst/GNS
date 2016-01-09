@@ -97,7 +97,7 @@ public class SSHClient {
 //      }
 
       // ??? NOT SURE WHY THIS IS HERE
-      //channel.setInputStream(null);
+      channel.setInputStream(null);
 
       InputStream in = channel.getInputStream();
 
