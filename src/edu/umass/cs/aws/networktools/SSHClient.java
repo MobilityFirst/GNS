@@ -97,7 +97,7 @@ public class SSHClient {
 //      }
 
       // ??? NOT SURE WHY THIS IS HERE
-      channel.setInputStream(null);
+      //channel.setInputStream(null);
 
       InputStream in = channel.getInputStream();
 
@@ -123,6 +123,7 @@ public class SSHClient {
 
       byte[] tmp = new byte[MAXCOMMANDBYTES];
       while (true) {
+    	  System.out.println("in reading while");
         while (in.available() > 0) {
           int i = in.read(tmp, 0, MAXCOMMANDBYTES);
           if (i < 0) {
