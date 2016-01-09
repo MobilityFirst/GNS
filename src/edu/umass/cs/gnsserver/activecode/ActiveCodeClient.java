@@ -268,6 +268,7 @@ public class ActiveCodeClient {
 	private synchronized void release(){
 		this.readyToRun = true;
 		this.notify();
+		System.out.println("release the client");
 	}
 	
 	public boolean isReady(){

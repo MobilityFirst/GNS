@@ -63,6 +63,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     			}
     		}
     	}
+    	System.out.println("Get the worker!" + client);
     	if(acp != null) {
     		result = client.runActiveCode(acp, false);
     	}
