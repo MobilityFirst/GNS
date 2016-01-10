@@ -29,10 +29,10 @@ public class ActiveCodeGuardian implements Runnable {
 				
 				for(FutureTask<ValuesMap> task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
-						ActiveCodeClient client = this.clientPool.getClient(getThread(task).getId());
-						client.restartServer();
+						ActiveCodeClient client = this.clientPool.getClient(getThread(task).getId());						
 						task.cancel(true);
-						removeThread(task);
+						client.restartServer();
+						//removeThread(task);
 					}
 				}		
 			}
