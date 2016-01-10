@@ -205,7 +205,7 @@ public class CapacityTestClient {
     	
     	int TOTAL_NORMAL = TOTAL * fraction / NUM_CLIENT;
     	
-    	System.out.println("There are "+TOTAL+" requests.");
+    	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) != TOTAL_NORMAL){
     		
     		System.out.println("Received "+latency.size()+" messages totally");
@@ -237,7 +237,7 @@ public class CapacityTestClient {
     	
     	TOTAL_NORMAL = TOTAL * fraction / NUM_CLIENT;
     	
-    	System.out.println("There are "+TOTAL+" requests.");
+    	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) != TOTAL_NORMAL){
     		
     		System.out.println("Received "+latency.size()+" messages totally");

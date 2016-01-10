@@ -46,6 +46,7 @@ public class ActiveCodeScheduler implements Runnable{
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			if (futureTask != null){
 				//for instrument only
+				System.out.println("66666666666666666>> To execute task "+futureTask);
 				executorPool.execute(futureTask);
 				//DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 			}
@@ -112,7 +113,7 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
-		//timeMap.put(futureTask, System.nanoTime());
+		System.out.println("Submit task to run "+futureTask+" by guid "+guid);
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);
