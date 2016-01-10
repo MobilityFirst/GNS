@@ -150,7 +150,7 @@ public class ActiveCodeClient {
 			return false;
 		}
 		
-		release();
+		//release();
 		
 		return true;
 	}  

@@ -37,12 +37,10 @@ public class CreateMultiGuidClient {
 		int fraction = NUM_CLIENT - Integer.parseInt(args[2]);
 		boolean flag = Boolean.parseBoolean(args[3]);
 		
-		String code = new String(Files.readAllBytes(Paths.get(filename)));		
 		//Read in the code and serialize
+		String code = new String(Files.readAllBytes(Paths.get(filename)));
 		String code64 = Base64.encodeToString(code.getBytes("utf-8"), true);
-		
-		String mal_code = new String(Files.readAllBytes(Paths.get(mal_file)));
-		
+		String mal_code = new String(Files.readAllBytes(Paths.get(mal_file)));		
 		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 				
 		client = new UniversalTcpClient(address, 24398, true);
@@ -80,8 +78,6 @@ public class CreateMultiGuidClient {
 		    	System.out.println("Request timed out!");
 		    }
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
-		    
-		    
 		}
 		System.exit(0);
 	}
