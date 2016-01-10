@@ -54,13 +54,9 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	
     	ActiveCodeClient client = clientPool.getClient(pid);
     	ValuesMap result = null;
-    	while(!client.isReady()){
-    		synchronized(client){
-    			try{
-    				client.wait();
-    			}catch(InterruptedException e){
-    				e.printStackTrace();
-    			}
+    	synchronized(client){
+    		while(!client.isReady()){   		
+    			client.waitLock();
     		}
     	}
     	System.out.println("Get the worker!" + client);

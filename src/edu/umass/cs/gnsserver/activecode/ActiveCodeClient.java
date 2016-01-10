@@ -19,17 +19,15 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,12 +49,15 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
+	protected Lock lock = new ReentrantLock();
+	
 	private int serverPort;
 	private boolean readyToRun = false;
 	private Process process;
 	private final GnsApplicationInterface<?> app;
 	private DatagramSocket clientSocket;
 	private byte[] buffer = new byte[8096*10];
+	
 	
 	/**
 	 * @param app the gns app
@@ -279,11 +280,19 @@ public class ActiveCodeClient {
 	
 	private synchronized void release(){
 		this.readyToRun = true;
-		this.notify();
+		this.lock.notify();
 		System.out.println("release the client");
 	}
 	
-	public boolean isReady(){
+	protected void waitLock(){
+		try{
+			lock.wait();
+		}catch(InterruptedException e){
+			e.printStackTrace();
+		}
+	}
+	
+	protected boolean isReady(){
 		return readyToRun;
 	}
 	
