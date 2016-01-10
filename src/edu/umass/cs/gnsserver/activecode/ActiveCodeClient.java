@@ -26,8 +26,6 @@ import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,7 +47,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
-	protected Lock lock = new ReentrantLock();
+	//protected Lock lock = new ReentrantLock();
 	
 	private int serverPort;
 	private boolean readyToRun = false;
@@ -97,7 +95,7 @@ public class ActiveCodeClient {
 		return port;
 	}
 	
-	public static int getOpenUDPPort() {
+	protected static int getOpenUDPPort() {
 		int port = 0;
 		try{
 			DatagramSocket serverSocket = new DatagramSocket(0);
@@ -278,23 +276,6 @@ public class ActiveCodeClient {
         return vm;
 	}
 	
-	private void release(){
-		synchronized(lock){
-			this.readyToRun = true;
-			this.lock.notify();
-		}
-		System.out.println("release the client");
-	}
-	
-	protected void waitLock(){
-		synchronized(lock){
-			try{
-				lock.wait();
-			}catch(InterruptedException e){
-				e.printStackTrace();
-			}
-		}
-	}
 	
 	protected boolean isReady(){
 		return readyToRun;

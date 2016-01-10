@@ -58,6 +58,7 @@ public class CapacityTestClient {
      
     protected synchronized static void clearLatency(){
     	CapacityTestClient.latency.clear();
+    	failed = 0;
     }
     
     protected synchronized static int num_received(){	
@@ -208,7 +209,7 @@ public class CapacityTestClient {
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) != TOTAL_NORMAL){
     		
-    		System.out.println("Received "+latency.size()+" messages totally");
+    		System.out.println("Received "+(latency.size()+failed)+" messages totally");
     		try{
     			Thread.sleep(1000);
     		}catch(Exception e){
@@ -240,7 +241,7 @@ public class CapacityTestClient {
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) != TOTAL_NORMAL){
     		
-    		System.out.println("Received "+latency.size()+" messages totally");
+    		System.out.println("Received "+(latency.size()+failed)+" messages totally");
     		try{
     			Thread.sleep(1000);
     		}catch(Exception e){
