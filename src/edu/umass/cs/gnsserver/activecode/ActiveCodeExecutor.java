@@ -54,7 +54,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	
 	@Override
 	public void beforeExecute(Thread t, Runnable r){
-		System.out.println("Get a thread to run "+t);
+		System.out.println("777777777777777777>>Get a thread to run "+t);
 		if(r instanceof FutureTask<?>){
 			this.guard.registerThread((FutureTask<ValuesMap>) r, t);
 		}	
@@ -85,7 +85,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 			}
 		}
 		
-		//System.out.println("999999999999999999999999999>>>>> Task is about to finish "+r);
+		System.out.println("999999999999999999999999999>>>>> Task is about to finish "+r);
 		if(r instanceof FutureTask<?>){
 			this.guard.removeThread((FutureTask<ValuesMap>) r);
 		}		

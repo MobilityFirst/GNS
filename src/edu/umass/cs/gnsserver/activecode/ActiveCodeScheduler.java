@@ -35,7 +35,8 @@ public class ActiveCodeScheduler implements Runnable{
 	
 	public void run(){		
 		while(true){
-			while(executorPool.getQueue().remainingCapacity()<=0 || guidList.isEmpty()){
+			//executorPool.getQueue().remainingCapacity()<=0
+			while(executorPool.getActiveCount() < executorPool.getPoolSize() || guidList.isEmpty()){
 				synchronized (lock){
 					try{
 						lock.wait();
@@ -47,7 +48,8 @@ public class ActiveCodeScheduler implements Runnable{
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			if (futureTask != null){
 				//for instrument only
-				//System.out.println("66666666666666666>> To execute task "+futureTask+", there are "+executorPool.getQueue().remainingCapacity()+" threads left.");
+				System.out.println("66666666666666666>> To execute task "+futureTask+", there are "+executorPool.getActiveCount()
+				+" threads running, and there are "+executorPool.getPoolSize()+" threads.");
 				executorPool.execute(futureTask);
 				DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 			}
@@ -114,7 +116,7 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
-		//System.out.println("Submit task to run "+futureTask+" by guid "+guid);
+		System.out.println("Submit task to run "+futureTask+" by guid "+guid);
 		timeMap.put(futureTask, System.nanoTime());
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
