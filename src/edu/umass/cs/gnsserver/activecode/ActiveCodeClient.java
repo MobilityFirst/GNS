@@ -278,9 +278,11 @@ public class ActiveCodeClient {
         return vm;
 	}
 	
-	private synchronized void release(){
-		this.readyToRun = true;
-		this.lock.notify();
+	private void release(){
+		synchronized(lock){
+			this.readyToRun = true;
+			this.lock.notify();
+		}
 		System.out.println("release the client");
 	}
 	
