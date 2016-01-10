@@ -10,6 +10,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to do a fair queue across all the GUIDs
@@ -23,7 +24,7 @@ public class ActiveCodeScheduler implements Runnable{
 	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
 	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
-	//private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
+	private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
@@ -46,9 +47,9 @@ public class ActiveCodeScheduler implements Runnable{
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			if (futureTask != null){
 				//for instrument only
-				System.out.println("66666666666666666>> To execute task "+futureTask+", there are "+executorPool.getQueue().remainingCapacity()+" threads left.");
+				//System.out.println("66666666666666666>> To execute task "+futureTask+", there are "+executorPool.getQueue().remainingCapacity()+" threads left.");
 				executorPool.execute(futureTask);
-				//DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
+				DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 			}
 		}
 	}
@@ -113,7 +114,8 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
-		System.out.println("Submit task to run "+futureTask+" by guid "+guid);
+		//System.out.println("Submit task to run "+futureTask+" by guid "+guid);
+		timeMap.put(futureTask, System.nanoTime());
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);
