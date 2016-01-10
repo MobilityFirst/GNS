@@ -287,10 +287,12 @@ public class ActiveCodeClient {
 	}
 	
 	protected void waitLock(){
-		try{
-			lock.wait();
-		}catch(InterruptedException e){
-			e.printStackTrace();
+		synchronized(lock){
+			try{
+				lock.wait();
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
 		}
 	}
 	
