@@ -86,7 +86,7 @@ public class ActiveCodeHandler {
 	    // Start the processes
 	    executorPool.prestartAllCoreThreads();
 	    System.out.println("##################### All threads have been started! ##################");
-	    System.out.println("There are "+executorPool.getActiveCount() + "threads running, and " + executorPool.getPoolSize()+" threads available.");
+	    //System.out.println("There are "+executorPool.getActiveCount() + " threads running, and " + executorPool.getPoolSize()+" threads available.");
 	    
 	    scheduler = new ActiveCodeScheduler(executorPool);
 	    (new Thread(scheduler)).start();
