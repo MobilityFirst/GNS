@@ -32,7 +32,7 @@ public class ActiveCodeGuardian implements Runnable {
 						ActiveCodeClient client = this.clientPool.getClient(getThread(task).getId());						
 						task.cancel(true);
 						client.restartServer();
-						removeThread(task);
+						//removeThread(task);
 					}
 				}		
 			}

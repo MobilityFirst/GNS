@@ -54,10 +54,10 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	
 	@Override
 	public void beforeExecute(Thread t, Runnable r){
+		super.beforeExecute(t, r);
 		if(r instanceof FutureTask<?>){
 			this.guard.registerThread((FutureTask<ValuesMap>) r, t);
-		}	
-		super.beforeExecute(t, r);
+		}			
 	}
 	
 		
@@ -67,9 +67,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	 * https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html#afterExecute(java.lang.Runnable,%20java.lang.Throwable)
 	 */
         @Override
-	protected void afterExecute(Runnable r, Throwable t) {
-		super.afterExecute(r, t);
-		
+	protected void afterExecute(Runnable r, Throwable t) {		
 		if (t == null && r instanceof Future<?>) {
 			try {
 				Future<?> future = (Future<?>) r;
@@ -89,5 +87,6 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 		if(r instanceof FutureTask<?>){
 			this.guard.removeThread((FutureTask<ValuesMap>) r);
 		}
+		super.afterExecute(r, t);
 	}
 }
