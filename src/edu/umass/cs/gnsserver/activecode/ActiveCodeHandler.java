@@ -79,7 +79,7 @@ public class ActiveCodeHandler {
 	    threadFactory = new ActiveCodeThreadFactory(clientPool);
 	    // Create the ThreadPoolExecutor
 	    executorPool = new ActiveCodeExecutor(numProcesses, numProcesses, 0, TimeUnit.SECONDS, 
-	    		new LinkedBlockingQueue<Runnable>(1000), 
+	    		new LinkedBlockingQueue<Runnable>(), 
 	    		//new SynchronousQueue<Runnable>(),
 	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy(),
 	    		guard);

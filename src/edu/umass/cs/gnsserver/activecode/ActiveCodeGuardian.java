@@ -28,7 +28,7 @@ public class ActiveCodeGuardian implements Runnable {
 				long now = System.currentTimeMillis();
 				
 				for(FutureTask<ValuesMap> task:tasks.keySet()){
-					if (now - tasks.get(task) > 1000){
+					if (now - tasks.get(task) > 200){
 						ActiveCodeClient client = this.clientPool.getClient(getThread(task).getId());						
 						task.cancel(true);
 						client.restartServer();
