@@ -58,7 +58,7 @@ public class SequentialRequestClient {
 		      System.exit(1);
 		}
 		
-		String guid = client.lookupGuid("test"+ACCOUNT_ALIAS);
+		//String guid = client.lookupGuid("test"+ACCOUNT_ALIAS);
 		
 		JSONObject json = new JSONObject("{\"hi\":\"hello\", \"hehe\":\"hello\"}");
 		client.update(guidAccount, json);
@@ -69,9 +69,9 @@ public class SequentialRequestClient {
 		client.fieldUpdate(guidAccount.getGuid(), "hi", str, guidAccount);
 		//String result = client.fieldRead(guidAccount, "hi");
 		//System.out.println("The response after setting active code is "+result.length());
-		client.activeCodeClear(guid, "read", guidAccount);
+		client.activeCodeClear(guidAccount.getGuid(), "read", guidAccount);
 	    if(flag){
-		    client.activeCodeSet(guid, "read", code64, guidAccount);
+		    client.activeCodeSet(guidAccount.getGuid(), "read", code64, guidAccount);
 	    }
 	    //result = client.fieldRead(guidAccount, "hi");
 	    
