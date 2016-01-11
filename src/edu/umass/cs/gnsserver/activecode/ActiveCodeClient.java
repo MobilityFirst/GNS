@@ -119,7 +119,7 @@ public class ActiveCodeClient {
 			// Get the current classpath
 			String classpath = System.getProperty("java.class.path");
 			
-			//ServerSocket listener = new ServerSocket(0);
+			ServerSocket listener = new ServerSocket(0);
 			
 		    command.add("java");
 		    command.add("-Xms64m");
@@ -129,6 +129,7 @@ public class ActiveCodeClient {
 		    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
 		    command.add(Integer.toString(serverPort));
 		    command.add(Integer.toString(clientSocket.getLocalPort()));
+		    command.add(Integer.toString(listener.getLocalPort()));
 		    
 		    ProcessBuilder builder = new ProcessBuilder(command);
 			builder.directory(new File(System.getProperty("user.dir")));
@@ -140,8 +141,8 @@ public class ActiveCodeClient {
 			process = builder.start();
 						
 			// Now we wait for the worker to notify us that it is ready
-			//listener.accept();
-			//listener.close();
+			listener.accept();
+			listener.close();
 			
 		} catch (Exception e) {
 			e.printStackTrace();

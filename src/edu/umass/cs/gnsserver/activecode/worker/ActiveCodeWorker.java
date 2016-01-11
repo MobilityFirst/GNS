@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.Socket;
 
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -49,7 +50,7 @@ public class ActiveCodeWorker {
 	 * Starts the worker listener
 	 * @throws IOException
 	 */
-	public void run() throws IOException {	
+	public void run(int readyPort) throws IOException {	
         //ServerSocket listener = new ServerSocket(port);
 		
         ActiveCodeRunner runner = new ActiveCodeRunner();
@@ -57,13 +58,11 @@ public class ActiveCodeWorker {
         try {
         	RequestHandler handler = new RequestHandler(runner, this.clientPort);
         	boolean keepGoing = true;
-        	/*
-        	if(callbackPort != -1){
-        		// Notify the server that we are ready
-        		Socket temp = new Socket("0.0.0.0", callbackPort);
-        		temp.close();
-        	}
-        	*/
+
+    		// Notify the server that we are ready
+    		Socket temp = new Socket("0.0.0.0", readyPort);
+    		temp.close();
+        	
             while (keepGoing) {
             	//Socket s = listener.accept();
             	keepGoing = handler.handleRequest(serverSocket);
@@ -88,13 +87,14 @@ public class ActiveCodeWorker {
 	 */
 	public static void main(String[] args) throws IOException  {
 		
-		int port = 0, callbackPort = -1;
+		int port = 0, callbackPort = -1, readyPort = -1;
 		
-		if(args.length == 2) {
+		if(args.length == 3) {
 			port = Integer.parseInt(args[0]);
 			callbackPort = Integer.parseInt(args[1]);
+			readyPort = Integer.parseInt(args[2]);
 			ActiveCodeWorker acs = new ActiveCodeWorker(port, callbackPort);
-			acs.run();
+			acs.run(readyPort);
 		}		
     }
 }
