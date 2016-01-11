@@ -84,6 +84,11 @@ public class SequentialRequestClient {
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);
+	    	try{
+	    		Thread.sleep(5000);
+	    	}catch(InterruptedException e){
+	    		e.printStackTrace();
+	    	}
 	    }
 	    
 	    Collections.sort(latency);
