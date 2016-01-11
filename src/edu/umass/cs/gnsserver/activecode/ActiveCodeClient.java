@@ -328,6 +328,6 @@ public class ActiveCodeClient {
 		startServer();
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms to restart this worker.");
-		System.out.println("The client being stopped is "+ this.serverPort);
+		//System.out.println("The client being stopped is "+ this.serverPort);
 	}
 }

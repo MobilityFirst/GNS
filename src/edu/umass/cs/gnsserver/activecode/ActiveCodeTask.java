@@ -60,7 +60,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     			client.waitLock();
     		}
     	}
-    	System.out.println("Get the worker!" + client);
+    	//System.out.println("Get the worker!" + client);
     	
     	if(acp != null) {
     		result = client.runActiveCode(acp, false);
