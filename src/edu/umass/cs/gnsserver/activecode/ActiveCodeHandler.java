@@ -181,14 +181,12 @@ public class ActiveCodeHandler {
 		} catch (ExecutionException e) {
 			//System.out.println("Added " + guid + " to blacklist!");
 			//addToBlacklist(guid);
-			Thread.currentThread().interrupt();
 			System.out.println("Execution");
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (CancellationException e){
-			//addToBlacklist(guid);
-			Thread.currentThread().interrupt();
-			System.out.println("Cancellation");
+			//addToBlacklist(guid);			
+			System.out.println("Cancellation thread "+Thread.currentThread().getId());
 			scheduler.finish(guid);
 			return valuesMap;
 			// Exception because of being cancelled
@@ -196,7 +194,7 @@ public class ActiveCodeHandler {
 			// Restart the server of the corresponding thread
 			// client.restartServer();
 		} catch (Exception e){
-			Thread.currentThread().interrupt();
+			
 			System.out.println("Other");
 			scheduler.finish(guid);
 			return valuesMap;
