@@ -26,6 +26,8 @@ import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,7 +49,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
-	//protected Lock lock = new ReentrantLock();
+	protected Lock lock = new ReentrantLock();
 	
 	private int serverPort;
 	private boolean readyToRun = false;
@@ -152,7 +154,7 @@ public class ActiveCodeClient {
 			return false;
 		}
 		
-		//release();
+		release();
 		
 		return true;
 	}  
@@ -162,6 +164,7 @@ public class ActiveCodeClient {
 	 * @param acp the parameters to send to the worker
 	 * @param useTimeout whether or not to use the timeout when waiting for a reply
 	 * @return the ValuesMap object returned by the active code
+	 * @exception ActiveCodeException
 	 */
 	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout) throws ActiveCodeException{
 		ActiveCodeMessage acm = new ActiveCodeMessage();
@@ -184,7 +187,7 @@ public class ActiveCodeClient {
 	 * Checks to see if the worker is still running.
 	 * @return true if the worker is still running
 	 */
-	private boolean isRunning() {
+	protected boolean isRunning() {
 		try {
 			process.exitValue();
 		}
@@ -285,6 +288,22 @@ public class ActiveCodeClient {
 		return readyToRun;
 	}
 	
+	protected void waitLock(){
+		synchronized(lock){
+			try{
+				lock.wait();
+			}catch(InterruptedException ie){
+				ie.printStackTrace();
+			}
+		}
+	}
+	
+	protected void release(){
+		synchronized(lock){
+			this.readyToRun = true;
+			lock.notify();
+		}
+	}
 	/**
 	 * Cleanly shuts down the worker
 	 */
@@ -302,9 +321,10 @@ public class ActiveCodeClient {
 	 * Restart the worker stuck with a malicious code
 	 */
 	public void restartServer() {
+		readyToRun = false;
 		long t1 = System.currentTimeMillis();
 		clientSocket.close();
-		process.destroyForcibly();		
+		process.destroyForcibly();
 		startServer();
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms to restart this worker.");

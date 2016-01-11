@@ -58,45 +58,33 @@ public class SequentialRequestClient {
 		      System.exit(1);
 		}
 		
-		//String guid = client.lookupGuid("test"+ACCOUNT_ALIAS);
 		
 		JSONObject json = new JSONObject("{\"hi\":\"hello\", \"hehe\":\"hello\"}");
 		client.update(guidAccount, json);
 		
 		SecureRandom random = new SecureRandom();
 		String str = new BigInteger(size, random).toString(32);
-		//System.out.println("The string length is "+str.length());
 		client.fieldUpdate(guidAccount.getGuid(), "hi", str, guidAccount);
-		//String result = client.fieldRead(guidAccount, "hi");
-		//System.out.println("The response after setting active code is "+result.length());
+		
+		
 		client.activeCodeClear(guidAccount.getGuid(), "read", guidAccount);
 	    if(flag){
 		    client.activeCodeSet(guidAccount.getGuid(), "read", code64, guidAccount);
 	    }
-	    //result = client.fieldRead(guidAccount, "hi");
 	    
-	    for (int i=0; i<2; i++){
+	    for (int i=0; i<5; i++){
 	    	long t1 = System.nanoTime();
 	    	String result = client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
 	    	System.out.println("Get response "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);
-	    	try{
-	    		Thread.sleep(5000);
-	    	}catch(InterruptedException e){
-	    		e.printStackTrace();
-	    	}
 	    }
 	    
 	    Collections.sort(latency);
 	    
 	    System.out.print(latency.get(latency.size()/2)+" ");
-	    long total = 0;
-	    for (long lat:latency){
-	    	total += lat;
-	    }
-	    //System.out.println(total/latency.size());
+
 	    System.exit(0);
 	}
 	
