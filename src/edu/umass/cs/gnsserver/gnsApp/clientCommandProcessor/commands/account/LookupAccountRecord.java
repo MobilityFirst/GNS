@@ -63,9 +63,9 @@ public class LookupAccountRecord extends GnsCommand {
     }
     if (acccountInfo != null) {
       try {
-        return new CommandResponse<>(acccountInfo.toJSONObject().toString());
         // the true below omits the list of guids which might be too big to send back to the client
-        //return new CommandResponse<>(acccountInfo.toJSONObject(true).toString());
+        return new CommandResponse<>(acccountInfo.toJSONObject(true).toString());
+        //return new CommandResponse<>(acccountInfo.toJSONObject().toString());
       } catch (JSONException e) {
         return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
       }

@@ -39,6 +39,7 @@ public class GnsProtocol {
   public final static String LOOKUP_PRIMARY_GUID = "lookupPrimaryGuid";
   public final static String LOOKUP_GUID_RECORD = "lookupGuidRecord";
   public final static String LOOKUP_ACCOUNT_RECORD = "lookupAccountRecord";
+  public final static String LOOKUP_RANDOM_GUIDS = "lookupAccountRecordGuids"; // mostly for testing
   public final static String RESET_KEY = "resetKey";
   public final static String ADD_ALIAS = "addAlias";
   public final static String REMOVE_ALIAS = "removeAlias";

@@ -98,6 +98,7 @@ public class BatchCreateTest {
     } catch (GnsException | IOException e) {
       System.out.println("Problem sending admin command " + command + e);
     }
+    long startTime = System.currentTimeMillis();
     int guidCnt = numberToCreate;
     int oldTimeout = client.getReadTimeout();
     try {
@@ -126,10 +127,19 @@ public class BatchCreateTest {
     } finally {
       client.setReadTimeout(oldTimeout);
     }
+    System.out.println("Creating " + numberToCreate + " guids took "
+            + ((System.currentTimeMillis() - startTime) / 1000) + " seconds");
+
+    try {
+      System.out.println("Account record: " + client.lookupAccountRecord(masterGuid.getGuid()));
+    } catch (GnsException | IOException e) {
+      System.out.println("Problem looking up account record: " + e);
+    }
+
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
-        command = client.createCommand(LOOKUP_ACCOUNT_RECORD, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
+        command = client.createCommand(LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
         result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);

@@ -55,7 +55,7 @@ public class LookupRandomGuids extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return LOOKUP_ACCOUNT_RECORD;
+    return LOOKUP_RANDOM_GUIDS;
   }
 
   @Override
