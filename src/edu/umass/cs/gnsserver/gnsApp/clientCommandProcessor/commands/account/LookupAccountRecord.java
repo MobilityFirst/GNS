@@ -37,7 +37,7 @@ public class LookupAccountRecord extends GnsCommand {
 
   /**
    * Creates a LookupAccountRecord instance.
-   * 
+   *
    * @param module
    */
   public LookupAccountRecord(CommandModule module) {
@@ -56,24 +56,22 @@ public class LookupAccountRecord extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String guid = json.getString(GUID);
-      AccountInfo acccountInfo;
-      if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    String guid = json.getString(GUID);
+    AccountInfo acccountInfo;
+    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    }
+    if (acccountInfo != null) {
+      try {
+        return new CommandResponse<>(acccountInfo.toJSONObject().toString());
+        // the true below omits the list of guids which might be too big to send back to the client
+        //return new CommandResponse<>(acccountInfo.toJSONObject(true).toString());
+      } catch (JSONException e) {
+        return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
       }
-      if (acccountInfo != null) {
-        try {
-          return new CommandResponse<>(acccountInfo.toJSONObject().toString());
-        } catch (JSONException e) {
-          return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
-        }
-      } else {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
-   // }
+    } else {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
   }
 
   @Override

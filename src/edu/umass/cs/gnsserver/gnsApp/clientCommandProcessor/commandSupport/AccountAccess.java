@@ -72,6 +72,10 @@ public class AccountAccess {
    * Defines the field name in an account guid where account information is stored.
    */
   public static final String ACCOUNT_INFO = InternalField.makeInternalFieldString("account_info");
+  /**
+   * Special case for guids which can only be read from client as a list
+   */
+  public static final String ACCOUNT_INFO_GUIDS = InternalField.makeInternalFieldString("guids");
 
   /**
    * Defines the field name in an HRN record (the reverse record) where guid is stored.

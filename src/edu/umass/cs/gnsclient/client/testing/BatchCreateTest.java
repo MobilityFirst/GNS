@@ -26,7 +26,6 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnscommon.utils.Base64;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -116,7 +115,7 @@ public class BatchCreateTest {
           return;
         }
         guidCnt = guidCnt - MAX_BATCH_SIZE;
-        if (numberToCreate > MAX_BATCH_SIZE) {
+        if (numberToCreate > MAX_BATCH_SIZE && guidCnt > 0) {
           System.out.println("... " + guidCnt + " left to create");
         } else {
           System.out.println();
