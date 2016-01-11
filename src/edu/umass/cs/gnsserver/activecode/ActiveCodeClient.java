@@ -62,11 +62,7 @@ public class ActiveCodeClient {
      * @param port 
 	 */
 	public ActiveCodeClient(GnsApplicationInterface<?> app, int port) {
-		try{
-			this.clientSocket = new DatagramSocket();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
+		
 		if(port == -1){
 			startServer();
 		}else{
@@ -113,6 +109,13 @@ public class ActiveCodeClient {
 	 */
 	public boolean startServer() {
 		try {
+			//initialize the clientSocket first
+			try{
+				this.clientSocket = new DatagramSocket();
+			}catch(IOException e){
+				e.printStackTrace();
+			}
+			
 			List<String> command = new ArrayList<>();
 			serverPort = getOpenUDPPort();
 
