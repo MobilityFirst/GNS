@@ -56,7 +56,11 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
   public MongoRecordMap(MongoRecords<NodeIDType> mongoRecords, String collectionName) {
     this.collectionName = collectionName;
     this.mongoRecords = mongoRecords;
-
+  }
+  
+  @Override
+  public void createIndex(String field, String index) {
+    mongoRecords.createIndex(collectionName, field, index);
   }
 
   @Override

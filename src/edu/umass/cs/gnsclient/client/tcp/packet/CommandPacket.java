@@ -69,6 +69,21 @@ public class CommandPacket extends BasicPacket {
     this.senderPort = senderPort;
     this.command = command;
   }
+  
+  /**
+   * Creates a command packet with a null host and -1 port which will be
+   * filled in when the packet is sent out.
+   * 
+   * @param requestId
+   * @param command 
+   */
+  public CommandPacket(int requestId, JSONObject command) {
+    this.setType(PacketType.COMMAND);
+    this.requestId = requestId;
+    this.senderIP = null;
+    this.senderPort = -1;
+    this.command = command;
+  }
 
   /**
    * Creates a CommandPacket from a JSONObject.

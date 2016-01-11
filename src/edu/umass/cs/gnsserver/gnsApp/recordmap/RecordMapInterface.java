@@ -38,6 +38,14 @@ import java.util.Set;
 public interface RecordMapInterface {
 
   /**
+   * Creates an index for the field.
+   * 
+   * @param field
+   * @param index 
+   */
+  public void createIndex(String field, String index);
+  
+  /**
    * Add a name record to the database.
    * 
    * @param recordEntry

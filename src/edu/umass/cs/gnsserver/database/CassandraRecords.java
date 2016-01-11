@@ -72,6 +72,11 @@ public class CassandraRecords implements NoSQLRecords {
     return collectionSpecMap.get(name);
   }
 
+  @Override
+  public void createIndex(String collectionName, String field, String index) {
+    throw new UnsupportedOperationException("Not supported yet."); 
+  }
+
   /**
    * Stores the name, primary key, and index of each collection we maintain in the mongo db.
    */
@@ -440,16 +445,6 @@ public class CassandraRecords implements NoSQLRecords {
     insert(tableName, guid, value);
   }
 
-  @Override
-  public void updateField(String tableName, String guid, String key, Object object) {
-    JSONObject json = new JSONObject();
-    try {
-      json.put(key, object);
-      insert(tableName, guid, json);
-    } catch (JSONException e) {
-      GNS.getLogger().warning("Problem creating JSON object: " + e);
-    }
-  }
 
 //  //
 //  // TEST CODE

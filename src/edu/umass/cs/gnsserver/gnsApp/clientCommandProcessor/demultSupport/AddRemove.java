@@ -58,7 +58,7 @@ public class AddRemove {
                 + confirmAddPacket.getCCPRequestID());
       }
     } else {
-      DelayProfiler.updateDelay("serviceNameAdd", (System.currentTimeMillis() - addInfo.getStartTime()));
+      DelayProfiler.updateDelay("serviceNameAdd", addInfo.getStartTime());
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket, handler);
     }
   }
@@ -82,7 +82,7 @@ public class AddRemove {
         GNS.getLogger().warning("Remove confirmation return info not found.: lns request id = " + confirmRemovePacket.getCCPRequestID());
       }
     } else {
-      DelayProfiler.updateDelay("serviceNameRemove", (System.currentTimeMillis() - removeInfo.getStartTime()));
+      DelayProfiler.updateDelay("serviceNameRemove", removeInfo.getStartTime());
       Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket, handler);
     }
   }

@@ -152,8 +152,6 @@ public class CommandDefs {
     //    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.group.RevokeMemberships",
     //Admin
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.Admin",
-    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuidSimple",
-    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuidName",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuid",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.GetParameter",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.SetParameter",

@@ -26,11 +26,13 @@ package edu.umass.cs.gnsserver.database;
  */
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
+import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
@@ -58,7 +60,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for 
+ * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for
  * guid, key, record triples using JSONObjects as the intermediate representation.
  * All records are stored in a document called NameRecord.
  *
@@ -144,6 +146,14 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Indexes initialized");
     }
+  }
+
+  @Override
+  public void createIndex(String collectionName, String field, String index) {
+    MongoCollectionSpec spec = mongoCollectionSpecs.getCollectionSpec(collectionName);
+    // Prepend this because of the way we store the records.
+    DBObject index2d = BasicDBObjectBuilder.start(NameRecord.VALUES_MAP.getName() + "." + field, index).get();
+    db.getCollection(spec.getName()).createIndex(index2d);
   }
 
   @Override
@@ -442,20 +452,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       collection.update(query, dbObject);
     } catch (MongoException e) {
       throw new FailedDBOperationException(collectionName, dbObject.toString());
-    }
-  }
-
-  @Override
-  public void updateField(String collectionName, String guid, String key, Object object) throws FailedDBOperationException {
-    String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    BasicDBObject newValue = new BasicDBObject(key, object);
-    BasicDBObject updateOperator = new BasicDBObject("$set", newValue);
-    try {
-      collection.update(query, updateOperator);
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, updateOperator.toString());
     }
   }
 
@@ -808,10 +804,10 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   // this use will probably go away at some point
   /**
    * Does a few things.
-   * 
+   *
    * @param args
    * @throws Exception
-   * @throws RecordNotFoundException 
+   * @throws RecordNotFoundException
    */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length > 0 && args[0].startsWith("-clear")) {
@@ -829,7 +825,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   /**
    * A utility to drop all the databases.
-   * 
+   *
    */
   public static void dropAllDatabases() {
     MongoClient mongoClient;
@@ -850,7 +846,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
   //  //test code
-  
 //  private static final ArrayList<ColumnField> dnsSystemFields = new ArrayList<ColumnField>();
 //
 //  static {
@@ -886,8 +881,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 //      System.out.println("Lookup failed: " + e);
 //    }
 //  }
-
-  
   @SuppressWarnings("unchecked") /// because it's static
   private static void queryTest(Object nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
@@ -943,12 +936,12 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   /**
    * *
-   * Close mongo client before shutting down name server. 
+   * Close mongo client before shutting down name server.
    * As per mongo doc:
    * "to dispose of an instance, make sure you call MongoClient.close() to clean up resources."
    */
   public void close() {
     mongoClient.close();
   }
-  
+
 }

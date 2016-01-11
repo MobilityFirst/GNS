@@ -45,7 +45,7 @@ import org.json.JSONObject;
  * Simple guid creation test.
  *
  * Usage:
- * java -cp dist/gns-1.16-2015-7-27.jar edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
+ * ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
  */
 public class BatchCreateTest {
 
@@ -68,7 +68,7 @@ public class BatchCreateTest {
    * @param host
    * @param portString
    */
-  public BatchCreateTest(String alias, String host, String portString, int guidCnt, int writeTo) {
+  public BatchCreateTest(String alias, String host, String portString, int numberToCreate, int writeTo) {
     if (address == null) {
       if (host != null && portString != null) {
         address = new InetSocketAddress(host, Integer.parseInt(portString));
@@ -90,7 +90,7 @@ public class BatchCreateTest {
     try {
       command = client.createCommand(GnsProtocol.ADMIN,
               GnsProtocol.PASSKEY, "shabiz");
-      result = client.checkResponse(command, client.sendCommand(command));
+      result = client.checkResponse(command, client.sendCommandAndWait(command));
       if (!result.equals(GnsProtocol.OK_RESPONSE)) {
         System.out.println("Admin command saw bad reponse " + result);
         return;
@@ -98,6 +98,7 @@ public class BatchCreateTest {
     } catch (GnsException | IOException e) {
       System.out.println("Problem sending admin command " + command + e);
     }
+    int guidCnt = numberToCreate;
     int oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(2 * 60 * 1000); // set the timeout to 2 minutes
@@ -107,14 +108,18 @@ public class BatchCreateTest {
         command = client.createCommand(GnsProtocol.BATCH_TEST,
                 GnsProtocol.NAME, alias,
                 GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
-        result = client.checkResponse(command, client.sendCommand(command));
+        result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.equals(GnsProtocol.OK_RESPONSE)) {
           System.out.println();
           System.out.println("Batch test command saw bad reponse " + result);
           return;
         }
         guidCnt = guidCnt - MAX_BATCH_SIZE;
-        System.out.println("... " + guidCnt + " left to create");
+        if (numberToCreate > MAX_BATCH_SIZE && guidCnt > 0) {
+          System.out.println("... " + guidCnt + " left to create");
+        } else {
+          System.out.println();
+        }
       }
     } catch (GnsException | IOException e) {
       System.out.println("Problem sending command " + command + e);
@@ -125,7 +130,7 @@ public class BatchCreateTest {
     if (writeTo > 0) {
       try {
         command = client.createCommand(LOOKUP_ACCOUNT_RECORD, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
-        result = client.checkResponse(command, client.sendCommand(command));
+        result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);

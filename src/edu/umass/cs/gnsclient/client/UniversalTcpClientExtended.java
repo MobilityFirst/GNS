@@ -30,7 +30,7 @@ import org.json.JSONObject;
 
 /**
  * This class defines an extension to {@link UniversalTcpClient} to communicate with a GNS instance
- * over HTTP. This extension contains more methods with more convenient to use invocation signatures.
+ * over HTTP. This extension contains more methods with additional invocation signatures.
  * It also has admin commands.
  *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
@@ -90,7 +90,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           GnsException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -106,7 +106,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    */
   public void fieldCreateOneElementList(GuidEntry target, String field, String value) throws IOException,
           GnsException {
-    UniversalTcpClientExtended.this.fieldCreateOneElementList(target.getGuid(), field, value, target);
+    fieldCreateOneElementList(target.getGuid(), field, value, target);
   }
 
   /**
@@ -126,7 +126,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           throws IOException, GnsException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
     checkResponse(command, response);
   }
 
@@ -147,7 +147,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           throws IOException, GnsException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.REPLACE_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
     checkResponse(command, response);
   }
   
@@ -166,7 +166,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
     JSONObject command = createAndSignCommand(targetGuid.getPrivateKey(), GnsProtocol.REPLACE_OR_CREATE_LIST, 
             GnsProtocol.GUID, targetGuid.getGuid(),
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, targetGuid.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
     checkResponse(command, response);
   }
 
@@ -201,7 +201,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           GnsException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.REPLACE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -250,7 +250,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           GnsException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND_WITH_DUPLICATION, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -285,7 +285,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           GnsException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -320,7 +320,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           GnsException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -362,7 +362,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
       command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.REPLACE, GnsProtocol.GUID, targetGuid,
               GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     }
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -399,7 +399,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.SUBSTITUTE, GnsProtocol.GUID,
             targetGuid, GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue,
             GnsProtocol.OLD_VALUE, oldValue, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -438,7 +438,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.SUBSTITUTE_LIST, GnsProtocol.GUID,
             targetGuid, GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue.toString(),
             GnsProtocol.OLD_VALUE, oldValue.toString(), GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -479,7 +479,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
               GnsProtocol.READER, reader.getGuid());
     }
 
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     return checkResponse(command, response);
   }
@@ -517,7 +517,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
   public String adminEnable(String passkey) throws Exception {
     JSONObject command = createCommand(GnsProtocol.ADMIN, GnsProtocol.PASSKEY, passkey);
 
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     return checkResponse(command, response);
   }
@@ -525,7 +525,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
   public void parameterSet(String name, Object value) throws Exception {
     JSONObject command = createCommand(GnsProtocol.SET_PARAMETER, GnsProtocol.NAME, name, GnsProtocol.VALUE, value);
 
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
@@ -533,7 +533,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
   public String parameterGet(String name) throws Exception {
     JSONObject command = createCommand(GnsProtocol.GET_PARAMETER, GnsProtocol.NAME, name);
 
-    String response = sendCommand(command);
+    String response = sendCommandAndWait(command);
 
     return checkResponse(command, response);
   }

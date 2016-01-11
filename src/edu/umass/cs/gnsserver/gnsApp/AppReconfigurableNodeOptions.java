@@ -332,7 +332,11 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG_PAXOS, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN PAXOS *********");
       // For backwards compatibility until Config goes away
-      PaxosManager.getLogger().setLevel(Level.INFO);
+      ConsoleHandler handler = Logging.getConsoleHandler();
+      handler.setLevel(Level.FINEST);
+      Logger log = PaxosManager.getLogger();
+      log.addHandler(handler);
+      log.setLevel(Level.FINER);
     } else {
       PaxosManager.getLogger().setLevel(Level.WARNING);
     }

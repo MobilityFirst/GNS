@@ -19,6 +19,9 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import static edu.umass.cs.gnscommon.GnsProtocol.BAD_GUID;
+import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GnsProtocol.OK_RESPONSE;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 
 /**
@@ -30,43 +33,26 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.Client
  */
 public class BatchTests {
 
-  /** */
-  public static final String DEFAULT_ACCOUNTNAME = "BatchTest";
-  /** */
-  public static final String DEFAULT_PUBLICKEY = "BATCH";
-
-  /**
-   * This method implements the Batch test using the default account name and public key.
-   * 
-   * @param guidCnt
-   * @param handler 
-   */
-  public static void runBatchTest(int guidCnt, ClientRequestHandlerInterface handler) {
-    runBatchTest(DEFAULT_ACCOUNTNAME, DEFAULT_PUBLICKEY, guidCnt, handler);
-  }
-  
   /**
    * This method implements the Batch test.
    * 
    * @param accountName
-   * @param publicKey
    * @param guidCnt
    * @param handler 
+   * @return a command response object
    */
-  public static void runBatchTest(String accountName, String publicKey, int guidCnt,
+  public static CommandResponse<String> runBatchTest(String accountName, int guidCnt,
           ClientRequestHandlerInterface handler) {
     String accountGuid;
     // see if we already registered our GUID
     if ((accountGuid = AccountAccess.lookupGuid(accountName, handler)) == null) {
-      // if not we use the method  below which bypasses the normal email verification requirement
-      // but first we create a GUID from our public key
-      accountGuid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
-      AccountAccess.addAccount(accountName, accountGuid, publicKey, "", false, null, handler);
+       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
     }
-    
     AccountAccess.testBatchCreateGuids(
             AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler), 
             AccountAccess.lookupGuidInfo(accountGuid, handler),
             guidCnt, handler); 
+    
+    return new CommandResponse<>(OK_RESPONSE);
   }
 }

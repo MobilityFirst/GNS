@@ -147,18 +147,6 @@ public interface NoSQLRecords {
           edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 
   /**
-   * Update one field indexed by the key in the record (row) with the given name using the object.
-   *
-   * @param collection the name of the collection
-   * @param name the name of the record
-   * @param key
-   * @param object
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
-   */
-  public void updateField(String collection, String name, String key, Object object) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-
-  /**
    * For the record with given name, replace the values of given fields to the given values.
    *
    * @param collection the name of the collection
@@ -313,6 +301,15 @@ public interface NoSQLRecords {
    */
   public void reset(String collection) throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 
+  /**
+   * Creates an index for the given field.
+   * 
+   * @param collectionName
+   * @param field
+   * @param index 
+   */
+  public void createIndex(String collectionName, String field, String index);
+  
   /**
    * Return a string representation of the record set.
    *

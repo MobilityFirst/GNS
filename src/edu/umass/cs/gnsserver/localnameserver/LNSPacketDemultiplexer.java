@@ -170,7 +170,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         // and if it is a READ command
         // FIXME: THIS ISN'T GOING TO WORK WITHOUT MORE INFO ABOUT THE REQUEST
         if (!CommandPacket.BOGUS_SERVICE_NAME.equals(serviceName)
-                && sentInfo.getCommandType().equals(GnsProtocol.NEWREAD)) {
+                && sentInfo.getCommandType().equals(GnsProtocol.READ)) {
           handler.updateCacheEntry(serviceName, returnPacket.getReturnValue());
         }
         // send the response back
