@@ -77,6 +77,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 					future.get();
 			} catch (CancellationException ce) {
 				t = ce.getCause();
+				System.out.println("The cancelled thread is "+Thread.currentThread().getId());
 			} catch (ExecutionException ee) {
 				t = ee.getCause();
 				//throw new RuntimeException();
