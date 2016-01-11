@@ -73,7 +73,7 @@ public class SequentialRequestClient {
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
-	    client.read(guidAccount);
+	    //client.read(guidAccount);
 	    
 	    result = client.fieldRead(guidAccount, "hi");
 	    //System.out.println("The response after setting active code is "+result.length());
