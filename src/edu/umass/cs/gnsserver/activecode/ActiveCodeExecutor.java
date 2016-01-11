@@ -80,8 +80,9 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 				System.out.println("The cancelled thread is "+Thread.currentThread().getId());
 			} catch (ExecutionException ee) {
 				t = ee.getCause();
-				//throw new RuntimeException();
+				System.out.println("The executed thread is "+Thread.currentThread().getId());
 			} catch (InterruptedException ie) {
+				System.out.println("The interrupted thread is "+Thread.currentThread().getId());
 				Thread.currentThread().interrupt(); // ignore/reset
 			}
 		}
