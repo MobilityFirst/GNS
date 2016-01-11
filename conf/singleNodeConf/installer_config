@@ -1,0 +1,6 @@
+userName=adipc
+keyFile=skuldKey
+hostType=linux
+dataStoreName=MONGO
+installPath=/home/adipc/TestLocalGNS
+javaCommand=java -ea

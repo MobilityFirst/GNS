@@ -90,10 +90,12 @@ public class GnsConnect extends ConsoleCommand {
       }
       UniversalTcpClient gnsClient;
       gnsClient = new UniversalTcpClient(gnsHost, gnsPort, disableSSL);
+      console.printString("Checking GNS connectivity.\n");
       if (!module.isSilent()) {
         console.printString("Checking GNS connectivity.\n");
       }
       gnsClient.checkConnectivity();
+      console.printString("Connected to GNS at " + gnsHost + ":" + gnsPort +"\n");
       if (!module.isSilent()) {
         console.printString("Connected to GNS at " + gnsHost + ":" + gnsPort +"\n");
       }

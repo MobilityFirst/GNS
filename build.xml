@@ -207,6 +207,7 @@
     <pathelement location="${lib.dir}/derby.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.16.jar"/>
     <pathelement location="${lib.dir}/gigapaxos-1.0.jar"/>
+  	<pathelement location="${lib.dir}/context-client-GNS.jar"/>
     <pathelement location="${conf.dir}"/>
   </path>
   
