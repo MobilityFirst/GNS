@@ -463,8 +463,8 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void killAllServers(String hostname, boolean runAsRoot) {
-	  // kill not working on emulab
-	  /*try
+	  //FIXME: kill not working on emulab
+	  try
 	  {
 		  System.out.println("Killing GNS servers");
 		  ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
@@ -472,14 +472,12 @@ public class GNSInstaller {
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + gnsJarFileName + "\""
-            //+ "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | awk \"{print \\$2}\"`"
-           // + "kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | cut -d \" \" -f2`"
             );
 		  //"#!/bin/bash\nkillall java");
 	  } catch(Exception | Error ex)
 	  {
 		  ex.printStackTrace();
-	  }*/
+	  }
   }
 
   /**
@@ -768,7 +766,8 @@ public class GNSInstaller {
               : runsetRestart != null ? runsetRestart
                       : runsetStop != null ? runsetStop
                               : null;
-
+      
+      
       System.out.println("Config name: " + configName);
       System.out.println("Current directory: " + System.getProperty("user.dir"));
 
@@ -776,13 +775,16 @@ public class GNSInstaller {
       if (!checkAndSetConfFilePaths(configName)) {
         System.exit(1);
       }
+      // so that key filename is updated before reading it.
+      // otherwise it reads default.
+      loadConfig(configName);
 
       if (getKeyFile() == null) {
         System.out.println("Can't find keyfile: " + keyFile + "; exiting.");
         System.exit(1);
       }
 
-      loadConfig(configName);
+      
       loadHostsFiles(configName);
 
       String lnsHostFile = fileSomewhere(configName + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath).toString();
