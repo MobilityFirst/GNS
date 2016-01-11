@@ -64,56 +64,6 @@
                        excludes="android.jar, hamcrest*.jar, junit*.jar"/>
     </jar>
   </target>
-    
-<!--  <target name="nio_jarbuild" depends="compile" description="generate jar files">
-    <mkdir dir="${build.jar.dir}"/>
-    <jar destfile="${build.jar.dir}/nio-1.2.jar" filesetmanifest="mergewithoutmain">
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Vendor"
-                   value="University of Massachusetts" />
-        <attribute name="Implementation-Title" value="GNS Nio Library" />
-        <attribute name="Implementation-Version"
-                   value="${VERSION}-${RELEASE}" />
-        <attribute name="Build-Version" value="${version.code}" />
-      </manifest>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/nioutils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/utils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="org/json/*.class"/>
-       interesting special cases here added because of one use of ReconfigurableClient in NIOInstrumenter 
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/protocoltask/**/*.class"/>
-      
-      <fileset dir="${conf.dir}" includes="trustStore/**, keystore/**" />
-    </jar>
-  </target>
-  
-  <target name="gigapaxos_jarbuild" depends="compile" description="generate jar files">
-    <mkdir dir="${build.jar.dir}"/>
-    <jar destfile="${build.jar.dir}/gigapaxos-1.0.jar" filesetmanifest="mergewithoutmain">
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Vendor"
-                   value="University of Massachusetts" />
-        <attribute name="Implementation-Title" value="GNS Gigapaxos Library" />
-        <attribute name="Implementation-Version"
-                   value="${VERSION}-${RELEASE}" />
-        <attribute name="Build-Version" value="${version.code}" />
-      </manifest>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/nioutils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/utils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="org/json/*.class"/>
-       interesting special cases here added because of one use of ReconfigurableClient in NIOInstrumenter 
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/protocoltask/**/*.class"/>
-      
-      <fileset dir="${conf.dir}" includes="trustStore/**, keystore/**" />
-    </jar>
-  </target>-->
   
   <fileset id="client.includes" dir="${build.classes.dir}"
            includes="edu/umass/cs/gnsclient/**/*.class,

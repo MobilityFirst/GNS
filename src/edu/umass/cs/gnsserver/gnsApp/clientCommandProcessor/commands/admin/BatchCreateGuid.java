@@ -44,7 +44,7 @@ public class BatchCreateGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, PUBLIC_KEY, GUIDCNT};
+    return new String[]{NAME, GUIDCNT};
   }
 
   @Override
@@ -55,12 +55,11 @@ public class BatchCreateGuid extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
-      String accountName = json.optString(NAME, BatchTests.DEFAULT_ACCOUNTNAME);
-      String publicKey = json.optString(PUBLIC_KEY, BatchTests.DEFAULT_PUBLICKEY);
+      String accountName = json.getString(NAME);
       String guidCntString = json.getString(GUIDCNT);
       int guidCnt = Integer.parseInt(guidCntString);
-      BatchTests.runBatchTest(accountName, publicKey, guidCnt, handler);
-      return new CommandResponse<>(OK_RESPONSE);
+      return BatchTests.runBatchTest(accountName, guidCnt, handler);
+       
     } else {
       return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
     }

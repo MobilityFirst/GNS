@@ -210,7 +210,7 @@ public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDT
 
   @Override
   public ClientRequest getResponse() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return null;
   }
 
 }

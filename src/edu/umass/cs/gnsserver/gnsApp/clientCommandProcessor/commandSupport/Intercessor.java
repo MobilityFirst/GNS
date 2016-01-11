@@ -406,7 +406,7 @@ public class Intercessor implements IntercessorInterface {
     AddBatchRecordPacket<String> pkt = new AddBatchRecordPacket<>(null, id, names, values, nodeAddress);
     if (debuggingEnabled) {
       //GNS.getLogger().fine("#####PACKET: " + pkt.toString());
-      GNS.getLogger().fine("#####PACKET: " + pkt.toReasonableString());
+      GNS.getLogger().info("#####PACKET: " + pkt.toReasonableString());
     }
     try {
       JSONObject json = pkt.toJSONObject();

@@ -26,6 +26,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.utils.Base64;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -45,7 +46,7 @@ import org.json.JSONObject;
  * Simple guid creation test.
  *
  * Usage:
- * java -cp dist/gns-1.16-2015-7-27.jar edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
+ * ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
  */
 public class BatchCreateTest {
 
@@ -68,7 +69,7 @@ public class BatchCreateTest {
    * @param host
    * @param portString
    */
-  public BatchCreateTest(String alias, String host, String portString, int guidCnt, int writeTo) {
+  public BatchCreateTest(String alias, String host, String portString, int numberToCreate, int writeTo) {
     if (address == null) {
       if (host != null && portString != null) {
         address = new InetSocketAddress(host, Integer.parseInt(portString));
@@ -98,6 +99,7 @@ public class BatchCreateTest {
     } catch (GnsException | IOException e) {
       System.out.println("Problem sending admin command " + command + e);
     }
+    int guidCnt = numberToCreate;
     int oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(2 * 60 * 1000); // set the timeout to 2 minutes
@@ -114,7 +116,11 @@ public class BatchCreateTest {
           return;
         }
         guidCnt = guidCnt - MAX_BATCH_SIZE;
-        System.out.println("... " + guidCnt + " left to create");
+        if (numberToCreate > MAX_BATCH_SIZE) {
+          System.out.println("... " + guidCnt + " left to create");
+        } else {
+          System.out.println();
+        }
       }
     } catch (GnsException | IOException e) {
       System.out.println("Problem sending command " + command + e);
