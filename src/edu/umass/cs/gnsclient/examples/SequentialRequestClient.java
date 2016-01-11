@@ -67,21 +67,18 @@ public class SequentialRequestClient {
 		String str = new BigInteger(size, random).toString(32);
 		//System.out.println("The string length is "+str.length());
 		client.fieldUpdate(guidAccount.getGuid(), "hi", str, guidAccount);
-		String result = client.fieldRead(guidAccount, "hi");
+		//String result = client.fieldRead(guidAccount, "hi");
 		//System.out.println("The response after setting active code is "+result.length());
 		client.activeCodeClear(guid, "read", guidAccount);
 	    if(flag){
 		    client.activeCodeSet(guid, "read", code64, guidAccount);
 	    }
-	    //client.read(guidAccount);
-	    
 	    //result = client.fieldRead(guidAccount, "hi");
-	    //System.out.println("The response after setting active code is "+result.length());
 	    
 	    for (int i=0; i<2; i++){
 	    	long t1 = System.nanoTime();
-	    	result = client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
-	    	System.out.println("Get response +"+result);
+	    	String result = client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
+	    	System.out.println("Get response "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);
