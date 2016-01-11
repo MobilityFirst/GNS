@@ -299,6 +299,7 @@ public class ActiveCodeClient {
 	 */
 	public void restartServer() {
 		long t1 = System.currentTimeMillis();
+		clientSocket.close();
 		process.destroyForcibly();		
 		startServer();
 		long elapsed = System.currentTimeMillis() - t1;
