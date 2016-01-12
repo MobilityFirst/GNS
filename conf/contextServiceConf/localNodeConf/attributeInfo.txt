@@ -1,0 +1,7 @@
+#attrName, minValue, maxValue, defaultValue, datatype[Integer, Long, Double, String]
+geoLocationCurrentLat, -90, 90, -90, Double
+geoLocationCurrentLong, -180, 180, -180, Double
+geoLocationWorkLat, -90, 90, -90, Double
+geoLocationWorkLong, -180, 180, -180, Double
+geoLocationHomeLat, -90, 90, -90, Double
+geoLocationHomeLong, -180, 180, -180, Double
