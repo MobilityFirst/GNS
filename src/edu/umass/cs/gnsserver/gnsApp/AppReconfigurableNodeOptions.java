@@ -121,7 +121,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * How long (in seconds) to blacklist active code.
    */
-  public static long activeCodeBlacklistSeconds = 60;
+  public static long activeCodeBlacklistSeconds = 75;
   /**
    * Default port numbers for active workers, the default
    * value for each worker's port is -1, it means the worker

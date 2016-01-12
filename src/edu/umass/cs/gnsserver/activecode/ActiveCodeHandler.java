@@ -160,7 +160,7 @@ public class ActiveCodeHandler {
 		// If the guid is blacklisted, just return immediately
 		if(isBlacklisted(guid)) {
 			//System.out.println("Guid " + guid + " is blacklisted from running code!");
-			//return valuesMap;
+			return valuesMap;
 		}
 		
 		
@@ -180,12 +180,12 @@ public class ActiveCodeHandler {
 			result = futureTask.get();
 		} catch (ExecutionException e) {
 			//System.out.println("Added " + guid + " to blacklist!");
-			//addToBlacklist(guid);
+			addToBlacklist(guid);
 			System.out.println("Execution");
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (CancellationException e){
-			//addToBlacklist(guid);			
+			addToBlacklist(guid);			
 			System.out.println("Cancellation thread "+Thread.currentThread().getId());
 			scheduler.finish(guid);
 			return valuesMap;
@@ -194,7 +194,6 @@ public class ActiveCodeHandler {
 			// Restart the server of the corresponding thread
 			// client.restartServer();
 		} catch (Exception e){
-			
 			System.out.println("Other");
 			scheduler.finish(guid);
 			return valuesMap;
