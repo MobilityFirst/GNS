@@ -22,7 +22,6 @@ package edu.umass.cs.gnsclient.client.testing;
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
-import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_ACCOUNT_RECORD;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.Format;
@@ -32,6 +31,7 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
+import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_RANDOM_GUIDS;
 import static edu.umass.cs.gnscommon.GnsProtocol.READ;
 import static edu.umass.cs.gnscommon.GnsProtocol.READER;
 import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
@@ -328,7 +328,7 @@ public class ThroughputAsynchMultiClientTest {
           }
         }
         try {
-          JSONObject command = clients[0].createCommand(LOOKUP_ACCOUNT_RECORD, GUID,
+          JSONObject command = clients[0].createCommand(LOOKUP_RANDOM_GUIDS, GUID,
                   masterGuid.getGuid(), GUIDCNT, numberOfGuids);
           String result = clients[0].checkResponse(command, clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {

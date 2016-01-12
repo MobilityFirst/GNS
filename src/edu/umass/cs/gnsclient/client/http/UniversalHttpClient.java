@@ -241,6 +241,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws IOException
    * @throws GnsException
    */
+  @Override
   public JSONObject lookupGuidRecord(String guid) throws IOException, GnsException {
     String command = createQuery(GnsProtocol.LOOKUP_GUID_RECORD, GnsProtocol.GUID, guid);
     String response = sendGetCommand(command);

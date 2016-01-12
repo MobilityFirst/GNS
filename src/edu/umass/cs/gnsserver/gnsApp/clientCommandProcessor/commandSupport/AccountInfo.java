@@ -335,7 +335,9 @@ public class AccountInfo {
     json.put(GUID, primaryGuid);
     json.put(TYPE, type);
     json.put(ALIASES, new JSONArray(aliases));
-    if (!forClient) {
+    if (forClient) {
+      json.put("guidCnt", guids.size());
+    } else {
       json.put(GUIDS, new JSONArray(guids));
     }
     json.put(CREATED, Format.formatDateUTC(created));
