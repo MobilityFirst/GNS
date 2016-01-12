@@ -108,6 +108,9 @@ public class ActiveCodeScheduler implements Runnable{
 				runningGuid.put(guid, 1);
 			}
 			
+			if (!fairQueue.containsKey(guid)){
+				return null;
+			}
 			futureTask = fairQueue.get(guid).pop();
 			if(fairQueue.get(guid).isEmpty()){
 				remove(guid);
