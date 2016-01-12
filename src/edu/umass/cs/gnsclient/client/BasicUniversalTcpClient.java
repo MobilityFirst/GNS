@@ -48,7 +48,7 @@ import edu.umass.cs.gnsclient.client.tcp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsclient.client.util.DelayProfiler;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
@@ -767,7 +767,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
       DelayProfiler.updateDelay("encodeBase64", singleEncodestartTime);
       publicKeys.add(publicKeyString);
     }
-    JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_GUID,
+    JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
             ACCOUNT_GUID, accountGuid.getGuid(),
             NAMES, new JSONArray(aliasList),
             PUBLIC_KEYS, new JSONArray(publicKeys)

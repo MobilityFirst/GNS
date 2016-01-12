@@ -29,7 +29,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * A test routine that batch creates guids.
+ * This one creates the public keys on the server so the resulting
+ * guids must be accessed using the account guid.
+ * See also account.AddMultipleGuids for the real version.
+ * 
  * @author westy
  */
 public class BatchCreateGuid extends GnsCommand {

@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -595,6 +596,7 @@ public class AccountAccess {
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
           ClientRequestHandlerInterface handler) {
     try {
+      long startTime = System.currentTimeMillis();
       Set<String> guids = new HashSet<>();
       Map<String, JSONObject> hrnMap = new HashMap<>();
       Map<String, JSONObject> guidInfoMap = new HashMap<>();
@@ -623,6 +625,7 @@ public class AccountAccess {
         jsonGuid.put("environment", 8675309); // test value
         guidInfoMap.put(guid, jsonGuid);
       }
+      DelayProfiler.updateDelay("addMultipleGuidsSetup", startTime);
       accountInfo.noteUpdate();
 
       // first we create the HRN records as a batch
@@ -632,6 +635,7 @@ public class AccountAccess {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
+           GNS.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse<String>(OK_RESPONSE);
         }
       }

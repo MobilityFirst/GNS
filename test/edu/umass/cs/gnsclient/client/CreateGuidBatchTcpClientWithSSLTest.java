@@ -19,15 +19,17 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
+import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.RandomString;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
+import org.json.JSONException;
+import org.json.JSONObject;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -38,24 +40,31 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateGuidBatchTcpClientTest {
+public class CreateGuidBatchTcpClientWithSSLTest {
 
-  private static String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client;
   /**
    * The address of the GNS server we will contact
    */
   private static InetSocketAddress address = null;
-  private static GuidEntry masterGuid;
+  private static GuidEntry batchMasterGuid;
 
-  public CreateGuidBatchTcpClientTest() {
+  public CreateGuidBatchTcpClientWithSSLTest() {
 
     if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+        batchMasterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
       } catch (Exception e) {
         fail("Exception when we were not expecting it: " + e);
       }
@@ -65,20 +74,31 @@ public class CreateGuidBatchTcpClientTest {
 
   @Test
   public void test_01_CreateBatch() {
+    int numberTocreate = 100;
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
     Set<String> aliases = new HashSet<>();
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < numberTocreate; i++) {
       aliases.add("testGUID" + RandomString.randomString(6));
     }
     String result = null;
     int oldTimeout = client.getReadTimeout();
     try {
-       client.setReadTimeout(10 * 60 * 1000); // 10 minutes
-       result = client.guidBatchCreate(masterGuid, aliases);
+      client.setReadTimeout(30 * 1000); // 30 seconds
+      result = client.guidBatchCreate(batchMasterGuid, aliases);
+      client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
     assertEquals(GnsProtocol.OK_RESPONSE, result);
-    client.setReadTimeout(oldTimeout);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(batchMasterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
   }
 
 }

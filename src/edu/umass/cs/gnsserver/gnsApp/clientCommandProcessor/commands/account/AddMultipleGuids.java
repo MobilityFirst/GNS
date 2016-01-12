@@ -40,7 +40,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Command to add a guid.
+ * Command to add a multiple guids using batch support.
  *
  * @author westy
  */
@@ -62,7 +62,7 @@ public class AddMultipleGuids extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return ADD_GUID;
+    return ADD_MULTIPLE_GUIDS;
   }
 
   @Override
@@ -70,9 +70,7 @@ public class AddMultipleGuids extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 
     String accountGuid = json.getString(ACCOUNT_GUID);
-    //String names = json.getString(NAMES);
     JSONArray names = json.getJSONArray(NAMES);
-    //String publicKeys = json.getString(PUBLIC_KEYS);
     JSONArray publicKeys = json.getJSONArray(PUBLIC_KEYS);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
@@ -91,17 +89,10 @@ public class AddMultipleGuids extends GnsCommand {
       } else if (accountInfo.getGuids().size() > GNS.MAXGUIDS) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
-
         CommandResponse<String> result
                 = AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
                         JSONUtils.JSONArrayToArrayListString(publicKeys),
                         accountInfo, accountGuidInfo, handler);
-//         CommandResponse<String> result
-//                = AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(new JSONArray(names)),
-//                        JSONUtils.JSONArrayToArrayListString(new JSONArray(publicKeys)),
-//                        accountInfo, accountGuidInfo, handler);
-        //CommandResponse<String> result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, 
-        //newGuid, publicKey, handler);
         return result;
       }
     } else {

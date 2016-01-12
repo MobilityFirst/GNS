@@ -43,14 +43,14 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- *  Functionality test for core elements in the client using the UniversalGnsClientFull.
+ * Functionality test for core elements in the client using the UniversalGnsClientFull.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UniversalCoreWithSSLTest {
 
-  private static final String ACCOUNT_ALIAS = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
+  private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static String password = "password";
   private static UniversalTcpClientExtended client = null;
   /**
    * The address of the GNS server we will contact
@@ -66,11 +66,27 @@ public class UniversalCoreWithSSLTest {
 
   public UniversalCoreWithSSLTest() {
     if (client == null) {
-      address = ServerSelectDialog.selectServer();
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+      if (System.getProperty("alias") != null
+              && !System.getProperty("alias").isEmpty()) {
+        accountAlias = System.getProperty("alias");
+      }
+      if (System.getProperty("password") != null
+              && !System.getProperty("password").isEmpty()) {
+        password = System.getProperty("password");
+      }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, password, true);
       } catch (Exception e) {
         fail("Exception while creating account guid: " + e);
       }
@@ -1025,7 +1041,7 @@ public class UniversalCoreWithSSLTest {
     } catch (Exception e) {
       fail("Exception while adding field \"flapjack\": " + e);
     }
-    
+
     try {
       JSONObject expected = new JSONObject();
       expected.put("name", "frank");
@@ -1059,7 +1075,7 @@ public class UniversalCoreWithSSLTest {
     } catch (Exception e) {
       fail("Exception while reading \"flapjack.sally\": " + e);
     }
-    
+
 //    try {
 //      String actual = client.fieldRead(westyEntry.getGuid(), "flapjack", westyEntry);
 //      String expected = "{ \"sammy\" : \"green\" , \"sally\" : { \"left\" : \"eight\" , \"right\" : \"seven\"}}";

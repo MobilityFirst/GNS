@@ -65,6 +65,7 @@ import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
+import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -336,6 +337,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
    */
   @Override
   public boolean restore(String name, String state) {
+    long startTime = System.currentTimeMillis();
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
     }
@@ -372,6 +374,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
           }
         }
       }
+      DelayProfiler.updateDelay("restore", startTime);
       return true;
     } catch (FailedDBOperationException e) {
       GNS.getLogger().severe("Failed update exception: " + e.getMessage());
