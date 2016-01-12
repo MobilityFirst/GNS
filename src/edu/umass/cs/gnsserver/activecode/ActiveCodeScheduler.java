@@ -135,8 +135,10 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void remove(String guid){
-		guidList.remove(guid);
-		fairQueue.remove(guid);
+		synchronized(guid){
+			guidList.remove(guid);
+			fairQueue.remove(guid);
+		}
 	}
 	
 	protected void finish(String guid){
