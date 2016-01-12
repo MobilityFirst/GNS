@@ -24,7 +24,7 @@ public class ActiveCodeScheduler implements Runnable{
 	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
 	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
-	private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
+	//private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
@@ -50,7 +50,7 @@ public class ActiveCodeScheduler implements Runnable{
 			if (futureTask != null){
 				//for instrument only
 				executorPool.execute(futureTask);
-				DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
+				//DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 			}
 		}
 	}
@@ -116,7 +116,7 @@ public class ActiveCodeScheduler implements Runnable{
 	
 	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
 		//System.out.println("Submit task to run "+futureTask+" by guid "+guid);
-		timeMap.put(futureTask, System.nanoTime());
+		//timeMap.put(futureTask, System.nanoTime());
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);
