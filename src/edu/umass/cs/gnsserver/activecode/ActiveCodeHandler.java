@@ -139,13 +139,14 @@ public class ActiveCodeHandler {
 	 * @param guid
 	 */
 	public void addToBlacklist(String guid) {
+		System.out.println("Guid " + guid + " is blacklisted from running code!");
 		blacklist.put(guid, System.currentTimeMillis());
 		scheduler.remove(guid);
 	}
 	
 	/**
 	 * Runs the active code. Returns a {@link ValuesMap}.
-         * 
+     * 
 	 * @param code64 base64 encoded active code, as stored in the db
 	 * @param guid the guid
 	 * @param field the field
@@ -158,11 +159,9 @@ public class ActiveCodeHandler {
 		//System.out.println("Original value is "+valuesMap);
 		long startTime = System.nanoTime();
 		// If the guid is blacklisted, just return immediately
-		if(isBlacklisted(guid)) {
-			//System.out.println("Guid " + guid + " is blacklisted from running code!");
+		if(isBlacklisted(guid)) {			
 			return valuesMap;
-		}
-		
+		}		
 		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
