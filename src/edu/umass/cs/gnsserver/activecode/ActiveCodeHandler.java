@@ -59,7 +59,7 @@ public class ActiveCodeHandler {
 	ConcurrentHashMap<String, Long> blacklist;
 	long blacklistSeconds;
 	
-	protected static final int MILLISECONDS_PER_SEC = 1000;
+	protected static final long MILLISECONDS_PER_SEC = 1000;
 	
 	/**
 	 * Initializes an ActiveCodeHandler

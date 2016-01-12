@@ -95,6 +95,9 @@ public class ActiveCodeScheduler implements Runnable{
 		String guid = null;
 		synchronized(queueLock){
 			guid = getNextGuid();
+			while(guid == null){
+				guid = getNextGuid();
+			}
 			
 			while(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
 				guid = getNextGuid();
