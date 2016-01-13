@@ -76,7 +76,7 @@ public class AddMultipleGuids extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
 
-    GNS.getLogger().info("OOOOOOOOOOOOOOOO" + names + " / " + publicKeys);
+    //GNS.getLogger().info("OOOOOOOOOOOOOOOO" + names + " / " + publicKeys);
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
@@ -92,16 +92,16 @@ public class AddMultipleGuids extends GnsCommand {
         return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
         if (names != null && publicKeys != null) {
-          GNS.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
+          //GNS.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
           return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
                   JSONUtils.JSONArrayToArrayListString(publicKeys),
                   accountInfo, accountGuidInfo, handler);
         } else if (names != null) {
-          GNS.getLogger().info("ADD FASTER" + names + " / " + publicKeys);
+          //GNS.getLogger().info("ADD FASTER" + names + " / " + publicKeys);
           return AccountAccess.addMultipleGuidsFaster(JSONUtils.JSONArrayToArrayListString(names),
                   accountInfo, accountGuidInfo, handler);
         } else if (guidCntString != null) {
-          GNS.getLogger().info("ADD RANDOM" + names + " / " + publicKeys);
+          //GNS.getLogger().info("ADD RANDOM" + names + " / " + publicKeys);
           int guidCnt = Integer.parseInt(guidCntString);
           return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
         } else {
