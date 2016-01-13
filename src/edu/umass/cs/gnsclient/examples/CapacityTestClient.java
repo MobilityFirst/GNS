@@ -34,7 +34,7 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 10;
     private static long start = 0;
     protected static int TOTAL_SECOND = 1;
-    private static final int NUM_CLIENT = 10;
+    private static final int NUM_CLIENT = 20;
     private static final int DURATION = 30; 
     
     private static int failed = 0;
