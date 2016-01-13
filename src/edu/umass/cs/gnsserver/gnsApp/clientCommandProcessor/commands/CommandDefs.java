@@ -106,6 +106,8 @@ public class CommandDefs {
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.AddAlias",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.AddGuid",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.AddMultipleGuids",
+    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.AddMultipleGuidsFast",
+    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.LookupAccountRecord",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.LookupRandomGuids", //for testing 
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account.LookupGuid",
@@ -152,7 +154,7 @@ public class CommandDefs {
     //    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.group.RevokeMemberships",
     //Admin
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.Admin",
-    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuid",
+    //"edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuid",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.GetParameter",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.SetParameter",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.admin.ListParameters",

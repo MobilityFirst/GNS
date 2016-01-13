@@ -752,26 +752,69 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     return entry;
   }
 
-  public String guidBatchCreate(GuidEntry accountGuid, Set<String> aliases) throws Exception {
+  /**
+   * Batch create guids with the given aliases. If
+   * createPublicKeys is true, key pairs will be created and saved 
+   * by the client for the guids.
+   * 
+   * @param accountGuid
+   * @param aliases
+   * @param createPublicKeys
+   * @return
+   * @throws Exception 
+   */
+  public String guidBatchCreate(GuidEntry accountGuid, Set<String> aliases,
+          boolean createPublicKeys) throws Exception {
 
     List<String> aliasList = new ArrayList<>(aliases);
-    List<String> publicKeys = new ArrayList<>();
-    for (String alias : aliasList) {
-      long singleEntrystartTime = System.currentTimeMillis();
-      GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-              remoteAddress.getHostString(), remoteAddress.getPort());
-      DelayProfiler.updateDelay("updateOnePreference", singleEntrystartTime);
-      long singleEncodestartTime = System.currentTimeMillis();
-      byte[] publicKeyBytes = entry.getPublicKey().getEncoded();
-      String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
-      DelayProfiler.updateDelay("encodeBase64", singleEncodestartTime);
-      publicKeys.add(publicKeyString);
+    List<String> publicKeys = null;
+    if (createPublicKeys) {
+      long publicKeyStartTime = System.currentTimeMillis();
+      publicKeys = new ArrayList<>();
+      for (String alias : aliasList) {
+        long singleEntrystartTime = System.currentTimeMillis();
+        GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
+                remoteAddress.getHostString(), remoteAddress.getPort());
+        DelayProfiler.updateDelay("updateOnePreference", singleEntrystartTime);
+        byte[] publicKeyBytes = entry.getPublicKey().getEncoded();
+        String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
+        publicKeys.add(publicKeyString);
+      }
+      DelayProfiler.updateDelay("batchCreatePublicKeys", publicKeyStartTime);
     }
-    JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
+
+    System.out.println(DelayProfiler.getStats());
+    JSONObject command;
+    if (createPublicKeys) {
+      command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
+              ACCOUNT_GUID, accountGuid.getGuid(),
+              NAMES, new JSONArray(aliasList),
+              PUBLIC_KEYS, new JSONArray(publicKeys));
+    } else {
+      // This version creates guids that have bogus public keys
+      command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
+              ACCOUNT_GUID, accountGuid.getGuid(),
+              NAMES, new JSONArray(aliasList));
+    }
+    String result = checkResponse(command, sendCommandAndWait(command));
+    return result;
+  }
+
+  /**
+   * Batch create a number guids. These guids will have 
+   * random aliases and can be accessed using the account guid.
+   * 
+   * @param accountGuid
+   * @param guidCnt
+   * @return
+   * @throws Exception 
+   */
+  public String guidBatchCreateFast(GuidEntry accountGuid, int guidCnt) throws Exception {
+    JSONObject command;
+    // This version creates guids that have bogus public keys
+    command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
             ACCOUNT_GUID, accountGuid.getGuid(),
-            NAMES, new JSONArray(aliasList),
-            PUBLIC_KEYS, new JSONArray(publicKeys)
-    );
+            GUIDCNT, guidCnt);
     String result = checkResponse(command, sendCommandAndWait(command));
     return result;
   }
@@ -1395,8 +1438,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
       result.put(SIGNATURE, signature);
       DelayProfiler.updateDelay("createAndSignCommand", startTime);
       return result;
-    } catch (GnsException | NoSuchAlgorithmException | InvalidKeyException 
-            | SignatureException | JSONException e) {
+    } catch (GnsException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | JSONException e) {
       throw new GnsException("Error encoding message", e);
     }
   }
@@ -1512,8 +1554,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
       GNSClient.getLogger().info(
               String.format(
                       "Command name: %19s %40s %16s id: %12s "
-                      + "NS: %16s " 
-                      ,
+                      + "NS: %16s ",
                       command.optString(COMMANDNAME, "Unknown"),
                       command.optString(GUID, ""),
                       command.optString(NAME, ""),

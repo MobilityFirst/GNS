@@ -34,8 +34,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import static org.hamcrest.Matchers.*;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -1167,7 +1169,99 @@ public class UniversalCoreWithSSLTest {
   }
 
   @Test
-  public void test_47_Stop() {
+  public void test_51_CreateBatch() {
+    GuidEntry batchMasterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      batchMasterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    Set<String> aliases = new HashSet<>();
+    for (int i = 0; i < numberTocreate; i++) {
+      aliases.add("testGUID" + RandomString.randomString(6));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(30 * 1000); // 30 seconds
+      result = client.guidBatchCreate(batchMasterGuid, aliases, true);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(batchMasterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+
+  @Test
+  public void test_52_CreateBatchFast() {
+    GuidEntry batchMasterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      batchMasterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    Set<String> aliases = new HashSet<>();
+    for (int i = 0; i < numberTocreate; i++) {
+      aliases.add("testGUID" + RandomString.randomString(6));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(30 * 1000); // 30 seconds
+      result = client.guidBatchCreate(batchMasterGuid, aliases, false);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(batchMasterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+
+  @Test
+  public void test_53_CreateBatchFastest() {
+    GuidEntry batchMasterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      batchMasterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(30 * 1000); // 30 seconds
+      result = client.guidBatchCreateFast(batchMasterGuid, numberTocreate);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(batchMasterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+
+  @Test
+  public void test_99_Stop() {
     try {
       client.stop();
     } catch (Exception e) {

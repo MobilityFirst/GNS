@@ -43,6 +43,10 @@ import org.json.JSONObject;
 
 /**
  * Simple guid creation test.
+ * 
+ * Note that TWO methods for batch creating guids exist. This one uses the "fast" method which
+ * uses bogus aliases and public keys and generates random guids that have to be accessed through the
+ * account guid.
  *
  * Usage:
  * ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
@@ -87,17 +91,6 @@ public class BatchCreateTest {
     }
     JSONObject command = null;
     String result = null;
-    try {
-      command = client.createCommand(GnsProtocol.ADMIN,
-              GnsProtocol.PASSKEY, "shabiz");
-      result = client.checkResponse(command, client.sendCommandAndWait(command));
-      if (!result.equals(GnsProtocol.OK_RESPONSE)) {
-        System.out.println("Admin command saw bad reponse " + result);
-        return;
-      }
-    } catch (GnsException | IOException e) {
-      System.out.println("Problem sending admin command " + command + e);
-    }
     long startTime = System.currentTimeMillis();
     int guidCnt = numberToCreate;
     int oldTimeout = client.getReadTimeout();
@@ -106,8 +99,9 @@ public class BatchCreateTest {
 
       while (guidCnt > 0) {
         System.out.print("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
-        command = client.createCommand(GnsProtocol.BATCH_TEST,
-                GnsProtocol.NAME, alias,
+        command = client.createAndSignCommand(masterGuid.getPrivateKey(),
+                GnsProtocol.ADD_MULTIPLE_GUIDS,
+                GnsProtocol.ACCOUNT_GUID, masterGuid.getGuid(),
                 GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
         result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.equals(GnsProtocol.OK_RESPONSE)) {
