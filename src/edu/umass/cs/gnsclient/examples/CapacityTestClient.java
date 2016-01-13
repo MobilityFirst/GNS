@@ -78,11 +78,11 @@ public class CapacityTestClient {
     	try {
     		future.get(1, TimeUnit.MILLISECONDS);
     	}catch(InterruptedException e){
-       		e.printStackTrace();
+       		//e.printStackTrace();
     	}catch(ExecutionException e){
-    		e.printStackTrace();
+    		//e.printStackTrace();
     	}catch(Exception e){
-    		e.printStackTrace();
+    		//e.printStackTrace();
     	}
     }
     
