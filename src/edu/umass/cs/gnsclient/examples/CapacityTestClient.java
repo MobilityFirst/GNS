@@ -18,6 +18,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.mchange.v2.resourcepool.TimeoutException;
+
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -74,10 +76,12 @@ public class CapacityTestClient {
     	//(new Thread(new MaliciousThread(this.client, this.guid, this.entry)) ).start();
     	Future<String> future = this.executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
-    		future.get();
+    		future.get(1, TimeUnit.MILLISECONDS);
     	}catch(InterruptedException e){
        		e.printStackTrace();
     	}catch(ExecutionException e){
+    		e.printStackTrace();
+    	}catch(Exception e){
     		e.printStackTrace();
     	}
     }
