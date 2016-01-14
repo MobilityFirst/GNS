@@ -28,7 +28,7 @@ public class ActiveCodeGuardian implements Runnable {
 				long now = System.currentTimeMillis();
 				
 				for(FutureTask<ValuesMap> task:tasks.keySet()){
-					if (now - tasks.get(task) > 2000){
+					if (now - tasks.get(task) > 10000){
 						//System.out.println("The thread should be interrupted is "+getThread(task).getId());
 						ActiveCodeClient client = this.clientPool.getClient(getThread(task).getId());
 						client.restartServer();

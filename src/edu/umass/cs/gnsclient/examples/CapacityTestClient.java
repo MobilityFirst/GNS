@@ -260,6 +260,8 @@ public class CapacityTestClient {
     	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	System.out.println("The start point is:"+(start/1000));
     	
+    	//client.stop(); 
+    	
     	// connect to none server and inform it's done
     	Socket socket = new Socket("128.119.245.5", 60001);
     	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
