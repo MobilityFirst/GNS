@@ -24,17 +24,18 @@ public class CreateMultiGuidClient {
 	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static int NUM_CLIENT = 20;
+	private final static int NUM_CLIENT = 100;
 	private final static String filename = "/home/ubuntu/test.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //
 	private final static String mal_file = "/home/ubuntu/mal.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js"; //
 	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/zhaoyugao/gns_key/";
+	private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, 
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]);
-		int fraction = NUM_CLIENT - Integer.parseInt(args[2]);
+		int fraction = Integer.parseInt(args[2]); // deploy a malicious code for every 5 clients 
 		boolean flag = Boolean.parseBoolean(args[3]);
 		
 		//Read in the code and serialize
@@ -48,8 +49,8 @@ public class CreateMultiGuidClient {
 		for (int i=0; i<NUM_CLIENT; i++){
 			GuidEntry guidAccount = null;
 			try{
-				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*10+i)+ACCOUNT_ALIAS, "password");
-				System.out.println("test"+(node*10+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
+				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*100+i)+ACCOUNT_ALIAS, "password");
+				System.out.println("test"+(node*100+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
 				
 				KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*10+i) );
 			}catch (Exception e) {
@@ -57,7 +58,7 @@ public class CreateMultiGuidClient {
 			      System.exit(1);
 			}
 			
-			String guid = client.lookupGuid("test"+(node*10+i)+ACCOUNT_ALIAS);
+			String guid = client.lookupGuid("test"+(node*100+i)+ACCOUNT_ALIAS);
 			
 			JSONObject json = new JSONObject("{\"hi\":\"hello\"}");
 			client.update(guidAccount, json);
@@ -65,12 +66,19 @@ public class CreateMultiGuidClient {
 			JSONObject result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
 		    if(flag){
+		    	if (i%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
+		    		client.activeCodeSet(guid, "read", code64, guidAccount);
+		    	}else{
+		    		client.activeCodeSet(guid, "read", mal_code64, guidAccount);
+		    	}
+		    	/*
 			    if( i < fraction ){
 			    	client.activeCodeSet(guid, "read", code64, guidAccount);
 			    	
 			    }else{
 			    	client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 			    }
+			    */
 		    }
 		    
 		    try{

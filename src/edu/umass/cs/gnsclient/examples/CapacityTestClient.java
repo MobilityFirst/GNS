@@ -18,7 +18,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.mchange.v2.resourcepool.TimeoutException;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
@@ -35,10 +34,9 @@ public class CapacityTestClient {
     
     private static int NUM_THREAD = 10;
     private static long start = 0;
-    protected static int TOTAL_SECOND = 1;
-    private static final int NUM_CLIENT = 20;
-    private static final int DURATION = 30; 
-    
+    private static int NUM_CLIENT = 0;
+    private static int INTERVAL = 8;
+    private static final int DURATION = 30;    
     private static int failed = 0;
     
     private String guid;
@@ -171,7 +169,8 @@ public class CapacityTestClient {
     InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
-		int rate =  Integer.parseInt(args[1]);
+		NUM_CLIENT =  Integer.parseInt(args[1]);
+		int rate = INTERVAL*NUM_CLIENT;
 		int node = Integer.parseInt(args[2]);
 		int fraction = NUM_CLIENT - Integer.parseInt(args[3]);
 		
@@ -179,7 +178,7 @@ public class CapacityTestClient {
 		UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
 		
 		for (int index=0; index<NUM_CLIENT; index++){			
-			String account = "test"+(node*10+index)+ACCOUNT_ALIAS;
+			String account = "test"+(node*100+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 		
 			//String guid = client.lookupGuid(account);
