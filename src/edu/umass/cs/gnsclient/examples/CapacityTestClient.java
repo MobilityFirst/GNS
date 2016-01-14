@@ -209,7 +209,7 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	int TOTAL_NORMAL = TOTAL - TOTAL * fraction / NUM_CLIENT;
+    	int TOTAL_NORMAL = TOTAL - TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
     	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) < TOTAL_NORMAL){
@@ -241,7 +241,7 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	TOTAL_NORMAL = TOTAL - TOTAL * fraction / NUM_CLIENT;
+    	TOTAL_NORMAL = TOTAL - TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
     	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) < TOTAL_NORMAL){
