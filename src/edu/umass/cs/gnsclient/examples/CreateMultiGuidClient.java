@@ -24,7 +24,7 @@ public class CreateMultiGuidClient {
 	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static int NUM_CLIENT = 100;
+	private final static int NUM_CLIENT = 150;
 	private final static String filename = "/home/ubuntu/test.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //
 	private final static String mal_file = "/home/ubuntu/mal.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js"; //
 	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/zhaoyugao/gns_key/";
@@ -54,16 +54,16 @@ public class CreateMultiGuidClient {
 		for (int i=0; i<NUM_CLIENT; i++){
 			GuidEntry guidAccount = null;
 			try{
-				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*100+i)+ACCOUNT_ALIAS, "password");
-				System.out.println("test"+(node*100+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
+				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*1000+i)+ACCOUNT_ALIAS, "password");
+				System.out.println("test"+(node*1000+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
 				
-				KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*10+i) );
+				KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i) );
 			}catch (Exception e) {
 			      System.out.println("Exception during accountGuid creation: " + e);
 			      System.exit(1);
 			}
 			
-			String guid = client.lookupGuid("test"+(node*100+i)+ACCOUNT_ALIAS);
+			String guid = client.lookupGuid("test"+(node*1000+i)+ACCOUNT_ALIAS);
 			
 			JSONObject json = new JSONObject("{\"hi\":\"hello\"}");
 			client.update(guidAccount, json);

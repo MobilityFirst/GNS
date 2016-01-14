@@ -180,7 +180,7 @@ public class CapacityTestClient {
 		UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
 		
 		for (int index=0; index<NUM_CLIENT; index++){			
-			String account = "test"+(node*100+index)+ACCOUNT_ALIAS;
+			String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 		
 			//String guid = client.lookupGuid(account);
