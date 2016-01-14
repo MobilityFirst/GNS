@@ -175,6 +175,7 @@ public class CapacityTestClient {
 		NUM_CLIENT =  Integer.parseInt(args[1]);
 		int rate = INTERVAL*NUM_CLIENT;
 		int node = Integer.parseInt(args[2]);
+		// fraction is the 
 		int fraction = Integer.parseInt(args[3]);
 		if(fraction > MALICIOUS_EVERY_FEW_CLIENTS ){
 			System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
@@ -210,7 +211,7 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	int TOTAL_NORMAL = TOTAL - TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
+    	int TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
     	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) < TOTAL_NORMAL){
@@ -245,7 +246,7 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	TOTAL_NORMAL = TOTAL - TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
+    	TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
     	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	while((latency.size()+failed) < TOTAL_NORMAL){
