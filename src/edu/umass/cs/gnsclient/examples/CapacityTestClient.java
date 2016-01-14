@@ -75,7 +75,7 @@ public class CapacityTestClient {
     	//(new Thread(new MaliciousThread(this.client, this.guid, this.entry)) ).start();
     	Future<String> future = this.executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
-    		future.get(1, TimeUnit.MILLISECONDS);
+    		future.get(300, TimeUnit.MILLISECONDS);
     	}catch(InterruptedException e){
        		//e.printStackTrace();
     	}catch(ExecutionException e){
