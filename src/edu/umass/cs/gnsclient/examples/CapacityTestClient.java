@@ -29,6 +29,8 @@ public class CapacityTestClient {
 	private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
+	private static ArrayList<Integer> mal_request = new ArrayList<Integer>();
+	private static int mal_id = 0;
     private ThreadPoolExecutor executorPool;
     private ExecutorService executor; // This is for executing malicious request
     
@@ -36,7 +38,7 @@ public class CapacityTestClient {
     private static long start = 0;
     private static int NUM_CLIENT = 0;
     private static int INTERVAL = 1;
-    private static final int DURATION = 30;
+    private static final int DURATION = 60;
     private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
     private static int failed = 0;
     
@@ -72,10 +74,12 @@ public class CapacityTestClient {
     }
     
     private void sendMaliciousRequest(UniversalTcpClient client){
+    	int req_id = mal_id;
+    	mal_id++;
     	//(new Thread(new MaliciousThread(this.client, this.guid, this.entry)) ).start();
     	Future<String> future = this.executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
-    		future.get(300, TimeUnit.MILLISECONDS);
+    		future.get();
     	}catch(InterruptedException e){
        		//e.printStackTrace();
     	}catch(ExecutionException e){
@@ -83,6 +87,8 @@ public class CapacityTestClient {
     	}catch(Exception e){
     		//e.printStackTrace();
     	}
+    	mal_request.add(req_id);
+    	
     }
     
     private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction, UniversalTcpClient client){
@@ -191,11 +197,6 @@ public class CapacityTestClient {
 			System.out.println("The GUID is "+guid);
 			
 			clients[index] = new CapacityTestClient(guid, accountGuid);
-			//client.activeCodeClear(guid, "read", accountGuid);
-			//long t1 = System.currentTimeMillis();
-			//client.fieldRead(accountGuid, "hi");
-			//long elapsed = System.currentTimeMillis() - t1;
-			//System.out.println("It takes "+elapsed+"ms to send a read request.");
 		}
 		
 		int TOTAL = rate * DURATION;
@@ -226,12 +227,15 @@ public class CapacityTestClient {
     	System.out.println("There are "+failed+" requests failed.");
     	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	System.out.println("The start point is:"+(start/1000));
+    	while(mal_request.size() != (TOTAL - TOTAL_NORMAL)){
+    		try{
+    			Thread.sleep(1000);
+    		}catch(InterruptedException e){
+    			e.printStackTrace();
+    		}
+    	}
     	
-    	
-    	clearLatency();
-    	
-    	Thread.sleep(2000);
-    	
+    	/*
     	System.out.println("2nd run");
     	start = System.currentTimeMillis();
     	t1 = System.currentTimeMillis();
@@ -259,8 +263,7 @@ public class CapacityTestClient {
     	System.out.println("There are "+failed+" requests failed.");
     	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	System.out.println("The start point is:"+(start/1000));
-    	
-    	//client.stop(); 
+    	*/ 
     	
     	// connect to none server and inform it's done
     	Socket socket = new Socket("128.119.245.5", 60001);
