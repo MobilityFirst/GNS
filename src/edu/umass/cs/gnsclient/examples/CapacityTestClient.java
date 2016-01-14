@@ -35,7 +35,7 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 10;
     private static long start = 0;
     private static int NUM_CLIENT = 0;
-    private static int INTERVAL = 8;
+    private static int INTERVAL = 1;
     private static final int DURATION = 30;
     private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
     private static int failed = 0;
