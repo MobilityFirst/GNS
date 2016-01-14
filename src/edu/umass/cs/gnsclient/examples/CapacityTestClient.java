@@ -36,7 +36,8 @@ public class CapacityTestClient {
     private static long start = 0;
     private static int NUM_CLIENT = 0;
     private static int INTERVAL = 8;
-    private static final int DURATION = 30;    
+    private static final int DURATION = 30;
+    private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
     private static int failed = 0;
     
     private String guid;
@@ -90,14 +91,10 @@ public class CapacityTestClient {
     	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" guid...");
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
-    			if(j < fraction){
+    			if(j%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
     				clients[j].sendSingleRequest(client);
     			}else{
-    				try{
-    					clients[j].sendMaliciousRequest(client);
-    				}catch(Exception e){
-    					System.out.println("Exception handled!");
-    				}
+    				clients[j].sendMaliciousRequest(client);
     			}
     			r.record();
     		}
@@ -172,7 +169,12 @@ public class CapacityTestClient {
 		NUM_CLIENT =  Integer.parseInt(args[1]);
 		int rate = INTERVAL*NUM_CLIENT;
 		int node = Integer.parseInt(args[2]);
-		int fraction = NUM_CLIENT - Integer.parseInt(args[3]);
+		int fraction = Integer.parseInt(args[3]);
+		if(fraction > MALICIOUS_EVERY_FEW_CLIENTS ){
+			System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
+			System.exit(0);
+		}
+		fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
 		
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
