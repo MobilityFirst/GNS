@@ -63,6 +63,7 @@ public class CreateMultiGuidClient {
 			JSONObject json = new JSONObject("{\"hi\":\"hello\"}");
 			client.update(guidAccount, json);
 			
+			client.activeCodeClear(guid, "read", guidAccount);
 			JSONObject result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
 		    if(flag){
