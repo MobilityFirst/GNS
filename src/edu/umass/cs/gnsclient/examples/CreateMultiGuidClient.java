@@ -36,6 +36,10 @@ public class CreateMultiGuidClient {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]);
 		int fraction = Integer.parseInt(args[2]); // deploy a malicious code for every 5 clients 
+		if(fraction >= MALICIOUS_EVERY_FEW_CLIENTS){
+			System.out.println("The fraction of malicious users must lie between 0 to 5(0%~100%).");
+			System.exit(0);
+		}
 		boolean flag = Boolean.parseBoolean(args[3]);
 		
 		//Read in the code and serialize
