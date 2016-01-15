@@ -31,8 +31,8 @@ public class CapacityTestClient {
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	private static ArrayList<Integer> mal_request = new ArrayList<Integer>();
 	private static int mal_id = 0;
-    private ThreadPoolExecutor executorPool;
-    private ExecutorService executor; // This is for executing malicious request
+    private static ThreadPoolExecutor executorPool;
+    private static ExecutorService executor; // This is for executing malicious request
     
     private static int NUM_THREAD = 10;
     private static long start = 0;
@@ -42,17 +42,12 @@ public class CapacityTestClient {
     private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
     private static int failed = 0;
     
-    private String guid;
-    private GuidEntry entry;
+    protected String guid;
+    protected GuidEntry entry;
             
     protected CapacityTestClient(String guid, GuidEntry entry){
     	this.guid = guid;
     	this.entry = entry;
-    	
-    	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
-	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
-    	executorPool.prestartAllCoreThreads();
-    	executor = Executors.newFixedThreadPool(NUM_THREAD);//Executors.newSingleThreadExecutor();
     }
     
     protected synchronized static void updateLatency(long time){
@@ -69,25 +64,24 @@ public class CapacityTestClient {
     }    
     
     private void sendSingleRequest(UniversalTcpClient client){
-    	this.executorPool.execute(new ClientThread(client, this.guid, this.entry));
+    	executorPool.execute(new ClientThread(client, this.guid, this.entry));
     	//(new Thread(new ClientThread())).start();
     }
     
     private void sendMaliciousRequest(UniversalTcpClient client){
-    	int req_id = mal_id;
-    	mal_id++;
-    	//(new Thread(new MaliciousThread(this.client, this.guid, this.entry)) ).start();
+    	(new Thread(new MaliciousThread(client, this.guid, this.entry)) ).start();
+    	/*
     	Future<String> future = this.executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
     		future.get();
     	}catch(InterruptedException e){
-       		//e.printStackTrace();
+       		e.printStackTrace();
     	}catch(ExecutionException e){
-    		//e.printStackTrace();
+    		e.printStackTrace();
     	}catch(Exception e){
-    		//e.printStackTrace();
+    		e.printStackTrace();
     	}
-    	mal_request.add(req_id);
+    	*/
     	
     }
     
@@ -135,7 +129,7 @@ public class CapacityTestClient {
     	}
     }
     
-    private class MaliciousThread implements Callable<String>{
+    private class MaliciousThread implements Runnable{
     	private UniversalTcpClient client;
         private String guid;
         private GuidEntry entry;
@@ -146,14 +140,15 @@ public class CapacityTestClient {
     		this.entry = entry;
     	}
     	
-    	public String call() throws Exception {
-    		String result = "";
+    	public void run(){
+    		int req_id = mal_id;
+        	mal_id++;
     		try{
-    			result = client.fieldRead(guid, "hi", entry);
+    			client.fieldRead(guid, "hi", entry);
     		}catch(Exception e){
     			//e.printStackTrace();
     		}
-    		return result;
+    		mal_request.add(req_id);
         }
     }
     
@@ -185,6 +180,11 @@ public class CapacityTestClient {
 		
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
 		UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
+		
+    	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
+	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
+    	executorPool.prestartAllCoreThreads();
+    	executor = Executors.newFixedThreadPool(NUM_THREAD*100);//Executors.newSingleThreadExecutor();
 		
 		for (int index=0; index<NUM_CLIENT; index++){			
 			String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
@@ -229,6 +229,7 @@ public class CapacityTestClient {
     	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	System.out.println("The start point is:"+(start/1000));
     	while(mal_request.size() != (TOTAL - TOTAL_NORMAL)){
+    		System.out.println("Finished malicious requests "+mal_request.size());
     		try{
     			Thread.sleep(1000);
     		}catch(InterruptedException e){
