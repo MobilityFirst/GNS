@@ -32,9 +32,9 @@ public class CapacityTestClient {
 	private static ArrayList<Integer> mal_request = new ArrayList<Integer>();
 	private static int mal_id = 0;
     private static ThreadPoolExecutor executorPool;
-    private static ExecutorService executor; // This is for executing malicious request
+    private static ThreadPoolExecutor executorMal; // This is for executing malicious request
     
-    private static int NUM_THREAD = 10;
+    private static int NUM_THREAD = 100;
     private static long start = 0;
     private static int NUM_CLIENT = 0;
     private static int INTERVAL = 1;
@@ -69,7 +69,8 @@ public class CapacityTestClient {
     }
     
     private void sendMaliciousRequest(UniversalTcpClient client){
-    	(new Thread(new MaliciousThread(client, this.guid, this.entry)) ).start();
+    	executorMal.execute(new MaliciousThread(client, this.guid, this.entry));
+    	//(new Thread(new MaliciousThread(client, this.guid, this.entry)) ).start();
     	/*
     	Future<String> future = executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
@@ -141,13 +142,12 @@ public class CapacityTestClient {
     	}
     	
     	public void run(){
-    		String result = "";
     		int req_id = mal_id;
         	mal_id++;
     		try{
-    			result = client.fieldRead(guid, "hi", entry);
+    			client.fieldRead(guid, "hi", entry);
     		}catch(Exception e){
-    			//e.printStackTrace();
+    			e.printStackTrace();
     		}
     		mal_request.add(req_id);
     		//return result;
@@ -186,8 +186,12 @@ public class CapacityTestClient {
     	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
     	executorPool.prestartAllCoreThreads();
-    	executor = Executors.newFixedThreadPool(NUM_THREAD*100);//Executors.newSingleThreadExecutor();
+    	executorMal = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
+	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
+    	executorMal.prestartAllCoreThreads();
+    	//Executors.newFixedThreadPool(NUM_THREAD);//Executors.newSingleThreadExecutor();
 		
+    	
 		for (int index=0; index<NUM_CLIENT; index++){			
 			String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
