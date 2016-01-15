@@ -69,8 +69,8 @@ public class CapacityTestClient {
     }
     
     private void sendMaliciousRequest(UniversalTcpClient client){
-    	//(new Thread(new MaliciousThread(client, this.guid, this.entry)) ).start();
-    	
+    	(new Thread(new MaliciousThread(client, this.guid, this.entry)) ).start();
+    	/*
     	Future<String> future = executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
     		future.get();
@@ -81,7 +81,7 @@ public class CapacityTestClient {
     	}catch(Exception e){
     		e.printStackTrace();
     	}
-    	
+    	*/
     	
     }
     
@@ -129,7 +129,7 @@ public class CapacityTestClient {
     	}
     }
     
-    private class MaliciousThread implements Callable<String>{
+    private class MaliciousThread implements Runnable{
     	private UniversalTcpClient client;
         private String guid;
         private GuidEntry entry;
@@ -140,7 +140,7 @@ public class CapacityTestClient {
     		this.entry = entry;
     	}
     	
-    	public String call(){
+    	public void run(){
     		String result = "";
     		int req_id = mal_id;
         	mal_id++;
@@ -150,7 +150,7 @@ public class CapacityTestClient {
     			//e.printStackTrace();
     		}
     		mal_request.add(req_id);
-    		return result;
+    		//return result;
         }
     }
     
