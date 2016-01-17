@@ -348,7 +348,7 @@
       </manifest>
     </jar>
   </target>
-	
+
   <target name="msocket-proxy-console-jar"
                 depends="clean,compile,msocketdoc"
                 description="Builds the mSocket proxy console Jar">
