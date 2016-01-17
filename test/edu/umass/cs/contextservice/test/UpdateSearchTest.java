@@ -116,8 +116,8 @@ public class UpdateSearchTest {
 			  double randomLong = (rand.nextDouble()*360)-180;
 			  
 			  
-			  randomLat = 42.466;
-			  randomLong = -72.58;
+			  randomLat = 32.000;
+			  randomLong = -97.000;
 			  
 			  attrValuePair.put("geoLocationCurrentLat", randomLat);
 			  attrValuePair.put("geoLocationCurrentLong", randomLong);
