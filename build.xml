@@ -253,6 +253,7 @@
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+    	<jvmarg value="-Xms1024m"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>

@@ -76,7 +76,7 @@ public class UpdateSearchTest {
       address = ServerSelectDialog.selectServer();
       try 
       {
-		contextServiceClient = new ContextServiceClient<String>();
+		contextServiceClient = new ContextServiceClient<String>("127.0.0.1", 5000);
       } catch (IOException e1) 
       {
 		e1.printStackTrace();

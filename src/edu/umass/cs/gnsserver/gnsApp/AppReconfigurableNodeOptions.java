@@ -43,7 +43,6 @@ import org.apache.commons.cli.Options;
  * @author westy
  */
 public class AppReconfigurableNodeOptions {
-
   // "Global" parameters
   /**
    * The port used by Mongo.
@@ -118,6 +117,9 @@ public class AppReconfigurableNodeOptions {
   public static long activeCodeBlacklistSeconds = 10;
   
   public static boolean enableContextService = false;
+  // ip port info of one context service node to contact.
+  // of the form ip:Port.
+  public static String contextServiceIpPort = "";
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -204,7 +206,12 @@ public class AppReconfigurableNodeOptions {
   /**
    * enable ContextService
    */
-  public static final String ENABLE_CONTEXT_SERVICE = "enableContextService";
+  public static final String ENABLE_CONTEXT_SERVICE  = "enableContextService";
+  
+  /**
+   * ip port information of 
+   */
+  public static final String CONTEXT_SERVICE_IP_PORT = "contextServiceHostPort";
 
   /**
    * Returns all the options.
@@ -234,6 +241,8 @@ public class AppReconfigurableNodeOptions {
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
     Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
+    Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
+    		+ "information of GNS");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -258,9 +267,11 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
     commandLineOptions.addOption(disableEmailVerification);
+    
+    //context service options
     commandLineOptions.addOption(enableContextService);
+    commandLineOptions.addOption(contextServiceHostPort);
     return commandLineOptions;
-
   }
 
   private static boolean initialized = false;
@@ -416,6 +427,9 @@ public class AppReconfigurableNodeOptions {
     {
     	enableContextService = true;
     }
+    
+    if (allValues.containsKey(CONTEXT_SERVICE_IP_PORT)) {
+    	contextServiceIpPort = allValues.get(CONTEXT_SERVICE_IP_PORT);
+    }
   }
-
 }

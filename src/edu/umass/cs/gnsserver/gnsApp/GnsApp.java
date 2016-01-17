@@ -151,7 +151,10 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     
     if(AppReconfigurableNodeOptions.enableContextService)
     {
-    	csClient = new ContextServiceClient<String>();
+    	String[] parsed = AppReconfigurableNodeOptions.contextServiceIpPort.split(":");
+    	String host = parsed[0];
+    	int port = Integer.parseInt(parsed[1]);
+    	csClient = new ContextServiceClient<String>(host, port);
     }
   }
   

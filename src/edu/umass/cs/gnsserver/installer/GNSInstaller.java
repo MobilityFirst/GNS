@@ -463,8 +463,8 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void killAllServers(String hostname, boolean runAsRoot) {
-	  //FIXME: kill not working on emulab
-	  try
+	  //FIXME: kill not working on emulab or local machine
+	  /*try
 	  {
 		  System.out.println("Killing GNS servers");
 		  ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
@@ -477,7 +477,7 @@ public class GNSInstaller {
 	  } catch(Exception | Error ex)
 	  {
 		  ex.printStackTrace();
-	  }
+	  }*/
   }
 
   /**
