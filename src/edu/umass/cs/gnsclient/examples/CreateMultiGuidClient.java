@@ -24,7 +24,7 @@ public class CreateMultiGuidClient {
 	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static int NUM_CLIENT = 100;
+	private static int NUM_CLIENT = 100;
 	private final static String filename = "/home/ubuntu/test.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //
 	private final static String mal_file = "/home/ubuntu/mal.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js"; //
 	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/zhaoyugao/gns_key/";
@@ -41,7 +41,8 @@ public class CreateMultiGuidClient {
 			System.exit(0);
 		}
 		fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
-		boolean flag = Boolean.parseBoolean(args[3]);
+		NUM_CLIENT = Integer.parseInt(args[3]);
+		boolean flag = Boolean.parseBoolean(args[4]);
 		
 		//Read in the code and serialize
 		String code = new String(Files.readAllBytes(Paths.get(filename)));
