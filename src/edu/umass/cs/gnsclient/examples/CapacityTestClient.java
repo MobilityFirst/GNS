@@ -170,10 +170,10 @@ public class CapacityTestClient {
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
 		NUM_CLIENT =  Integer.parseInt(args[1]);
+		INTERVAL = Integer.parseInt(args[2]);
 		int rate = INTERVAL*NUM_CLIENT;
-		int node = Integer.parseInt(args[2]);
-		// fraction is the 
-		int fraction = Integer.parseInt(args[3]);
+		int node = Integer.parseInt(args[3]); 
+		int fraction = Integer.parseInt(args[4]);
 		if(fraction > MALICIOUS_EVERY_FEW_CLIENTS ){
 			System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
 			System.exit(0);
