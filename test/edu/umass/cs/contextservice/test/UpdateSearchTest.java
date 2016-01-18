@@ -38,6 +38,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +70,23 @@ public class UpdateSearchTest {
   
   private static final int NUM_GUIDs	= 10;
   
+  private static final double LEFT = -98.08;
+  private static final double RIGHT = -96.01;
+  private static final double TOP = 33.635;
+  private static final double BOTTOM = 31.854;
+  
+
+  private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(TOP, LEFT);
+  //private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(33.45, -98.08);
+  private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(TOP, RIGHT);
+  //private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(33.45, -96.01);
+  private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(BOTTOM, RIGHT);
+  //private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(32.23, -96.01);
+  private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(BOTTOM, LEFT);
+  //private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(32.23, -98.08);
+
+  public static final List<GlobalCoordinate> AREA_EXTENT = new ArrayList(
+          Arrays.asList(UPPER_LEFT, UPPER_RIGHT, LOWER_RIGHT, LOWER_LEFT, UPPER_LEFT));
 
   
   public UpdateSearchTest() {
@@ -205,18 +224,19 @@ public class UpdateSearchTest {
   
   private JSONObject getGeoJSON()
   {
-	  List<GlobalCoordinate> list = new LinkedList<GlobalCoordinate>();
-	  GlobalCoordinate amherst = new GlobalCoordinate(42.340382, -72.496819);
-		GlobalCoordinate northampton = new GlobalCoordinate(42.3250896, -72.6412013);
-		GlobalCoordinate sunderland = new GlobalCoordinate(42.4663727, -72.5795115);
-		list.add(amherst);
-		list.add(sunderland);
-		list.add(northampton);
-		list.add(amherst);
+//	  List<GlobalCoordinate> list = new LinkedList<GlobalCoordinate>();
+//	  GlobalCoordinate amherst = new GlobalCoordinate(42.340382, -72.496819);
+//		GlobalCoordinate northampton = new GlobalCoordinate(42.3250896, -72.6412013);
+//		GlobalCoordinate sunderland = new GlobalCoordinate(42.4663727, -72.5795115);
+//		list.add(amherst);
+//		list.add(sunderland);
+//		list.add(northampton);
+//		list.add(amherst);
+		
 		JSONObject geoJSON = null;
 		try 
 		{
-			 geoJSON = GeoJSON.createGeoJSONPolygon(list);
+			 geoJSON = GeoJSON.createGeoJSONPolygon(AREA_EXTENT);
 			 /*JSONArray coordArray = geoJSON.getJSONArray("coordinates");
 			 JSONArray newArray = new JSONArray(coordArray.getString(0));
 			 for(int i=0;i<newArray.length();i++)
