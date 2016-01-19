@@ -30,9 +30,9 @@ public class CapacityTestClient {
 	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	private static ArrayList<Integer> mal_request = new ArrayList<Integer>();
-	private static int mal_id = 0;
+	private static int req_id = 0;
     private static ThreadPoolExecutor executorPool;
-    private static ThreadPoolExecutor executorMal; // This is for executing malicious request
+    //private static ThreadPoolExecutor executorMal; // This is for executing malicious request
     
     private static int NUM_THREAD = 100;
     private static long start = 0;
@@ -63,15 +63,15 @@ public class CapacityTestClient {
     	return latency.size();
     }    
     
-    private void sendSingleRequest(UniversalTcpClient client){
-    	executorPool.execute(new ClientThread(client, this.guid, this.entry));
+    private void sendSingleRequest(UniversalTcpClient client, boolean malicious){
+    	executorPool.execute(new ClientThread(client, this.guid, this.entry, malicious));
     	//(new Thread(new ClientThread())).start();
     }
     
-    private void sendMaliciousRequest(UniversalTcpClient client){
-    	executorMal.execute(new MaliciousThread(client, this.guid, this.entry));
-    	//(new Thread(new MaliciousThread(client, this.guid, this.entry)) ).start();
-    	/*
+    /*
+    private void sendMaliciousRequest(UniversalTcpClient client, boolean malicious){
+    	executorPool.execute(new MaliciousThread(client, this.guid, this.entry));
+    	
     	Future<String> future = executor.submit(new MaliciousThread(client, this.guid, this.entry));
     	try {
     		future.get();
@@ -82,9 +82,9 @@ public class CapacityTestClient {
     	}catch(Exception e){
     		e.printStackTrace();
     	}
-    	*/
     	
     }
+	*/
     
     private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction, UniversalTcpClient client){
     	int reqPerClient = numRequest / NUM_CLIENT;
@@ -93,9 +93,9 @@ public class CapacityTestClient {
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
     			if(j%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
-    				clients[j].sendSingleRequest(client);
+    				clients[j].sendSingleRequest(client, false);
     			}else{
-    				clients[j].sendMaliciousRequest(client);
+    				clients[j].sendSingleRequest(client, true);
     			}
     			r.record();
     		}
@@ -106,11 +106,13 @@ public class CapacityTestClient {
     	private UniversalTcpClient client;
         private String guid;
         private GuidEntry entry;
+        private boolean mal;
         
-    	public ClientThread(UniversalTcpClient client, String guid, GuidEntry entry){
+    	public ClientThread(UniversalTcpClient client, String guid, GuidEntry entry, boolean mal){
     		this.client = client;
     		this.guid = guid;
     		this.entry = entry;
+    		this.mal = mal;
     	}
     	
     	public synchronized void run(){
@@ -125,34 +127,17 @@ public class CapacityTestClient {
     		}
     		
     		long elapsed = System.nanoTime() - begin;
-    		//System.out.println(elapsed);
-    		CapacityTestClient.updateLatency(elapsed);
+    		if(this.mal){
+    			System.out.println(elapsed);
+    			CapacityTestClient.updateLatency(elapsed);
+    		}else{
+    			mal_request.add(req_id);
+            	req_id++;
+    		}
+    		
     	}
     }
     
-    private class MaliciousThread implements Runnable{
-    	private UniversalTcpClient client;
-        private String guid;
-        private GuidEntry entry;
-        
-    	public MaliciousThread(UniversalTcpClient client, String guid, GuidEntry entry){
-    		this.client = client;
-    		this.guid = guid;
-    		this.entry = entry;
-    	}
-    	
-    	public void run(){
-    		int req_id = mal_id;
-        	mal_id++;
-    		try{
-    			client.fieldRead(guid, "hi", entry);
-    		}catch(Exception e){
-    			e.printStackTrace();
-    		}
-    		mal_request.add(req_id);
-    		//return result;
-        }
-    }
     
     /**
      * Test with a single {@link UniversalTcpClient}
@@ -186,9 +171,11 @@ public class CapacityTestClient {
     	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
     	executorPool.prestartAllCoreThreads();
+    	/*
     	executorMal = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
     	executorMal.prestartAllCoreThreads();
+    	*/
     	//Executors.newFixedThreadPool(NUM_THREAD);//Executors.newSingleThreadExecutor();
 		
     	
