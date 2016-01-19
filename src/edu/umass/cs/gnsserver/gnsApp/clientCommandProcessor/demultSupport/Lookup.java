@@ -43,7 +43,6 @@ public class Lookup {
 
   /**
    *
-   * @param json
    * @param incomingPacket
    * @param handler
    * @throws JSONException
@@ -53,8 +52,7 @@ public class Lookup {
           throws JSONException, UnknownHostException {
     long startTime = System.currentTimeMillis();
     if (handler.getParameters().isDebugMode()) {
-      //GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + incomingPacket.toString());
-      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + incomingPacket.toReasonableString());
+      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + incomingPacket.toString(true));
     }
     int ccpReqID = handler.getUniqueRequestID();
     DNSRequestInfo<String> requestInfo = new DNSRequestInfo<String>(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
@@ -71,15 +69,13 @@ public class Lookup {
 
   /**
    *
-   * @param json
    * @param dnsPacket
    * @param handler
    * @throws JSONException
    */
   public static void handlePacketLookupResponse(DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
-      //GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + dnsPacket.toString());
-      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + dnsPacket.toReasonableString());
+      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + dnsPacket.toString(true));
     }
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
@@ -113,7 +109,6 @@ public class Lookup {
   /**
    * Handles the returning of error packets.
    * 
-   * @param jsonObject
    * @param dnsPacket
    * @param handler
    * @throws JSONException
@@ -121,7 +116,7 @@ public class Lookup {
   public static void handlePacketLookupErrorResponse(DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("Recvd Lookup Error Response" + dnsPacket.toReasonableString());
+      GNS.getLogger().info("Recvd Lookup Error Response" + dnsPacket.toString(true));
     }
     @SuppressWarnings("unchecked")
     DNSRequestInfo<String> requestInfo = (DNSRequestInfo<String>) handler.removeRequestInfo(dnsPacket.getQueryId());

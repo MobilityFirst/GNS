@@ -20,18 +20,22 @@
 package edu.umass.cs.gnsclient.client.tcp.packet;
 
 import edu.umass.cs.gnsclient.client.tcp.packet.Packet.PacketType;
+import edu.umass.cs.gnscommon.GnsProtocol;
+import static edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket.BOGUS_SERVICE_NAME;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Packet format sent from a client and handled by a local name server.
+ * Packet format sent from a client LNS or AR.
  *
  */
-public class CommandPacket extends BasicPacket {
+public class CommandPacket extends BasicPacket implements ReplicableRequest {
 
-  private final static String REQUESTID = "clientreqID"; // needs to be the same as the field in the server
-  private final static String SENDERIP = MessageNIOTransport.SNDR_IP_FIELD; // GNS knows about this field
+  private final static String CLIENTREQUESTID = "clientreqID"; // needs to be the same as the field in the server
+  private final static String LNSREQUESTID = "LNSreqID"; // only needed by LNS and server
+  private final static String SENDERADDRESS = MessageNIOTransport.SNDR_IP_FIELD; // GNS knows about this field
   private final static String SENDERPORT = MessageNIOTransport.SNDR_PORT_FIELD; // GNS knows about this field
   private final static String COMMAND = "command";
 
@@ -40,10 +44,14 @@ public class CommandPacket extends BasicPacket {
    */
   private int requestId; // not final because of testing requirement
   /**
-   * The IP address of the sender as a string. 
+   * LNS identifier - filled in at the LNS.
+   */
+  private int LNSRequestId;
+  /**
+   * The IP address of the sender as a string.
    * Will be inserted by the receiver.
    */
-  private final String senderIP;
+  private final String senderAddress;
   /**
    * The TCP port of the sender as an int
    */
@@ -55,46 +63,57 @@ public class CommandPacket extends BasicPacket {
   private final JSONObject command;
 
   /**
+   * The stop requests needsCoordination() method must return true by default.
+   */
+  private boolean needsCoordination = true;
+  private boolean needsCoordinationExplicitlySet = false;
+
+  /**
    * Creates a CommandPacket.
-   * 
+   *
    * @param requestId
-   * @param senderHost
+   * @param senderAddress
    * @param senderPort
    * @param command
    */
-  public CommandPacket(int requestId, String senderHost, int senderPort, JSONObject command) {
+  public CommandPacket(int requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.requestId = requestId;
-    this.senderIP = senderHost;
+    this.senderAddress = senderAddress;
     this.senderPort = senderPort;
     this.command = command;
   }
-  
+
   /**
    * Creates a command packet with a null host and -1 port which will be
    * filled in when the packet is sent out.
-   * 
+   *
    * @param requestId
-   * @param command 
+   * @param command
    */
   public CommandPacket(int requestId, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.requestId = requestId;
-    this.senderIP = null;
+    this.senderAddress = null;
     this.senderPort = -1;
     this.command = command;
   }
 
   /**
    * Creates a CommandPacket from a JSONObject.
-   * 
+   *
    * @param json
-   * @throws JSONException 
+   * @throws JSONException
    */
   public CommandPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.requestId = json.getInt(REQUESTID);
-    this.senderIP = json.optString(SENDERIP, null);
+    this.requestId = json.getInt(CLIENTREQUESTID);
+    if (json.has(LNSREQUESTID)) {
+      this.LNSRequestId = json.getInt(LNSREQUESTID);
+    } else {
+      this.LNSRequestId = -1;
+    }
+    this.senderAddress = json.optString(SENDERADDRESS, null);
     this.senderPort = json.optInt(SENDERPORT, -1);
     this.command = json.getJSONObject(COMMAND);
   }
@@ -109,10 +128,13 @@ public class CommandPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(REQUESTID, this.requestId);
+    json.put(CLIENTREQUESTID, this.requestId);
+    if (this.LNSRequestId != -1) {
+      json.put(LNSREQUESTID, this.LNSRequestId);
+    }
     json.put(COMMAND, this.command);
-    if (senderIP != null) {
-      json.put(SENDERIP, this.senderIP);
+    if (senderAddress != null) {
+      json.put(SENDERADDRESS, this.senderAddress);
     }
     if (senderPort != -1) {
       json.put(SENDERPORT, this.senderPort);
@@ -130,7 +152,7 @@ public class CommandPacket extends BasicPacket {
   }
 
   public String getSenderAddress() {
-    return senderIP;
+    return senderAddress;
   }
 
   public int getSenderPort() {
@@ -139,6 +161,64 @@ public class CommandPacket extends BasicPacket {
 
   public JSONObject getCommand() {
     return command;
+  }
+
+  @Override
+  public String getServiceName() {
+    try {
+      if (command != null) {
+        if (command.has(GnsProtocol.GUID)) {
+          return command.getString(GnsProtocol.GUID);
+        }
+        if (command.has(GnsProtocol.NAME)) {
+          return command.getString(GnsProtocol.NAME);
+        }
+      }
+    } catch (JSONException e) {
+      // Just ignore it
+    }
+    return BOGUS_SERVICE_NAME;
+  }
+
+  /**
+   * Return the command name.
+   *
+   * @return the command name
+   */
+  public String getCommandName() {
+    try {
+      if (command != null) {
+        if (command.has(GnsProtocol.COMMANDNAME)) {
+          return command.getString(GnsProtocol.COMMANDNAME);
+        }
+      }
+    } catch (JSONException e) {
+      // Just ignore it
+    }
+    return "unknown";
+  }
+
+  @Override
+  public boolean needsCoordination() {
+    if (needsCoordinationExplicitlySet) {
+      return needsCoordination;
+    } else {
+      // Cache it.
+      needsCoordinationExplicitlySet = true;
+      needsCoordination = GnsProtocol.UPDATE_COMMANDS.contains(getCommandName());
+      return needsCoordination;
+    }
+  }
+
+  @Override
+  public void setNeedsCoordination(boolean needsCoordination) {
+    needsCoordinationExplicitlySet = true;
+    this.needsCoordination = needsCoordination;
+  }
+
+  @Override
+  public void addToJSONObject(JSONObject json) throws JSONException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
 }

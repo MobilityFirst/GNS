@@ -76,8 +76,7 @@ public class AppUpdate {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Processing UPDATE with " + " "
               + "doNotReplyToClient= " + doNotReplyToClient
-              //+ " packet: " + updatePacket.toString());
-              + " packet: " + updatePacket.toReasonableString());
+              + " packet: " + updatePacket.toString(true));
     }
 
     // First we do signature and ACL checks
@@ -118,8 +117,7 @@ public class AppUpdate {
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " 
-                //+ guid + " Packet = " + updatePacket.toString());
-                + guid + " Packet = " + updatePacket.toReasonableString());
+                + guid + " Packet = " + updatePacket.toString(true));
         e.printStackTrace();
         @SuppressWarnings("unchecked")
         ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
@@ -201,8 +199,7 @@ public class AppUpdate {
 
       if (!result) { // update failed
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          //GNS.getLogger().info("Update operation failed " + updatePacket.toString());
-          GNS.getLogger().info("Update operation failed " + updatePacket.toReasonableString());
+          GNS.getLogger().info("Update operation failed " + updatePacket.toString(true));
         }
         if (updatePacket.getNameServerID().equals(app.getNodeID())) {
           // IF this node proposed this update send error message to client (CCP).
@@ -211,8 +208,7 @@ public class AppUpdate {
                           updatePacket.getSourceId(),
                           updatePacket.getRequestIDInteger(), updatePacket.getCCPRequestID(), NSResponseCode.ERROR);
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            //GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket.toString());
-            GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket.toReasonableString());
+            GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket.toString(true));
           }
           if (!doNotReplyToClient) {
             app.getClientCommandProcessor().injectPacketIntoCCPQueue(failPacket.toJSONObject());
@@ -221,8 +217,7 @@ public class AppUpdate {
 
       } else {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          //GNS.getLogger().info("Update applied" + updatePacket.toString());
-          GNS.getLogger().info("Update applied" + updatePacket.toReasonableString());
+          GNS.getLogger().info("Update applied" + updatePacket.toString(true));
         }
 
         // If this node proposed this update send the confirmation back to the client (CCP).

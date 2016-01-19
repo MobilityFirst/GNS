@@ -180,4 +180,9 @@ public class CommandValueReturnPacket extends BasicPacket {
 //    return lookupTime;
 //  }
 
+  @Override
+  public void addToJSONObject(JSONObject json) throws JSONException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
 }

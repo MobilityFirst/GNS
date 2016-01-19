@@ -84,8 +84,7 @@ public class AppLookup {
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() 
-              //+ "; DNS Query Packet: " + dnsPacket.toString());
-              + "; DNS Query Packet: " + dnsPacket.toReasonableString());
+              + "; DNS Query Packet: " + dnsPacket.toString(true));
     }
     // FIX THIS!
     // META COMMENT ABOUT THE COMMENT BELOW: 

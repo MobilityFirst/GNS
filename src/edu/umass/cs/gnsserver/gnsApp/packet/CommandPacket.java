@@ -133,6 +133,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
   public int getClientRequestId() {
     return clientRequestId;
   }
+  
 
   /**
    * Return the LNS request id.
