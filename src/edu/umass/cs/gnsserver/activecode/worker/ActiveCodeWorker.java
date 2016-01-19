@@ -53,18 +53,18 @@ public class ActiveCodeWorker {
 	 */
 	public void run(int readyPort) throws IOException {	
         //ServerSocket listener = new ServerSocket(port);
-		long start = System.nanoTime();
+		//long start = System.nanoTime();
         ActiveCodeRunner runner = new ActiveCodeRunner();
-        System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a runner.");
+        //System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a runner.");
         try {
         	RequestHandler handler = new RequestHandler(runner, this.clientPort);
-        	System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a handler.");
+        	//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a handler.");
         	boolean keepGoing = true;
 
     		// Notify the server that we are ready
     		Socket temp = new Socket("0.0.0.0", readyPort);
     		temp.close();
-    		System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
+    		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
     		
             while (keepGoing) {
             	//Socket s = listener.accept();
