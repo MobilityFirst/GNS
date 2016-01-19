@@ -47,18 +47,19 @@ public class ActiveCodeRunner {
   //private ScriptContext sc;
   
   /**
-   * Intialize an ActiveCodeRunner with nashorn script engine
+   * Initialize an ActiveCodeRunner with nashorn script engine
    * by default.
+   * To get the script engine takes hundreds of milliseconds. 
    */
   public ActiveCodeRunner() {
-	long start = System.currentTimeMillis();
+	//long start = System.currentTimeMillis();
     ScriptEngineManager engineManager = new ScriptEngineManager();
-    System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to initialize the manager.");
+    //System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to initialize the manager.");
     engine = engineManager.getEngineByName("nashorn");
-    System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to get the engine.");
+    //System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to get the engine.");
     // engine = engineManager.getEngineByName("luaj");
     invocable = (Invocable) engine;
-    System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to get the invocable.");
+    //System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to get the invocable.");
     contexts = new HashMap<>();
     codeHashes = new HashMap<>();
     //sc = new SimpleScriptContext();

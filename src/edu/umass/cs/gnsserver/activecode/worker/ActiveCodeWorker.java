@@ -38,7 +38,6 @@ public class ActiveCodeWorker {
 	private int clientPort = 0;
 	
 	public ActiveCodeWorker(int port, int callbackPort) {
-		long start = System.currentTimeMillis();
 		try{
 			this.serverSocket = new DatagramSocket(port);
 			System.out.println("Starting ActiveCodeWorker at port number " + port);
@@ -47,6 +46,7 @@ public class ActiveCodeWorker {
 			e.printStackTrace();
 		}
 	}
+	
 	/**
 	 * Starts the worker listener
 	 * @throws IOException

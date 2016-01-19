@@ -75,6 +75,11 @@ public class CreateMultiGuidClient {
 		    if(flag){
 		    	if (i%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
 		    		client.activeCodeSet(guid, "read", code64, guidAccount);
+		    		try{
+				    	result = client.read(guidAccount);
+				    }catch(GnsException e){
+				    	System.out.println("Request timed out!");
+				    }
 		    	}else{
 		    		client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 		    	}
@@ -88,11 +93,7 @@ public class CreateMultiGuidClient {
 			    */
 		    }
 		    
-		    try{
-		    	result = client.read(guidAccount);
-		    }catch(GnsException e){
-		    	System.out.println("Request timed out!");
-		    }
+		    
 	    	System.out.println("Retrieved JSON from guid: " + result.toString());
 		}
 		System.exit(0);

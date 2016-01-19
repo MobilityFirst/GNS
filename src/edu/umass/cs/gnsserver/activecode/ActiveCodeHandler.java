@@ -140,8 +140,8 @@ public class ActiveCodeHandler {
 	 */
 	public void addToBlacklist(String guid) {
 		System.out.println("Guid " + guid + " is blacklisted from running code!");
-		blacklist.put(guid, System.currentTimeMillis());
 		scheduler.remove(guid);
+		blacklist.put(guid, System.currentTimeMillis());
 	}
 	
 	/**
@@ -188,10 +188,6 @@ public class ActiveCodeHandler {
 			System.out.println("Cancellation thread "+Thread.currentThread().getId());
 			scheduler.finish(guid);
 			return valuesMap;
-			// Exception because of being cancelled
-			// ActiveCodeClient client = clientPool.getClient(guard.getThread(futureTask).getId());
-			// Restart the server of the corresponding thread
-			// client.restartServer();
 		} catch (Exception e){
 			System.out.println("Other");
 			scheduler.finish(guid);
