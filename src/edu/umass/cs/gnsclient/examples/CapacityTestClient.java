@@ -127,7 +127,7 @@ public class CapacityTestClient {
     		}
     		
     		long elapsed = System.nanoTime() - begin;
-    		if(this.mal){
+    		if(!this.mal){
     			System.out.println(elapsed);
     			CapacityTestClient.updateLatency(elapsed);
     		}else{
