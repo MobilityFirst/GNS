@@ -35,8 +35,7 @@ public class ActiveCodeScheduler implements Runnable{
 	
 	public void run(){		
 		while(true){
-			//executorPool.getQueue().remainingCapacity()<=0
-			System.out.println("The number of running threads is "+executorPool.getActiveCount()+"/"+executorPool.getPoolSize());
+			//System.out.println("The number of running threads is "+executorPool.getActiveCount()+"/"+executorPool.getPoolSize());
 			while(executorPool.getActiveCount() == executorPool.getPoolSize() || guidList.isEmpty()){
 				synchronized (lock){
 					try{
