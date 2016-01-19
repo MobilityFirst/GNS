@@ -45,10 +45,8 @@ public class ActiveCodeGuidQuerier {
 
   private PrintWriter out;
   private BufferedReader in;
-  private int breadth = 5;
-  private int depth = 5;
   private String guid = "";
-  
+  private int depth = 0;
   /**
    * Initialize an ActiveCodeGuidQuerier
    * @param in
@@ -70,18 +68,13 @@ public class ActiveCodeGuidQuerier {
   }
   
   private synchronized boolean accounting(String obj_guid){
-	  System.out.println("The breadth is "+breadth+" "+depth);
-	  if(guid.equals(obj_guid) || obj_guid.equals(null)){
-		  if(this.breadth <= 0){
-			  return false;
-		  }
-		  this.breadth--;
-	  }else{
-		  if(this.depth <= 0){
-			  return false;
-		  }
-		  this.depth--;
+	  System.out.println("The depth is "+depth);
+	  
+	  if(this.depth <= 0){
+		  return false;
 	  }
+	  this.depth--;
+	  
 	  return true;
   }
   
