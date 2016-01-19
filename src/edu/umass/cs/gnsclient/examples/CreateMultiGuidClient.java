@@ -80,6 +80,7 @@ public class CreateMultiGuidClient {
 				    }catch(GnsException e){
 				    	System.out.println("Request timed out!");
 				    }
+		    		System.out.println("Retrieved JSON from guid: " + result.toString());
 		    	}else{
 		    		client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 		    	}
@@ -94,7 +95,7 @@ public class CreateMultiGuidClient {
 		    }
 		    
 		    
-	    	System.out.println("Retrieved JSON from guid: " + result.toString());
+	    	
 		}
 		System.exit(0);
 	}
