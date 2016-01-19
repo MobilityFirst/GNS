@@ -51,12 +51,14 @@ public class ActiveCodeRunner {
    * by default.
    */
   public ActiveCodeRunner() {
+	long start = System.currentTimeMillis();
     ScriptEngineManager engineManager = new ScriptEngineManager();
     engine = engineManager.getEngineByName("nashorn");
     // engine = engineManager.getEngineByName("luaj");
     invocable = (Invocable) engine;
     contexts = new HashMap<>();
     codeHashes = new HashMap<>();
+    System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to get the engine.");
     //sc = new SimpleScriptContext();
 
 		// uncomment to enable the lua-to-java bytecode compiler 
