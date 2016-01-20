@@ -66,10 +66,12 @@
   </target>
   
   <fileset id="client.includes" dir="${build.classes.dir}"
-           includes="edu/umass/cs/gnsclient/**/*.class,
-                     edu/umass/cs/gnscommon/**/*.class, 
-                     org/**/*.class"
-  />
+               includes="**/*.class"/>
+<!--           includes="edu/umass/cs/gnsclient/**/*.class,
+                     edu/umass/cs/gnscommon/**/*.class,
+                     edu/umass/cs/gnsserver/**/*.class, 
+                     org/**/*.class"-->
+  
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
   

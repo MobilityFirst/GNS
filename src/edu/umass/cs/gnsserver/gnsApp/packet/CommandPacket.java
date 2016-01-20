@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
@@ -33,7 +34,7 @@ import org.json.JSONObject;
  * Packet format sent from a client and handled by a local name server.
  *
  */
-public class CommandPacket extends BasicPacketWithClientAddress implements ReplicableRequest {
+public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest {
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";
@@ -41,7 +42,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
   private final static String SENDERPORT = MessageNIOTransport.SNDR_PORT_FIELD;
   private final static String COMMAND = "command";
 
-  /** bogus service name */
+  /**
+   * bogus service name
+   */
   public final static String BOGUS_SERVICE_NAME = "unknown";
 
   /**
@@ -73,7 +76,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 
   /**
    * Create a CommandPacket instance.
-   * 
+   *
    * @param requestId
    * @param senderAddress
    * @param command
@@ -87,7 +90,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
     this.senderPort = senderPort;
     this.command = command;
   }
-  
+
   /**
    * Creates a command packet with a null host and -1 port which will be
    * filled in when the packet is sent out.
@@ -121,7 +124,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
     this.senderPort = json.optInt(SENDERPORT, -1);
     this.command = json.getJSONObject(COMMAND);
   }
-  
+
 //  /**
 //   * Create a CommandPacket instance.
 //   *
@@ -140,8 +143,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 //    this.senderPort = json.getInt(SENDERPORT);
 //    this.command = json.getJSONObject(COMMAND);
 //  }
-
-  
   /**
    * Converts the command object into a JSONObject.
    *
@@ -165,7 +166,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
     }
     return json;
   }
-  
+
 //  /**
 //   * Converts the command object into a JSONObject.
 //   *
@@ -185,16 +186,36 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 //    json.put(SENDERPORT, this.senderPort);
 //    return json;
 //  }
-
   /**
    * Return the client request id.
-   * 
+   *
    * @return the client request id
    */
   public int getClientRequestId() {
     return clientRequestId;
   }
+
   
+  /**
+   * Return the client request id as a long.
+   *
+   * @return the client request id
+   */
+  @Override
+  public long getRequestID() {
+    return clientRequestId;
+  }
+
+  /**
+   * For ClientRequest.
+   * 
+   * @return 
+   */
+  @Override
+  public ClientRequest getResponse() {
+    return null;
+  }
+
   // only for testing
   public void setClientRequestId(int requestId) {
     this.clientRequestId = requestId;
@@ -202,7 +223,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 
   /**
    * Return the LNS request id.
-   * 
+   *
    * @return the LNS request id
    */
   public int getLNSRequestId() {
@@ -211,7 +232,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 
   /**
    * Set the LNS request id.
-   * 
+   *
    * @param LNSRequestId
    */
   public void setLNSRequestId(int LNSRequestId) {
@@ -220,7 +241,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 
   /**
    * Return the sender address.
-   * 
+   *
    * @return a string
    */
   public String getSenderAddress() {
@@ -229,7 +250,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 
   /**
    * Return the sender port.
-   * 
+   *
    * @return the sender port
    */
   public int getSenderPort() {
@@ -238,7 +259,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 
   /**
    * Return the command.
-   * 
+   *
    * @return the command
    */
   public JSONObject getCommand() {
@@ -264,7 +285,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
 
   /**
    * Return the command name.
-   * 
+   *
    * @return the command name
    */
   public String getCommandName() {
