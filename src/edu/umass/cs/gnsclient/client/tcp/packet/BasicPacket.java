@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client.tcp.packet;
 
+import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsApp.packet.PacketInterface;
 import edu.umass.cs.gnsserver.gnsApp.packet.ExtensiblePacketInterface;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -29,6 +31,7 @@ import org.json.JSONException;
  *
  * @author westy
  */
+@Deprecated
 public abstract class BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
   /**

@@ -26,6 +26,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public interface PacketInterface {
   
   public JSONObject toJSONObject() throws JSONException;

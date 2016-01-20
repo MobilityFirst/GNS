@@ -19,9 +19,12 @@
  */
 package edu.umass.cs.gnsclient.client.tcp.packet;
 
-import edu.umass.cs.gnsclient.client.tcp.packet.Packet.PacketType;
+import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket.BOGUS_SERVICE_NAME;
+import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.putPacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import org.json.JSONException;
@@ -106,7 +109,7 @@ public class CommandPacket extends BasicPacket implements ReplicableRequest {
    * @throws JSONException
    */
   public CommandPacket(JSONObject json) throws JSONException {
-    this.type = Packet.getPacketType(json);
+    this.type = getPacketType(json);
     this.requestId = json.getInt(CLIENTREQUESTID);
     if (json.has(LNSREQUESTID)) {
       this.LNSRequestId = json.getInt(LNSREQUESTID);
@@ -127,7 +130,7 @@ public class CommandPacket extends BasicPacket implements ReplicableRequest {
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
-    Packet.putPacketType(json, getType());
+    putPacketType(json, getType());
     json.put(CLIENTREQUESTID, this.requestId);
     if (this.LNSRequestId != -1) {
       json.put(LNSREQUESTID, this.LNSRequestId);

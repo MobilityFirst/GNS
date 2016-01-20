@@ -33,6 +33,7 @@ import java.util.Map;
  *
  * @author westy
  */
+@Deprecated
 public class Packet {
 
   /**
@@ -77,7 +78,7 @@ public class Packet {
   }
 
   public static PacketType getPacketType(JSONObject json) throws JSONException {
-    if (Packet.hasPacketTypeField(json)) {
+    if (hasPacketTypeField(json)) {
       return PacketType.getPacketType(json.getInt(TYPE));
     }
     throw new JSONException("Missing packet type field");

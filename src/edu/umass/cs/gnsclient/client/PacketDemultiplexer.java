@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import org.json.JSONObject;
-import edu.umass.cs.gnsclient.client.tcp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import org.json.JSONException;
 

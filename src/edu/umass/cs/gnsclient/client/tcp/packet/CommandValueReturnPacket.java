@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client.tcp.packet;
 
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
