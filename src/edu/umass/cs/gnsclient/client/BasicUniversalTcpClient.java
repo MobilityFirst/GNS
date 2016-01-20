@@ -43,8 +43,8 @@ import org.json.JSONObject;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -1606,7 +1606,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   public void handleCommandValueReturnPacket(JSONObject json, long receivedTime) throws JSONException {
     long methodStartTime = System.currentTimeMillis();
     CommandValueReturnPacket packet = new CommandValueReturnPacket(json);
-    int id = packet.getRequestId();
+    int id = packet.getClientRequestId();
     // *INSTRUMENTATION*
     long queryStartTime = queryTimeStamp.remove(id);
     long latency = receivedTime - queryStartTime;
@@ -1698,7 +1698,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    */
   public void sendCommandPacketAsynch(CommandPacket packet) throws IOException {
     long startTime = System.currentTimeMillis();
-    int id = packet.getRequestId();
+    int id = packet.getClientRequestId();
     pendingAsynchPackets.put(id, packet);
     queryTimeStamp.put(id, System.currentTimeMillis());
     sendCommandPacket(packet);

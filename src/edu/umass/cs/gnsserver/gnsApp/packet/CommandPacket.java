@@ -21,6 +21,8 @@ package edu.umass.cs.gnsserver.gnsApp.packet;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
+import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.putPacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 
@@ -43,9 +45,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
   public final static String BOGUS_SERVICE_NAME = "unknown";
 
   /**
-   * Identifier of the request.
+   * Identifier of the request on the client.
    */
-  private final int clientRequestId;
+  private int clientRequestId;
   /**
    * LNS identifier - filled in at the LNS.
    */
@@ -85,45 +87,104 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
     this.senderPort = senderPort;
     this.command = command;
   }
+  
+  /**
+   * Creates a command packet with a null host and -1 port which will be
+   * filled in when the packet is sent out.
+   *
+   * @param requestId
+   * @param command
+   */
+  public CommandPacket(int requestId, JSONObject command) {
+    this.setType(PacketType.COMMAND);
+    this.clientRequestId = requestId;
+    this.senderAddress = null;
+    this.senderPort = -1;
+    this.command = command;
+  }
 
   /**
-   * Create a CommandPacket instance.
+   * Creates a CommandPacket instance from a JSONObject.
    *
    * @param json
    * @throws JSONException
    */
   public CommandPacket(JSONObject json) throws JSONException {
-    this.type = Packet.getPacketType(json);
+    this.type = getPacketType(json);
     this.clientRequestId = json.getInt(CLIENTREQUESTID);
     if (json.has(LNSREQUESTID)) {
       this.LNSRequestId = json.getInt(LNSREQUESTID);
     } else {
       this.LNSRequestId = -1;
     }
-    this.senderAddress = json.getString(SENDERADDRESS);
-    this.senderPort = json.getInt(SENDERPORT);
+    this.senderAddress = json.optString(SENDERADDRESS, null);
+    this.senderPort = json.optInt(SENDERPORT, -1);
     this.command = json.getJSONObject(COMMAND);
   }
+  
+//  /**
+//   * Create a CommandPacket instance.
+//   *
+//   * @param json
+//   * @throws JSONException
+//   */
+//  public CommandPacket(JSONObject json) throws JSONException {
+//    this.type = Packet.getPacketType(json);
+//    this.clientRequestId = json.getInt(CLIENTREQUESTID);
+//    if (json.has(LNSREQUESTID)) {
+//      this.LNSRequestId = json.getInt(LNSREQUESTID);
+//    } else {
+//      this.LNSRequestId = -1;
+//    }
+//    this.senderAddress = json.getString(SENDERADDRESS);
+//    this.senderPort = json.getInt(SENDERPORT);
+//    this.command = json.getJSONObject(COMMAND);
+//  }
 
+  
   /**
    * Converts the command object into a JSONObject.
    *
-   * @return a JSONObject
+   * @return
    * @throws org.json.JSONException
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
-    Packet.putPacketType(json, getType());
+    putPacketType(json, getType());
     json.put(CLIENTREQUESTID, this.clientRequestId);
     if (this.LNSRequestId != -1) {
       json.put(LNSREQUESTID, this.LNSRequestId);
     }
     json.put(COMMAND, this.command);
-    json.put(SENDERADDRESS, this.senderAddress);
-    json.put(SENDERPORT, this.senderPort);
+    if (senderAddress != null) {
+      json.put(SENDERADDRESS, this.senderAddress);
+    }
+    if (senderPort != -1) {
+      json.put(SENDERPORT, this.senderPort);
+    }
     return json;
   }
+  
+//  /**
+//   * Converts the command object into a JSONObject.
+//   *
+//   * @return a JSONObject
+//   * @throws org.json.JSONException
+//   */
+//  @Override
+//  public JSONObject toJSONObject() throws JSONException {
+//    JSONObject json = new JSONObject();
+//    Packet.putPacketType(json, getType());
+//    json.put(CLIENTREQUESTID, this.clientRequestId);
+//    if (this.LNSRequestId != -1) {
+//      json.put(LNSREQUESTID, this.LNSRequestId);
+//    }
+//    json.put(COMMAND, this.command);
+//    json.put(SENDERADDRESS, this.senderAddress);
+//    json.put(SENDERPORT, this.senderPort);
+//    return json;
+//  }
 
   /**
    * Return the client request id.
@@ -134,6 +195,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Repli
     return clientRequestId;
   }
   
+  // only for testing
+  public void setClientRequestId(int requestId) {
+    this.clientRequestId = requestId;
+  }
 
   /**
    * Return the LNS request id.

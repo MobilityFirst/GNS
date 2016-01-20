@@ -29,8 +29,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.nio.NIOTransport;
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.JSONMessenger;
 

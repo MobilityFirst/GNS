@@ -22,8 +22,8 @@ package edu.umass.cs.gnsclient.examples;
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
-import edu.umass.cs.gnsclient.client.tcp.packet.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
@@ -100,7 +100,7 @@ public class ClientAsynchExample {
               READER, accountGuidEntry.getGuid());
     }
     // Create the command packet with a bogus id
-    CommandPacket commandPacket = new CommandPacket(-1, command);
+    CommandPacket commandPacket = new CommandPacket(-1, null, -1, command);
     // Keep track of what we've sent for the other thread to look at.
     Set<Integer> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
     // Create and run another thread to pick up the responses
@@ -111,7 +111,7 @@ public class ClientAsynchExample {
     while (true) {
       int id = client.generateNextRequestID();
       // Important to set the new request id each time
-      commandPacket.setRequestId(id);
+      commandPacket.setClientRequestId(id);
       // Record what we're sending
       pendingIds.add(id);
       // Actually send out the packet
