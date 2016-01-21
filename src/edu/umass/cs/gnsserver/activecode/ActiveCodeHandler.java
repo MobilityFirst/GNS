@@ -116,7 +116,7 @@ public class ActiveCodeHandler {
 	 * Checks to see if all of the workers are busy.
 	 * @return true if all workers are busy
 	 */
-	public boolean isPoolBusy() {
+	private boolean isPoolBusy() {
 		return executorPool.getActiveCount() == executorPool.getMaximumPoolSize();
 	}
 	
@@ -125,7 +125,7 @@ public class ActiveCodeHandler {
 	 * @param guid
 	 * @return true if the guid is blacklisted
 	 */
-	public boolean isBlacklisted(String guid) {
+	private boolean isBlacklisted(String guid) {
 		if(!blacklist.containsKey(guid))
 			return false;
 		
@@ -138,7 +138,7 @@ public class ActiveCodeHandler {
 	 * Adds the guid to the blacklist
 	 * @param guid
 	 */
-	public void addToBlacklist(String guid) {
+	private void addToBlacklist(String guid) {
 		System.out.println("Guid " + guid + " is blacklisted from running code!");
 		scheduler.remove(guid);
 		blacklist.put(guid, System.currentTimeMillis());
@@ -159,9 +159,11 @@ public class ActiveCodeHandler {
 		//System.out.println("Original value is "+valuesMap);
 		long startTime = System.nanoTime();
 		// If the guid is blacklisted, just return immediately
+		/*
 		if(isBlacklisted(guid)) {			
 			return valuesMap;
 		}		
+		*/
 		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
@@ -179,12 +181,12 @@ public class ActiveCodeHandler {
 			result = futureTask.get();
 		} catch (ExecutionException e) {
 			//System.out.println("Added " + guid + " to blacklist!");
-			addToBlacklist(guid);
+			//addToBlacklist(guid);
 			System.out.println("Execution");
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (CancellationException e){
-			addToBlacklist(guid);			
+			//addToBlacklist(guid);			
 			System.out.println("Cancellation thread "+Thread.currentThread().getId());
 			scheduler.finish(guid);
 			return valuesMap;
@@ -198,9 +200,6 @@ public class ActiveCodeHandler {
 		
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
 		
-		// This is an best effort implementation
-		// Only run if there are free workers and queue space
-		// This prevents excessive CPU usage
 		/*
 		if(executorPool.getPoolSize() > 0 &&
 				executorPool.getQueue().remainingCapacity() > 0) {

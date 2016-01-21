@@ -30,7 +30,6 @@ import javax.script.SimpleScriptContext;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -158,7 +157,7 @@ public class ActiveCodeRunner {
       updateCache(codeId, code);
       
       // Set the context
-      ScriptContext sc = contexts.get(codeId);      
+      ScriptContext sc = contexts.get(codeId);
       //engine.eval(code, sc);      
       engine.setContext(sc);
 

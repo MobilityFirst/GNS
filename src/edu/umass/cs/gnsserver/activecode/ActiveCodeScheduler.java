@@ -36,7 +36,10 @@ public class ActiveCodeScheduler implements Runnable{
 	public void run(){		
 		while(true){
 			//System.out.println("The number of running threads is "+executorPool.getActiveCount()+"/"+executorPool.getPoolSize());
-			while(executorPool.getActiveCount() == executorPool.getPoolSize() || guidList.isEmpty()){
+			/**
+			 * If the guidList is empty, wait until there is a task comes in
+			 */
+			while(guidList.isEmpty()){
 				synchronized (lock){
 					try{
 						lock.wait();
@@ -46,14 +49,17 @@ public class ActiveCodeScheduler implements Runnable{
 				}
 			}
 			FutureTask<ValuesMap> futureTask = getNextTask();
-			if (futureTask != null){
-				//for instrument only
+			if (futureTask != null){				
 				executorPool.execute(futureTask);
+				//for instrument only
 				//DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 			}
 		}
 	}
 	
+	/**
+	 * Called when a task is done
+	 */
 	protected void release(){
 		synchronized(lock){
 			lock.notify();

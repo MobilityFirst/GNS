@@ -19,10 +19,6 @@
  */
 package edu.umass.cs.gnsserver.activecode.worker;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.DatagramSocket;
 
 import org.json.JSONException;
@@ -31,7 +27,6 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -44,6 +39,8 @@ public class RequestHandler {
 	private ActiveCodeRunner runner;
 	private int clientPort = 0;
 	private byte[] buffer = new byte[8096*10];
+	
+	
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
 	 * @param runner
@@ -51,32 +48,26 @@ public class RequestHandler {
 	public RequestHandler(ActiveCodeRunner runner, int port) {
 		this.runner = runner;
 		this.clientPort = port;
+		
 	}
 	
 	protected boolean handleRequest(DatagramSocket socket) {
 		boolean ret = true;
 		
 		try {
-			long startTime = System.nanoTime();
-			//PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-			//BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			//ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(in, out);
+			ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, buffer, clientPort);
 			// Get the ActiveCodeMessage from the GNS
-		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, this.buffer);
+		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, buffer);
 		    
 		    
-		    if( acm.isShutdown()) {
-		    	//FIXME: the following line is used to send back a response
-		    	//out.println("OK");
+		    if( acm.isShutdown() ) {
 		    	System.out.println("Shutting down...");
 		    	ret = false;
 		    } else {
 		    	// Run the active code
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();
-			    //querier.setParam(params.getHopLimit(), params.getGuid());
-			    //FIXME: This step takes too much time
-			    //ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
+			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONObject vm = new JSONObject(params.getValuesMapString());
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);

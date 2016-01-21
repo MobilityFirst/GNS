@@ -23,7 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -43,18 +43,21 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveCodeGuidQuerier {
 
-  private PrintWriter out;
-  private BufferedReader in;
+  private DatagramSocket socket;
+  private byte[] buffer;
+  private int clientPort;
   private String guid = "";
   private int depth = 0;
+  
   /**
    * Initialize an ActiveCodeGuidQuerier
    * @param in
    * @param out
    */
-  public ActiveCodeGuidQuerier(BufferedReader in, PrintWriter out) {
-    this.out = out;
-    this.in = in;
+  public ActiveCodeGuidQuerier(DatagramSocket socket, byte[] buffer, int clientPort) {
+    this.socket = socket;
+    this.buffer = buffer;
+    this.clientPort = clientPort;
   }
   
   
@@ -89,10 +92,10 @@ public class ActiveCodeGuidQuerier {
       ActiveCodeMessage acm = new ActiveCodeMessage();
       acm.setAcqreq(acqreq);
       // Send off the query request
-      //ActiveCodeUtils.sendMessage(out, acm);
+      ActiveCodeUtils.sendMessage(socket, acm, clientPort);
 
       // Wait for a response
-      ActiveCodeMessage acmqr = null; //ActiveCodeUtils.getMessage(in);
+      ActiveCodeMessage acmqr = ActiveCodeUtils.receiveMessage(socket, buffer);
       return acmqr.getAcqresp();
 
     } catch (Exception e) {
