@@ -10,7 +10,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to do a fair queue across all the GUIDs

@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.activecode;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 
 /**

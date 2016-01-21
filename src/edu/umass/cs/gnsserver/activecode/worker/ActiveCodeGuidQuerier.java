@@ -30,6 +30,7 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
@@ -112,10 +113,10 @@ public class ActiveCodeGuidQuerier {
    * @param field the field
    * @return the ValuesMap response
    */
-  public ValuesMap readGuid(String guid, String field) {
+  public ValuesMap readGuid(String guid, String field) throws ActiveCodeException {
 	  if (!accounting(guid)){
 		  //System.out.println("out of money");
-		  return null;
+		  throw new ActiveCodeException("Out of read limitation");
 	  }
     ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read");
     ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
@@ -140,9 +141,9 @@ public class ActiveCodeGuidQuerier {
    * @param newValue the new values as a object
    * @return whether or not the write succeeded
    */
-  public boolean writeGuid(String guid, String field, Object newValue) {
+  public boolean writeGuid(String guid, String field, Object newValue) throws ActiveCodeException{
 	  if (!accounting(guid)){
-		  return false;
+		  throw new ActiveCodeException("Out of write limitation");
 	  }
     try {
       if (!(newValue instanceof ValuesMap)) {

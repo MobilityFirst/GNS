@@ -19,14 +19,12 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
-import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
-import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
@@ -43,7 +41,6 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeQueryHelper {
-	private static final ArrayList<ColumnField> empty = new ArrayList<ColumnField>();
 	private GnsApplicationInterface<?> app;
 	
 	/**

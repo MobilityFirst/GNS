@@ -26,5 +26,7 @@ package edu.umass.cs.gnsserver.activecode;
  *
  */
 public class ActiveCodeException extends Exception {
-
+	public ActiveCodeException(String message) {
+        super(message);
+    }
 }
