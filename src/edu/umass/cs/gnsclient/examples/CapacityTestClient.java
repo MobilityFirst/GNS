@@ -9,11 +9,6 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -155,10 +150,10 @@ public class CapacityTestClient {
     InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
-		NUM_CLIENT =  Integer.parseInt(args[1]);
-		INTERVAL = Integer.parseInt(args[2]);
-		int rate = INTERVAL*NUM_CLIENT;
-		int node = Integer.parseInt(args[3]); 
+		int node = Integer.parseInt(args[1]); 
+		NUM_CLIENT =  Integer.parseInt(args[2]);
+		INTERVAL = Integer.parseInt(args[3]);
+		int rate = INTERVAL*NUM_CLIENT;		
 		int fraction = Integer.parseInt(args[4]);
 		if(fraction > MALICIOUS_EVERY_FEW_CLIENTS ){
 			System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
