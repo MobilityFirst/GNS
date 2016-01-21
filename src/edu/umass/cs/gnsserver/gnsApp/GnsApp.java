@@ -53,7 +53,7 @@ import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsApp.packet.StopPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.MongoRecordMap;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.nio.JSONMessenger;
@@ -125,7 +125,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
             + nodeConfig.getCcpPingPort(nodeID));
     MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
+    this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.messenger = messenger;
     this.clientCommandProcessor = new ClientCommandProcessor(messenger,
