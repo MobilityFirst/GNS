@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.activecode;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.RunnableFuture;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 

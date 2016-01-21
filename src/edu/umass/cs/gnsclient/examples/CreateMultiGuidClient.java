@@ -66,7 +66,7 @@ public class CreateMultiGuidClient {
 			
 			String guid = client.lookupGuid("test"+(node*1000+i)+ACCOUNT_ALIAS);
 			
-			JSONObject json = new JSONObject("{\"hi\":\"hello\"}");
+			JSONObject json = new JSONObject("{\"hi\":\"hello\",\"cnt\":1}");
 			client.update(guidAccount, json);
 			
 			client.activeCodeClear(guid, "read", guidAccount);
