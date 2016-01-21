@@ -72,7 +72,7 @@ public class RequestHandler {
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
-			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, null);
+			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
 			    
 			    long t2 = System.nanoTime();
 			    // Send the results back
