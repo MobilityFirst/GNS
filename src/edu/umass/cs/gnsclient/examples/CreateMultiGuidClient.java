@@ -71,16 +71,17 @@ public class CreateMultiGuidClient {
 			
 			client.activeCodeClear(guid, "read", guidAccount);
 			JSONObject result = client.read(guidAccount);
-		    System.out.println("Retrieved JSON from guid: " + result.toString());
+			String field = client.fieldRead(guidAccount, "hi");
+		    System.out.println("Retrieved JSON from guid: " + result.toString()+", the field is "+field);
 		    if(flag){
 		    	if (i%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
 		    		client.activeCodeSet(guid, "read", code64, guidAccount);
 		    		try{
-				    	result = client.read(guidAccount);
+				    	field = client.fieldRead(guidAccount, "hi");
 				    }catch(GnsException e){
 				    	System.out.println("Request timed out!");
 				    }
-		    		System.out.println("Retrieved JSON from guid: " + result.toString());
+		    		System.out.println("Retrieved JSON from guid: " + field);
 		    	}else{
 		    		client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 		    	}
