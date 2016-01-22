@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
 
@@ -35,7 +36,7 @@ public class ActiveCodeWorker {
 	
 	private static int numReqs = 0;
 	private DatagramSocket serverSocket;
-	private int clientPort = 0;
+	private int clientPort = -1;
 	
 	public ActiveCodeWorker(int port, int callbackPort) {
 		try{
@@ -52,7 +53,6 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public void run(int readyPort) throws IOException {	
-        //ServerSocket listener = new ServerSocket(port);
 		//long start = System.nanoTime();
         ActiveCodeRunner runner = new ActiveCodeRunner();
         //System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a runner.");
@@ -62,14 +62,25 @@ public class ActiveCodeWorker {
         	boolean keepGoing = true;
 
     		// Notify the server that we are ready
-    		//Socket temp = new Socket("0.0.0.0", readyPort);
-    		//temp.close();
+    		if (readyPort != -1){
+    			Socket temp = new Socket("0.0.0.0", readyPort);
+    			temp.close();
+    		}
     		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
     		
             while (keepGoing) {
-            	//Socket s = listener.accept();
+            	if (clientPort == -1){
+            		byte[] buffer = new byte[1024];
+            		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
+            		try{
+            			serverSocket.receive(pkt);
+            			clientPort = pkt.getPort();
+            		}catch(IOException e){
+            			e.printStackTrace();
+            		}
+            		continue;
+            	}
             	keepGoing = handler.handleRequest(serverSocket);
-            	//s.close();
             	numReqs++;
             	if(numReqs%1000 == 0){
             		System.out.println(DelayProfiler.getStats());

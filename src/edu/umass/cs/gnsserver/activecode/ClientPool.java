@@ -80,7 +80,7 @@ public class ClientPool {
 	
 	protected void addSpareWorker(){
 		List<String> command = new ArrayList<>();
-		int serverPort = 60001 ; //getOpenUDPPort();
+		int serverPort = ActiveCodeClient.getOpenUDPPort();
 
 		// Get the current classpath
 		String classpath = System.getProperty("java.class.path");
@@ -94,6 +94,7 @@ public class ClientPool {
 	    command.add(classpath);
 	    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
 	    command.add(Integer.toString(serverPort));
+	    command.add(Integer.toString(-1));
 	    command.add(Integer.toString(-1));
 	    
 	    ProcessBuilder builder = new ProcessBuilder(command);

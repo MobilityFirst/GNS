@@ -37,7 +37,7 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class RequestHandler {
 	private ActiveCodeRunner runner;
-	private int clientPort = 0;
+	private int clientPort = -1;
 	private byte[] buffer = new byte[8096*10];
 	
 	
