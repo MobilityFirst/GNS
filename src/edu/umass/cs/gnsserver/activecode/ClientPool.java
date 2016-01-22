@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.activecode;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -79,12 +80,12 @@ public class ClientPool {
 	
 	protected void addSpareWorker(){
 		List<String> command = new ArrayList<>();
-		int serverPort = getOpenUDPPort();
+		int serverPort = 60001 ; //getOpenUDPPort();
 
 		// Get the current classpath
 		String classpath = System.getProperty("java.class.path");
 		
-		ServerSocket listener = new ServerSocket(0);
+		//ServerSocket listener = new ServerSocket(0);
 		
 	    command.add("java");
 	    command.add("-Xms64m");
@@ -102,8 +103,13 @@ public class ClientPool {
 		builder.redirectOutput(Redirect.INHERIT);
 		builder.redirectInput(Redirect.INHERIT);
 		
-		Process process = builder.start();
+		Process process = null;
+		try{
+			process = builder.start();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		
-		//spareWorkers.add(new ActiveCodeClient(this.app, -1));
+		spareWorkers.put(serverPort, process);
 	}
 }
