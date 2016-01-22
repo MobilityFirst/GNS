@@ -40,7 +40,6 @@ public class RequestHandler {
 	private int clientPort = -1;
 	private byte[] buffer = new byte[8096*10];
 	
-	
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
 	 * @param runner

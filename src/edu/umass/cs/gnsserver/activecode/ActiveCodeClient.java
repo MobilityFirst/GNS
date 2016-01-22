@@ -312,6 +312,8 @@ public class ActiveCodeClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		clientSocket.close();
+		process.destroyForcibly();
 	}
 	
 	/**
@@ -320,29 +322,24 @@ public class ActiveCodeClient {
 	public void restartServer() {
 		readyToRun = false;
 		long t1 = System.currentTimeMillis();
-		clientSocket.close();
+		
+		
+		
+		long elapsed = System.currentTimeMillis() - t1;
+		System.out.println("It takes "+elapsed+"ms to restart this worker.");
+	}
+	
+	protected void setNewWorker(int port, Process proc){
+		this.process = proc;
+		this.serverPort = port;
+		
 		try{
 			clientSocket = new DatagramSocket();
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-		process.destroyForcibly();
-		startServer();
-		long elapsed = System.currentTimeMillis() - t1;
-		System.out.println("It takes "+elapsed+"ms to restart this worker.");
-		//System.out.println("The client being stopped is "+ this.serverPort);
-	}
-	
-	protected Process getProcess(){
-		return process;
-	}
-	
-	protected int getWorkerPort(){
-		return serverPort;
-	}
-	
-	protected void setNewWorker(ActiveCodeClient ac){
-		this.process = ac.getProcess();
-		this.serverPort = ac.getWorkerPort();
+		
+		//notify new worker
+		ActiveCodeUtils.sendMessage(clientSocket, new ActiveCodeMessage(), port);
 	}
 }

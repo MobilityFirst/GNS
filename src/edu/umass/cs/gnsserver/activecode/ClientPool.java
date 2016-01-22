@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.activecode;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
-import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,9 +72,13 @@ public class ClientPool {
 		}
 	}
 	
-	protected int getSpareWorker(){
+	protected int getSpareWorkerPort(){
 		int port = spareWorkers.keys().nextElement();
 		return port;
+	}
+	
+	protected Process getSpareWorker(int port){
+		return spareWorkers.remove(port);
 	}
 	
 	protected void addSpareWorker(){
@@ -112,5 +115,15 @@ public class ClientPool {
 		}
 		
 		spareWorkers.put(serverPort, process);
+	}
+	
+	protected void generateNewWorker(){
+		(new Thread(new WorkerGeneratorRunanble())).start();;
+	}
+	
+	private class WorkerGeneratorRunanble implements Runnable{
+		public void run(){
+			addSpareWorker();
+		}
 	}
 }

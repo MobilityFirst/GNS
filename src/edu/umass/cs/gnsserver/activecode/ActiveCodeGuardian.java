@@ -30,11 +30,12 @@ public class ActiveCodeGuardian implements Runnable {
 					
 					if (now - tasks.get(task) > 2000){
 						ActiveCodeClient client = clientPool.getClient(getThread(task).getId());
-						//ActiveCodeClient tmpClient = clientPool.getSpareWorker();
-						//client.setNewWorker(tmpClient);
-						//client.restartServer();
+						client.shutdownServer();
+						int port = clientPool.getSpareWorkerPort();
+						client.setNewWorker(port, clientPool.getSpareWorker(port));
 						removeThread(task);
 						task.cancel(true);
+						clientPool.generateNewWorker();
 					}
 					
 				}		
