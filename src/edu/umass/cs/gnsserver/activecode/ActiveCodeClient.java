@@ -321,10 +321,28 @@ public class ActiveCodeClient {
 		readyToRun = false;
 		long t1 = System.currentTimeMillis();
 		clientSocket.close();
+		try{
+			clientSocket = new DatagramSocket();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 		process.destroyForcibly();
 		startServer();
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms to restart this worker.");
 		//System.out.println("The client being stopped is "+ this.serverPort);
+	}
+	
+	protected Process getProcess(){
+		return process;
+	}
+	
+	protected int getWorkerPort(){
+		return serverPort;
+	}
+	
+	protected void setNewWorker(ActiveCodeClient ac){
+		this.process = ac.getProcess();
+		this.serverPort = ac.getWorkerPort();
 	}
 }

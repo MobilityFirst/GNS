@@ -19,9 +19,14 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
+import java.io.File;
+import java.lang.ProcessBuilder.Redirect;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 
@@ -34,7 +39,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 public class ClientPool {
 	Map<Long, ActiveCodeClient> clients;
 	GnsApplicationInterface<?> app;
-	ArrayList<ActiveCodeClient> spareWorkers;
+	ConcurrentHashMap<Integer, Process> spareWorkers;
 	
 	/**
 	 * Initialize a ClientPool
@@ -43,9 +48,9 @@ public class ClientPool {
 	public ClientPool(GnsApplicationInterface<?> app) {
 		clients = new HashMap<>();
 		this.app = app;
-		spareWorkers = new ArrayList<ActiveCodeClient>();
+		spareWorkers = new ConcurrentHashMap<Integer, Process>();
 		for (int i=0; i<10; i++){
-			spareWorkers.add(new ActiveCodeClient(app, -1));
+			addSpareWorker();
 		}
 	}
 	
@@ -65,5 +70,40 @@ public class ClientPool {
 		for(ActiveCodeClient client : clients.values()) {
 		    client.shutdownServer();
 		}
+	}
+	
+	protected int getSpareWorker(){
+		int port = spareWorkers.keys().nextElement();
+		return port;
+	}
+	
+	protected void addSpareWorker(){
+		List<String> command = new ArrayList<>();
+		int serverPort = getOpenUDPPort();
+
+		// Get the current classpath
+		String classpath = System.getProperty("java.class.path");
+		
+		ServerSocket listener = new ServerSocket(0);
+		
+	    command.add("java");
+	    command.add("-Xms64m");
+	    command.add("-Xmx64m");
+	    command.add("-cp");
+	    command.add(classpath);
+	    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
+	    command.add(Integer.toString(serverPort));
+	    command.add(Integer.toString(-1));
+	    
+	    ProcessBuilder builder = new ProcessBuilder(command);
+		builder.directory(new File(System.getProperty("user.dir")));
+		
+		builder.redirectError(Redirect.INHERIT);
+		builder.redirectOutput(Redirect.INHERIT);
+		builder.redirectInput(Redirect.INHERIT);
+		
+		Process process = builder.start();
+		
+		//spareWorkers.add(new ActiveCodeClient(this.app, -1));
 	}
 }
