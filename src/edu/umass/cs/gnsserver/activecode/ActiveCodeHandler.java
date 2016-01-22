@@ -70,7 +70,7 @@ public class ActiveCodeHandler {
 	public ActiveCodeHandler(GnsApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
 		gnsApp = app;			    		
 	    
-		clientPool = new ClientPool(app); 
+		clientPool = new ClientPool(app, this); 
 		
 		guard = new ActiveCodeGuardian(clientPool);
 	    (new Thread(guard)).start();

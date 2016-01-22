@@ -39,15 +39,17 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 public class ClientPool {
 	Map<Long, ActiveCodeClient> clients;
 	GnsApplicationInterface<?> app;
+	ActiveCodeHandler ach;
 	ConcurrentHashMap<Integer, Process> spareWorkers;
 	
 	/**
 	 * Initialize a ClientPool
 	 * @param app
 	 */
-	public ClientPool(GnsApplicationInterface<?> app) {
+	public ClientPool(GnsApplicationInterface<?> app, ActiveCodeHandler ach) {
 		clients = new HashMap<>();
 		this.app = app;
+		this.ach = ach;
 		spareWorkers = new ConcurrentHashMap<Integer, Process>();
 		for (int i=0; i<10; i++){
 			addSpareWorker();
@@ -55,11 +57,11 @@ public class ClientPool {
 	}
 	
 	protected void addClient(Thread t) {
-		clients.put(t.getId(), new ActiveCodeClient(app, -1));
+		clients.put(t.getId(), new ActiveCodeClient(app, -1, ach));
 	}
 	
 	protected void addClient(Thread t, int port){
-		clients.put(t.getId(), new ActiveCodeClient(app, port));
+		clients.put(t.getId(), new ActiveCodeClient(app, port, ach));
 	}
 	
 	protected ActiveCodeClient getClient(long pid) {

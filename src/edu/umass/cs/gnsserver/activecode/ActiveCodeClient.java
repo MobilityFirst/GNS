@@ -57,13 +57,13 @@ public class ActiveCodeClient {
 	private final GnsApplicationInterface<?> app;
 	private DatagramSocket clientSocket;
 	private byte[] buffer = new byte[8096*10];
-	
+	private ActiveCodeHandler ach;
 	
 	/**
 	 * @param app the gns app
      * @param port 
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<?> app, int port) {
+	public ActiveCodeClient(GnsApplicationInterface<?> app, int port, ActiveCodeHandler ach) {
 		
 		if(port == -1){
 			startServer();
@@ -71,6 +71,7 @@ public class ActiveCodeClient {
 			setPort(port);
 		}		
 		this.app = app;
+		this.ach = ach;
 	}
 	
 	private void setPort(int port) {
@@ -172,7 +173,7 @@ public class ActiveCodeClient {
 		ValuesMap vm = null;
 		
 		try{
-			vm = submitRequest(acm);
+			vm = submitRequest(acm, ach);
 		}catch(InterruptedException e){
 			e.printStackTrace();
 		}
@@ -201,13 +202,9 @@ public class ActiveCodeClient {
 	 * @throws IOException 
 	 * @throws ActiveCodeException 
 	 */
-	private ValuesMap submitRequest(ActiveCodeMessage acmReq) throws InterruptedException, ActiveCodeException{
+	private ValuesMap submitRequest(ActiveCodeMessage acmReq, ActiveCodeHandler ach) throws InterruptedException, ActiveCodeException{
 		long startTime = System.nanoTime();
-		//Socket socket = null;
 		boolean crashed = false;
-		
-		//PrintWriter out = null;
-		//BufferedReader in = null;
 		
 		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
 		
@@ -227,7 +224,6 @@ public class ActiveCodeClient {
 		}
 		
 		// Serialize the initial request
-		//ActiveCodeUtils.sendMessage(out, acmReq);
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
 		
@@ -308,7 +304,7 @@ public class ActiveCodeClient {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setShutdown(true);
 		try {
-			submitRequest(acm);
+			submitRequest(acm, ach);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

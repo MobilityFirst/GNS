@@ -42,13 +42,15 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveCodeQueryHelper {
 	private GnsApplicationInterface<?> app;
+	private ActiveCodeHandler ach;
 	
 	/**
 	 * Initialize an ActiveCodeQueryHelper
 	 * @param app
 	 */
-	public ActiveCodeQueryHelper(GnsApplicationInterface<?> app) {
+	public ActiveCodeQueryHelper(GnsApplicationInterface<?> app, ActiveCodeHandler ach) {
 		this.app = app;
+		this.ach = ach;
 	}
 
 	/**
@@ -126,7 +128,6 @@ public class ActiveCodeQueryHelper {
 			}
 		}
 		
-		// Return failure
 		return new ActiveCodeQueryResponse();
 	}
 }
