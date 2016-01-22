@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 public class ClientPool {
 	Map<Long, ActiveCodeClient> clients;
 	GnsApplicationInterface<?> app;
+	ArrayList<ActiveCodeClient> spareWorkers;
 	
 	/**
 	 * Initialize a ClientPool
@@ -41,6 +43,10 @@ public class ClientPool {
 	public ClientPool(GnsApplicationInterface<?> app) {
 		clients = new HashMap<>();
 		this.app = app;
+		spareWorkers = new ArrayList<ActiveCodeClient>();
+		for (int i=0; i<10; i++){
+			spareWorkers.add(new ActiveCodeClient(app, -1));
+		}
 	}
 	
 	protected void addClient(Thread t) {
