@@ -62,8 +62,8 @@ public class ActiveCodeWorker {
         	boolean keepGoing = true;
 
     		// Notify the server that we are ready
-    		Socket temp = new Socket("0.0.0.0", readyPort);
-    		temp.close();
+    		//Socket temp = new Socket("0.0.0.0", readyPort);
+    		//temp.close();
     		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
     		
             while (keepGoing) {
