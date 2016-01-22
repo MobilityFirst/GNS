@@ -24,6 +24,7 @@ import java.net.DatagramSocket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
@@ -83,6 +84,9 @@ public class RequestHandler {
 		    }
 		    
 		} catch (JSONException e) {
+			e.printStackTrace();
+			ret = false;
+		} catch (ActiveCodeException e){
 			e.printStackTrace();
 			ret = false;
 		}

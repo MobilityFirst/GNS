@@ -30,6 +30,7 @@ import javax.script.SimpleScriptContext;
 
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeException;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -146,7 +147,7 @@ public class ActiveCodeRunner {
    * @param querier the querier object used for active code reads/writes
    * @return the output of the code
    */
-  public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) {
+  public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) throws ActiveCodeException {
 	JSONObject ret = null;
 	  //	return runLuaCode(guid, action, field, code, value, querier);
 	long startTime = System.nanoTime();
@@ -161,9 +162,8 @@ public class ActiveCodeRunner {
       //engine.eval(code, sc);      
       engine.setContext(sc);
 
-      // Run the code
       ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
-
+      
     } catch (NoSuchMethodException | ScriptException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
