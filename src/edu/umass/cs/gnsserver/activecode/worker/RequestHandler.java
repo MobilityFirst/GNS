@@ -75,22 +75,30 @@ public class RequestHandler {
 			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
 			    
 			    long t2 = System.nanoTime();
+			    
 			    // Send the results back
 			    ActiveCodeMessage acmResp = new ActiveCodeMessage();
 			    acmResp.setFinished(true);
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
-			    ActiveCodeUtils.sendMessage(socket, acmResp, this.clientPort);
+			    ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    
-		} catch (JSONException e) {
+		} catch (JSONException | ActiveCodeException e) {
+			ActiveCodeMessage acmResp = crashedMessage();
+			ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
 			e.printStackTrace();
-			ret = false;
-		} catch (ActiveCodeException e){
-			e.printStackTrace();
-			ret = false;
 		}
 		
 		return ret;
+	}
+	
+	
+	private ActiveCodeMessage crashedMessage(){
+		ActiveCodeMessage acmResp = new ActiveCodeMessage();
+		acmResp.setFinished(true);
+	    acmResp.setValuesMapString(null);
+	    acmResp.setCrashed(true);
+	    return acmResp;
 	}
 }
