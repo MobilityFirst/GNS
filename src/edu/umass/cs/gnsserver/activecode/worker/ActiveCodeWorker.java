@@ -56,42 +56,39 @@ public class ActiveCodeWorker {
 		//long start = System.nanoTime();
         ActiveCodeRunner runner = new ActiveCodeRunner();
         //System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a runner.");
-        try {
-        	RequestHandler handler = new RequestHandler(runner, this.clientPort);
-        	//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a handler.");
-        	boolean keepGoing = true;
+        
+    	RequestHandler handler = new RequestHandler(runner, this.clientPort);
+    	//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a handler.");
+    	boolean keepGoing = true;
 
-    		// Notify the server that we are ready
-    		if (readyPort != -1){
-    			Socket temp = new Socket("0.0.0.0", readyPort);
-    			temp.close();
-    		}
-    		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
-    		
-            while (keepGoing) {
-            	if (clientPort == -1){
-            		byte[] buffer = new byte[1024];
-            		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
-            		try{
-            			serverSocket.receive(pkt);
-            			clientPort = pkt.getPort();
-            		}catch(IOException e){
-            			e.printStackTrace();
-            		}
-            		continue;
-            	}
-            	keepGoing = handler.handleRequest(serverSocket);
-            	numReqs++;
-            	if(numReqs%1000 == 0){
-            		System.out.println(DelayProfiler.getStats());
-            	}
-            }
-        } catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-            serverSocket.close();
+		// Notify the server that we are ready
+		if (readyPort != -1){
+			Socket temp = new Socket("0.0.0.0", readyPort);
+			temp.close();
+		}
+		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
+		
+        while (keepGoing) {
+        	if (clientPort == -1){
+        		byte[] buffer = new byte[1024];
+        		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
+        		try{
+        			serverSocket.receive(pkt);
+        			clientPort = pkt.getPort();
+        		}catch(IOException e){
+        			e.printStackTrace();
+        		}
+        		continue;
+        	}
+        	keepGoing = handler.handleRequest(serverSocket);
+        	numReqs++;
+        	if(numReqs%1000 == 0){
+        		System.out.println(DelayProfiler.getStats());
+        	}
         }
+        
+        serverSocket.close();
+
 	}
 	
 	/**
