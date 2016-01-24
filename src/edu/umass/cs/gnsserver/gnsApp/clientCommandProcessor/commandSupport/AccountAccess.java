@@ -995,7 +995,7 @@ public class AccountAccess {
    * @return a JSONObject
    * @throws JSONException
    */
-  private static JSONObject createACL(String readField, List<String> readAcessors,
+  public static JSONObject createACL(String readField, List<String> readAcessors,
           String writeField, List<String> writeAcessors) throws JSONException {
     JSONObject result = new JSONObject();
 

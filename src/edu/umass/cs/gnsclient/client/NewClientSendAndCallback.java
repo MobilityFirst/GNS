@@ -36,7 +36,7 @@ import edu.umass.cs.utils.GCConcurrentHashMapCallback;
  * @author Westy
  *
  */
-public class NewBaseClient {
+public class NewClientSendAndCallback {
 
   private static final long MIN_RTX_INTERVAL = 1000;
   private static final long GC_TIMEOUT = 60000;
@@ -48,7 +48,7 @@ public class NewBaseClient {
   // Enables all the debug logging statements in the client.
   protected boolean debuggingEnabled = true;
 
-  final GCConcurrentHashMapCallback defaultGCCallback = new GCConcurrentHashMapCallback() {
+  private final GCConcurrentHashMapCallback defaultGCCallback = new GCConcurrentHashMapCallback() {
     @Override
     public void callbackGC(Object key, Object value) {
       Reconfigurator.getLogger().info(
@@ -56,20 +56,20 @@ public class NewBaseClient {
     }
   };
 
-  final GCConcurrentHashMap<Long, RequestCallback> callbacks = new GCConcurrentHashMap<Long, RequestCallback>(
+  private final GCConcurrentHashMap<Long, RequestCallback> callbacks = new GCConcurrentHashMap<Long, RequestCallback>(
           defaultGCCallback, GC_TIMEOUT);
 
-  final GCConcurrentHashMap<String, RequestCallback> callbacksCRP = new GCConcurrentHashMap<String, RequestCallback>(
+  private final GCConcurrentHashMap<String, RequestCallback> callbacksCRP = new GCConcurrentHashMap<String, RequestCallback>(
           defaultGCCallback, GC_TIMEOUT);
 
   // name->actives map
-  final GCConcurrentHashMap<String, InetSocketAddress[]> activeReplicas = new GCConcurrentHashMap<String, InetSocketAddress[]>(
+  private final GCConcurrentHashMap<String, InetSocketAddress[]> activeReplicas = new GCConcurrentHashMap<String, InetSocketAddress[]>(
           defaultGCCallback, GC_TIMEOUT);
   // name->unsent app requests for which active replicas are not yet known
-  final GCConcurrentHashMap<String, LinkedBlockingQueue<RequestAndCallback>> requestsPendingActives = new GCConcurrentHashMap<String, LinkedBlockingQueue<RequestAndCallback>>(
+  private final GCConcurrentHashMap<String, LinkedBlockingQueue<RequestAndCallback>> requestsPendingActives = new GCConcurrentHashMap<String, LinkedBlockingQueue<RequestAndCallback>>(
           defaultGCCallback, GC_TIMEOUT);
   // name->last queried time to rate limit RequestActiveReplicas queries
-  final GCConcurrentHashMap<String, Long> lastQueriedActives = new GCConcurrentHashMap<String, Long>(
+  private final GCConcurrentHashMap<String, Long> lastQueriedActives = new GCConcurrentHashMap<String, Long>(
           defaultGCCallback, GC_TIMEOUT);
 
   /**
@@ -84,7 +84,7 @@ public class NewBaseClient {
    * @param reconfigurators
    * @throws IOException
    */
-  public NewBaseClient(Set<IntegerPacketType> types, Set<InetSocketAddress> reconfigurators) throws IOException {
+  public NewClientSendAndCallback(Set<IntegerPacketType> types, Set<InetSocketAddress> reconfigurators) throws IOException {
     this.niot = (new MessageNIOTransport<>(null, null,
             (new ClientPacketDemultiplexer(types)), true));
     this.reconfigurators = reconfigurators.toArray(new InetSocketAddress[0]);
@@ -95,7 +95,7 @@ public class NewBaseClient {
    * @param types
    * @throws IOException
    */
-  public NewBaseClient(Set<IntegerPacketType> types) throws IOException {
+  public NewClientSendAndCallback(Set<IntegerPacketType> types) throws IOException {
     this(types, ReconfigurationConfig.getReconfiguratorAddresses());
   }
 
@@ -320,11 +320,11 @@ public class NewBaseClient {
 
   private void sendRequest(ClientReconfigurationPacket request)
           throws IOException {
+    InetSocketAddress reconfigurator = getRandom(reconfigurators);
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Send reconfig request: " + request.toString());
+      GNSClient.getLogger().info("Send to " + reconfigurator + " request: " + request.toString());
     }
-    niot.sendToAddress(getRandom(reconfigurators),
-            request.toString());
+    niot.sendToAddress(reconfigurator, request.toString());
   }
 
   private InetSocketAddress getRandom(InetSocketAddress[] isas) {

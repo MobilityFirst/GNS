@@ -18,32 +18,32 @@ import java.io.IOException;
  */
 public class NewClientTest {
 
-  private static void sendDeleteCreate(NewBasicUniversalTcpClient client) throws IOException {
-
-//    client.sendReconfigurationRequest(DELETE_SERVICE_NAME, "test@gns.name", "{}",
-//            (Request response) -> {
-//              GNSClient.getLogger().info("Received response: " + response);
-//            });
-    client.sendReconfigurationRequest(CREATE_SERVICE_NAME, "test@gns.name", "{}",
-            (Request response) -> {
-              GNSClient.getLogger().info("Received response: " + response);
-            });
-  }
-
   public static void main(String args[]) {
-    NewBasicUniversalTcpClient client;
+    NewClientBase client;
     try {
-      client = new NewBasicUniversalTcpClient();
+      client = new NewClientBase();
     } catch (IOException e) {
       GNSClient.getLogger().severe("Problem creating client:" + e);
       return;
     }
     try {
-      sendDeleteCreate(client);
-      //GuidUtils.lookupOrCreateAccountGuid(client, "test@gns.name", "frank", true);
-      //client.checkConnectivity();
+      client.sendReconfigurationRequest(CREATE_SERVICE_NAME, "test@gns.name", "{}",
+              (Request response) -> {
+                GNSClient.getLogger().info("Received response: " + response);
+              });
     } catch (Exception e) {
       GNSClient.getLogger().severe("Problem executing command:" + e);
+      System.exit(-1);
     }
+    System.exit(0);
+
+//    try {
+//      client.newAccountGuidCreate("test@gns.name", "frank");
+//    } catch (Exception e) {
+//      GNSClient.getLogger().severe("Problem executing command:" + e);
+//      System.exit(-1);
+//    }
+//    System.exit(0);
   }
+
 }

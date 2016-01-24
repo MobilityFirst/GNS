@@ -146,7 +146,6 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 
   }
   
-  
   @Override
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
     this.messenger = (SSLMessenger<String, JSONObject>)messenger;
@@ -244,25 +243,6 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
       e.printStackTrace();
     }
     return executed;
-  }
-
-  class CommandQuery {
-
-    private String host;
-    private int port;
-
-    public CommandQuery(String host, int port) {
-      this.host = host;
-      this.port = port;
-    }
-
-    public String getHost() {
-      return host;
-    }
-
-    public int getPort() {
-      return port;
-    }
   }
 
   // For InterfaceApplication
