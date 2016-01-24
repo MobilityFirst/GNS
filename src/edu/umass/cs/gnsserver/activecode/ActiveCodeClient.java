@@ -211,18 +211,6 @@ public class ActiveCodeClient {
 		boolean codeFinished = false;
 		String valuesMapString = null;
 		
-		// Create the socket and throw an exception upon failure
-		try{
-			//socket = new Socket(hostname, port);
-			//socket.setSoTimeout(timeoutMs);
-			
-			//out = new PrintWriter(socket.getOutputStream(), true);
-			//in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-						
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
 		// Serialize the initial request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
@@ -233,11 +221,13 @@ public class ActiveCodeClient {
 		    ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
 		    
 		    if(acmResp.isFinished()) {
-		    	// We are done!
+		    	// We are done!		
 		    	System.out.println("Got finish message"+acmResp);
 		    	codeFinished = true;
 		    	valuesMapString = acmResp.getValuesMapString();
+		    	System.out.println("ValuesMap got from the message is "+valuesMapString);
 		    	crashed = acmResp.isCrashed();
+		    	System.out.println("Whether it's crashed is "+crashed);
 		    }
 		    else {
 		    	// We aren't finished, which means that the response asked us to query a guid
