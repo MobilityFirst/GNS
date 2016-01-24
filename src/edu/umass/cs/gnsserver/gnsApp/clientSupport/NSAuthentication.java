@@ -158,7 +158,7 @@ public class NSAuthentication {
    * @return the public key
    * @throws FailedDBOperationException
    */
-  private static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,
+  public static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,
           MetaDataTypeName access, GnsApplicationInterface<String> gnsApp, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
     String publicKey;

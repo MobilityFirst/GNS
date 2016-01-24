@@ -21,6 +21,8 @@ package edu.umass.cs.gnsserver.activecode;
 
 
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -55,7 +57,7 @@ public class ActiveCodeHandler {
 	ActiveCodeExecutor executorPool;
 	ActiveCodeGuardian guard;
 	ActiveCodeScheduler scheduler;
-	
+	InetSocketAddress addr;
 	ConcurrentHashMap<String, Long> blacklist;
 	long blacklistSeconds;
 	
@@ -67,8 +69,9 @@ public class ActiveCodeHandler {
 	 * @param numProcesses
 	 * @param blacklistSeconds
 	 */
-	public ActiveCodeHandler(GnsApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
-		gnsApp = app;			    		
+	public ActiveCodeHandler(GnsApplicationInterface<String> app, int numProcesses, long blacklistSeconds, InetSocketAddress addr) {
+		this.gnsApp = app;			    		
+	    this.addr = addr;
 	    
 		clientPool = new ClientPool(app, this); 
 		
@@ -142,6 +145,14 @@ public class ActiveCodeHandler {
 		System.out.println("Guid " + guid + " is blacklisted from running code!");
 		scheduler.remove(guid);
 		blacklist.put(guid, System.currentTimeMillis());
+	}
+	
+	/**
+	 * return the local address
+	 * @return the address being bound with the local name server
+	 */
+	protected InetSocketAddress getAddress(){
+		return addr;
 	}
 	
 	/**

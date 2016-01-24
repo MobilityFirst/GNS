@@ -25,9 +25,9 @@ public class CreateMultiGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT = 100;
-	private final static String filename = "/home/ubuntu/test.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js"; //
-	private final static String mal_file = "/home/ubuntu/mal.js"; //"/Users/zhaoyugao/Documents/ActiveCode/Activecode/mal.js"; //
-	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/zhaoyugao/gns_key/";
+	private final static String filename = "/Users/gaozy/GNS/test.js"; //"/home/ubuntu/test.js"; 
+	private final static String mal_file = "/Users/gaozy/GNS/mal.js"; //"/home/ubuntu/mal.js"; 
+	private final static String key_folder = "/Users/gaozy/GNS/gns_key/"; //"/home/ubuntu/gns_key/"; 
 	private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	
 	public static void main(String[] args) throws IOException,

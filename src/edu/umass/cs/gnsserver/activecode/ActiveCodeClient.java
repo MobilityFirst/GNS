@@ -54,7 +54,7 @@ public class ActiveCodeClient {
 	private int serverPort;
 	private boolean readyToRun = false;
 	private Process process;
-	private final GnsApplicationInterface<?> app;
+	private final GnsApplicationInterface<String> app;
 	private DatagramSocket clientSocket;
 	private byte[] buffer = new byte[8096*10];
 	private ActiveCodeHandler ach;
@@ -63,7 +63,7 @@ public class ActiveCodeClient {
 	 * @param app the gns app
      * @param port 
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<?> app, int port, ActiveCodeHandler ach) {
+	public ActiveCodeClient(GnsApplicationInterface<String> app, int port, ActiveCodeHandler ach) {
 		
 		if(port == -1){
 			startServer();
@@ -206,7 +206,7 @@ public class ActiveCodeClient {
 		long startTime = System.nanoTime();
 		boolean crashed = false;
 		
-		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
+		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app, ach);
 		
 		boolean codeFinished = false;
 		String valuesMapString = null;
@@ -234,6 +234,7 @@ public class ActiveCodeClient {
 		    
 		    if(acmResp.isFinished()) {
 		    	// We are done!
+		    	System.out.println("Got finish message"+acmResp);
 		    	codeFinished = true;
 		    	valuesMapString = acmResp.getValuesMapString();
 		    	crashed = acmResp.isCrashed();
@@ -261,6 +262,7 @@ public class ActiveCodeClient {
         if(crashed) {
         	System.out.println("################### "+ acmReq.getAcp().getGuid()+" Crashed! ####################");
         	throw new ActiveCodeException("Code execution failed!");
+        	
         }else if(valuesMapString != null) {
         	try {
         		vm = new ValuesMap(new JSONObject(valuesMapString));

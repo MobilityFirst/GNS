@@ -38,7 +38,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
  */
 public class ClientPool {
 	Map<Long, ActiveCodeClient> clients;
-	GnsApplicationInterface<?> app;
+	GnsApplicationInterface<String> app;
 	ActiveCodeHandler ach;
 	ConcurrentHashMap<Integer, Process> spareWorkers;
 	
@@ -46,7 +46,7 @@ public class ClientPool {
 	 * Initialize a ClientPool
 	 * @param app
 	 */
-	public ClientPool(GnsApplicationInterface<?> app, ActiveCodeHandler ach) {
+	public ClientPool(GnsApplicationInterface<String> app, ActiveCodeHandler ach) {
 		clients = new HashMap<>();
 		this.app = app;
 		this.ach = ach;

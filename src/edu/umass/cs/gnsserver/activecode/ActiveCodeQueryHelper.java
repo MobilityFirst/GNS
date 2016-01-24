@@ -29,8 +29,11 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsApp.AppLookup;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -41,14 +44,14 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeQueryHelper {
-	private GnsApplicationInterface<?> app;
+	private GnsApplicationInterface<String> app;
 	private ActiveCodeHandler ach;
 	
 	/**
 	 * Initialize an ActiveCodeQueryHelper
 	 * @param app
 	 */
-	public ActiveCodeQueryHelper(GnsApplicationInterface<?> app, ActiveCodeHandler ach) {
+	public ActiveCodeQueryHelper(GnsApplicationInterface<String> app, ActiveCodeHandler ach) {
 		this.app = app;
 		this.ach = ach;
 	}
@@ -109,21 +112,52 @@ public class ActiveCodeQueryHelper {
 	 * @return the response, which may contain values read, or just status for a write
 	 */
 	public ActiveCodeQueryResponse handleQuery(String currentGuid, ActiveCodeQueryRequest acqreq) {		
-		// Do a local read/write
-		if(acqreq.getGuid() == null || acqreq.getGuid().equals(currentGuid)) {
+		// Do a local read/write for the same guid without triggering the active code
+		String targetGuid = acqreq.getGuid();
+		String field = acqreq.getField();
+		if(targetGuid == null || targetGuid.equals(currentGuid)) {
 			if(acqreq.getAction().equals("read")) {
-				return readLocalGuid(currentGuid, acqreq.getField());
+				return readLocalGuid(currentGuid, field);
 			} else if(acqreq.getAction().equals("write")) {
-				return writeLocalGuid(currentGuid, acqreq.getField(), acqreq.getValuesMapString());
+				return writeLocalGuid(currentGuid, field, acqreq.getValuesMapString());
 			}
 		}
 		// Otherwise, we need to do an external read
 		else {
 			if(acqreq.getAction().equals("read")) {
 				// TODO
+				try{
+					boolean allowAccess = false;
+					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, MetaDataTypeName.READ_WHITELIST, app, ach.getAddress());
+					System.out.println("The public key retrieved is "+publicKey);
+					if (publicKey != null){
+						allowAccess = true;
+					}
+					if (allowAccess){
+						return readLocalGuid(acqreq.getGuid(), acqreq.getField());
+					}else{
+						//TODO: terminate the execution of the active code and return
+					}
+					//AppLookup.executeLookupLocal(null, app, true, ach);
+				}catch(Exception e){
+					e.printStackTrace();
+				}
 				return readLocalGuid(acqreq.getGuid(), acqreq.getField());
 			} else if(acqreq.getAction().equals("write")){
-				// TODO
+				boolean allowAccess = false;
+				try{
+					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, MetaDataTypeName.WRITE_WHITELIST, app, ach.getAddress());
+					if (publicKey != null){
+						allowAccess = true;
+					}
+					if (allowAccess){
+						return writeLocalGuid(acqreq.getGuid(), acqreq.getField(), acqreq.getValuesMapString());
+					}else{
+						// TODO: terminate the execution of the active code and return
+					}
+				} catch(Exception e){
+					e.printStackTrace();
+				}
 				return writeLocalGuid(acqreq.getGuid(), acqreq.getField(), acqreq.getValuesMapString());
 			}
 		}
