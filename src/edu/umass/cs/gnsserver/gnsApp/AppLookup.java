@@ -172,7 +172,8 @@ public class AppLookup {
       // Only do this for user fields.
       if (field == null || !InternalField.isInternalField(field)) {
     	long activeStartTime = System.nanoTime(); 
-        int hopLimit = 1;
+    	// set the initial active code limit as 100
+        int hopLimit = 100;
 
       // Grab the code because it is of a different type
         //FIXME: Maybe change this to not use LIST_STRING?

@@ -31,12 +31,14 @@ public class ActiveCodeQueryRequest implements Serializable {
 	public String field;
 	public String valuesMapString;
 	public String action;
+	public int hopLimit;
 	
-	public ActiveCodeQueryRequest(String guid, String field, String valuesMapString, String action) {
+	public ActiveCodeQueryRequest(String guid, String field, String valuesMapString, String action, int hopLimit) {
 		this.guid = guid;
 		this.field = field;
 		this.valuesMapString = valuesMapString;
 		this.action = action;
+		this.hopLimit = hopLimit;
 	}
 	
 	public ActiveCodeQueryRequest() {
@@ -77,6 +79,12 @@ public class ActiveCodeQueryRequest implements Serializable {
   public void setAction(String action) {
     this.action = action;
   }
-        
-        
+  
+  public int getLimit(){
+	  return this.hopLimit;
+  }
+  
+  public void setLimit(int hopLimit){
+	  this.hopLimit = hopLimit;
+  }
 }

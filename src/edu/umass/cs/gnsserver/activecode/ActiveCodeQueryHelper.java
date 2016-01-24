@@ -31,6 +31,7 @@ import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.AppLookup;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
@@ -115,53 +116,68 @@ public class ActiveCodeQueryHelper {
 		// Do a local read/write for the same guid without triggering the active code
 		String targetGuid = acqreq.getGuid();
 		String field = acqreq.getField();
+		int hopLimit = acqreq.getLimit();
+		ActiveCodeQueryResponse acqr = null;
+		
 		if(targetGuid == null || targetGuid.equals(currentGuid)) {
 			if(acqreq.getAction().equals("read")) {
-				return readLocalGuid(currentGuid, field);
+				acqr = readLocalGuid(currentGuid, field);
 			} else if(acqreq.getAction().equals("write")) {
-				return writeLocalGuid(currentGuid, field, acqreq.getValuesMapString());
+				acqr =  writeLocalGuid(currentGuid, field, acqreq.getValuesMapString());
 			}
 		}
-		// Otherwise, we need to do an external read
+		// Otherwise, we need to do an external guid read
 		else {
 			if(acqreq.getAction().equals("read")) {
 				// TODO
 				try{
 					boolean allowAccess = false;
-					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, MetaDataTypeName.READ_WHITELIST, app, ach.getAddress());
+					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
+							MetaDataTypeName.READ_WHITELIST, app, ach.getAddress());
 					System.out.println("The public key retrieved is "+publicKey);
 					if (publicKey != null){
 						allowAccess = true;
 					}
 					if (allowAccess){
-						return readLocalGuid(acqreq.getGuid(), acqreq.getField());
+						//acqr = readLocalGuid(acqreq.getGuid(), acqreq.getField());
+						NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, 
+								  ColumnFieldType.USER_JSON, field);
+						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
+				                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+						if (codeRecord != null && nameRecord != null && ach.hasCode(codeRecord, "read")) {
+							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+							ValuesMap originalValues = nameRecord.getValuesMap();
+							ValuesMap newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+							acqr = new ActiveCodeQueryResponse(true, newResult.toString());
+						}
+						
 					}else{
 						//TODO: terminate the execution of the active code and return
 					}
-					//AppLookup.executeLookupLocal(null, app, true, ach);
 				}catch(Exception e){
 					e.printStackTrace();
 				}
-				return readLocalGuid(acqreq.getGuid(), acqreq.getField());
+				
 			} else if(acqreq.getAction().equals("write")){
+				//TODO: implement write operation for external guid write
 				boolean allowAccess = false;
 				try{
-					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, MetaDataTypeName.WRITE_WHITELIST, app, ach.getAddress());
+					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
+							MetaDataTypeName.WRITE_WHITELIST, app, ach.getAddress());
 					if (publicKey != null){
 						allowAccess = true;
 					}
 					if (allowAccess){
-						return writeLocalGuid(acqreq.getGuid(), acqreq.getField(), acqreq.getValuesMapString());
+						
 					}else{
 						// TODO: terminate the execution of the active code and return
 					}
 				} catch(Exception e){
 					e.printStackTrace();
 				}
-				return writeLocalGuid(acqreq.getGuid(), acqreq.getField(), acqreq.getValuesMapString());
 			}
 		}
 		
-		return new ActiveCodeQueryResponse();
+		return acqr;
 	}
 }

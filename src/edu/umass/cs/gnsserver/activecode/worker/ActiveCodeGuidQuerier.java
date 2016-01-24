@@ -119,7 +119,7 @@ public class ActiveCodeGuidQuerier {
 		  error = "Out of read limitation";
 		  return null;
 	  }
-    ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read");
+    ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read", depth);
     ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
 
     ValuesMap vm = null;
@@ -154,7 +154,7 @@ public class ActiveCodeGuidQuerier {
         valuesMap.put(field, newValue);
         newValue = valuesMap;
       }
-      ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, newValue.toString(), "write");
+      ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, newValue.toString(), "write", depth);
       ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
       return acqresp.isSuccess();
     } catch (JSONException e) {
