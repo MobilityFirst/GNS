@@ -166,7 +166,7 @@ public class ActiveCodeRunner {
       
     } catch (NoSuchMethodException | ScriptException e) {
       // TODO Auto-generated catch block
-      e.printStackTrace();
+      throw new ActiveCodeException(e.toString());
     }
     DelayProfiler.updateDelayNano("activeWorkerEngineExecution", startTime);
     //System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");

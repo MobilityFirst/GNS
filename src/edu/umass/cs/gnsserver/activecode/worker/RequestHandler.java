@@ -86,9 +86,8 @@ public class RequestHandler {
 		    
 		} catch (JSONException | ActiveCodeException e) {
 			System.out.println("catch the exception "+e);
-			ActiveCodeMessage acmResp = crashedMessage();
+			ActiveCodeMessage acmResp = crashedMessage(e.toString());
 			ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
-			e.printStackTrace();
 			return ret;
 		}
 		
@@ -96,11 +95,11 @@ public class RequestHandler {
 	}
 	
 	
-	private ActiveCodeMessage crashedMessage(){
+	private ActiveCodeMessage crashedMessage(String errMsg){
 		ActiveCodeMessage acmResp = new ActiveCodeMessage();
 		acmResp.setFinished(true);
 	    acmResp.setValuesMapString(null);
-	    acmResp.setCrashed(true);
+	    acmResp.setCrashed(errMsg);
 	    return acmResp;
 	}
 }

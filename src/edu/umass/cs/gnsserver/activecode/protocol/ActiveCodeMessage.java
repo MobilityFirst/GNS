@@ -41,9 +41,9 @@ public class ActiveCodeMessage implements Serializable {
   public boolean finished;
 
   /**
-   * Inidicates that the active code request crashed
+   * Inidicates that the active code execution error
    */
-  public boolean crashed;
+  public String error;
 
   /**
    * The active code params to execute
@@ -95,22 +95,6 @@ public class ActiveCodeMessage implements Serializable {
    */
   public void setFinished(boolean finished) {
     this.finished = finished;
-  }
-
-  /**
-   * crashed getter
-   * @return true if worker crashed
-   */
-  public boolean isCrashed() {
-    return crashed;
-  }
-
-  /**
-   * crashed setter
-   * @param crashed
-   */
-  public void setCrashed(boolean crashed) {
-    this.crashed = crashed;
   }
 
   /**
@@ -176,5 +160,16 @@ public class ActiveCodeMessage implements Serializable {
   public void setAcqresp(ActiveCodeQueryResponse acqresp) {
     this.acqresp = acqresp;
   }
-
+  
+  public boolean isCrashed(){
+	  boolean crashed = false;
+	  if (this.error != null){
+		  crashed = true;
+	  }
+	  return crashed;
+  }
+  
+  public void setCrashed(String errMsg){
+	  error = errMsg;
+  }
 }
