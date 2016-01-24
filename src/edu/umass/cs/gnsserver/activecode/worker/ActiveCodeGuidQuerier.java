@@ -49,6 +49,7 @@ public class ActiveCodeGuidQuerier {
   private int clientPort;
   private String guid = "";
   private int depth = 0;
+  private String error = null;
   
   /**
    * Initialize an ActiveCodeGuidQuerier
@@ -115,8 +116,8 @@ public class ActiveCodeGuidQuerier {
    */
   public ValuesMap readGuid(String guid, String field) throws ActiveCodeException {
 	  if (!accounting(guid)){
-		  //System.out.println("out of money");
-		  throw new ActiveCodeException("Out of read limitation");
+		  error = "Out of read limitation";
+		  return null;
 	  }
     ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read");
     ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
@@ -143,7 +144,9 @@ public class ActiveCodeGuidQuerier {
    */
   public boolean writeGuid(String guid, String field, Object newValue) throws ActiveCodeException{
 	  if (!accounting(guid)){
-		  throw new ActiveCodeException("Out of write limitation");
+		  //throw new ActiveCodeException("Out of write limitation");
+		  error = "Out of write limitation";
+		  return false;
 	  }
     try {
       if (!(newValue instanceof ValuesMap)) {
