@@ -202,4 +202,8 @@ public class ActiveCodeGuidQuerier {
 	  
 	  return response.toString();
   }
+  
+  protected String getError(){
+	  return error;
+  }
 }

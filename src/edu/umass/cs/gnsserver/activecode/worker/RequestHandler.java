@@ -79,6 +79,7 @@ public class RequestHandler {
 			    // Send the results back
 			    ActiveCodeMessage acmResp = new ActiveCodeMessage();
 			    acmResp.setFinished(true);
+			    acmResp.setCrashed(querier.getError());
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
 			    ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
