@@ -79,7 +79,7 @@ public class CreateMultiGuidClient {
 		    		try{
 				    	field = client.fieldRead(guidAccount, "hi");
 				    }catch(GnsException e){
-				    	System.out.println("Request timed out!");
+				    	e.printStackTrace();
 				    }
 		    		System.out.println("Retrieved JSON from guid: " + field);
 		    	}else{

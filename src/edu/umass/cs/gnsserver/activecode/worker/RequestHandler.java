@@ -87,7 +87,7 @@ public class RequestHandler {
 		} catch (JSONException | ActiveCodeException e) {
 			ActiveCodeMessage acmResp = crashedMessage();
 			ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
-			//e.printStackTrace();
+			e.printStackTrace();
 		}
 		
 		return ret;
