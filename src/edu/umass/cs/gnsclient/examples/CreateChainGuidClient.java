@@ -60,14 +60,17 @@ public class CreateChainGuidClient {
 			
 			JSONObject json = new JSONObject("{\"nextGuid\":\"gao\",\"cnt\":1}");
 			client.update(guidAccount, json);
+			System.out.println("The last guid is "+lastGuid);
+			client.fieldUpdate(guidAccount, "nextGuid", lastGuid);
 			
 			client.activeCodeClear(guid, "read", guidAccount);
 			JSONObject result = client.read(guidAccount);
 		    System.out.println("Retrieved JSON from guid: " + result.toString());
 
     		client.activeCodeSet(guid, "read", code64, guidAccount);
-    		client.fieldUpdate(guidAccount, "nextGuid", lastGuid);  
+    		
     		lastGuid = guidAccount.getGuid();
+    		
 		}
 		
 		long t = System.nanoTime();
