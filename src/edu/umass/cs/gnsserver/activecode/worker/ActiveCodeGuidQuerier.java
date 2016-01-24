@@ -116,7 +116,8 @@ public class ActiveCodeGuidQuerier {
   public ValuesMap readGuid(String guid, String field) throws ActiveCodeException {
 	  if (!accounting(guid)){
 		  //System.out.println("out of money");
-		  throw new ActiveCodeException("Out of read limitation");
+		  //throw new ActiveCodeException("Out of read limitation");
+		  return null;
 	  }
     ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read");
     ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
