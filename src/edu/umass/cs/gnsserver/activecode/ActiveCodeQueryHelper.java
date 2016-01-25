@@ -113,7 +113,7 @@ public class ActiveCodeQueryHelper {
 	 * @return the response, which may contain values read, or just status for a write
 	 */
 	public ActiveCodeQueryResponse handleQuery(String currentGuid, ActiveCodeQueryRequest acqreq) {
-		System.out.println(currentGuid+" "+acqreq.getGuid()+" "+acqreq.getField()+" "+acqreq.getLimit());
+		System.out.println(currentGuid+"|"+acqreq.getGuid()+"|"+acqreq.getField()+"|"+acqreq.getLimit());
 		// Do a local read/write for the same guid without triggering the active code
 		String targetGuid = acqreq.getGuid();
 		String field = acqreq.getField();
@@ -130,7 +130,7 @@ public class ActiveCodeQueryHelper {
 		// Otherwise, we need to do an external guid read
 		else {
 			if(acqreq.getAction().equals("read")) {
-				// TODO
+				System.out.println("Enter else "+currentGuid+" "+acqreq.getGuid()+" "+acqreq.getField()+" "+acqreq.getLimit());
 				try{
 					boolean allowAccess = false;
 					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
