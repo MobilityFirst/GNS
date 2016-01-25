@@ -29,7 +29,6 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.AppLookup;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
@@ -144,10 +143,13 @@ public class ActiveCodeQueryHelper {
 					}
 					if (allowAccess){
 						long start = System.nanoTime();
+						//Read the record and code from DB
 						NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, 
 								  ColumnFieldType.USER_JSON, field);
 						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
 				                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+						//set the response value to the code before running the active code
+						acqr = new ActiveCodeQueryResponse(true, nameRecord.getValuesMap().toString());
 						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
 						start = System.nanoTime();
 						if (codeRecord != null && nameRecord != null && ach.hasCode(codeRecord, "read")) {
@@ -156,9 +158,10 @@ public class ActiveCodeQueryHelper {
 							ValuesMap newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
 							acqr = new ActiveCodeQueryResponse(true, newResult.toString());
 						}
-						DelayProfiler.updateDelayNano("activeCodeQuerierExecution", start);
+						DelayProfiler.updateDelayNano("activeCodeQuerierReadExecution", start);
 					}else{
 						//TODO: terminate the execution of the active code and return
+						acqr = new ActiveCodeQueryResponse(false, null);
 					}
 				}catch(Exception e){
 					e.printStackTrace();
@@ -166,17 +169,35 @@ public class ActiveCodeQueryHelper {
 				
 			} else if(acqreq.getAction().equals("write")){
 				//TODO: implement write operation for external guid write
-				boolean allowAccess = false;
 				try{
+					long t1 = System.nanoTime();
+					boolean allowAccess = false;
 					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
 							MetaDataTypeName.WRITE_WHITELIST, app, ach.getAddress());
+					DelayProfiler.updateDelayNano("activeCodeWhiteListVerification", t1);
+					
 					if (publicKey != null){
 						allowAccess = true;
 					}
 					if (allowAccess){
-						
+						long start = System.nanoTime();
+						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
+				                  ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
+						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
+						start = System.nanoTime();
+						if (codeRecord != null && ach.hasCode(codeRecord, "write")) {
+							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
+							ValuesMap userJSON = new ValuesMap(new JSONObject(acqreq.getValuesMapString()));
+							NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, ColumnFieldType.USER_JSON, field);
+							nameRecord.updateNameRecord(field, null, null, 0, userJSON,
+						              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
+							ach.runCode(code64, targetGuid, field, "write", nameRecord.getValuesMap(), hopLimit);
+							acqr = new ActiveCodeQueryResponse(true, null);
+						}
+						DelayProfiler.updateDelayNano("activeCodeQuerierWriteExecution", start);
 					}else{
 						// TODO: terminate the execution of the active code and return
+						acqr = new ActiveCodeQueryResponse(false, null);
 					}
 				} catch(Exception e){
 					e.printStackTrace();

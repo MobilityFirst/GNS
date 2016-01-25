@@ -73,8 +73,6 @@ public class ActiveCodeGuidQuerier {
   }
   
   private synchronized boolean accounting(String obj_guid){
-	  //System.out.println("The depth is "+depth);
-	  
 	  if(this.depth <= 0){
 		  return false;
 	  }

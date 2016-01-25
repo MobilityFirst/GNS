@@ -93,7 +93,7 @@ public class ClientPool {
 		//ServerSocket listener = new ServerSocket(0);
 		
 	    command.add("java");
-	    command.add("-Xms64m");
+	    command.add("-Xms16m");
 	    command.add("-Xmx64m");
 	    command.add("-cp");
 	    command.add(classpath);
