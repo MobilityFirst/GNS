@@ -222,12 +222,12 @@ public class ActiveCodeClient {
 		    
 		    if(acmResp.isFinished()) {
 		    	// We are done!		
-		    	System.out.println("Got finish message"+acmResp);
+		    	//System.out.println("Got finish message"+acmResp);
 		    	codeFinished = true;
 		    	valuesMapString = acmResp.getValuesMapString();
-		    	System.out.println("ValuesMap got from the message is "+valuesMapString);
+		    	//System.out.println("ValuesMap got from the message is "+valuesMapString);
 		    	crashed = acmResp.isCrashed();
-		    	System.out.println("Whether it's crashed is "+crashed);
+		    	//System.out.println("Whether it's crashed is "+crashed);
 		    }
 		    else {
 		    	// We aren't finished, which means that the response asked us to query a guid
