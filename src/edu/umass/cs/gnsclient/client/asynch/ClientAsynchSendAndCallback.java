@@ -18,6 +18,7 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOHeader;
@@ -30,6 +31,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 
@@ -87,10 +89,13 @@ public class ClientAsynchSendAndCallback {
    */
   public ClientAsynchSendAndCallback(Set<IntegerPacketType> types, Set<InetSocketAddress> reconfigurators) throws IOException {
     this.niot = (new MessageNIOTransport<>(null, null,
-            (new ClientPacketDemultiplexer(types)), true));
+            (new ClientPacketDemultiplexer(types)), true,
+            // This will be set in the gigapaxos.properties file that we invoke the client using.
+            SSLDataProcessingWorker.SSL_MODES.valueOf(Config
+                    .getGlobal(ReconfigurationConfig.RC.CLIENT_SSL_MODE).toString())));
     this.reconfigurators = reconfigurators.toArray(new InetSocketAddress[0]);
     this.clientPacketTypes = types;
-    GNSClient.getLogger().info("Reconfigurators: " + reconfigurators);
+    GNSClient.getLogger().info("@@@@@@@@@@@@@@@Reconfigurators: " + reconfigurators);
   }
 
   /**
@@ -114,7 +119,7 @@ public class ClientAsynchSendAndCallback {
             String strMsg) {
       ReconfigurationPacket<?> rcPacket = null;
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Parse as recon packet: " + strMsg);
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as recon packet: " + strMsg);
       }
       try {
         rcPacket = ReconfigurationPacket.getReconfigurationPacket(
@@ -125,7 +130,7 @@ public class ClientAsynchSendAndCallback {
       ClientReconfigurationPacket result = (rcPacket instanceof ClientReconfigurationPacket) ? (ClientReconfigurationPacket) rcPacket
               : null;
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Parse as recon packet returns: " + result);
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as recon packet returns: " + result);
       }
       return result;
     }
@@ -133,7 +138,7 @@ public class ClientAsynchSendAndCallback {
     private Request parseAsAppRequest(String strMsg) {
       Request request = null;
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Parse as app request: " + strMsg);
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as app request: " + strMsg);
       }
       try {
         JSONObject json = new JSONObject(strMsg);
@@ -147,7 +152,7 @@ public class ClientAsynchSendAndCallback {
       }
       assert (request == null || request instanceof ClientRequest);
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Parse as app request returns: " + request);
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as app request returns: " + request);
       }
       return request;
     }
@@ -155,7 +160,7 @@ public class ClientAsynchSendAndCallback {
     @Override
     public boolean handleMessage(String strMsg) {
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Handle message: " + strMsg);
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message: " + strMsg);
       }
       Request response = null;
       // first try parsing as app request
@@ -167,7 +172,7 @@ public class ClientAsynchSendAndCallback {
       assert (response != null);
 
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Handle message response: " + response);
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message response: " + response);
       }
       RequestCallback callback = null;
       if (response != null) {
@@ -175,19 +180,19 @@ public class ClientAsynchSendAndCallback {
         if ((response instanceof ClientRequest)
                 && (callback = callbacks.remove(((ClientRequest) response).getRequestID())) != null) {
           if (debuggingEnabled) {
-            GNSClient.getLogger().info("Handle message client request call back");
+            GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message client request call back");
           }
           callback.handleResponse(((ClientRequest) response));
         } // ActiveReplicaError has to be dealt with separately
         else if ((response instanceof ActiveReplicaError)
                 && (callback = callbacks.remove(((ActiveReplicaError) response).getRequestID())) != null) {
           if (debuggingEnabled) {
-            GNSClient.getLogger().info("Handle message ActiveReplicaError ");
+            GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message ActiveReplicaError ");
           }
         } else if (response instanceof ClientReconfigurationPacket) {
           if ((callback = callbacksCRP.remove(getKey((ClientReconfigurationPacket) response))) != null) {
             if (debuggingEnabled) {
-              GNSClient.getLogger().info("Handle message recon packet callback");
+              GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message recon packet callback");
             }
             callback.handleResponse(response);
           }
@@ -195,7 +200,7 @@ public class ClientAsynchSendAndCallback {
           if (response instanceof RequestActiveReplicas) {
             try {
               if (debuggingEnabled) {
-                GNSClient.getLogger().info("Handle message send pending requests");
+                GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message send pending requests");
               }
               sendRequestsPendingActives((RequestActiveReplicas) response);
             } catch (IOException e) {
@@ -261,7 +266,7 @@ public class ClientAsynchSendAndCallback {
     int sent = -1;
     assert (request.getServiceName() != null);
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Send client request: " + request.toString());
+      GNSClient.getLogger().info("@@@@@@@@@@@@@@@Send client request: " + request.toString());
     }
     try {
       callbacks.putIfAbsent(request.getRequestID(), callback);
@@ -324,7 +329,7 @@ public class ClientAsynchSendAndCallback {
           throws IOException {
     InetSocketAddress reconfigurator = getRandom(reconfigurators);
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Send to " + reconfigurator + " request: " + request.toString());
+      GNSClient.getLogger().info("@@@@@@@@@@@@@@@Send to " + reconfigurator + " request: " + request.toString());
     }
     niot.sendToAddress(reconfigurator, request.toString());
   }
@@ -359,43 +364,39 @@ public class ClientAsynchSendAndCallback {
    */
   public Long sendRequest(ClientRequest request, RequestCallback callback) throws IOException, JSONException {
     if (request instanceof ClientReconfigurationPacket) {
-      return sendRequest(request,
-              reconfigurators[(int) (Math.random() * reconfigurators.length)],
+      return sendRequest(request, reconfigurators[(int) (Math.random() * reconfigurators.length)],
               callback);
     }
 
+    GNSClient.getLogger().info("@@@@@@@@@@@@@@@Looking up actives for : " + request.getServiceName());
     // lookup actives in the cache first
     if (activeReplicas.containsKey(request.getServiceName())) {
-      InetSocketAddress[] actives = activeReplicas.get(request
-              .getServiceName());
+      InetSocketAddress[] actives = activeReplicas.get(request.getServiceName());
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Found actives: " + actives);
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@Found actives: " + actives);
       }
-      return sendRequest(request,
-              actives[(int) (Math.random() * actives.length)], callback);
+      return sendRequest(request, actives[(int) (Math.random() * actives.length)], callback);
     }
 
     // else enqueue them
     enqueue(new RequestAndCallback(request, callback));
     queryForActives(request.getServiceName());
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Enqueue: " + request.getRequestID());
+      GNSClient.getLogger().info("@@@@@@@@@@@@@@@Enqueue: " + request.getRequestID());
     }
     return request.getRequestID();
   }
 
   private synchronized boolean enqueue(RequestAndCallback rc) {
-    requestsPendingActives.putIfAbsent(rc.request.getServiceName(),
-            new LinkedBlockingQueue<RequestAndCallback>());
-    LinkedBlockingQueue<RequestAndCallback> pending = requestsPendingActives
-            .get(rc.request.getServiceName());
+    requestsPendingActives.putIfAbsent(rc.request.getServiceName(), new LinkedBlockingQueue<RequestAndCallback>());
+    LinkedBlockingQueue<RequestAndCallback> pending = requestsPendingActives.get(rc.request.getServiceName());
     assert (pending != null);
     return pending.add(rc);
   }
 
   private void queryForActives(String name) throws IOException {
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Query for actives: " + name);
+      GNSClient.getLogger().info("@@@@@@@@@@@@@@@Query for actives: " + name);
     }
     Long lastQueriedTime = lastQueriedActives.get(name);
     if (lastQueriedTime == null) {
@@ -411,8 +412,7 @@ public class ClientAsynchSendAndCallback {
     if (response.isFailed()) {
       return;
     }
-    InetSocketAddress[] actives = response.getActives().toArray(
-            new InetSocketAddress[0]);
+    InetSocketAddress[] actives = response.getActives().toArray(new InetSocketAddress[0]);
     if (actives == null || actives.length == 0) {
       return;
     }
@@ -422,8 +422,7 @@ public class ClientAsynchSendAndCallback {
               .get(response.getServiceName()).iterator(); reqIter
               .hasNext();) {
         RequestAndCallback rc = reqIter.next();
-        sendRequest(rc.request,
-                actives[((int) rc.request.getRequestID())
+        sendRequest(rc.request, actives[((int) rc.request.getRequestID())
                 % actives.length], rc.callback);
         reqIter.remove();
       }
@@ -434,8 +433,7 @@ public class ClientAsynchSendAndCallback {
    * @return The list of default servers.
    */
   public Set<InetSocketAddress> getDefaultServers() {
-    return new HashSet<InetSocketAddress>(
-            Arrays.asList(reconfigurators));
+    return new HashSet<InetSocketAddress>(Arrays.asList(reconfigurators));
   }
 
   public void stop() {

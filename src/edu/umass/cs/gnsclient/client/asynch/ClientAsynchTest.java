@@ -11,9 +11,15 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
+ * This tests the asynch client. It uses wait / notify so we
+ * can do one step followed by another step. This usage isn't part of the
+ * asynch client, it's just a way to do this test.
  *
  * @author westy
  */
@@ -21,6 +27,17 @@ public class ClientAsynchTest {
 
   private static Request receivedResponse;
   private static long readTimeout = 10000;
+  private static final Object monitor = new Object();
+  // make a call back that notifys any waits and records the response
+  private static RequestCallback callback = new RequestCallback() {
+    @Override
+    public void handleResponse(Request response) {
+      synchronized (monitor) {
+        monitor.notifyAll();
+      }
+      receivedResponse = response;
+    }
+  };
 
   public static void main(String args[]) {
     ClientAsynchBase client;
@@ -30,47 +47,34 @@ public class ClientAsynchTest {
       GNSClient.getLogger().severe("Problem creating client:" + e);
       return;
     }
+    GuidEntry guidEntry = null;
     try {
-      Object monitor = new Object();
       receivedResponse = null;
-      GuidEntry guidEntry = client.newAccountGuidCreate("test@gns.name", "frank",
-              new RequestCallback() {
-                @Override
-                public void handleResponse(Request response) {
-                  synchronized (monitor) {
-                    monitor.notifyAll();
-                  }
-                  receivedResponse = response;
-                }
-              });
-      synchronized (monitor) {
-        long monitorStartTime = System.currentTimeMillis();
-        while (receivedResponse == null && (readTimeout == 0 || System.currentTimeMillis() - monitorStartTime < readTimeout)) {
-          monitor.wait(readTimeout);
-        }
-        if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
-          GNSClient.getLogger().info("Timeout!");
-        }
-      }
+      guidEntry = client.accountGuidCreate("test@gns.name", "frank", callback);
       System.out.println("##### Guid: " + guidEntry.getGuid());
+      waitForResponse();
       System.out.println("##### Received response: " + receivedResponse);
     } catch (Exception e) {
       GNSClient.getLogger().severe("Problem executing command:" + e);
     }
-    
+    if (guidEntry == null) {
+      GNSClient.getLogger().info("Guid entry is null!");
+      return;
+    }
+    // Try to lookup the account info
     try {
-      Object monitor = new Object();
       receivedResponse = null;
-      long id = client.lookupGuid("test@gns.name", 
-              new RequestCallback() {
-                @Override
-                public void handleResponse(Request response) {
-                  synchronized (monitor) {
-                    monitor.notifyAll();
-                  }
-                  receivedResponse = response;
-                }
-              });
+      long id = client.lookupAccountRecord(guidEntry.getGuid(), callback);
+      System.out.println("##### id: " + id);
+      waitForResponse();
+      System.out.println("##### Received response: " + receivedResponse);
+    } catch (Exception e) {
+      GNSClient.getLogger().severe("Problem executing command:" + e);
+    }
+  }
+
+  private static void waitForResponse() {
+    try {
       synchronized (monitor) {
         long monitorStartTime = System.currentTimeMillis();
         while (receivedResponse == null && (readTimeout == 0 || System.currentTimeMillis() - monitorStartTime < readTimeout)) {
@@ -80,11 +84,9 @@ public class ClientAsynchTest {
           GNSClient.getLogger().info("Timeout!");
         }
       }
-      System.out.println("##### Received response: " + receivedResponse);
-    } catch (Exception e) {
-      GNSClient.getLogger().severe("Problem executing command:" + e);
+    } catch (InterruptedException x) {
+      GNSClient.getLogger().severe("Wait for return packet was interrupted " + x);
     }
-    
   }
 
 }
