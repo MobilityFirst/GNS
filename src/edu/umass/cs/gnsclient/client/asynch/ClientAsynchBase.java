@@ -17,10 +17,13 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -96,9 +99,8 @@ import java.util.concurrent.ExecutionException;
  *
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
  */
-public class NewClientBase extends NewClientSendAndCallback implements GNSClientInterface {
+public class ClientAsynchBase extends ClientAsynchSendAndCallback implements GNSClientInterface {
 
-  
   /**
    * Indicates whether we are on an Android platform or not
    */
@@ -146,14 +148,14 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
    * @param address
    * @throws java.io.IOException
    */
-  public NewClientBase(InetSocketAddress address) throws IOException {
+  public ClientAsynchBase(InetSocketAddress address) throws IOException {
     this(new HashSet<>(Arrays.asList(address)), false);
   }
 
   /**
    * @throws IOException
    */
-  public NewClientBase() throws IOException {
+  public ClientAsynchBase() throws IOException {
     this(ReconfigurationConfig.getReconfiguratorAddresses(), false);
   }
 
@@ -165,7 +167,7 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
    * @param disableSSL
    * @throws java.io.IOException
    */
-  public NewClientBase(Set<InetSocketAddress> addresses, boolean disableSSL) throws IOException {
+  public ClientAsynchBase(Set<InetSocketAddress> addresses, boolean disableSSL) throws IOException {
     super(new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND, Packet.PacketType.COMMAND_RETURN_VALUE)),
             addresses);
     this.disableSSL = disableSSL;
@@ -217,16 +219,15 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
    * Obtains the guid of the alias from the GNS server.
    *
    * @param alias
-   * @return guid
    * @throws IOException
    * @throws UnsupportedEncodingException
    * @throws GnsException
    */
-  public String lookupGuid(String alias) throws IOException, GnsException {
+  public long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, GnsException {
     JSONObject command = createCommand(LOOKUP_GUID, NAME, alias);
-    String response = sendCommandAndWait(command);
-
-    return checkResponse(command, response);
+    int id = generateNextRequestID();
+    CommandPacket packet = new CommandPacket(id, null, -1, command);
+    return sendRequest(packet, callback);
   }
 
   /**
@@ -256,7 +257,6 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
    * @throws IOException
    * @throws GnsException
    */
-  @Override
   public JSONObject lookupGuidRecord(String guid) throws IOException, GnsException {
     JSONObject command = createCommand(LOOKUP_GUID_RECORD, GUID, guid);
     String response = sendCommandAndWait(command);
@@ -291,22 +291,7 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
       throw new GnsException("Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
     }
   }
-
-  /**
-   * Get the public key for a given alias.
-   *
-   * @param alias
-   * @return the public key registered for the alias
-   * @throws GnsInvalidGuidException
-   * @throws GnsException
-   * @throws IOException
-   */
-  public PublicKey publicKeyLookupFromAlias(String alias) throws GnsInvalidGuidException, GnsException, IOException {
-
-    String guid = lookupGuid(alias);
-    return publicKeyLookupFromGuid(guid);
-  }
-
+  
   /**
    * Get the public key for a given GUID.
    *
@@ -332,7 +317,7 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
 
   }
 
-  public GuidEntry newAccountGuidCreate(String alias, String password) throws Exception {
+  public GuidEntry newAccountGuidCreate(String alias, String password, RequestCallback callback) throws Exception {
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
     String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
@@ -357,16 +342,10 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
     state.put(alias, jsonHRN.toString());
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
-    GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
-    Object monitor = new Object();
-    sendRequest(createPacket, new RequestCallback() {
-      @Override
-      public void handleResponse(Request response) {
-        System.out.println("##### Received response: " + response);
-      }
-    });
-    monitor.wait();
-
+    if (debuggingEnabled) {
+      GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
+    }
+    sendRequest(createPacket, callback);
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
     return entry;
   }

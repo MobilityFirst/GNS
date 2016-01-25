@@ -17,10 +17,11 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import org.json.JSONObject;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
@@ -36,9 +37,9 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class NewClientSimpleExample extends NewClientSendAndCallback {
+public class ClientAsynchSimpleExample extends ClientAsynchSendAndCallback {
 
-  public NewClientSimpleExample() throws IOException {
+  public ClientAsynchSimpleExample() throws IOException {
     super(new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND, Packet.PacketType.COMMAND_RETURN_VALUE)));
   }
   
@@ -65,9 +66,9 @@ public class NewClientSimpleExample extends NewClientSendAndCallback {
   }
 
   public static void main(String args[]) {
-    NewClientSimpleExample client;
+    ClientAsynchSimpleExample client;
     try {
-      client = new NewClientSimpleExample();
+      client = new ClientAsynchSimpleExample();
     } catch (IOException e) {
       GNSClient.getLogger().severe("Problem creating client:" + e);
       return;

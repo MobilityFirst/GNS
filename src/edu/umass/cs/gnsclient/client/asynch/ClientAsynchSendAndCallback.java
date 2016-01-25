@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.asynch;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.MessageNIOTransport;
@@ -36,7 +37,7 @@ import edu.umass.cs.utils.GCConcurrentHashMapCallback;
  * @author Westy
  *
  */
-public class NewClientSendAndCallback {
+public class ClientAsynchSendAndCallback {
 
   private static final long MIN_RTX_INTERVAL = 1000;
   private static final long GC_TIMEOUT = 60000;
@@ -84,7 +85,7 @@ public class NewClientSendAndCallback {
    * @param reconfigurators
    * @throws IOException
    */
-  public NewClientSendAndCallback(Set<IntegerPacketType> types, Set<InetSocketAddress> reconfigurators) throws IOException {
+  public ClientAsynchSendAndCallback(Set<IntegerPacketType> types, Set<InetSocketAddress> reconfigurators) throws IOException {
     this.niot = (new MessageNIOTransport<>(null, null,
             (new ClientPacketDemultiplexer(types)), true));
     this.reconfigurators = reconfigurators.toArray(new InetSocketAddress[0]);
@@ -96,7 +97,7 @@ public class NewClientSendAndCallback {
    * @param types
    * @throws IOException
    */
-  public NewClientSendAndCallback(Set<IntegerPacketType> types) throws IOException {
+  public ClientAsynchSendAndCallback(Set<IntegerPacketType> types) throws IOException {
     this(types, ReconfigurationConfig.getReconfiguratorAddresses());
   }
 

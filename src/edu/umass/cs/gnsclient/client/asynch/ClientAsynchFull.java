@@ -17,8 +17,9 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.asynch;
 
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -45,7 +46,7 @@ import java.util.HashSet;
  *
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
  */
-public class NewClientFull extends NewClientBase {
+public class ClientAsynchFull extends ClientAsynchBase {
 
   /**
    * Creates a new <code>NewBasicUniversalTcpClient</code> object
@@ -53,14 +54,14 @@ public class NewClientFull extends NewClientBase {
    * @param address
    * @throws java.io.IOException
    */
-  public NewClientFull(InetSocketAddress address) throws IOException {
+  public ClientAsynchFull(InetSocketAddress address) throws IOException {
     super(new HashSet<>(Arrays.asList(address)), false);
   }
 
   /**
    * @throws IOException
    */
-  public NewClientFull() throws IOException {
+  public ClientAsynchFull() throws IOException {
     super();
   }
 
@@ -95,7 +96,7 @@ public class NewClientFull extends NewClientBase {
    * @throws GnsException
    */
   public void update(GuidEntry guid, JSONObject json) throws IOException, GnsException {
-    NewClientFull.this.update(guid.getGuid(), json, guid);
+    ClientAsynchFull.this.update(guid.getGuid(), json, guid);
   }
 
   /**
