@@ -34,6 +34,7 @@ public class CreateChainGuidClient {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]);
 		NUM_CLIENT = Integer.parseInt(args[2]);
+		boolean deploy = Boolean.parseBoolean(args[3]);
 		
 		//Read in the code and serialize
 		String code = new String(Files.readAllBytes(Paths.get(filename)));
@@ -62,25 +63,22 @@ public class CreateChainGuidClient {
 			client.update(guidAccount, json);
 			//System.out.println("The last guid is "+lastGuid);
 			client.fieldUpdate(guidAccount, "nextGuid", lastGuid);
-			
-			client.activeCodeClear(guid, "read", guidAccount);
-			JSONObject result = client.read(guidAccount);
-		    //System.out.println("Retrieved JSON from guid: " + result.toString());
-
-    		client.activeCodeSet(guid, "read", code64, guidAccount);
-    		
+			if (deploy){
+				client.activeCodeClear(guid, "read", guidAccount);
+				client.activeCodeSet(guid, "read", code64, guidAccount);
+			}
     		lastGuid = guidAccount.getGuid();
     		
 		}
 		
 		// For warming up only
 		long t = System.nanoTime();
-		for (int i=0; i<1000; i++){
+		for (int i=0; i<5000; i++){
 			client.fieldRead(guidAccount, "nextGuid");
 		}
 		
 		t = System.nanoTime();
-		for (int i=0; i<1000; i++){
+		for (int i=0; i<5000; i++){
 			client.fieldRead(guidAccount, "nextGuid");
 		}
 		long eclapsed = System.nanoTime() - t;
