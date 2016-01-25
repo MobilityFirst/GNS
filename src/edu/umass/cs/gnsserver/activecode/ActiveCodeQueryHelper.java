@@ -145,10 +145,14 @@ public class ActiveCodeQueryHelper {
 								  ColumnFieldType.USER_JSON, field);
 						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
 				                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+						System.out.println("nameRecord is:"+nameRecord);
 						if (codeRecord != null && nameRecord != null && ach.hasCode(codeRecord, "read")) {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+							System.out.println("code64 is "+code64);
 							ValuesMap originalValues = nameRecord.getValuesMap();
+							System.out.println("originalValues is "+originalValues);
 							ValuesMap newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+							System.out.println("newResult is "+newResult);
 							acqr = new ActiveCodeQueryResponse(true, newResult.toString());
 						}
 						
