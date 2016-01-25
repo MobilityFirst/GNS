@@ -112,7 +112,8 @@ public class ActiveCodeQueryHelper {
 	 * @param acqreq the query request object
 	 * @return the response, which may contain values read, or just status for a write
 	 */
-	public ActiveCodeQueryResponse handleQuery(String currentGuid, ActiveCodeQueryRequest acqreq) {		
+	public ActiveCodeQueryResponse handleQuery(String currentGuid, ActiveCodeQueryRequest acqreq) {
+		System.out.println(currentGuid+" "+acqreq.getGuid()+" "+acqreq.getField()+" "+acqreq.getLimit());
 		// Do a local read/write for the same guid without triggering the active code
 		String targetGuid = acqreq.getGuid();
 		String field = acqreq.getField();

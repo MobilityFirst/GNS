@@ -119,6 +119,7 @@ public class ActiveCodeGuidQuerier {
 		  error = "Out of read limitation";
 		  return null;
 	  }
+	System.out.println("GUID is "+guid+", field is "+field);
     ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read", depth);
     ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
 
