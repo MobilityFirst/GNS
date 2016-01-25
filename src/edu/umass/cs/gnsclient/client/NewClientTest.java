@@ -26,24 +26,20 @@ public class NewClientTest {
       GNSClient.getLogger().severe("Problem creating client:" + e);
       return;
     }
-    try {
-      client.sendReconfigurationRequest(CREATE_SERVICE_NAME, "test@gns.name", "{}",
-              (Request response) -> {
-                GNSClient.getLogger().info("Received response: " + response);
-              });
-    } catch (Exception e) {
-      GNSClient.getLogger().severe("Problem executing command:" + e);
-      System.exit(-1);
-    }
-    System.exit(0);
-
 //    try {
-//      client.newAccountGuidCreate("test@gns.name", "frank");
+//      client.sendReconfigurationRequest(CREATE_SERVICE_NAME, "test@gns.name", "{}",
+//              (Request response) -> {
+//                GNSClient.getLogger().info("Received response: " + response);
+//              });
 //    } catch (Exception e) {
 //      GNSClient.getLogger().severe("Problem executing command:" + e);
-//      System.exit(-1);
 //    }
-//    System.exit(0);
+
+    try {
+      client.newAccountGuidCreate("test@gns.name", "frank");
+    } catch (Exception e) {
+      GNSClient.getLogger().severe("Problem executing command:" + e);
+    }
   }
 
 }

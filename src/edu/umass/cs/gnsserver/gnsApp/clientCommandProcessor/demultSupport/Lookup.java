@@ -145,14 +145,14 @@ public class Lookup {
   public static void sendDNSResponseBackToSource(DNSPacket<String> packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == null) {
       if (handler.getParameters().isDebugMode()) {
-        //GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
-        GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toReasonableString());
+        GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
+        //GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toReasonableString());
       }
       handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
       if (handler.getParameters().isDebugMode()) {
-        //GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
-        GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toReasonableString());
+        GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
+        //GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toReasonableString());
       }
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());
     }

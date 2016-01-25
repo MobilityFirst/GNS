@@ -288,8 +288,7 @@ public class Intercessor implements IntercessorInterface {
 
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     QueryResult<String> result = queryResultMap.remove(id);
-    Long sentTime = queryTimeStamp.get(id); // instrumentation
-    queryTimeStamp.remove(id); // instrumentation
+    Long sentTime = queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime - sentTime;
     if (debuggingEnabled) {
       GNS.getLogger().finer("Query (" + id + ") RTT = " + rtt + "ms");

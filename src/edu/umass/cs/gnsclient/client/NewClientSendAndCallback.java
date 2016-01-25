@@ -89,6 +89,7 @@ public class NewClientSendAndCallback {
             (new ClientPacketDemultiplexer(types)), true));
     this.reconfigurators = reconfigurators.toArray(new InetSocketAddress[0]);
     this.clientPacketTypes = types;
+    GNSClient.getLogger().info("Reconfigurators: " + reconfigurators);
   }
 
   /**

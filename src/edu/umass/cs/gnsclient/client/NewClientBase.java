@@ -78,7 +78,6 @@ import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
-import static edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -99,13 +98,17 @@ import java.util.concurrent.ExecutionException;
  */
 public class NewClientBase extends NewClientSendAndCallback implements GNSClientInterface {
 
-  private InetSocketAddress remoteAddress;
+  
   /**
    * Indicates whether we are on an Android platform or not
    */
   public static final boolean isAndroid = System.getProperty("java.vm.name")
           .equalsIgnoreCase("Dalvik");
 
+  /**
+   * This is only used as a key into database of public private key pairs.
+   */
+  private InetSocketAddress remoteAddress;
   /**
    * The length of time we will wait for a command response from the server
    * before giving up.
@@ -124,7 +127,7 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
   /* Used to generate unique ids */
   private final Random randomID = new Random();
   /* Used by the wait/notify calls */
-  private final Object monitor = new Object();
+  private final Object resultMonitor = new Object();
 
   // Enables all the debug logging statements in the client.
   protected boolean debuggingEnabled = false;
@@ -355,12 +358,14 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
     GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
+    Object monitor = new Object();
     sendRequest(createPacket, new RequestCallback() {
       @Override
       public void handleResponse(Request response) {
         System.out.println("##### Received response: " + response);
       }
     });
+    monitor.wait();
 
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
     return entry;
@@ -883,10 +888,10 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
       if (debuggingEnabled) {
         GNSClient.getLogger().info("Waiting for query id: " + id);
       }
-      synchronized (monitor) {
+      synchronized (resultMonitor) {
         long monitorStartTime = System.currentTimeMillis();
         while (!resultMap.containsKey(id) && (readTimeout == 0 || System.currentTimeMillis() - monitorStartTime < readTimeout)) {
-          monitor.wait(readTimeout);
+          resultMonitor.wait(readTimeout);
         }
         if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
           if (debuggingEnabled) {
@@ -974,8 +979,8 @@ public class NewClientBase extends NewClientSendAndCallback implements GNSClient
     // This differentiates between packets sent synchronusly and asynchronusly
     if (!pendingAsynchPackets.containsKey(id)) {
       // for synchronus sends we notify waiting threads
-      synchronized (monitor) {
-        monitor.notifyAll();
+      synchronized (resultMonitor) {
+        resultMonitor.notifyAll();
       }
     } else {
       // Handle the asynchronus packets

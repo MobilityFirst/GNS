@@ -67,7 +67,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AccountAccess {
+  public class AccountAccess {
 
   /**
    * Defines the field name in an account guid where account information is stored.

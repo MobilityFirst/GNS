@@ -371,9 +371,35 @@ public class UniversalCoreWithSSLTest {
       fail("Exception when we were not expecting it testing ACL all fields: " + e);
     }
   }
+  
+  @Test
+  public void test_14_ACLCreateDeeperField() {
+    try {
+      try {
+        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
+      } catch (Exception e) {
+        fail("Problem updating field: " + e);
+      }
+      try {
+        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GnsProtocol.ALL_FIELDS);
+      } catch (Exception e) {
+        fail("Problem adding acl: " + e);
+      }
+      try {
+        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry, 
+                "test.deeper.field", westyEntry.getGuid());
+        JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
+        JSONAssert.assertEquals(expected, actual, true);
+      } catch (Exception e) {
+        fail("Problem reading acl: " + e);
+      }
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
 
   @Test
-  public void test_14_DB() {
+  public void test_17_DB() {
     //testCreateEntity();
     try {
 
@@ -432,7 +458,7 @@ public class UniversalCoreWithSSLTest {
   }
 
   @Test
-  public void test_15_DBUpserts() {
+  public void test_18_DBUpserts() {
     HashSet<String> expected = null;
     HashSet<String> actual = null;
     try {
@@ -487,7 +513,7 @@ public class UniversalCoreWithSSLTest {
   }
 
   @Test
-  public void test_16_Substitute() {
+  public void test_19_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -529,7 +555,7 @@ public class UniversalCoreWithSSLTest {
   }
 
   @Test
-  public void test_17_SubstituteList() {
+  public void test_20_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -574,7 +600,7 @@ public class UniversalCoreWithSSLTest {
   }
 
   @Test
-  public void test_18_Group() {
+  public void test_21_Group() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
@@ -629,7 +655,7 @@ public class UniversalCoreWithSSLTest {
   }
 
   @Test
-  public void test_19_GroupAndACL() {
+  public void test_22_GroupAndACL() {
     //testGroup();
     String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
@@ -699,7 +725,7 @@ public class UniversalCoreWithSSLTest {
   }
 
   @Test
-  public void test_20_Alias() {
+  public void test_23_Alias() {
     String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
     try {
       //
