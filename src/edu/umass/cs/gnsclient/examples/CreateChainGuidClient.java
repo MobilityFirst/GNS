@@ -48,11 +48,11 @@ public class CreateChainGuidClient {
 			
 			try{
 				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*1000+i)+ACCOUNT_ALIAS, "password");
-				System.out.println("test"+(node*1000+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
+				//System.out.println("test"+(node*1000+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
 				
 				KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i) );
 			}catch (Exception e) {
-			      System.out.println("Exception during accountGuid creation: " + e);
+			      //System.out.println("Exception during accountGuid creation: " + e);
 			      System.exit(1);
 			}
 			
@@ -60,12 +60,12 @@ public class CreateChainGuidClient {
 			
 			JSONObject json = new JSONObject("{\"nextGuid\":\"gao\",\"cnt\":1}");
 			client.update(guidAccount, json);
-			System.out.println("The last guid is "+lastGuid);
+			//System.out.println("The last guid is "+lastGuid);
 			client.fieldUpdate(guidAccount, "nextGuid", lastGuid);
 			
 			client.activeCodeClear(guid, "read", guidAccount);
 			JSONObject result = client.read(guidAccount);
-		    System.out.println("Retrieved JSON from guid: " + result.toString());
+		    //System.out.println("Retrieved JSON from guid: " + result.toString());
 
     		client.activeCodeSet(guid, "read", code64, guidAccount);
     		
@@ -73,12 +73,18 @@ public class CreateChainGuidClient {
     		
 		}
 		
+		// For warming up only
 		long t = System.nanoTime();
 		for (int i=0; i<1000; i++){
 			client.fieldRead(guidAccount, "nextGuid");
 		}
+		
+		t = System.nanoTime();
+		for (int i=0; i<1000; i++){
+			client.fieldRead(guidAccount, "nextGuid");
+		}
 		long eclapsed = System.nanoTime() - t;
-		System.out.println("The chain being queired takes "+eclapsed/1000000/1000+"ms.");
+		System.out.println(NUM_CLIENT+" "+eclapsed/1000000/1000);
 		System.exit(0);
 	}
 	
