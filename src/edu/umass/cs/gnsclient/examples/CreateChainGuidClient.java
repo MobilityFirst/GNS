@@ -84,7 +84,7 @@ public class CreateChainGuidClient {
 			client.fieldRead(guidAccount, "nextGuid");
 		}
 		long eclapsed = System.nanoTime() - t;
-		System.out.println(NUM_CLIENT+" "+eclapsed/1000000/1000);
+		System.out.println(NUM_CLIENT+" "+eclapsed/1000000.0/1000.0);
 		System.exit(0);
 	}
 	
