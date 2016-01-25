@@ -37,6 +37,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Updat
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used for handling queries from
@@ -132,30 +133,30 @@ public class ActiveCodeQueryHelper {
 			if(acqreq.getAction().equals("read")) {
 				System.out.println("Enter else "+currentGuid+" "+acqreq.getGuid()+" "+acqreq.getField()+" "+acqreq.getLimit());
 				try{
+					long t1 = System.nanoTime();
 					boolean allowAccess = false;
 					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
 							MetaDataTypeName.READ_WHITELIST, app, ach.getAddress());
+					DelayProfiler.updateDelayNano("activeCodeWhiteListVerification", t1);
 					System.out.println("The public key retrieved is "+publicKey);
 					if (publicKey != null){
 						allowAccess = true;
 					}
 					if (allowAccess){
-						//acqr = readLocalGuid(acqreq.getGuid(), acqreq.getField());
+						long start = System.nanoTime();
 						NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, 
 								  ColumnFieldType.USER_JSON, field);
 						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
 				                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
-						System.out.println("nameRecord is:"+nameRecord);
+						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
+						start = System.nanoTime();
 						if (codeRecord != null && nameRecord != null && ach.hasCode(codeRecord, "read")) {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
-							System.out.println("code64 is "+code64);
 							ValuesMap originalValues = nameRecord.getValuesMap();
-							System.out.println("originalValues is "+originalValues);
 							ValuesMap newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
-							System.out.println("newResult is "+newResult);
 							acqr = new ActiveCodeQueryResponse(true, newResult.toString());
 						}
-						
+						DelayProfiler.updateDelayNano("activeCodeQuerierExecution", start);
 					}else{
 						//TODO: terminate the execution of the active code and return
 					}

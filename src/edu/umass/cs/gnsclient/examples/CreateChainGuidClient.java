@@ -74,9 +74,11 @@ public class CreateChainGuidClient {
 		}
 		
 		long t = System.nanoTime();
-		String result = client.fieldRead(guidAccount, "nextGuid");
+		for (int i=0; i<1000; i++){
+			client.fieldRead(guidAccount, "nextGuid");
+		}
 		long eclapsed = System.nanoTime() - t;
-		System.out.println("The chain being queired get the response "+result+", and it takes "+eclapsed/1000000+"ms.");
+		System.out.println("The chain being queired takes "+eclapsed/1000000/1000+"ms.");
 		System.exit(0);
 	}
 	
