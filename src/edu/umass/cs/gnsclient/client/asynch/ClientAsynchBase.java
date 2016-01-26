@@ -105,7 +105,7 @@ public class ClientAsynchBase extends ClientAsynchSendAndCallback {
   public ClientAsynchBase(Set<InetSocketAddress> addresses) throws IOException {
     super(new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND, Packet.PacketType.COMMAND_RETURN_VALUE)),
             addresses);
-    if (debuggingEnabled) {
+    if (isDebuggingEnabled()) {
       System.out.println("Client port offset " + ReconfigurationConfig.getClientPortOffset());
       System.out.println("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
     }
@@ -161,7 +161,7 @@ public class ClientAsynchBase extends ClientAsynchSendAndCallback {
     state.put(alias, jsonHRN.toString());
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
-    if (debuggingEnabled) {
+    if (isDebuggingEnabled()) {
       GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
     }
     sendRequest(createPacket, callback);
@@ -230,7 +230,7 @@ public class ClientAsynchBase extends ClientAsynchSendAndCallback {
     state.put(alias, jsonHRN.toString());
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
-    if (debuggingEnabled) {
+    if (isDebuggingEnabled()) {
       GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
     }
     sendRequest(createPacket, callback);
@@ -281,7 +281,7 @@ public class ClientAsynchBase extends ClientAsynchSendAndCallback {
 
     System.out.println(DelayProfiler.getStats());
     CreateServiceName createPacket = new CreateServiceName(null, state);
-    if (debuggingEnabled) {
+    if (isDebuggingEnabled()) {
       GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
     }
     sendRequest(createPacket, callback);

@@ -48,9 +48,6 @@ public class ClientAsynchSendAndCallback {
   private final InetSocketAddress[] reconfigurators;
   private Set<IntegerPacketType> clientPacketTypes;
 
-  // Enables all the debug logging statements in the client.
-  protected boolean debuggingEnabled = true;
-
   private final GCConcurrentHashMapCallback defaultGCCallback = new GCConcurrentHashMapCallback() {
     @Override
     public void callbackGC(Object key, Object value) {
@@ -59,23 +56,30 @@ public class ClientAsynchSendAndCallback {
     }
   };
 
-  private final GCConcurrentHashMap<Long, RequestCallback> callbacks = new GCConcurrentHashMap<Long, RequestCallback>(
+  private final GCConcurrentHashMap<Long, RequestCallback> callbacks = new GCConcurrentHashMap<>(
           defaultGCCallback, GC_TIMEOUT);
 
-  private final GCConcurrentHashMap<String, RequestCallback> callbacksCRP = new GCConcurrentHashMap<String, RequestCallback>(
+  private final GCConcurrentHashMap<String, RequestCallback> callbacksCRP = new GCConcurrentHashMap<>(
           defaultGCCallback, GC_TIMEOUT);
 
   // name->actives map
-  private final GCConcurrentHashMap<String, InetSocketAddress[]> activeReplicas = new GCConcurrentHashMap<String, InetSocketAddress[]>(
+  private final GCConcurrentHashMap<String, InetSocketAddress[]> activeReplicas = new GCConcurrentHashMap<>(
           defaultGCCallback, GC_TIMEOUT);
   // name->unsent app requests for which active replicas are not yet known
-  private final GCConcurrentHashMap<String, LinkedBlockingQueue<RequestAndCallback>> requestsPendingActives = new GCConcurrentHashMap<String, LinkedBlockingQueue<RequestAndCallback>>(
+  private final GCConcurrentHashMap<String, LinkedBlockingQueue<RequestAndCallback>> requestsPendingActives = new GCConcurrentHashMap<>(
           defaultGCCallback, GC_TIMEOUT);
   // name->last queried time to rate limit RequestActiveReplicas queries
-  private final GCConcurrentHashMap<String, Long> lastQueriedActives = new GCConcurrentHashMap<String, Long>(
+  private final GCConcurrentHashMap<String, Long> lastQueriedActives = new GCConcurrentHashMap<>(
           defaultGCCallback, GC_TIMEOUT);
 
+  // Enables all the debug logging statements in the client.
+  private boolean debuggingEnabled = true;
+
   /**
+   * Creates a ClientAsynchSendAndCallback instance that handles incoming
+   * packets specified by the types parameter and sends requests to the 
+   * reconfigurators in the given list.
+   * 
    * The constructor specifies the default set of reconfigurators. This set
    * may change over time, so it is the caller's responsibility to ensure that
    * this set remains up-to-date. Some staleness however can be tolerated as
@@ -99,6 +103,10 @@ public class ClientAsynchSendAndCallback {
   }
 
   /**
+   * Creates a ClientAsynchSendAndCallback instance that handles incoming
+   * packets specified by the types parameter and sends requests to the 
+   * default reconfigurators.
+   *
    * @param types
    * @throws IOException
    */
@@ -108,7 +116,7 @@ public class ClientAsynchSendAndCallback {
 
   private static Stringifiable<String> unstringer = new StringifiableDefault<>("");
 
-  class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer<String> {
+  private class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer<String> {
 
     ClientPacketDemultiplexer(Set<IntegerPacketType> types) {
       register(ReconfigurationPacket.clientPacketTypes);
@@ -118,7 +126,7 @@ public class ClientAsynchSendAndCallback {
     private ClientReconfigurationPacket parseAsClientReconfigurationPacket(
             String strMsg) {
       ReconfigurationPacket<?> rcPacket = null;
-      if (debuggingEnabled) {
+      if (isDebuggingEnabled()) {
         GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as recon packet: " + strMsg);
       }
       try {
@@ -129,7 +137,7 @@ public class ClientAsynchSendAndCallback {
       }
       ClientReconfigurationPacket result = (rcPacket instanceof ClientReconfigurationPacket) ? (ClientReconfigurationPacket) rcPacket
               : null;
-      if (debuggingEnabled) {
+      if (isDebuggingEnabled()) {
         GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as recon packet returns: " + result);
       }
       return result;
@@ -137,7 +145,7 @@ public class ClientAsynchSendAndCallback {
 
     private Request parseAsAppRequest(String strMsg) {
       Request request = null;
-      if (debuggingEnabled) {
+      if (isDebuggingEnabled()) {
         GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as app request: " + strMsg);
       }
       try {
@@ -151,7 +159,7 @@ public class ClientAsynchSendAndCallback {
 
       }
       assert (request == null || request instanceof ClientRequest);
-      if (debuggingEnabled) {
+      if (isDebuggingEnabled()) {
         GNSClient.getLogger().info("@@@@@@@@@@@@@@@Parse as app request returns: " + request);
       }
       return request;
@@ -159,7 +167,7 @@ public class ClientAsynchSendAndCallback {
 
     @Override
     public boolean handleMessage(String strMsg) {
-      if (debuggingEnabled) {
+      if (isDebuggingEnabled()) {
         GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message: " + strMsg);
       }
       Request response = null;
@@ -171,7 +179,7 @@ public class ClientAsynchSendAndCallback {
 
       assert (response != null);
 
-      if (debuggingEnabled) {
+      if (isDebuggingEnabled()) {
         GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message response: " + response);
       }
       RequestCallback callback = null;
@@ -179,19 +187,19 @@ public class ClientAsynchSendAndCallback {
         // execute registered callback
         if ((response instanceof ClientRequest)
                 && (callback = callbacks.remove(((ClientRequest) response).getRequestID())) != null) {
-          if (debuggingEnabled) {
+          if (isDebuggingEnabled()) {
             GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message client request call back");
           }
           callback.handleResponse(((ClientRequest) response));
         } // ActiveReplicaError has to be dealt with separately
         else if ((response instanceof ActiveReplicaError)
                 && (callback = callbacks.remove(((ActiveReplicaError) response).getRequestID())) != null) {
-          if (debuggingEnabled) {
+          if (isDebuggingEnabled()) {
             GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message ActiveReplicaError ");
           }
         } else if (response instanceof ClientReconfigurationPacket) {
           if ((callback = callbacksCRP.remove(getKey((ClientReconfigurationPacket) response))) != null) {
-            if (debuggingEnabled) {
+            if (isDebuggingEnabled()) {
               GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message recon packet callback");
             }
             callback.handleResponse(response);
@@ -199,7 +207,7 @@ public class ClientAsynchSendAndCallback {
           // if RequestActiveReplicas, send pending requests
           if (response instanceof RequestActiveReplicas) {
             try {
-              if (debuggingEnabled) {
+              if (isDebuggingEnabled()) {
                 GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message send pending requests");
               }
               sendRequestsPendingActives((RequestActiveReplicas) response);
@@ -343,7 +351,7 @@ public class ClientAsynchSendAndCallback {
     return crp.getRequestType() + ":" + crp.getServiceName();
   }
 
-  class RequestAndCallback {
+  private class RequestAndCallback {
 
     final ClientRequest request;
     final RequestCallback callback;
@@ -388,7 +396,7 @@ public class ClientAsynchSendAndCallback {
   }
 
   private synchronized boolean enqueue(RequestAndCallback rc) {
-    requestsPendingActives.putIfAbsent(rc.request.getServiceName(), new LinkedBlockingQueue<RequestAndCallback>());
+    requestsPendingActives.putIfAbsent(rc.request.getServiceName(), new LinkedBlockingQueue<>());
     LinkedBlockingQueue<RequestAndCallback> pending = requestsPendingActives.get(rc.request.getServiceName());
     assert (pending != null);
     return pending.add(rc);
@@ -433,10 +441,24 @@ public class ClientAsynchSendAndCallback {
    * @return The list of default servers.
    */
   public Set<InetSocketAddress> getDefaultServers() {
-    return new HashSet<InetSocketAddress>(Arrays.asList(reconfigurators));
+    return new HashSet<>(Arrays.asList(reconfigurators));
   }
 
   public void stop() {
     niot.stop();
+  }
+
+  /**
+   * @return the debuggingEnabled
+   */
+  public boolean isDebuggingEnabled() {
+    return debuggingEnabled;
+  }
+
+  /**
+   * @param debuggingEnabled the debuggingEnabled to set
+   */
+  public void setDebuggingEnabled(boolean debuggingEnabled) {
+    this.debuggingEnabled = debuggingEnabled;
   }
 }
