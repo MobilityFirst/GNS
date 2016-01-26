@@ -78,7 +78,7 @@ public class NRState {
 
   @Override
   public String toString() {
-    return ttl + ":::" + valuesMap; // need to convert to json as it will be reinserted into database.
+    return ttl + SEPARATOR + valuesMap; // need to convert to json as it will be reinserted into database.
   }
 
 }

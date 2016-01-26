@@ -288,8 +288,7 @@ public class Intercessor implements IntercessorInterface {
 
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     QueryResult<String> result = queryResultMap.remove(id);
-    Long sentTime = queryTimeStamp.get(id); // instrumentation
-    queryTimeStamp.remove(id); // instrumentation
+    Long sentTime = queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime - sentTime;
     if (debuggingEnabled) {
       GNS.getLogger().finer("Query (" + id + ") RTT = " + rtt + "ms");
@@ -405,8 +404,7 @@ public class Intercessor implements IntercessorInterface {
     int id = nextUpdateRequestID();
     AddBatchRecordPacket<String> pkt = new AddBatchRecordPacket<>(null, id, names, values, nodeAddress);
     if (debuggingEnabled) {
-      //GNS.getLogger().fine("#####PACKET: " + pkt.toString());
-      GNS.getLogger().info("#####PACKET: " + pkt.toReasonableString());
+      GNS.getLogger().fine("#####PACKET: " + pkt.toString(true));
     }
     try {
       JSONObject json = pkt.toJSONObject();

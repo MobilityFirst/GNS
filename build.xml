@@ -66,10 +66,12 @@
   </target>
   
   <fileset id="client.includes" dir="${build.classes.dir}"
-           includes="edu/umass/cs/gnsclient/**/*.class,
-                     edu/umass/cs/gnscommon/**/*.class, 
-                     org/**/*.class"
-  />
+               includes="**/*.class"/>
+<!--           includes="edu/umass/cs/gnsclient/**/*.class,
+                     edu/umass/cs/gnscommon/**/*.class,
+                     edu/umass/cs/gnsserver/**/*.class, 
+                     org/**/*.class"-->
+  
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
   
@@ -228,9 +230,20 @@
   
   <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
+    <!-- Allows use to pass in some standard args from command line using -Dhost=127.0.0.1/>-->
+    <property name="host" value=""/>
+    <property name="port" value=""/>
+    <property name="alias" value=""/>
+    <property name="password" value=""/>
+    <property name="count" value=""/>
     <junit printsummary="withOutAndErr" fork="yes"> 
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Dhost=${host}"/>
+      <jvmarg value="-Dport=${port}"/>
+      <jvmarg value="-Dalias=${alias}"/>
+      <jvmarg value="-Dpassword=${password}"/>
+      <jvmarg value="-Dcount=${count}"/>
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -304,8 +317,8 @@
   description="Build both mSocket and proxy jars" />-->
 
   <target name="msocket-jar"
-                depends="clean,compile,msocketdoc"
-                description="Builds the mSocket Jar">
+          depends="clean,compile,msocketdoc"
+          description="Builds the mSocket Jar">
     <mkdir dir="${build.jar.dir}"/>
     <jar jarfile="${build.jar.dir}/msocket-${VERSION}-${RELEASE}.jar">
 		
@@ -340,18 +353,18 @@
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor"
-                                   value="University of Massachusetts" />
+                   value="University of Massachusetts" />
         <attribute name="Implementation-Title" value="MSocket Library" />
         <attribute name="Implementation-Version"
-                                   value="${VERSION}-${RELEASE}" />
+                   value="${VERSION}-${RELEASE}" />
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
     </jar>
   </target>
 
   <target name="msocket-proxy-console-jar"
-                depends="clean,compile,msocketdoc"
-                description="Builds the mSocket proxy console Jar">
+          depends="clean,compile,msocketdoc"
+          description="Builds the mSocket proxy console Jar">
     <mkdir dir="${build.jar.dir}"/>
     <jar jarfile="${build.jar.dir}/msocket-proxy-console-${VERSION}-${RELEASE}.jar">
 			
@@ -387,10 +400,10 @@
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor"
-                                           value="University of Massachusetts" />
+                   value="University of Massachusetts" />
         <attribute name="Implementation-Title" value="MSocket Library" />
         <attribute name="Implementation-Version"
-                                           value="${VERSION}-${RELEASE}" />
+                   value="${VERSION}-${RELEASE}" />
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
     </jar>

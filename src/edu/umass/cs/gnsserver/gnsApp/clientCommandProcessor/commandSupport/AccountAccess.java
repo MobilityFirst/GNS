@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -66,7 +67,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AccountAccess {
+  public class AccountAccess {
 
   /**
    * Defines the field name in an account guid where account information is stored.
@@ -562,7 +563,7 @@ public class AccountAccess {
           JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
                   ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
           // prefix is the same for all acls so just pick one to use here
-          json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl); 
+          json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
           // For active code
           //json.put(ActiveCode.ON_READ, new JSONArray());
           //json.put(ActiveCode.ON_WRITE, new JSONArray());
@@ -582,19 +583,20 @@ public class AccountAccess {
 
   /**
    * Add multiple guids to an account.
-   * 
+   *
    * @param names - the list of names
    * @param publicKeys - the list of public keys associated with the names
    * @param accountInfo
    * @param accountGuidInfo
    * @param handler
-   * @return 
+   * @return
    */
   public static CommandResponse<String> addMultipleGuids(List<String> names,
           List<String> publicKeys,
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
           ClientRequestHandlerInterface handler) {
     try {
+      long startTime = System.currentTimeMillis();
       Set<String> guids = new HashSet<>();
       Map<String, JSONObject> hrnMap = new HashMap<>();
       Map<String, JSONObject> guidInfoMap = new HashMap<>();
@@ -623,6 +625,7 @@ public class AccountAccess {
         jsonGuid.put("environment", 8675309); // test value
         guidInfoMap.put(guid, jsonGuid);
       }
+      DelayProfiler.updateDelay("addMultipleGuidsSetup", startTime);
       accountInfo.noteUpdate();
 
       // first we create the HRN records as a batch
@@ -632,6 +635,7 @@ public class AccountAccess {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
+          GNS.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse<String>(OK_RESPONSE);
         }
       }
@@ -646,14 +650,38 @@ public class AccountAccess {
   /**
    * Used by the batch test methods to create multiple guids.
    * This creates bunch of randomly names guids.
-   * 
+   *
+   * @param names
+   * @param accountInfo
+   * @param accountGuidInfo
+   * @param handler
+   */
+  public static CommandResponse<String> addMultipleGuidsFaster(
+          List<String> names,
+          AccountInfo accountInfo,
+          GuidInfo accountGuidInfo,
+          ClientRequestHandlerInterface handler) {
+    List<String> publicKeys = new ArrayList<>();
+    for (String name : names) {
+      String publicKey = "P" + name;
+      publicKeys.add(publicKey);
+    }
+    return addMultipleGuids(names, publicKeys, accountInfo, accountGuidInfo, handler);
+  }
+
+  /**
+   * Used by the batch test methods to create multiple guids.
+   * This creates bunch of randomly names guids.
+   *
    * @param accountInfo
    * @param accountGuidInfo
    * @param count
-   * @param handler 
+   * @param handler
+   * @return 
    */
-  public static void testBatchCreateGuids(AccountInfo accountInfo, GuidInfo accountGuidInfo,
-          int count, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> addMultipleGuidsFasterAllRandom(int count, 
+          AccountInfo accountInfo, GuidInfo accountGuidInfo,
+          ClientRequestHandlerInterface handler) {
     List<String> names = new ArrayList<>();
     List<String> publicKeys = new ArrayList<>();
     for (int i = 0; i < count; i++) {
@@ -662,7 +690,7 @@ public class AccountAccess {
       String publicKey = "P" + name;
       publicKeys.add(publicKey);
     }
-    addMultipleGuids(names, publicKeys, accountInfo, accountGuidInfo, handler);
+    return addMultipleGuids(names, publicKeys, accountInfo, accountGuidInfo, handler);
   }
 
   /**
@@ -967,7 +995,7 @@ public class AccountAccess {
    * @return a JSONObject
    * @throws JSONException
    */
-  private static JSONObject createACL(String readField, List<String> readAcessors,
+  public static JSONObject createACL(String readField, List<String> readAcessors,
           String writeField, List<String> writeAcessors) throws JSONException {
     JSONObject result = new JSONObject();
 

@@ -45,6 +45,7 @@ public class GnsProtocol {
   public final static String REMOVE_ALIAS = "removeAlias";
   public final static String RETRIEVE_ALIASES = "retrieveAliases";
   public final static String ADD_GUID = "addGuid";
+  public final static String ADD_MULTIPLE_GUIDS = "addMultipleGuids";
   public final static String REMOVE_GUID = "removeGuid";
   public final static String SET_PASSWORD = "setPassword";
   //

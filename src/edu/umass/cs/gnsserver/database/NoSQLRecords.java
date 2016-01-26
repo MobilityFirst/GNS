@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import org.json.JSONObject;
 

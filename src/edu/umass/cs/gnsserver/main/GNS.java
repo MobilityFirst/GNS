@@ -60,9 +60,10 @@ public class GNS {
   public static int MAXALIASES = 100;
   /**
    * The maximum number of subguids allowed in an account guid.
+   * The upper limit on this is currently dictated by mongo's 16MB document limit.
+   * https://docs.mongodb.org/manual/reference/limits/#bson-documents
    */
-  public static int MAXGUIDS = 12000;
-
+  public static int MAXGUIDS = 300000;
   // This is designed so we can run multiple NSs on the same host if needed
   /**
    * Master port types.

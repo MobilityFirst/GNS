@@ -23,7 +23,7 @@ import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.MongoRecordMap;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -74,7 +74,7 @@ public class MongoRecordsThroughputTest {
 
     // make a fake record
     MongoRecords<String> instance = new MongoRecords<String>(node);
-    MongoRecordMap<String> recordMap = new MongoRecordMap<String>(instance, DBNAMERECORD);
+    GNSRecordMap<String> recordMap = new GNSRecordMap<String>(instance, DBNAMERECORD);
     JSONObject json = new JSONObject();
     try {
       json.put(field, "some value");

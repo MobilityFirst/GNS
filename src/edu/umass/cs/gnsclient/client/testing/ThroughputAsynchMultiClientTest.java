@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.Format;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -530,7 +530,7 @@ public class ThroughputAsynchMultiClientTest {
           } while (chosen.contains(index));
           chosen.add(index);
           // important to set the request id to something unique for the client
-          commmandPackets[index][clientNumber].setRequestId(clients[clientNumber].generateNextRequestID());
+          commmandPackets[index][clientNumber].setClientRequestId(clients[clientNumber].generateNextRequestID());
           clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index][clientNumber]);
           // clear this out if we have used all the guids
           if (chosen.size() == numberOfGuids) {

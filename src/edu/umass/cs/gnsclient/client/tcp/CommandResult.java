@@ -19,8 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client.tcp;
 
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gnsclient.client.tcp.packet.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import java.io.Serializable;
 
 /**
@@ -72,8 +72,8 @@ public class CommandResult implements Serializable /* does it */ {
     this.result = packet.getReturnValue();
     this.receivedTime = receivedTime;
     this.errorCode = packet.getErrorCode();
-    this.CCPRoundTripTime = packet.getLNSRoundTripTime();
-    this.CCPProcessingTime = packet.getLNSProcessingTime();
+    this.CCPRoundTripTime = packet.getCPPRoundTripTime();
+    this.CCPProcessingTime = packet.getCPPProcessingTime();
     this.responder = packet.getResponder();
     this.requestCnt = packet.getRequestCnt();
     this.requestRate = packet.getRequestRate();

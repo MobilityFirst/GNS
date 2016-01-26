@@ -19,11 +19,6 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-/*
- * Copyright (C) 2013
- * University of Massachusetts
- * All Rights Reserved
- */
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
@@ -32,7 +27,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
-import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;

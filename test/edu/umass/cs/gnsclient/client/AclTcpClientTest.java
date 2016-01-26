@@ -19,15 +19,17 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.json.JSONArray;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -40,12 +42,9 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AclTcpClientTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "test@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
   private static InetSocketAddress address;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
@@ -53,15 +52,22 @@ public class AclTcpClientTest {
   private static GuidEntry barneyEntry;
 
   public AclTcpClientTest() {
-    if (client == null) {
-      address = ServerSelectDialog.selectServer();
-      System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
-      try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-      } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+    if (address == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
       }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+    }
+    try {
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
     }
   }
 
@@ -210,6 +216,32 @@ public class AclTcpClientTest {
       assertEquals("100 Main Street",
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
 
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  @Test
+  public void test_05_CreateDeeperField() {
+    try {
+      try {
+        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
+      } catch (Exception e) {
+        fail("Problem updating field: " + e);
+      }
+      try {
+        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GnsProtocol.ALL_FIELDS);
+      } catch (Exception e) {
+        fail("Problem adding acl: " + e);
+      }
+      try {
+        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry, 
+                "test.deeper.field", westyEntry.getGuid());
+        JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
+        JSONAssert.assertEquals(expected, actual, true);
+      } catch (Exception e) {
+        fail("Problem reading acl: " + e);
+      }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }

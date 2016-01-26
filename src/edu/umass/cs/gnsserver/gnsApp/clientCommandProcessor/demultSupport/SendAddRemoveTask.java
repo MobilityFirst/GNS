@@ -46,6 +46,7 @@ import java.util.TimerTask;
  * Date: 8/9/13
  * Time: 4:59 PM
  */
+@Deprecated
 public class SendAddRemoveTask extends TimerTask {
 
   private final String name;

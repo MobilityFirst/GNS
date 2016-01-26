@@ -44,6 +44,8 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import java.util.Set;
+import org.json.JSONException;
 
 /**
  * Functionality test for core elements in the client using the UniversalGnsClientFull.
@@ -395,9 +397,35 @@ public class ServerIntegrationTest {
       fail("Exception when we were not expecting it: " + e);
     }
   }
+  
+  @Test
+  public void test_14_ACLCreateDeeperField() {
+    try {
+      try {
+        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
+      } catch (Exception e) {
+        fail("Problem updating field: " + e);
+      }
+      try {
+        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GnsProtocol.ALL_FIELDS);
+      } catch (Exception e) {
+        fail("Problem adding acl: " + e);
+      }
+      try {
+        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry, 
+                "test.deeper.field", westyEntry.getGuid());
+        JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
+        JSONAssert.assertEquals(expected, actual, true);
+      } catch (Exception e) {
+        fail("Problem reading acl: " + e);
+      }
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
 
   @Test
-  public void test_14_DB() {
+  public void test_17_DB() {
     //testCreateEntity();
     try {
 
@@ -456,7 +484,7 @@ public class ServerIntegrationTest {
   }
 
   @Test
-  public void test_15_DBUpserts() {
+  public void test_18_DBUpserts() {
     HashSet<String> expected = null;
     HashSet<String> actual = null;
     try {
@@ -511,7 +539,7 @@ public class ServerIntegrationTest {
   }
 
   @Test
-  public void test_16_Substitute() {
+  public void test_19_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -553,7 +581,7 @@ public class ServerIntegrationTest {
   }
 
   @Test
-  public void test_17_SubstituteList() {
+  public void test_20_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -598,7 +626,7 @@ public class ServerIntegrationTest {
   }
 
   @Test
-  public void test_18_Group() {
+  public void test_21_Group() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
@@ -653,7 +681,7 @@ public class ServerIntegrationTest {
   }
 
   @Test
-  public void test_19_GroupAndACL() {
+  public void test_22_GroupAndACL() {
     //testGroup();
     String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
@@ -723,7 +751,7 @@ public class ServerIntegrationTest {
   }
 
   @Test
-  public void test_20_Alias() {
+  public void test_23_Alias() {
     String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
     try {
       //
@@ -1192,8 +1220,112 @@ public class ServerIntegrationTest {
     }
   }
 
+//  @Test
+//  public void test_51_CreateBatch() {
+//    GuidEntry masterGuid = null;
+//    try {
+//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+//      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//    int numberTocreate = 100;
+//    if (System.getProperty("count") != null
+//            && !System.getProperty("count").isEmpty()) {
+//      numberTocreate = Integer.parseInt(System.getProperty("count"));
+//    }
+//    Set<String> aliases = new HashSet<>();
+//    for (int i = 0; i < numberTocreate; i++) {
+//      aliases.add("testGUID" + RandomString.randomString(6));
+//    }
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(15 * 1000); // 30 seconds
+//      result = client.guidBatchCreate(masterGuid, aliases, true);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GnsProtocol.OK_RESPONSE, result);
+//    try {
+//      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | GnsException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
+
   @Test
-  public void test_47_Stop() {
+  public void test_52_CreateBatchFast() {
+    GuidEntry masterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
+    Set<String> aliases = new HashSet<>();
+    for (int i = 0; i < numberTocreate; i++) {
+      aliases.add("testGUID" + RandomString.randomString(6));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(60 * 1000); // 30 seconds
+      result = client.guidBatchCreate(masterGuid, aliases, false);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+
+  @Test
+  public void test_53_CreateBatchFastest() {
+    GuidEntry masterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(60 * 1000); // 30 seconds
+      result = client.guidBatchCreateFast(masterGuid, numberTocreate);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+  
+  @Test
+  public void test_99_Stop() {
     try {
       client.stop();
     } catch (Exception e) {

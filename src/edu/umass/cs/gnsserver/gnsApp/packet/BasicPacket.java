@@ -36,24 +36,7 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
    */
   protected Packet.PacketType type;
 
-  @Override
-  public String toString() {
-    try {
-      return this.toJSONObject().toString();
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to string:" + e);
-      return "BasicPacket{" + "type=" + getType() + '}';
-    }
-  }
-
-  public String toReasonableString() {
-    try {
-      return this.toJSONObject().toReasonableString();
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to string:" + e);
-      return "BasicPacket{" + "type=" + getType() + '}';
-    }
-  }
+  
 
   /**
    * @return the type
@@ -79,6 +62,35 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
    */
   public void setType(Packet.PacketType type) {
     this.type = type;
+  }
+  
+  @Override
+  public String toString() {
+    try {
+      return this.toJSONObject().toString();
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to string:" + e);
+      return "BasicPacket{" + "type=" + getType() + '}';
+    }
+  }
+
+  public static boolean shortenLongToString = false; // shorten is unused right now
+
+  public String toString(boolean shorten) {
+    if (shortenLongToString && shorten) {
+      return toReasonableString();
+    } else {
+      return toString();
+    }
+  }
+
+  public String toReasonableString() {
+    try {
+      return this.toJSONObject().toReasonableString();
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem converting packet to string:" + e);
+      return "BasicPacket{" + "type=" + getType() + '}';
+    }
   }
 
 }

@@ -45,12 +45,11 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   private final static String RETURNVALUE = "returnValue";
   private final static String ERRORCODE = "errorCode";
   // Instrumentation
-  private final static String CCPROUNDTRIPTIME = "ccpRtt";
-  private final static String CCPPROCESSINGTIME = "ccpTime";
+  private final static String CPPROUNDTRIPTIME = "ccpRtt";
+  private final static String CPPPROCESSINGTIME = "ccpTime";
   private final static String RESPONDER = "responder";
   private final static String REQUESTCNT = "requestCnt";
   private final static String REQUESTRATE = "requestRate";
-  //private final static String LOOKUPTIME = "lookuptime";
 
   /**
    * Identifier of the request.
@@ -75,11 +74,11 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * Instrumentation - The RTT as measured from the LNS out and back.
    */
-  private final long CCPRoundTripTime; // how long this query took from the CCP out and back
+  private final long CPPRoundTripTime; // how long this query took from the CCP out and back
   /**
    * Instrumentation - Total command processing time at the LNS.
    */
-  private final long CCPProcessingTime; // how long this query took inside the CCP
+  private final long CPPProcessingTime; // how long this query took inside the CCP
   /**
    * Instrumentation - what nameserver responded to this query.
    */
@@ -92,10 +91,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    * Instrumentation - the current requests per second from the LNS (can be used to tell how busy LNS is).
    */
   private final int requestRate;
-//  /**
-//   * Database lookup time instrumentation
-//   */
-//  private final int lookupTime;
 
   /**
    * Creates a CommandValueReturnPacket from a CommandResponse.
@@ -117,12 +112,11 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.serviceName = serviceName;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
-    this.CCPRoundTripTime = response.getCCPRoundTripTime();
-    this.CCPProcessingTime = cppProccessingTime;
+    this.CPPRoundTripTime = response.getCCPRoundTripTime();
+    this.CPPProcessingTime = cppProccessingTime;
     this.responder = response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
-    //this.lookupTime = response.getLookupTime();
   }
 
   /**
@@ -150,10 +144,9 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.requestRate = json.getInt(REQUESTRATE);
     this.requestCnt = json.getLong(REQUESTCNT);
     //
-    this.CCPRoundTripTime = json.optLong(CCPROUNDTRIPTIME, -1);
-    this.CCPProcessingTime = json.optLong(CCPPROCESSINGTIME, -1);
+    this.CPPRoundTripTime = json.optLong(CPPROUNDTRIPTIME, -1);
+    this.CPPProcessingTime = json.optLong(CPPPROCESSINGTIME, -1);
     this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : null;
-    //this.lookupTime = json.optInt(LOOKUPTIME, -1);
   }
 
   /**
@@ -178,25 +171,22 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     json.put(REQUESTRATE, requestRate); // instrumentation
     json.put(REQUESTCNT, requestCnt); // instrumentation
     // instrumentation
-    if (CCPRoundTripTime != -1) {
-      json.put(CCPROUNDTRIPTIME, CCPRoundTripTime);
+    if (CPPRoundTripTime != -1) {
+      json.put(CPPROUNDTRIPTIME, CPPRoundTripTime);
     }
-    if (CCPProcessingTime != -1) {
-      json.put(CCPPROCESSINGTIME, CCPProcessingTime);
+    if (CPPProcessingTime != -1) {
+      json.put(CPPPROCESSINGTIME, CPPProcessingTime);
     }
     // instrumentation
     if (responder != null) {
       json.put(RESPONDER, responder);
     }
-//    if (lookupTime != -1) {
-//      json.put(LOOKUPTIME, lookupTime);
-//    }
     return json;
   }
 
   /**
    * Get the client request id.
-   * 
+   *
    * @return the client request id
    */
   public int getClientRequestId() {
@@ -210,7 +200,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 
   /**
    * Get the LNS request id.
-   * 
+   *
    * @return the LNS request id
    */
   public int getLNSRequestId() {
@@ -219,7 +209,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 
   /**
    * Get the return value.
-   * 
+   *
    * @return the return value
    */
   public String getReturnValue() {
@@ -228,7 +218,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 
   /**
    * Get the error code.
-   * 
+   *
    * @return the error code
    */
   public NSResponseCode getErrorCode() {
@@ -237,11 +227,11 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 
   /**
    * Get the LNS round trip time (instrumentation).
-   * 
+   *
    * @return the LNS round trip time
    */
-  public long getLNSRoundTripTime() {
-    return CCPRoundTripTime;
+  public long getCPPRoundTripTime() {
+    return CPPRoundTripTime;
   }
 
   /**
@@ -249,13 +239,13 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    *
    * @return the LNS processing time
    */
-  public long getLNSProcessingTime() {
-    return CCPProcessingTime;
+  public long getCPPProcessingTime() {
+    return CPPProcessingTime;
   }
 
   /**
    * Get the responder host id (instrumentation).
-   * 
+   *
    * @return the responder
    */
   public String getResponder() {
@@ -264,7 +254,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 
   /**
    * Get the request count (instrumentation).'
-   * 
+   *
    * @return the request count
    */
   public long getRequestCnt() {
@@ -273,7 +263,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 
   /**
    * Get the request rate (instrumentation).
-   * 
+   *
    * @return the request rate
    */
   public int getRequestRate() {

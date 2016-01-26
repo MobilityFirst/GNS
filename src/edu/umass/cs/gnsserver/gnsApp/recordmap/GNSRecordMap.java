@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.recordmap;
 
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnsserver.database.ColumnField;
-import edu.umass.cs.gnsserver.database.MongoRecords;
+import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
@@ -42,10 +42,10 @@ import java.util.Set;
  * @author westy
  * @param <NodeIDType> 
  */
-public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
+public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
 
   private final String collectionName;
-  private final MongoRecords<NodeIDType> mongoRecords;
+  private final NoSQLRecords mongoRecords;
 
   /**
    * Creates an MongoRecordMap instance.
@@ -53,7 +53,7 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
    * @param mongoRecords
    * @param collectionName
    */
-  public MongoRecordMap(MongoRecords<NodeIDType> mongoRecords, String collectionName) {
+  public GNSRecordMap(NoSQLRecords mongoRecords, String collectionName) {
     this.collectionName = collectionName;
     this.mongoRecords = mongoRecords;
   }
@@ -67,7 +67,7 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
   public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException, FailedDBOperationException {
     if (!containsName(name)) {
       try {
-        MongoRecords<NodeIDType> records = mongoRecords;
+        NoSQLRecords records = mongoRecords;
         JSONObject json = records.lookupEntireRecord(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
@@ -176,7 +176,7 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
 
   @Override
   public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException {
-    MongoRecords records = mongoRecords;
+    NoSQLRecords records = mongoRecords;
     try {
       String name = json.getString(NameRecord.NAME.getName());
       records.insert(collectionName, name, json);
@@ -188,7 +188,7 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
 
   @Override
   public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException {
-    MongoRecords<NodeIDType> records = mongoRecords;
+    NoSQLRecords records = mongoRecords;
     records.bulkInsert(collectionName, jsons);
     GNS.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
   }
