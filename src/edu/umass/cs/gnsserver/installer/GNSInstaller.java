@@ -263,7 +263,6 @@ public class GNSInstaller {
    * Copies the JAR and conf files and optionally resets some other stuff depending on the
    * update action given.
    * Then the various servers are started on the host.
-   *
    * @param nsId
    * @param createLNS
    * @param hostname
@@ -290,18 +289,24 @@ public class GNSInstaller {
       if (action == InstallerAction.UPDATE) {
         makeInstallDir(hostname);
       }
+      System.out.println("Kill servers start "+runAsRoot);
       killAllServers(hostname, runAsRoot);
+      System.out.println("Kill servers complete");
       if (scriptFile != null) {
-        executeScriptFile(hostname, scriptFile);
+    	  System.out.println("Executing script file");
+    	  executeScriptFile(hostname, scriptFile);
       }
       if (removeLogs) {
+    	System.out.println("Removing logs");
         removeLogFiles(hostname, runAsRoot);
       }
       if (deleteDatabase) {
+    	System.out.println("Delete db");
         deleteDatabase(hostname);
       }
       switch (action) {
         case UPDATE:
+        	System.out.println("Executing update case");
           makeConfAndcopyJarAndConfFiles(hostname, createLNS, noopTest);
           copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
           copySSLFiles(hostname);
@@ -428,7 +433,7 @@ public class GNSInstaller {
     // make it executable
     SSHClient.exec(userName, hostname, keyFileName, "chmod ugo+x" + " " + buildInstallFilePath(remoteFile));
     //execute it
-    SSHClient.exec(userName, hostname, keyFileName, "." + FILESEPARATOR + buildInstallFilePath(remoteFile));
+    SSHClient.exec(userName, hostname, keyFileName, "bash " + FILESEPARATOR + buildInstallFilePath(remoteFile));
   }
 
   private static void makeInstallDir(String hostname) {
@@ -458,14 +463,21 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void killAllServers(String hostname, boolean runAsRoot) {
-    System.out.println("Killing GNS servers");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
+	  //FIXME: kill not working on emulab or local machine
+	  /*try
+	  {
+		  System.out.println("Killing GNS servers");
+		  ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
             //runAsRoot,
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + gnsJarFileName + "\""
-    );
-    //"#!/bin/bash\nkillall java");
+            );
+		  //"#!/bin/bash\nkillall java");
+	  } catch(Exception | Error ex)
+	  {
+		  ex.printStackTrace();
+	  }*/
   }
 
   /**
@@ -754,7 +766,8 @@ public class GNSInstaller {
               : runsetRestart != null ? runsetRestart
                       : runsetStop != null ? runsetStop
                               : null;
-
+      
+      
       System.out.println("Config name: " + configName);
       System.out.println("Current directory: " + System.getProperty("user.dir"));
 
@@ -762,13 +775,16 @@ public class GNSInstaller {
       if (!checkAndSetConfFilePaths(configName)) {
         System.exit(1);
       }
+      // so that key filename is updated before reading it.
+      // otherwise it reads default.
+      loadConfig(configName);
 
       if (getKeyFile() == null) {
         System.out.println("Can't find keyfile: " + keyFile + "; exiting.");
         System.exit(1);
       }
 
-      loadConfig(configName);
+      
       loadHostsFiles(configName);
 
       String lnsHostFile = fileSomewhere(configName + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath).toString();
@@ -803,7 +819,7 @@ public class GNSInstaller {
    * The thread we use to run a copy of the updater for each host we're updating.
    */
   private static class UpdateThread extends Thread {
-
+	  
     private final String hostname;
     private final String nsId;
     private final boolean createLNS;
@@ -834,10 +850,15 @@ public class GNSInstaller {
     @Override
     public void run() {
       try {
+    	  
         GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase,
                 lnsHostsFile, nsHostsFile, scriptFile, runAsRoot, noopTest);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
+      }
+      catch(Exception | Error ex)
+      {
+    	  ex.printStackTrace();
       }
     }
   }

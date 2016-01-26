@@ -123,6 +123,7 @@ public class SSHClient {
 
       byte[] tmp = new byte[MAXCOMMANDBYTES];
       while (true) {
+    	  //System.out.println("in reading while");
         while (in.available() > 0) {
           int i = in.read(tmp, 0, MAXCOMMANDBYTES);
           if (i < 0) {
@@ -336,6 +337,8 @@ public class SSHClient {
   }
  
   public static void main(String[] arg) {
+	  exec("ayadavum", "serv0.singlenodetest.mobilityfirst.emulab.net",new File("/home/adipc/privatekey/skuldKey") 
+	  , "bash /home/GNSDir/hostnameScript.sh");
     String host = "23.21.160.80";
     String scriptPath = "/Users/westy/Documents/Code/GNRS-westy/scripts/5nodesregions/";
     String script = "installnosudo.sh";

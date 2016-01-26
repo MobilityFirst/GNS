@@ -55,7 +55,7 @@ public class RunServer {
       //Warning: doing this is no good in high quality applications.
       //Instead, present appropriate error messages to the user.
       //But it's perfectly fine for prototyping.
-
+    	e.printStackTrace();
       return null;
     }
   }

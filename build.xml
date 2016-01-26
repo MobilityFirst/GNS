@@ -209,6 +209,7 @@
     <pathelement location="${lib.dir}/derby.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.16.jar"/>
     <pathelement location="${lib.dir}/gigapaxos-1.0.jar"/>
+  	<pathelement location="${lib.dir}/context-client-GNS.jar"/>
     <pathelement location="${conf.dir}"/>
   </path>
   
@@ -265,6 +266,7 @@
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+    	<jvmarg value="-Xms1024m"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
@@ -359,7 +361,7 @@
       </manifest>
     </jar>
   </target>
-	
+
   <target name="msocket-proxy-console-jar"
           depends="clean,compile,msocketdoc"
           description="Builds the mSocket proxy console Jar">

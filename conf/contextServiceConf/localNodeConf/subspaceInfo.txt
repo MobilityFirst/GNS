@@ -1,0 +1,6 @@
+0,0,1,2,3
+0, geoLocationCurrentLat, geoLocationCurrentLong
+1,0,1,2,3
+1, geoLocationWorkLat, geoLocationWorkLong
+2,0,1,2,3
+2, geoLocationHomeLat, geoLocationHomeLong

@@ -43,7 +43,6 @@ import org.apache.commons.cli.Options;
  * @author westy
  */
 public class AppReconfigurableNodeOptions {
-
   // "Global" parameters
   /**
    * The port used by Mongo.
@@ -116,6 +115,11 @@ public class AppReconfigurableNodeOptions {
    * How long (in seconds) to blacklist active code.
    */
   public static long activeCodeBlacklistSeconds = 10;
+  
+  public static boolean enableContextService = false;
+  // ip port info of one context service node to contact.
+  // of the form ip:Port.
+  public static String contextServiceIpPort = "";
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -198,10 +202,19 @@ public class AppReconfigurableNodeOptions {
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
   
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
+  
+  /**
+   * enable ContextService
+   */
+  public static final String ENABLE_CONTEXT_SERVICE  = "enableContextService";
+  
+  /**
+   * ip port information of 
+   */
+  public static final String CONTEXT_SERVICE_IP_PORT = "contextServiceHostPort";
 
   /**
    * Returns all the options.
-   *
    * @return all the options
    */
   public static Options getAllOptions() {
@@ -227,6 +240,9 @@ public class AppReconfigurableNodeOptions {
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
+    Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
+    Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
+    		+ "information of GNS");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -251,9 +267,11 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
     commandLineOptions.addOption(disableEmailVerification);
-
+    
+    //context service options
+    commandLineOptions.addOption(enableContextService);
+    commandLineOptions.addOption(contextServiceHostPort);
     return commandLineOptions;
-
   }
 
   private static boolean initialized = false;
@@ -275,7 +293,8 @@ public class AppReconfigurableNodeOptions {
     }
 
     // make sure this has been initialized
-    GNS.getLogger();
+    // initializing it here doesn't allow the logging levels set in the file
+    //GNS.getLogger();
 
     if (!allValues.containsKey(DISABLE_SSL)) {
       disableSSL = false;
@@ -403,7 +422,14 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
     	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
-
+    
+    if (isOptionTrue(ENABLE_CONTEXT_SERVICE, allValues))
+    {
+    	enableContextService = true;
+    }
+    
+    if (allValues.containsKey(CONTEXT_SERVICE_IP_PORT)) {
+    	contextServiceIpPort = allValues.get(CONTEXT_SERVICE_IP_PORT);
+    }
   }
-
 }

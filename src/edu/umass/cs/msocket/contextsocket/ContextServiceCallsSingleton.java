@@ -41,6 +41,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.contextservice.common.CSNodeConfig;
 import edu.umass.cs.contextservice.messages.ContextServicePacket;
 import edu.umass.cs.contextservice.messages.QueryMsgFromUser;
 import edu.umass.cs.contextservice.messages.QueryMsgFromUserReply;
@@ -273,7 +274,7 @@ public class ContextServiceCallsSingleton<NodeIDType> implements PacketDemultipl
 	private void sendQueryMesgToContextService(String query, long userReqNum) throws IOException, JSONException
 	{
 		QueryMsgFromUser<NodeIDType> qmesgU 
-			= new QueryMsgFromUser<NodeIDType>(myID, query, sourceIP, LISTEN_PORT, userReqNum);
+			= new QueryMsgFromUser<NodeIDType>(myID, query, userReqNum, 300000, sourceIP, LISTEN_PORT);
 		
 		InetSocketAddress sockAddr = getRandomNodeSock();
 		log.trace("Sending query to "+sockAddr);
@@ -284,7 +285,7 @@ public class ContextServiceCallsSingleton<NodeIDType> implements PacketDemultipl
 	{
 		ValueUpdateFromGNS<NodeIDType> updateMesg 
 			= new ValueUpdateFromGNS<NodeIDType>(myID, userReqNum, memberGUID, 
-					new JSONObject(), sourceIP, LISTEN_PORT, userReqNum );
+					new JSONObject(), userReqNum, sourceIP, LISTEN_PORT );
 		
 		InetSocketAddress sockAddr = getRandomNodeSock();
 		log.trace("Sending update to "+sockAddr);

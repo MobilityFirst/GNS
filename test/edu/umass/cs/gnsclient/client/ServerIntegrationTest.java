@@ -71,6 +71,7 @@ public class ServerIntegrationTest {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+	 System.out.println("setUpBeforeClass starting");
     ArrayList<String> output = RunServer.command("scripts/3nodeslocal/reset_and_restart.sh", ".");
     if (output != null) {
       for (String line : output) {
