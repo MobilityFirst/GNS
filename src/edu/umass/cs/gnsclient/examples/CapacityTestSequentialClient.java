@@ -63,21 +63,20 @@ public class CapacityTestSequentialClient {
 				
 			}
 			
-			Thread[] threadPool = new Thread[NUM_CLIENT];
+			//Thread[] threadPool = new Thread[NUM_CLIENT];
 			long start = System.currentTimeMillis();
 			
 			for (int i=0; i<NUM_CLIENT; i++){
-				threadPool[i] = new Thread(clients[i]);
-				threadPool[i].start();
-				//executorPool.execute(clients[i]);
+				//threadPool[i] = new Thread(clients[i]);
+				//threadPool[i].start();
+				executorPool.execute(clients[i]);
 			}
 			
 			int t = 0;
 			int received = 0;
 			int max = 0;
 			int thruput = 0;
-			//executorPool.getCompletedTaskCount() < NUM_CLIENT
-			while (t<60){
+			while (executorPool.getCompletedTaskCount() < NUM_CLIENT){
 				thruput = latency.size() - received;
 				if(max<thruput){
 					max = thruput;
@@ -91,11 +90,7 @@ public class CapacityTestSequentialClient {
 					e.printStackTrace();
 				}
 			}
-			
-			for (int i=0; i<NUM_CLIENT; i++){
-				threadPool[i].join();
-			}
-			
+						
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*received/eclapsed)+" req/sec.");
