@@ -36,6 +36,7 @@ public class CapacityTestSequentialClient {
 			int node = Integer.parseInt(args[1]); 			
 			int BENIGN = Integer.parseInt(args[2]);	
 			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients.");
+			NUM_CLIENT = Integer.parseInt(args[3]);
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
