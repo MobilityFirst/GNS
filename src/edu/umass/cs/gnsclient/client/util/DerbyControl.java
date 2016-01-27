@@ -46,6 +46,7 @@ public class DerbyControl {
     try {
       Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
     } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      GNSClient.getLogger().severe("Could not find Derby driver class!");
       e.printStackTrace();
       return null;
     }

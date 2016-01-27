@@ -64,7 +64,9 @@ public class ClientAsynchTest {
       System.out.println("##### Received response: " + receivedResponse);
     } catch (Exception e) {
       GNSClient.getLogger().severe("Problem executing command:" + e);
+      System.exit(-1);
     }
+    System.exit(0);
   }
 
   private static void waitForResponse() {
