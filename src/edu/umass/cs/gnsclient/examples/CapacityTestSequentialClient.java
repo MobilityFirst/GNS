@@ -19,7 +19,7 @@ public class CapacityTestSequentialClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
 		public static ArrayList<Long> latency = new ArrayList<Long>();
 		public static ArrayList<Long> mal_request = new ArrayList<Long>();
-		
+		private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	    
 		private static int NUM_THREAD = 100;
 	    private static int NUM_CLIENT = 0;
@@ -33,9 +33,14 @@ public class CapacityTestSequentialClient {
 	    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
 	    InvalidKeyException, SignatureException, Exception {
 	    	String address = args[0];
-			int node = Integer.parseInt(args[1]); 
-			NUM_CLIENT =  Integer.parseInt(args[2]);
-			int MAL = Integer.parseInt(args[3]);
+			int node = Integer.parseInt(args[1]); 			
+			int fraction = Integer.parseInt(args[2]);			
+			if(fraction > MALICIOUS_EVERY_FEW_CLIENTS){
+				System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
+				System.exit(0);
+			}
+			fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
+			NUM_CLIENT =  Integer.parseInt(args[3]);
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -51,11 +56,12 @@ public class CapacityTestSequentialClient {
 				//String guid = accountGuid.getGuid();
 			
 				//System.out.println("The GUID is "+guid);
-				if (index < MAL){
+				if (index%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
 					clients[index] = new SingleClient(client, accountGuid, false);
-				}else{
+				} else {
 					clients[index] = new SingleClient(client, accountGuid, true);
 				}
+				
 			}
 			
 			//Thread[] threadPool = new Thread[NUM_CLIENT];
@@ -88,7 +94,7 @@ public class CapacityTestSequentialClient {
 			
 			while (executorPool.getCompletedTaskCount() < NUM_CLIENT)
 				;
-			
+						
 			System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+received/50+" req/sec.");
 			
