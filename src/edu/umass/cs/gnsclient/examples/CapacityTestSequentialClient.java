@@ -26,7 +26,7 @@ public class CapacityTestSequentialClient {
 	    public static final int DURATION = 60;
 	    public static final int INTERVAL = 5;
 	    public static final int MAL_INTERVAL = 200;
-	    
+	    private static SingleClient[] clients;
 	    private static ThreadPoolExecutor executorPool;  
 	    
 	    public static void main(String[] args) throws IOException,
@@ -37,7 +37,7 @@ public class CapacityTestSequentialClient {
 			NUM_CLIENT =  Integer.parseInt(args[2]);
 			int MAL = Integer.parseInt(args[3]);
 			
-			SingleClient[] clients = new SingleClient[NUM_CLIENT];
+			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
 			executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 		    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
@@ -58,12 +58,13 @@ public class CapacityTestSequentialClient {
 				}
 			}
 			
-			Thread[] threadPool = new Thread[NUM_CLIENT];
+			//Thread[] threadPool = new Thread[NUM_CLIENT];
 			long start = System.currentTimeMillis();
 			
 			for (int i=0; i<NUM_CLIENT; i++){
-				threadPool[i] = new Thread(clients[i]);
-				threadPool[i].start();
+				//threadPool[i] = new Thread(clients[i]);
+				//threadPool[i].start();
+				executorPool.execute(clients[i]);
 			}
 			
 			int t = 0;
@@ -83,10 +84,6 @@ public class CapacityTestSequentialClient {
 				}catch(InterruptedException e){
 					e.printStackTrace();
 				}
-			}
-			
-			for (int i=0; i<NUM_CLIENT; i++){
-				threadPool[i].join();
 			}
 			
 			System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to send all the requests");
