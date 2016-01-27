@@ -765,7 +765,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @SuppressWarnings("unchecked")
   public static void main(String[] args) throws Exception {
-    String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/single-server-info.txt";
+    String filename = "conf/single-server-info.txt";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, "frank");
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());
