@@ -34,15 +34,15 @@ public class CapacityTestSequentialClient {
 	    InvalidKeyException, SignatureException, Exception {
 	    	String address = args[0];
 			int node = Integer.parseInt(args[1]); 			
-			int fraction = Integer.parseInt(args[2]);			
+			int fraction = Integer.parseInt(args[2]);	
+			System.out.println("There are "+NUM_CLIENT+" clients, and "+fraction+"/5 are malicious.");
 			if(fraction > MALICIOUS_EVERY_FEW_CLIENTS){
 				System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
 				System.exit(0);
 			}
 			fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
 			NUM_CLIENT =  Integer.parseInt(args[3]);
-			
-			System.out.println("There are "+NUM_CLIENT+" clients, and "+fraction+"/5 are malicious.");
+						
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -97,9 +97,9 @@ public class CapacityTestSequentialClient {
 				}
 			}
 									
-			long eclapsed = System.currentTimeMillis()-start;
+			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(received/eclapsed)+" req/sec.");
+			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*received/eclapsed)+" req/sec.");
 			
 			System.exit(0);
 	    }
