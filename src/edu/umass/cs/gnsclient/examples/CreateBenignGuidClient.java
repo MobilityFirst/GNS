@@ -39,6 +39,7 @@ public class CreateBenignGuidClient {
 				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 				
 				client.activeCodeSet(accountGuid.getGuid(), "read", code64, accountGuid);
+				System.out.println("Create benign user "+index);
 			}
 			
 			System.out.println("Benign users, all set!");
