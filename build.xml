@@ -93,6 +93,7 @@
         <attribute name="Implementation-Title" value="GNS" />
         <attribute name="Implementation-Version"
                    value="${VERSION}-${RELEASE}" />
+        <attribute name="Class-Path" value="."/>
         <!--        <attribute name="Class-Path" value="${jar.classpath}"/>-->
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
