@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
+import edu.umass.cs.gigapaxos.paxosutil.SQL;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -42,6 +43,12 @@ public class DerbyControl {
   private boolean debuggingEnabled = false;
 
   public Connection start() {
+    try {
+      Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      e.printStackTrace();
+      return null;
+    }
     Connection conn = null;
     if (debuggingEnabled) {
       GNSClient.getLogger().info("Derby starting in " + framework + " mode");
