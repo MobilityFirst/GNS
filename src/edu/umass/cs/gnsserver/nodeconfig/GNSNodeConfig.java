@@ -81,8 +81,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   public static final int INVALID_PORT = -1;
 
   private long version = 0l;
-  private NodeIDType nodeID; // if this is null you should check isLocalNameServer; otherwise it might be invalid
-  private boolean isCCP = false;
+  private NodeIDType nodeID; // if this is null you should check isCPP; otherwise it might be invalid
+  private boolean isCPP = false;
   private final String hostsFile;
 
   /**
@@ -96,12 +96,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * This supports the new hosts.txt style format.
    *
    * @param hostsFile
-   * @param nameServerID - specify null to mean the local name server
+   * @param nameServerID - specify null to mean the CPP
    * @throws java.io.IOException
    */
   public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
     if (nameServerID == null) {
-      this.isCCP = true;
+      this.isCPP = true;
     }
     this.nodeID = nameServerID;
 
@@ -114,7 +114,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     // Informational purposes
     for (Entry<NodeIDType, NodeInfo<NodeIDType>> hostInfoEntry : hostInfoMapping.entrySet()) {
       GNS.getLogger().info("For "
-              + (nameServerID == null ? "CCP" : nameServerID.toString())
+              + (nameServerID == null ? "CPP" : nameServerID.toString())
               + " Id: " + hostInfoEntry.getValue().getId().toString()
               + " Host Name:" + hostInfoEntry.getValue().getIpAddress()
               + " IP:" + hostInfoEntry.getValue().getExternalIPAddress()
@@ -647,7 +647,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
               spec.getStartPort() != null ? spec.getStartPort() : GNS.DEFAULT_STARTING_PORT);
     }
     // some idiot checking of the given Id
-    if (!isCCP) {
+    if (!isCPP) {
       NodeInfo<NodeIDType> nodeInfo = newHostInfoMapping.get(this.nodeID);
       if (nodeInfo == null) {
         throw new IOException("NodeId not found in hosts file:" + this.nodeID.toString());
@@ -754,7 +754,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   @Override
   public String toString() {
-    return "GNSNodeConfig{" + "nodeID=" + nodeID + ", isLocalNameServer=" + isCCP + '}';
+    return "GNSNodeConfig{" + "nodeID=" + nodeID + ", isLocalNameServer=" + isCPP + '}';
   }
 
   /**
@@ -765,8 +765,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @SuppressWarnings("unchecked")
   public static void main(String[] args) throws Exception {
-    String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, "billy");
+    String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/single-server-info.txt";
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, "frank");
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());
     System.out.println(gnsNodeConfig.getNodePort("smith"));
