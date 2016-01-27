@@ -23,7 +23,7 @@ public class CapacityTestSequentialClient {
 	    
 		private static int NUM_THREAD = 100;
 	    private static int NUM_CLIENT = 0;
-	    public static final int DURATION = 30;
+	    public static final int DURATION = 10;
 	    public static final int INTERVAL = 5;
 	    public static final int MAL_INTERVAL = 200;
 	    private static SingleClient[] clients;
@@ -42,6 +42,8 @@ public class CapacityTestSequentialClient {
 			fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
 			NUM_CLIENT =  Integer.parseInt(args[3]);
 			
+			System.out.println("There are "+NUM_CLIENT+" clients, and "+fraction+"/5 are malicious.");
+			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
 			executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
@@ -57,8 +59,10 @@ public class CapacityTestSequentialClient {
 			
 				//System.out.println("The GUID is "+guid);
 				if (index%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
+					System.out.println("Set to benign "+index);
 					clients[index] = new SingleClient(client, accountGuid, false);
 				} else {
+					System.out.println("Set to malicious "+index);
 					clients[index] = new SingleClient(client, accountGuid, true);
 				}
 				
@@ -92,8 +96,7 @@ public class CapacityTestSequentialClient {
 					e.printStackTrace();
 				}
 			}
-				
-						
+									
 			System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+received/50+" req/sec.");
 			
