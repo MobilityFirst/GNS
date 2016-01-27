@@ -17,9 +17,9 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 public class CapacityTestSequentialClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
+		
 		public static ArrayList<Long> latency = new ArrayList<Long>();
 		public static ArrayList<Long> mal_request = new ArrayList<Long>();
-		private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	    
 		private static int NUM_THREAD = 100;
 	    private static int NUM_CLIENT = 0;
@@ -34,15 +34,8 @@ public class CapacityTestSequentialClient {
 	    InvalidKeyException, SignatureException, Exception {
 	    	String address = args[0];
 			int node = Integer.parseInt(args[1]); 			
-			int fraction = Integer.parseInt(args[2]);	
-			System.out.println("There are "+NUM_CLIENT+" clients, and "+fraction+"/5 are malicious.");
-			if(fraction > MALICIOUS_EVERY_FEW_CLIENTS){
-				System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
-				System.exit(0);
-			}
-			fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
-			NUM_CLIENT =  Integer.parseInt(args[3]);
-						
+			int MAL = Integer.parseInt(args[2]);	
+			System.out.println("There are "+MAL+"/"+NUM_CLIENT+" clients.");
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -55,7 +48,7 @@ public class CapacityTestSequentialClient {
 				
 				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 				
-				if (index%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
+				if (index < MAL){
 					clients[index] = new SingleClient(client, accountGuid, false);
 				} else {
 					clients[index] = new SingleClient(client, accountGuid, true);
