@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author westy
  */
+@Deprecated
 public class LNSQueryHandler {
 
   private static final Object monitor = new Object();

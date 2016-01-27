@@ -398,6 +398,26 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
           throws IOException, GnsException, JSONException {
     return sendCommandAsynch(createCommand(LOOKUP_ACCOUNT_RECORD, GUID, accountGuid), callback);
   }
+  
+  /**
+   * Read a field from a GNS server.
+   *
+   * @param guid
+   * @param field
+   * @param callback
+   * @return a request id
+   * @throws IOException
+   * @throws org.json.JSONException
+   * @throws UnsupportedEncodingException
+   * @throws GnsException
+   */
+  public long fieldRead(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsException {
+    return sendCommandAsynch(createCommand(READ, GUID, guid, FIELD, field), callback);
+  }
+  
+  public long fieldReadArray(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsException {
+    return sendCommandAsynch(createCommand(READ_ARRAY, GUID, guid, FIELD, field), callback);
+  }
 
   // NEED TO CREATE A DUMMY GUID FOR THIS TO WORK
   /**

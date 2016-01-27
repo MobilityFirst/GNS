@@ -43,7 +43,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSQueryHandler;
+//import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSQueryHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSUpdateHandler;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket;
@@ -184,7 +184,8 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
           // the only dns response we should see are coming in response to LNSQueryHandler requests
           DNSPacket<String> dnsPacket = new DNSPacket<String>(json, nodeConfig);
           if (!dnsPacket.isQuery()) {
-            LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
+            GNS.getLogger().severe("App should not be getting query packets!!");
+            //LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
             AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient, activeCodeHandler);
