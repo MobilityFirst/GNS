@@ -52,37 +52,32 @@ public class CapacityTestSequentialClient {
 	    	
 			for (int index=0; index<NUM_CLIENT; index++){			
 				String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
-				//System.out.println("The account is "+account);
 				
 				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
-				//String guid = accountGuid.getGuid();
-			
-				//System.out.println("The GUID is "+guid);
+				
 				if (index%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
-					System.out.println("Set to benign "+index);
 					clients[index] = new SingleClient(client, accountGuid, false);
 				} else {
-					System.out.println("Set to malicious "+index);
 					clients[index] = new SingleClient(client, accountGuid, true);
 				}
 				
 			}
 			
-			//Thread[] threadPool = new Thread[NUM_CLIENT];
+			Thread[] threadPool = new Thread[NUM_CLIENT];
 			long start = System.currentTimeMillis();
 			
 			for (int i=0; i<NUM_CLIENT; i++){
-				//threadPool[i] = new Thread(clients[i]);
-				//threadPool[i].start();
-				executorPool.execute(clients[i]);
+				threadPool[i] = new Thread(clients[i]);
+				threadPool[i].start();
+				//executorPool.execute(clients[i]);
 			}
 			
 			int t = 0;
 			int received = 0;
 			int max = 0;
 			int thruput = 0;
-			
-			while (executorPool.getCompletedTaskCount() < NUM_CLIENT){
+			//executorPool.getCompletedTaskCount() < NUM_CLIENT
+			while (t<60){
 				thruput = latency.size() - received;
 				if(max<thruput){
 					max = thruput;
@@ -96,7 +91,11 @@ public class CapacityTestSequentialClient {
 					e.printStackTrace();
 				}
 			}
-									
+			
+			for (int i=0; i<NUM_CLIENT; i++){
+				threadPool[i].join();
+			}
+			
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*received/eclapsed)+" req/sec.");
