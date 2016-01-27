@@ -86,8 +86,11 @@ public class CapacityTestSequentialClient {
 				}
 			}
 			
+			while (executorPool.getCompletedTaskCount() < NUM_CLIENT)
+				;
+			
 			System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+received/60+" req/sec.");
+			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+received/50+" req/sec.");
 			
 			System.exit(0);
 	    }
