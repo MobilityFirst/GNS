@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client.asynch;
 
-import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
@@ -64,15 +63,9 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.nio.interfaces.IntegerPacketType;
-import edu.umass.cs.nio.interfaces.Stringifiable;
-import edu.umass.cs.nio.nioutils.StringifiableDefault;
-import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -83,10 +76,9 @@ import java.util.Set;
  *
  * @author Westy
  */
-public class ClientAsynchBase extends ReconfigurableAppClientAsync {
+@Deprecated
+public class ClientAsynchBaseV1 extends ClientAsynchSendAndCallback {
 
-  private static Set<IntegerPacketType> clientPacketTypes
-          = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND, Packet.PacketType.COMMAND_RETURN_VALUE));
   /**
    * Used to generate unique ids
    */
@@ -101,7 +93,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @throws IOException
    */
-  public ClientAsynchBase() throws IOException {
+  public ClientAsynchBaseV1() throws IOException {
     this(ReconfigurationConfig.getReconfiguratorAddresses());
   }
 
@@ -111,36 +103,16 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @param addresses
    * @throws java.io.IOException
    */
-  public ClientAsynchBase(Set<InetSocketAddress> addresses) throws IOException {
-    super(addresses);
+  public ClientAsynchBaseV1(Set<InetSocketAddress> addresses) throws IOException {
+    super(new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND, Packet.PacketType.COMMAND_RETURN_VALUE)),
+            addresses);
     if (isDebuggingEnabled()) {
       System.out.println("Client port offset " + ReconfigurationConfig.getClientPortOffset());
       System.out.println("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
     }
     keyPairHostIndex = addresses.iterator().next();
   }
-  
-  private static Stringifiable<String> unstringer = new StringifiableDefault<String>("");
 
-  @Override
-  // This needs to return null for packet types that we don't want to handle.
-  public Request getRequest(String stringified) throws RequestParseException {
-    Request request = null;
-    try {
-      JSONObject json = new JSONObject(stringified);
-      if (clientPacketTypes.contains(Packet.getPacketType(json))) {
-        request = (Request) Packet.createInstance(json, unstringer);
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    return request;
-  }
-
-  @Override
-  public Set<IntegerPacketType> getRequestTypes() {
-    return Collections.unmodifiableSet(clientPacketTypes);
-  }
   /**
    * Sends a command packet to an active replica.
    *
@@ -158,12 +130,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
   /**
    * Creates an account guid.
-   *
+   * 
    * @param alias
    * @param password
    * @param callback
    * @return a guid entry
-   * @throws Exception
+   * @throws Exception 
    */
   public GuidEntry accountGuidCreate(String alias, String password, RequestCallback callback) throws Exception {
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
@@ -217,7 +189,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @param guid GuidEntry
    * @param callback
-   * @return the command id
+   * @return the command id 
    * @throws Exception
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
@@ -584,20 +556,4 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return randomID.nextInt();
   }
 
-  // Enables all the debug logging statements in the client.
-  private boolean debuggingEnabled = true;
-
-  /**
-   * @return the debuggingEnabled
-   */
-  public boolean isDebuggingEnabled() {
-    return debuggingEnabled;
-  }
-
-  /**
-   * @param debuggingEnabled the debuggingEnabled to set
-   */
-  public void setDebuggingEnabled(boolean debuggingEnabled) {
-    this.debuggingEnabled = debuggingEnabled;
-  }
 }

@@ -1259,41 +1259,41 @@ public class ServerIntegrationTest {
 //    }
 //  }
 
-  @Test
-  public void test_52_CreateBatchFast() {
-    GuidEntry masterGuid = null;
-    try {
-      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-    int numberTocreate = 100;
-    if (System.getProperty("count") != null
-            && !System.getProperty("count").isEmpty()) {
-      numberTocreate = Integer.parseInt(System.getProperty("count"));
-    }
-    Set<String> aliases = new HashSet<>();
-    for (int i = 0; i < numberTocreate; i++) {
-      aliases.add("testGUID" + RandomString.randomString(6));
-    }
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(60 * 1000); // 30 seconds
-      result = client.guidBatchCreate(masterGuid, aliases, false);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
-    try {
-      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsException | IOException e) {
-      fail("Exception while fetching account record: " + e);
-    }
-  }
+//  @Test
+//  public void test_52_CreateBatchFast() {
+//    GuidEntry masterGuid = null;
+//    try {
+//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+//      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//    int numberTocreate = 100;
+//    if (System.getProperty("count") != null
+//            && !System.getProperty("count").isEmpty()) {
+//      numberTocreate = Integer.parseInt(System.getProperty("count"));
+//    }
+//    Set<String> aliases = new HashSet<>();
+//    for (int i = 0; i < numberTocreate; i++) {
+//      aliases.add("testGUID" + RandomString.randomString(6));
+//    }
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(60 * 1000); // 30 seconds
+//      result = client.guidBatchCreate(masterGuid, aliases, false);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GnsProtocol.OK_RESPONSE, result);
+//    try {
+//      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | GnsException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
 
   @Test
   public void test_53_CreateBatchFastest() {

@@ -36,9 +36,12 @@ import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 
 /**
+ * Original version that was a copy of ReconfigurableAppClientAsync when that wasn't working.
+ * 
  * @author Westy
  *
  */
+@Deprecated
 public class ClientAsynchSendAndCallback {
 
   private static final long MIN_RTX_INTERVAL = 1000;
@@ -77,9 +80,9 @@ public class ClientAsynchSendAndCallback {
 
   /**
    * Creates a ClientAsynchSendAndCallback instance that handles incoming
-   * packets specified by the types parameter and sends requests to the 
+   * packets specified by the types parameter and sends requests to the
    * reconfigurators in the given list.
-   * 
+   *
    * The constructor specifies the default set of reconfigurators. This set
    * may change over time, so it is the caller's responsibility to ensure that
    * this set remains up-to-date. Some staleness however can be tolerated as
@@ -104,7 +107,7 @@ public class ClientAsynchSendAndCallback {
 
   /**
    * Creates a ClientAsynchSendAndCallback instance that handles incoming
-   * packets specified by the types parameter and sends requests to the 
+   * packets specified by the types parameter and sends requests to the
    * default reconfigurators.
    *
    * @param types
@@ -191,8 +194,8 @@ public class ClientAsynchSendAndCallback {
             GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message client request call back");
           }
           callback.handleResponse(((ClientRequest) response));
-        } // ActiveReplicaError has to be dealt with separately
-        else if ((response instanceof ActiveReplicaError)
+        } else if ((response instanceof ActiveReplicaError)
+                // ActiveReplicaError has to be dealt with separately
                 && (callback = callbacks.remove(((ActiveReplicaError) response).getRequestID())) != null) {
           if (isDebuggingEnabled()) {
             GNSClient.getLogger().info("@@@@@@@@@@@@@@@Handle message ActiveReplicaError ");
@@ -215,6 +218,8 @@ public class ClientAsynchSendAndCallback {
               e.printStackTrace();
             }
           }
+        } else {
+          GNSClient.getLogger().severe("Handle message unknown type for " + response.toString());
         }
       }
       return true;
@@ -426,10 +431,17 @@ public class ClientAsynchSendAndCallback {
     }
     activeReplicas.put(response.getServiceName(), actives);
     if (requestsPendingActives.containsKey(response.getServiceName())) {
+      if (debuggingEnabled) {
+        GNSClient.getLogger().info("@@@@@@@@@@@@@@@ Sending queued requests for : " + response.getServiceName());
+      }
       for (Iterator<RequestAndCallback> reqIter = requestsPendingActives
               .get(response.getServiceName()).iterator(); reqIter
               .hasNext();) {
+
         RequestAndCallback rc = reqIter.next();
+        if (debuggingEnabled) {
+          GNSClient.getLogger().info("@@@@@@@@@@@@@@@ Sending one queued request for : " + rc.request.getRequestID());
+        }
         sendRequest(rc.request, actives[((int) rc.request.getRequestID())
                 % actives.length], rc.callback);
         reqIter.remove();

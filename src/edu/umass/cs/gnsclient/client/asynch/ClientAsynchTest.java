@@ -11,10 +11,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * This tests the asynch client. It uses wait / notify so we
@@ -29,14 +26,11 @@ public class ClientAsynchTest {
   private static long readTimeout = 10000;
   private static final Object monitor = new Object();
   // make a call back that notifys any waits and records the response
-  private static RequestCallback callback = new RequestCallback() {
-    @Override
-    public void handleResponse(Request response) {
-      synchronized (monitor) {
-        monitor.notifyAll();
-      }
-      receivedResponse = response;
+  private static RequestCallback callback = (Request response) -> {
+    synchronized (monitor) {
+      monitor.notifyAll();
     }
+    receivedResponse = response;
   };
 
   public static void main(String args[]) {
