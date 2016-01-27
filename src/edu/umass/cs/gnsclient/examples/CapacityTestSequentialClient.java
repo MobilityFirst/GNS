@@ -45,12 +45,12 @@ public class CapacityTestSequentialClient {
 	    	
 			for (int index=0; index<NUM_CLIENT; index++){			
 				String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
-				System.out.println("The account is "+account);
+				//System.out.println("The account is "+account);
 				
 				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
-				String guid = accountGuid.getGuid();
+				//String guid = accountGuid.getGuid();
 			
-				System.out.println("The GUID is "+guid);
+				//System.out.println("The GUID is "+guid);
 				if (index < MAL){
 					clients[index] = new SingleClient(client, accountGuid, false);
 				}else{
@@ -71,7 +71,7 @@ public class CapacityTestSequentialClient {
 			int received = 0;
 			int max = 0;
 			int thruput = 0;
-			while(t < 60){
+			while(t < 50){
 				thruput = latency.size() - received;
 				if(max<thruput){
 					max = thruput;
