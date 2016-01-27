@@ -50,9 +50,9 @@ public class CapacityTestSequentialClient {
 				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 				
 				if (index < BENIGN){
-					clients[index] = new SingleClient(client, accountGuid, true);
-				} else {
 					clients[index] = new SingleClient(client, accountGuid, false);
+				} else {
+					clients[index] = new SingleClient(client, accountGuid, true);
 				}
 				
 			}
