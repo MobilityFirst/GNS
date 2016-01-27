@@ -8,12 +8,10 @@ public class SingleClient implements Runnable{
 	private int numReq;
     private GuidEntry entry;
     private UniversalTcpClient client;
-    private boolean malicious;
     
 	public SingleClient(UniversalTcpClient client, GuidEntry entry, boolean malicious){
 		this.client = client;
 		this.entry = entry;
-		this.malicious = malicious;
 		if (malicious){
 			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.MAL_INTERVAL; 
 		} else{
@@ -30,9 +28,7 @@ public class SingleClient implements Runnable{
 				e.printStackTrace();
 			}
 			long eclapsed = System.nanoTime() - start;
-			if (malicious){
-				CapacityTestSequentialClient.mal_request.add(eclapsed);
-			}else{
+			if(i > 0.1*numReq){
 				CapacityTestSequentialClient.latency.add(eclapsed);
 			}
 		}

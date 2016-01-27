@@ -6,7 +6,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
@@ -16,7 +15,6 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 public class CapacityTestSequentialClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
 		public static ArrayList<Long> latency = new ArrayList<Long>();
-		public static ArrayList<Long> mal_request = new ArrayList<Long>();
 	    
 	    private static int NUM_CLIENT = 0;
 	    public static final int DURATION = 60;
@@ -55,17 +53,39 @@ public class CapacityTestSequentialClient {
 			}
 			
 			Thread[] threadPool = new Thread[NUM_CLIENT];
+			long start = System.currentTimeMillis();
 			
 			for (int i=0; i<NUM_CLIENT; i++){
 				threadPool[i] = new Thread(clients[i]);
 				threadPool[i].start();
 			}
 			
+			int t = 0;
+			int received = 0;
+			int max = 0;
+			int thruput = 0;
+			while(t < 60){
+				thruput = latency.size() - received;
+				if(max<thruput){
+					max = thruput;
+				}
+				System.out.println("Throuput:"+thruput+"reqs/sec" );
+				received = latency.size();
+				try{
+					Thread.sleep(1000);
+				}catch(InterruptedException e){
+					e.printStackTrace();
+				}
+			}
+			
 			for (int i=0; i<NUM_CLIENT; i++){
 				threadPool[i].join();
 			}
 			
+			System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to send all the requests");
+			System.out.println("The maximum throuput is "+max+"reqs/sec.");
 			
+			System.exit(0);
 	    }
 	    
 }
