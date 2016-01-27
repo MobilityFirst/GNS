@@ -34,8 +34,8 @@ public class CapacityTestSequentialClient {
 	    InvalidKeyException, SignatureException, Exception {
 	    	String address = args[0];
 			int node = Integer.parseInt(args[1]); 			
-			int MAL = Integer.parseInt(args[2]);	
-			System.out.println("There are "+MAL+"/"+NUM_CLIENT+" clients.");
+			int BENIGN = Integer.parseInt(args[2]);	
+			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients.");
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -48,10 +48,10 @@ public class CapacityTestSequentialClient {
 				
 				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 				
-				if (index < MAL){
-					clients[index] = new SingleClient(client, accountGuid, false);
-				} else {
+				if (index < BENIGN){
 					clients[index] = new SingleClient(client, accountGuid, true);
+				} else {
+					clients[index] = new SingleClient(client, accountGuid, false);
 				}
 				
 			}
