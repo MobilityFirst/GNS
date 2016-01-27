@@ -77,12 +77,13 @@ public class CapacityTestSequentialClient {
 			int received = 0;
 			int max = 0;
 			int thruput = 0;
-			while(t < 50){
+			
+			while (executorPool.getCompletedTaskCount() < NUM_CLIENT){
 				thruput = latency.size() - received;
 				if(max<thruput){
 					max = thruput;
 				}
-				System.out.println("Throuput:"+thruput+" reqs/sec" );
+				System.out.println(t+" Throuput:"+thruput+" reqs/sec" );
 				received = latency.size();
 				t++;
 				try{
@@ -91,9 +92,7 @@ public class CapacityTestSequentialClient {
 					e.printStackTrace();
 				}
 			}
-			
-			while (executorPool.getCompletedTaskCount() < NUM_CLIENT)
-				;
+				
 						
 			System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+received/50+" req/sec.");
