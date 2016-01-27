@@ -28,9 +28,9 @@ public class SingleClient implements Runnable{
 				e.printStackTrace();
 			}
 			long eclapsed = System.nanoTime() - start;
-			if(i>0.1*numReq){
-				CapacityTestSequentialClient.latency.add(eclapsed);
-			}
+
+			CapacityTestSequentialClient.latency.add(eclapsed);
+			
 			/*
 			if (malicious){
 				CapacityTestSequentialClient.mal_request.add(eclapsed);
