@@ -97,8 +97,9 @@ public class CapacityTestSequentialClient {
 				}
 			}
 									
-			System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+received/50+" req/sec.");
+			long eclapsed = System.currentTimeMillis()-start;
+			System.out.println("It takes "+eclapsed+"ms to send all the requests");
+			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(received/eclapsed)+" req/sec.");
 			
 			System.exit(0);
 	    }
