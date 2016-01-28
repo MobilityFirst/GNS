@@ -1,6 +1,8 @@
 package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -35,8 +37,8 @@ public class CapacityTestSequentialClient {
 	    	String address = args[0];
 			int node = Integer.parseInt(args[1]); 			
 			int BENIGN = Integer.parseInt(args[2]);	
-			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients.");
 			NUM_CLIENT = Integer.parseInt(args[3]);
+			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients.");
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -88,6 +90,11 @@ public class CapacityTestSequentialClient {
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*received/eclapsed)+" req/sec.");
+			
+			Socket socket = new Socket("128.119.245.5", 60001);
+	    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+	    	out.println(node+"\n");
+	    	socket.close();
 			
 			System.exit(0);
 	    }
