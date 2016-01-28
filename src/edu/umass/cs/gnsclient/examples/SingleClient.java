@@ -13,10 +13,11 @@ public class SingleClient implements Runnable{
 		this.client = client;
 		this.entry = entry;
 		if (malicious){
-			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.MAL_INTERVAL; 
+			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.MAL_INTERVAL;
 		} else{
 			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.INTERVAL;
 		}
+		System.out.println("There are "+numReq+" requests.");
 	}
 	
 	public void run(){
