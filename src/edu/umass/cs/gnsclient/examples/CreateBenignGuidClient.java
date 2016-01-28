@@ -25,7 +25,9 @@ public class CreateBenignGuidClient {
 	    InvalidKeyException, SignatureException, Exception {
 	    	String address = args[0];
 			int node = Integer.parseInt(args[1]); 			
-			int BENIGN = Integer.parseInt(args[2]);	
+			int BENIGN = Integer.parseInt(args[2]);
+			NUM_CLIENT = Integer.parseInt(args[3]);
+			
 			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients.");
 			
 			String code = new String(Files.readAllBytes(Paths.get(filename)));
