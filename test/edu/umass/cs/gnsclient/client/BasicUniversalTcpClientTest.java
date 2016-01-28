@@ -38,7 +38,6 @@ import org.json.JSONArray;
  * JSON User update test for the GNS.
  *
  */
-
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BasicUniversalTcpClientTest {
 
@@ -53,13 +52,20 @@ public class BasicUniversalTcpClientTest {
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
-  
   public BasicUniversalTcpClientTest() {
     if (address == null) {
-      address = ServerSelectDialog.selectServer();
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
       client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
       } catch (Exception e) {
         fail("Exception when we were not expecting it: " + e);
       }
@@ -221,7 +227,7 @@ public class BasicUniversalTcpClientTest {
     } catch (Exception e) {
       fail("Exception while reading \"flapjack\": " + e);
     }
-     try {
+    try {
       String actual = client.fieldRead(westyEntry.getGuid(), "flapjack.sally", westyEntry);
       assertEquals("{\"left\":\"eight\",\"right\":\"seven\"}", actual);
     } catch (Exception e) {
@@ -233,8 +239,7 @@ public class BasicUniversalTcpClientTest {
     } catch (Exception e) {
       fail("Exception while reading \"flapjack.sally.right\": " + e);
     }
-   
-    
+
   }
 
   @Test
@@ -317,42 +322,42 @@ public class BasicUniversalTcpClientTest {
       fail("Exception while reading JSON: " + e);
     }
   }
-  
+
   @Test
   public void test_4_HierarchicalACL() {
-    
+
     try {
       client.aclRemove(GnsProtocol.AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception while removing access for all users to all fields: " + e);
     }
-    
+
     try {
       samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
       fail("Exception while creating Sam: " + e);
     }
-    
+
     try {
       client.aclAdd(GnsProtocol.AccessType.READ_WHITELIST, westyEntry, "flapjack.crash", samEntry.getGuid());
     } catch (Exception e) {
       fail("Exception while adding access for sam to \"flapjack.crash\": " + e);
     }
-    
+
     try {
       String actual = client.fieldRead(westyEntry.getGuid(), "flapjack.crash", samEntry);
       assertEquals(new JSONArray(Arrays.asList("Tango", "Sierra", "Alpha")).toString(), actual);
     } catch (Exception e) {
       fail("Exception while sam reading \"flapjack.crash\": " + e);
     }
-    
+
     try {
       String actual = client.fieldRead(westyEntry.getGuid(), "flapjack.shattered", samEntry);
       fail("Should not have been able to read \"flapjack.shattered\"");
     } catch (Exception e) {
     }
-    
+
     try {
       client.aclAdd(GnsProtocol.AccessType.READ_WHITELIST, westyEntry, "flapjack", samEntry.getGuid());
     } catch (Exception e) {

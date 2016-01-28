@@ -34,7 +34,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateAccountTcpClientWithSSLTest {
+public class CreateAccountTcpClientTestNoSSL {
 
   private static String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -45,10 +45,18 @@ public class CreateAccountTcpClientWithSSLTest {
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
-  public CreateAccountTcpClientWithSSLTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+  public CreateAccountTcpClientTestNoSSL() {
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
     }
   }
 

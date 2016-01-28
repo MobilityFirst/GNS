@@ -34,7 +34,7 @@ import org.junit.runners.MethodSorters;
 
 /**
  * Comprehensive functionality test for the GNS.
- * 
+ *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SingleRemoveGuidTcpTest {
@@ -49,9 +49,17 @@ public class SingleRemoveGuidTcpTest {
   private static GuidEntry masterGuid;
 
   public SingleRemoveGuidTcpTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -76,13 +84,13 @@ public class SingleRemoveGuidTcpTest {
       fail("Exception while removing testGuid: " + e);
     }
     try {
-    client.lookupGuidRecord(testGuid.getGuid());
-     fail("Lookup testGuid should have throw an exception.");
+      client.lookupGuidRecord(testGuid.getGuid());
+      fail("Lookup testGuid should have throw an exception.");
     } catch (GnsException e) {
-      
+
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
     }
   }
-  
+
 }

@@ -35,7 +35,7 @@ import org.junit.runners.MethodSorters;
 
 /**
  * Comprehensive functionality test for the GNS.
- * 
+ *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SelectTcpClientTest {
@@ -50,9 +50,17 @@ public class SelectTcpClientTest {
   private static GuidEntry masterGuid;
 
   public SelectTcpClientTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -67,8 +75,8 @@ public class SelectTcpClientTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
-       JSONArray array = new JSONArray(Arrays.asList(25));
-       client.fieldReplaceOrCreateList(testEntry, fieldName, array);
+        JSONArray array = new JSONArray(Arrays.asList(25));
+        client.fieldReplaceOrCreateList(testEntry, fieldName, array);
       }
     } catch (Exception e) {
       fail("Exception while trying to create the guids: " + e);

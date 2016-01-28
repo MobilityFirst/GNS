@@ -61,7 +61,7 @@ public class StandaloneTcpExample {
           InvalidKeyException, SignatureException, Exception {
     
     InetSocketAddress address = ServerSelectDialog.selectServer();
-    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
     try {
       accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
     } catch (Exception e) {

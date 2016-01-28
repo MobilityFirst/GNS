@@ -19,8 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -53,8 +51,16 @@ public class MultiFieldLookupTcpTest {
   private static GuidEntry samEntry;
 
   public MultiFieldLookupTcpTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
       client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);

@@ -48,15 +48,23 @@ public class GroupGuidLookupIndirectionTest {
    */
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
-  
+
   private static final String indirectionGroupTestFieldName = "_IndirectionTestQueryField_";
   private static GuidEntry indirectionGroupGuid;
   private JSONArray IndirectionGroupMembers = new JSONArray();
 
   public GroupGuidLookupIndirectionTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {

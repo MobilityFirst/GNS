@@ -51,9 +51,17 @@ public class NewReadTest {
 
   public NewReadTest() {
     if (client == null) {
-      address = ServerSelectDialog.selectServer();
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
       //System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -61,7 +69,7 @@ public class NewReadTest {
       }
     }
   }
-  
+
   @Test
   public void test_10_CreateFields() {
     try {
@@ -71,7 +79,7 @@ public class NewReadTest {
       fail("Exception when we were not expecting it: " + e);
     }
   }
-  
+
   @Test
   public void test_71_JSONUpdate() {
     try {

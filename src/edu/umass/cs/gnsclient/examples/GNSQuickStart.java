@@ -78,7 +78,7 @@ public class GNSQuickStart {
     // A convenience function that pops up a GUI for picking which GNS server you want to use.
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create a new client object
-    UniversalTcpClientExtended client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    UniversalTcpClientExtended client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
     System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
     
     // Retrive the GUID using the account id

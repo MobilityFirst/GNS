@@ -52,9 +52,17 @@ public class UnsignedWriteTest {
 
   public UnsignedWriteTest() {
     if (client == null) {
-      address = ServerSelectDialog.selectServer();
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -82,13 +90,13 @@ public class UnsignedWriteTest {
     try {
       // remove default access
       client.aclRemove(AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
-      
+
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
       client.aclAdd(AccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GnsProtocol.ALL_USERS);
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
-      
+
       try {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result

@@ -53,12 +53,19 @@ public class SelectAutoGroupTest {
   private static GuidEntry groupTwoGuid;
   private String queryOne = "~" + groupTestFieldName + " : {$gt: 20}";
   private String queryTwo = "~" + groupTestFieldName + " : 0";
-  
 
   public SelectAutoGroupTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -263,6 +270,7 @@ public class SelectAutoGroupTest {
 //  }
 //  
 //  
+
   private void checkTheReturnValues(JSONArray result) throws Exception {
     // should be 5
     assertThat(result.length(), equalTo(5));

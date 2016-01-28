@@ -36,7 +36,7 @@ import org.junit.runners.MethodSorters;
 
 /**
  * Signature functionality test for the GNS Tcp client.
- * 
+ *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestSignatureTcpClientTest {
@@ -51,9 +51,17 @@ public class TestSignatureTcpClientTest {
   private static InetSocketAddress address = null;
 
   public TestSignatureTcpClientTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       // Retrive the GUID using the account id
       String guidString;
       try {

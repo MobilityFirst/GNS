@@ -23,18 +23,11 @@ import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
-import static edu.umass.cs.gnscommon.GnsProtocol.ACCOUNT_GUID;
-import static edu.umass.cs.gnscommon.GnsProtocol.ADD_MULTIPLE_GUIDS;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
-import static edu.umass.cs.gnscommon.GnsProtocol.NAMES;
-import static edu.umass.cs.gnscommon.GnsProtocol.PUBLIC_KEYS;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import static org.junit.Assert.*;
@@ -47,7 +40,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateGuidBatchTcpClientWithSSLTest {
+public class CreateGuidBatchTcpClientTest {
 
   private static UniversalTcpClientExtended client;
   /**
@@ -55,9 +48,9 @@ public class CreateGuidBatchTcpClientWithSSLTest {
    */
   private static InetSocketAddress address = null;
 
-  public CreateGuidBatchTcpClientWithSSLTest() {
+  public CreateGuidBatchTcpClientTest() {
 
-    if (address == null) {
+    if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
               && System.getProperty("port") != null

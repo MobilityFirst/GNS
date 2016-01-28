@@ -83,7 +83,7 @@ public class UniversalMultipleClientTest {
     if (clients == null) {
       clients = new ArrayList<>();
       for (InetSocketAddress address : addresses) {
-        clients.add(new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true));
+        clients.add(new UniversalTcpClientExtended(address.getHostName(), address.getPort()));
         System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       }
       try {

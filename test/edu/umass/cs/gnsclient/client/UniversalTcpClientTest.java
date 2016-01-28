@@ -52,8 +52,8 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UniversalTcpClientTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
+  private static String accountAlias = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static String password = "password";
   private static UniversalTcpClientExtended client = null;
   /**
    * The address of the GNS server we will contact
@@ -69,11 +69,27 @@ public class UniversalTcpClientTest {
 
   public UniversalTcpClientTest() {
     if (client == null) {
-      address = ServerSelectDialog.selectServer();
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+      if (System.getProperty("alias") != null
+              && !System.getProperty("alias").isEmpty()) {
+        accountAlias = System.getProperty("alias");
+      }
+      if (System.getProperty("password") != null
+              && !System.getProperty("password").isEmpty()) {
+        password = System.getProperty("password");
+      }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, password, true);
       } catch (Exception e) {
         fail("Exception when we were not expecting it: " + e);
       }
