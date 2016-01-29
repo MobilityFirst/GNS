@@ -85,14 +85,7 @@ public class CreateMultiGuidClient {
 		    	}else{
 		    		client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 		    	}
-		    	/*
-			    if( i < fraction ){
-			    	client.activeCodeSet(guid, "read", code64, guidAccount);
-			    	
-			    }else{
-			    	client.activeCodeSet(guid, "read", mal_code64, guidAccount);
-			    }
-			    */
+		    	
 		    }
 		    
 		    

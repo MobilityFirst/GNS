@@ -21,10 +21,9 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 public class CreateChainGuidClient {
-	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private static int NUM_CLIENT = 100;
+	private static int NUM_CLIENT = 20;
 	private final static String filename = "/home/ubuntu/chain.js"; //"/Users/gaozy/GNS/test.js"; //
 	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/gaozy/GNS/gns_key/"; //
 	
@@ -33,7 +32,7 @@ public class CreateChainGuidClient {
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]);
-		NUM_CLIENT = Integer.parseInt(args[2]);
+		int depth = Integer.parseInt(args[2]);
 		boolean deploy = Boolean.parseBoolean(args[3]);
 		
 		//Read in the code and serialize
@@ -42,35 +41,40 @@ public class CreateChainGuidClient {
 				
 		client = new UniversalTcpClient(address, 24398, true);
 		
-		String lastGuid = "";
-		GuidEntry guidAccount = null;
+		
 		
 		for (int i=0; i<NUM_CLIENT; i++){
 			
-			try{
-				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*1000+i)+ACCOUNT_ALIAS, "password");
-				//System.out.println("test"+(node*1000+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
+			String lastGuid = "";
+			GuidEntry guidAccount = null;
+			
+			for (int j=0; j<depth; j++){
+				try{
+					guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*1000+i*10+j)+ACCOUNT_ALIAS, "password");
+					System.out.println("test"+(node*1000+i*10+j)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
+					
+					KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i*10+j) );
+				}catch (Exception e) {
+				      //System.out.println("Exception during accountGuid creation: " + e);
+				      System.exit(1);
+				}
 				
-				KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i) );
-			}catch (Exception e) {
-			      //System.out.println("Exception during accountGuid creation: " + e);
-			      System.exit(1);
+				String guid = client.lookupGuid("test"+(node*1000+i*10+j)+ACCOUNT_ALIAS);
+				
+				JSONObject json = new JSONObject("{\"nextGuid\":\"gao\",\"cnt\":1}");
+				client.update(guidAccount, json);
+				//System.out.println("The last guid is "+lastGuid);
+				client.fieldUpdate(guidAccount, "nextGuid", lastGuid);
+				if (deploy){
+					client.activeCodeClear(guid, "read", guidAccount);
+					client.activeCodeSet(guid, "read", code64, guidAccount);
+				}
+	    		lastGuid = guidAccount.getGuid();
 			}
-			
-			String guid = client.lookupGuid("test"+(node*1000+i)+ACCOUNT_ALIAS);
-			
-			JSONObject json = new JSONObject("{\"nextGuid\":\"gao\",\"cnt\":1}");
-			client.update(guidAccount, json);
-			//System.out.println("The last guid is "+lastGuid);
-			client.fieldUpdate(guidAccount, "nextGuid", lastGuid);
-			if (deploy){
-				client.activeCodeClear(guid, "read", guidAccount);
-				client.activeCodeSet(guid, "read", code64, guidAccount);
-			}
-    		lastGuid = guidAccount.getGuid();
     		
 		}
 		
+		/*
 		// For warming up only
 		long t = System.nanoTime();
 		for (int i=0; i<5000; i++){
@@ -83,6 +87,8 @@ public class CreateChainGuidClient {
 		}
 		long eclapsed = System.nanoTime() - t;
 		System.out.println(NUM_CLIENT+" "+eclapsed/1000000.0/1000.0);
+		*/
+		
 		System.exit(0);
 	}
 	
