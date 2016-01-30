@@ -115,6 +115,17 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
       ioe.printStackTrace();
     }
   }
+  
+	protected static Map<String, String> initOptions(String[] args)
+			throws IOException {
+		Map<String, String> options = ParametersAndOptions
+				.getParametersAsHashMap(
+						AppReconfigurableNode.class.getCanonicalName(),
+						AppReconfigurableNodeOptions.getAllOptions(), args);
+		AppReconfigurableNodeOptions.initializeFromOptions(options);
+		printOptions(options);
+		return options;
+	}
 
   /**
    * Parses all the command line arguments and invoke methods
@@ -124,6 +135,12 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
+		System.out
+				.println("*********************************************************\n"
+						+ "This mode of starting the GNS is not recommended. Start ReconfigurableNode"
+						+ " instead with the node ID(s) being started listed at the end of command-line options,"
+						+ " and APPLICATION=edu.umass.cs.gnsserver.GnsApp in gigapaxos.properties."
+						+ "*********************************************************\n");
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
@@ -134,11 +151,9 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
         System.out.println("********* All nodes have been shutdown. *********");
       }
     });
-    Map<String, String> options
-            = ParametersAndOptions.getParametersAsHashMap(AppReconfigurableNode.class.getCanonicalName(),
-                    AppReconfigurableNodeOptions.getAllOptions(), args);
-    printOptions(options);
-    AppReconfigurableNodeOptions.initializeFromOptions(options);
+    
+    Map<String, String> options = initOptions(args);
+    
     if (options.containsKey(STANDALONE) && options.get(NS_FILE) != null) {
       startStandalone(options.get(NS_FILE));
       // run multiple nodes on a single machine
