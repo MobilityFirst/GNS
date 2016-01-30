@@ -62,24 +62,7 @@ public class CapacityTestClient {
     	executorPool.execute(new ClientThread(client, this.guid, this.entry, malicious));
     	//(new Thread(new ClientThread())).start();
     }
-    
-    /*
-    private void sendMaliciousRequest(UniversalTcpClient client, boolean malicious){
-    	executorPool.execute(new MaliciousThread(client, this.guid, this.entry));
-    	
-    	Future<String> future = executor.submit(new MaliciousThread(client, this.guid, this.entry));
-    	try {
-    		future.get();
-    	}catch(InterruptedException e){
-       		e.printStackTrace();
-    	}catch(ExecutionException e){
-    		e.printStackTrace();
-    	}catch(Exception e){
-    		e.printStackTrace();
-    	}
-    	
-    }
-	*/
+
     
     private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction, UniversalTcpClient client){
     	int reqPerClient = numRequest / NUM_CLIENT;
@@ -113,7 +96,7 @@ public class CapacityTestClient {
     	public synchronized void run(){
     		long begin = System.nanoTime();
     		try{
-    			client.fieldRead(guid, "hi", entry);
+    			client.fieldRead(guid, "nextGuid", entry);
     			//System.out.println("The response is "+result);
     		}catch(GnsException e){
     			failed++;

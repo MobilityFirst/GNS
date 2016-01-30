@@ -24,7 +24,7 @@ public class SingleClient implements Runnable{
 		for (int i=0; i<numReq; i++){
 			long start = System.nanoTime();
 			try{
-				client.fieldRead(entry, "hi");
+				client.fieldRead(entry, "nextGuid");
 			}catch (Exception e){
 				e.printStackTrace();
 			}

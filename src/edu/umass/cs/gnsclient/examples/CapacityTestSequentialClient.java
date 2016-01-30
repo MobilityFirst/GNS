@@ -59,12 +59,9 @@ public class CapacityTestSequentialClient {
 				
 			}
 			
-			//Thread[] threadPool = new Thread[NUM_CLIENT];
 			long start = System.currentTimeMillis();
 			
 			for (int i=0; i<NUM_CLIENT; i++){
-				//threadPool[i] = new Thread(clients[i]);
-				//threadPool[i].start();
 				executorPool.execute(clients[i]);
 			}
 			

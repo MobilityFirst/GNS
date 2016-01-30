@@ -21,10 +21,8 @@ package edu.umass.cs.gnsserver.activecode;
 
 
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -58,7 +56,6 @@ public class ActiveCodeHandler {
 	ActiveCodeGuardian guard;
 	ActiveCodeScheduler scheduler;
 	InetSocketAddress addr;
-	ConcurrentHashMap<String, Long> blacklist;
 	long blacklistSeconds;
 	
 	protected static final long MILLISECONDS_PER_SEC = 1000;
@@ -93,8 +90,7 @@ public class ActiveCodeHandler {
 	    
 	    scheduler = new ActiveCodeScheduler(executorPool);
 	    (new Thread(scheduler)).start();
-	    // Blacklist init
-		blacklist = new ConcurrentHashMap<String, Long>();
+	    
 		this.blacklistSeconds = blacklistSeconds;
 	}
 	
@@ -115,37 +111,6 @@ public class ActiveCodeHandler {
 		}
 	}
 	
-	/**
-	 * Checks to see if all of the workers are busy.
-	 * @return true if all workers are busy
-	 */
-	private boolean isPoolBusy() {
-		return executorPool.getActiveCount() == executorPool.getMaximumPoolSize();
-	}
-	
-	/**
-	 * Checks to see if the guid is currently blacklisted.
-	 * @param guid
-	 * @return true if the guid is blacklisted
-	 */
-	private boolean isBlacklisted(String guid) {
-		if(!blacklist.containsKey(guid))
-			return false;
-		
-		long blacklistedAt = blacklist.get(guid);
-		//System.out.println(guid+"'s elapsed time is "+(System.currentTimeMillis() - blacklistedAt));
-		return (System.currentTimeMillis() - blacklistedAt) < (blacklistSeconds * MILLISECONDS_PER_SEC);
-	}
-	
-	/**
-	 * Adds the guid to the blacklist
-	 * @param guid
-	 */
-	private void addToBlacklist(String guid) {
-		System.out.println("Guid " + guid + " is blacklisted from running code!");
-		scheduler.remove(guid);
-		blacklist.put(guid, System.currentTimeMillis());
-	}
 	
 	/**
 	 * return the local address
@@ -169,12 +134,6 @@ public class ActiveCodeHandler {
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
 		//System.out.println("Original value is "+valuesMap);
 		long startTime = System.nanoTime();
-		// If the guid is blacklisted, just return immediately
-		/*
-		if(isBlacklisted(guid)) {			
-			return valuesMap;
-		}		
-		*/
 		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
@@ -191,13 +150,10 @@ public class ActiveCodeHandler {
 		try {
 			result = futureTask.get();
 		} catch (ExecutionException e) {
-			//System.out.println("Added " + guid + " to blacklist!");
-			//addToBlacklist(guid);
 			System.out.println("Execution");
 			scheduler.finish(guid);
 			return valuesMap;
-		} catch (CancellationException e){
-			//addToBlacklist(guid);			
+		} catch (CancellationException e){		
 			System.out.println("Cancellation thread "+Thread.currentThread().getId());
 			scheduler.finish(guid);
 			return valuesMap;
@@ -210,27 +166,6 @@ public class ActiveCodeHandler {
 		scheduler.finish(guid);
 		
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
-		
-		/*
-		if(executorPool.getPoolSize() > 0 &&
-				executorPool.getQueue().remainingCapacity() > 0) {
-			executorPool.execute(futureTask);
-			try {
-				result = futureTask.get();
-			} catch (ExecutionException e) {
-				System.out.println("Added " + guid + " to blacklist!");
-				addToBlacklist(guid);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		} else {
-			System.out.println("Rejecting task!");
-		}
-		
-		if(result == null){
-			return valuesMap;
-		}
-		*/
 		
 	    return result;
 	}

@@ -66,18 +66,18 @@ public class CreateMultiGuidClient {
 			
 			String guid = client.lookupGuid("test"+(node*1000+i)+ACCOUNT_ALIAS);
 			
-			JSONObject json = new JSONObject("{\"hi\":\"hello\",\"cnt\":1}");
+			JSONObject json = new JSONObject("{\"nextGuid\":\"hello\",\"cnt\":1}");
 			client.update(guidAccount, json);
 			
 			client.activeCodeClear(guid, "read", guidAccount);
 			JSONObject result = client.read(guidAccount);
-			String field = client.fieldRead(guidAccount, "hi");
+			String field = client.fieldRead(guidAccount, "nextGuid");
 		    System.out.println("Retrieved JSON from guid: " + result.toString()+", the field is "+field);
 		    if(flag){
 		    	if (i%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
 		    		client.activeCodeSet(guid, "read", code64, guidAccount);
 		    		try{
-				    	field = client.fieldRead(guidAccount, "hi");
+				    	field = client.fieldRead(guidAccount, "nextGuid");
 				    }catch(GnsException e){
 				    	e.printStackTrace();
 				    }

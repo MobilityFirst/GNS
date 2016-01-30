@@ -39,7 +39,7 @@ public class CapacityTestChainClient {
 			int BENIGN = Integer.parseInt(args[2]);	
 			NUM_CLIENT = Integer.parseInt(args[3]);
 			int depth = Integer.parseInt(args[4]);
-			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is ");
+			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is "+depth);
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);

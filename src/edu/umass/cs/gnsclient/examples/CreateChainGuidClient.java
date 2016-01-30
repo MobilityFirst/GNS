@@ -53,7 +53,6 @@ public class CreateChainGuidClient {
 					
 					KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i*10+j) );
 				}catch (Exception e) {
-				      //System.out.println("Exception during accountGuid creation: " + e);
 				      System.exit(1);
 				}
 				
