@@ -17,7 +17,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 
-public class CapacityTestSequentialClient {
+public class CapacityTestChainClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
 		
 		public static ArrayList<Long> latency = new ArrayList<Long>();
@@ -38,7 +38,8 @@ public class CapacityTestSequentialClient {
 			int node = Integer.parseInt(args[1]); 			
 			int BENIGN = Integer.parseInt(args[2]);	
 			NUM_CLIENT = Integer.parseInt(args[3]);
-			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients.");
+			int depth = Integer.parseInt(args[4]);
+			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is ");
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -46,14 +47,16 @@ public class CapacityTestSequentialClient {
 		    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
 	    	executorPool.prestartAllCoreThreads();
 	    	
-			for (int index=0; index<NUM_CLIENT; index++){			
-				String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
-				
-				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
-				
+			for (int index=0; index<NUM_CLIENT; index++){
 				if (index < BENIGN){
+					//create benign users
+					String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
+					GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);				
 					clients[index] = new SingleClient(client, accountGuid, false);
 				} else {
+					// otherwise create malicious users
+					String account = "test"+(node*1000+index*10+depth-1)+ACCOUNT_ALIAS;
+					GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 					clients[index] = new SingleClient(client, accountGuid, true);
 				}
 				

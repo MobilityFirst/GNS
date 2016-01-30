@@ -41,8 +41,6 @@ public class CreateChainGuidClient {
 				
 		client = new UniversalTcpClient(address, 24398, true);
 		
-		
-		
 		for (int i=0; i<NUM_CLIENT; i++){
 			
 			String lastGuid = "";
@@ -73,21 +71,6 @@ public class CreateChainGuidClient {
 			}
     		
 		}
-		
-		/*
-		// For warming up only
-		long t = System.nanoTime();
-		for (int i=0; i<5000; i++){
-			client.fieldRead(guidAccount, "nextGuid");
-		}
-		
-		t = System.nanoTime();
-		for (int i=0; i<5000; i++){
-			client.fieldRead(guidAccount, "nextGuid");
-		}
-		long eclapsed = System.nanoTime() - t;
-		System.out.println(NUM_CLIENT+" "+eclapsed/1000000.0/1000.0);
-		*/
 		
 		System.exit(0);
 	}
@@ -134,7 +117,5 @@ public class CreateChainGuidClient {
 	  private static String createVerificationCode(String name) {
 	    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
 	  }
-	  
+
 }
-
-
