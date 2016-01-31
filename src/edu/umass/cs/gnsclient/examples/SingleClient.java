@@ -17,14 +17,14 @@ public class SingleClient implements Runnable{
 		} else{
 			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.INTERVAL;
 		}
-		numReq = 40;
+		//numReq = 40;
 		//System.out.println("There are "+numReq+" requests.");
 	}
 	
 	public void run(){
 		for (int i=0; i<numReq; i++){
 			long start = System.nanoTime();
-			System.out.println("send out the message");
+			//System.out.println("send out the message");
 			String result = "";
 			try{
 				result = client.fieldRead(entry, "nextGuid");
@@ -32,8 +32,8 @@ public class SingleClient implements Runnable{
 				e.printStackTrace();
 			}
 			long eclapsed = System.nanoTime() - start;
-			System.out.println("It takes "+eclapsed+"ms to get the result, and the result is "+result);
-			//CapacityTestSequentialClient.latency.add(eclapsed);
+			//System.out.println("It takes "+eclapsed+"ms to get the result, and the result is "+result);
+			CapacityTestChainClient.latency.add(eclapsed);
 			
 			/*
 			if (malicious){
