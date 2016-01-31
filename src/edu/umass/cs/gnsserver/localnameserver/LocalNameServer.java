@@ -459,7 +459,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     packet.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     // Don't get a client facing port for these because they are returned as already translated.
     if (debuggingEnabled) {
-      LOG.info("Sending to " + address + ": " + packet);
+      //LOG.info("Sending to " + address + ": " + packet);
     }
     messenger.sendToAddress(address, packet);
   }

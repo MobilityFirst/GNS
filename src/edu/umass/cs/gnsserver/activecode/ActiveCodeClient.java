@@ -114,7 +114,8 @@ public class ActiveCodeClient {
 		try {
 			//initialize the clientSocket first
 			try{
-				this.clientSocket = new DatagramSocket();
+				clientSocket = new DatagramSocket();
+				//clientSocket.setSoTimeout(200);
 			}catch(IOException e){
 				e.printStackTrace();
 			}
@@ -262,7 +263,6 @@ public class ActiveCodeClient {
         }else if(valuesMapString != null) {
         	try {
         		vm = new ValuesMap(new JSONObject(valuesMapString));
-        		//System.out.println("99999999999999999999999>> result is: "+valuesMapString);
  	        } catch (JSONException e) {
  	        	e.printStackTrace();
  	        }
@@ -307,7 +307,16 @@ public class ActiveCodeClient {
 			e.printStackTrace();
 		}
 		clientSocket.close();
+	}
+	
+	public void forceShutdownServer() {
 		process.destroyForcibly();
+		clientSocket.close();
+		try{
+			clientSocket = new DatagramSocket();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -315,23 +324,15 @@ public class ActiveCodeClient {
 	 */
 	public void restartServer() {
 		readyToRun = false;
-		long t1 = System.currentTimeMillis();
-		
-		
-		
+		long t1 = System.currentTimeMillis();		
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms to restart this worker.");
 	}
 	
 	protected void setNewWorker(int port, Process proc){
+		//System.out.println("port number is "+port+", process is "+proc);
 		this.process = proc;
 		this.serverPort = port;
-		
-		try{
-			clientSocket = new DatagramSocket();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
 		
 		//notify new worker
 		ActiveCodeUtils.sendMessage(clientSocket, new ActiveCodeMessage(), port);

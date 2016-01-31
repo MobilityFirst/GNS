@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 
@@ -41,6 +43,7 @@ public class ClientPool {
 	GnsApplicationInterface<String> app;
 	ActiveCodeHandler ach;
 	ConcurrentHashMap<Integer, Process> spareWorkers;
+	private ExecutorService executorPool;
 	
 	/**
 	 * Initialize a ClientPool
@@ -51,8 +54,9 @@ public class ClientPool {
 		this.app = app;
 		this.ach = ach;
 		spareWorkers = new ConcurrentHashMap<Integer, Process>();
+		executorPool = Executors.newFixedThreadPool(5);
 		for (int i=0; i<10; i++){
-			addSpareWorker();
+			executorPool.execute(new WorkerGeneratorRunanble());
 		}
 	}
 	
@@ -80,6 +84,15 @@ public class ClientPool {
 	}
 	
 	protected Process getSpareWorker(int port){
+		while(spareWorkers.size() == 0){
+			synchronized(spareWorkers){
+				try{
+					spareWorkers.wait();
+				}catch(InterruptedException e){
+					e.printStackTrace();
+				}
+			}
+		}
 		return spareWorkers.remove(port);
 	}
 	
@@ -89,9 +102,7 @@ public class ClientPool {
 
 		// Get the current classpath
 		String classpath = System.getProperty("java.class.path");
-		
-		//ServerSocket listener = new ServerSocket(0);
-		
+				
 	    command.add("java");
 	    command.add("-Xms16m");
 	    command.add("-Xmx64m");
@@ -120,7 +131,7 @@ public class ClientPool {
 	}
 	
 	protected void generateNewWorker(){
-		(new Thread(new WorkerGeneratorRunanble())).start();;
+		executorPool.execute(new WorkerGeneratorRunanble());
 	}
 	
 	private class WorkerGeneratorRunanble implements Runnable{

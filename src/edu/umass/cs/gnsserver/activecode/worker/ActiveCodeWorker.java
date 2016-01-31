@@ -78,6 +78,7 @@ public class ActiveCodeWorker {
         		}catch(IOException e){
         			e.printStackTrace();
         		}
+        		//System.out.println("Set the new client port to "+clientPort);
         		continue;
         	}
         	keepGoing = handler.handleRequest(serverSocket);
@@ -99,9 +100,9 @@ public class ActiveCodeWorker {
 	public static void main(String[] args) throws IOException  {
 		
 		int port = 0, callbackPort = -1, readyPort = -1;
+		port = Integer.parseInt(args[0]);
 		
-		if(args.length == 3) {
-			port = Integer.parseInt(args[0]);
+		if(args.length == 3) {	
 			callbackPort = Integer.parseInt(args[1]);
 			readyPort = Integer.parseInt(args[2]);
 			ActiveCodeWorker acs = new ActiveCodeWorker(port, callbackPort);

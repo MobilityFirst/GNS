@@ -53,12 +53,12 @@ public class RequestHandler {
 	
 	protected boolean handleRequest(DatagramSocket socket) {
 		boolean ret = true;
-		System.out.println("77777777777777777777>>got the message!");
-		try {
-			ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, buffer, clientPort);
+		
+		try {			
 			// Get the ActiveCodeMessage from the GNS
 		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, buffer);
 		    
+		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, buffer, clientPort);
 		    
 		    if( acm.isShutdown() ) {
 		    	System.out.println("Shutting down...");

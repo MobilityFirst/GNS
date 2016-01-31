@@ -151,10 +151,12 @@ public class ActiveCodeHandler {
 			result = futureTask.get();
 		} catch (ExecutionException e) {
 			System.out.println("Execution");
+			e.printStackTrace();
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (CancellationException e){		
-			System.out.println("Cancellation thread "+Thread.currentThread().getId());
+			System.out.println("Cancellation"+Thread.currentThread().getId());
+			e.printStackTrace();
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (Exception e){

@@ -11,6 +11,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.json.JSONObject;
 
@@ -26,7 +27,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class SequentialRequestClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static String filename = "/home/ubuntu/mal.js"; // "/Users/gaozy/WebStorm/mal.js"; // 
+	private final static String filename =  "/Users/gaozy/WebStorm/mal.js"; // "/home/ubuntu/test.js"; //
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	
 	public static void main(String[] args) throws IOException,
@@ -49,9 +50,6 @@ public class SequentialRequestClient {
 		GuidEntry guidAccount = null;
 		try{
 			guidAccount = lookupOrCreateAccountGuid(client, "test"+ACCOUNT_ALIAS, "password");
-			//System.out.println("test"+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
-			
-			//KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*10+i) );
 		}catch (Exception e) {
 		      System.out.println("Exception during accountGuid creation: " + e);
 		      System.exit(1);
@@ -71,7 +69,8 @@ public class SequentialRequestClient {
 		    client.activeCodeSet(guidAccount.getGuid(), "read", code64, guidAccount);
 	    }
 	    
-	    for(int i = 0; i<2; i++){
+	    
+	    for(int i = 0; i<1; i++){
 	    	(new Thread(new SingleClient(client, guidAccount, true))).start();
 	    }
 	    
@@ -89,9 +88,9 @@ public class SequentialRequestClient {
 	    Collections.sort(latency);
 	    
 	    System.out.print(latency.get(latency.size()/2)+" ");
-		*/
-	    
+		
 	    System.exit(0);
+	    */
 	}
 	
 	/**

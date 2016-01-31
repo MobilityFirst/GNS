@@ -27,18 +27,19 @@ public class ActiveCodeGuardian implements Runnable {
 				long now = System.currentTimeMillis();
 				
 				for(FutureTask<ValuesMap> task:tasks.keySet()){
-					
-					if (now - tasks.get(task) > 200){
-						System.out.println("Ready to restart the worker.");
-						long start = System.nanoTime();
+					if (now - tasks.get(task) > 1000){
+						// generate a spare worker in another thread
+						clientPool.generateNewWorker();
+						// shutdown the previous worker process 
 						ActiveCodeClient client = clientPool.getClient(getThread(task).getId());
-						client.shutdownServer();
+						client.forceShutdownServer();
+						// get the spare worker and set the client port to the new worker
 						int port = clientPool.getSpareWorkerPort();
-						client.setNewWorker(port, clientPool.getSpareWorker(port));
+						Process proc = clientPool.getSpareWorker(port);
+						client.setNewWorker(port, proc);
+						// deregister the task and cancel it
 						removeThread(task);
 						task.cancel(true);
-						clientPool.generateNewWorker();
-						System.out.println("It takes "+(System.nanoTime() - start)/1000000+" to restart the worker.");
 					}
 					
 				}		
@@ -52,14 +53,12 @@ public class ActiveCodeGuardian implements Runnable {
 	}
 	
 	protected void register(FutureTask<ValuesMap> task){
-		//System.out.println("Submitted task is "+task);
 		synchronized(tasks){
 			tasks.put(task, System.currentTimeMillis());
 		}
 	}
 	
 	protected void remove(Future<ValuesMap> task){
-		//System.out.println("Removed task is "+task);
 		synchronized(tasks){
 			tasks.remove(task);
 		}
