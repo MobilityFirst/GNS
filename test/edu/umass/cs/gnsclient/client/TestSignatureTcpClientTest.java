@@ -41,7 +41,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestSignatureTcpClientTest {
 
-  private static String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String privateKeyFile = "/Users/westy/pkcs8_key";
   private static UniversalTcpClient client;
   private static GuidEntry guid;

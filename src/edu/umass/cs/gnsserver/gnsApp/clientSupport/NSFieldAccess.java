@@ -199,7 +199,7 @@ public class NSFieldAccess {
       }
       //result = lookupFieldQueryLNS(guid, field, activeReplica, lnsAddress);
       if (result != null) {
-        GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru LNS query.");
+        GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru remote query.");
       }
     }
     return result;

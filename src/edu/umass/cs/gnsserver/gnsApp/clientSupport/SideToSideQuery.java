@@ -9,7 +9,6 @@ package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.asynch.ClientAsynchBase;
 import edu.umass.cs.gnsclient.exceptions.EncryptionException;
 import edu.umass.cs.gnsclient.exceptions.GnsACLException;

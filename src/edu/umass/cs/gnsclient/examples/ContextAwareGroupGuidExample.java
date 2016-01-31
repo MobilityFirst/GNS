@@ -75,7 +75,7 @@ import org.json.JSONArray;
  */
 public class ContextAwareGroupGuidExample {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static BasicUniversalTcpClient client;
   private static GuidEntry masterGuid;
   private static final String fieldName = "contextAwareExampleField";
