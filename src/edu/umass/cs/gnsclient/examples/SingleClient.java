@@ -23,6 +23,7 @@ public class SingleClient implements Runnable{
 	public void run(){
 		for (int i=0; i<numReq; i++){
 			long start = System.nanoTime();
+			System.out.println("send out the message");
 			try{
 				client.fieldRead(entry, "nextGuid");
 			}catch (Exception e){

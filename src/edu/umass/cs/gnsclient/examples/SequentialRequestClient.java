@@ -11,7 +11,6 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 
 import org.json.JSONObject;
 
@@ -27,7 +26,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class SequentialRequestClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static String filename = "/home/ubuntu/test.js";//"/Users/zhaoyugao/Documents/ActiveCode/Activecode/test.js";//
+	private final static String filename = "/Users/gaozy/WebStorm/mal.js"; // "/home/ubuntu/test.js";//
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	
 	public static void main(String[] args) throws IOException,
@@ -59,12 +58,12 @@ public class SequentialRequestClient {
 		}
 		
 		
-		JSONObject json = new JSONObject("{\"hi\":\"hello\", \"hehe\":\"hello\"}");
+		JSONObject json = new JSONObject("{\"nextGuid\":\"a\", \"hehe\":\"hello\"}");
 		client.update(guidAccount, json);
 		
 		SecureRandom random = new SecureRandom();
 		String str = new BigInteger(size, random).toString(32);
-		client.fieldUpdate(guidAccount.getGuid(), "hi", str, guidAccount);
+		client.fieldUpdate(guidAccount.getGuid(), "nextGuid", str, guidAccount);
 		
 		
 		client.activeCodeClear(guidAccount.getGuid(), "read", guidAccount);
@@ -72,9 +71,15 @@ public class SequentialRequestClient {
 		    client.activeCodeSet(guidAccount.getGuid(), "read", code64, guidAccount);
 	    }
 	    
+	    for(int i = 0; i<2; i++){
+	    	(new Thread(new SingleClient(client, guidAccount, true))).start();
+	    }
+	    
+	    
+	    /*
 	    for (int i=0; i<5000; i++){
 	    	long t1 = System.nanoTime();
-	    	client.fieldRead(guidAccount.getGuid(), "hi", guidAccount);
+	    	client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
 	    	//System.out.println("Get response "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
@@ -84,7 +89,8 @@ public class SequentialRequestClient {
 	    Collections.sort(latency);
 	    
 	    System.out.print(latency.get(latency.size()/2)+" ");
-
+		*/
+	    
 	    System.exit(0);
 	}
 	

@@ -28,7 +28,9 @@ public class ActiveCodeGuardian implements Runnable {
 				
 				for(FutureTask<ValuesMap> task:tasks.keySet()){
 					
-					if (now - tasks.get(task) > 10000){
+					if (now - tasks.get(task) > 200){
+						System.out.println("Ready to restart the worker.");
+						long start = System.nanoTime();
 						ActiveCodeClient client = clientPool.getClient(getThread(task).getId());
 						client.shutdownServer();
 						int port = clientPool.getSpareWorkerPort();
@@ -36,6 +38,7 @@ public class ActiveCodeGuardian implements Runnable {
 						removeThread(task);
 						task.cancel(true);
 						clientPool.generateNewWorker();
+						System.out.println("It takes "+(System.nanoTime() - start)/1000000+" to restart the worker.");
 					}
 					
 				}		

@@ -102,10 +102,11 @@ public class ActiveCodeScheduler implements Runnable{
 			while(guid == null){
 				guid = getNextGuid();
 			}
-			
+			/*
 			while(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
 				guid = getNextGuid();
 			}
+			*/
 			if (runningGuid.containsKey(guid)){
 				runningGuid.put(guid, runningGuid.get(guid)+1);
 			} else{
