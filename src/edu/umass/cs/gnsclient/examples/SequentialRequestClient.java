@@ -26,7 +26,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class SequentialRequestClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static String filename = "/Users/gaozy/WebStorm/mal.js"; // "/home/ubuntu/test.js";//
+	private final static String filename = "/home/ubuntu/mal.js"; // "/Users/gaozy/WebStorm/mal.js"; // 
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	
 	public static void main(String[] args) throws IOException,
