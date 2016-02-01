@@ -69,13 +69,10 @@ public class RequestHandler {
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONParser parser = new JSONParser();
 			    JSONObject vm = (JSONObject) parser.parse(params.getValuesMapString());
-			    System.out.println("The received valuesmap is "+vm.toString());
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
 			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
-			    
-			    System.out.println("The result is "+result.toString());
 			    
 			    long t2 = System.nanoTime();
 			    

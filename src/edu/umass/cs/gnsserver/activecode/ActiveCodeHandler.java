@@ -131,14 +131,12 @@ public class ActiveCodeHandler {
 	 * @param activeCodeTTL the remaining active code TTL
 	 * @return a Valuesmap
 	 */
-	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
-		System.out.println("Original value is "+valuesMap);
+	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
 		long startTime = System.nanoTime();
 		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
 		String values = valuesMap.toString();
-		System.out.println("The valuesmap is "+values);
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));

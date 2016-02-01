@@ -20,12 +20,10 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -36,7 +34,6 @@ import javax.script.SimpleScriptContext;
 
 import org.json.simple.JSONObject;
 
-import edu.umass.cs.gnsserver.activecode.ActiveCodeException;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
