@@ -168,7 +168,7 @@ public class ActiveCodeRunner {
 
       FutureTask<JSONObject> task = new FutureTask<JSONObject>(new ActiveCodeWorkerTask(invocable, value, field, querier));
       executor.execute(task);
-      ret = task.get(1000, TimeUnit.MILLISECONDS);
+      ret = task.get(200, TimeUnit.MILLISECONDS);
 
     } catch(ScriptException e){
     	e.printStackTrace();

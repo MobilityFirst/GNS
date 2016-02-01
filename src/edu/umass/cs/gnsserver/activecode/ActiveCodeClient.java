@@ -248,8 +248,6 @@ public class ActiveCodeClient {
 		
 		long convertTime = System.nanoTime();
 		ValuesMap vm = null;
-	    
-		System.out.println("ValuesMapString is "+valuesMapString);
 		
         // Try to convert back to a valuesMap
         if(crashed) {
