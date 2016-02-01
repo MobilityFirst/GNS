@@ -167,17 +167,15 @@ public class ActiveCodeRunner {
       //engine.eval(code, sc);      
       engine.setContext(sc);
 
-      // ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
+      ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
+      /*
       FutureTask<JSONObject> task = new FutureTask<JSONObject>(new ActiveCodeWorkerTask(invocable, value, field, querier));
       executor.execute(task);
-      //ret = task.get(1000, TimeUnit.MILLISECONDS);
-      ret = task.get();
-      
+      ret = task.get(1000, TimeUnit.MILLISECONDS);
+      */
     } catch(ScriptException e){
     	e.printStackTrace();
-    } catch(InterruptedException e) {
-    	e.printStackTrace();
-    } catch(ExecutionException e){
+    } catch(Exception e){
     	e.printStackTrace();
     }
     
