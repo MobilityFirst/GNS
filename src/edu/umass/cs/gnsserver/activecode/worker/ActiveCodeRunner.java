@@ -20,6 +20,12 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -44,8 +50,7 @@ public class ActiveCodeRunner {
   private final Invocable invocable;
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
-  //private ScriptContext sc;
-  
+  private final ExecutorService executor = Executors.newSingleThreadExecutor();
   /**
    * Initialize an ActiveCodeRunner with nashorn script engine
    * by default.
@@ -64,7 +69,7 @@ public class ActiveCodeRunner {
     codeHashes = new HashMap<>();
     //sc = new SimpleScriptContext();
 
-		// uncomment to enable the lua-to-java bytecode compiler 
+	// uncomment to enable the lua-to-java bytecode compiler 
     // (require bcel library in class path)
     // Globals globals = JsePlatform.standardGlobals();
     // LuaJC.install(globals);
@@ -162,12 +167,20 @@ public class ActiveCodeRunner {
       //engine.eval(code, sc);      
       engine.setContext(sc);
 
-      ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
-      
-    } catch (NoSuchMethodException | ScriptException e) {
-      // TODO Auto-generated catch block
+      // ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
+      FutureTask<JSONObject> task = new FutureTask<JSONObject>(new ActiveCodeWorkerTask(invocable, value, field, querier));
+      executor.execute(task);
+      ret = task.get(200, TimeUnit.MILLISECONDS);
+    } catch(ScriptException e){
+    	e.printStackTrace();
+    } catch (TimeoutException e) {
       e.printStackTrace();
+    } catch(InterruptedException e) {
+    	e.printStackTrace();
+    } catch(ExecutionException e){
+    	e.printStackTrace();
     }
+    
     DelayProfiler.updateDelayNano("activeWorkerEngineExecution", startTime);
     //System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");
     return ret;

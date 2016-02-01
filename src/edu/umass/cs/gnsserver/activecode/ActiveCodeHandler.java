@@ -155,7 +155,7 @@ public class ActiveCodeHandler {
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (CancellationException e){		
-			System.out.println("Cancellation"+Thread.currentThread().getId());
+			System.out.println("Cancellation");
 			e.printStackTrace();
 			scheduler.finish(guid);
 			return valuesMap;

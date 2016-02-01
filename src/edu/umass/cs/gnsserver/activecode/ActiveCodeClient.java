@@ -266,8 +266,13 @@ public class ActiveCodeClient {
  	        } catch (JSONException e) {
  	        	e.printStackTrace();
  	        }
-        }else{
-        	System.out.println("The returned value is "+valuesMapString);
+        }else{        	
+        	try{
+        		//If there is an error, send the original value back
+        		vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
+        	} catch (JSONException e) {
+        		e.printStackTrace();
+        	}
         }
         DelayProfiler.updateDelayNano("activeConvert", convertTime);
         DelayProfiler.updateDelayNano("communication", startTime);
