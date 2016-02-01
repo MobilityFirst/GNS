@@ -66,7 +66,7 @@ public class RequestHandler {
 		    	// Run the active code
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();
-			    System.out.println("The params is "+params);
+			    System.out.println("The params is "+params.getValuesMapString());
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONObject vm = new JSONObject(params.getValuesMapString());
 			    System.out.println("The received valuesmap is "+vm.toReasonableString());
