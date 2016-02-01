@@ -21,10 +21,10 @@ package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.net.DatagramSocket;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
-import edu.umass.cs.gnsserver.activecode.ActiveCodeException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
@@ -67,7 +67,8 @@ public class RequestHandler {
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();
 			    querier.setParam(params.getHopLimit(), params.getGuid());
-			    JSONObject vm = new JSONObject(params.getValuesMapString());
+			    JSONParser parser = new JSONParser();
+			    JSONObject vm = (JSONObject) parser.parse(params.getValuesMapString());
 			    System.out.println("The received valuesmap is "+vm.toReasonableString());
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
@@ -87,7 +88,7 @@ public class RequestHandler {
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    
-		} catch (JSONException e ) {
+		} catch (ParseException e ) {
 			ActiveCodeMessage acmResp = crashedMessage(e.toString());
 			ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
 			return ret;
