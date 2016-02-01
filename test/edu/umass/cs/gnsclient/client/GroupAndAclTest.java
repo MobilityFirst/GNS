@@ -41,7 +41,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GroupAndAclTcpTest {
+public class GroupAndAclTest {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -55,7 +55,7 @@ public class GroupAndAclTcpTest {
   private static GuidEntry samEntry;
   private static GuidEntry mygroupEntry;
 
-  public GroupAndAclTcpTest() {
+  public GroupAndAclTest() {
     if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()

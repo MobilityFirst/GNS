@@ -40,7 +40,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AclTcpClientTest {
+public class AclClientTest {
 
   private static final String ACCOUNT_ALIAS = "test@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -51,7 +51,7 @@ public class AclTcpClientTest {
   private static GuidEntry samEntry;
   private static GuidEntry barneyEntry;
 
-  public AclTcpClientTest() {
+  public AclClientTest() {
     if (address == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()

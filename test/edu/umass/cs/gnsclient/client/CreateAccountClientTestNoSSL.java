@@ -19,12 +19,11 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
+import org.json.JSONObject;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -35,7 +34,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateGuidTcpClientTest {
+public class CreateAccountClientTestNoSSL {
 
   private static String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -46,8 +45,7 @@ public class CreateGuidTcpClientTest {
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
-  public CreateGuidTcpClientTest() {
-
+  public CreateAccountClientTestNoSSL() {
     if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
@@ -58,27 +56,42 @@ public class CreateGuidTcpClientTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
-      try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-      } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
-      }
- 
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
     }
   }
 
   @Test
-  public void test_01_CreateEntity() {
-    String alias = "testGUID" + RandomString.randomString(6);
-    GuidEntry guidEntry = null;
+  public void test_01_CreateAccount() {
     try {
-      guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
-      fail("Exception while creating guid: " + e);
+      fail("Exception when we were not expecting it: " + e);
     }
-    assertNotNull(guidEntry);
-    assertEquals(alias, guidEntry.getEntityName());
+  }
+
+  @Test
+  public void test_02_CheckAccount() {
+    String guidString = null;
+    try {
+      guidString = client.lookupGuid(ACCOUNT_ALIAS);
+    } catch (Exception e) {
+      fail("Exception while looking up guid: " + e);
+    }
+    JSONObject json = null;
+    if (guidString != null) {
+      try {
+        json = client.lookupAccountRecord(guidString);
+      } catch (Exception e) {
+        fail("Exception while looking up account record: " + e);
+      }
+    }
+    if (json == null) {
+      try {
+        assertFalse(json.getBoolean(GnsProtocol.ACCOUNT_RECORD_VERIFIED));
+      } catch (Exception e) {
+        fail("Exception while getting field from account record: " + e);
+      }
+    }
   }
 
 }

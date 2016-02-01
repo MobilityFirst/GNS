@@ -40,7 +40,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CreateGuidBatchTcpClientTest {
+public class CreateGuidBatchClientTest {
 
   private static UniversalTcpClientExtended client;
   /**
@@ -48,7 +48,7 @@ public class CreateGuidBatchTcpClientTest {
    */
   private static InetSocketAddress address = null;
 
-  public CreateGuidBatchTcpClientTest() {
+  public CreateGuidBatchClientTest() {
 
     if (client == null) {
       if (System.getProperty("host") != null

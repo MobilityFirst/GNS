@@ -19,8 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -72,7 +70,6 @@ public class ReadTcpClientTest {
   }
 
   @Test
-  @Order(1)
   public void test_01_CreateEntity() {
     try {
       GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID" + RandomString.randomString(6));
@@ -82,7 +79,6 @@ public class ReadTcpClientTest {
   }
 
   @Test
-  @Order(2)
   public void test_02_CreateField() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
@@ -125,7 +121,6 @@ public class ReadTcpClientTest {
   }
 
   @Test
-  @Order(3)
   public void test_03_ACLPartOne() {
     //testCreateField();
 
