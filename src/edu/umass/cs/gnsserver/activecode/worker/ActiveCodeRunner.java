@@ -152,7 +152,7 @@ public class ActiveCodeRunner {
    * @param querier the querier object used for active code reads/writes
    * @return the output of the code
    */
-  public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) throws ActiveCodeException {
+  public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) {
 	JSONObject ret = null;
 	  //	return runLuaCode(guid, action, field, code, value, querier);
 	long startTime = System.nanoTime();

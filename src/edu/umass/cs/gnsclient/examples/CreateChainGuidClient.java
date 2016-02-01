@@ -58,7 +58,7 @@ public class CreateChainGuidClient {
 				
 				String guid = client.lookupGuid("test"+(node*1000+i*10+j)+ACCOUNT_ALIAS);
 				
-				JSONObject json = new JSONObject("{\"nextGuid\":\"gao\",\"cnt\":1}");
+				JSONObject json = new JSONObject("{\"nextGuid\":\"gao\"}");
 				client.update(guidAccount, json);
 				//System.out.println("The last guid is "+lastGuid);
 				client.fieldUpdate(guidAccount, "nextGuid", lastGuid);

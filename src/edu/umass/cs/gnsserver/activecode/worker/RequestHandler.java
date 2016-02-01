@@ -85,8 +85,7 @@ public class RequestHandler {
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    
-		} catch (JSONException | ActiveCodeException e) {
-			System.out.println("catch the exception "+e);
+		} catch (JSONException e ) {
 			ActiveCodeMessage acmResp = crashedMessage(e.toString());
 			ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
 			return ret;

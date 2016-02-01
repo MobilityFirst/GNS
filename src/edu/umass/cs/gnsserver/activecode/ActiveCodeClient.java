@@ -248,7 +248,7 @@ public class ActiveCodeClient {
 		
 		long convertTime = System.nanoTime();
 		ValuesMap vm = null;
-	        
+	    
         // Try to convert back to a valuesMap
         if(crashed) {
         	System.out.println("################### "+ acmReq.getAcp().getGuid()+" Crashed! ####################");
@@ -266,13 +266,8 @@ public class ActiveCodeClient {
  	        } catch (JSONException e) {
  	        	e.printStackTrace();
  	        }
-        }else{        	
-        	try{
-        		//If there is an error, send the original value back
-        		vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
-        	} catch (JSONException e) {
-        		e.printStackTrace();
-        	}
+        }else{    
+        	System.out.println(acmReq);
         }
         DelayProfiler.updateDelayNano("activeConvert", convertTime);
         DelayProfiler.updateDelayNano("communication", startTime);
