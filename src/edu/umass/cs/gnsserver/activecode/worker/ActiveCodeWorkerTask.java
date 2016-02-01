@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 import javax.script.Invocable;
 import javax.script.ScriptException;
 
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 public class ActiveCodeWorkerTask implements Callable<JSONObject>{
 	private Invocable inv;

@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.net.DatagramSocket;
 
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -69,13 +69,13 @@ public class RequestHandler {
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONParser parser = new JSONParser();
 			    JSONObject vm = (JSONObject) parser.parse(params.getValuesMapString());
-			    System.out.println("The received valuesmap is "+vm.toReasonableString());
+			    System.out.println("The received valuesmap is "+vm.toString());
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
 			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
 			    
-			    System.out.println("The result is "+result.toReasonableString());
+			    System.out.println("The result is "+result.toString());
 			    
 			    long t2 = System.nanoTime();
 			    

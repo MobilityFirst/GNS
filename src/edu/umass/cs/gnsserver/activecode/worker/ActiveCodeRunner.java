@@ -34,7 +34,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeException;
 import edu.umass.cs.utils.DelayProfiler;
