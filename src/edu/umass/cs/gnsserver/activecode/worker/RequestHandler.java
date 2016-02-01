@@ -56,8 +56,7 @@ public class RequestHandler {
 		
 		try {			
 			// Get the ActiveCodeMessage from the GNS
-		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, buffer);
-		    
+		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, buffer);		    
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, buffer, clientPort);
 		    
 		    if( acm.isShutdown() ) {
@@ -69,10 +68,13 @@ public class RequestHandler {
 			    ActiveCodeParams params = acm.getAcp();
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONObject vm = new JSONObject(params.getValuesMapString());
+			    System.out.println("The received valuesmap is "+vm.toReasonableString());
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
 			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
+			    
+			    System.out.println("The result is "+result.toReasonableString());
 			    
 			    long t2 = System.nanoTime();
 			    

@@ -53,7 +53,7 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public void run(int readyPort) throws IOException {	
-		//long start = System.nanoTime();
+		long start = System.nanoTime();
         ActiveCodeRunner runner = new ActiveCodeRunner();
         //System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a runner.");
         
@@ -66,7 +66,7 @@ public class ActiveCodeWorker {
 			Socket temp = new Socket("0.0.0.0", readyPort);
 			temp.close();
 		}
-		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
+		System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
 		
         while (keepGoing) {
         	if (clientPort == -1){
@@ -78,7 +78,6 @@ public class ActiveCodeWorker {
         		}catch(IOException e){
         			e.printStackTrace();
         		}
-        		//System.out.println("Set the new client port to "+clientPort);
         		continue;
         	}
         	keepGoing = handler.handleRequest(serverSocket);
