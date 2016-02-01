@@ -267,7 +267,7 @@ public class ActiveCodeClient {
  	        	e.printStackTrace();
  	        }
         }else{    
-        	System.out.println(acmReq);
+        	System.out.println("ValuesMapString is "+acmReq);
         }
         DelayProfiler.updateDelayNano("activeConvert", convertTime);
         DelayProfiler.updateDelayNano("communication", startTime);
