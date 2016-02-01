@@ -170,11 +170,11 @@ public class ActiveCodeRunner {
       // ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
       FutureTask<JSONObject> task = new FutureTask<JSONObject>(new ActiveCodeWorkerTask(invocable, value, field, querier));
       executor.execute(task);
-      ret = task.get(1000, TimeUnit.MILLISECONDS);
+      //ret = task.get(1000, TimeUnit.MILLISECONDS);
+      ret = task.get();
+      
     } catch(ScriptException e){
     	e.printStackTrace();
-    } catch (TimeoutException e) {
-      e.printStackTrace();
     } catch(InterruptedException e) {
     	e.printStackTrace();
     } catch(ExecutionException e){
