@@ -138,7 +138,7 @@ public class ActiveCodeHandler {
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
 		String values = valuesMap.toString();
-		System.out.println("Before sending it, the valuesmap is "+values);
+		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
 		
