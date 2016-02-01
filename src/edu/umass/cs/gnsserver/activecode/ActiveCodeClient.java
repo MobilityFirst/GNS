@@ -172,6 +172,7 @@ public class ActiveCodeClient {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setAcp(acp);
 		ValuesMap vm = null;
+		System.out.println(acp.getValuesMapString());
 		
 		try{
 			vm = submitRequest(acm, ach);
