@@ -249,6 +249,8 @@ public class ActiveCodeClient {
 		long convertTime = System.nanoTime();
 		ValuesMap vm = null;
 	    
+		System.out.println("ValuesMapString is "+valuesMapString);
+		
         // Try to convert back to a valuesMap
         if(crashed) {
         	System.out.println("################### "+ acmReq.getAcp().getGuid()+" Crashed! ####################");
@@ -259,8 +261,7 @@ public class ActiveCodeClient {
         		e.printStackTrace();
         	}
         	return vm;
-        }else if(valuesMapString != null) {
-        	System.out.println("ValuesMapString is "+valuesMapString);
+        }else if(valuesMapString != null) {        	
         	try {
         		vm = new ValuesMap(new JSONObject(valuesMapString));
  	        } catch (JSONException e) {
