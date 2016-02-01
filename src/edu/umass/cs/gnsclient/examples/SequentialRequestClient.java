@@ -78,7 +78,8 @@ public class SequentialRequestClient {
 	    
 	    for (int i=0; i<10; i++){
 	    	long t1 = System.nanoTime();
-	    	client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
+	    	String result = client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
+	    	System.out.println("The nextGuid is "+result);
 	    	//System.out.println("Get response "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
