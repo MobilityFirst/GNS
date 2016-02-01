@@ -44,7 +44,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import java.util.Set;
 import org.json.JSONException;
 
 /**
@@ -1295,44 +1294,53 @@ public class ServerIntegrationTest {
 //    }
 //  }
 
+//  @Test
+//  public void test_53_CreateBatchFastest() {
+//    GuidEntry masterGuid = null;
+//    try {
+//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+//      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//    int numberTocreate = 100;
+//    if (System.getProperty("count") != null
+//            && !System.getProperty("count").isEmpty()) {
+//      numberTocreate = Integer.parseInt(System.getProperty("count"));
+//    }
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(60 * 1000); // 30 seconds
+//      result = client.guidBatchCreateFast(masterGuid, numberTocreate);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GnsProtocol.OK_RESPONSE, result);
+//    try {
+//      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | GnsException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
+  
   @Test
-  public void test_53_CreateBatchFastest() {
-    GuidEntry masterGuid = null;
+  public void test_99_Client_Stop() {
     try {
-      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+      client.stop();
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-    int numberTocreate = 100;
-    if (System.getProperty("count") != null
-            && !System.getProperty("count").isEmpty()) {
-      numberTocreate = Integer.parseInt(System.getProperty("count"));
-    }
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(60 * 1000); // 30 seconds
-      result = client.guidBatchCreateFast(masterGuid, numberTocreate);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
-    try {
-      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsException | IOException e) {
-      fail("Exception while fetching account record: " + e);
+      fail("Exception during client stop: " + e);
     }
   }
   
   @Test
-  public void test_99_Stop() {
+  public void test_999_Server_Stop() {
     try {
-      client.stop();
+      RunServer.command("scripts/3nodeslocal/shutdown.sh", ".");
     } catch (Exception e) {
-      fail("Exception during stop: " + e);
+      fail("Exception during server stop: " + e);
     }
   }
 }
