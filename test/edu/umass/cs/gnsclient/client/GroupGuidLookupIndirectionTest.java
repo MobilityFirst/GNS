@@ -66,7 +66,7 @@ public class GroupGuidLookupIndirectionTest {
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        fail("Exception while creating account guid: " + e);
       }
     }
   }

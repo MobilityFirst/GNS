@@ -44,7 +44,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import org.json.JSONException;
 
 /**
  * Functionality test for core elements in the client using the UniversalGnsClientFull.
@@ -102,7 +101,7 @@ public class ServerIntegrationTest {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
       fail("Failure setting up account guid: " + e + "; aborting all tests.");
-      System.exit(1);
+      //System.exit(1);
     }
   }
 
@@ -653,7 +652,7 @@ public class ServerIntegrationTest {
 
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
-      System.exit(2);
+      //System.exit(2);
     }
     // now remove a guid and check for group updates
     try {
@@ -677,7 +676,7 @@ public class ServerIntegrationTest {
 
     } catch (Exception e) {
       fail("Exception during remove guid group update test: " + e);
-      System.exit(2);
+      //System.exit(2);
     }
 
   }
@@ -1327,7 +1326,7 @@ public class ServerIntegrationTest {
 //  }
   
   @Test
-  public void test_99_Client_Stop() {
+  public void test_998_Client_Stop() {
     try {
       client.stop();
     } catch (Exception e) {

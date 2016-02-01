@@ -114,6 +114,12 @@ public class CCPProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask<NodeIDType, ?> handleCreate(CreateServiceName packet) {
+    if (packet.isFailed()) {
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("??????????????????????????? Ignoring failed create " + packet.getServiceName());
+      }
+      return null;
+    }
     Integer lnsRequestID = handler.removeCreateRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
       // NEW - There can be multiple creates for one client request.
@@ -121,7 +127,7 @@ public class CCPProtocolTask<NodeIDType> implements
       if (!handler.pendingCreatesIsEmpty(lnsRequestID)) {
         return null;
       }
-        
+
       // Basically we gin up a confirmation packet for the original AddRecord packet and
       // send it back to the originator of the request.
       @SuppressWarnings("unchecked")
@@ -133,10 +139,10 @@ public class CCPProtocolTask<NodeIDType> implements
         }
         @SuppressWarnings("unchecked")
         AbstractAddRecordPacket<String> originalPacket = (AbstractAddRecordPacket<String>) info.getUpdatePacket();
-        ConfirmUpdatePacket<String> confirmPacket = 
-                new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM, 
-        originalPacket.getSourceId(),
-        originalPacket.getRequestIDInteger(), originalPacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
+        ConfirmUpdatePacket<String> confirmPacket
+                = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
+                        originalPacket.getSourceId(),
+                        originalPacket.getRequestIDInteger(), originalPacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
 //        ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, 
 //                originalPacket);
         try {
