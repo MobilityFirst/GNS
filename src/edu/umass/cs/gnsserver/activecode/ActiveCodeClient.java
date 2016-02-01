@@ -260,6 +260,7 @@ public class ActiveCodeClient {
         	}
         	return vm;
         }else if(valuesMapString != null) {
+        	System.out.println("ValuesMapString is "+valuesMapString);
         	try {
         		vm = new ValuesMap(new JSONObject(valuesMapString));
  	        } catch (JSONException e) {
