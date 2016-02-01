@@ -173,7 +173,8 @@ public class ActiveCodeRunner {
     } catch(ScriptException e){
     	e.printStackTrace();
     } catch(Exception e){
-    	e.printStackTrace();
+    	//e.printStackTrace();
+    	return value;
     }
     
     DelayProfiler.updateDelayNano("activeWorkerEngineExecution", startTime);
