@@ -23,7 +23,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class CreateChainGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private static int NUM_CLIENT = 20;
+	private static int NUM_CLIENT = 5;
 	private final static String filename = "/home/ubuntu/chain.js"; //"/Users/gaozy/GNS/test.js"; //
 	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/gaozy/GNS/gns_key/"; //
 	
@@ -33,7 +33,7 @@ public class CreateChainGuidClient {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]);
 		int depth = Integer.parseInt(args[2]);
-		boolean deploy = Boolean.parseBoolean(args[3]);
+		NUM_CLIENT = Integer.parseInt(args[3]);
 		
 		//Read in the code and serialize
 		String code = new String(Files.readAllBytes(Paths.get(filename)));
@@ -62,10 +62,10 @@ public class CreateChainGuidClient {
 				client.update(guidAccount, json);
 				//System.out.println("The last guid is "+lastGuid);
 				client.fieldUpdate(guidAccount, "nextGuid", lastGuid);
-				if (deploy){
-					client.activeCodeClear(guid, "read", guidAccount);
-					client.activeCodeSet(guid, "read", code64, guidAccount);
-				}
+				
+				client.activeCodeClear(guid, "read", guidAccount);
+				client.activeCodeSet(guid, "read", code64, guidAccount);
+				
 	    		lastGuid = guidAccount.getGuid();
 			}
     		
