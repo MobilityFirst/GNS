@@ -67,8 +67,8 @@ public class RequestHandler {
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();			    
 			   
-			    System.out.println("Got the message from port "+socket.getLocalPort());
-			    System.out.println("The hop is "+params.getHopLimit()+"The guid is "+params.getGuid());
+			    //System.out.println("Got the message from port "+socket.getLocalPort());
+			    //System.out.println("The hop is "+params.getHopLimit()+". The guid is "+params.getGuid());
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONParser parser = new JSONParser();
 			    JSONObject vm = (JSONObject) parser.parse(params.getValuesMapString());
