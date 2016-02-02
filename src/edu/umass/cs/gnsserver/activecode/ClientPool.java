@@ -44,7 +44,7 @@ public class ClientPool {
 	ActiveCodeHandler ach;
 	ConcurrentHashMap<Integer, Process> spareWorkers;
 	private ExecutorService executorPool;
-	
+	private final int numSpareWorker = 20;
 	/**
 	 * Initialize a ClientPool
 	 * @param app
@@ -55,7 +55,7 @@ public class ClientPool {
 		this.ach = ach;
 		spareWorkers = new ConcurrentHashMap<Integer, Process>();
 		executorPool = Executors.newFixedThreadPool(5);
-		for (int i=0; i<20; i++){
+		for (int i=0; i<numSpareWorker; i++){
 			executorPool.execute(new WorkerGeneratorRunanble());
 		}
 	}

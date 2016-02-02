@@ -193,7 +193,7 @@ public class CapacityTestClient {
     		}
     		cnt++;
     	}
-    	    	
+    	
     	System.out.println("The percentage of the responsed requests is "+latency.size()/(new Double(TOTAL_NORMAL)));
     	
     	while(mal_request.size() != (TOTAL - TOTAL_NORMAL) || (latency.size()+failed) < TOTAL_NORMAL ){
