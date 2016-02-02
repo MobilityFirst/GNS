@@ -216,7 +216,7 @@ public class ActiveCodeClient {
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
 		
-		System.out.println("Send the request to worker port "+serverPort+" through the local port "+clientSocket.getPort());
+		System.out.println("Send the request to worker port "+serverPort+" through the local port "+clientSocket.getLocalPort());
 		
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
@@ -258,7 +258,7 @@ public class ActiveCodeClient {
         		//If there is an error, send the original value back
         		vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
         	} catch (JSONException e) {
-        		e.printStackTrace();
+        		//e.printStackTrace();
         	}
         	return vm;
         }else if(valuesMapString != null) {        	
