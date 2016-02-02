@@ -672,8 +672,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
     String idString = id.toString();
-    NodeIDType activeReplicaID = valueOf(idString + "_ActiveReplica");
-    NodeIDType ReconfiguratorID = valueOf(idString + "_Reconfigurator");
+    NodeIDType activeReplicaID = valueOf(idString + "_Repl");
+    NodeIDType ReconfiguratorID = valueOf(idString + "_Recon");
     NodeInfo<NodeIDType> nodeInfo = new NodeInfo<NodeIDType>(id, activeReplicaID, ReconfiguratorID,
             ipAddress, externalIP, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
@@ -774,8 +774,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     System.out.println(gnsNodeConfig.getNodePort("frank"));
     System.out.println(gnsNodeConfig.getActiveReplicas());
     System.out.println(gnsNodeConfig.getReconfigurators());
-    System.out.println(gnsNodeConfig.getNodePort("frank_ActiveReplica"));
-    System.out.println(gnsNodeConfig.getNodeAddress("billy_Reconfigurator"));
+    System.out.println(gnsNodeConfig.getNodePort("frank_Repl"));
+    System.out.println(gnsNodeConfig.getNodeAddress("billy_Recon"));
     System.exit(0);
   }
 

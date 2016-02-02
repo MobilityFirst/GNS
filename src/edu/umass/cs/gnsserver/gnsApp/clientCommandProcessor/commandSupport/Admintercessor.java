@@ -368,6 +368,8 @@ public class Admintercessor {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("RECEIVED DUMP RECORD FROM NS: " + entry.getKey());
       }
+      result.append("#############################################");
+      result.append(LINE_SEPARATOR);
       result.append("Nameserver: " + entry.getKey().toString()
               + " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);

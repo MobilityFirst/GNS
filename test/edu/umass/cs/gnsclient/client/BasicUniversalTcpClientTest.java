@@ -24,6 +24,7 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import static edu.umass.cs.gnsclient.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
 import java.net.InetSocketAddress;
 import org.json.JSONObject;
 import static org.junit.Assert.*;
@@ -106,7 +107,7 @@ public class BasicUniversalTcpClientTest {
       subJson.put("meiny", "bloop");
       expected.put("gibberish", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, false);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -131,7 +132,7 @@ public class BasicUniversalTcpClientTest {
       subJson.put("meiny", "bloop");
       expected.put("gibberish", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual,  NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception reading change of \"occupation\" to \"rocket scientist\": " + e);
@@ -157,7 +158,7 @@ public class BasicUniversalTcpClientTest {
       subJson.put("meiny", "bloop");
       expected.put("gibberish", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual,  NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -177,7 +178,7 @@ public class BasicUniversalTcpClientTest {
       expected.put("ip address", "127.0.0.1");
       expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual,  NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -216,7 +217,7 @@ public class BasicUniversalTcpClientTest {
       subJson.put("sally", subsubJson);
       expected.put("flapjack", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual,  NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -264,7 +265,7 @@ public class BasicUniversalTcpClientTest {
       subJson.put("sally", subsubJson);
       expected.put("flapjack", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual,  NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -289,7 +290,7 @@ public class BasicUniversalTcpClientTest {
       subJson.put("sally", subsubJson);
       expected.put("flapjack", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual,  NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -316,7 +317,7 @@ public class BasicUniversalTcpClientTest {
       moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
       expected.put("flapjack", moreJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual,  NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
