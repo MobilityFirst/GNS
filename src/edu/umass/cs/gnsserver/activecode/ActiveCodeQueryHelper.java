@@ -129,6 +129,7 @@ public class ActiveCodeQueryHelper {
 		}
 		// Otherwise, we need to do an external guid read
 		else {
+			System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
 			if(acqreq.getAction().equals("read")) {
 				//System.out.println("Enter else "+currentGuid+" "+acqreq.getGuid()+" "+acqreq.getField()+" "+acqreq.getLimit());
 				try{

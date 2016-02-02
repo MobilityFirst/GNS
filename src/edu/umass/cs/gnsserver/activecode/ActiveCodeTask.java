@@ -55,6 +55,8 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	ActiveCodeClient client = clientPool.getClient(pid);
     	ValuesMap result = null;
     	
+    	System.out.println("Start running the active code task for guid "+acp.getGuid());
+    	
     	if(acp != null) {
     		result = client.runActiveCode(acp, false);
     	}
