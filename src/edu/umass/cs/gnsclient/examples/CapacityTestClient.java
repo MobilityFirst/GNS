@@ -29,7 +29,7 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 100;
     private static int NUM_CLIENT = 0;
     private static int INTERVAL = 1;
-    private static final int DURATION = 60;
+    private static final int DURATION = 30;
     private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
     private static int failed = 0;
     
@@ -146,19 +146,10 @@ public class CapacityTestClient {
     	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
     	executorPool.prestartAllCoreThreads();
-    	/*
-    	executorMal = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
-	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
-    	executorMal.prestartAllCoreThreads();
-    	*/
-    	//Executors.newFixedThreadPool(NUM_THREAD);//Executors.newSingleThreadExecutor();
-		
-    	
+    	    	
 		for (int index=0; index<NUM_CLIENT; index++){			
 			String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
-		
-			//String guid = client.lookupGuid(account);
 			
 			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 			String guid = accountGuid.getGuid();
@@ -178,8 +169,7 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	int TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
-    	
+    	int TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;    	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	
     	int cnt = 0;
@@ -205,9 +195,16 @@ public class CapacityTestClient {
     		}
     	}
     	
-    	/*
+    	long total = 0;
+    	for (long lat:latency){
+    		total += lat;
+    	}
+    	System.out.println("There are "+failed+" requests failed.");
+    	System.out.println("The average latency is "+(total/latency.size()));
+    	
+    	clearLatency();    	
+    	
     	System.out.println("2nd run");
-    	start = System.currentTimeMillis();
     	t1 = System.currentTimeMillis();
     	sendRequests(TOTAL, rate, clients, fraction, client);
     	t2 = System.currentTimeMillis();
@@ -215,10 +212,11 @@ public class CapacityTestClient {
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;
-    	
+    	TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;    	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
-    	while((latency.size()+failed) < TOTAL_NORMAL){
+    	
+    	cnt = 0;
+    	while((latency.size()+failed) < TOTAL_NORMAL && cnt<20){
     		
     		System.out.println("Received "+(latency.size()+failed)+" messages totally");
     		try{
@@ -226,14 +224,28 @@ public class CapacityTestClient {
     		}catch(Exception e){
     			e.printStackTrace();
     		}
-    		
+    		cnt++;
     	}
-
-    	Collections.sort(latency);
+    	
+    	System.out.println("The percentage of the responsed requests is "+latency.size()/(new Double(TOTAL_NORMAL)));
+    	
+    	while(mal_request.size() != (TOTAL - TOTAL_NORMAL) || (latency.size()+failed) < TOTAL_NORMAL ){
+    		System.out.println("Finished malicious requests "+mal_request.size());
+    		try{
+    			Thread.sleep(1000);
+    		}catch(InterruptedException e){
+    			e.printStackTrace();
+    		}
+    	}
+    	
+    	total = 0;
+    	for (long lat:latency){
+    		total += lat;
+    	}
     	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
-    	System.out.println("The start point is:"+(start/1000));
-    	*/ 
+    	System.out.println("The average latency is "+(total/latency.size()));
+    	
+    	
     	
     	// connect to none server and inform it's done
     	Socket socket = new Socket("128.119.245.5", 60001);
