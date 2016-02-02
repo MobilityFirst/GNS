@@ -20,17 +20,13 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 public class CapacityTestClient {
-	//private final static String key_folder = "/Users/zhaoyugao/gns_key/";
 	private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
-	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	private static ArrayList<Integer> mal_request = new ArrayList<Integer>();
 	private static int req_id = 0;
     private static ThreadPoolExecutor executorPool;
-    //private static ThreadPoolExecutor executorMal; // This is for executing malicious request
-    
+        
     private static int NUM_THREAD = 100;
-    private static long start = 0;
     private static int NUM_CLIENT = 0;
     private static int INTERVAL = 1;
     private static final int DURATION = 60;
@@ -175,7 +171,6 @@ public class CapacityTestClient {
 		int TOTAL = rate * DURATION;
 		
 		System.out.println("1st run");
-		start = System.currentTimeMillis();
     	long t1 = System.currentTimeMillis();
     	sendRequests(TOTAL, rate, clients, fraction, client);
     	long t2 = System.currentTimeMillis();
@@ -198,10 +193,7 @@ public class CapacityTestClient {
     		}
     		cnt++;
     	}
-    	Collections.sort(latency);
-    	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
-    	
+    	    	
     	System.out.println("The percentage of the responsed requests is "+latency.size()/(new Double(TOTAL_NORMAL)));
     	
     	while(mal_request.size() != (TOTAL - TOTAL_NORMAL) && (latency.size()+failed) < TOTAL_NORMAL ){
@@ -212,6 +204,10 @@ public class CapacityTestClient {
     			e.printStackTrace();
     		}
     	}
+    	
+    	Collections.sort(latency);
+    	System.out.println("There are "+failed+" requests failed.");
+    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	
     	/*
     	System.out.println("2nd run");
