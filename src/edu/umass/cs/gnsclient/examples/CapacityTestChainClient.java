@@ -92,7 +92,7 @@ public class CapacityTestChainClient {
 						
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*received/eclapsed)+" req/sec.");
+			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*latency.size()/eclapsed)+" req/sec.");
 			
 			Socket socket = new Socket("128.119.245.5", 60001);
 	    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
