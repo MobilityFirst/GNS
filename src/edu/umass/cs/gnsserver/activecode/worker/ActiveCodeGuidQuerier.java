@@ -72,6 +72,10 @@ public class ActiveCodeGuidQuerier {
 	  this.guid = guid;
   }
   
+  protected void setError(String err){
+	  this.error = err;
+  }
+  
   private synchronized boolean accounting(String obj_guid){
 	  if(this.depth <= 0){
 		  return false;

@@ -171,9 +171,12 @@ public class ActiveCodeRunner {
       ret = task.get(200, TimeUnit.MILLISECONDS);
 
     } catch(ScriptException e){
-    	e.printStackTrace();
+    	//e.printStackTrace();
+    	querier.setError(e.toString());
+    	return value;
     } catch(Exception e){
-    	e.printStackTrace();
+    	//e.printStackTrace();
+    	querier.setError(e.toString());
     	return value;
     }
     
