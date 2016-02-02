@@ -196,7 +196,7 @@ public class CapacityTestClient {
     	    	
     	System.out.println("The percentage of the responsed requests is "+latency.size()/(new Double(TOTAL_NORMAL)));
     	
-    	while(mal_request.size() != (TOTAL - TOTAL_NORMAL) && (latency.size()+failed) < TOTAL_NORMAL ){
+    	while(mal_request.size() != (TOTAL - TOTAL_NORMAL) || (latency.size()+failed) < TOTAL_NORMAL ){
     		System.out.println("Finished malicious requests "+mal_request.size());
     		try{
     			Thread.sleep(1000);
@@ -204,10 +204,6 @@ public class CapacityTestClient {
     			e.printStackTrace();
     		}
     	}
-    	
-    	Collections.sort(latency);
-    	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The median latency is "+latency.get(latency.size()/2)/1000000.0+"ms");
     	
     	/*
     	System.out.println("2nd run");
