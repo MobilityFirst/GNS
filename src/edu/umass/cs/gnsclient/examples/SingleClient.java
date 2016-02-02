@@ -17,7 +17,8 @@ public class SingleClient implements Runnable{
 		} else{
 			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.INTERVAL;
 		}
-		System.out.println("There are "+numReq+" requests.");
+		
+		numReq = 5;
 	}
 	
 	public void run(){

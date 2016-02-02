@@ -253,7 +253,7 @@ public class ActiveCodeClient {
 		
         // Try to convert back to a valuesMap
         if(crashed) {
-        	System.out.println("################### "+ acmReq.getAcp().getGuid()+" Crashed! ####################");
+        	System.out.println("################### "+ acmReq.getAcp().getGuid()+" Crashed! #################### "+acmReq.getValuesMapString());
         	try{
         		//If there is an error, send the original value back
         		vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
