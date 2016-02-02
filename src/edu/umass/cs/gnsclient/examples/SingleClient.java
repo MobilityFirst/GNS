@@ -28,7 +28,7 @@ public class SingleClient implements Runnable{
 			try{
 				result = client.fieldRead(entry, "nextGuid");
 			}catch (Exception e){
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 			long eclapsed = System.nanoTime() - start;
 			System.out.println("It takes "+eclapsed+"ms to get the result, and the result is "+result);
