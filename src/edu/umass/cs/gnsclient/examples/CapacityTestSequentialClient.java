@@ -27,7 +27,7 @@ public class CapacityTestSequentialClient {
 	    private static int NUM_CLIENT = 0;
 	    public static final int DURATION = 10;
 	    public static final int INTERVAL = 5;
-	    public static final int MAL_INTERVAL = 200;
+	    public static final int MAL_INTERVAL = 1000;
 	    private static SingleClient[] clients;
 	    private static ThreadPoolExecutor executorPool;  
 	    

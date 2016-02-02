@@ -66,7 +66,7 @@ public class ActiveCodeWorker {
 			Socket temp = new Socket("0.0.0.0", readyPort);
 			temp.close();
 		}
-		System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
+		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
 		
         while (keepGoing) {
         	if (clientPort == -1){

@@ -24,7 +24,7 @@ public class CreateChainGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT = 5;
-	private final static String filename = "/home/ubuntu/chain.js"; //"/Users/gaozy/GNS/test.js"; //
+	private final static String filename = "/Users/gaozy/WebStorm/chain.js"; //"/home/ubuntu/chain.js"; //
 	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/gaozy/GNS/gns_key/"; //
 	
 	public static void main(String[] args) throws IOException,

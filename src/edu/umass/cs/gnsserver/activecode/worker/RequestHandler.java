@@ -65,8 +65,7 @@ public class RequestHandler {
 		    } else {
 		    	// Run the active code
 		    	long t1 = System.nanoTime();
-			    ActiveCodeParams params = acm.getAcp();
-			    
+			    ActiveCodeParams params = acm.getAcp();			    
 			   
 			    System.out.println("Got the message from port "+socket.getLocalPort());
 			    System.out.println("The hop is "+params.getHopLimit()+"The guid is "+params.getGuid());
