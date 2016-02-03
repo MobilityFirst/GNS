@@ -28,6 +28,7 @@ public class ActiveCodeGuardian implements Runnable {
 				
 				for(FutureTask<ValuesMap> task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
+						System.out.println("The task will be cancelled is "+task);
 						// generate a spare worker in another thread
 						clientPool.generateNewWorker();
 						// shutdown the previous worker process 
