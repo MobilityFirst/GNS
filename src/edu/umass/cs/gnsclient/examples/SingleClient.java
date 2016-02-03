@@ -32,9 +32,9 @@ public class SingleClient implements Runnable{
 				//e.printStackTrace();
 			}
 			long eclapsed = System.nanoTime() - start;
-			System.out.println("It takes "+eclapsed+"ms to get the result, and the result is "+result);
+			//System.out.println("It takes "+eclapsed+"ms to get the result, and the result is "+result);
 			
-			CapacityTestChainClient.latency.add(eclapsed);
+			CapacityTestSequentialClient.latency.add(eclapsed);
 			
 			/*
 			if (malicious){
