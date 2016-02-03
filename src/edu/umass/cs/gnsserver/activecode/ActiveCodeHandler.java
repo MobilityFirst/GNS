@@ -149,6 +149,7 @@ public class ActiveCodeHandler {
 		
 		try {
 			result = futureTask.get();
+			System.out.println("The returned result is "+result);
 		} catch (ExecutionException e) {
 			System.out.println("Execution");
 			e.printStackTrace();
