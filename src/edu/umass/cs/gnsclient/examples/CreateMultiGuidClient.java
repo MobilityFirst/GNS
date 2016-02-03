@@ -86,9 +86,7 @@ public class CreateMultiGuidClient {
 		    		client.activeCodeSet(guid, "read", mal_code64, guidAccount);
 		    	}
 		    	
-		    }
-		    
-		    
+		    }		    
 	    	
 		}
 		System.exit(0);
