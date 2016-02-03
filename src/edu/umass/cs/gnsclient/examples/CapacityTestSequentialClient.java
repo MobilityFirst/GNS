@@ -89,55 +89,6 @@ public class CapacityTestSequentialClient {
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(latency.size()+mal_request.size())/eclapsed)+" req/sec.");
 			
-			CapacityTestSequentialClient.latency.clear();
-			CapacityTestSequentialClient.mal_request.clear();
-			
-			
-			System.out.println("2nd run");
-			for (int index=0; index<NUM_CLIENT; index++){			
-				String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
-				
-				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
-				
-				if (index < BENIGN){
-					clients[index] = new SingleClient(client, accountGuid, false);
-				} else {
-					clients[index] = new SingleClient(client, accountGuid, true);
-				}
-				
-			}
-			
-			start = System.currentTimeMillis();
-			
-			for (int i=0; i<NUM_CLIENT; i++){
-				executorPool.execute(clients[i]);
-			}
-			
-			t = 0;
-			received = 0;
-			max = 0;
-			thruput = 0;
-			while (executorPool.getCompletedTaskCount() < NUM_CLIENT){
-				thruput = latency.size() - received;
-				if(max<thruput){
-					max = thruput;
-				}
-				System.out.println(t+" Throuput:"+thruput+" reqs/sec" );
-				received = latency.size();
-				t++;
-				try{
-					Thread.sleep(1000);
-				}catch(InterruptedException e){
-					e.printStackTrace();
-				}
-			}
-						
-			eclapsed = System.currentTimeMillis()-start;
-			System.out.println("It takes "+eclapsed+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(latency.size()+mal_request.size())/eclapsed)+" req/sec.");
-			
-			
-			
 			Socket socket = new Socket("128.119.245.5", 60001);
 	    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 	    	out.println(node+"\n");
