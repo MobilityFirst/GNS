@@ -94,6 +94,19 @@ public class CapacityTestSequentialClient {
 			
 			
 			System.out.println("2nd run");
+			for (int index=0; index<NUM_CLIENT; index++){			
+				String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
+				
+				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
+				
+				if (index < BENIGN){
+					clients[index] = new SingleClient(client, accountGuid, false);
+				} else {
+					clients[index] = new SingleClient(client, accountGuid, true);
+				}
+				
+			}
+			
 			start = System.currentTimeMillis();
 			
 			for (int i=0; i<NUM_CLIENT; i++){
