@@ -25,7 +25,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import java.util.StringTokenizer;
 
 /**

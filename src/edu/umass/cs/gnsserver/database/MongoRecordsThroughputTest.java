@@ -20,9 +20,9 @@
 package edu.umass.cs.gnsserver.database;
 
 import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnscommon.utils.Format;

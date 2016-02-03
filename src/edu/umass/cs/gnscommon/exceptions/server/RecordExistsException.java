@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.exceptions;
+package edu.umass.cs.gnscommon.exceptions.server;
 
 /**
  * Exception means that field being created already exists.
@@ -25,7 +25,7 @@ package edu.umass.cs.gnsserver.exceptions;
  * 
  * @author westy
  */
-public class RecordExistsException extends GnsException {
+public class RecordExistsException extends GnsServerException {
   String collection;
   String guid;
 

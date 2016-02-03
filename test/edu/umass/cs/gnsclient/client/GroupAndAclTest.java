@@ -27,7 +27,7 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -94,7 +94,7 @@ public class GroupAndAclTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
 
@@ -117,7 +117,7 @@ public class GroupAndAclTest {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
       GuidEntry groupAccessUserEntry;
       try {
@@ -152,7 +152,7 @@ public class GroupAndAclTest {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's address by westy is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
 
       try {

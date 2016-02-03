@@ -25,7 +25,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Clien
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;

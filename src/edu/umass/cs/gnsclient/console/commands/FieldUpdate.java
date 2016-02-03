@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnsclient.console.GnsUtils;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import org.json.JSONException;
 
@@ -100,7 +100,7 @@ public class FieldUpdate extends ConsoleCommand {
       console.printNewline();
     } catch (IOException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     }
   }

@@ -14,25 +14,22 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsclient.exceptions;
+package edu.umass.cs.gnscommon.exceptions.server;
 
 /**
- * This class defines a GnrsException
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
- * @version 1.0
+ * This class defines a GnsException
  */
-public class GnsException extends Exception
+public class GnsRuntimeException extends RuntimeException
 {
   private static final long serialVersionUID = 6627620787610127842L;
 
   /**
    * Creates a new <code>GnrsException</code> object
    */
-  public GnsException()
+  public GnsRuntimeException()
   {
     super();
   }
@@ -43,7 +40,7 @@ public class GnsException extends Exception
    * @param message
    * @param cause
    */
-  public GnsException(String message, Throwable cause)
+  public GnsRuntimeException(String message, Throwable cause)
   {
     super(message, cause);
   }
@@ -53,7 +50,7 @@ public class GnsException extends Exception
    * 
    * @param message
    */
-  public GnsException(String message)
+  public GnsRuntimeException(String message)
   {
     super(message);
   }
@@ -63,10 +60,9 @@ public class GnsException extends Exception
    * 
    * @param throwable
    */
-  public GnsException(Throwable throwable)
+  public GnsRuntimeException(Throwable throwable)
   {
     super(throwable);
-    // TODO Auto-generated constructor stub
   }
 
 }

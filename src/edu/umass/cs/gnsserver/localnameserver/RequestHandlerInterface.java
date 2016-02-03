@@ -144,6 +144,13 @@ public interface RequestHandlerInterface {
   public void updateCacheEntry(String name, Set<InetSocketAddress> actives);
   
   /**
+   * Updates the active replicas associated with the name in the cache.
+   * 
+   * @param name
+   */
+  public void invalidateCacheEntry(String name);
+  
+  /**
    * Retrieves the active replicas associated with the name if they have not timed out.
    * 
    * @param name

@@ -17,55 +17,56 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.exceptions;
+package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsDupplicateNameException
+ * This class defines a EncryptionException
  * 
- * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsDuplicateNameException extends GnsException
+public class EncryptionException extends GnsClientException
 {
+  private static final long serialVersionUID = 1721392537222462554L;
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>EncryptionException</code> object
    */
-  public GnsDuplicateNameException()
+  public EncryptionException()
   {
     super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>EncryptionException</code> object
    * 
-   * @param message
-   * @param cause
+   * @param detailMessage
+   * @param throwable
    */
-  public GnsDuplicateNameException(String message, Throwable cause)
+  public EncryptionException(String detailMessage, Throwable throwable)
   {
-    super(message, cause);
+    super(detailMessage, throwable);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>EncryptionException</code> object
    * 
-   * @param message
+   * @param detailMessage
    */
-  public GnsDuplicateNameException(String message)
+  public EncryptionException(String detailMessage)
   {
-    super(message);
+    super(detailMessage);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>EncryptionException</code> object
    * 
    * @param throwable
    */
-  public GnsDuplicateNameException(Throwable throwable)
+  public EncryptionException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

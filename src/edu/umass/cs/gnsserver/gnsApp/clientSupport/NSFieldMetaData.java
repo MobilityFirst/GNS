@@ -23,9 +23,9 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import java.net.InetSocketAddress;
@@ -48,9 +48,9 @@ public class NSFieldMetaData {
    * @param key
    * @param activeReplica
    * @return a set of objects
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
           GnsApplicationInterface<String> activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
@@ -65,9 +65,9 @@ public class NSFieldMetaData {
    * @param key
    * @param activeReplica
    * @return a set of objects
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
           GnsApplicationInterface<String> activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {

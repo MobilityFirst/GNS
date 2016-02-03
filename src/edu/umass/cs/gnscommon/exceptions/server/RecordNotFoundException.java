@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.exceptions;
+package edu.umass.cs.gnscommon.exceptions.server;
 /*
  * Copyright (C) 2013
  * University of Massachusetts
@@ -30,7 +30,7 @@ package edu.umass.cs.gnsserver.exceptions;
  * @author westy
  */
 
-public class RecordNotFoundException extends GnsException{
+public class RecordNotFoundException extends GnsServerException{
   String name;
 
   /**

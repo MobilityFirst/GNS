@@ -27,7 +27,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -57,7 +57,7 @@ public class StandaloneTcpExample {
   private static GuidEntry accountGuid;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
     
     InetSocketAddress address = ServerSelectDialog.selectServer();

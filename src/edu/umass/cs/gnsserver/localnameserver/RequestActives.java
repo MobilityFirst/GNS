@@ -81,15 +81,18 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
       try {
+        Set<InetSocketAddress> actives = handler.getActivesIfValid(lnsRequestInfo.getServiceName());
+        // HACK - the cache entry might not be correct for all operations so destroy it
+        // This code is going away soon anyway... don't sweat it.
+        handler.invalidateCacheEntry(lnsRequestInfo.getServiceName());
+        
         // got our actives and they're in the cache so now send out the command
         if (LNSPacketDemultiplexer.disableCommandRetransmitter) {
-          handler.sendToClosestReplica(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+          handler.sendToClosestReplica(actives,
                   lnsRequestInfo.getCommandPacket().toJSONObject());
         } else {
           handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
-                  lnsRequestInfo.getCommandPacket().toJSONObject(),
-                  handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-                  handler));
+                  lnsRequestInfo.getCommandPacket().toJSONObject(), actives, handler));
         }
       } catch (JSONException | IOException e) {
         log.severe(this.refreshKey() + " unable to send command packet " + e);
@@ -107,7 +110,10 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
       return true;
     } else if (requestCount >= reconfigurators.size()) {
       if (handler.isDebugMode()) {
-        log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " No answer, using defaults");
+        log.info("~~~~~~~~~~~~~~~~~~~~~~~~" 
+                + this.refreshKey() + " No answer, using defaults for " 
+                + lnsRequestInfo.getServiceName() + " :" 
+                + handler.getReplicatedActives(lnsRequestInfo.getServiceName()));
       }
       // no answer so we stuff in the default choices and return
       handler.updateCacheEntry(lnsRequestInfo.getServiceName(),

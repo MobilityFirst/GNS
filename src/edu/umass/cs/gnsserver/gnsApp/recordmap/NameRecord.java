@@ -23,10 +23,10 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Updat
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ResultValue;
@@ -253,7 +253,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * GETTER methods for each field in name record
    * *****************************************
    * @return
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    */
   public String getName() throws FieldNotFoundException {
     if (hashMap.containsKey(NAME)) {
@@ -326,7 +326,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param key
    * @return true if the key exists in the values map
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    */
   public boolean containsKey(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
@@ -345,7 +345,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param key
    * @return the list of values as a {@link ResultValue}
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    */
   public ResultValue getKeyAsArray(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
@@ -367,8 +367,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param operation
    * @param userJSON
    * @return True if the update does anything, false otherwise.
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public boolean updateNameRecord(String recordKey, ResultValue newValues, ResultValue oldValues, int argument,
           ValuesMap userJSON, UpdateOperation operation) throws FieldNotFoundException, FailedDBOperationException {
@@ -464,8 +464,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param recordMap
    * @param name
    * @return a NameRecord
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static NameRecord getNameRecord(BasicRecordMap recordMap, String name)
           throws RecordNotFoundException, FailedDBOperationException {
@@ -479,8 +479,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param name
    * @param systemFields - a list of Field structures representing "system" fields to retrieve
    * @return a NameRecord
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name,
           ArrayList<ColumnField> systemFields)
@@ -497,8 +497,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param systemFields - a list of Field structures representing "system" fields to retrieve
    * @param userFields - a list of Field structures representing user fields to retrieve
    * @return a NameRecord
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name,
           ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
@@ -516,8 +516,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param returnType - the format which the returned data should be in
    * @param userFieldNames - strings which name the user fields to return
    * @return a NameRecord
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name,
           ArrayList<ColumnField> systemFields,
@@ -541,8 +541,8 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param recordMap
    * @param record
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordExistsException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
   public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException, RecordExistsException {
     recordMap.addNameRecord(record);
@@ -553,7 +553,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param recordMap
    * @param record
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException {
     recordMap.updateNameRecord(record);
@@ -564,7 +564,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param recordMap
    * @param name
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void removeNameRecord(BasicRecordMap recordMap, String name) throws FailedDBOperationException {
     recordMap.removeNameRecord(name);
@@ -575,7 +575,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param recordMap
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static AbstractRecordCursor getAllRowsIterator(BasicRecordMap recordMap) throws FailedDBOperationException {
     return recordMap.getAllRowsIterator();
@@ -588,7 +588,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param key
    * @param value
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) throws FailedDBOperationException {
     return recordMap.selectRecords(NameRecord.VALUES_MAP, key, value);
@@ -602,7 +602,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param key
    * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) throws FailedDBOperationException {
     return recordMap.selectRecordsWithin(NameRecord.VALUES_MAP, key, value);
@@ -617,7 +617,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param value - a string that looks like this: [LONG, LAT]
    * @param maxDistance - the distance in meters
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) throws FailedDBOperationException {
     return recordMap.selectRecordsNear(NameRecord.VALUES_MAP, key, value, maxDistance);
@@ -629,7 +629,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param recordMap
    * @param query
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) throws FailedDBOperationException {
     return recordMap.selectRecordsQuery(NameRecord.VALUES_MAP, query);

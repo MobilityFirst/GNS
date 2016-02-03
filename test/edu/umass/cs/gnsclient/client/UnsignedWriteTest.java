@@ -26,7 +26,7 @@ import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -101,7 +101,7 @@ public class UnsignedWriteTest {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -124,7 +124,7 @@ public class UnsignedWriteTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

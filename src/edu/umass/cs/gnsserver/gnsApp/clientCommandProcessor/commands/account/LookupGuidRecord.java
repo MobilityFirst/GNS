@@ -56,9 +56,6 @@ public class LookupGuidRecord extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
       String guid = json.getString(GUID);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {

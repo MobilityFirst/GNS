@@ -41,7 +41,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.msocket.common.GnsConstants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.location.GeodeticCalculator;
@@ -95,7 +95,7 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
    (proxyGroupName, GnsConstants.ACTIVE_LOCATION_FIELD, DefaultGNSClient.getMyGuidEntry() ); }
     catch (Exception e)
     {
-      throw new GnsException("Could not find active location services (" + e + ")");
+      throw new GnsClientException("Could not find active location services (" + e + ")");
     }
 
     // Try every location proxy in the list until one works
@@ -136,7 +136,7 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
       }
     }
 
-    throw new GnsException("Could not find any location service to provide a geolocated proxy");
+    throw new GnsClientException("Could not find any location service to provide a geolocated proxy");
   }
 
   @Override

@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import java.io.IOException;
 import org.json.JSONArray;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -67,10 +67,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldCreateList(GuidEntry target, String field, JSONArray value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldCreateList(target.getGuid(), field, value, target);
   }
 
@@ -84,10 +84,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldCreateOneElementList(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -102,10 +102,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldCreateOneElementList(GuidEntry target, String field, String value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldCreateOneElementList(target.getGuid(), field, value, target);
   }
 
@@ -120,10 +120,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendOrCreate(String targetGuid, String field, String value, GuidEntry writer)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -141,10 +141,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceOrCreate(String targetGuid, String field, String value, GuidEntry writer)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.REPLACE_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -159,10 +159,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceOrCreateList(GuidEntry targetGuid, String field, JSONArray value)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     JSONObject command = createAndSignCommand(targetGuid.getPrivateKey(), GnsProtocol.REPLACE_OR_CREATE_LIST, 
             GnsProtocol.GUID, targetGuid.getGuid(),
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, targetGuid.getGuid());
@@ -178,10 +178,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceOrCreateList(GuidEntry target, String field, String value)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     fieldReplaceOrCreate(target.getGuid(), field, value, target);
   }
 
@@ -195,10 +195,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value the new value
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplace(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.REPLACE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -213,10 +213,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplace(GuidEntry target, String field, String value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldReplace(target.getGuid(), field, value, target);
   }
 
@@ -227,10 +227,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplace(GuidEntry target, String field, JSONArray value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldReplaceList(target.getGuid(), field, value, target);
   }
 
@@ -244,10 +244,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppend(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND_WITH_DUPLICATION, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -262,10 +262,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppend(GuidEntry target, String field, String value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldAppend(target.getGuid(), field, value, target);
   }
 
@@ -279,10 +279,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -297,10 +297,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendWithSetSemantics(GuidEntry target, String field, JSONArray value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldAppendWithSetSemantics(target.getGuid(), field, value, target);
   }
 
@@ -314,10 +314,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.APPEND, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -332,10 +332,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendWithSetSemantics(GuidEntry target, String field, String value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldAppendWithSetSemantics(target.getGuid(), field, value, target);
   }
 
@@ -350,10 +350,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceFirstElement(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     JSONObject command;
     if (writer == null) {
       command = createCommand(GnsProtocol.REPLACE, GnsProtocol.GUID, targetGuid,
@@ -374,10 +374,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceFirstElement(GuidEntry target, String field, String value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldReplaceFirstElement(target.getGuid(), field, value, target);
   }
 
@@ -392,10 +392,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param oldValue
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldSubstitute(String targetGuid, String field, String newValue,
-          String oldValue, GuidEntry writer) throws IOException, GnsException {
+          String oldValue, GuidEntry writer) throws IOException, GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.SUBSTITUTE, GnsProtocol.GUID,
             targetGuid, GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue,
             GnsProtocol.OLD_VALUE, oldValue, GnsProtocol.WRITER, writer.getGuid());
@@ -412,10 +412,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param newValue
    * @param oldValue
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldSubstitute(GuidEntry target, String field, String newValue,
-          String oldValue) throws IOException, GnsException {
+          String oldValue) throws IOException, GnsClientException {
     fieldSubstitute(target.getGuid(), field, newValue, oldValue, target);
   }
 
@@ -431,10 +431,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param oldValue list of old values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldSubstitute(String targetGuid, String field,
-          JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, GnsException {
+          JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.SUBSTITUTE_LIST, GnsProtocol.GUID,
             targetGuid, GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue.toString(),
             GnsProtocol.OLD_VALUE, oldValue.toString(), GnsProtocol.WRITER, writer.getGuid());
@@ -451,10 +451,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param newValue
    * @param oldValue
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldSubstitute(GuidEntry target, String field,
-          JSONArray newValue, JSONArray oldValue) throws IOException, GnsException {
+          JSONArray newValue, JSONArray oldValue) throws IOException, GnsClientException {
     fieldSubstitute(target.getGuid(), field, newValue, oldValue, target);
   }
 
@@ -507,10 +507,10 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldRemove(GuidEntry guid, String field) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     fieldRemove(guid.getGuid(), field, guid);
   }
   

@@ -17,49 +17,51 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.installer;
-
-import edu.umass.cs.gnscommon.exceptions.server.GnsServerException;
+package edu.umass.cs.gnscommon.exceptions.server;
 
 /**
- * This class defines a HostConfigParseException
- *
- * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
+ * This class defines a GnsServerException
  */
-public class HostConfigParseException extends GnsServerException {
+public class GnsServerException extends Exception
+{
+  private static final long serialVersionUID = 6627620787610127842L;
 
   /**
-   * Creates a new <code>HostConfigParseException</code> object
+   * Creates a new <code>GnsException</code> object
    */
-  public HostConfigParseException() {
+  public GnsServerException()
+  {
     super();
   }
 
   /**
-   * Creates a new <code>HostConfigParseException</code> object
-   *
+   * Creates a new <code>GnsException</code> object
+   * 
    * @param message
    * @param cause
    */
-  public HostConfigParseException(String message, Throwable cause) {
+  public GnsServerException(String message, Throwable cause)
+  {
     super(message, cause);
   }
 
   /**
-   * Creates a new <code>HostConfigParseException</code> object
-   *
+   * Creates a new <code>GnsException</code> object
+   * 
    * @param message
    */
-  public HostConfigParseException(String message) {
+  public GnsServerException(String message)
+  {
     super(message);
   }
 
   /**
-   * Creates a new <code>HostConfigParseException</code> object
-   *
+   * Creates a new <code>GnsException</code> object
+   * 
    * @param throwable
    */
-  public HostConfigParseException(Throwable throwable) {
+  public GnsServerException(Throwable throwable)
+  {
     super(throwable);
   }
 

@@ -17,58 +17,57 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.exceptions;
+package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a EncryptionException
+ * This class defines a GnsInvalidFieldException
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class EncryptionException extends GnsException
+public class GnsInvalidFieldException extends GnsClientException
 {
-  private static final long serialVersionUID = 1721392537222462554L;
+  private static final long serialVersionUID = 2676899572105162853L;
 
   /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    */
-  public EncryptionException()
+  public GnsInvalidFieldException()
   {
-    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>EncryptionException</code> object
-   * 
-   * @param detailMessage
-   * @param throwable
-   */
-  public EncryptionException(String detailMessage, Throwable throwable)
-  {
-    super(detailMessage, throwable);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    * 
    * @param detailMessage
    */
-  public EncryptionException(String detailMessage)
+  public GnsInvalidFieldException(String detailMessage)
   {
     super(detailMessage);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    * 
    * @param throwable
    */
-  public EncryptionException(Throwable throwable)
+  public GnsInvalidFieldException(Throwable throwable)
   {
     super(throwable);
+    // TODO Auto-generated constructor stub
+  }
+
+  /**
+   * Creates a new <code>GnsInvalidFieldException</code> object
+   * 
+   * @param detailMessage
+   * @param throwable
+   */
+  public GnsInvalidFieldException(String detailMessage, Throwable throwable)
+  {
+    super(detailMessage, throwable);
     // TODO Auto-generated constructor stub
   }
 

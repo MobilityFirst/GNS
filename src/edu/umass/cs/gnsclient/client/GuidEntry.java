@@ -34,7 +34,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsclient.exceptions.EncryptionException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 /**
  * This class defines a GuidEntry which contains the alias, guid, public and private key. 

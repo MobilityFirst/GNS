@@ -24,7 +24,7 @@ import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -101,7 +101,7 @@ public class AclTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -142,7 +142,7 @@ public class AclTest {
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
@@ -183,7 +183,7 @@ public class AclTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -203,7 +203,7 @@ public class AclTest {
       try {
         client.lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);

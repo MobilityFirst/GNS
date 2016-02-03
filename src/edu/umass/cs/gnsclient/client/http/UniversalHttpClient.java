@@ -50,15 +50,15 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
-import edu.umass.cs.gnsclient.exceptions.EncryptionException;
-import edu.umass.cs.gnsclient.exceptions.GnsACLException;
-import edu.umass.cs.gnsclient.exceptions.GnsDuplicateNameException;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidFieldException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGroupException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidUserException;
-import edu.umass.cs.gnsclient.exceptions.GnsVerificationException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsDuplicateNameException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidFieldException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 
 /**
  * This class defines a UniversalHttpClient to communicate with a GNS instance
@@ -207,10 +207,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return guid
    * @throws IOException
    * @throws UnsupportedEncodingException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws Exception
    */
-  public String lookupGuid(String alias) throws UnsupportedEncodingException, IOException, GnsException {
+  public String lookupGuid(String alias) throws UnsupportedEncodingException, IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_GUID, GnsProtocol.NAME, URIEncoderDecoder.quoteIllegal(alias, ""));
     String response = sendGetCommand(command);
 
@@ -224,9 +224,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return
    * @throws UnsupportedEncodingException
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public String lookupPrimaryGuid(String guid) throws UnsupportedEncodingException, IOException, GnsException {
+  public String lookupPrimaryGuid(String guid) throws UnsupportedEncodingException, IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_PRIMARY_GUID, GnsProtocol.GUID, guid);
     String response = sendGetCommand(command);
 
@@ -239,17 +239,17 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param guid
    * @return
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   @Override
-  public JSONObject lookupGuidRecord(String guid) throws IOException, GnsException {
+  public JSONObject lookupGuidRecord(String guid) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_GUID_RECORD, GnsProtocol.GUID, guid);
     String response = sendGetCommand(command);
     checkResponse(command, response);
     try {
       return new JSONObject(response);
     } catch (JSONException e) {
-      throw new GnsException("Failed to parse LOOKUP_GUID_RECORD response", e);
+      throw new GnsClientException("Failed to parse LOOKUP_GUID_RECORD response", e);
     }
   }
 
@@ -260,16 +260,16 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param gaccountGuid
    * @return
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public JSONObject lookupAccountRecord(String gaccountGuid) throws IOException, GnsException {
+  public JSONObject lookupAccountRecord(String gaccountGuid) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_ACCOUNT_RECORD, GnsProtocol.GUID, gaccountGuid);
     String response = sendGetCommand(command);
     checkResponse(command, response);
     try {
       return new JSONObject(response);
     } catch (JSONException e) {
-      throw new GnsException("Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
+      throw new GnsClientException("Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
     }
   }
 
@@ -279,10 +279,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param alias
    * @return the public key registered for the alias
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws IOException
    */
-  public PublicKey publicKeyLookupFromAlias(String alias) throws GnsInvalidGuidException, GnsException, IOException {
+  public PublicKey publicKeyLookupFromAlias(String alias) throws GnsInvalidGuidException, GnsClientException, IOException {
 
     String guid = lookupGuid(alias);
     return publicKeyLookupFromGuid(guid);
@@ -294,10 +294,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param guid
    * @return
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws IOException
    */
-  public PublicKey publicKeyLookupFromGuid(String guid) throws GnsInvalidGuidException, GnsException, IOException {
+  public PublicKey publicKeyLookupFromGuid(String guid) throws GnsInvalidGuidException, GnsClientException, IOException {
     JSONObject guidInfo = lookupGuidRecord(guid);
     try {
       String key = guidInfo.getString(GnsProtocol.GUID_RECORD_PUBLICKEY);
@@ -306,7 +306,7 @@ public class UniversalHttpClient implements GNSClientInterface {
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
       return keyFactory.generatePublic(publicKeySpec);
     } catch (JSONException e) {
-      throw new GnsException("Failed to parse LOOKUP_USER response", e);
+      throw new GnsClientException("Failed to parse LOOKUP_USER response", e);
     } catch (NoSuchAlgorithmException e) {
       throw new EncryptionException("Public key encryption failed", e);
     } catch (InvalidKeySpecException e) {
@@ -421,11 +421,11 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param reader the guid of the entity doing the lookup
    * @return the list of groups as a JSONArray
    * @throws IOException if a communication error occurs
-   * @throws GnsException if a protocol error occurs or the list cannot be
+   * @throws GnsClientException if a protocol error occurs or the list cannot be
    * parsed
    * @throws GnsInvalidGuidException if the group guid is invalid
    */
-  public JSONArray guidGetGroups(String groupGuid, GuidEntry reader) throws IOException, GnsException,
+  public JSONArray guidGetGroups(String groupGuid, GuidEntry reader) throws IOException, GnsClientException,
           GnsInvalidGuidException {
     String command = createAndSignQuery(reader, GnsProtocol.GET_GROUPS, GnsProtocol.GUID, groupGuid,
             GnsProtocol.READER, reader.getGuid());
@@ -434,7 +434,7 @@ public class UniversalHttpClient implements GNSClientInterface {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid member list", e);
+      throw new GnsClientException("Invalid member list", e);
     }
   }
 
@@ -447,10 +447,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param writer the guid doing the add
    * @throws IOException
    * @throws GnsInvalidGuidException if the group guid does not exist
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void groupAddGuid(String groupGuid, String guidToAdd, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException {
+          GnsInvalidGuidException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.ADD_TO_GROUP, GnsProtocol.GUID, groupGuid,
             GnsProtocol.MEMBER, guidToAdd, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -466,13 +466,13 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param writer the guid doing the add
    * @throws IOException
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
   public void groupAddGuids(String groupGuid, JSONArray members, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+          GnsInvalidGuidException, GnsClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(writer, GnsProtocol.ADD_TO_GROUP, GnsProtocol.GUID, groupGuid,
             GnsProtocol.MEMBERS, members.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -489,10 +489,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param writer the guid of the entity doing the remove
    * @throws IOException
    * @throws GnsInvalidGuidException if the group guid does not exist
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void groupRemoveGuid(String guid, String guidToRemove, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException {
+          GnsInvalidGuidException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_FROM_GROUP, GnsProtocol.GUID, guid,
             GnsProtocol.MEMBER, guidToRemove, GnsProtocol.WRITER, writer.getGuid());
 
@@ -509,13 +509,13 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param writer the guid of the entity doing the remove
    * @throws IOException
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
   public void groupRemoveGuids(String guid, JSONArray members, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+          GnsInvalidGuidException, GnsClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_FROM_GROUP, GnsProtocol.GUID, guid,
             GnsProtocol.MEMBERS, members.toString(), GnsProtocol.WRITER, writer.getGuid());
 
@@ -532,11 +532,11 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param reader the guid of the entity doing the lookup
    * @return the list of guids as a JSONArray
    * @throws IOException if a communication error occurs
-   * @throws GnsException if a protocol error occurs or the list cannot be
+   * @throws GnsClientException if a protocol error occurs or the list cannot be
    * parsed
    * @throws GnsInvalidGuidException if the group guid is invalid
    */
-  public JSONArray groupGetMembers(String groupGuid, GuidEntry reader) throws IOException, GnsException,
+  public JSONArray groupGetMembers(String groupGuid, GuidEntry reader) throws IOException, GnsClientException,
           GnsInvalidGuidException {
     String command = createAndSignQuery(reader, GnsProtocol.GET_GROUP_MEMBERS, GnsProtocol.GUID, groupGuid,
             GnsProtocol.READER, reader.getGuid());
@@ -545,7 +545,7 @@ public class UniversalHttpClient implements GNSClientInterface {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid member list", e);
+      throw new GnsClientException("Invalid member list", e);
     }
   }
 
@@ -625,7 +625,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param field field name
    * @param accesserGuid guid to add to the ACL
    * @throws Exception
-   * @throws GnsException if the query is not accepted by the server.
+   * @throws GnsClientException if the query is not accepted by the server.
    */
   public void aclAdd(GnsProtocol.AccessType accessType, GuidEntry targetGuid, String field, String accesserGuid)
           throws Exception {
@@ -645,7 +645,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param field
    * @param accesserGuid
    * @throws Exception
-   * @throws GnsException if the query is not accepted by the server.
+   * @throws GnsClientException if the query is not accepted by the server.
    */
   public void aclRemove(GnsProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
@@ -666,7 +666,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param accesserGuid
    * @return list of GUIDs for that ACL
    * @throws Exception
-   * @throws GnsException if the query is not accepted by the server.
+   * @throws GnsClientException if the query is not accepted by the server.
    */
   public JSONArray aclGet(GnsProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
@@ -683,10 +683,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldCreate(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.CREATE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -704,10 +704,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldRemove(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_FIELD, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -724,10 +724,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendOrCreate(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_OR_CREATE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -743,10 +743,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceOrCreate(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE_OR_CREATE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -761,10 +761,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param value list of values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppend(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_LIST_WITH_DUPLICATION, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -780,10 +780,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param value list of values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplace(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -799,10 +799,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param value list of values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldClear(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -817,9 +817,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param field field name
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void fieldClear(String targetGuid, String field, GuidEntry writer) throws IOException, GnsException {
+  public void fieldClear(String targetGuid, String field, GuidEntry writer) throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.CLEAR, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -863,10 +863,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param index
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldSetElement(String targetGuid, String field, String newValue, int index, GuidEntry writer)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SET, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, newValue, GnsProtocol.N, Integer.toString(index), GnsProtocol.WRITER,
             writer.getGuid());
@@ -885,11 +885,11 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldSetNull(String targetGuid, String field, GuidEntry writer) throws IOException,
           InvalidKeyException, NoSuchAlgorithmException, SignatureException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SET_FIELD_NULL,
             GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.WRITER, writer.getGuid());
@@ -1075,7 +1075,7 @@ public class UniversalHttpClient implements GNSClientInterface {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid alias list", e);
+      throw new GnsClientException("Invalid alias list", e);
     }
   }
 
@@ -1135,11 +1135,11 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return guid the GUID generated by the GNS
    * @throws IOException
    * @throws UnsupportedEncodingException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException if the user already exists
    */
   private String accountGuidCreate(String alias, PublicKey publicKey, String password) throws UnsupportedEncodingException, IOException,
-          GnsException, GnsInvalidGuidException, NoSuchAlgorithmException {
+          GnsClientException, GnsInvalidGuidException, NoSuchAlgorithmException {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command;
@@ -1187,17 +1187,17 @@ public class UniversalHttpClient implements GNSClientInterface {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid ACL list", e);
+      throw new GnsClientException("Invalid ACL list", e);
     }
   }
 
-  protected String checkResponse(String command, String response) throws GnsException {
+  protected String checkResponse(String command, String response) throws GnsClientException {
     // System.out.println("response:" + response);
     if (response.startsWith(GnsProtocol.BAD_RESPONSE)) {
       String results[] = response.split(" ");
       // System.out.println("results length:" + results.length);
       if (results.length < 2) {
-        throw new GnsException("Invalid bad response indicator: " + response + " Command: " + command);
+        throw new GnsClientException("Invalid bad response indicator: " + response + " Command: " + command);
       } else if (results.length >= 2) {
         // System.out.println("results[0]:" + results[0]);
         // System.out.println("results[1]:" + results[1]);
@@ -1238,7 +1238,7 @@ public class UniversalHttpClient implements GNSClientInterface {
         if (error.startsWith(GnsProtocol.VERIFICATION_ERROR)) {
           throw new GnsVerificationException(error + rest);
         }
-        throw new GnsException("General command failure: " + error + rest);
+        throw new GnsClientException("General command failure: " + error + rest);
       }
     }
     if (response.startsWith(GnsProtocol.NULL_RESPONSE)) {
@@ -1280,9 +1280,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param action
    * @param keysAndValues
    * @return the query string
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  protected String createAndSignQuery(GuidEntry guid, String action, String... keysAndValues) throws GnsException {
+  protected String createAndSignQuery(GuidEntry guid, String action, String... keysAndValues) throws GnsClientException {
     String key;
     String value;
     StringBuilder encodedString = new StringBuilder(action + QUERYPREFIX);
@@ -1303,7 +1303,7 @@ public class UniversalHttpClient implements GNSClientInterface {
       // return the encoded query with the signature appended
       return encodedString.toString() + KEYSEP + GnsProtocol.SIGNATURE + VALSEP + signature;
     } catch (Exception e) {
-      throw new GnsException("Error encoding message", e);
+      throw new GnsClientException("Error encoding message", e);
     }
   }
 

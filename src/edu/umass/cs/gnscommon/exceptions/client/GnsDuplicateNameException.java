@@ -17,55 +17,55 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.exceptions;
+package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsInvalidUserException
+ * This class defines a GnsDupplicateNameException
  * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
+ * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsInvalidUserException extends GnsException
+public class GnsDuplicateNameException extends GnsClientException
 {
-  private static final long serialVersionUID = -9116661769609344698L;
 
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    */
-  public GnsInvalidUserException()
+  public GnsDuplicateNameException()
   {
+    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsInvalidUserException(String message, Throwable cause)
+  public GnsDuplicateNameException(String message, Throwable cause)
   {
     super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
    * @param message
    */
-  public GnsInvalidUserException(String message)
+  public GnsDuplicateNameException(String message)
   {
     super(message);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
    * @param throwable
    */
-  public GnsInvalidUserException(Throwable throwable)
+  public GnsDuplicateNameException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

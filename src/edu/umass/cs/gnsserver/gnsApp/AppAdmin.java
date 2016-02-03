@@ -24,7 +24,7 @@ import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsApp.packet.admin.AdminRequestPacket;

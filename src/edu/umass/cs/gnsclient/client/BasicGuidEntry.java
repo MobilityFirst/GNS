@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsclient.exceptions.EncryptionException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -67,7 +67,7 @@ public class BasicGuidEntry {
    * 
    * @param json 
    * @throws org.json.JSONException 
-   * @throws edu.umass.cs.gnsclient.exceptions.EncryptionException 
+   * @throws edu.umass.cs.gnscommon.exceptions.client.EncryptionException 
    */
   public BasicGuidEntry (JSONObject json) throws JSONException, EncryptionException {
     this.entityName = json.getString(GnsProtocol.GUID_RECORD_NAME);

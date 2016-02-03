@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
@@ -86,7 +86,7 @@ public class SingleRemoveGuidTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);

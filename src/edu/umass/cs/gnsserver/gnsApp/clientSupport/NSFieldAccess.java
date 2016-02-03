@@ -19,12 +19,12 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
@@ -50,7 +50,7 @@ public class NSFieldAccess {
    * @param field
    * @param activeReplica
    * @return ResultValue
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ResultValue lookupListFieldOnThisServer(String guid, String field,
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -86,7 +86,7 @@ public class NSFieldAccess {
    * @param field
    * @param activeReplica
    * @return ResultValue
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ValuesMap lookupFieldOnThisServer(String guid, String field,
           GnsApplicationInterface<String> activeReplica)
@@ -94,7 +94,7 @@ public class NSFieldAccess {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
+        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       }
       return nameRecord.getValuesMap();
     } catch (FieldNotFoundException e) {
@@ -117,7 +117,7 @@ public class NSFieldAccess {
    * @param key
    * @param activeReplica
    * @return a string representing the first value in field
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static String lookupSingletonFieldOnThisServer(String recordName, String key,
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -141,7 +141,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @param lnsAddress
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ResultValue lookupListFieldAnywhere(String guid, String field, boolean allowQueryToOtherNSs,
           GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
@@ -183,7 +183,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @param lnsAddress
    * @return ValuesMap containing the value of the field or null if field cannot be found
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ValuesMap lookupFieldAnywhere(String guid, String field, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {

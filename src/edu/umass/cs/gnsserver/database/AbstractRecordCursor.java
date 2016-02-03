@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import org.json.JSONObject;
 
 import java.util.HashMap;

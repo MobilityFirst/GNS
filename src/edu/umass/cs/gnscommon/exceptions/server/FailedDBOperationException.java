@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.exceptions;
+package edu.umass.cs.gnscommon.exceptions.server;
 
 /**
  * Exception means that the desired database operation could not be completed.
@@ -29,7 +29,7 @@ package edu.umass.cs.gnsserver.exceptions;
  * an external mechanism would be needed to restart the database.
  * 
  */
-public class FailedDBOperationException extends GnsException {
+public class FailedDBOperationException extends GnsServerException {
   String collection;
   String name;
 

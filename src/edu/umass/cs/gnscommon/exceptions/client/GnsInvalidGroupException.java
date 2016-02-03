@@ -17,55 +17,55 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.exceptions;
+package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnrsACLException
+ * This class defines a GnsInvalidGroupException
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsACLException extends GnsException
+public class GnsInvalidGroupException extends GnsClientException
 {
-  private static final long serialVersionUID = 7789779657368481702L;
+  private static final long serialVersionUID = 1190440453314093353L;
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    */
-  public GnsACLException()
+  public GnsInvalidGroupException()
   {
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsACLException(String message, Throwable cause)
+  public GnsInvalidGroupException(String message, Throwable cause)
   {
     super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    * 
    * @param message
    */
-  public GnsACLException(String message)
+  public GnsInvalidGroupException(String message)
   {
     super(message);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    * 
    * @param throwable
    */
-  public GnsACLException(Throwable throwable)
+  public GnsInvalidGroupException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

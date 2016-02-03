@@ -185,7 +185,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the protocolExecutor.
-   * 
+   *
    * @return the protocolExecutor
    */
   @Override
@@ -195,7 +195,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the node config.
-   * 
+   *
    * @return the node config
    */
   @Override
@@ -205,7 +205,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the node address.
-   * 
+   *
    * @return the node address
    */
   @Override
@@ -215,6 +215,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the demultiplexer.
+   *
    * @return the demultiplexer
    */
   @Override
@@ -224,7 +225,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Are we in debug mode?
-   * 
+   *
    * @return true if we are in debug mode
    */
   @Override
@@ -234,7 +235,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Adds the request info.
-   * 
+   *
    * @param id
    * @param requestInfo
    */
@@ -245,7 +246,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Removes the request info.
-   * 
+   *
    * @param id
    * @return the request info removed
    */
@@ -256,7 +257,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the request info.
-   * 
+   *
    * @param id
    * @return the request info
    */
@@ -267,7 +268,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the ping manager.
-   * 
+   *
    * @return the ping manager
    */
   @Override
@@ -277,7 +278,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the active replicas.
-   * 
+   *
    * @param name
    * @return the active replicas
    */
@@ -286,6 +287,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     // FIXME: this needs work
     if (!disableSSL) {
       Set<InetSocketAddress> result = new HashSet<>();
+      // FIXME: I don't think this returns the same set as the server uses so it's a good
+      // thing this code is going away soon.
       for (InetSocketAddress socketAddress : crNodeConfig.getReplicatedActives(name)) {
         // If we're doing SSL we need to get the correct SSL port on the server.
         if (!disableSSL) {
@@ -345,7 +348,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Updates the value in the cache.
-   * 
+   *
    * @param name
    * @param value
    */
@@ -362,7 +365,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns the value if it has not timed out.
-   * 
+   *
    * @param name
    * @return the value
    */
@@ -378,7 +381,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Updates the set of active replicas.
-   * 
+   *
    * @param name
    * @param actives
    */
@@ -393,9 +396,14 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     }
   }
 
+  @Override
+  public void invalidateCacheEntry(String name) {
+    cache.invalidate(name);
+  }
+
   /**
    * Returns the set of active replicas if they have not timed out.
-   * 
+   *
    * @param name
    * @return a set of active replicas
    */
@@ -419,7 +427,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Returns true if the name is in the cache.
-   * 
+   *
    * @param name
    * @return true if the name is in the cache
    */
@@ -431,7 +439,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   /**
    * Invokes the protocolExecutor to handle an event.
    * Returns true if the event was handled.
-   * 
+   *
    * @param json
    * @return true if the event was handled
    * @throws JSONException
@@ -446,7 +454,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Sends a JSON packet to the closets active replica.
-   * 
+   *
    * @param servers
    * @param packet
    * @throws IOException
@@ -466,7 +474,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Sends a JSON packet to a client.
-   * 
+   *
    * @param isa
    * @param msg
    * @throws IOException

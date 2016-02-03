@@ -44,15 +44,15 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
-import edu.umass.cs.gnsclient.exceptions.EncryptionException;
-import edu.umass.cs.gnsclient.exceptions.GnsACLException;
-import edu.umass.cs.gnsclient.exceptions.GnsDuplicateNameException;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidFieldException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGroupException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidUserException;
-import edu.umass.cs.gnsclient.exceptions.GnsVerificationException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsDuplicateNameException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidFieldException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 
 /**
  * This class defines a AbstractGnrsClient to communicate with a GNS instance
@@ -194,10 +194,10 @@ public abstract class AbstractHttpClient {
    * @param alias
    * @return the public key registered for the alias
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws IOException
    */
-  public PublicKey lookupPublicKeyFromAlias(String alias) throws GnsInvalidGuidException, GnsException, IOException {
+  public PublicKey lookupPublicKeyFromAlias(String alias) throws GnsInvalidGuidException, GnsClientException, IOException {
 
     String guid = lookupGuid(alias);
     return lookupPublicKey(guid);
@@ -209,10 +209,10 @@ public abstract class AbstractHttpClient {
    * @param guid
    * @return
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws IOException
    */
-  public PublicKey lookupPublicKey(String guid) throws GnsInvalidGuidException, GnsException, IOException {
+  public PublicKey lookupPublicKey(String guid) throws GnsInvalidGuidException, GnsClientException, IOException {
     JSONObject guidInfo = lookupGuidRecord(guid);
     try {
       String key = guidInfo.getString(GnsProtocol.GUID_RECORD_PUBLICKEY);
@@ -221,7 +221,7 @@ public abstract class AbstractHttpClient {
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
       return keyFactory.generatePublic(publicKeySpec);
     } catch (JSONException e) {
-      throw new GnsException("Failed to parse LOOKUP_USER response", e);
+      throw new GnsClientException("Failed to parse LOOKUP_USER response", e);
     } catch (NoSuchAlgorithmException e) {
       throw new EncryptionException("Public key encryption failed", e);
     } catch (InvalidKeySpecException e) {
@@ -237,9 +237,9 @@ public abstract class AbstractHttpClient {
    * @return guid
    * @throws IOException
    * @throws UnsupportedEncodingException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public String lookupGuid(String alias) throws UnsupportedEncodingException, IOException, GnsException {
+  public String lookupGuid(String alias) throws UnsupportedEncodingException, IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_GUID, GnsProtocol.NAME, URIEncoderDecoder.quoteIllegal(alias, ""));
     String response = sendGetCommand(command);
 
@@ -253,9 +253,9 @@ public abstract class AbstractHttpClient {
    * @return
    * @throws UnsupportedEncodingException
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public String lookupPrimaryGuid(String guid) throws UnsupportedEncodingException, IOException, GnsException {
+  public String lookupPrimaryGuid(String guid) throws UnsupportedEncodingException, IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_PRIMARY_GUID, GnsProtocol.GUID, guid);
     String response = sendGetCommand(command);
 
@@ -268,16 +268,16 @@ public abstract class AbstractHttpClient {
    * @param guid
    * @return
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public JSONObject lookupGuidRecord(String guid) throws IOException, GnsException {
+  public JSONObject lookupGuidRecord(String guid) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_GUID_RECORD, GnsProtocol.GUID, guid);
     String response = sendGetCommand(command);
     checkResponse(command, response);
     try {
       return new JSONObject(response);
     } catch (JSONException e) {
-      throw new GnsException("Failed to parse LOOKUP_GUID_RECORD response", e);
+      throw new GnsClientException("Failed to parse LOOKUP_GUID_RECORD response", e);
     }
   }
 
@@ -287,16 +287,16 @@ public abstract class AbstractHttpClient {
    * @param guid
    * @return
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public JSONObject lookupAccountRecord(String guid) throws IOException, GnsException {
+  public JSONObject lookupAccountRecord(String guid) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_ACCOUNT_RECORD, GnsProtocol.GUID, guid);
     String response = sendGetCommand(command);
     checkResponse(command, response);
     try {
       return new JSONObject(response);
     } catch (JSONException e) {
-      throw new GnsException("Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
+      throw new GnsClientException("Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
     }
   }
 
@@ -331,11 +331,11 @@ public abstract class AbstractHttpClient {
    * @return guid the GUID generated by the GNS
    * @throws IOException
    * @throws UnsupportedEncodingException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException if the user already exists
    */
   public String registerNewAccountGuid(String alias, PublicKey publicKey) throws UnsupportedEncodingException,
-          IOException, GnsException, GnsInvalidGuidException {
+          IOException, GnsClientException, GnsInvalidGuidException {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command = createQuery(GnsProtocol.REGISTER_ACCOUNT, GnsProtocol.NAME,
@@ -449,13 +449,13 @@ public abstract class AbstractHttpClient {
    * @param writer the guid doing the add
    * @throws IOException
    * @throws GnsInvalidGuidException if the group guid does not exist
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws java.security.InvalidKeyException
    * @throws java.security.NoSuchAlgorithmException
    * @throws java.security.SignatureException
    */
   public void addToGroup(String groupGuid, String guidToAdd, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+          GnsInvalidGuidException, GnsClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(writer, GnsProtocol.ADD_TO_GROUP, GnsProtocol.GUID, groupGuid,
             GnsProtocol.MEMBER, guidToAdd, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -471,13 +471,13 @@ public abstract class AbstractHttpClient {
    * @param writer the guid doing the add
    * @throws IOException
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
   public void addToGroup(String groupGuid, JSONArray members, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+          GnsInvalidGuidException, GnsClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(writer, GnsProtocol.ADD_TO_GROUP, GnsProtocol.GUID, groupGuid,
             GnsProtocol.MEMBERS, members.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -494,13 +494,13 @@ public abstract class AbstractHttpClient {
    * @param writer the guid of the entity doing the remove
    * @throws IOException
    * @throws GnsInvalidGuidException if the group guid does not exist
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws java.security.InvalidKeyException
    * @throws java.security.NoSuchAlgorithmException
    * @throws java.security.SignatureException
    */
   public void removeFromGroup(String guid, String guidToRemove, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+          GnsInvalidGuidException, GnsClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_FROM_GROUP, GnsProtocol.GUID, guid,
             GnsProtocol.MEMBER, guidToRemove, GnsProtocol.WRITER, writer.getGuid());
 
@@ -517,13 +517,13 @@ public abstract class AbstractHttpClient {
    * @param writer the guid of the entity doing the remove
    * @throws IOException
    * @throws GnsInvalidGuidException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
   public void removeFromGroup(String guid, JSONArray members, GuidEntry writer) throws IOException,
-          GnsInvalidGuidException, GnsException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
+          GnsInvalidGuidException, GnsClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_FROM_GROUP, GnsProtocol.GUID, guid,
             GnsProtocol.MEMBERS, members.toString(), GnsProtocol.WRITER, writer.getGuid());
 
@@ -540,14 +540,14 @@ public abstract class AbstractHttpClient {
    * @param reader the guid of the entity doing the lookup
    * @return the list of guids as a JSONArray
    * @throws IOException if a communication error occurs
-   * @throws GnsException if a protocol error occurs or the list cannot be
+   * @throws GnsClientException if a protocol error occurs or the list cannot be
    * parsed
    * @throws GnsInvalidGuidException if the group guid is invalid
    * @throws java.security.InvalidKeyException
    * @throws java.security.NoSuchAlgorithmException
    * @throws java.security.SignatureException
    */
-  public JSONArray getGroupMembers(String groupGuid, GuidEntry reader) throws IOException, GnsException,
+  public JSONArray getGroupMembers(String groupGuid, GuidEntry reader) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(reader, GnsProtocol.GET_GROUP_MEMBERS, GnsProtocol.GUID, groupGuid,
             GnsProtocol.READER, reader.getGuid());
@@ -556,7 +556,7 @@ public abstract class AbstractHttpClient {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid member list", e);
+      throw new GnsClientException("Invalid member list", e);
     }
   }
 
@@ -568,14 +568,14 @@ public abstract class AbstractHttpClient {
    * @param reader the guid of the entity doing the lookup
    * @return the list of groups as a JSONArray
    * @throws IOException if a communication error occurs
-   * @throws GnsException if a protocol error occurs or the list cannot be
+   * @throws GnsClientException if a protocol error occurs or the list cannot be
    * parsed
    * @throws GnsInvalidGuidException if the group guid is invalid
    * @throws java.security.InvalidKeyException
    * @throws java.security.NoSuchAlgorithmException
    * @throws java.security.SignatureException
    */
-  public JSONArray getGroups(String groupGuid, GuidEntry reader) throws IOException, GnsException,
+  public JSONArray getGroups(String groupGuid, GuidEntry reader) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(reader, GnsProtocol.GET_GROUPS, GnsProtocol.GUID, groupGuid,
             GnsProtocol.READER, reader.getGuid());
@@ -584,7 +584,7 @@ public abstract class AbstractHttpClient {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid member list", e);
+      throw new GnsClientException("Invalid member list", e);
     }
   }
 
@@ -658,13 +658,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @param member
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public void requestJoinGroup(String groupGuid, GuidEntry member) throws IOException, GnsException,
+  public void requestJoinGroup(String groupGuid, GuidEntry member) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(member, GnsProtocol.REQUEST_JOIN_GROUP, GnsProtocol.GUID, groupGuid,
             GnsProtocol.MEMBER, member.getGuid());
@@ -679,13 +679,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @return
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public JSONArray getJoinGroupRequests(GuidEntry groupGuid) throws IOException, GnsException, GnsInvalidGuidException,
+  public JSONArray getJoinGroupRequests(GuidEntry groupGuid) throws IOException, GnsClientException, GnsInvalidGuidException,
           InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(groupGuid, GnsProtocol.RETRIEVE_GROUP_JOIN_REQUESTS, GnsProtocol.GUID,
             groupGuid.getGuid());
@@ -694,7 +694,7 @@ public abstract class AbstractHttpClient {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid member list", e);
+      throw new GnsClientException("Invalid member list", e);
     }
   }
 
@@ -706,13 +706,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @param member
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public void grantMembership(GuidEntry groupGuid, String member) throws IOException, GnsException,
+  public void grantMembership(GuidEntry groupGuid, String member) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(groupGuid, GnsProtocol.GRANT_MEMBERSHIP, GnsProtocol.GUID, groupGuid.getGuid(),
             GnsProtocol.MEMBER, member);
@@ -729,13 +729,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @param members - a JSONArray
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public void grantMemberships(GuidEntry groupGuid, JSONArray members) throws IOException, GnsException,
+  public void grantMemberships(GuidEntry groupGuid, JSONArray members) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(groupGuid, GnsProtocol.GRANT_MEMBERSHIP, GnsProtocol.GUID, groupGuid.getGuid(),
             GnsProtocol.MEMBERS, members.toString());
@@ -750,13 +750,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @param member
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public void requestLeaveGroup(String groupGuid, GuidEntry member) throws IOException, GnsException,
+  public void requestLeaveGroup(String groupGuid, GuidEntry member) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(member, GnsProtocol.REQUEST_LEAVE_GROUP, GnsProtocol.GUID, groupGuid,
             GnsProtocol.MEMBER, member.getGuid());
@@ -771,13 +771,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @return
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public JSONArray getLeaveGroupRequests(GuidEntry groupGuid) throws IOException, GnsException,
+  public JSONArray getLeaveGroupRequests(GuidEntry groupGuid) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(groupGuid, GnsProtocol.RETRIEVE_GROUP_LEAVE_REQUESTS, GnsProtocol.GUID,
             groupGuid.getGuid());
@@ -786,7 +786,7 @@ public abstract class AbstractHttpClient {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid member list", e);
+      throw new GnsClientException("Invalid member list", e);
     }
   }
 
@@ -798,13 +798,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @param member
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public void revokeMembership(GuidEntry groupGuid, String member) throws IOException, GnsException,
+  public void revokeMembership(GuidEntry groupGuid, String member) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(groupGuid, GnsProtocol.REVOKE_MEMBERSHIP, GnsProtocol.GUID,
             groupGuid.getGuid(), GnsProtocol.MEMBER, member);
@@ -821,13 +821,13 @@ public abstract class AbstractHttpClient {
    * @param groupGuid
    * @param members - a JSONArray
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    * @throws GnsInvalidGuidException
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    */
-  public void revokeMemberships(GuidEntry groupGuid, JSONArray members) throws IOException, GnsException,
+  public void revokeMemberships(GuidEntry groupGuid, JSONArray members) throws IOException, GnsClientException,
           GnsInvalidGuidException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
     String command = createAndSignQuery(groupGuid, GnsProtocol.REVOKE_MEMBERSHIP, GnsProtocol.GUID,
             groupGuid.getGuid(), GnsProtocol.MEMBERS, members.toString());
@@ -848,7 +848,7 @@ public abstract class AbstractHttpClient {
    * @param field field name
    * @param accesserGuid guid to add to the ACL
    * @throws Exception
-   * @throws GnsException if the query is not accepted by the server.
+   * @throws GnsClientException if the query is not accepted by the server.
    */
   public void addToACL(GnsProtocol.AccessType accessType, GuidEntry targetGuid, String field, String accesserGuid)
           throws Exception {
@@ -876,7 +876,7 @@ public abstract class AbstractHttpClient {
    * @param field
    * @param accesserGuid
    * @throws Exception
-   * @throws GnsException if the query is not accepted by the server.
+   * @throws GnsClientException if the query is not accepted by the server.
    */
   public void removeFromACL(GnsProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
@@ -907,7 +907,7 @@ public abstract class AbstractHttpClient {
    * @param accesserGuid
    * @return list of GUIDs for that ACL
    * @throws Exception
-   * @throws GnsException if the query is not accepted by the server.
+   * @throws GnsClientException if the query is not accepted by the server.
    */
   public JSONArray getACL(GnsProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
@@ -923,7 +923,7 @@ public abstract class AbstractHttpClient {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid ACL list", e);
+      throw new GnsClientException("Invalid ACL list", e);
     }
   }
 
@@ -938,10 +938,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void createField(GuidEntry targetGuid, String field, String value) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     createField(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -958,10 +958,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void createField(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.CREATE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -980,10 +980,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void createFieldUsingList(GuidEntry targetGuid, String field, JSONArray value) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     createFieldUsingList(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -1000,10 +1000,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void createFieldUsingList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.CREATE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1021,10 +1021,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void removeField(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_FIELD, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1041,10 +1041,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void removeField(GuidEntry targetGuid, String field) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     removeField(targetGuid.getGuid(), field, targetGuid);
   }
 
@@ -1060,10 +1060,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendOrCreate(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1081,10 +1081,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendOrCreate(GuidEntry targetGuid, String field, String value) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     appendOrCreate(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -1100,10 +1100,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void replaceOrCreate(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1121,10 +1121,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void replaceOrCreate(GuidEntry targetGuid, String field, String value) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     replaceOrCreate(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -1140,10 +1140,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendOrCreateUsingList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_OR_CREATE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1161,10 +1161,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendOrCreateUsingList(GuidEntry targetGuid, String field, JSONArray value) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     appendOrCreateUsingList(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -1180,10 +1180,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void replaceOrCreateUsingList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE_OR_CREATE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1201,10 +1201,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void replaceOrCreateUsingList(GuidEntry targetGuid, String field, JSONArray value) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     replaceOrCreateUsingList(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -1220,10 +1220,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendValue(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1242,10 +1242,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendValue(GuidEntry targetGuid, String field, String value) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     appendValue(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -1261,10 +1261,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendValueWithDuplicates(String targetGuid, String field, String value, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_WITH_DUPLICATION, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1283,10 +1283,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendValueWithDuplicates(GuidEntry targetGuid, String field, String value) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     appendValueWithDuplicates(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -1302,10 +1302,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendValuesUsingList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1324,10 +1324,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void replaceValue(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1346,10 +1346,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void replaceValuesUsingList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1368,10 +1368,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void removeValue(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1390,10 +1390,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void removeValuesUsingList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REMOVE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1413,10 +1413,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void substituteValue(String targetGuid, String field, String newValue, String oldValue, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SUBSTITUTE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue, GnsProtocol.OLD_VALUE, oldValue, GnsProtocol.WRITER,
             writer.getGuid());
@@ -1439,11 +1439,11 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void substituteValuesUsingList(String targetGuid, String field, JSONArray newValue, JSONArray oldValue,
           GuidEntry writer) throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SUBSTITUTE_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue.toString(), GnsProtocol.OLD_VALUE, oldValue.toString(),
             GnsProtocol.WRITER, writer.getGuid());
@@ -1465,10 +1465,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void setValue(String targetGuid, String field, String newValue, int index, GuidEntry writer)
-          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsException {
+          throws IOException, InvalidKeyException, NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SET, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, newValue, GnsProtocol.N, Integer.toString(index), GnsProtocol.WRITER,
             writer.getGuid());
@@ -1488,10 +1488,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void setFieldNull(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SET_FIELD_NULL, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1509,10 +1509,10 @@ public abstract class AbstractHttpClient {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void clearField(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsException {
+          NoSuchAlgorithmException, SignatureException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.CLEAR, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -1530,9 +1530,9 @@ public abstract class AbstractHttpClient {
    * @param targetGuid
    * @param field
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void removeField(String targetGuid, String field) throws IOException, GnsException {
+  public void removeField(String targetGuid, String field) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.REMOVE_FIELD, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field);
     String response = sendGetCommand(command);
 
@@ -1548,9 +1548,9 @@ public abstract class AbstractHttpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void appendOrCreate(String targetGuid, String field, String value) throws IOException, GnsException {
+  public void appendOrCreate(String targetGuid, String field, String value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.APPEND_OR_CREATE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value);
     String response = sendGetCommand(command);
@@ -1566,9 +1566,9 @@ public abstract class AbstractHttpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void replaceOrCreate(String targetGuid, String field, String value) throws IOException, GnsException {
+  public void replaceOrCreate(String targetGuid, String field, String value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.REPLACE_OR_CREATE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value);
     String response = sendGetCommand(command);
@@ -1585,10 +1585,10 @@ public abstract class AbstractHttpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void appendOrCreateUsingList(String targetGuid, String field, JSONArray value) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createQuery(GnsProtocol.APPEND_OR_CREATE_LIST, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, value.toString());
     String response = sendGetCommand(command);
@@ -1605,10 +1605,10 @@ public abstract class AbstractHttpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void replaceOrCreateUsingList(String targetGuid, String field, JSONArray value) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createQuery(GnsProtocol.REPLACE_OR_CREATE_LIST, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD,
             field, GnsProtocol.VALUE, value.toString());
     String response = sendGetCommand(command);
@@ -1623,9 +1623,9 @@ public abstract class AbstractHttpClient {
    * @param field field name
    * @param value field value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void appendValue(String targetGuid, String field, String value) throws IOException, GnsException {
+  public void appendValue(String targetGuid, String field, String value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.APPEND, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value);
     String response = sendGetCommand(command);
@@ -1642,9 +1642,9 @@ public abstract class AbstractHttpClient {
    * @param value list of values
    * @throws IOException
    * @throws SignatureException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void appendValuesUsingList(String targetGuid, String field, JSONArray value) throws IOException, GnsException {
+  public void appendValuesUsingList(String targetGuid, String field, JSONArray value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.APPEND_LIST, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value.toString());
     String response = sendGetCommand(command);
@@ -1660,9 +1660,9 @@ public abstract class AbstractHttpClient {
    * @param field field name
    * @param value field value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void replaceValue(String targetGuid, String field, String value) throws IOException, GnsException {
+  public void replaceValue(String targetGuid, String field, String value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.REPLACE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value);
     String response = sendGetCommand(command);
@@ -1678,9 +1678,9 @@ public abstract class AbstractHttpClient {
    * @param field field name
    * @param value list of values
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void replaceValuesUsingList(String targetGuid, String field, JSONArray value) throws IOException, GnsException {
+  public void replaceValuesUsingList(String targetGuid, String field, JSONArray value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.REPLACE_LIST, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value.toString());
     String response = sendGetCommand(command);
@@ -1696,9 +1696,9 @@ public abstract class AbstractHttpClient {
    * @param field field name
    * @param value field value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void removeValue(String targetGuid, String field, String value) throws IOException, GnsException {
+  public void removeValue(String targetGuid, String field, String value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.REMOVE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value);
     String response = sendGetCommand(command);
@@ -1714,9 +1714,9 @@ public abstract class AbstractHttpClient {
    * @param field field name
    * @param value list of values
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void removeValuesUsingList(String targetGuid, String field, JSONArray value) throws IOException, GnsException {
+  public void removeValuesUsingList(String targetGuid, String field, JSONArray value) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.REMOVE_LIST, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, value.toString());
     String response = sendGetCommand(command);
@@ -1733,10 +1733,10 @@ public abstract class AbstractHttpClient {
    * @param newValue field value
    * @param oldValue field value to replace
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void substituteValue(String targetGuid, String field, String newValue, String oldValue) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createQuery(GnsProtocol.SUBSTITUTE, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, newValue, GnsProtocol.OLD_VALUE, oldValue);
     String response = sendGetCommand(command);
@@ -1755,10 +1755,10 @@ public abstract class AbstractHttpClient {
    * @param newValue list of values to sub in
    * @param oldValue field values to replace
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void substituteValuesUsingList(String targetGuid, String field, JSONArray newValue, JSONArray oldValue)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.SUBSTITUTE_LIST, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field,
             GnsProtocol.VALUE, newValue.toString(), GnsProtocol.OLD_VALUE, oldValue.toString());
     String response = sendGetCommand(command);
@@ -1772,9 +1772,9 @@ public abstract class AbstractHttpClient {
    * @param targetGuid GUID where the field is stored
    * @param field field name
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
-  public void clearField(String targetGuid, String field) throws IOException, GnsException {
+  public void clearField(String targetGuid, String field) throws IOException, GnsClientException {
     String command = createQuery(GnsProtocol.CLEAR, GnsProtocol.GUID, targetGuid, GnsProtocol.FIELD, field);
     String response = sendGetCommand(command);
 
@@ -2017,7 +2017,7 @@ public abstract class AbstractHttpClient {
     try {
       return new JSONArray(checkResponse(command, response));
     } catch (JSONException e) {
-      throw new GnsException("Invalid alias list", e);
+      throw new GnsClientException("Invalid alias list", e);
     }
   }
 
@@ -2092,13 +2092,13 @@ public abstract class AbstractHttpClient {
     checkResponse(command, response);
   }
 
-  private String checkResponse(String command, String response) throws GnsException {
+  private String checkResponse(String command, String response) throws GnsClientException {
     // System.out.println("response:" + response);
     if (response.startsWith(GnsProtocol.BAD_RESPONSE)) {
       String results[] = response.split(" ");
       // System.out.println("results length:" + results.length);
       if (results.length < 2) {
-        throw new GnsException("Invalid bad response indicator: " + response + " Command: " + command);
+        throw new GnsClientException("Invalid bad response indicator: " + response + " Command: " + command);
       } else if (results.length >= 2) {
         // System.out.println("results[0]:" + results[0]);
         // System.out.println("results[1]:" + results[1]);
@@ -2143,7 +2143,7 @@ public abstract class AbstractHttpClient {
         if (error.startsWith(GnsProtocol.VERIFICATION_ERROR)) {
           throw new GnsVerificationException(error + rest);
         }
-        throw new GnsException("General command failure: " + error + rest);
+        throw new GnsClientException("General command failure: " + error + rest);
       }
     }
     if (response.startsWith(GnsProtocol.NULL_RESPONSE)) {

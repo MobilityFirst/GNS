@@ -17,56 +17,57 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.exceptions;
+package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsFieldNotFoundException
+ * This class defines a GnsInvalidUserException
  * 
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsFieldNotFoundException extends GnsException
+public class GnsInvalidUserException extends GnsClientException
 {
-  private static final long serialVersionUID = 2676899572105162853L;
+  private static final long serialVersionUID = -9116661769609344698L;
 
   /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
+   * Creates a new <code>GnsInvalidUserException</code> object
    */
-  public GnsFieldNotFoundException()
+  public GnsInvalidUserException()
   {
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
+   * Creates a new <code>GnsInvalidUserException</code> object
    * 
-   * @param detailMessage
+   * @param message
+   * @param cause
    */
-  public GnsFieldNotFoundException(String detailMessage)
+  public GnsInvalidUserException(String message, Throwable cause)
   {
-    super(detailMessage);
+    super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
+   * Creates a new <code>GnsInvalidUserException</code> object
+   * 
+   * @param message
+   */
+  public GnsInvalidUserException(String message)
+  {
+    super(message);
+    // TODO Auto-generated constructor stub
+  }
+
+  /**
+   * Creates a new <code>GnsInvalidUserException</code> object
    * 
    * @param throwable
    */
-  public GnsFieldNotFoundException(Throwable throwable)
+  public GnsInvalidUserException(Throwable throwable)
   {
     super(throwable);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param detailMessage
-   * @param throwable
-   */
-  public GnsFieldNotFoundException(String detailMessage, Throwable throwable)
-  {
-    super(detailMessage, throwable);
     // TODO Auto-generated constructor stub
   }
 

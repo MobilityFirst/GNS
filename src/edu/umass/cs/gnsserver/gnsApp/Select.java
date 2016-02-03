@@ -25,7 +25,7 @@ package edu.umass.cs.gnsserver.gnsApp;
  */
 
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;

@@ -19,20 +19,22 @@
  */
 package edu.umass.cs.gnsserver.gnsApp;
 
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.SideToSideQuery;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSRecordType;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
@@ -46,6 +48,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONObject;
 
 /**
  * This class executes lookupJSONArray requests sent by an LNS to an active replica. If name servers are replicated,
@@ -75,7 +78,7 @@ public class AppLookup {
    * @throws java.security.spec.InvalidKeySpecException
    * @throws java.security.NoSuchAlgorithmException
    * @throws java.security.SignatureException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void executeLookupLocal(DNSPacket<String> dnsPacket, GnsApplicationInterface<String> gnsApp,
           boolean doNotReplyToClient, ActiveCodeHandler activeCodeHandler)
@@ -83,7 +86,7 @@ public class AppLookup {
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() 
+      GNS.getLogger().info("Node " + gnsApp.getNodeID().toString()
               + "; DNS Query Packet: " + dnsPacket.toString(true));
     }
     // FIX THIS!
@@ -172,7 +175,7 @@ public class AppLookup {
       if (field == null || !InternalField.isInternalField(field)) {
         int hopLimit = 1;
 
-      // Grab the code because it is of a different type
+        // Grab the code because it is of a different type
         //FIXME: Maybe change this to not use LIST_STRING?
         NameRecord codeRecord = null;
 
@@ -343,7 +346,7 @@ public class AppLookup {
               // we return the single value of the key (old array-based return format)
               dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));
               if (AppReconfigurableNodeOptions.debuggingEnabled) {
-                GNS.getLogger().info("NS sending DNS lookup response: Name = " 
+                GNS.getLogger().info("NS sending DNS lookup response: Name = "
                         //+ guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue().toString());
                         + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue().toReasonableString());
               }
@@ -365,7 +368,7 @@ public class AppLookup {
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("Record doesn't contain field: " + key + " guid = "
                       + guid + " record = " + nameRecord.toString());
-                      //+ guid + " record = " + nameRecord.toReasonableString());
+              //+ guid + " record = " + nameRecord.toReasonableString());
             }
             dnsPacket.getHeader().setResponseCode(NSResponseCode.FIELD_NOT_FOUND_ERROR);
           }

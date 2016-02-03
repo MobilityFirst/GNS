@@ -27,7 +27,7 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -83,7 +83,7 @@ public class ContextAwareGroupGuidExample {
   private static GuidEntry groupTwoGuidEntry;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
 
     // BOILER PLATE FOR RUNNING AN EXAMPLE
@@ -227,7 +227,7 @@ public class ContextAwareGroupGuidExample {
           throws IOException {
     try {
       client.lookupGuidRecord(guidEntry.getGuid());
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
       return false;
     }
     return true;

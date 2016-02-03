@@ -17,16 +17,30 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.exceptions;
+package edu.umass.cs.gnscommon.exceptions.server;
+
+import edu.umass.cs.gnsserver.database.ColumnField;
 
 /**
- * This exception is thrown to terminate a task that is scheduled for repeat execution via an ExecutorService.
- *
- * // todo complete this documentation
- *
- * Created by abhigyan on 2/24/14.
+ * Exception means that field being accessed does not exist.
+ * This is often not an error.
+ * 
+ * @author westy
  */
-public class CancelExecutorTaskException extends GnsException{
+public class FieldNotFoundException extends GnsServerException{
+  ColumnField missingField;
 
+  /**
+   * Create a FieldNotFoundException instance.
+   * 
+   * @param f
+   */
+  public FieldNotFoundException(ColumnField f) {
+    missingField = f;
+  }
+
+  @Override
+  public String getMessage() {
+    return "FieldNotFoundException: " + missingField.toString();
+  }
 }
-

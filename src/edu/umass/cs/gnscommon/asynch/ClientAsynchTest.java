@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsclient.client.asynch;
+package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;

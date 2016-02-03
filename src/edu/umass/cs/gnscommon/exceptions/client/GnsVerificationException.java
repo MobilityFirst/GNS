@@ -17,55 +17,55 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.exceptions;
+package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsInvalidGuidException
+ * This class defines a GnsDupplicateNameException
  * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
+ * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsInvalidGuidException extends GnsException
+public class GnsVerificationException extends GnsClientException
 {
-  private static final long serialVersionUID = 4263493664073760147L;
+
   /**
-   * Creates a new <code>GnsInvalidGuidException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    */
-  public GnsInvalidGuidException()
+  public GnsVerificationException()
   {
     super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidGuidException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsInvalidGuidException(String message, Throwable cause)
+  public GnsVerificationException(String message, Throwable cause)
   {
     super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidGuidException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
    * @param message
    */
-  public GnsInvalidGuidException(String message)
+  public GnsVerificationException(String message)
   {
     super(message);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidGuidException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
    * @param throwable
    */
-  public GnsInvalidGuidException(Throwable throwable)
+  public GnsVerificationException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

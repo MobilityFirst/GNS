@@ -23,9 +23,9 @@ import com.google.common.collect.Sets;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
@@ -129,7 +129,7 @@ public class NSAccessSupport {
    * @param activeReplica
    * @param lnsAddress
    * @return true if the the reader has access
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
           String accessorGuid, GnsApplicationInterface<String> activeReplica,

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport;
 
-import edu.umass.cs.gnsserver.exceptions.CancelExecutorTaskException;
+import edu.umass.cs.gnscommon.exceptions.server.CancelExecutorTaskException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.packet.AddRecordPacket;

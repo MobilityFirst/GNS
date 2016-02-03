@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -95,7 +95,7 @@ public class CreateGuidBatchTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsException | IOException e) {
+    } catch (JSONException | GnsClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
@@ -131,7 +131,7 @@ public class CreateGuidBatchTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsException | IOException e) {
+    } catch (JSONException | GnsClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
@@ -163,7 +163,7 @@ public class CreateGuidBatchTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsException | IOException e) {
+    } catch (JSONException | GnsClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }

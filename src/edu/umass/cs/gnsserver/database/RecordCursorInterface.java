@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -35,7 +35,7 @@ public interface RecordCursorInterface {
    * Returns the next row as a JSONObject.
    * 
    * @return the next row as a JSONObject
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException 
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException 
    */
   public JSONObject nextJSONObject() throws FailedDBOperationException;
   
@@ -43,14 +43,14 @@ public interface RecordCursorInterface {
    * Returns the next row as a HashMap.
    * 
    * @return the next row as a HashMap
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public HashMap<ColumnField, Object> nextHashMap() throws FailedDBOperationException;
 
   /**
    * Returns true if the collection has more records. 
    * @return true if the collection has more records
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public boolean hasNext() throws FailedDBOperationException;
   

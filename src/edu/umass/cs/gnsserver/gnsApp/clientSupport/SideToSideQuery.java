@@ -9,17 +9,17 @@ package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnsclient.client.asynch.ClientAsynchBase;
-import edu.umass.cs.gnsclient.exceptions.EncryptionException;
-import edu.umass.cs.gnsclient.exceptions.GnsACLException;
-import edu.umass.cs.gnsclient.exceptions.GnsDuplicateNameException;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsFieldNotFoundException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidFieldException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGroupException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidUserException;
-import edu.umass.cs.gnsclient.exceptions.GnsVerificationException;
+import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsDuplicateNameException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidFieldException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnscommon.GnsProtocol.ACCESS_DENIED;
 import static edu.umass.cs.gnscommon.GnsProtocol.BAD_ACCESSOR_GUID;
 import static edu.umass.cs.gnscommon.GnsProtocol.BAD_ACCOUNT;
@@ -70,39 +70,45 @@ public class SideToSideQuery extends ClientAsynchBase {
   public SideToSideQuery() throws IOException {
   }
 
-  public String fieldRead(String guid, String field) throws IOException, JSONException, GnsException {
+  public String fieldRead(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + guid + "/" + field);
+    }
     int requestId = (int) fieldRead(guid, field, callback);
     CommandValueReturnPacket packet = waitForResponse(requestId);
     if (packet == null) {
-      throw new GnsException("Packet not found in table " + requestId);
+      throw new GnsClientException("Packet not found in table " + requestId);
     } else {
       String returnValue = packet.getReturnValue();
       if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + packet.getServiceName() 
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + packet.getServiceName()
                 + " got from " + packet.getResponder() + " this: " + returnValue);
       }
       return checkResponse(returnValue);
     }
   }
 
-  public String fieldReadArray(String guid, String field) throws IOException, JSONException, GnsException {
+  public String fieldReadArray(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + guid + "/" + field);
+    }
     int requestId = (int) fieldReadArray(guid, field, callback);
     CommandValueReturnPacket packet = waitForResponse(requestId);
     if (packet == null) {
-      throw new GnsException("Packet not found in table " + requestId);
+      throw new GnsClientException("Packet not found in table " + requestId);
     } else {
       String returnValue = packet.getReturnValue();
       if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + packet.getServiceName() 
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + packet.getServiceName()
                 + " got from " + packet.getResponder() + " this: " + returnValue);
       }
       return checkResponse(returnValue);
     }
   }
 
-  private static CommandValueReturnPacket waitForResponse(int id) throws GnsException {
+  private static CommandValueReturnPacket waitForResponse(int id) throws GnsClientException {
     try {
       synchronized (monitor) {
         long monitorStartTime = System.currentTimeMillis();
@@ -111,11 +117,11 @@ public class SideToSideQuery extends ClientAsynchBase {
           monitor.wait(readTimeout);
         }
         if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
-          throw new GnsException("Timeout waiting for response packet for " + id);
+          throw new GnsClientException("Timeout waiting for response packet for " + id);
         }
       }
     } catch (InterruptedException x) {
-      throw new GnsException("Wait for return packet was interrupted " + x);
+      throw new GnsClientException("Wait for return packet was interrupted " + x);
     }
     return resultMap.remove(id);
   }
@@ -127,16 +133,16 @@ public class SideToSideQuery extends ClientAsynchBase {
    * @param command
    * @param response
    * @return the result of the command
-   * @throws GnsException
+   * @throws GnsClientException
    */
   //FIXME: With somae changes we could probably some existing version of this in the client.
-  private String checkResponse(String response) throws GnsException {
+  private String checkResponse(String response) throws GnsClientException {
     // System.out.println("response:" + response);
     if (response.startsWith(BAD_RESPONSE)) {
       String results[] = response.split(" ");
       // System.out.println("results length:" + results.length);
       if (results.length < 2) {
-        throw new GnsException("Invalid bad response indicator: " + response);
+        throw new GnsClientException("Invalid bad response indicator: " + response);
       } else if (results.length >= 2) {
         // System.out.println("results[0]:" + results[0]);
         // System.out.println("results[1]:" + results[1]);
@@ -180,7 +186,7 @@ public class SideToSideQuery extends ClientAsynchBase {
         if (error.startsWith(VERIFICATION_ERROR)) {
           throw new GnsVerificationException(error + rest);
         }
-        throw new GnsException("General command failure: " + error + rest);
+        throw new GnsClientException("General command failure: " + error + rest);
       }
     }
     if (response.startsWith(NULL_RESPONSE)) {
