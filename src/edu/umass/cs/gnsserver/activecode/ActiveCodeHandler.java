@@ -73,7 +73,7 @@ public class ActiveCodeHandler {
 		clientPool = new ClientPool(app, this); 
 		
 		guard = new ActiveCodeGuardian(clientPool);
-	    //(new Thread(guard)).start();
+	    (new Thread(guard)).start();
 		
 	    // Get the ThreadFactory implementation to use
 	    threadFactory = new ActiveCodeThreadFactory(clientPool);
