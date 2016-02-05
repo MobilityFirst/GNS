@@ -5,6 +5,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class periodically checks the status of each running task,
@@ -28,6 +29,7 @@ public class ActiveCodeGuardian implements Runnable {
 				
 				for(FutureTask<ValuesMap> task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
+						long start = System.currentTimeMillis();
 						System.out.println("The task will be cancelled is "+task);
 						// generate a spare worker in another thread
 						clientPool.generateNewWorker();
@@ -41,6 +43,7 @@ public class ActiveCodeGuardian implements Runnable {
 						// deregister the task and cancel it
 						removeThread(task);
 						task.cancel(true);
+						DelayProfiler.updateDelay("ActiveCodeSubstitude", start);
 					}
 					
 				}		

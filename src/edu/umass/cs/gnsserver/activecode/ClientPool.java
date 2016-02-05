@@ -104,7 +104,7 @@ public class ClientPool {
 		String classpath = System.getProperty("java.class.path");
 				
 	    command.add("java");
-	    command.add("-Xms16m");
+	    command.add("-Xms64m");
 	    command.add("-Xmx64m");
 	    command.add("-cp");
 	    command.add(classpath);
