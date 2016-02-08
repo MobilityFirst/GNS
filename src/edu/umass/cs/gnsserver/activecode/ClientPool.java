@@ -22,6 +22,8 @@ package edu.umass.cs.gnsserver.activecode;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 
 /**
@@ -38,13 +43,22 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
  * @author mbadov
  *
  */
-public class ClientPool {
-	Map<Long, ActiveCodeClient> clients;
-	GnsApplicationInterface<String> app;
-	ActiveCodeHandler ach;
-	ConcurrentHashMap<Integer, Process> spareWorkers;
+public class ClientPool implements Runnable{
+	private Map<Long, ActiveCodeClient> clients;
+	private GnsApplicationInterface<String> app;
+	private ActiveCodeHandler ach;
+	private ConcurrentHashMap<Integer, Process> spareWorkers;
 	private ExecutorService executorPool;
 	private final int numSpareWorker = 20;
+	private Lock lock = new ReentrantLock();
+	
+	private final static int CALLBACK_PORT = 60000;
+	/**
+	 * Maintain the state of all available ports, including active and spare
+	 */
+	private static ConcurrentHashMap<Integer, Boolean> readyMap;
+	
+	
 	/**
 	 * Initialize a ClientPool
 	 * @param app
@@ -54,10 +68,67 @@ public class ClientPool {
 		this.app = app;
 		this.ach = ach;
 		spareWorkers = new ConcurrentHashMap<Integer, Process>();
+		readyMap = new ConcurrentHashMap<Integer, Boolean>();
 		executorPool = Executors.newFixedThreadPool(5);
+	}
+	
+	public void run(){
+		DatagramSocket socket = null;
+		try{
+			socket = new DatagramSocket(CALLBACK_PORT);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		boolean keepGoing = true;
+		
+		while(keepGoing){
+			byte[] buffer = new byte[1024];
+    		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
+    		try{
+    			socket.receive(pkt);
+    			int clientPort = pkt.getPort();
+    			System.out.println("Port "+clientPort + " is ready.");
+    			updateClientState(clientPort, true);
+    			synchronized(lock){
+    				lock.notifyAll();
+    			}
+    		}catch(IOException e){
+    			e.printStackTrace();
+    			keepGoing = false;
+    		}
+		}
+		
+		socket.close();
+		
+	}
+	
+	protected void startSpareWorkers(){
 		for (int i=0; i<numSpareWorker; i++){
 			executorPool.execute(new WorkerGeneratorRunanble());
 		}
+	}
+	
+	protected void waitFor(){
+		synchronized(lock){
+			try{
+				lock.wait();
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	protected static void removeClientState(int port){
+		readyMap.remove(port);
+	}
+	
+	protected static void updateClientState(int port, boolean state){
+		// update the state of the worker
+		readyMap.put(port, state);		
+	}
+	
+	protected static boolean getClientState(int port){
+		return readyMap.get(port);
 	}
 	
 	protected void addClient(Thread t) {
@@ -76,35 +147,59 @@ public class ClientPool {
 		for(ActiveCodeClient client : clients.values()) {
 		    client.shutdownServer();
 		}
+		
+		DatagramSocket socket = null;
+		try{
+			socket = new DatagramSocket();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		for (int port : spareWorkers.keySet()){
+			ActiveCodeMessage acm = new ActiveCodeMessage();
+			acm.setShutdown(true);
+			try {
+				ActiveCodeUtils.sendMessage(socket, acm, port);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		socket.close();
 	}
+	
 	
 	protected int getSpareWorkerPort(){
-		int port = spareWorkers.keys().nextElement();
-		return port;
-	}
-	
-	protected Process getSpareWorker(int port){
-		while(spareWorkers.size() == 0){
+		while(spareWorkers.keySet().isEmpty()){
+			System.out.println("The spare worker set is empty.");
 			synchronized(spareWorkers){
 				try{
 					spareWorkers.wait();
-				}catch(InterruptedException e){
+				} catch(InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
 		}
+		//assert(spareWorkers.keySet().isEmpty());
+		int port = spareWorkers.keys().nextElement();
+		System.out.println("The port is "+port);
+		return port;
+	}
+	
+	protected Process getSpareWorker(int port){
 		return spareWorkers.remove(port);
 	}
 	
 	protected void addSpareWorker(){
 		List<String> command = new ArrayList<>();
 		int serverPort = ActiveCodeClient.getOpenUDPPort();
-
+		// maintain state for a worker
+		// assert(readyMap.containsKey(serverPort));
+		updateClientState(serverPort, false);		
+		
 		// Get the current classpath
 		String classpath = System.getProperty("java.class.path");
-				
 	    command.add("java");
-	    command.add("-Xms64m");
+	    command.add("-Xms16m");
 	    command.add("-Xmx64m");
 	    command.add("-cp");
 	    command.add(classpath);
@@ -128,6 +223,9 @@ public class ClientPool {
 		}
 		
 		spareWorkers.put(serverPort, process);
+		synchronized(spareWorkers){
+			spareWorkers.notifyAll();
+		}
 	}
 	
 	protected void generateNewWorker(){

@@ -34,16 +34,22 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 
     private ActiveCodeParams acp;
     private ClientPool clientPool;
+    private ActiveCodeGuardian guard;
     /**
      * Initialize a ActiveCodeTask
      * @param acp
      * @param clientPool
      */
-    public ActiveCodeTask(ActiveCodeParams acp, ClientPool clientPool) {
+    public ActiveCodeTask(ActiveCodeParams acp, ClientPool clientPool, ActiveCodeGuardian guard) {
         this.acp = acp; 
         this.clientPool = clientPool;
+        this.guard = guard;
     }
-
+    
+    public void deregisterTask(){
+    	guard.removeThread(this);
+    }
+    
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
@@ -52,15 +58,26 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	long startTime = System.nanoTime();
     	long pid = Thread.currentThread().getId();
     	
-    	ActiveCodeClient client = clientPool.getClient(pid);
     	ValuesMap result = null;
+    	ActiveCodeClient client = clientPool.getClient(pid);
+    	int port = client.getPort();
+    	//check the state of the client's worker
+    	while(!ClientPool.getClientState(port)){
+    		// wait until it's ready
+    		System.out.println("99999999999999 >>>>>>>>>>>>>>>>>>>>> The port "+port +" is not ready.");
+    		clientPool.waitFor();    		
+    	}
     	
-    	//System.out.println("Start running the active code task for guid "+acp.getGuid());
+    	System.out.println("88888888888888 >>>>>>>>>>>>>>>>>>>> The port "+port+" is ready to run.");
     	
+    	guard.registerThread(this, Thread.currentThread());   	
     	if(acp != null) {
     		result = client.runActiveCode(acp, false);
-    	}
+    	}    	
+    	guard.removeThread(this);
+    	
     	DelayProfiler.updateDelayNano("activeTask", startTime);
+    	
     	return result;
     }
 }

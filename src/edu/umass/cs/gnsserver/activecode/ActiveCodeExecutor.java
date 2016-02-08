@@ -23,13 +23,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 
 /**
@@ -39,27 +36,19 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  */
 public class ActiveCodeExecutor extends ThreadPoolExecutor {
-	private ActiveCodeGuardian guard;
 	
 	protected ActiveCodeExecutor(int numCoreThreads, int numMaxThreads, int timeout,
 			TimeUnit timeUnit,
 			BlockingQueue<Runnable> queue,
 			ThreadFactory threadFactory,
-			RejectedExecutionHandler handler,
-			ActiveCodeGuardian guard) {
+			RejectedExecutionHandler handler) {
 		super(numCoreThreads, numMaxThreads, timeout, timeUnit, queue, threadFactory, handler);
-		this.guard = guard;
 	}
 	
 	
-	@Override
-	public void beforeExecute(Thread t, Runnable r){
-		if(r instanceof FutureTask<?>){
-			this.guard.registerThread((FutureTask<ValuesMap>) r, t);
-		}	
-		super.beforeExecute(t, r);
+	protected void beforeExecute(){
+		
 	}
-	
 		
 	/**
 	 * This is a fix for catching exceptions when using Future
@@ -79,13 +68,10 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 			} catch (ExecutionException ee) {
 				t = ee.getCause();
 			} catch (InterruptedException ie) {
-				Thread.currentThread().interrupt(); // ignore/reset
+				//Thread.currentThread().interrupt(); // ignore/reset
+				t = ie.getCause();
 			}
 		}
-		
-		//System.out.println("999999999999999999999999999>>>>> Task is about to finish "+r);
-		if(r instanceof FutureTask<?>){
-			this.guard.removeThread((FutureTask<ValuesMap>) r);
-		}		
+				
 	}
 }

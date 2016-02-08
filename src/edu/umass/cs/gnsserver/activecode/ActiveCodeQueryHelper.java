@@ -157,7 +157,13 @@ public class ActiveCodeQueryHelper {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
 							ValuesMap originalValues = nameRecord.getValuesMap();
 							ValuesMap newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
-							acqr = new ActiveCodeQueryResponse(true, newResult.toString());
+							if (newResult != null){
+								acqr = new ActiveCodeQueryResponse(true, newResult.toString());
+								System.out.println("Send the request with new result value "+newResult.toString());
+							} else {
+								acqr = new ActiveCodeQueryResponse(true, nameRecord.toString());
+								System.out.println("Send the request with new record value "+nameRecord.toString());
+							}
 						}
 						DelayProfiler.updateDelayNano("activeCodeQuerierReadExecution", start);
 					}else{
@@ -199,6 +205,7 @@ public class ActiveCodeQueryHelper {
 					}else{
 						// TODO: terminate the execution of the active code and return
 						acqr = new ActiveCodeQueryResponse(false, null);
+						
 					}
 				} catch(Exception e){
 					e.printStackTrace();
@@ -206,6 +213,7 @@ public class ActiveCodeQueryHelper {
 			}
 		}
 		
+		System.out.println("The returned value is "+acqr.getValuesMapString());
 		return acqr;
 	}
 }

@@ -27,7 +27,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class SequentialRequestClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static String filename =   "/home/ubuntu/test.js"; //"/Users/gaozy/WebStorm/mal.js"; //
+	private final static String filename = "/Users/gaozy/WebStorm/mal.js"; // "/home/ubuntu/test.js"; //
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	
 	public static void main(String[] args) throws IOException,
@@ -69,14 +69,8 @@ public class SequentialRequestClient {
 		    client.activeCodeSet(guidAccount.getGuid(), "read", code64, guidAccount);
 	    }
 	    
-	    /*
-	    for(int i = 0; i<1; i++){
-	    	(new Thread(new SingleClient(client, guidAccount, true))).start();
-	    }
-	    */
 	    
-	    
-	    for (int i=0; i<10; i++){
+	    for (int i=0; i<200; i++){
 	    	long t1 = System.nanoTime();
 	    	String result = client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
 	    	System.out.println("The nextGuid is "+result);

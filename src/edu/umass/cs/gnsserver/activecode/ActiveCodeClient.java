@@ -78,6 +78,10 @@ public class ActiveCodeClient {
 		this.serverPort = port;
 	}
 	
+	protected int getPort(){
+		return serverPort;
+	}
+	
 	/**
 	 * Grab an open port
 	 * @return the port number
@@ -122,7 +126,7 @@ public class ActiveCodeClient {
 			
 			List<String> command = new ArrayList<>();
 			serverPort = getOpenUDPPort();
-
+			
 			// Get the current classpath
 			String classpath = System.getProperty("java.class.path");
 			
@@ -150,6 +154,9 @@ public class ActiveCodeClient {
 			// Now we wait for the worker to notify us that it is ready
 			listener.accept();
 			listener.close();
+			
+			//update the state of this port
+			ClientPool.updateClientState(serverPort, true);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -203,7 +210,7 @@ public class ActiveCodeClient {
 	 * @throws IOException 
 	 * @throws ActiveCodeException 
 	 */
-	private ValuesMap submitRequest(ActiveCodeMessage acmReq, ActiveCodeHandler ach) throws InterruptedException, ActiveCodeException{
+	protected ValuesMap submitRequest(ActiveCodeMessage acmReq, ActiveCodeHandler ach) throws InterruptedException, ActiveCodeException{
 		long startTime = System.nanoTime();
 		boolean crashed = false;
 		
@@ -212,12 +219,15 @@ public class ActiveCodeClient {
 		boolean codeFinished = false;
 		String valuesMapString = null;
 		
-		// Serialize the initial request
+		//check whether its worker is ready
+		while(!readyToRun){
+			
+		}
+		
+		// Serialize the request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
-		
-		//System.out.println("Send the request to worker port "+serverPort+" through the local port "+clientSocket.getLocalPort());
-		
+				
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
 		while(!codeFinished) {
@@ -225,12 +235,9 @@ public class ActiveCodeClient {
 		    
 		    if(acmResp.isFinished()) {
 		    	// We are done!		
-		    	//System.out.println("Got finish message"+acmResp);
 		    	codeFinished = true;
 		    	valuesMapString = acmResp.getValuesMapString();
-		    	//System.out.println("ValuesMap got from the message is "+valuesMapString);
 		    	crashed = acmResp.isCrashed();
-		    	//System.out.println("Whether it's crashed is "+crashed);
 		    }
 		    else {
 		    	// We aren't finished, which means that the response asked us to query a guid
@@ -258,7 +265,7 @@ public class ActiveCodeClient {
         		//If there is an error, send the original value back
         		vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
         	} catch (JSONException e) {
-        		//e.printStackTrace();
+        		e.printStackTrace();
         	}
         	return vm;
         }else if(valuesMapString != null) {        	
@@ -312,6 +319,7 @@ public class ActiveCodeClient {
 	
 	public void forceShutdownServer() {
 		process.destroyForcibly();
+		ClientPool.removeClientState(serverPort);
 		clientSocket.close();
 		try{
 			clientSocket = new DatagramSocket();
@@ -320,18 +328,7 @@ public class ActiveCodeClient {
 		}
 	}
 	
-	/**
-	 * Restart the worker stuck with a malicious code
-	 */
-	public void restartServer() {
-		readyToRun = false;
-		long t1 = System.currentTimeMillis();		
-		long elapsed = System.currentTimeMillis() - t1;
-		System.out.println("It takes "+elapsed+"ms to restart this worker.");
-	}
-	
 	protected void setNewWorker(int port, Process proc){
-		//System.out.println("port number is "+port+", process is "+proc);
 		this.process = proc;
 		this.serverPort = port;
 		

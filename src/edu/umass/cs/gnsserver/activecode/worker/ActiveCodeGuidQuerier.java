@@ -45,21 +45,21 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveCodeGuidQuerier {
 
   private DatagramSocket socket;
-  private byte[] buffer;
   private int clientPort;
   private String guid = "";
   private int depth = 0;
   private String error = null;
+  private ActiveCodeQueryResponse acqr;
   
   /**
    * Initialize an ActiveCodeGuidQuerier
    * @param in
    * @param out
    */
-  public ActiveCodeGuidQuerier(DatagramSocket socket, byte[] buffer, int clientPort) {
+  public ActiveCodeGuidQuerier(DatagramSocket socket, int clientPort) {
     this.socket = socket;
-    this.buffer = buffer;
     this.clientPort = clientPort;
+    this.acqr = new ActiveCodeQueryResponse();
   }
   
   
@@ -97,10 +97,14 @@ public class ActiveCodeGuidQuerier {
       acm.setAcqreq(acqreq);
       // Send off the query request
       ActiveCodeUtils.sendMessage(socket, acm, clientPort);
-
+      
+      synchronized(acqr){
+    	  acqr.wait();
+      }
+      
       // Wait for a response
-      ActiveCodeMessage acmqr = ActiveCodeUtils.receiveMessage(socket, buffer);
-      return acmqr.getAcqresp();
+      System.out.println(">>>>>>>>>>>>>>>> Received the message "+acqr);
+      return acqr;
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -108,7 +112,14 @@ public class ActiveCodeGuidQuerier {
     // Return an empty response to designate failure
     return new ActiveCodeQueryResponse();
   }
-
+  
+  protected void setResponse(ActiveCodeQueryResponse acqr){
+	  this.acqr = acqr;
+	  synchronized(acqr){
+		  acqr.notify();
+	  }
+  }
+  
   /**
    * Reads a guid by passing the query on to the GNS process
    *

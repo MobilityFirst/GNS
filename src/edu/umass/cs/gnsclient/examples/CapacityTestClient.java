@@ -47,6 +47,7 @@ public class CapacityTestClient {
      
     protected synchronized static void clearLatency(){
     	CapacityTestClient.latency.clear();
+    	CapacityTestClient.mal_request.clear();
     	failed = 0;
     }
     

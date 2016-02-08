@@ -24,6 +24,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
+import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -53,20 +55,19 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public void run(int readyPort) throws IOException {	
-		long start = System.nanoTime();
         ActiveCodeRunner runner = new ActiveCodeRunner();
-        //System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a runner.");
         
     	RequestHandler handler = new RequestHandler(runner, this.clientPort);
-    	//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to create a handler.");
     	boolean keepGoing = true;
 
 		// Notify the server that we are ready
 		if (readyPort != -1){
 			Socket temp = new Socket("0.0.0.0", readyPort);
 			temp.close();
+		} else {
+			//System.out.println("Notify clientPool through port "+serverSocket.getLocalPort());
+			ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
 		}
-		//System.out.println("It takes "+(System.nanoTime()-start)/1000000+"ms to inform the main process.");
 		
         while (keepGoing) {
         	if (clientPort == -1){
@@ -75,6 +76,7 @@ public class ActiveCodeWorker {
         		try{
         			serverSocket.receive(pkt);
         			clientPort = pkt.getPort();
+        			handler.setPort(clientPort);
         		}catch(IOException e){
         			e.printStackTrace();
         		}
@@ -88,7 +90,6 @@ public class ActiveCodeWorker {
         }
         
         serverSocket.close();
-
 	}
 	
 	/**

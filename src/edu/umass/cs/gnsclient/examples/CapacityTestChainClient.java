@@ -28,6 +28,7 @@ public class CapacityTestChainClient {
 	    public static final int DURATION = 10;
 	    public static final int INTERVAL = 5;
 	    public static final int MAL_INTERVAL = 200;
+	    public static int DEPTH = 1;
 	    private static SingleClient[] clients;
 	    private static ThreadPoolExecutor executorPool;  
 	    
@@ -38,8 +39,8 @@ public class CapacityTestChainClient {
 			int node = Integer.parseInt(args[1]); 			
 			int BENIGN = Integer.parseInt(args[2]);	
 			NUM_CLIENT = Integer.parseInt(args[3]);
-			int depth = Integer.parseInt(args[4]);
-			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is "+depth);
+			DEPTH = Integer.parseInt(args[4]);
+			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is "+DEPTH);
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -55,7 +56,7 @@ public class CapacityTestChainClient {
 					clients[index] = new SingleClient(client, accountGuid, false);
 				} else {
 					// otherwise create malicious users
-					String account = "test"+(node*1000+index*10+depth-1)+ACCOUNT_ALIAS;
+					String account = "test"+(node*1000+index*10+DEPTH-1)+ACCOUNT_ALIAS;
 					GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 					clients[index] = new SingleClient(client, accountGuid, true);
 				}
@@ -76,12 +77,12 @@ public class CapacityTestChainClient {
 			int max = 0;
 			int thruput = 0;
 			while (executorPool.getCompletedTaskCount() < NUM_CLIENT){
-				thruput = latency.size() - received;
+				thruput = (latency.size()+mal_request.size()) - received;
 				if(max<thruput){
 					max = thruput;
 				}
 				System.out.println(t+" Throuput:"+thruput+" reqs/sec" );
-				received = latency.size();
+				received = latency.size()+mal_request.size();
 				t++;
 				try{
 					Thread.sleep(1000);
@@ -92,7 +93,7 @@ public class CapacityTestChainClient {
 						
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*latency.size()/eclapsed)+" req/sec.");
+			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(latency.size()+mal_request.size())/eclapsed)+" req/sec.");
 			
 			Socket socket = new Socket("128.119.245.5", 60001);
 	    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);

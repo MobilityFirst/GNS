@@ -15,10 +15,10 @@ public class SingleClient implements Runnable{
 		this.entry = entry;
 		this.malicious = malicious;
 		if (malicious){
-			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.MAL_INTERVAL;
+			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestChainClient.MAL_INTERVAL/CapacityTestChainClient.DEPTH;
 		} else{
-			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestSequentialClient.INTERVAL;
-		}
+			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestChainClient.INTERVAL;
+		} 
 	}
 	
 	public void run(){
@@ -26,17 +26,16 @@ public class SingleClient implements Runnable{
 			long start = System.nanoTime();
 			try{
 				String result = client.fieldRead(entry, "nextGuid");
+				System.out.println("query result is "+result);
 			}catch (Exception e){
-				//e.printStackTrace();
+				e.printStackTrace();
 			}
-			long eclapsed = System.nanoTime() - start;
-			
-			
+			long eclapsed = System.nanoTime() - start;			
 			
 			if (malicious){
-				CapacityTestSequentialClient.mal_request.add(eclapsed);
+				CapacityTestChainClient.mal_request.add(eclapsed);
 			}else{
-				CapacityTestSequentialClient.latency.add(eclapsed);
+				CapacityTestChainClient.latency.add(eclapsed);
 			}
 			
 		}

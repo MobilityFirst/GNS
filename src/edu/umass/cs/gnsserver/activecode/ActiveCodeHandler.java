@@ -71,9 +71,11 @@ public class ActiveCodeHandler {
 	    this.addr = addr;
 	    
 		clientPool = new ClientPool(app, this); 
+		(new Thread(clientPool)).start();
+		
 		
 		guard = new ActiveCodeGuardian(clientPool);
-	    //(new Thread(guard)).start();
+	    (new Thread(guard)).start();
 		
 	    // Get the ThreadFactory implementation to use
 	    threadFactory = new ActiveCodeThreadFactory(clientPool);
@@ -81,8 +83,7 @@ public class ActiveCodeHandler {
 	    executorPool = new ActiveCodeExecutor(numProcesses, numProcesses, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), 
 	    		//new SynchronousQueue<Runnable>(),
-	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy(),
-	    		guard);
+	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy());
 	    // Start the processes
 	    executorPool.prestartAllCoreThreads();
 	    System.out.println("##################### All threads have been started! ##################");
@@ -90,6 +91,8 @@ public class ActiveCodeHandler {
 	    
 	    scheduler = new ActiveCodeScheduler(executorPool);
 	    (new Thread(scheduler)).start();
+	    
+	    clientPool.startSpareWorkers();
 	    
 		this.blacklistSeconds = blacklistSeconds;
 	}
@@ -139,7 +142,9 @@ public class ActiveCodeHandler {
 		String values = valuesMap.toString();
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
-		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
+		ActiveCodeTask act = new ActiveCodeTask(acp, clientPool, guard);
+		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(act);
+		guard.registerFutureTask(act, futureTask);
 		
 		DelayProfiler.updateDelayNano("activeHandlerPrepare", startTime);		
 		
@@ -149,19 +154,34 @@ public class ActiveCodeHandler {
 		
 		try {
 			result = futureTask.get();
-		} catch (ExecutionException e) {
-			System.out.println("Execution");
-			e.printStackTrace();
+			guard.deregisterFutureTask(act);
+		} catch (ExecutionException ee) {
+			System.out.println("Execution "+guid);
+			//ee.printStackTrace();
+			act.deregisterTask();
 			scheduler.finish(guid);
+			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
 			return valuesMap;
-		} catch (CancellationException e){		
-			System.out.println("Cancellation");
-			e.printStackTrace();
+		} catch(CancellationException ce) {
+			System.out.println("Cancel "+guid);
+			//ce.printStackTrace();
+			act.deregisterTask();
 			scheduler.finish(guid);
+			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
+			return valuesMap;
+		} catch(InterruptedException ie) {
+			System.out.println("Interrupt "+guid);
+			ie.printStackTrace();
+			act.deregisterTask();
+			scheduler.finish(guid);
+			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
 			return valuesMap;
 		} catch (Exception e){
 			System.out.println("Other");
+			//e.printStackTrace();
+			act.deregisterTask();
 			scheduler.finish(guid);
+			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
 			return valuesMap;
 		}
 		
@@ -169,6 +189,7 @@ public class ActiveCodeHandler {
 		
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
 		
+		System.out.println(">>>>>>>>>>>>> Handler returns result "+result);
 	    return result;
 	}
 }
