@@ -19,8 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.interfaces.Request;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
@@ -37,7 +37,7 @@ import org.json.JSONObject;
  * insofar as the fields in the JOSN Object is concerned.
  *
  */
-public class CommandValueReturnPacket extends BasicPacketWithClientAddress implements Request {
+public class CommandValueReturnPacket extends BasicPacketWithClientAddress implements ClientRequest {
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";
@@ -268,6 +268,16 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    */
   public int getRequestRate() {
     return requestRate;
+  }
+
+  @Override
+  public ClientRequest getResponse() {
+    return null;
+  }
+
+  @Override
+  public long getRequestID() {
+    return clientRequestId;
   }
 
 }

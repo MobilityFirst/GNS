@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.CCPListenerAdmin;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.packet.admin.AdminRequestPacket;
@@ -368,8 +368,14 @@ public class Admintercessor {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("RECEIVED DUMP RECORD FROM NS: " + entry.getKey());
       }
+      result.append("========================================================================");
+      result.append(LINE_SEPARATOR);
       result.append("Nameserver: " + entry.getKey().toString()
-              + " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
+              + " ("
+              + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() 
+              + ":"
+              + handler.getGnsNodeConfig().getNodePort(entry.getKey())
+              + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
         try {

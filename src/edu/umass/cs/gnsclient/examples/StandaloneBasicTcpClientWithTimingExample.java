@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -45,12 +45,12 @@ import org.json.JSONObject;
  */
 public class StandaloneBasicTcpClientWithTimingExample {
 
-  private static String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static BasicUniversalTcpClient client;
   private static GuidEntry guid;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
 
     InetSocketAddress address;

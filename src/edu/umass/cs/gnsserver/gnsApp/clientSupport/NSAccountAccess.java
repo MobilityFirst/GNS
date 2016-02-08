@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -46,7 +46,7 @@ public class NSAccountAccess {
    * @param guid
    * @param activeReplica
    * @return an {@link edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo} instance
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, null);
@@ -62,7 +62,7 @@ public class NSAccountAccess {
    * @param activeReplica
    * @param lnsAddress
    * @return a {@link GuidInfo} instance or null
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, 
           GnsApplicationInterface<String> activeReplica,

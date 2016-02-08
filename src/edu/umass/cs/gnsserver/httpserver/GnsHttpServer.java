@@ -98,6 +98,7 @@ public class GnsHttpServer {
 
   /**
    * Try to start the http server at the port.
+   *
    * @param port
    * @return true if it was started
    */
@@ -245,18 +246,32 @@ public class GnsHttpServer {
         String nodeAddressesString = resultString.toString();
         resultString = new StringBuilder();
         String prefix = "";
-        for (Object recon : GnsHttpServer.requestHandler.getGnsNodeConfig().getReconfigurators()) {
-          resultString.append(prefix);
-          resultString.append((String) recon);
-          prefix = ", ";
+        for (String recon : GnsHttpServer.requestHandler.getGnsNodeConfig().getReconfigurators()) {
+          resultString.append("<br>&nbsp;&nbsp;");
+          //resultString.append(prefix);
+          resultString.append(recon);
+          resultString.append("&nbsp;=&gt;&nbsp;");
+          //resultString.append("(");
+          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeAddress(recon).getHostName());
+          resultString.append(":");
+          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodePort(recon));
+          //resultString.append(")");
+          //prefix = ", ";
         }
         String reconfiguratorsString = "Reconfigurators: " + resultString.toString();
         resultString = new StringBuilder();
         prefix = "";
-        for (Object activeReplica : GnsHttpServer.requestHandler.getGnsNodeConfig().getActiveReplicas()) {
-          resultString.append(prefix);
-          resultString.append((String) activeReplica);
-          prefix = ", ";
+        for (String activeReplica : GnsHttpServer.requestHandler.getGnsNodeConfig().getActiveReplicas()) {
+          resultString.append("<br>&nbsp;&nbsp;");
+          //resultString.append(prefix);
+          resultString.append(activeReplica);
+          resultString.append("&nbsp;=&gt;&nbsp;");
+          //resultString.append("(");
+          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeAddress(activeReplica).getHostName());
+          resultString.append(":");
+          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodePort(activeReplica));
+          //resultString.append(")");
+          //prefix = ", ";
         }
         String activeReplicasString = "Active replicas: " + resultString.toString();
         String consoleLogLevelString = "Console log level is " + GNS.getLogger().getLevel().getLocalizedName();
@@ -289,7 +304,7 @@ public class GnsHttpServer {
         responseBody.write("<br>".getBytes());
 
         responseBody.write("Gigapaxos is enabled<br>".getBytes());
-     
+
         responseBody.write("New app is enabled<br>".getBytes());
 
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -319,11 +334,11 @@ public class GnsHttpServer {
 
   /**
    * Return the port.
-   * 
+   *
    * @return an int
    */
   public static int getPort() {
     return port;
   }
-  
+
 }

@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.UpdateInfo;
-import edu.umass.cs.gnsserver.exceptions.CancelExecutorTaskException;
+import edu.umass.cs.gnscommon.exceptions.server.CancelExecutorTaskException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.Util;

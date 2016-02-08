@@ -26,7 +26,7 @@ import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
 import static edu.umass.cs.gnscommon.GnsProtocol.READ;
@@ -68,7 +68,7 @@ public class ClientAsynchExample {
   private static final String ACCOUNT_ALIAS = "gnstest@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
 
     // Bring up the server selection dialog

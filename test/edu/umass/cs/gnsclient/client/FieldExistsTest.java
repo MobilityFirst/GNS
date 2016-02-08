@@ -24,8 +24,8 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -39,7 +39,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FieldExistsTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client = null;
   private static GuidEntry masterGuid;
@@ -47,8 +47,17 @@ public class FieldExistsTest {
 
   public FieldExistsTest() {
     if (client == null) {
-      InetSocketAddress address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+      InetSocketAddress address;
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {

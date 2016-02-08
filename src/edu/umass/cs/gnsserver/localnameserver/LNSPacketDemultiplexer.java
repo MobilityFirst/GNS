@@ -200,7 +200,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
       if (requestActives.getActives() != null) {
         if (handler.isDebugMode()) {
           for (InetSocketAddress address : requestActives.getActives()) {
-            GNS.getLogger().info("ACTIVE ADDRESS HOST: " + address.getHostString());
+            GNS.getLogger().info("ACTIVE ADDRESS HOST: " + address.toString());
           }
         }
         // Update the cache so that request actives task will now complete

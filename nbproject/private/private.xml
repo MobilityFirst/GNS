@@ -12,9 +12,24 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/Code/GNS/test/edu/umass/cs/gnsclient/client/UniversalCoreWithSSLTest.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/scripts/singlenodetests/ns.properties</file>
-            <file>file:/Users/westy/Documents/Code/GNS/scripts/singlenodetests/run-nossl.sh</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/FieldAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/AppUpdate.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/AppLookup.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/account/RegisterAccount.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/account/LookupGuidRecord.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/SideToSideQuery.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsclient/client/asynch/ClientAsynchBase.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/recordmap/GNSRecordMap.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/AccountAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSFieldAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/recordmap/RecordMapInterface.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/CommandHandler.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/account/AddGuid.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/recordmap/NameRecord.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/GnsApp.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/account/AddAlias.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/PerformanceTests.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSGroupAccess.java</file>
         </group>
     </open-files>
 </project-private>

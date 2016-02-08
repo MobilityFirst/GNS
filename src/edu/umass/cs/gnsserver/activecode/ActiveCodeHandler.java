@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.codec.binary.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;

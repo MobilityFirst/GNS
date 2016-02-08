@@ -32,9 +32,9 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
@@ -610,7 +610,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
    * @param value
    * // * @param explain
    * @return a MongoRecordCursor
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   @Override
   public MongoRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value)

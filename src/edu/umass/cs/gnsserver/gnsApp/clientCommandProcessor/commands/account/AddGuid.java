@@ -78,7 +78,7 @@ public class AddGuid extends GnsCommand {
       String newGuid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
       
       GuidInfo accountGuidInfo;
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
       if (AccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {

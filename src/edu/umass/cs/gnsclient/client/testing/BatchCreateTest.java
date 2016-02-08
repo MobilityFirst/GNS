@@ -25,7 +25,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -116,7 +116,7 @@ public class BatchCreateTest {
           System.out.println();
         }
       }
-    } catch (GnsException | IOException e) {
+    } catch (GnsClientException | IOException e) {
       System.out.println("Problem sending command " + command + e);
     } finally {
       client.setReadTimeout(oldTimeout);
@@ -126,7 +126,7 @@ public class BatchCreateTest {
 
     try {
       System.out.println("Account record: " + client.lookupAccountRecord(masterGuid.getGuid()));
-    } catch (GnsException | IOException e) {
+    } catch (GnsClientException | IOException e) {
       System.out.println("Problem looking up account record: " + e);
     }
 
@@ -141,7 +141,7 @@ public class BatchCreateTest {
         } else {
           System.out.println("Problem reading random guids " + result);
         }
-      } catch (JSONException | IOException | GnsException e) {
+      } catch (JSONException | IOException | GnsClientException e) {
         System.out.println("Problem reading random guids " + command + e);
       }
       try {

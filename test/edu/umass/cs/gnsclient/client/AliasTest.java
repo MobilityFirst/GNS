@@ -26,7 +26,7 @@ import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
@@ -54,8 +54,17 @@ public class AliasTest {
 
   public AliasTest() {
     if (client == null) {
-      InetSocketAddress address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+      InetSocketAddress address;
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
     }
   }
 
@@ -101,7 +110,7 @@ public class AliasTest {
 //    try {
 //      client.lookupGuid(alias);
 //      System.out.println(alias + " should not exist (first read)");
-//    } catch (GnsException e) {
+//    } catch (GnsClientException e) {
 //    } catch (IOException e) {
 //      fail("Exception while looking up alias: " + e);
 //    }
@@ -109,7 +118,7 @@ public class AliasTest {
 //    try {
 //      client.lookupGuid(alias);
 //      fail(alias + " should not exist (second read)");
-//    } catch (GnsException e) {
+//    } catch (GnsClientException e) {
 //    } catch (IOException e) {
 //      fail("Exception while looking up alias: " + e);
 //    }
@@ -129,7 +138,7 @@ public class AliasTest {
         ThreadUtils.sleep(10);
       } while (true);
       // the lookup should fail and throw to here
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
       System.out.println(alias + " was gone on " + (cnt + 1) + " read");
     }
   }

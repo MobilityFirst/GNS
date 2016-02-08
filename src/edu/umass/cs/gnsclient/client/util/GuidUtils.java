@@ -24,9 +24,9 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
-import edu.umass.cs.gnsclient.exceptions.GnsVerificationException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.security.KeyPair;
@@ -50,7 +50,7 @@ public class GuidUtils {
   private static boolean guidExists(GNSClientInterface client, GuidEntry guid) throws IOException {
     try {
       client.lookupGuidRecord(guid.getGuid());
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
       return false;
     }
     return true;

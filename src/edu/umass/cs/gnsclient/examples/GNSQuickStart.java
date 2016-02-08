@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -72,13 +72,13 @@ public class GNSQuickStart {
   private static final String privateKeyFile = "/Users/Westy/test_key";
 
   public static void main(String[] args) throws IOException, 
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
     
     // A convenience function that pops up a GUI for picking which GNS server you want to use.
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create a new client object
-    UniversalTcpClientExtended client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    UniversalTcpClientExtended client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
     System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
     
     // Retrive the GUID using the account id

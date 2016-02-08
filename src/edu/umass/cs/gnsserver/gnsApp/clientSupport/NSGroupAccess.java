@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Group
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SelectHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
@@ -113,7 +113,7 @@ public class NSGroupAccess {
    * @param activeReplica
    * @param lnsAddress
    * @return a set of strings
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static Set<String> lookupGroups(String guid, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
@@ -128,7 +128,7 @@ public class NSGroupAccess {
    * @param guid
    * @param activeReplica
    * @return a set of strings
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static Set<String> lookupGroupsOnThisServer(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     // this guid could be on another NS hence the true below
@@ -165,7 +165,7 @@ public class NSGroupAccess {
    * @param guid
    * @param activeReplica
    * @param lnsAddress
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void cleanupGroupsForDelete(String guid, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {

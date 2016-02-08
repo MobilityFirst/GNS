@@ -300,8 +300,8 @@ public class LNSNodeConfig implements
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
     String idString = id.toString();
-    Object activeReplicaID = idString + "_ActiveReplica";
-    Object ReconfiguratorID = idString + "_Reconfigurator";
+    Object activeReplicaID = idString + "_Repl";
+    Object ReconfiguratorID = idString + "_Recon";
     LNSNodeInfo nodeInfo = new LNSNodeInfo(id, activeReplicaID, ReconfiguratorID,
             ipAddress, externalIP, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());

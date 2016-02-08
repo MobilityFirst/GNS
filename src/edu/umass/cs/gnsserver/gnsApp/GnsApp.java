@@ -22,18 +22,18 @@ package edu.umass.cs.gnsserver.gnsApp;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
-
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.MongoRecords;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import static edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientCommandProcessor;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,7 +43,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSQueryHandler;
+//import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSQueryHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSUpdateHandler;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket;
@@ -64,8 +64,8 @@ import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -86,16 +86,17 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   private final static int INITIAL_RECORD_VERSION = 0;
   private String nodeID;
   private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
-  private final PingManager<String> pingManager;
+  private PingManager<String> pingManager;
+  private boolean constructed = false;
   /**
    * Object provides interface to the database table storing name records
    */
-  private final BasicRecordMap nameRecordDB;
+  private BasicRecordMap nameRecordDB;
   /**
    * The Nio server
    */
   private SSLMessenger<String, JSONObject> messenger;
-  private final ClientCommandProcessor clientCommandProcessor;
+  private ClientCommandProcessor clientCommandProcessor;
 
   // Keep track of commands that are coming in
   /**
@@ -109,6 +110,44 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
    */
   private ActiveCodeHandler activeCodeHandler;
 
+  public GnsApp(String[] args) throws IOException {
+	  AppReconfigurableNode.initOptions(args);
+  }
+  /**
+   * Creates the application.
+   *
+   * @param messenger
+   * @throws java.io.IOException
+   */
+  public void GnsAppConstructor(JSONMessenger<String> messenger) throws IOException {
+    this.nodeID = messenger.getMyID();
+    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>((GNSNodeConfig<String>)messenger.getNodeConfig());
+    // Start a ping server, but not a client.
+    this.pingManager = new PingManager<String>(nodeID, this.nodeConfig, true);
+    GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
+            + nodeConfig.getCcpPingPort(nodeID));
+    MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
+    GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
+    this.messenger = messenger;
+    this.clientCommandProcessor = new ClientCommandProcessor(messenger,
+            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
+            ((GNSNodeConfig<String>)messenger.getNodeConfig()),
+            AppReconfigurableNodeOptions.debuggingEnabled,
+            this,
+            this.nodeID,
+            AppReconfigurableNodeOptions.dnsGnsOnly,
+            AppReconfigurableNodeOptions.dnsOnly,
+            AppReconfigurableNodeOptions.gnsServerIP);
+    // start the NSListenerAdmin thread
+    new AppAdmin(this, (GNSNodeConfig<String>) messenger.getNodeConfig()).start();
+    GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
+    this.activeCodeHandler = new ActiveCodeHandler(this,
+            AppReconfigurableNodeOptions.activeCodeWorkerCount,
+            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
+    constructed = true;
+  }
+  
   /**
    * Creates the application.
    *
@@ -143,13 +182,22 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     this.activeCodeHandler = new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
-
+    constructed = true;
   }
+
   
   @Override
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
     this.messenger = (SSLMessenger<String, JSONObject>)messenger;
     this.nodeID = messenger.getMyID().toString();
+    try {
+    	if(!constructed)
+    		this.GnsAppConstructor((JSONMessenger<String>)messenger);
+    } catch(IOException e) {
+    	e.printStackTrace();
+    	GNS.getLogger().severe("Unable to create app: exiting");
+    	System.exit(1);
+    }
 //    this.nodeConfig 
 //            = new GNSConsistentReconfigurableNodeConfig<String>(((SSLMessenger<String, JSONObject>)messenger).getNodeConfig());
   }
@@ -184,7 +232,8 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
           // the only dns response we should see are coming in response to LNSQueryHandler requests
           DNSPacket<String> dnsPacket = new DNSPacket<String>(json, nodeConfig);
           if (!dnsPacket.isQuery()) {
-            LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
+            GNS.getLogger().severe("App should not be getting query packets!!");
+            //LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
             AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient, activeCodeHandler);

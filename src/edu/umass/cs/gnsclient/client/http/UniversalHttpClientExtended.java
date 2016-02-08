@@ -23,7 +23,7 @@ import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import java.io.IOException;
 import org.json.JSONArray;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 
 /**
  * This class defines an extension to AbstractGnrsClient to communicate with a GNS instance
@@ -54,10 +54,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldCreateSingleElementArray(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -72,10 +72,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldCreateSingleElementArray(GuidEntry targetGuid, String field, String value) throws IOException,
-          GnsException {
+          GnsClientException {
     fieldCreateSingleElementArray(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -88,10 +88,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendOrCreate(String targetGuid, String field, String value, GuidEntry writer)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -107,10 +107,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceOrCreate(String targetGuid, String field, String value, GuidEntry writer)
-          throws IOException, GnsException {
+          throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE_OR_CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -125,10 +125,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppend(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_WITH_DUPLICATION, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -144,10 +144,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND_LIST, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -163,10 +163,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.APPEND, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value.toString(), GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -182,10 +182,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldReplaceFirstElement(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsException {
+          GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.REPLACE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -202,10 +202,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param oldValue
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException
+   * @throws GnsClientException
    */
   public void fieldSubstitute(String targetGuid, String field, String newValue,
-          String oldValue, GuidEntry writer) throws IOException, GnsException {
+          String oldValue, GuidEntry writer) throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SUBSTITUTE, GnsProtocol.GUID,
             targetGuid, GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue,
             GnsProtocol.OLD_VALUE, oldValue);
@@ -223,10 +223,10 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param oldValue list of old values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsException 
+   * @throws GnsClientException 
    */
   public void fieldSubstitute(String targetGuid, String field,
-          JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, GnsException {
+          JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, GnsClientException {
     String command = createAndSignQuery(writer, GnsProtocol.SUBSTITUTE_LIST, GnsProtocol.GUID,
             targetGuid, GnsProtocol.FIELD, field, GnsProtocol.VALUE, newValue.toString(),
             GnsProtocol.OLD_VALUE, oldValue.toString());

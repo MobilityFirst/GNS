@@ -19,20 +19,26 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnscommon.utils.Base64;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.exceptions.GnsRuntimeException;
+import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.SideToSideQuery;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -67,7 +73,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-  public class AccountAccess {
+public class AccountAccess {
 
   /**
    * Defines the field name in an account guid where account information is stored.
@@ -177,13 +183,27 @@ import org.json.JSONObject;
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
 
     try {
-      QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(name, HRN_GUID);
-      //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(name, HRN_GUID);
-      if (!guidResult.isError()) {
-        return guidResult.getValuesMap().getString(HRN_GUID);
-        //return (String) guidResult.getArray(HRN_GUID).get(0);
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(name, HRN_GUID, handler.getApp());
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
       }
-    } catch (JSONException e) {
+      if (result != null) {
+        return result.getString(HRN_GUID);
+      }
+    } catch (FailedDBOperationException | JSONException e) {
+      GNS.getLogger().severe("Problem extracting HRN_GUID from " + name + " :" + e);
+    }
+//    try {
+//      QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(name, HRN_GUID);
+//      //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(name, HRN_GUID);
+//      if (!guidResult.isError()) {
+//        return guidResult.getValuesMap().getString(HRN_GUID);
+//        //return (String) guidResult.getArray(HRN_GUID).get(0);
+//      }
+//    } catch (JSONException e) {
+//    }
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for " + name);
     }
     return null;
   }
@@ -198,17 +218,67 @@ import org.json.JSONObject;
    * @return an {@link GuidInfo} instance
    */
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler) {
+    return lookupGuidInfo(guid, handler, false);
+  }
 
-    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, GUID_INFO);
-    //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, GUID_INFO);
-    if (!guidResult.isError()) {
+  /**
+   * Obtains the guid info record from the database for GUID given.
+   * <p>
+   * GUID = Globally Unique Identifier<br>
+   *
+   * @param guid
+   * @param handler
+   * @param allowRemoteLookup
+   * @return an {@link GuidInfo} instance
+   */
+  public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is " + allowRemoteLookup);
+    }
+
+    try {
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, GUID_INFO, handler.getApp());
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + GUID_INFO + ": " + result);
+      }
+      if (result != null) {
+        return new GuidInfo(new JSONObject(result.getString(GUID_INFO)));
+      }
+    } catch (FailedDBOperationException | JSONException | ParseException e) {
+      GNS.getLogger().severe("Problem extracting GUID_INFO from " + guid + " :" + e);
+    }
+
+//    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, GUID_INFO);
+//    //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, GUID_INFO);
+//    if (!guidResult.isError()) {
+//      try {
+//        return new GuidInfo(guidResult.getValuesMap().getJSONObject(GUID_INFO));
+//        //return new GuidInfo(guidResult.getArray(GUID_INFO).toResultValueString());
+//      } catch (JSONException e) {
+//        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
+//      } catch (ParseException e) {
+//        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
+//      }
+//    }
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for " + guid);
+    }
+    if (allowRemoteLookup) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for " + guid);
+      }
+      String value = null;
       try {
-        return new GuidInfo(guidResult.getValuesMap().getJSONObject(GUID_INFO));
-        //return new GuidInfo(guidResult.getArray(GUID_INFO).toResultValueString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
-      } catch (ParseException e) {
-        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
+        value = new SideToSideQuery().fieldRead(guid, GUID_INFO);
+      } catch (IOException | JSONException | GnsClientException e) {
+         GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
+      }
+      if (value != null) {
+        try {
+          return new GuidInfo(new JSONObject(value));
+        } catch (JSONException | ParseException e) {
+          GNS.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
+        }
       }
     }
     return null;
@@ -289,10 +359,8 @@ import org.json.JSONObject;
           }
           return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " " + "Unable to send verification email");
         }
-      } else {
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
-        }
+      } else if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
       }
     }
     return response;
@@ -677,9 +745,9 @@ import org.json.JSONObject;
    * @param accountGuidInfo
    * @param count
    * @param handler
-   * @return 
+   * @return
    */
-  public static CommandResponse<String> addMultipleGuidsFasterAllRandom(int count, 
+  public static CommandResponse<String> addMultipleGuidsFasterAllRandom(int count,
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
           ClientRequestHandlerInterface handler) {
     List<String> names = new ArrayList<>();

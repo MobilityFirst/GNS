@@ -65,7 +65,7 @@ public class LNSConsistentReconfigurableNodeConfig extends
     this.activeReplicas = this.nodeConfig.getActiveReplicas();
     this.reconfigurators = this.nodeConfig.getReconfigurators();
     this.CH_RC = new ConsistentHashing<InetSocketAddress>(this.reconfigurators);
-    this.CH_AR = new ConsistentHashing<InetSocketAddress>(this.activeReplicas, true);
+    this.CH_AR = new ConsistentHashing<InetSocketAddress>(this.activeReplicas); 
   }
 
   @Override

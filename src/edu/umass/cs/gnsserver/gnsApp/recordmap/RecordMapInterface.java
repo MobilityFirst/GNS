@@ -22,9 +22,9 @@ package edu.umass.cs.gnsserver.gnsApp.recordmap;
 //import edu.umass.cs.gnsserver.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnsserver.database.ColumnField;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -120,7 +120,7 @@ public interface RecordMapInterface {
   /**
    * Clears the database and reinitializes all indices.
    * 
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public void reset() throws FailedDBOperationException;
 
@@ -194,7 +194,7 @@ public interface RecordMapInterface {
    * @param valuesMapKeys - the user fields to update
    * @param valuesMapValues - the values to set the user fields to to
    * @return Returns true if the update was applied false otherwise.
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
           ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField,
@@ -219,7 +219,7 @@ public interface RecordMapInterface {
    * @param nameField - the field in the row that contains the name field
    * @param fields
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException;
 
@@ -227,7 +227,7 @@ public interface RecordMapInterface {
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract AbstractRecordCursor getAllRowsIterator() throws FailedDBOperationException;
 
@@ -239,7 +239,7 @@ public interface RecordMapInterface {
    * @param key
    * @param value
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException;
 
@@ -251,7 +251,7 @@ public interface RecordMapInterface {
    * @param key
    * @param value - a string that looks like this [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) throws FailedDBOperationException;
 
@@ -264,7 +264,7 @@ public interface RecordMapInterface {
    * @param value - a string that looks like this [LONG, LAT]
    * @param maxDistance - the distance in meters
    * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException;
 

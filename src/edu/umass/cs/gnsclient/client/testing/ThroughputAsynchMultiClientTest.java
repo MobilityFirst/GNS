@@ -28,7 +28,7 @@ import edu.umass.cs.gnsclient.client.util.Format;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
 import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_RANDOM_GUIDS;
@@ -337,7 +337,7 @@ public class ThroughputAsynchMultiClientTest {
             System.out.println("Problem reading random guids " + result);
             System.exit(-1);
           }
-        } catch (JSONException | IOException | GnsException e) {
+        } catch (JSONException | IOException | GnsClientException e) {
           System.out.println("Problem reading random guids " + e);
           System.exit(-1);
         }
