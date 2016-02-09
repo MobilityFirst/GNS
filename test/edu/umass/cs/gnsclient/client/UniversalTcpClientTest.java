@@ -79,7 +79,8 @@ public class UniversalTcpClientTest {
         address = ServerSelectDialog.selectServer();
       }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
       if (System.getProperty("alias") != null
               && !System.getProperty("alias").isEmpty()) {
         accountAlias = System.getProperty("alias");

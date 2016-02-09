@@ -109,6 +109,12 @@ public class AccountAccess {
     }
   }
 
+  public static AccountInfo lookupAccountInfoFromGuid(String guid,
+          //boolean allowSubGuids, 
+          ClientRequestHandlerInterface handler) {
+    return lookupAccountInfoFromGuid(guid, handler, false);
+  }
+
   /**
    * Obtains the account info record for the given GUID if that GUID
    * was used to create an account.
@@ -123,27 +129,64 @@ public class AccountAccess {
    *
    * @param guid
    * @param handler
+   * @param allowRemoteLookup
    * @return the account info record or null if it could not be found
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid,
-          //boolean allowSubGuids, 
-          ClientRequestHandlerInterface handler) {
-    QueryResult<String> accountResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-    //QueryResult<String> accountResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, 
+          ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
+    try {
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, ACCOUNT_INFO, handler.getApp());
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for " + guid + " / " + ACCOUNT_INFO + ": " + result);
+      }
+      if (result != null) {
+        return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
+      }
+    } catch (FailedDBOperationException | JSONException | ParseException e) {
+      GNS.getLogger().severe("Problem extracting ACCOUNT_INFO from " + guid + " :" + e);
     }
-    if (!accountResult.isError()) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for " + guid);
+    }
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ACCOUNT_INFO NOT FOUND for " + guid);
+    }
+    if (allowRemoteLookup) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for " + guid);
+      }
+      String value = null;
       try {
-        return new AccountInfo(accountResult.getValuesMap().getJSONObject(ACCOUNT_INFO));
-        //return new AccountInfo(accountResult.getArray(ACCOUNT_INFO).toResultValueString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem parsing accountinfo:" + e);
-      } catch (ParseException e) {
-        GNS.getLogger().severe("Problem parsing accountinfo:" + e);
+        value = new SideToSideQuery().fieldRead(guid, ACCOUNT_INFO);
+      } catch (IOException | JSONException | GnsClientException e) {
+        GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
+      }
+      if (value != null) {
+        try {
+          return new AccountInfo(new JSONObject(value));
+        } catch (JSONException | ParseException e) {
+          GNS.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
+        }
       }
     }
     return null;
+
+//    QueryResult<String> accountResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+//    //QueryResult<String> accountResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+//    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//      GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
+//    }
+//    if (!accountResult.isError()) {
+//      try {
+//        return new AccountInfo(accountResult.getValuesMap().getJSONObject(ACCOUNT_INFO));
+//        //return new AccountInfo(accountResult.getArray(ACCOUNT_INFO).toResultValueString());
+//      } catch (JSONException e) {
+//        GNS.getLogger().severe("Problem parsing accountinfo:" + e);
+//      } catch (ParseException e) {
+//        GNS.getLogger().severe("Problem parsing accountinfo:" + e);
+//      }
+//    }
+//    return null;
   }
 
   /**
@@ -271,7 +314,7 @@ public class AccountAccess {
       try {
         value = new SideToSideQuery().fieldRead(guid, GUID_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
-         GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
+        GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
       }
       if (value != null) {
         try {
@@ -982,23 +1025,24 @@ public class AccountAccess {
 
   private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo, String writer, String signature, String message,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
-    try {
-      JSONObject json = new JSONObject();
-      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-      if (sendToReplica) {
-        handler.setReallySendUpdateToReplica(true);
-      }
-      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
-              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-              writer, signature, message, sendToReplica);
-      if (sendToReplica) {
-        handler.setReallySendUpdateToReplica(false);
-      }
-      return response;
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing account info:" + e);
-      return NSResponseCode.ERROR;
-    }
+//    try {
+//      JSONObject json = new JSONObject();
+//      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
+//      if (sendToReplica) {
+//        handler.setReallySendUpdateToReplica(true);
+//      }
+//      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
+//              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+//              writer, signature, message, sendToReplica);
+//      if (sendToReplica) {
+//        handler.setReallySendUpdateToReplica(false);
+//      }
+//      return response;
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("Problem parsing account info:" + e);
+//      return NSResponseCode.ERROR;
+//    }
+  return NSResponseCode.NO_ERROR;
   }
 
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,

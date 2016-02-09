@@ -70,6 +70,9 @@ public class Read extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    if (reader.equals(MAGIC_STRING)) {
+      reader = null;
+    }
 
     if (ALL_FIELDS.equals(field)) {
       return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);

@@ -90,7 +90,10 @@ public class AccountInfo {
     this.created = new Date();
     this.updated = new Date();
     this.password = password;
-    this.verified = false;
+    // FIXME: TEST HACK
+    this.verified = true;
+    
+    //this.verified = false;
     this.verificationCode = null;
   }
 

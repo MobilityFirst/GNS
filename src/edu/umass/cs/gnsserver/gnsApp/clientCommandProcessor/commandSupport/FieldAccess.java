@@ -98,11 +98,20 @@ public class FieldAccess {
     if (result.isError()) {
       resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
-      ValuesMap valuesMap = result.getValuesMapSansInternalFields();
+      
       try {
         if (field != null) {
+          // Reader is null means this is a magic internal request
+          // so let them access internal fields.
+          ValuesMap valuesMap;
+          if (reader == null) {
+            valuesMap = result.getValuesMap();
+          } else {
+            valuesMap = result.getValuesMapSansInternalFields();
+          }
           resultString = valuesMap.get(field).toString();
         } else {
+          ValuesMap valuesMap = result.getValuesMapSansInternalFields();
           resultString = valuesMap.toString();
         }
       } catch (JSONException e) {

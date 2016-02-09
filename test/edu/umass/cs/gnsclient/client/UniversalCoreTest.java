@@ -78,7 +78,8 @@ public class UniversalCoreTest {
         address = ServerSelectDialog.selectServer();
       }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
       if (System.getProperty("alias") != null
               && !System.getProperty("alias").isEmpty()) {
         accountAlias = System.getProperty("alias");
@@ -371,7 +372,7 @@ public class UniversalCoreTest {
       fail("Exception when we were not expecting it testing ACL all fields: " + e);
     }
   }
-  
+
   @Test
   public void test_14_ACLCreateDeeperField() {
     try {
@@ -386,7 +387,7 @@ public class UniversalCoreTest {
         fail("Problem adding acl: " + e);
       }
       try {
-        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry, 
+        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
         JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);

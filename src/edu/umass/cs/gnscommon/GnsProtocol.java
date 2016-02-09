@@ -192,6 +192,7 @@ public class GnsProtocol {
   public final static String SIGNATURE = "signature";
   public final static String PASSKEY = "passkey";
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
+  public final static String MAGIC_STRING = "magic";
   // Special fields for ACL
   public final static String GUID_ACL = "+GUID_ACL+";
   public final static String GROUP_ACL = "+GROUP_ACL+";

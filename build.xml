@@ -236,6 +236,7 @@
     <property name="alias" value=""/>
     <property name="password" value=""/>
     <property name="count" value=""/>
+    <property name="disableSSL" value=""/>
     <junit printsummary="withOutAndErr" fork="yes"> 
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
@@ -244,6 +245,7 @@
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DdisableSSL=${disableSSL}"/>
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>

@@ -54,6 +54,8 @@ public class CommandDefs {
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.CreateSelf",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.Help",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.Read",
+    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReadSelf",
+    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReadUnsigned",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReadMultiField",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReadArray",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReadArrayOne",

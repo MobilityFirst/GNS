@@ -82,7 +82,7 @@ public class AddGuid extends GnsCommand {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
       if (AccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
         if (accountInfo == null) {
           return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
         }

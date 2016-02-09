@@ -62,7 +62,8 @@ public class GroupGuidLookupIndirectionTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -83,12 +84,20 @@ public class GroupGuidLookupIndirectionTest {
     } catch (Exception e) {
       fail("Exception while trying to create the guids: " + e);
     }
+  }
+
+  @Test
+  public void test_02_RegisterGroup() {
     try {
       indirectionGroupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTestGroup-" + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);
     }
+  }
+
+  @Test
+  public void test_03_AddGroupMembers() {
     try {
       client.groupAddGuids(indirectionGroupGuid.getGuid(), IndirectionGroupMembers, masterGuid);
     } catch (Exception e) {
@@ -98,7 +107,7 @@ public class GroupGuidLookupIndirectionTest {
   }
 
   @Test
-  public void test_02_TestRead() {
+  public void test_99_TestRead() {
     try {
       String actual = client.fieldRead(indirectionGroupGuid, indirectionGroupTestFieldName);
       System.out.println("Indirection Test Result = " + actual);

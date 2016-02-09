@@ -39,7 +39,12 @@ import static edu.umass.cs.gnscommon.GnsProtocol.NULL_RESPONSE;
 import static edu.umass.cs.gnscommon.GnsProtocol.VERIFICATION_ERROR;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import static edu.umass.cs.reconfiguration.ReconfigurationConfig.getReconfigurators;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.json.JSONException;
@@ -68,6 +73,16 @@ public class SideToSideQuery extends ClientAsynchBase {
   };
 
   public SideToSideQuery() throws IOException {
+    super(getAuthReconfiguratorAddresses());
+  }
+
+  public static Set<InetSocketAddress> getAuthReconfiguratorAddresses() {
+    HashSet<InetSocketAddress> result = new HashSet<>();
+    getReconfigurators().values().stream().forEach((socketAddress) -> {
+      result.add(new InetSocketAddress(socketAddress.getAddress(),
+              socketAddress.getPort() + ReconfigurationConfig.getClientPortOffset()));
+    });
+    return result;
   }
 
   public String fieldRead(String guid, String field) throws IOException, JSONException, GnsClientException {
