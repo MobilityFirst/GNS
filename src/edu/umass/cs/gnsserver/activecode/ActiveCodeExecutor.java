@@ -68,9 +68,9 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 			} catch (ExecutionException ee) {
 				t = ee.getCause();
 			} catch (InterruptedException ie) {
-				//Thread.currentThread().interrupt(); // ignore/reset
-				t = ie.getCause();
+				Thread.currentThread().interrupt(); // ignore/reset
 			}
+			
 		}
 				
 	}

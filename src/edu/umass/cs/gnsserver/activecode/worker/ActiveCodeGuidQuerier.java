@@ -114,6 +114,7 @@ public class ActiveCodeGuidQuerier {
   }
   
   protected void setResponse(ActiveCodeQueryResponse acqr){
+	  System.out.println("The querier is "+this);
 	  this.acqr = acqr;
 	  synchronized(acqr){
 		  acqr.notify();

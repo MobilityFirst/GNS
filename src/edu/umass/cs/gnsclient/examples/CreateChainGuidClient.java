@@ -24,7 +24,7 @@ public class CreateChainGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT;
-	private final static String filename = "/Users/gaozy/WebStorm/chain.js"; // "/home/ubuntu/chain.js"; // 
+	private static String filename = "/Users/gaozy/WebStorm/chain.js"; // "/home/ubuntu/chain.js"; // 
 	private final static String key_folder = "/Users/gaozy/GNS/gns_key/"; //"/home/ubuntu/gns_key/"; //
 	
 	public static void main(String[] args) throws IOException,
@@ -34,6 +34,7 @@ public class CreateChainGuidClient {
 		int node = Integer.parseInt(args[1]);
 		int depth = Integer.parseInt(args[2]);
 		NUM_CLIENT = Integer.parseInt(args[3]);
+		filename = args[4];
 		
 		//Read in the code and serialize
 		String code = new String(Files.readAllBytes(Paths.get(filename)));

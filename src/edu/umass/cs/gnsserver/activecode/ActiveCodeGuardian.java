@@ -46,7 +46,7 @@ public class ActiveCodeGuardian implements Runnable {
 						}
 						// deregister the task and cancel it
 						removeThread(task);
-						runnableMap.get(task).cancel(true);
+						//runnableMap.get(task).cancel(true);
 						deregisterFutureTask(task);
 						cnt++;
 						System.out.println("There are "+(cnt)+" tasks being cancelled.");
