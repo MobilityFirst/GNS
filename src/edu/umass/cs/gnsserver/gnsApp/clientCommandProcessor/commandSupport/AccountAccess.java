@@ -1026,38 +1026,39 @@ public class AccountAccess {
   private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
           String writer, String signature, String message,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
-    try {
-      JSONObject json = new JSONObject();
-      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
+//    try {
+//      JSONObject json = new JSONObject();
+//      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
+////      if (sendToReplica) {
+////        handler.setReallySendUpdateToReplica(true);
+////      }
+//      NSResponseCode response;
 //      if (sendToReplica) {
-//        handler.setReallySendUpdateToReplica(true);
+//        try {
+//          new SideToSideQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
+//          response = NSResponseCode.NO_ERROR;
+//        } catch (GnsClientException | IOException | JSONException e) {
+//          GNS.getLogger().severe("Problem with remote query:" + e);
+//          response = NSResponseCode.ERROR;
+//        }
+//      } else {
+//        response = handler.getIntercessor().sendUpdateUserJSON(guid,
+//                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+//                writer, signature, message, sendToReplica);
 //      }
-      NSResponseCode response;
-      if (sendToReplica) {
-        try {
-          new SideToSideQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
-          response = NSResponseCode.NO_ERROR;
-        } catch (GnsClientException | IOException | JSONException e) {
-          response = NSResponseCode.ERROR;
-        }
-      } else {
-        response = handler.getIntercessor().sendUpdateUserJSON(guid,
-                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-                writer, signature, message, sendToReplica);
-      }
-//      if (sendToReplica) {
-//        handler.setReallySendUpdateToReplica(false);
-//      }
-      return response;
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing account info:" + e);
-      return NSResponseCode.ERROR;
-    }
+////      if (sendToReplica) {
+////        handler.setReallySendUpdateToReplica(false);
+////      }
+//      return response;
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("Problem parsing account info:" + e);
+//      return NSResponseCode.ERROR;
+//    }
+  return NSResponseCode.NO_ERROR;
   }
 
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
-    //try {
     return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
             null, null, null, handler, sendToReplica).isAnError();
   }
@@ -1071,8 +1072,6 @@ public class AccountAccess {
       NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
               new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
               writer, signature, message);
-//      NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guidInfo.getGuid(), GUID_INFO,
-//              guidInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
       return response;
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing guid info:" + e);
@@ -1084,23 +1083,6 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
 
     return !updateGuidInfo(guidInfo, null, null, null, handler).isAnError();
-//    try {
-//      JSONObject json = new JSONObject();
-//      json.put(GUID_INFO, guidInfo.toJSONObject());
-//      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
-//              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE, 
-//              null, null, null);
-//      if (!response.isAnError()) {
-////      ResultValue newvalue;
-////      newvalue = guidInfo.toDBFormat();
-////      if (!handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
-////              newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
-//        return true;
-//      }
-//    } catch (JSONException e) {
-//      GNS.getLogger().warning("Problem parsing guid info:" + e);
-//    }
-//    return false;
   }
 
   /**

@@ -28,8 +28,11 @@ import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.utils.Config;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -192,11 +195,11 @@ public class AppReconfigurableNodeOptions {
    * DISABLE_SSL
    */
   public static final String DISABLE_SSL = "disableSSL";
-   /**
+  /**
    * DISABLE_EMAIL_VERIFICATION
    */
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
-  
+
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
   /**
@@ -279,23 +282,45 @@ public class AppReconfigurableNodeOptions {
 
     if (!allValues.containsKey(DISABLE_SSL)) {
       disableSSL = false;
+//      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
+//              100);
+      // old
       ReconfigurationConfig.setClientPortOffset(100);
+
+//      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
+//              SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH);
+      // old
       ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
+
+//      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
+//              SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH);
+      // old
       ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
+
       System.out.println("NS: SSL is enabled");
     } else {
       disableSSL = true;
+//      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
+//              0);
+      // old
       ReconfigurationConfig.setClientPortOffset(0);
+
+//      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
+//              SSLDataProcessingWorker.SSL_MODES.CLEAR);
+      // old
       ReconfigurationConfig.setClientSSLMode(CLEAR);
+
+//      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
+//              SSLDataProcessingWorker.SSL_MODES.CLEAR);
+      // old
       ReconfigurationConfig.setServerSSLMode(CLEAR);
       System.out.println("NS: SSL is disabled");
     }
-    
-     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
-       System.out.println("******** Email Verification is OFF *********");
-       GNS.enableEmailAccountVerification = false;
-     }
-    
+
+    if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
+      System.out.println("******** Email Verification is OFF *********");
+      GNS.enableEmailAccountVerification = false;
+    }
 
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       debuggingEnabled = true;
@@ -399,9 +424,9 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
     }
-    
+
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
-    	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
+      activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
 
   }

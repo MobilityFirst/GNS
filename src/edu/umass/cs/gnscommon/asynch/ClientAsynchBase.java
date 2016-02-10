@@ -64,6 +64,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
@@ -112,7 +113,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws java.io.IOException
    */
   public ClientAsynchBase(Set<InetSocketAddress> addresses) throws IOException {
-    super(addresses);
+    //super(addresses);
+    // will use above code once we get rid of  ReconfigurationConfig accessors
+    super(addresses,
+            ReconfigurationConfig.getClientSSLMode(),
+            ReconfigurationConfig.getClientPortOffset());
     if (isDebuggingEnabled()) {
       System.out.println("Reconfigurators " + addresses);
       System.out.println("Client port offset " + ReconfigurationConfig.getClientPortOffset());
@@ -120,7 +125,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     }
     keyPairHostIndex = addresses.iterator().next();
   }
-  
+
   private static Stringifiable<String> unstringer = new StringifiableDefault<String>("");
 
   @Override
@@ -142,6 +147,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public Set<IntegerPacketType> getRequestTypes() {
     return Collections.unmodifiableSet(clientPacketTypes);
   }
+
   /**
    * Sends a command packet to an active replica.
    *
@@ -399,7 +405,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
           throws IOException, GnsClientException, JSONException {
     return sendCommandAsynch(createCommand(LOOKUP_ACCOUNT_RECORD, GUID, accountGuid), callback);
   }
-  
+
   /**
    * Read a field from a GNS server.
    *
@@ -416,25 +422,25 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(READ, GUID, guid, FIELD, field), callback);
   }
-  
+
   public long fieldReadArray(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(READ_ARRAY, GUID, guid, FIELD, field), callback);
   }
-  
+
   public long fieldUpdate(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid, 
-            USER_JSON, json.toString(), 
+    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid,
+            USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
   }
-  
+
   public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
-    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid, 
-            USER_JSON, json.toString(), 
+    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid,
+            USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 
