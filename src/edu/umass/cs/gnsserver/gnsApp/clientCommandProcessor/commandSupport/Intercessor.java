@@ -571,10 +571,9 @@ public class Intercessor implements IntercessorInterface {
     if (wait) {
       waitForUpdateConfirmationPacket(id);
     }
-    NSResponseCode result = updateSuccessResult.get(id);
-    updateSuccessResult.remove(id);
+    NSResponseCode result = updateSuccessResult.remove(id);
     if (debuggingEnabled) {
-      GNS.getLogger().fine("Update userJSON (" + id + "): " + name + "\n  Returning: " + result);
+      GNS.getLogger().info("Update userJSON (" + id + "): " + name + "\n  Returning: " + result);
     }
     return result;
   }

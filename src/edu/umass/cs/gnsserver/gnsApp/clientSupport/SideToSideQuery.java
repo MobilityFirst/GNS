@@ -73,18 +73,20 @@ public class SideToSideQuery extends ClientAsynchBase {
   };
 
   public SideToSideQuery() throws IOException {
-    super(getAuthReconfiguratorAddresses());
   }
 
-  public static Set<InetSocketAddress> getAuthReconfiguratorAddresses() {
-    HashSet<InetSocketAddress> result = new HashSet<>();
-    getReconfigurators().values().stream().forEach((socketAddress) -> {
-      result.add(new InetSocketAddress(socketAddress.getAddress(),
-              socketAddress.getPort() + ReconfigurationConfig.getClientPortOffset()));
-    });
-    return result;
-  }
-
+//  public SideToSideQuery() throws IOException {
+//    super(getAuthReconfiguratorAddresses());
+//  }
+//
+//  public static Set<InetSocketAddress> getAuthReconfiguratorAddresses() {
+//    HashSet<InetSocketAddress> result = new HashSet<>();
+//    getReconfigurators().values().stream().forEach((socketAddress) -> {
+//      result.add(new InetSocketAddress(socketAddress.getAddress(),
+//              socketAddress.getPort() + ReconfigurationConfig.getClientPortOffset()));
+//    });
+//    return result;
+//  }
   public String fieldRead(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {

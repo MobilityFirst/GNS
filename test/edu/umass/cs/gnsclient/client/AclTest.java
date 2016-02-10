@@ -62,7 +62,8 @@ public class AclTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
     }
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
@@ -235,7 +236,7 @@ public class AclTest {
         fail("Problem adding acl: " + e);
       }
       try {
-        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry, 
+        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
         JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);

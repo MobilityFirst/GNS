@@ -66,7 +66,8 @@ public class GroupAndAclTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -83,7 +84,7 @@ public class GroupAndAclTest {
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while creating guids: " + e);
     }
   }
 
@@ -122,7 +123,7 @@ public class GroupAndAclTest {
       GuidEntry groupAccessUserEntry;
       try {
         groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupAccessUserName);
-        } catch (Exception e) {
+      } catch (Exception e) {
         fail("Exception creating group user: " + e);
         return;
       }

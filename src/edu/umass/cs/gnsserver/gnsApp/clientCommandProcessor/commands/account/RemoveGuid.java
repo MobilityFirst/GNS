@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
@@ -77,7 +77,7 @@ public class RemoveGuid extends GnsCommand {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
       }
       if (accountGuid != null) {
-        if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
+        if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
           return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
         }
       }
@@ -85,7 +85,7 @@ public class RemoveGuid extends GnsCommand {
               : guidInfoToRemove.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = null;
         if (accountGuid != null) {
-          accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
+          accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
           if (accountInfo == null) {
             return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
           }

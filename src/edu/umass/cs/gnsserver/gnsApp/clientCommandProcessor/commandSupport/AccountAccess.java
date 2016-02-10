@@ -132,7 +132,7 @@ public class AccountAccess {
    * @param allowRemoteLookup
    * @return the account info record or null if it could not be found
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, 
+  public static AccountInfo lookupAccountInfoFromGuid(String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
       ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, ACCOUNT_INFO, handler.getApp());
@@ -468,7 +468,7 @@ public class AccountAccess {
   public static CommandResponse<String> resetPublicKey(String guid, String password, String publicKey,
           ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
-    if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
+    if ((accountInfo = lookupAccountInfoFromGuid(guid, handler, true)) == null) {
       return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Not an account guid");
     }
     if (verifyPassword(accountInfo, password)) {
@@ -615,9 +615,9 @@ public class AccountAccess {
       for (String alias : accountInfo.getAliases()) {
         handler.getIntercessor().sendRemoveRecord(alias);
       }
-      // getArray rid of all subguids
+      // get rid of all subguids
       for (String guid : accountInfo.getGuids()) {
-        GuidInfo guidInfo = lookupGuidInfo(guid, handler);
+        GuidInfo guidInfo = lookupGuidInfo(guid, handler, true);
         if (guidInfo != null) { // should not be null, ignore if it is
           removeGuid(guidInfo, accountInfo, true, handler);
         }
@@ -1023,7 +1023,8 @@ public class AccountAccess {
     return new CommandResponse<String>(OK_RESPONSE);
   }
 
-  private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo, String writer, String signature, String message,
+  private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
+          String writer, String signature, String message,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
       JSONObject json = new JSONObject();
@@ -1031,9 +1032,19 @@ public class AccountAccess {
       if (sendToReplica) {
         handler.setReallySendUpdateToReplica(true);
       }
-      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
-              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-              writer, signature, message, sendToReplica);
+      NSResponseCode response;
+      if (sendToReplica) {
+        try {
+          new SideToSideQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
+          response = NSResponseCode.NO_ERROR;
+        } catch (GnsClientException | IOException | JSONException e) {
+          response = NSResponseCode.ERROR;
+        }
+      } else {
+        response = handler.getIntercessor().sendUpdateUserJSON(guid,
+                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+                writer, signature, message, sendToReplica);
+      }
       if (sendToReplica) {
         handler.setReallySendUpdateToReplica(false);
       }

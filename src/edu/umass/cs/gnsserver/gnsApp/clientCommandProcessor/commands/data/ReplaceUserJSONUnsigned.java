@@ -27,13 +27,13 @@ import static edu.umass.cs.gnscommon.GnsProtocol.*;
  *
  * @author westy
  */
-public class AppendListSelf extends AbstractUpdateList {
+public class ReplaceUserJSONUnsigned extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public AppendListSelf(CommandModule module) {
+  public ReplaceUserJSONUnsigned(CommandModule module) {
     super(module);
   }
 
@@ -44,21 +44,24 @@ public class AppendListSelf extends AbstractUpdateList {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_APPEND;
+    return UpdateOperation.USER_JSON_REPLACE;
   }
 
   @Override
   public String getCommandName() {
-    return APPEND_LIST;
+    return REPLACE_USER_JSON;
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, USER_JSON, WRITER};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list.";
+    return "Replaces existing fields in JSON record with the given JSONObject's fields. "
+            + " Field must be world writeable or magic must be supplied "
+            + "as this command does not specify the writer and is not signed."
+            + "Doesn't touch top-level fields that aren't in the given JSONObject.";
   }
 }

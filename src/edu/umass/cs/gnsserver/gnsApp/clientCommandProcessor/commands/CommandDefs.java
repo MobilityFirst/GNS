@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands;
@@ -85,6 +85,7 @@ public class CommandDefs {
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReplaceSelf",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReplaceUnsigned",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReplaceUserJSON",
+    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.Select",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.SelectGroupLookupQuery",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.SelectGroupSetupQuery",
