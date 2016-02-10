@@ -1029,9 +1029,9 @@ public class AccountAccess {
     try {
       JSONObject json = new JSONObject();
       json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-      if (sendToReplica) {
-        handler.setReallySendUpdateToReplica(true);
-      }
+//      if (sendToReplica) {
+//        handler.setReallySendUpdateToReplica(true);
+//      }
       NSResponseCode response;
       if (sendToReplica) {
         try {
@@ -1045,9 +1045,9 @@ public class AccountAccess {
                 new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
                 writer, signature, message, sendToReplica);
       }
-      if (sendToReplica) {
-        handler.setReallySendUpdateToReplica(false);
-      }
+//      if (sendToReplica) {
+//        handler.setReallySendUpdateToReplica(false);
+//      }
       return response;
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing account info:" + e);
