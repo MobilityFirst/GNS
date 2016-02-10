@@ -53,7 +53,7 @@ public abstract class AbstractUpdate extends GnsCommand {
 
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   public abstract UpdateOperation getUpdateOperation();
@@ -71,29 +71,28 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    
+
     NSResponseCode responseCode;
     if (field == null) {
+      responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON),
+              getUpdateOperation(), writer, signature, message, false);
       // full JSON object update
-      if (!(responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
-              getUpdateOperation(), writer, signature, message, false)).isAnError()) {
-         return new CommandResponse<String>(OK_RESPONSE);
-      } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
-      }
-    } else {
-      // single field update 
-      if (!(responseCode = FieldAccess.update(guid, field,
-              // special case for the ops which do not need a value
-              value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),
-              oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
-              index,
-              getUpdateOperation(),
-              writer, signature, message, handler)).isAnError()) {
+      if (!responseCode.isAnError()) {
         return new CommandResponse<String>(OK_RESPONSE);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
+    } else // single field update 
+    if (!(responseCode = FieldAccess.update(guid, field,
+            // special case for the ops which do not need a value
+            value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),
+            oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
+            index,
+            getUpdateOperation(),
+            writer, signature, message, handler)).isAnError()) {
+      return new CommandResponse<String>(OK_RESPONSE);
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
   }
 }
