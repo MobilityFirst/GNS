@@ -123,6 +123,25 @@ public class SideToSideQuery extends ClientAsynchBase {
     }
   }
 
+  public String fieldUpdate(String guid, String field, Object value) throws IOException, JSONException, GnsClientException {
+    // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+    }
+    int requestId = (int) fieldUpdate(guid, field, value, callback);
+    CommandValueReturnPacket packet = waitForResponse(requestId);
+    if (packet == null) {
+      throw new GnsClientException("Packet not found in table " + requestId);
+    } else {
+      String returnValue = packet.getReturnValue();
+      if (debuggingEnabled) {
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
+                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
+      }
+      return checkResponse(returnValue);
+    }
+  }
+
   private static CommandValueReturnPacket waitForResponse(int id) throws GnsClientException {
     try {
       synchronized (monitor) {

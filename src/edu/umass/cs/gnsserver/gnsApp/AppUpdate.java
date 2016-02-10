@@ -27,13 +27,15 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.utils.Util;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
@@ -104,99 +106,77 @@ public class AppUpdate {
       return;
     }
 
-    NameRecord nameRecord;
-
-    if (updatePacket.getOperation().isAbleToSkipRead()) { // some operations don't require a read first
-      nameRecord = new NameRecord(app.getDB(), guid);
-    } else {
-      try {
-        if (field == null) {
-          nameRecord = NameRecord.getNameRecord(app.getDB(), guid);
-        } else {
-          nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
-        }
-      } catch (RecordNotFoundException e) {
-        GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " 
-                + guid + " Packet = " + updatePacket.toString(true));
-        e.printStackTrace();
-        @SuppressWarnings("unchecked")
-        ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
-        if (!doNotReplyToClient) {
-          app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
-          //app.getMessenger().sendToAddress(updatePacket.getCppAddress(), failConfirmPacket.toJSONObject());
-
-        }
-        return;
-      }
-    }
-
-    // START ACTIVE CODE HANDLING
-    ValuesMap newValue = null;
-    // Only do this for user fields.
-    if (field == null || !InternalField.isInternalField(field)) {
-      NameRecord codeRecord = null;
-
-      try {
-        codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null,
-                ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
-//      codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null,
-//              ColumnFieldType.LIST_STRING, ActiveCode.ON_WRITE);
-      } catch (RecordNotFoundException e) {
-        //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
-      }
-
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("AC--->>> " + codeRecord.toString());
-      }
-
-      int hopLimit = 1;
-      if (codeRecord != null && activeCodeHandler.hasCode(codeRecord, "write")) {
-        try {
-          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
-          ValuesMap packetValuesMap = updatePacket.getUserJSON();
-//        ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_WRITE);
-//        String code64 = codeResult.get(0).toString();
-          //String code64 = NSFieldAccess.lookupListFieldOnThisServer(guid, ActiveCode.ON_WRITE, app).get(0).toString();
-          if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toString());
-            GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toReasonableString());
-          }
-          newValue = activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
-        } catch (Exception e) {
-          GNS.getLogger().info("Active code error: " + e.getMessage());
-        }
-      }
-    }
-    if (newValue == null) {
-      newValue = updatePacket.getUserJSON();
-    }
-
-    // END ACTIVE CODE HANDLING
-    // Apply update
-    // FIXME: THIS CAUSES US TO HANG.
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      if (field != null) {
-        GNS.getLogger().info("****** field= " + field + " operation= " + updatePacket.getOperation().toString()
-                + " value= " + updatePacket.getUpdateValue().toString()
-                //FIXME: THIS CAUSES US TO HANG!
-                //+ " value= " + Util.ellipsize(updatePacket.getUpdateValue().toString(), 500)
-                //+ " name Record=" + nameRecord.toString());
-                + " name Record=" + nameRecord.toReasonableString());
-      }
-    }
-    boolean result;
     try {
-      result = nameRecord.updateNameRecord(field,
+      NameRecord nameRecord = getNameRecord(guid, field, updatePacket.getOperation(), app.getDB());
+      boolean result = updateNameRecord(nameRecord, guid, field, updatePacket.getOperation(),
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
-              newValue,
-              //updatePacket.getUserJSON(),
-              updatePacket.getOperation());
-      // FIXME: THIS CAUSES US TO HANG!
-//      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-//        GNS.getLogger().fine("Update operation result = " + result + "\t"
-//                + updatePacket.getUpdateValue().toReasonableString());
-//      }
+              updatePacket.getUserJSON(), app.getDB(), activeCodeHandler);
 
+//    // START ACTIVE CODE HANDLING
+//    ValuesMap newValue = null;
+//    // Only do this for user fields.
+//    if (field == null || !InternalField.isInternalField(field)) {
+//      NameRecord codeRecord = null;
+//
+//      try {
+//        codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null,
+//                ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
+////      codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null,
+////              ColumnFieldType.LIST_STRING, ActiveCode.ON_WRITE);
+//      } catch (RecordNotFoundException e) {
+//        //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
+//      }
+//
+//      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//        GNS.getLogger().info("AC--->>> " + codeRecord.toString());
+//      }
+//
+//      int hopLimit = 1;
+//      if (codeRecord != null && activeCodeHandler.hasCode(codeRecord, "write")) {
+//        try {
+//          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
+//          ValuesMap packetValuesMap = updatePacket.getUserJSON();
+////        ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_WRITE);
+////        String code64 = codeResult.get(0).toString();
+//          //String code64 = NSFieldAccess.lookupListFieldOnThisServer(guid, ActiveCode.ON_WRITE, app).get(0).toString();
+//          if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//            //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toString());
+//            GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toReasonableString());
+//          }
+//          newValue = activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
+//        } catch (Exception e) {
+//          GNS.getLogger().info("Active code error: " + e.getMessage());
+//        }
+//      }
+//    }
+//    if (newValue == null) {
+//      newValue = updatePacket.getUserJSON();
+//    }
+//    // END ACTIVE CODE HANDLING
+//    // Apply update
+//    // FIXME: THIS CAUSES US TO HANG.
+//    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//      if (field != null) {
+//        GNS.getLogger().info("****** field= " + field + " operation= " + updatePacket.getOperation().toString()
+//                + " value= " + updatePacket.getUpdateValue().toString()
+//                //FIXME: THIS CAUSES US TO HANG!
+//                //+ " value= " + Util.ellipsize(updatePacket.getUpdateValue().toString(), 500)
+//                //+ " name Record=" + nameRecord.toString());
+//                + " name Record=" + nameRecord.toReasonableString());
+//      }
+//    }
+      //boolean result;
+      //try {
+//      result = nameRecord.updateNameRecord(field,
+//              updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
+//              newValue,
+//              //updatePacket.getUserJSON(),
+//              updatePacket.getOperation());
+//      // FIXME: THIS CAUSES US TO HANG!
+////      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+////        GNS.getLogger().fine("Update operation result = " + result + "\t"
+////                + updatePacket.getUpdateValue().toReasonableString());
+////      }
       if (!result) { // update failed
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Update operation failed " + updatePacket.toString(true));
@@ -235,10 +215,101 @@ public class AppUpdate {
           }
         }
       }
+    } catch (RecordNotFoundException e) {
+      GNS.getLogger().severe(" Error: name record not found before update. Return. Name = "
+              + guid + " Packet = " + updatePacket.toString(true));
+      e.printStackTrace();
+      @SuppressWarnings("unchecked")
+      ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket,
+              NSResponseCode.ERROR);
+      if (!doNotReplyToClient) {
+        app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
+      }
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception. Exception = " + e.getMessage());
       e.printStackTrace();
     }
     DelayProfiler.updateDelay("totalUpdate", receiptTime);
   }
+
+  private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation,
+          BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
+    if (operation.isAbleToSkipRead()) { // some operations don't require a read first
+      return new NameRecord(db, guid);
+    } else //try {
+    {
+      if (field == null) {
+        return NameRecord.getNameRecord(db, guid);
+      } else {
+        return NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.LIST_STRING, field);
+      } //      } catch (RecordNotFoundException e) {    //        GNS.getLogger().severe(" Error: name record not found before update. Return. Name = "    //                + guid + " Packet = " + updatePacket.toString(true));
+    }    //        e.printStackTrace();
+    //        @SuppressWarnings("unchecked")
+    //        ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket,
+    //                NSResponseCode.ERROR);
+    //        if (!doNotReplyToClient) {
+    //          app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
+    //        }
+    //        return null;
+    //}
+  }
+
+  private static boolean updateNameRecord(NameRecord nameRecord, String guid, String field,
+          UpdateOperation operation,
+          ResultValue updateValue, ResultValue oldValue,
+          int argument,
+          ValuesMap userJSON,
+          BasicRecordMap db,
+          ActiveCodeHandler activeCodeHandler)
+          throws FailedDBOperationException, FieldNotFoundException {
+    ValuesMap newValue = null;
+    if (activeCodeHandler != null) {
+      try {
+        newValue = handleActiveCode(guid, field, userJSON, db, activeCodeHandler);
+      } catch (JSONException e) {
+        GNS.getLogger().severe("JSON problem while handlding active code: " + e);
+      }
+    }
+    if (newValue == null) {
+      newValue = userJSON;
+    }
+    // END ACTIVE CODE HANDLING
+    if (AppReconfigurableNodeOptions.debuggingEnabled && field != null) {
+      GNS.getLogger().info("****** field= " + field + " operation= " + operation.toString()
+              + " value= " + updateValue.toString()
+              + " name Record=" + nameRecord.toReasonableString());
+    }
+    // Apply update to record in the database
+    return nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
+  }
+
+  private static ValuesMap handleActiveCode(String guid, String field, ValuesMap userJSON,
+          BasicRecordMap db,
+          ActiveCodeHandler activeCodeHandler)
+          throws FailedDBOperationException, FieldNotFoundException, JSONException {
+    // Only do active field handling for user fields.
+    if (field == null || !InternalField.isInternalField(field)) {
+      NameRecord activeCodeNameRecord = null;
+      try {
+        activeCodeNameRecord = NameRecord.getNameRecordMultiField(db, guid, null,
+                ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
+      } catch (RecordNotFoundException e) {
+      }
+
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("AC--->>> " + activeCodeNameRecord.toString());
+      }
+      int hopLimit = 1;
+      if (activeCodeNameRecord != null && activeCodeHandler.hasCode(activeCodeNameRecord, "write")) {
+        String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
+        ValuesMap packetValuesMap = userJSON;
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toReasonableString());
+        }
+        return activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
+      }
+    }
+    return null;
+  }
+
 }

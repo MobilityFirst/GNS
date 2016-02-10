@@ -71,6 +71,7 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    
     NSResponseCode responseCode;
     if (field == null) {
       // full JSON object update

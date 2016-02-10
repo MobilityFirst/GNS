@@ -1025,24 +1025,23 @@ public class AccountAccess {
 
   private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo, String writer, String signature, String message,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
-//    try {
-//      JSONObject json = new JSONObject();
-//      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-//      if (sendToReplica) {
-//        handler.setReallySendUpdateToReplica(true);
-//      }
-//      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
-//              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//              writer, signature, message, sendToReplica);
-//      if (sendToReplica) {
-//        handler.setReallySendUpdateToReplica(false);
-//      }
-//      return response;
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("Problem parsing account info:" + e);
-//      return NSResponseCode.ERROR;
-//    }
-  return NSResponseCode.NO_ERROR;
+    try {
+      JSONObject json = new JSONObject();
+      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
+      if (sendToReplica) {
+        handler.setReallySendUpdateToReplica(true);
+      }
+      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
+              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+              writer, signature, message, sendToReplica);
+      if (sendToReplica) {
+        handler.setReallySendUpdateToReplica(false);
+      }
+      return response;
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem parsing account info:" + e);
+      return NSResponseCode.ERROR;
+    }
   }
 
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,

@@ -413,11 +413,29 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws GnsClientException
    */
   public long fieldRead(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(READ, GUID, guid, FIELD, field), callback);
   }
   
   public long fieldReadArray(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(READ_ARRAY, GUID, guid, FIELD, field), callback);
+  }
+  
+  public long fieldUpdate(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a read command that doesn't need authentication.
+    JSONObject json = new JSONObject();
+    json.put(field, value);
+    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid, 
+            USER_JSON, json.toString(), 
+            WRITER, MAGIC_STRING), callback);
+  }
+  
+  public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a read command that doesn't need authentication.
+    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid, 
+            USER_JSON, json.toString(), 
+            WRITER, MAGIC_STRING), callback);
   }
 
   // NEED TO CREATE A DUMMY GUID FOR THIS TO WORK

@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsApp;
 
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnscommon.GnsProtocol;
@@ -34,7 +33,6 @@ import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.SideToSideQuery;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.DNSRecordType;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
@@ -48,7 +46,6 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
-import org.json.JSONObject;
 
 /**
  * This class executes lookupJSONArray requests sent by an LNS to an active replica. If name servers are replicated,
