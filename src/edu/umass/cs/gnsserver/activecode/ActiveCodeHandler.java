@@ -184,7 +184,6 @@ public class ActiveCodeHandler {
 		
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
 		
-		System.out.println(">>>>>>>>>>>>> Handler returns result "+result);
 	    return result;
 	}
 }
