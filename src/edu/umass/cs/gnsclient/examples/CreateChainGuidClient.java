@@ -24,8 +24,8 @@ public class CreateChainGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT;
-	private static String filename = "/Users/gaozy/WebStorm/chain.js"; // "/home/ubuntu/chain.js"; // 
-	private final static String key_folder = "/Users/gaozy/GNS/gns_key/"; //"/home/ubuntu/gns_key/"; //
+	private static String filename = "/home/ubuntu/chain.js"; // "/Users/gaozy/WebStorm/chain.js"; //
+	private final static String key_folder = "/home/ubuntu/gns_key/"; // "/Users/gaozy/GNS/gns_key/"; //
 	
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, 
