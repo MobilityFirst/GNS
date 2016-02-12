@@ -87,7 +87,6 @@ public class ClientPool implements Runnable{
     		try{
     			socket.receive(pkt);
     			int clientPort = pkt.getPort();
-    			System.out.println("Port "+clientPort + " is ready.");
     			updateClientState(clientPort, true);
     			synchronized(lock){
     				lock.notifyAll();
@@ -96,10 +95,20 @@ public class ClientPool implements Runnable{
     			e.printStackTrace();
     			keepGoing = false;
     		}
-		}
-		
+		}		
 		socket.close();
-		
+	}
+	
+	protected static int getOpenUDPPort() {
+		int port = 0;
+		try{
+			DatagramSocket serverSocket = new DatagramSocket(0);
+			port = serverSocket.getLocalPort();
+			serverSocket.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return port;
 	}
 	
 	protected void startSpareWorkers(){
@@ -132,11 +141,11 @@ public class ClientPool implements Runnable{
 	}
 	
 	protected void addClient(Thread t) {
-		clients.put(t.getId(), new ActiveCodeClient(app, -1, ach));
-	}
-	
-	protected void addClient(Thread t, int port){
-		clients.put(t.getId(), new ActiveCodeClient(app, port, ach));
+		int serverPort = getOpenUDPPort();
+		updateClientState(serverPort, false);
+		
+		Process proc = startNewWorker(serverPort);
+		clients.put(t.getId(), new ActiveCodeClient(app, ach, this, serverPort, proc));
 	}
 	
 	protected ActiveCodeClient getClient(long pid) {
@@ -181,7 +190,7 @@ public class ClientPool implements Runnable{
 		}
 		//assert(spareWorkers.keySet().isEmpty());
 		int port = spareWorkers.keys().nextElement();
-		System.out.println("The port is "+port);
+		//System.out.println("The port is "+port);
 		return port;
 	}
 	
@@ -189,17 +198,12 @@ public class ClientPool implements Runnable{
 		return spareWorkers.remove(port);
 	}
 	
-	protected void addSpareWorker(){
+	protected Process startNewWorker(int serverPort){
 		List<String> command = new ArrayList<>();
-		int serverPort = ActiveCodeClient.getOpenUDPPort();
-		// maintain state for a worker
-		// assert(readyMap.containsKey(serverPort));
-		updateClientState(serverPort, false);		
-		
 		// Get the current classpath
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
-	    command.add("-Xms16m");
+	    command.add("-Xms64m");
 	    command.add("-Xmx64m");
 	    command.add("-cp");
 	    command.add(classpath);
@@ -222,6 +226,16 @@ public class ClientPool implements Runnable{
 			e.printStackTrace();
 		}
 		
+		return process;
+	}
+	
+	protected void addSpareWorker(){
+		int serverPort = getOpenUDPPort();
+		// maintain state for a worker
+		updateClientState(serverPort, false);		
+		
+		Process process = startNewWorker(serverPort);
+		
 		spareWorkers.put(serverPort, process);
 		synchronized(spareWorkers){
 			spareWorkers.notifyAll();
@@ -233,7 +247,8 @@ public class ClientPool implements Runnable{
 	}
 	
 	private class WorkerGeneratorRunanble implements Runnable{
-		public void run(){
+		
+		public void run(){			
 			addSpareWorker();
 		}
 	}

@@ -44,11 +44,6 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 			RejectedExecutionHandler handler) {
 		super(numCoreThreads, numMaxThreads, timeout, timeUnit, queue, threadFactory, handler);
 	}
-	
-	
-	protected void beforeExecute(){
-		
-	}
 		
 	/**
 	 * This is a fix for catching exceptions when using Future

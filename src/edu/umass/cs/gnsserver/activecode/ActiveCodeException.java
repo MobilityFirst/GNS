@@ -25,6 +25,7 @@ package edu.umass.cs.gnsserver.activecode;
  * @author mbadov
  *
  */
+@SuppressWarnings("serial")
 public class ActiveCodeException extends Exception {
 	public ActiveCodeException(String message) {
         super(message);

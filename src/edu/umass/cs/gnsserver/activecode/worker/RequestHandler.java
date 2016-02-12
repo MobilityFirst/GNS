@@ -20,9 +20,6 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.net.DatagramSocket;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -42,7 +39,6 @@ public class RequestHandler {
 	private ActiveCodeRunner runner;
 	private int clientPort = -1;
 	private byte[] buffer = new byte[8096*10];
-	private Lock lock = new ReentrantLock();
 	
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
@@ -71,7 +67,6 @@ public class RequestHandler {
 		    	ret = false;
 		    } else if(acm.getAcqresp() != null) {
 		    	// notify and return
-		    	System.out.println("Get the response "+acm.getAcqresp());
 		    	querier.setResponse(acm.getAcqresp());
 		    	return true;
 		    }
@@ -80,11 +75,11 @@ public class RequestHandler {
 		    	long t1 = System.nanoTime();
 			    ActiveCodeParams params = acm.getAcp();			    
 			   
-			    System.out.println("Got the message from port "+socket.getLocalPort());
+			    //System.out.println("Got the message from port "+socket.getLocalPort());
 			    if(params == null){
 			    	System.out.println("The value is null!");
 			    }
-			    System.out.println("The hop is "+params.getHopLimit()+". The guid is "+params.getGuid());
+			    //System.out.println("The hop is "+params.getHopLimit()+". The guid is "+params.getGuid());
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONParser parser = new JSONParser();
 			    JSONObject vm = (JSONObject) parser.parse(params.getValuesMapString());

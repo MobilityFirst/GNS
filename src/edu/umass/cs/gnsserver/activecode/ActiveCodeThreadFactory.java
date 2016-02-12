@@ -28,7 +28,6 @@ import java.util.concurrent.ThreadFactory;
  */
 public class ActiveCodeThreadFactory implements ThreadFactory {
 	ClientPool clientPool;
-	private static int port = 60001;
 	
 	protected ActiveCodeThreadFactory(ClientPool clientPool) {
 		this.clientPool = clientPool;
@@ -37,14 +36,10 @@ public class ActiveCodeThreadFactory implements ThreadFactory {
 	/**
 	 * Creates a new thread and also spawns a new worker associated with the thread
 	 */
-        @Override
+    @Override
 	public Thread newThread(Runnable r) {
-        long t1 = System.currentTimeMillis();
 		Thread t = new Thread(r);		
 		clientPool.addClient(t);
-		long elapsed = System.currentTimeMillis() - t1;
-		System.out.println("It takes "+elapsed+"ms to start a worker.");
-		port++;
 	    return t;
 	} 
 }

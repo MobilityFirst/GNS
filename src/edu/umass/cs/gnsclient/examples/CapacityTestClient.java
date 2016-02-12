@@ -8,7 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +28,7 @@ public class CapacityTestClient {
     private static int NUM_THREAD = 100;
     private static int NUM_CLIENT = 0;
     private static int INTERVAL = 1;
-    private static final int DURATION = 30;
+    private static final int DURATION = 10;
     private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
     private static int failed = 0;
     
@@ -57,7 +56,6 @@ public class CapacityTestClient {
     
     private void sendSingleRequest(UniversalTcpClient client, boolean malicious){
     	executorPool.execute(new ClientThread(client, this.guid, this.entry, malicious));
-    	//(new Thread(new ClientThread())).start();
     }
 
     

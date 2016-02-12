@@ -27,6 +27,7 @@ import java.io.Serializable;
  * 
  * @author Zhaoyu Gao
  */
+@SuppressWarnings("serial")
 public class ActiveCodeParams implements Serializable {
 	/**
 	 * Use guid getter to get its value

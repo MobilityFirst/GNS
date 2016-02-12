@@ -26,6 +26,7 @@ import java.io.Serializable;
  * 
  * @author Zhaoyu Gao
  */
+@SuppressWarnings("serial")
 public class ActiveCodeQueryRequest implements Serializable {
 	public String guid;
 	public String field;

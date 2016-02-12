@@ -19,13 +19,8 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
 import java.net.DatagramSocket;
-import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -52,121 +47,39 @@ public class ActiveCodeClient {
 	protected Lock lock = new ReentrantLock();
 	
 	private int serverPort;
-	private boolean readyToRun = false;
 	private Process process;
 	private final GnsApplicationInterface<String> app;
 	private DatagramSocket clientSocket;
 	private byte[] buffer = new byte[8096*10];
 	private ActiveCodeHandler ach;
 	
+	
 	/**
 	 * @param app the gns app
      * @param port 
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<String> app, int port, ActiveCodeHandler ach) {
-		
-		if(port == -1){
-			startServer();
-		}else{
-			setPort(port);
-		}		
+	public ActiveCodeClient(GnsApplicationInterface<String> app, ActiveCodeHandler ach, ClientPool clientPool, int port, Process proc) {
 		this.app = app;
 		this.ach = ach;
-	}
-	
-	private void setPort(int port) {
-		this.serverPort = port;
+		
+		//initialize the clientSocket first
+		try{
+			clientSocket = new DatagramSocket();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
+		while(!ClientPool.getClientState(port)){
+			clientPool.waitFor();
+		}
+		
+		setNewWorker(port, proc);		
 	}
 	
 	protected int getPort(){
 		return serverPort;
 	}
-	
-	/**
-	 * Grab an open port
-	 * @return the port number
-	 */
-	public static int getOpenPort() {
-		int port = 0;
-		try {
-			ServerSocket listener = new ServerSocket(0);
-			port = listener.getLocalPort();
-			listener.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return port;
-	}
-	
-	protected static int getOpenUDPPort() {
-		int port = 0;
-		try{
-			DatagramSocket serverSocket = new DatagramSocket(0);
-			port = serverSocket.getLocalPort();
-			serverSocket.close();
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
-		return port;
-	}
-	
-	/**
-	 * Starts an active code worker and waits for it to accept requests
-	 * @return true if successful
-	 */
-	public boolean startServer() {
-		try {
-			//initialize the clientSocket first
-			try{
-				clientSocket = new DatagramSocket();
-				//clientSocket.setSoTimeout(200);
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-			
-			List<String> command = new ArrayList<>();
-			serverPort = getOpenUDPPort();
-			
-			// Get the current classpath
-			String classpath = System.getProperty("java.class.path");
-			
-			ServerSocket listener = new ServerSocket(0);
-			
-		    command.add("java");
-		    command.add("-Xms64m");
-		    command.add("-Xmx64m");
-		    command.add("-cp");
-		    command.add(classpath);
-		    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
-		    command.add(Integer.toString(serverPort));
-		    command.add(Integer.toString(clientSocket.getLocalPort()));
-		    command.add(Integer.toString(listener.getLocalPort()));
-		    
-		    ProcessBuilder builder = new ProcessBuilder(command);
-			builder.directory(new File(System.getProperty("user.dir")));
-			
-			builder.redirectError(Redirect.INHERIT);
-			builder.redirectOutput(Redirect.INHERIT);
-			builder.redirectInput(Redirect.INHERIT);
-			
-			process = builder.start();
-						
-			// Now we wait for the worker to notify us that it is ready
-			listener.accept();
-			listener.close();
-			
-			//update the state of this port
-			ClientPool.updateClientState(serverPort, true);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
-		}
-		
-		release();
-		
-		return true;
-	}  
+	  
 	
 	/**
 	 * 
@@ -175,16 +88,12 @@ public class ActiveCodeClient {
 	 * @return the ValuesMap object returned by the active code
 	 * @exception ActiveCodeException
 	 */
-	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout) throws ActiveCodeException{
+	public ValuesMap runActiveCode(ActiveCodeParams acp) {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setAcp(acp);
 		ValuesMap vm = null;
 		
-		try{
-			vm = submitRequest(acm, ach);
-		}catch(InterruptedException e){
-			e.printStackTrace();
-		}
+		vm = submitRequest(acm, ach);
 		
 		return vm;
 	}
@@ -207,10 +116,8 @@ public class ActiveCodeClient {
 	 * Submits the request to the worker via socket comm.
 	 * @param acmReq
 	 * @return the ValuesMap object returned by the active code
-	 * @throws IOException 
-	 * @throws ActiveCodeException 
 	 */
-	protected ValuesMap submitRequest(ActiveCodeMessage acmReq, ActiveCodeHandler ach) throws InterruptedException, ActiveCodeException{
+	protected ValuesMap submitRequest(ActiveCodeMessage acmReq, ActiveCodeHandler ach) {
 		long startTime = System.nanoTime();
 		boolean crashed = false;
 		
@@ -218,11 +125,6 @@ public class ActiveCodeClient {
 		
 		boolean codeFinished = false;
 		String valuesMapString = null;
-		
-		//check whether its worker is ready
-		while(!readyToRun){
-			
-		}
 		
 		// Serialize the request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
@@ -283,10 +185,6 @@ public class ActiveCodeClient {
 	}
 	
 	
-	protected boolean isReady(){
-		return readyToRun;
-	}
-	
 	protected void waitLock(){
 		synchronized(lock){
 			try{
@@ -297,12 +195,6 @@ public class ActiveCodeClient {
 		}
 	}
 	
-	protected void release(){
-		synchronized(lock){
-			this.readyToRun = true;
-			lock.notify();
-		}
-	}
 	/**
 	 * Cleanly shuts down the worker
 	 */
@@ -332,7 +224,8 @@ public class ActiveCodeClient {
 		this.process = proc;
 		this.serverPort = port;
 		
-		//notify new worker
+		//notify new worker about the client's new port number
 		ActiveCodeUtils.sendMessage(clientSocket, new ActiveCodeMessage(), port);
+		//System.out.println("Bind the client to the new port "+port);
 	}
 }

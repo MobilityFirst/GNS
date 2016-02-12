@@ -85,8 +85,8 @@ public class ActiveCodeHandler {
 	    		//new SynchronousQueue<Runnable>(),
 	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy());
 	    // Start the processes
-	    executorPool.prestartAllCoreThreads();
-	    System.out.println("##################### All threads have been started! ##################");
+	    int numThread = executorPool.prestartAllCoreThreads();
+	    System.out.println("##################### "+numThread+" threads have been started! ##################");
 	    //System.out.println("There are "+executorPool.getActiveCount() + " threads running, and " + executorPool.getPoolSize()+" threads available.");
 	    
 	    scheduler = new ActiveCodeScheduler(executorPool);
@@ -135,8 +135,7 @@ public class ActiveCodeHandler {
 	 * @return a Valuesmap
 	 */
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
-		long startTime = System.nanoTime();
-		
+		long startTime = System.nanoTime();		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
 		String values = valuesMap.toString();
@@ -156,33 +155,29 @@ public class ActiveCodeHandler {
 			result = futureTask.get();
 			guard.deregisterFutureTask(act);
 		} catch (ExecutionException ee) {
-			System.out.println("Execution "+guid);
+			System.out.println("Execution "+guid+" Task "+act);
 			//ee.printStackTrace();
 			act.deregisterTask();
 			scheduler.finish(guid);
-			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
+			//System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap+Thread.currentThread());
 			return valuesMap;
 		} catch(CancellationException ce) {
-			System.out.println("Cancel "+guid);
+			System.out.println("Cancel "+guid+" Task "+act);
 			//ce.printStackTrace();
 			act.deregisterTask();
 			scheduler.finish(guid);
-			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
+			//System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap+Thread.currentThread());
 			return valuesMap;
 		} catch(InterruptedException ie) {
-			System.out.println("Interrupt "+guid);
-			ie.printStackTrace();
+			System.out.println("Interrupt "+guid+" Task "+act+" thread "+Thread.currentThread());
+			futureTask.cancel(true);
+			//ie.printStackTrace();
+			guard.cancelTask(act);
 			act.deregisterTask();
 			scheduler.finish(guid);
-			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
 			return valuesMap;
 		} catch (Exception e){
-			System.out.println("Other");
-			//e.printStackTrace();
-			act.deregisterTask();
-			scheduler.finish(guid);
-			System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap);
-			return valuesMap;
+			e.printStackTrace();
 		}
 		
 		scheduler.finish(guid);

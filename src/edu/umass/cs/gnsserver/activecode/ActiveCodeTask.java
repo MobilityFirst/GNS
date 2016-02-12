@@ -31,7 +31,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeTask implements Callable<ValuesMap> {
-
+	
     private ActiveCodeParams acp;
     private ClientPool clientPool;
     private ActiveCodeGuardian guard;
@@ -54,9 +54,11 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     /**
      * Called by the ThreadPoolExecutor to run the active code task
      */
-    public ValuesMap call() throws ActiveCodeException{  
+    public ValuesMap call() throws InterruptedException{  
+    	
     	long startTime = System.nanoTime();
     	long pid = Thread.currentThread().getId();
+    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
     	
     	ValuesMap result = null;
     	ActiveCodeClient client = clientPool.getClient(pid);
@@ -64,15 +66,12 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	//check the state of the client's worker
     	while(!ClientPool.getClientState(port)){
     		// wait until it's ready
-    		System.out.println("99999999999999 >>>>>>>>>>>>>>>>>>>>> The port "+port +" is not ready.");
-    		clientPool.waitFor();    		
+    		clientPool.waitFor();
     	}
-    	
-    	System.out.println("88888888888888 >>>>>>>>>>>>>>>>>>>> The port "+port+" is ready to run.");
     	
     	guard.registerThread(this, Thread.currentThread());   	
     	if(acp != null) {
-    		result = client.runActiveCode(acp, false);
+    		result = client.runActiveCode(acp);
     	}    	
     	guard.removeThread(this);
     	

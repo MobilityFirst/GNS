@@ -33,11 +33,7 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	public void run(){		
-		while(true){
-			//System.out.println("The number of running threads is "+executorPool.getActiveCount()+"/"+executorPool.getPoolSize());
-			/**
-			 * If the guidList is empty, wait until there is a task comes in
-			 */
+		while(true){			
 			while(guidList.isEmpty()){
 				synchronized (lock){
 					try{
@@ -47,8 +43,12 @@ public class ActiveCodeScheduler implements Runnable{
 					}
 				}
 			}
+			
 			FutureTask<ValuesMap> futureTask = getNextTask();
-			if (futureTask != null){				
+			//System.out.println("Get the FutureTask "+futureTask+", and guidList is "+guidList+", fairQueue is "+fairQueue);
+			
+			if (futureTask != null){
+				//System.out.println("================ Ready to run the task "+futureTask);
 				executorPool.execute(futureTask);
 				//for instrument only
 				//DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
@@ -56,14 +56,6 @@ public class ActiveCodeScheduler implements Runnable{
 		}
 	}
 	
-	/**
-	 * Called when a task is done
-	 */
-	protected void release(){
-		synchronized(lock){
-			lock.notify();
-		}
-	}
 	
 	protected String getNextGuid(){
 		String guid = null;
@@ -72,7 +64,6 @@ public class ActiveCodeScheduler implements Runnable{
 				guid = guidList.get(ptr);
 			}else{ 
 				if(guidList.isEmpty()){
-					guid = null;
 					return null;
 				}else{
 					assert(ptr == 0);
@@ -82,7 +73,6 @@ public class ActiveCodeScheduler implements Runnable{
 		}else{
 			ptr = 0;
 			if(guidList.isEmpty()){
-				guid = null;
 				return null;
 			}else{
 				assert(ptr == 0);
@@ -98,15 +88,18 @@ public class ActiveCodeScheduler implements Runnable{
 		FutureTask<ValuesMap> futureTask = null;
 		String guid = null;
 		synchronized(queueLock){
+			
 			guid = getNextGuid();
-			while(guid == null){
-				guid = getNextGuid();
-			}
+			//System.out.println("The guid fetched "+guid);
 			
-			while(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
-				guid = getNextGuid();
+			if (guid == null){
+				return null;
 			}
-			
+			/*
+			if(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
+				return null;
+			}
+			*/
 			if (runningGuid.containsKey(guid)){
 				runningGuid.put(guid, runningGuid.get(guid)+1);
 			} else{
@@ -121,34 +114,42 @@ public class ActiveCodeScheduler implements Runnable{
 				remove(guid);
 			}
 		}		
-		
+		//System.out.println("The task being fetched is "+futureTask);
 		return futureTask;
+	}
+	
+	/**
+	 * Called when a task is done
+	 */
+	protected void release(){
+		synchronized(lock){
+			lock.notify();
+		}
 	}
 	
 	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
-				fairQueue.get(guid).add(futureTask);
-				
+				fairQueue.get(guid).add(futureTask);				
 			}else{
 				LinkedList<FutureTask<ValuesMap>> taskList = new LinkedList<FutureTask<ValuesMap>>();
 				taskList.add(futureTask);
 				fairQueue.put(guid, taskList);
 				guidList.add(guid);
-			}	
-			release();
+			}
 		}
+		release();
 	}
 	
 	protected void remove(String guid){
-		synchronized(guid){
 			guidList.remove(guid);
 			fairQueue.remove(guid);
-		}
 	}
 	
 	protected void finish(String guid){
 		runningGuid.put(guid, runningGuid.get(guid)-1);
 		release();
 	}
+	
+	/************************************** TEST **************************************/
 }

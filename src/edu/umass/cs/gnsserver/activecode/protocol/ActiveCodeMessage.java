@@ -28,6 +28,7 @@ import java.io.Serializable;
  * @author mbadov
  *
  */
+@SuppressWarnings("serial")
 public class ActiveCodeMessage implements Serializable {
 
   /**

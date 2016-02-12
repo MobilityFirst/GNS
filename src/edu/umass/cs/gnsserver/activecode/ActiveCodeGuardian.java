@@ -18,6 +18,7 @@ public class ActiveCodeGuardian implements Runnable {
 	private ConcurrentHashMap<ActiveCodeTask, Thread> threadMap = new ConcurrentHashMap<ActiveCodeTask, Thread>();
 	private static ConcurrentHashMap<ActiveCodeTask, Long> tasks = new ConcurrentHashMap<ActiveCodeTask, Long>();
 	private ConcurrentHashMap<ActiveCodeTask, FutureTask<ValuesMap>> runnableMap = new ConcurrentHashMap<ActiveCodeTask, FutureTask<ValuesMap>>();
+	private ConcurrentHashMap<ActiveCodeTask, ActiveCodeTask> relationMap = new ConcurrentHashMap<ActiveCodeTask, ActiveCodeTask>();
 	
 	public ActiveCodeGuardian(ClientPool clientPool){
 		 this.clientPool = clientPool;
@@ -30,27 +31,7 @@ public class ActiveCodeGuardian implements Runnable {
 				
 				for(ActiveCodeTask task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
-						long start = System.currentTimeMillis();
-						synchronized(clientPool){
-							// shutdown the previous worker process 
-							ActiveCodeClient client = clientPool.getClient(getThread(task).getId());
-							client.forceShutdownServer();
-							
-							// generate a spare worker in another thread
-							clientPool.generateNewWorker();
-																		
-							// get the spare worker and set the client port to the new worker
-							int port = clientPool.getSpareWorkerPort();
-							Process proc = clientPool.getSpareWorker(port);
-							client.setNewWorker(port, proc);
-						}
-						// deregister the task and cancel it
-						removeThread(task);
-						//runnableMap.get(task).cancel(true);
-						deregisterFutureTask(task);
-						cnt++;
-						System.out.println("There are "+(cnt)+" tasks being cancelled.");
-						DelayProfiler.updateDelay("ActiveCodeRestart", start);
+						cancelTask(task);
 					}
 				}		
 			}
@@ -60,6 +41,32 @@ public class ActiveCodeGuardian implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	protected void cancelTask(ActiveCodeTask task){
+		
+		long start = System.currentTimeMillis();
+		synchronized(clientPool){
+			// shutdown the previous worker process 
+			assert(getThread(task) != null);
+			ActiveCodeClient client = clientPool.getClient(getThread(task).getId());
+			client.forceShutdownServer();
+			
+			// generate a spare worker in another thread
+			clientPool.generateNewWorker();
+														
+			// get the spare worker and set the client port to the new worker
+			int port = clientPool.getSpareWorkerPort();
+			Process proc = clientPool.getSpareWorker(port);
+			client.setNewWorker(port, proc);
+		}
+		// deregister the task and cancel it
+		removeThread(task);
+		//System.out.println("The task to be cancelled is "+runnableMap.get(task));
+		runnableMap.get(task).cancel(true);
+		
+		deregisterFutureTask(task);
+		DelayProfiler.updateDelay("ActiveCodeRestart", start);
 	}
 	
 	protected void registerFutureTask(ActiveCodeTask act, FutureTask<ValuesMap> task){
@@ -96,4 +103,11 @@ public class ActiveCodeGuardian implements Runnable {
 		return threadMap.get(r);
 	}
 	
+	protected void registerParent(ActiveCodeTask parent, ActiveCodeTask child){
+		relationMap.put(parent, child);
+	}
+	
+	protected void deregisterParent(ActiveCodeTask parent){
+		relationMap.remove(parent);
+	}
 }

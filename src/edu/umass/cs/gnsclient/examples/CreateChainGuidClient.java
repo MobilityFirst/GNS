@@ -34,7 +34,6 @@ public class CreateChainGuidClient {
 		int node = Integer.parseInt(args[1]);
 		int depth = Integer.parseInt(args[2]);
 		NUM_CLIENT = Integer.parseInt(args[3]);
-		filename = args[4];
 		
 		//Read in the code and serialize
 		String code = new String(Files.readAllBytes(Paths.get(filename)));
@@ -43,7 +42,6 @@ public class CreateChainGuidClient {
 		client = new UniversalTcpClient(address, 24398, true);
 		
 		for (int i=0; i<NUM_CLIENT; i++){
-			
 			String lastGuid = "";
 			GuidEntry guidAccount = null;
 			
@@ -69,8 +67,12 @@ public class CreateChainGuidClient {
 				
 	    		lastGuid = guidAccount.getGuid();
 			}
+			/*
+			long t = System.currentTimeMillis();
     		String result = client.fieldRead(guidAccount, "nextGuid");
-    		System.out.println("The result is "+result);
+    		long elapsed = System.currentTimeMillis() - t;
+    		System.out.println("The result is "+result+", it takes "+elapsed+"ms.");
+    		*/
 		}
 		
 		System.exit(0);

@@ -20,10 +20,6 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -47,7 +43,7 @@ public class ActiveCodeRunner {
   private final Invocable invocable;
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
-  private final ExecutorService executor = Executors.newSingleThreadExecutor();
+  //private final ExecutorService executor = Executors.newSingleThreadExecutor();
   /**
    * Initialize an ActiveCodeRunner with nashorn script engine
    * by default.

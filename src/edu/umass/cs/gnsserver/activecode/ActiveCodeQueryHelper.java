@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -113,7 +112,6 @@ public class ActiveCodeQueryHelper {
 	 * @return the response, which may contain values read, or just status for a write
 	 */
 	public ActiveCodeQueryResponse handleQuery(String currentGuid, ActiveCodeQueryRequest acqreq) {
-		//System.out.println(currentGuid+"|"+acqreq.getGuid()+"|"+acqreq.getField()+"|"+acqreq.getLimit());
 		// Do a local read/write for the same guid without triggering the active code
 		String targetGuid = acqreq.getGuid();
 		String field = acqreq.getField();
@@ -129,16 +127,14 @@ public class ActiveCodeQueryHelper {
 		}
 		// Otherwise, we need to do an external guid read
 		else {
-			System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
+			//System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
 			if(acqreq.getAction().equals("read")) {
-				//System.out.println("Enter else "+currentGuid+" "+acqreq.getGuid()+" "+acqreq.getField()+" "+acqreq.getLimit());
 				try{
 					long t1 = System.nanoTime();
 					boolean allowAccess = false;
 					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
 							MetaDataTypeName.READ_WHITELIST, app, ach.getAddress());
 					DelayProfiler.updateDelayNano("activeCodeWhiteListVerification", t1);
-					//System.out.println("The public key retrieved is "+publicKey);
 					if (publicKey != null){
 						allowAccess = true;
 					}
@@ -156,13 +152,16 @@ public class ActiveCodeQueryHelper {
 						if (codeRecord != null && nameRecord != null && ach.hasCode(codeRecord, "read")) {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
 							ValuesMap originalValues = nameRecord.getValuesMap();
-							ValuesMap newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+							ValuesMap newResult = null;
+							//System.out.println("Ready to do this external query for "+targetGuid+" on field "+field+" with the original value "+originalValues.toString());
+							newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+							
 							if (newResult != null){
 								acqr = new ActiveCodeQueryResponse(true, newResult.toString());
-								System.out.println("Send the request with new result value "+newResult.toString());
+								//System.out.println("Send the request with new result value "+newResult.toString());
 							} else {
 								acqr = new ActiveCodeQueryResponse(true, nameRecord.toString());
-								System.out.println("Send the request with new record value "+nameRecord.toString());
+								//System.out.println("Send the request with new record value "+nameRecord.toString());
 							}
 						}
 						DelayProfiler.updateDelayNano("activeCodeQuerierReadExecution", start);
@@ -213,7 +212,6 @@ public class ActiveCodeQueryHelper {
 			}
 		}
 		
-		System.out.println("The returned value is "+acqr.getValuesMapString());
 		return acqr;
 	}
 }

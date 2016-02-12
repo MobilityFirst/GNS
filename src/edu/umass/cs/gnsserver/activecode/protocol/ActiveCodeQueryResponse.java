@@ -26,6 +26,7 @@ import java.io.Serializable;
  * 
  * @author mbadov
  */
+@SuppressWarnings("serial")
 public class ActiveCodeQueryResponse implements Serializable {
 	public boolean success;
 	public String valuesMapString;
