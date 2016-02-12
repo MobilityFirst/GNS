@@ -21,7 +21,6 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 public class CreateMultiGuidClient {
-	//private final static String EC2_ADDRESS = "52.88.106.121";
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT = 100;

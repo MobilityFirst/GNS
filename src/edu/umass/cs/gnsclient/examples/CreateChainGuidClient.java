@@ -1,6 +1,8 @@
 package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
@@ -67,14 +69,15 @@ public class CreateChainGuidClient {
 				
 	    		lastGuid = guidAccount.getGuid();
 			}
-			/*
-			long t = System.currentTimeMillis();
-    		String result = client.fieldRead(guidAccount, "nextGuid");
-    		long elapsed = System.currentTimeMillis() - t;
-    		System.out.println("The result is "+result+", it takes "+elapsed+"ms.");
-    		*/
+			
+    		
 		}
 		
+		Socket socket = new Socket("128.119.245.5", 60001);
+    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+    	out.println(node+"\n");
+    	socket.close();
+    	
 		System.exit(0);
 	}
 	
