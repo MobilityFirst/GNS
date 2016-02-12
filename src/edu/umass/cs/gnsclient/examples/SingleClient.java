@@ -25,8 +25,8 @@ public class SingleClient implements Runnable{
 		for (int i=0; i<numReq; i++){
 			long start = System.nanoTime();
 			try{
-				String result = client.fieldRead(entry, "nextGuid");
-				System.out.println("query result is "+result);
+				client.fieldRead(entry, "nextGuid");
+				//System.out.println("query result is "+result);
 			}catch (Exception e){
 				e.printStackTrace();
 			}
