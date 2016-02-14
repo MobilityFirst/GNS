@@ -139,6 +139,7 @@ public class ActiveCodeHandler {
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
 		String values = valuesMap.toString();
+		//System.out.println("Got the request from guid "+guid+" for the field "+field+" with original value "+valuesMap);
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		ActiveCodeTask act = new ActiveCodeTask(acp, clientPool, guard);
