@@ -49,7 +49,7 @@ public class ClientPool implements Runnable{
 	private ActiveCodeHandler ach;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
 	private ExecutorService executorPool;
-	private final int numSpareWorker = 20;
+	private final int numSpareWorker = 10;
 	private Lock lock = new ReentrantLock();
 	
 	private final static int CALLBACK_PORT = 60000;

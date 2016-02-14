@@ -122,6 +122,8 @@ public class ActiveCodeSchedulerTest {
 		}
 		
 		assertEquals(task, scheduler.getNextTask());
+		
+		assertEquals(null, scheduler.getNextGuid());
 	}
 	
 	private class FakeTask implements Callable<ValuesMap>{

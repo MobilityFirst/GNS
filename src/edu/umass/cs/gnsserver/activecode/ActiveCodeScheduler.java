@@ -45,10 +45,8 @@ public class ActiveCodeScheduler implements Runnable{
 			}
 			
 			FutureTask<ValuesMap> futureTask = getNextTask();
-			//System.out.println("Get the FutureTask "+futureTask+", and guidList is "+guidList+", fairQueue is "+fairQueue);
 			
 			if (futureTask != null){
-				//System.out.println("================ Ready to run the task "+futureTask);
 				executorPool.execute(futureTask);
 				//for instrument only
 				//DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
@@ -90,31 +88,34 @@ public class ActiveCodeScheduler implements Runnable{
 		synchronized(queueLock){
 			
 			guid = getNextGuid();
-			//System.out.println("The guid fetched "+guid);
 			
 			if (guid == null){
 				return null;
 			}
+			
 			/*
 			if(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
 				return null;
 			}
-			*/
+			
 			if (runningGuid.containsKey(guid)){
 				runningGuid.put(guid, runningGuid.get(guid)+1);
 			} else{
 				runningGuid.put(guid, 1);
 			}
+			*/
 			
 			if (!fairQueue.containsKey(guid)){
 				return null;
 			}
-			futureTask = fairQueue.get(guid).pop();
+			futureTask = fairQueue.get(guid).removeFirst();
 			if(fairQueue.get(guid).isEmpty()){
 				remove(guid);
+				if(ptr > 0){
+					ptr--;
+				}
 			}
-		}		
-		//System.out.println("The task being fetched is "+futureTask);
+		}
 		return futureTask;
 	}
 	
@@ -147,9 +148,18 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void finish(String guid){
-		runningGuid.put(guid, runningGuid.get(guid)-1);
+		//runningGuid.put(guid, runningGuid.get(guid)-1);
 		release();
 	}
 	
-	/************************************** TEST **************************************/
+	/************************************** For TEST Use Only **************************************/
+	protected ArrayList<String> getGuidList(){
+		return guidList;
+	}
+	
+	protected HashMap<String, LinkedList<FutureTask<ValuesMap>>> getFairQueue(){
+		return fairQueue;
+	}
+	
+	
 }

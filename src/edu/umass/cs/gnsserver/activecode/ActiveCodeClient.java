@@ -84,9 +84,7 @@ public class ActiveCodeClient {
 	/**
 	 * 
 	 * @param acp the parameters to send to the worker
-	 * @param useTimeout whether or not to use the timeout when waiting for a reply
 	 * @return the ValuesMap object returned by the active code
-	 * @exception ActiveCodeException
 	 */
 	public ValuesMap runActiveCode(ActiveCodeParams acp) {
 		ActiveCodeMessage acm = new ActiveCodeMessage();

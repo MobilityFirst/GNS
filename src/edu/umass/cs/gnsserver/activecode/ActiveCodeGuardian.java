@@ -14,7 +14,6 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeGuardian implements Runnable {
 	private ClientPool clientPool;
-	private static int cnt = 0;
 	private ConcurrentHashMap<ActiveCodeTask, Thread> threadMap = new ConcurrentHashMap<ActiveCodeTask, Thread>();
 	private static ConcurrentHashMap<ActiveCodeTask, Long> tasks = new ConcurrentHashMap<ActiveCodeTask, Long>();
 	private ConcurrentHashMap<ActiveCodeTask, FutureTask<ValuesMap>> runnableMap = new ConcurrentHashMap<ActiveCodeTask, FutureTask<ValuesMap>>();
