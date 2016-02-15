@@ -116,48 +116,6 @@ public class LNSUpdateHandler {
     }
   }
 
-//  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value, GnsApplicationInterface activeReplica,
-//          InetSocketAddress lnsAddress) {
-//    int id = nextRequestID();
-//    outStandingUpdates.put(id, id);
-//    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-//      GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID().toString() + "; Sending add: " + name + " : " + key + "->" + value + " to LNS " + lnsAddress);
-//    }
-//    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null);
-//    try {
-//      activeReplica.getMessenger().sendToAddress(lnsAddress, packet.toJSONObject());
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
-//    } catch (IOException e) {
-//      GNS.getLogger().severe("Problem sending packet to NS " + lnsAddress + ": " + e);
-//    }
-//    waitForResponsePacket(id);
-//    NSResponseCode result = updateResultMap.get(id);
-//    updateResultMap.remove(id);
-//    return result;
-//  }
-//
-//  public static NSResponseCode sendRemoveRecord(String name, GnsApplicationInterface activeReplica,
-//          InetSocketAddress lnsAddress) {
-//    int id = nextRequestID();
-//    outStandingUpdates.put(id, id);
-//    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-//      GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID().toString() + "; Sending remove: " + name + " to LNS " + lnsAddress);
-//    }
-//    RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, null);
-//    try {
-//      activeReplica.getMessenger().sendToAddress(lnsAddress, packet.toJSONObject());
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
-//    } catch (IOException e) {
-//      GNS.getLogger().severe("Problem sending packet to NS " + lnsAddress + ": " + e);
-//    }
-//    waitForResponsePacket(id);
-//    NSResponseCode result = updateResultMap.get(id);
-//    updateResultMap.remove(id);
-//    return result;
-//  }
-
   /**
    * Handles a ConfirmUpdatePacket coming back to this NameServer from a Local Name Server
    *

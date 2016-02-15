@@ -34,8 +34,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.SideToSideQuery;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
@@ -201,15 +199,25 @@ public class AccountAccess {
    */
   public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler) {
 
-    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, PRIMARY_GUID);
-    //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, PRIMARY_GUID);
     try {
-      if (!guidResult.isError()) {
-        return guidResult.getValuesMap().getString(PRIMARY_GUID);
-        //return (String) guidResult.getArray(PRIMARY_GUID).get(0);
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, PRIMARY_GUID, handler.getApp());
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
       }
-    } catch (JSONException e) {
+      if (result != null) {
+        return result.getString(PRIMARY_GUID);
+      }
+    } catch (FailedDBOperationException | JSONException e) {
+      GNS.getLogger().severe("Problem extracting PRIMARY_GUID from " + guid + " :" + e);
     }
+//    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, PRIMARY_GUID);
+//     try {
+//      if (!guidResult.isError()) {
+//        return guidResult.getValuesMap().getString(PRIMARY_GUID);
+//        //return (String) guidResult.getArray(PRIMARY_GUID).get(0);
+//      }
+//    } catch (JSONException e) {
+//    }
     return null;
   }
 

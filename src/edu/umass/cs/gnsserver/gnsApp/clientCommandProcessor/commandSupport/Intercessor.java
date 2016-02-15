@@ -308,6 +308,7 @@ public class Intercessor implements IntercessorInterface {
    * @param field
    * @return a {@link QueryResult}
    */
+  @Deprecated
   public QueryResult<String> sendSingleFieldQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
@@ -319,6 +320,7 @@ public class Intercessor implements IntercessorInterface {
    * @param field
    * @return a {@link QueryResult}
    */
+  @Deprecated
   public QueryResult<String> sendFullQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, GnsProtocol.ALL_FIELDS, null, null, null, ColumnFieldType.USER_JSON);
   }
