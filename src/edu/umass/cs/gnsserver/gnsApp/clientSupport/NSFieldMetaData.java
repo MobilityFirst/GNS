@@ -89,6 +89,7 @@ public class NSFieldMetaData {
    * @param activeReplica
    * @param lnsAddress
    */
+  @Deprecated
   public static void add(MetaDataTypeName type, String guid, String key, String value, 
           GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
 
@@ -106,6 +107,7 @@ public class NSFieldMetaData {
    * @param activeReplica
    * @param lnsAddress
    */
+  @Deprecated
   public static void remove(MetaDataTypeName type, String guid, String key, String value, 
           GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
 

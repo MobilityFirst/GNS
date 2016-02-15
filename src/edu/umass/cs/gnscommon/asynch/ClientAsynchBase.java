@@ -64,7 +64,6 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;

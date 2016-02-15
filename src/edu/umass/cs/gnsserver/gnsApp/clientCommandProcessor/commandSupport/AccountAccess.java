@@ -157,7 +157,7 @@ public class AccountAccess {
       }
       String value = null;
       try {
-        value = new SideToSideQuery().fieldRead(guid, ACCOUNT_INFO);
+        value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
         GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
       }
@@ -312,7 +312,7 @@ public class AccountAccess {
       }
       String value = null;
       try {
-        value = new SideToSideQuery().fieldRead(guid, GUID_INFO);
+        value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
         GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
       }
@@ -545,7 +545,8 @@ public class AccountAccess {
       // First try to create the HRN record to make sure this name isn't already registered
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
+      if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isAnError()) {
+        //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -570,12 +571,14 @@ public class AccountAccess {
         //json.put(ActiveCode.ON_READ, new JSONArray());
         //json.put(ActiveCode.ON_WRITE, new JSONArray());
         // set up the default read access
-        if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
+        if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isAnError()) {
+          //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
           return new CommandResponse<String>(OK_RESPONSE);
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
-          handler.getIntercessor().sendRemoveRecord(name);
+          handler.getRemoteQuery().deleteRecord(name);
+          //handler.getIntercessor().sendRemoveRecord(name);
           return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
         }
 
@@ -609,11 +612,14 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
-    if (!handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
-      handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
+    if (!handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryName()).isAnError()) {
+    //if (!handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
+      handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryGuid());
+      //handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
-        handler.getIntercessor().sendRemoveRecord(alias);
+        //handler.getIntercessor().sendRemoveRecord(alias);
+        handler.getRemoteQuery().deleteRecord(alias);
       }
       // get rid of all subguids
       for (String guid : accountInfo.getGuids()) {
@@ -660,7 +666,8 @@ public class AccountAccess {
       // First try to create the HRN to insure that that name does not already exist
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
+      if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isAnError()) {
+        //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
@@ -678,7 +685,8 @@ public class AccountAccess {
           // For active code
           //json.put(ActiveCode.ON_READ, new JSONArray());
           //json.put(ActiveCode.ON_WRITE, new JSONArray());
-          handler.getIntercessor().sendFullAddRecord(guid, json);
+          handler.getRemoteQuery().createRecord(guid, json);
+          //handler.getIntercessor().sendFullAddRecord(guid, json);
           return new CommandResponse<String>(OK_RESPONSE);
         }
       }
@@ -861,9 +869,11 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(guid.getGuid(), handler);
     // Then remove the guid record
-    if (!handler.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
+    if (!handler.getRemoteQuery().deleteRecord(guid.getGuid()).isAnError()) {
+    //if (!handler.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
       // remove reverse record
-      handler.getIntercessor().sendRemoveRecord(guid.getName());
+      handler.getRemoteQuery().deleteRecord(guid.getName());
+      //handler.getIntercessor().sendRemoveRecord(guid.getName());
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
@@ -904,7 +914,8 @@ public class AccountAccess {
       NSResponseCode returnCode;
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, accountInfo.getPrimaryGuid());
-      if ((returnCode = handler.getIntercessor().sendFullAddRecord(alias, jsonHRN)).isAnError()) {
+      if ((returnCode = handler.getRemoteQuery().createRecord(alias, jsonHRN)).isAnError()) {
+        //if ((returnCode = handler.getIntercessor().sendFullAddRecord(alias, jsonHRN)).isAnError()) {
 //    if ((returnCode = handler.getIntercessor().sendAddRecordWithSingleField(alias, HRN_GUID,
 //            new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))).isAnError()) {
         // roll this back
@@ -916,7 +927,8 @@ public class AccountAccess {
       if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
               writer, signature, message, handler, true).isAnError()) {
         // back out if we got an error
-        handler.getIntercessor().sendRemoveRecord(alias);
+        handler.getRemoteQuery().deleteRecord(alias);
+        //handler.getIntercessor().sendRemoveRecord(alias);
         //accountInfo.removeAlias(alias);
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ALIAS);
       } else {
@@ -947,7 +959,8 @@ public class AccountAccess {
     }
     // remove the NAME -- GUID record
     NSResponseCode responseCode;
-    if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
+    if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isAnError()) {
+    //if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     // Now updated the account record
@@ -1026,35 +1039,35 @@ public class AccountAccess {
   private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
           String writer, String signature, String message,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
-//    try {
-//      JSONObject json = new JSONObject();
-//      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-////      if (sendToReplica) {
-////        handler.setReallySendUpdateToReplica(true);
-////      }
-//      NSResponseCode response;
+    try {
+      JSONObject json = new JSONObject();
+      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
 //      if (sendToReplica) {
-//        try {
-//          new SideToSideQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
-//          response = NSResponseCode.NO_ERROR;
-//        } catch (GnsClientException | IOException | JSONException e) {
-//          GNS.getLogger().severe("Problem with remote query:" + e);
-//          response = NSResponseCode.ERROR;
-//        }
-//      } else {
-//        response = handler.getIntercessor().sendUpdateUserJSON(guid,
-//                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//                writer, signature, message, sendToReplica);
+//        handler.setReallySendUpdateToReplica(true);
 //      }
-////      if (sendToReplica) {
-////        handler.setReallySendUpdateToReplica(false);
-////      }
-//      return response;
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("Problem parsing account info:" + e);
-//      return NSResponseCode.ERROR;
-//    }
-  return NSResponseCode.NO_ERROR;
+      NSResponseCode response;
+      if (sendToReplica) {
+        try {
+          handler.getRemoteQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
+          response = NSResponseCode.NO_ERROR;
+        } catch (GnsClientException | IOException | JSONException e) {
+          GNS.getLogger().severe("Problem with remote query:" + e);
+          response = NSResponseCode.ERROR;
+        }
+      } else {
+        response = handler.getIntercessor().sendUpdateUserJSON(guid,
+                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+                writer, signature, message, sendToReplica);
+      }
+//      if (sendToReplica) {
+//        handler.setReallySendUpdateToReplica(false);
+//      }
+      return response;
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem parsing account info:" + e);
+      return NSResponseCode.ERROR;
+    }
+    //return NSResponseCode.NO_ERROR;
   }
 
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,

@@ -77,6 +77,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Node
    * @param name Host/domain/device name
    * @param lnsAddress
    */
+  @Deprecated
   @SuppressWarnings("unchecked")
   public RemoveRecordPacket(NodeIDType sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
     super(null, lnsAddress);

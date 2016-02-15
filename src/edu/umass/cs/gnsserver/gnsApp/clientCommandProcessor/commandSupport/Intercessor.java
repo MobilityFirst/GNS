@@ -41,7 +41,6 @@ import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
 import edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
-import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -332,6 +331,7 @@ public class Intercessor implements IntercessorInterface {
    * @param value
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendAddRecordWithSingleField(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
@@ -366,6 +366,7 @@ public class Intercessor implements IntercessorInterface {
    * @param value
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendFullAddRecord(String name, JSONObject value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
@@ -432,6 +433,7 @@ public class Intercessor implements IntercessorInterface {
    * @param name the record name
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {

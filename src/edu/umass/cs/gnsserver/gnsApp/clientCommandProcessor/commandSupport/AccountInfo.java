@@ -91,8 +91,8 @@ public class AccountInfo {
     this.updated = new Date();
     this.password = password;
     // FIXME: TEST HACK
-    this.verified = true;
-    //this.verified = false;
+    //this.verified = true;
+    this.verified = false;
     this.verificationCode = null;
   }
 

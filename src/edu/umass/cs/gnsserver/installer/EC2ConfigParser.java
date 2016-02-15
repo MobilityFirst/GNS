@@ -151,7 +151,7 @@ public class EC2ConfigParser {
   private static String getConfPath() {
     try {
       File jarLoc = new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-      return jarLoc.getParentFile() + "/conf/";
+      return jarLoc.getParentFile().getParentFile() + "/conf/";
     } catch (URISyntaxException e) {
       GNS.getLogger().info("Unable to get conf location: " + e);
       return null;

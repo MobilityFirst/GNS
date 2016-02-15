@@ -23,6 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApp;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.RequestHandlerParameters;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.SideToSideQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
@@ -45,6 +46,13 @@ import org.json.JSONException;
  */
 public interface ClientRequestHandlerInterface {
 
+  /**
+   * Return the remote query handler.
+   * 
+   * @return the remote query handler
+   */
+  public SideToSideQuery getRemoteQuery();
+  
   /**
    * The executor that runs tasks.
    *

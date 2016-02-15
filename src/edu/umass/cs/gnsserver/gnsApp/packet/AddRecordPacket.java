@@ -49,6 +49,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
+@Deprecated
 public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> {
 
   private final static String NAME = "name";

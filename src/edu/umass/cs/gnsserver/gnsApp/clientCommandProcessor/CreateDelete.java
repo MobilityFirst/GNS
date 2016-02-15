@@ -70,7 +70,7 @@ public class CreateDelete {
   public static void handleAddPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       // do normal add which actually involves converting this into a CreateServiceName packet
-      AddRecordPacket addRecordPacket = registerPacketAddRecord(json, handler);
+      AddRecordPacket<String> addRecordPacket = registerPacketAddRecord(json, handler);
       handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getCCPRequestID());
       ValuesMap valuesMap;
       if (addRecordPacket.getField() != null) {
