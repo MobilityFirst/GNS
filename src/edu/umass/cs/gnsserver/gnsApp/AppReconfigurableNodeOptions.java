@@ -123,6 +123,11 @@ public class AppReconfigurableNodeOptions {
    */
   public static long activeCodeBlacklistSeconds = 75;
   /**
+   * Number of spare workers
+   */
+  public static int activeCodeSpareWorker = 20;
+  
+  /**
    * Default port numbers for active workers, the default
    * value for each worker's port is -1, it means the worker
    * will be launched inside the handler's pool. If it's not
@@ -213,7 +218,9 @@ public class AppReconfigurableNodeOptions {
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
   
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
-
+  
+  private static final String ACTIVE_CODE_SPARE_WORKER = "activeCodeSpareWorker";
+  
   /**
    * Returns all the options.
    *
@@ -413,6 +420,10 @@ public class AppReconfigurableNodeOptions {
     
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
     	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
+    }
+    
+    if (allValues.containsKey(ACTIVE_CODE_SPARE_WORKER)) {
+    	activeCodeSpareWorker = Integer.parseInt(allValues.get(ACTIVE_CODE_SPARE_WORKER));
     }
 
   }

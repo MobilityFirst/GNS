@@ -35,6 +35,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 
 /**
@@ -49,7 +50,7 @@ public class ClientPool implements Runnable{
 	private ActiveCodeHandler ach;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
 	private ExecutorService executorPool;
-	private final int numSpareWorker = 10;
+	private final int numSpareWorker = AppReconfigurableNodeOptions.activeCodeSpareWorker;
 	private Lock lock = new ReentrantLock();
 	
 	private final static int CALLBACK_PORT = 60000;
@@ -70,6 +71,8 @@ public class ClientPool implements Runnable{
 		spareWorkers = new ConcurrentHashMap<Integer, Process>();
 		readyMap = new ConcurrentHashMap<Integer, Boolean>();
 		executorPool = Executors.newFixedThreadPool(5);
+		System.out.println("Starting "+AppReconfigurableNodeOptions.activeCodeWorkerCount+
+				" workers with "+AppReconfigurableNodeOptions.activeCodeSpareWorker+" spare workers");
 	}
 	
 	public void run(){
@@ -144,7 +147,7 @@ public class ClientPool implements Runnable{
 		int serverPort = getOpenUDPPort();
 		updateClientState(serverPort, false);
 		
-		Process proc = startNewWorker(serverPort);
+		Process proc = startNewWorker(serverPort, 64);
 		clients.put(t.getId(), new ActiveCodeClient(app, ach, this, serverPort, proc));
 	}
 	
@@ -198,12 +201,12 @@ public class ClientPool implements Runnable{
 		return spareWorkers.remove(port);
 	}
 	
-	protected Process startNewWorker(int serverPort){
+	protected Process startNewWorker(int serverPort, int initMemory){
 		List<String> command = new ArrayList<>();
 		// Get the current classpath
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
-	    command.add("-Xms64m");
+	    command.add("-Xms"+initMemory+"m");
 	    command.add("-Xmx64m");
 	    command.add("-cp");
 	    command.add(classpath);
@@ -234,7 +237,7 @@ public class ClientPool implements Runnable{
 		// maintain state for a worker
 		updateClientState(serverPort, false);		
 		
-		Process process = startNewWorker(serverPort);
+		Process process = startNewWorker(serverPort, 16);
 		
 		spareWorkers.put(serverPort, process);
 		synchronized(spareWorkers){
