@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gnscommon.utils.JSONDotNotation;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.main.GNS;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +30,7 @@ import org.json.JSONArray;
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
  *
- * This class also has some code that supports backwards compatability with older code. 
+ * This class also has some code that supports backwards compatability with older code.
  * In particular, in some older code result values are always a list.
  *
  * @author westy
@@ -63,6 +64,18 @@ public class ValuesMap extends JSONObject {
         GNS.getLogger().severe("Unable to parse JSON: " + e);
       }
     }
+  }
+
+  public ValuesMap removeInternalFields() {
+    ValuesMap copy = new ValuesMap(this);
+    Iterator<?> keyIter = copy.keys();
+    while (keyIter.hasNext()) {
+      String key = (String) keyIter.next();
+      if (InternalField.isInternalField(key)) {
+        keyIter.remove();
+      }
+    }
+    return copy;
   }
 
   /**

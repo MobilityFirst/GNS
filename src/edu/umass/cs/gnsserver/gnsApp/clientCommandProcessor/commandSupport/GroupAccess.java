@@ -226,133 +226,133 @@ public class GroupAccess {
     }
   }
 
-  /**
-   *
-   * @param guid
-   * @param memberGuid
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a response code
-   * @deprecated
-   */
-  @Deprecated
-  public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+//  /**
+//   *
+//   * @param guid
+//   * @param memberGuid
+//   * @param writer
+//   * @param signature
+//   * @param message
+//   * @param handler
+//   * @return a response code
+//   * @deprecated
+//   */
+//  @Deprecated
+//  public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message,
+//          ClientRequestHandlerInterface handler) {
+//
+//    return handler.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
+//  }
+//
+//  /**
+//   *
+//   * @param guid
+//   * @param memberGuid
+//   * @param writer
+//   * @param signature
+//   * @param message
+//   * @param handler
+//   * @return a response code
+//   * @deprecated
+//   */
+//  @Deprecated
+//  public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message,
+//          ClientRequestHandlerInterface handler) {
+//
+//    return handler.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
+//  }
 
-    return handler.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
-  }
+//  /**
+//   *
+//   * @param guid
+//   * @param reader
+//   * @param signature
+//   * @param message
+//   * @param handler
+//   * @return a result value
+//   * @deprecated
+//   */
+//  @Deprecated
+//  public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message,
+//          ClientRequestHandlerInterface handler) {
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
+//    if (!result.isError()) {
+//      return new ResultValue(result.getArray(JOINREQUESTS));
+//    } else {
+//      return new ResultValue();
+//    }
+//  }
 
-  /**
-   *
-   * @param guid
-   * @param memberGuid
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a response code
-   * @deprecated
-   */
-  @Deprecated
-  public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+//  /**
+//   *
+//   * @param guid
+//   * @param reader
+//   * @param signature
+//   * @param message
+//   * @param handler
+//   * @return a result value
+//   * @deprecated
+//   */
+//  @Deprecated
+//  public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message,
+//          ClientRequestHandlerInterface handler) {
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
+//    if (!result.isError()) {
+//      return new ResultValue(result.getArray(LEAVEREQUESTS));
+//    } else {
+//      return new ResultValue();
+//    }
+//  }
 
-    return handler.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
-  }
+//  /**
+//   *
+//   * @param guid
+//   * @param requests
+//   * @param writer
+//   * @param signature
+//   * @param message
+//   * @param handler
+//   * @return boolean that indicates if the request was successful
+//   * @deprecated
+//   */
+//  @Deprecated
+//  public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message,
+//          ClientRequestHandlerInterface handler) {
+//
+//    if (!addToGroup(guid, requests, writer, signature, message, handler).isAnError()) {
+//      //if (!handler.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message).isAnError()) {
+//      if (!handler.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, requests, null, -1,
+//              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
+//        return true;
+//      }
+//    }
+//    return false;
+//  }
 
-  /**
-   *
-   * @param guid
-   * @param reader
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a result value
-   * @deprecated
-   */
-  @Deprecated
-  public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(JOINREQUESTS));
-    } else {
-      return new ResultValue();
-    }
-  }
-
-  /**
-   *
-   * @param guid
-   * @param reader
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a result value
-   * @deprecated
-   */
-  @Deprecated
-  public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(LEAVEREQUESTS));
-    } else {
-      return new ResultValue();
-    }
-  }
-
-  /**
-   *
-   * @param guid
-   * @param requests
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return boolean that indicates if the request was successful
-   * @deprecated
-   */
-  @Deprecated
-  public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-
-    if (!addToGroup(guid, requests, writer, signature, message, handler).isAnError()) {
-      //if (!handler.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message).isAnError()) {
-      if (!handler.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, requests, null, -1,
-              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   *
-   * @param guid
-   * @param requests
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return boolean that indicates if the request was successful
-   * @deprecated
-   */
-  @Deprecated
-  public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-
-    if (!removeFromGroup(guid, requests, writer, signature, message, handler).isAnError()) {
-      //if (!handler.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
-      if (!handler.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, -1,
-              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
-        return true;
-      }
-    }
-    return false;
-  }
+//  /**
+//   *
+//   * @param guid
+//   * @param requests
+//   * @param writer
+//   * @param signature
+//   * @param message
+//   * @param handler
+//   * @return boolean that indicates if the request was successful
+//   * @deprecated
+//   */
+//  @Deprecated
+//  public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message,
+//          ClientRequestHandlerInterface handler) {
+//
+//    if (!removeFromGroup(guid, requests, writer, signature, message, handler).isAnError()) {
+//      //if (!handler.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
+//      if (!handler.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, -1,
+//              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
+//        return true;
+//      }
+//    }
+//    return false;
+//  }
 }

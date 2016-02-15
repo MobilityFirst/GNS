@@ -133,7 +133,8 @@ public class AccountAccess {
   public static AccountInfo lookupAccountInfoFromGuid(String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, ACCOUNT_INFO, handler.getApp());
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, ACCOUNT_INFO,
+              handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for " + guid + " / " + ACCOUNT_INFO + ": " + result);
       }
@@ -200,7 +201,8 @@ public class AccountAccess {
   public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler) {
 
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, PRIMARY_GUID, handler.getApp());
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, PRIMARY_GUID,
+              handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
       }
@@ -234,7 +236,8 @@ public class AccountAccess {
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
 
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(name, HRN_GUID, handler.getApp());
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(name, HRN_GUID,
+              handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
       }
@@ -282,13 +285,15 @@ public class AccountAccess {
    * @param allowRemoteLookup
    * @return an {@link GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
+  public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler, 
+          boolean allowRemoteLookup) {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is " + allowRemoteLookup);
     }
 
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, GUID_INFO, handler.getApp());
+      ValuesMap result = NSFieldAccess.lookupFieldOnThisServer(guid, GUID_INFO,
+              handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + GUID_INFO + ": " + result);
       }
@@ -621,7 +626,7 @@ public class AccountAccess {
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
     if (!handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryName()).isAnError()) {
-    //if (!handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
+      //if (!handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
       handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryGuid());
       //handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
@@ -878,7 +883,7 @@ public class AccountAccess {
     GroupAccess.cleanupGroupsForDelete(guid.getGuid(), handler);
     // Then remove the guid record
     if (!handler.getRemoteQuery().deleteRecord(guid.getGuid()).isAnError()) {
-    //if (!handler.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
+      //if (!handler.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
       // remove reverse record
       handler.getRemoteQuery().deleteRecord(guid.getName());
       //handler.getIntercessor().sendRemoveRecord(guid.getName());
@@ -968,7 +973,7 @@ public class AccountAccess {
     // remove the NAME -- GUID record
     NSResponseCode responseCode;
     if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isAnError()) {
-    //if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
+      //if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     // Now updated the account record

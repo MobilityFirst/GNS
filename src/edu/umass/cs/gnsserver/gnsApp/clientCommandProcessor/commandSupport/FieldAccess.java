@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -30,6 +31,7 @@ import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import java.util.ArrayList;
@@ -89,42 +91,37 @@ public class FieldAccess {
           String message, ClientRequestHandlerInterface handler) {
     long startTime = System.currentTimeMillis();
     String resultString;
-    QueryResult<String> result;
-    if (field != null) {
-      result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
-    } else {
-      result = handler.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
-    }
-    if (result.isError()) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
-    } else {
-      
-      try {
-        if (field != null) {
-          // Reader is null means this is a magic internal request
-          // so let them access internal fields.
-          ValuesMap valuesMap;
-          if (reader == null) {
-            valuesMap = result.getValuesMap();
-          } else {
-            valuesMap = result.getValuesMapSansInternalFields();
-          }
-          resultString = valuesMap.get(field).toString();
-        } else {
-          ValuesMap valuesMap = result.getValuesMapSansInternalFields();
-          resultString = valuesMap.toString();
-        }
-      } catch (JSONException e) {
-        resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e;
+//    if (field != null) {
+//      result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
+//    } else {
+//      result = handler.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
+//    }
+    ValuesMap valuesMap;
+    try {
+      if (field != null) {
+        valuesMap = NSFieldAccess.lookupFieldLocally(guid, field, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      } else {
+        valuesMap = NSFieldAccess.lookupFieldsLocally(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
       }
+      if (reader != null) {
+        // read is null means a magic internal request so we
+        // only strip internal fields when read is not null
+        valuesMap = valuesMap.removeInternalFields();
+      }
+      if (field == null) {
+        resultString = valuesMap.toString(); // single field return
+      } else {
+        resultString = valuesMap.get(field).toString(); // multiple field return
+      }
+    } catch (JSONException e) {
+      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e;
+    } catch (FailedDBOperationException e) {
+      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.GENERIC_ERROR + " " + e;
     }
+
     DelayProfiler.updateDelay("FieldAccessreadLookup", startTime);
     return new CommandResponse<String>(resultString,
-            result.getErrorCode(),
-            result.getRoundTripTime(),
-            result.getResponder()
-            //,result.getLookupTime()
-    );
+            NSResponseCode.NO_ERROR, 0, "");
   }
 
   /**
@@ -148,7 +145,7 @@ public class FieldAccess {
 
     String resultString;
     // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, 
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message,
             ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
@@ -164,7 +161,7 @@ public class FieldAccess {
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
-            //,result.getLookupTime()
+    //,result.getLookupTime()
     );
   }
 
@@ -194,7 +191,7 @@ public class FieldAccess {
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
-            //,result.getLookupTime()
+    //,result.getLookupTime()
     );
   }
 
@@ -238,7 +235,7 @@ public class FieldAccess {
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
-            //,result.getLookupTime()
+    //,result.getLookupTime()
     );
   }
 
@@ -272,7 +269,7 @@ public class FieldAccess {
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
-            //,result.getLookupTime()
+    //,result.getLookupTime()
     );
   }
 
@@ -340,7 +337,7 @@ public class FieldAccess {
    */
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateRecord(guid, key, value, null, -1, 
+    return handler.getIntercessor().sendUpdateRecord(guid, key, value, null, -1,
             UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
   }
 
@@ -422,7 +419,7 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey, 
+  public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey,
           int interval,
           ClientRequestHandlerInterface handler) {
     String guid = ClientUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
@@ -445,7 +442,7 @@ public class FieldAccess {
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
-        CommandResponse<String> groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo, 
+        CommandResponse<String> groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo,
                 name, guid, publicKey, handler);
         if (!groupGuidCreateresult.getReturnValue().equals(OK_RESPONSE)) {
           return groupGuidCreateresult;

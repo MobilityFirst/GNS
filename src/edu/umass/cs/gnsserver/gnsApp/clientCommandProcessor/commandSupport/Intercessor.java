@@ -261,6 +261,7 @@ public class Intercessor implements IntercessorInterface {
    * @param returnFormat
    * @return a {@link QueryResult}
    */
+  @Deprecated
   public QueryResult<String> sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
   }
@@ -301,29 +302,29 @@ public class Intercessor implements IntercessorInterface {
 
   }
 
-  /**
-   * This version bypasses any signature checks and is meant for "system" use.
-   *
-   * @param name the record name
-   * @param field
-   * @return a {@link QueryResult}
-   */
-  @Deprecated
-  public QueryResult<String> sendSingleFieldQueryBypassingAuthentication(String name, String field) {
-    return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
-  }
+//  /**
+//   * This version bypasses any signature checks and is meant for "system" use.
+//   *
+//   * @param name the record name
+//   * @param field
+//   * @return a {@link QueryResult}
+//   */
+//  @Deprecated
+//  public QueryResult<String> sendSingleFieldQueryBypassingAuthentication(String name, String field) {
+//    return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
+//  }
 
-  /**
-   * Sends a query to the Nameserver for all of the fields in a guid.
-   * 
-   * @param name the record name
-   * @param field
-   * @return a {@link QueryResult}
-   */
-  @Deprecated
-  public QueryResult<String> sendFullQueryBypassingAuthentication(String name, String field) {
-    return sendSingleFieldQuery(name, GnsProtocol.ALL_FIELDS, null, null, null, ColumnFieldType.USER_JSON);
-  }
+//  /**
+//   * Sends a query to the Nameserver for all of the fields in a guid.
+//   * 
+//   * @param name the record name
+//   * @param field
+//   * @return a {@link QueryResult}
+//   */
+//  @Deprecated
+//  public QueryResult<String> sendFullQueryBypassingAuthentication(String name, String field) {
+//    return sendSingleFieldQuery(name, GnsProtocol.ALL_FIELDS, null, null, null, ColumnFieldType.USER_JSON);
+//  }
 
   /**
    * Sends an AddRecord packet to the CCP with an initial value using a single field.
