@@ -65,6 +65,7 @@ public class ActiveCodeHandler {
 	 * @param app
 	 * @param numProcesses
 	 * @param blacklistSeconds
+	 * @param addr 
 	 */
 	public ActiveCodeHandler(GnsApplicationInterface<String> app, int numProcesses, long blacklistSeconds, InetSocketAddress addr) {
 		this.gnsApp = app;			    		

@@ -50,6 +50,7 @@ public class ActiveCodeQueryHelper {
 	/**
 	 * Initialize an ActiveCodeQueryHelper
 	 * @param app
+	 * @param ach 
 	 */
 	public ActiveCodeQueryHelper(GnsApplicationInterface<String> app, ActiveCodeHandler ach) {
 		this.app = app;
