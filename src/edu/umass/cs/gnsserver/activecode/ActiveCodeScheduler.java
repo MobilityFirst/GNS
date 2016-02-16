@@ -3,13 +3,13 @@ package edu.umass.cs.gnsserver.activecode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to do a fair queue across all the GUIDs
@@ -21,9 +21,9 @@ public class ActiveCodeScheduler implements Runnable{
 	
 	private ArrayList<String> guidList = new ArrayList<String>();
 	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
-	//private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
+	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
-	private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
+	//private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
@@ -92,7 +92,7 @@ public class ActiveCodeScheduler implements Runnable{
 			if (guid == null){
 				return null;
 			}
-			/*
+			
 			if(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
 				return null;
 			}
@@ -102,7 +102,7 @@ public class ActiveCodeScheduler implements Runnable{
 			} else{
 				runningGuid.put(guid, 1);
 			}
-			*/
+			
 			if (!fairQueue.containsKey(guid)){
 				return null;
 			}
@@ -147,7 +147,7 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void finish(String guid){
-		//runningGuid.put(guid, runningGuid.get(guid)-1);
+		runningGuid.put(guid, runningGuid.get(guid)-1);
 		release();
 	}
 	
