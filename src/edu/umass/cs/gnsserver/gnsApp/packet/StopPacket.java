@@ -28,13 +28,15 @@ import org.json.JSONObject;
 /**
  * This class implements a packet stops things.
  *
- * @author Westy
+ * @author Westy, arun
  */
 public class StopPacket extends BasicPacketWithClientAddress implements ReconfigurableRequest,
         ReplicableRequest {
 
   private final static String NAME = "name";
   private final static String VERSION = "version";
+  private final static String QID = "qid";
+
   /**
    * name for which the proposal is being done.
    */
@@ -43,6 +45,8 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
    * ID that is requested to be stopped.
    */
   private final int version;
+  
+  private final long requestID;
 
   /**
    * The stop requests needsCoordination() method must return true by default.
@@ -59,6 +63,7 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     this.type = Packet.PacketType.STOP;
     this.name = name;
     this.version = version;
+    this.requestID = (long)(Math.random()*Long.MAX_VALUE);
   }
 
   /**
@@ -74,6 +79,7 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     this.type = Packet.PacketType.STOP;
     this.name = json.getString(NAME);
     this.version = json.getInt(VERSION);
+    this.requestID = json.getLong(QID);
   }
 
   /**
@@ -88,6 +94,7 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     Packet.putPacketType(json, getType());
     json.put(NAME, name);
     json.put(VERSION, version);
+    json.put(QID, this.requestID);
     return json;
   }
 
@@ -130,5 +137,10 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
   public void setNeedsCoordination(boolean needsCoordination) {
     this.needsCoordination = needsCoordination;
   }
+
+@Override
+public long getRequestID() {
+	return this.requestID;
+}
 
 }

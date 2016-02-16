@@ -26,6 +26,7 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.interfaces.ExecutedCallback;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -89,7 +90,7 @@ public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<Strin
   }
 
   @Override
-  public boolean coordinateRequest(Request request)
+  public boolean coordinateRequest(Request request, ExecutedCallback callback)
           throws IOException, RequestParseException {
     try {
       // coordinate exactly once, and set self to entry replica
@@ -104,7 +105,7 @@ public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<Strin
       if (this.coordType.equals(CoordType.LAZY)) {
         this.sendAllLazy(request);
       } else if (this.coordType.equals(CoordType.PAXOS)) {
-        super.coordinateRequest(request);
+        super.coordinateRequest(request, callback);
       }
     } catch (JSONException e) {
       e.printStackTrace();
