@@ -71,6 +71,9 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    if (writer.equals(MAGIC_STRING)) {
+      writer = null;
+    }
 
     NSResponseCode responseCode;
     if (field == null) {
@@ -82,17 +85,19 @@ public abstract class AbstractUpdate extends GnsCommand {
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
-    } else // single field update 
-    if (!(responseCode = FieldAccess.update(guid, field,
-            // special case for the ops which do not need a value
-            value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),
-            oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
-            index,
-            getUpdateOperation(),
-            writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse<String>(OK_RESPONSE);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      // single field update
+      if (!(responseCode = FieldAccess.update(guid, field,
+              // special case for the ops which do not need a value
+              value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),
+              oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
+              index,
+              getUpdateOperation(),
+              writer, signature, message, handler)).isAnError()) {
+        return new CommandResponse<String>(OK_RESPONSE);
+      } else {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      }
     }
   }
 }

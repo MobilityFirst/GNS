@@ -21,9 +21,11 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
@@ -207,6 +209,45 @@ public class SideToSideQuery extends ClientAsynchBase {
       return checkResponse(returnValue);
     }
   }
+  
+  public String fieldRemove(String guid, String field, Object value) throws IOException, JSONException, GnsClientException {
+    // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    assert value instanceof String || value instanceof Number;
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+    }
+    int requestId = (int) fieldRemove(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    if (packet == null) {
+      throw new GnsClientException("Packet not found in table " + requestId);
+    } else {
+      String returnValue = packet.getReturnValue();
+      if (debuggingEnabled) {
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
+                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
+      }
+      return checkResponse(returnValue);
+    }
+  }
+  
+  public String fieldRemoveMultiple(String guid, String field, ResultValue value) throws IOException, JSONException, GnsClientException {
+    // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+    }
+    int requestId = (int) fieldRemoveMultiple(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    if (packet == null) {
+      throw new GnsClientException("Packet not found in table " + requestId);
+    } else {
+      String returnValue = packet.getReturnValue();
+      if (debuggingEnabled) {
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
+                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
+      }
+      return checkResponse(returnValue);
+    }
+  }
 
   /**
    * Checks the response from a command request for proper syntax as well as
@@ -267,6 +308,10 @@ public class SideToSideQuery extends ClientAsynchBase {
 
         if (error.startsWith(VERIFICATION_ERROR)) {
           throw new GnsVerificationException(error + rest);
+        }
+        
+        if (error.startsWith(OPERATION_NOT_SUPPORTED)) {
+          throw new GnsOperationNotSupportedException(error + rest);
         }
         throw new GnsClientException("General command failure: " + error + rest);
       }

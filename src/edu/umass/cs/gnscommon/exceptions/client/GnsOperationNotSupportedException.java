@@ -25,7 +25,7 @@ package edu.umass.cs.gnscommon.exceptions.client;
  * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsVerificationException extends GnsClientException
+public class GnsOperationNotSupportedException extends GnsClientException
 {
 
   private static final long serialVersionUID = 1L;
@@ -33,7 +33,7 @@ public class GnsVerificationException extends GnsClientException
   /**
    * Creates a new <code>GnsDupplicateNameException</code> object
    */
-  public GnsVerificationException()
+  public GnsOperationNotSupportedException()
   {
     super();
     // TODO Auto-generated constructor stub
@@ -45,7 +45,7 @@ public class GnsVerificationException extends GnsClientException
    * @param message
    * @param cause
    */
-  public GnsVerificationException(String message, Throwable cause)
+  public GnsOperationNotSupportedException(String message, Throwable cause)
   {
     super(message, cause);
     // TODO Auto-generated constructor stub
@@ -56,7 +56,7 @@ public class GnsVerificationException extends GnsClientException
    * 
    * @param message
    */
-  public GnsVerificationException(String message)
+  public GnsOperationNotSupportedException(String message)
   {
     super(message);
     // TODO Auto-generated constructor stub
@@ -67,7 +67,7 @@ public class GnsVerificationException extends GnsClientException
    * 
    * @param throwable
    */
-  public GnsVerificationException(Throwable throwable)
+  public GnsOperationNotSupportedException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

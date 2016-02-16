@@ -69,7 +69,7 @@ public class NSAuthentication {
    */
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String accessorGuid, String signature,
           String message, MetaDataTypeName access, 
-          GnsApplicationInterface<String> gnsApp, InetSocketAddress lnsAddress)
+          GnsApplicationInterface<String> gnsApp)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
     final long aclStartTime = System.currentTimeMillis();
@@ -113,7 +113,7 @@ public class NSAuthentication {
       // but we still need to verify the ACL.
       // Our last attempt to check the ACL - handles all the edge cases like group guid in acl
       // FIXME: This ACL check Probably does more than it needs to.
-      aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp, lnsAddress);
+      aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp);
     }
     DelayProfiler.updateDelay("authACL", aclStartTime);
     long sigStartTime = System.currentTimeMillis();

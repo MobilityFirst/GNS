@@ -26,12 +26,10 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import java.net.InetSocketAddress;
 import java.util.List;
 
 /**
@@ -130,10 +128,9 @@ public class NSFieldAccess {
    * @param field
    * @param database
    * @return ResultValue
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ResultValue lookupListFieldOnThisServer(String guid, String field,
-          BasicRecordMap database) throws FailedDBOperationException {
+          BasicRecordMap database) {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null, ColumnFieldType.LIST_STRING, field);
@@ -149,6 +146,10 @@ public class NSFieldAccess {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Record not found " + guid + " : " + field);
       }
+    } catch (FailedDBOperationException e) {
+       if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("Failed DB operation " + guid + " : " + field);
+      }
     }
     if (result != null) {
       return result;
@@ -161,15 +162,15 @@ public class NSFieldAccess {
    * Looks up the first element of field in the guid on this NameServer as a String.
    * Returns null if the field or the record cannot be found.
    *
-   * @param recordName
-   * @param key
+   * @param guid
+   * @param field
    * @param database
    * @return a string representing the first value in field
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static String lookupSingletonFieldOnThisServer(String recordName, String key,
+  public static String lookupSingletonFieldOnThisServer(String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    ResultValue guidResult = lookupListFieldOnThisServer(recordName, key, database);
+    ResultValue guidResult = lookupListFieldOnThisServer(guid, field, database);
     if (guidResult != null && !guidResult.isEmpty()) {
       return (String) guidResult.get(0);
     } else {

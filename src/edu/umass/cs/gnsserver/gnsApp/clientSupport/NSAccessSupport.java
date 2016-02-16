@@ -128,24 +128,22 @@ public class NSAccessSupport {
    * @param field
    * @param accessorGuid
    * @param activeReplica
-   * @param lnsAddress
    * @return true if the the reader has access
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
-          String accessorGuid, GnsApplicationInterface<String> activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          String accessorGuid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     //String accessorGuid = ClientUtils.createGuidStringFromPublicKey(accessorPublicKey);
     if (debuggingEnabled) {
       GNS.getLogger().info("User: " + guid + " Reader: " + accessorGuid + " Field: " + field);
     }
     if (guid.equals(accessorGuid)) {
       return true; // can always read your own stuff
-    } else if (hierarchicalAccessCheck(access, guid, field, accessorGuid, activeReplica, lnsAddress)) {
+    } else if (hierarchicalAccessCheck(access, guid, field, accessorGuid, activeReplica)) {
       return true; // accessor can see this field
 //    } else if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
 //      return true; // accessor can see this field
-    } else if (checkForAccess(access, guid, ALL_FIELDS, accessorGuid, activeReplica, lnsAddress)) {
+    } else if (checkForAccess(access, guid, ALL_FIELDS, accessorGuid, activeReplica)) {
       return true; // accessor can see all fields
     } else {
       if (debuggingEnabled) {
@@ -169,25 +167,24 @@ public class NSAccessSupport {
    */
   private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid, 
           String field, String accessorGuid,
-          GnsApplicationInterface<String> activeReplica, 
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
-    if (checkForAccess(access, guid, field, accessorGuid, activeReplica, lnsAddress)) {
+    if (checkForAccess(access, guid, field, accessorGuid, activeReplica)) {
       return true;
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
       return hierarchicalAccessCheck(access, guid, field.substring(0, field.lastIndexOf(".")),
-              accessorGuid, activeReplica, lnsAddress);
+              accessorGuid, activeReplica);
     } else {
       return false;
     }
   }
 
   private static boolean checkForAccess(MetaDataTypeName access, String guid, String field, String accessorGuid,
-          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
       return true;
@@ -200,7 +197,7 @@ public class NSAccessSupport {
       if (debuggingEnabled) {
         GNS.getLogger().info(guid + " allowed users of " + field + " : " + allowedusers);
       }
-      if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica, lnsAddress)) {
+      if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica)) {
         if (debuggingEnabled) {
           GNS.getLogger().info("User " + accessorGuid + " allowed to access "
                   + (field != ALL_FIELDS ? ("user " + guid + "'s " + field + " field") : ("all of user " + guid + "'s fields")));
@@ -218,8 +215,7 @@ public class NSAccessSupport {
   }
 
   private static boolean checkAllowedUsers(String accessorGuid,
-          Set<String> allowedUsers, GnsApplicationInterface<String> activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          Set<String> allowedUsers, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (ClientUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
       //if (allowedUsers.contains(accessorPublicKey)) {
       return true;
@@ -230,7 +226,7 @@ public class NSAccessSupport {
       // intersects with the groups that this
       // guid is a member of (which is stored with this guid)
       return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers),
-              NSGroupAccess.lookupGroups(accessorGuid, activeReplica, lnsAddress)).isEmpty();
+              NSGroupAccess.lookupGroups(accessorGuid, activeReplica.getDB())).isEmpty();
     }
   }
 

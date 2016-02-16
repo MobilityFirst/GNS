@@ -236,11 +236,11 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
             //LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
-            AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient, activeCodeHandler);
+            AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient);
           }
           break;
         case UPDATE:
-          AppUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this, doNotReplyToClient, activeCodeHandler);
+          AppUpdate.executeUpdateLocalUpdatePacket(new UpdatePacket<String>(json, nodeConfig), this, doNotReplyToClient);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
@@ -489,4 +489,9 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     return clientCommandProcessor;
   }
 
+  @Override
+  public ActiveCodeHandler getActiveCodeHandler() {
+    return activeCodeHandler;
+  }
+ 
 }

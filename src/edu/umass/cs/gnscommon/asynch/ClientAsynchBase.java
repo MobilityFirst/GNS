@@ -63,7 +63,9 @@ import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSuppor
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
@@ -433,6 +435,24 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     json.put(field, value);
     return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid,
             USER_JSON, json.toString(),
+            WRITER, MAGIC_STRING), callback);
+  }
+  
+  public long fieldRemove(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a remove command that doesn't need authentication.
+    JSONObject json = new JSONObject();
+    json.put(field, value);
+    return sendCommandAsynch(createCommand(REMOVE, GUID, guid, 
+            FIELD, field, VALUE, value.toString(),
+            WRITER, MAGIC_STRING), callback);
+  }
+  
+  public long fieldRemoveMultiple(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a remove command that doesn't need authentication.
+    JSONObject json = new JSONObject();
+    json.put(field, value);
+    return sendCommandAsynch(createCommand(REMOVE_LIST, GUID, guid, 
+            FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 

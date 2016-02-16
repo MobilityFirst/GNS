@@ -19,11 +19,18 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
+import java.io.IOException;
+import java.util.Arrays;
+import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
 /**
@@ -128,19 +135,14 @@ public class GroupAccess {
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
-    handler.setReallySendUpdateToReplica(false);
-    // We could roll back the above operation if the one below gets an error, but we don't
-    // We'll worry about that when we migrate this into the Name Server
-    if (!groupResponse.isAnError()) {
-      handler.setReallySendUpdateToReplica(true);
-      handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-              UpdateOperation.SINGLE_FIELD_REMOVE);
-      handler.setReallySendUpdateToReplica(false);
+    // FIXME: adde authentication check
+    try {
+      handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
+      handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
+      return NSResponseCode.NO_ERROR;
+    } catch (IOException | JSONException | GnsClientException e) {
+      return NSResponseCode.ERROR;
     }
-    return groupResponse;
   }
 
   /**
@@ -156,21 +158,30 @@ public class GroupAccess {
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, true);
-    handler.setReallySendUpdateToReplica(false);
-    if (!groupResponse.isAnError()) {
-      // We could fix the above operation if any one below gets an error, but we don't
-      // We'll worry about that when we migrate this into the Name Server
+    try {
+      handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
       for (String memberGuid : members.toStringSet()) {
-        handler.setReallySendUpdateToReplica(true);
-        handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-                UpdateOperation.SINGLE_FIELD_REMOVE);
-        handler.setReallySendUpdateToReplica(false);
+        handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
       }
+      return NSResponseCode.NO_ERROR;
+    } catch (IOException | JSONException | GnsClientException e) {
+      return NSResponseCode.ERROR;
     }
-    return groupResponse;
+//    handler.setReallySendUpdateToReplica(true);
+//    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
+//            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, true);
+//    handler.setReallySendUpdateToReplica(false);
+//    if (!groupResponse.isAnError()) {
+//      // We could fix the above operation if any one below gets an error, but we don't
+//      // We'll worry about that when we migrate this into the Name Server
+//      for (String memberGuid : members.toStringSet()) {
+//        handler.setReallySendUpdateToReplica(true);
+//        handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
+//                UpdateOperation.SINGLE_FIELD_REMOVE);
+//        handler.setReallySendUpdateToReplica(false);
+//      }
+//    }
+//    return groupResponse;
   }
 
   /**
@@ -185,12 +196,14 @@ public class GroupAccess {
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(GROUP));
-    } else {
-      return new ResultValue();
-    }
+    // FIXME: handle authentication
+    return NSFieldAccess.lookupListFieldOnThisServer(guid, GROUP, handler.getApp().getDB());
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
+//    if (!result.isError()) {
+//      return new ResultValue(result.getArray(GROUP));
+//    } else {
+//      return new ResultValue();
+//    }
   }
 
   /**
@@ -205,12 +218,14 @@ public class GroupAccess {
    */
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(GROUPS));
-    } else {
-      return new ResultValue();
-    }
+    // FIXME: handle authentication
+    return NSFieldAccess.lookupListFieldOnThisServer(guid, GROUPS, handler.getApp().getDB());
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
+//    if (!result.isError()) {
+//      return new ResultValue(result.getArray(GROUPS));
+//    } else {
+//      return new ResultValue();
+//    }
   }
 
   /**
@@ -263,7 +278,6 @@ public class GroupAccess {
 //    return handler.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
 //            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
 //  }
-
 //  /**
 //   *
 //   * @param guid
@@ -284,7 +298,6 @@ public class GroupAccess {
 //      return new ResultValue();
 //    }
 //  }
-
 //  /**
 //   *
 //   * @param guid
@@ -305,7 +318,6 @@ public class GroupAccess {
 //      return new ResultValue();
 //    }
 //  }
-
 //  /**
 //   *
 //   * @param guid
@@ -330,7 +342,6 @@ public class GroupAccess {
 //    }
 //    return false;
 //  }
-
 //  /**
 //   *
 //   * @param guid

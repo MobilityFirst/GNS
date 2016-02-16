@@ -22,6 +22,8 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -31,9 +33,16 @@ import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSUpdateSupport;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -87,10 +96,13 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse<String> lookup(String guid, String field, ArrayList<String> fields, String reader, String signature,
-          String message, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> lookup(String guid, String field, ArrayList<String> fields,
+          String reader, String signature, String message,
+          ClientRequestHandlerInterface handler) {
     long startTime = System.currentTimeMillis();
     String resultString;
+//    NSResponseCode authResponse = NSAuthentication.signatureAndACLCheck(guid, field, reader, 
+//            signature, message, MetaDataTypeName.READ_WHITELIST, );
 //    if (field != null) {
 //      result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
 //    } else {
@@ -292,12 +304,20 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue, int argument,
-          UpdateOperation operation,
+  public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue,
+          int argument, UpdateOperation operation,
           String writer, String signature, String message, ClientRequestHandlerInterface handler) {
 
-    return handler.getIntercessor().sendUpdateRecord(guid, key, value, oldValue, argument,
-            operation, writer, signature, message);
+    try {
+      return NSUpdateSupport.executeUpdateLocal(guid, key, writer, signature, message, operation,
+              value, oldValue, argument, null, handler.getApp(), false);
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
+            SignatureException | JSONException | IOException |
+            FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
+      return NSResponseCode.ERROR;
+    }
+//    return handler.getIntercessor().sendUpdateRecord(guid, key, value, oldValue, argument,
+//            operation, writer, signature, message);
   }
 
   /**

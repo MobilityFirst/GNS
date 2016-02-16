@@ -68,7 +68,6 @@ public class AppLookup {
    * @param dnsPacket
    * @param gnsApp
    * @param doNotReplyToClient
-   * @param activeCodeHandler
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws java.security.InvalidKeyException
@@ -78,7 +77,7 @@ public class AppLookup {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void executeLookupLocal(DNSPacket<String> dnsPacket, GnsApplicationInterface<String> gnsApp,
-          boolean doNotReplyToClient, ActiveCodeHandler activeCodeHandler)
+          boolean doNotReplyToClient)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     Long receiptTime = System.currentTimeMillis(); // instrumentation
@@ -114,12 +113,12 @@ public class AppLookup {
     if (reader != null) { // reader will be null for internal system reads
       if (field != null) {// single field check
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message,
-                MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCppAddress());
+                MetaDataTypeName.READ_WHITELIST, gnsApp);
       } else { //multi field check - return an error if any field doesn't pass
         for (String key : fields) {
           NSResponseCode code;
           if ((code = NSAuthentication.signatureAndACLCheck(guid, key, reader, signature,
-                  message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCppAddress())).isAnError()) {
+                  message, MetaDataTypeName.READ_WHITELIST, gnsApp)).isAnError()) {
             errorCode = code;
           }
         }
@@ -185,7 +184,7 @@ public class AppLookup {
           //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
         }
 
-        if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
+        if (codeRecord != null && nameRecord != null && gnsApp.getActiveCodeHandler().hasCode(codeRecord, "read")) {
           try {
             String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
             ValuesMap originalValues = nameRecord.getValuesMap();
@@ -195,7 +194,7 @@ public class AppLookup {
               //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
               GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toReasonableString());
             }
-            newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
+            newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field, "read", originalValues, hopLimit);
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               //GNS.getLogger().info("AC--->>> " + newResult.toString());
               GNS.getLogger().info("AC--->>> " + newResult.toReasonableString());
@@ -239,7 +238,7 @@ public class AppLookup {
    */
   private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket<String> dnsPacket, String guid, String field, NameRecord nameRecord,
           GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException, IOException, JSONException {
-    if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
+    if (NSGroupAccess.isGroupGuid(guid, gnsApp.getDB())) {
       ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp.getDB());
       // Set up the response packet
       dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);

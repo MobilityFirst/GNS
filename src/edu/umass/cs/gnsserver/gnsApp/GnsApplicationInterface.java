@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientCommandProcessor;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.ping.PingManager;
@@ -92,5 +93,7 @@ public interface GnsApplicationInterface<NodeIDType> {
    * @return the client command processor
    */
   ClientCommandProcessor getClientCommandProcessor();
+  
+  ActiveCodeHandler getActiveCodeHandler();
   
 }
