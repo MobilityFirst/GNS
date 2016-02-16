@@ -123,9 +123,13 @@ public class AppReconfigurableNodeOptions {
    */
   public static long activeCodeBlacklistSeconds = 75;
   /**
-   * Number of spare workers
+   * Number of spare workers.
    */
   public static int activeCodeSpareWorker = 20;
+  /**
+   * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
+   */
+  public static boolean activeCodeEnableTimeout = true;
   
   /**
    * Default port numbers for active workers, the default
@@ -220,6 +224,8 @@ public class AppReconfigurableNodeOptions {
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
   
   private static final String ACTIVE_CODE_SPARE_WORKER = "activeCodeSpareWorker";
+  
+  private static final String ACTIVE_CODE_ENABLE_TIMEOUT = "activeCodeEnableTimeout";
   
   /**
    * Returns all the options.
@@ -425,7 +431,10 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(ACTIVE_CODE_SPARE_WORKER)) {
     	activeCodeSpareWorker = Integer.parseInt(allValues.get(ACTIVE_CODE_SPARE_WORKER));
     }
-
+    
+    if (allValues.containsKey(ACTIVE_CODE_ENABLE_TIMEOUT)) {
+    	activeCodeEnableTimeout = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_TIMEOUT));
+    }
   }
 
 }

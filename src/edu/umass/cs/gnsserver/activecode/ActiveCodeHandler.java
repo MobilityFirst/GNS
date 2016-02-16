@@ -34,6 +34,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
+import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
@@ -49,14 +50,13 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeHandler {	
-	GnsApplicationInterface<?> gnsApp;
-	ClientPool clientPool;
-	ThreadFactory threadFactory;
-	ActiveCodeExecutor executorPool;
-	ActiveCodeGuardian guard;
-	ActiveCodeScheduler scheduler;
-	InetSocketAddress addr;
-	long blacklistSeconds;
+	private GnsApplicationInterface<?> gnsApp;
+	private ClientPool clientPool;
+	private ThreadFactory threadFactory;
+	private ActiveCodeExecutor executorPool;
+	private ActiveCodeGuardian guard;
+	private ActiveCodeScheduler scheduler;
+	private InetSocketAddress addr;
 	
 	protected static final long MILLISECONDS_PER_SEC = 1000;
 	
@@ -64,11 +64,10 @@ public class ActiveCodeHandler {
 	 * Initializes an ActiveCodeHandler
 	 * @param app
 	 * @param numProcesses
-	 * @param blacklistSeconds
 	 * @param addr 
 	 */
-	public ActiveCodeHandler(GnsApplicationInterface<String> app, int numProcesses, long blacklistSeconds, InetSocketAddress addr) {
-		this.gnsApp = app;			    		
+	public ActiveCodeHandler(GnsApplicationInterface<String> app, int numProcesses, InetSocketAddress addr) {
+		this.setGnsApp(app);			    		
 	    this.addr = addr;
 	    
 		clientPool = new ClientPool(app, this); 
@@ -76,7 +75,9 @@ public class ActiveCodeHandler {
 		
 		
 		guard = new ActiveCodeGuardian(clientPool);
-	    (new Thread(guard)).start();
+		if (AppReconfigurableNodeOptions.activeCodeEnableTimeout){
+			(new Thread(guard)).start();
+		}
 		
 	    // Get the ThreadFactory implementation to use
 	    threadFactory = new ActiveCodeThreadFactory(clientPool);
@@ -94,8 +95,6 @@ public class ActiveCodeHandler {
 	    (new Thread(scheduler)).start();
 	    
 	    clientPool.startSpareWorkers();
-	    
-		this.blacklistSeconds = blacklistSeconds;
 	}
 	
 	
@@ -187,5 +186,21 @@ public class ActiveCodeHandler {
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
 		
 	    return result;
+	}
+
+
+	/**
+	 * @return gnsApp
+	 */
+	public GnsApplicationInterface<?> getGnsApp() {
+		return gnsApp;
+	}
+
+
+	/**
+	 * @param gnsApp
+	 */
+	public void setGnsApp(GnsApplicationInterface<?> gnsApp) {
+		this.gnsApp = gnsApp;
 	}
 }
