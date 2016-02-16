@@ -134,7 +134,7 @@ public class Select {
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
-          ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app, packet.getCppAddress());
+          ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app.getDB());
           sendReponsePacketToCCP(packet.getId(), packet.getCcpQueryId(), packet.getCppAddress(), result.toStringSet(), app);
           return;
         }

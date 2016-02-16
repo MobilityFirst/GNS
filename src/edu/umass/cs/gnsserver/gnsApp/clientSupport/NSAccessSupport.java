@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Set;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -195,7 +196,7 @@ public class NSAccessSupport {
       // FIXME: Tidy this mess up.
       @SuppressWarnings("unchecked")
       Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access,
-              guid, field, activeReplica);
+              guid, field, activeReplica.getDB());
       if (debuggingEnabled) {
         GNS.getLogger().info(guid + " allowed users of " + field + " : " + allowedusers);
       }
@@ -246,8 +247,8 @@ public class NSAccessSupport {
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
-      return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica).contains(EVERYONE)
-              || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALL_FIELDS, activeReplica).contains(EVERYONE);
+      return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica.getDB()).contains(EVERYONE)
+              || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALL_FIELDS, activeReplica.getDB()).contains(EVERYONE);
     } catch (FieldNotFoundException e) {
       // This is actually a normal result.. so no warning here.
       return false;
@@ -263,30 +264,30 @@ public class NSAccessSupport {
    * @param access
    * @param guid
    * @param field
-   * @param activeReplica
+   * @param database
    * @return a set of public keys
    * @throws FailedDBOperationException
    */
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
-          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+          BasicRecordMap database) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
     try {
       //FIXME: Clean this mess up.
-      return (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica);
+      return (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access, guid, field, database);
     } catch (FieldNotFoundException e) {
       // do nothing
     } catch (RecordNotFoundException e) {
       GNS.getLogger().warning("User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
-      return new HashSet<String>();
+      return new HashSet<>();
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), activeReplica);
+      return lookupPublicKeysFromAcl(access, guid, field.substring(0, field.lastIndexOf(".")), database);
     } else {
-      return new HashSet<String>();
+      return new HashSet<>();
     }
   }
 

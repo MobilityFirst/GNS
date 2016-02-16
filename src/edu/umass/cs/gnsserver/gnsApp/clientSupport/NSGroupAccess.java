@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.net.InetSocketAddress;
@@ -83,15 +84,13 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param allowQueryToOtherNSs
-   * @param activeReplica
-   * @param lnsAddress
+   * @param database
    * @return the members as a {@link ResultValue}
    * @throws FailedDBOperationException
    */
   public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs, 
-          GnsApplicationInterface<String> activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUP, allowQueryToOtherNSs, activeReplica, lnsAddress);
+          BasicRecordMap database) throws FailedDBOperationException {
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUP, allowQueryToOtherNSs, database);
   }
 
   /**
@@ -103,7 +102,7 @@ public class NSGroupAccess {
    * @throws FailedDBOperationException
    */
   public static boolean isGroupGuid(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    return !NSFieldAccess.lookupListFieldOnThisServer(guid, GroupAccess.GROUP, activeReplica).isEmpty();
+    return !NSFieldAccess.lookupListFieldOnThisServer(guid, GroupAccess.GROUP, activeReplica.getDB()).isEmpty();
   }
 
   /**
@@ -118,7 +117,7 @@ public class NSGroupAccess {
   public static Set<String> lookupGroups(String guid, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // this guid could be on another NS hence the true below
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, true, activeReplica, lnsAddress).toStringSet();
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, true, activeReplica.getDB()).toStringSet();
   }
   
   /**
@@ -132,7 +131,7 @@ public class NSGroupAccess {
    */
   public static Set<String> lookupGroupsOnThisServer(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     // this guid could be on another NS hence the true below
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, false, activeReplica, null).toStringSet();
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, false, activeReplica.getDB()).toStringSet();
   }
 
   /**
@@ -229,7 +228,7 @@ public class NSGroupAccess {
    */
   public static Date getLastUpdate(String guid, GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_LAST_UPDATE, true, activeReplica, lnsAddress);
+    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_LAST_UPDATE, true, activeReplica.getDB());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++ResultValue = " + resultValue);
     }
@@ -251,7 +250,7 @@ public class NSGroupAccess {
    */
   public static int getMinRefresh(String guid, GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica, lnsAddress);
+    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica.getDB());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++ResultValue = " + resultValue);
     }
@@ -274,7 +273,7 @@ public class NSGroupAccess {
    */
   public static String getQueryString(String guid, GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_QUERY_STRING, true, activeReplica, lnsAddress);
+    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_QUERY_STRING, true, activeReplica.getDB());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++ResultValue = " + resultValue);
     }
@@ -297,12 +296,12 @@ public class NSGroupAccess {
    * @throws FailedDBOperationException
    * @throws JSONException
    */
-  public static ValuesMap lookupFieldInGroupGuid(String groupGuid, String field, GnsApplicationInterface<String> activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException, JSONException {
+  public static ValuesMap lookupFieldInGroupGuid(String groupGuid, String field, 
+          BasicRecordMap database) throws FailedDBOperationException, JSONException {
     JSONArray resultArray = new JSONArray();
-    for (Object guidObject : lookupMembers(groupGuid, false, activeReplica, lnsAddress)) {
+    for (Object guidObject : lookupMembers(groupGuid, false, database)) {
       String guid = (String) guidObject;
-      ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, field, activeReplica, lnsAddress);
+      ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, field, database);
       if (valuesMap != null && valuesMap.has(field)) {
         resultArray.put(valuesMap.get(field));
       }

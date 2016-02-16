@@ -153,11 +153,5 @@ public class ActiveCode {
     } catch (JSONException e) {
     }
     return GnsProtocol.NULL_RESPONSE;
-//    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
-//    if (!result.isError()) {
-//      return new ResultValue(result.getArray(field));
-//    } else {
-//      return new ResultValue();
-//    }
   }
 }

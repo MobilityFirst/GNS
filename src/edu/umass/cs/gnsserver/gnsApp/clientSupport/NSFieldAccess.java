@@ -128,15 +128,15 @@ public class NSFieldAccess {
    *
    * @param guid
    * @param field
-   * @param activeReplica
+   * @param database
    * @return ResultValue
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ResultValue lookupListFieldOnThisServer(String guid, String field,
-          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+          BasicRecordMap database) throws FailedDBOperationException {
     ResultValue result = null;
     try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
+      NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null, ColumnFieldType.LIST_STRING, field);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       }
@@ -163,13 +163,13 @@ public class NSFieldAccess {
    *
    * @param recordName
    * @param key
-   * @param activeReplica
+   * @param database
    * @return a string representing the first value in field
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static String lookupSingletonFieldOnThisServer(String recordName, String key,
-          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    ResultValue guidResult = lookupListFieldOnThisServer(recordName, key, activeReplica);
+          BasicRecordMap database) throws FailedDBOperationException {
+    ResultValue guidResult = lookupListFieldOnThisServer(recordName, key, database);
     if (guidResult != null && !guidResult.isEmpty()) {
       return (String) guidResult.get(0);
     } else {
@@ -186,16 +186,15 @@ public class NSFieldAccess {
    * @param guid
    * @param field
    * @param allowQueryToOtherNSs
-   * @param activeReplica
-   * @param lnsAddress
+   * @param database
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ResultValue lookupListFieldAnywhere(String guid, String field, boolean allowQueryToOtherNSs,
-          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    ResultValue result = lookupListFieldOnThisServer(guid, field, activeReplica);
+  public static ResultValue lookupListFieldAnywhere(String guid, String field, 
+          boolean allowQueryToOtherNSs, BasicRecordMap database) throws FailedDBOperationException {
+    ResultValue result = lookupListFieldOnThisServer(guid, field, database);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
-    if (result.isEmpty() && !activeReplica.getDB().containsName(guid) && allowQueryToOtherNSs) {
+    if (result.isEmpty() && !database.containsName(guid) && allowQueryToOtherNSs) {
       try {
         String stringResult = new SideToSideQuery().fieldRead(guid, field);
         result = new ResultValue(stringResult);
@@ -227,16 +226,15 @@ public class NSFieldAccess {
    *
    * @param guid
    * @param field
-   * @param activeReplica
-   * @param lnsAddress
+   * @param database
    * @return ValuesMap containing the value of the field or null if field cannot be found
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupFieldAnywhere(String guid, String field, GnsApplicationInterface<String> activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    ValuesMap result = lookupFieldOnThisServer(guid, field, activeReplica.getDB());
+  public static ValuesMap lookupFieldAnywhere(String guid, String field, 
+          BasicRecordMap database) throws FailedDBOperationException {
+    ValuesMap result = lookupFieldOnThisServer(guid, field, database);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
-    if (result == null && !activeReplica.getDB().containsName(guid)) {
+    if (result == null && !database.containsName(guid)) {
       try {
         String stringResult = new SideToSideQuery().fieldRead(guid, field);
         result = new ValuesMap();

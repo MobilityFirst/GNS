@@ -240,7 +240,7 @@ public class AppLookup {
   private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket<String> dnsPacket, String guid, String field, NameRecord nameRecord,
           GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException, IOException, JSONException {
     if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
-      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getCppAddress());
+      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp.getDB());
       // Set up the response packet
       dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
       dnsPacket.setResponder(gnsApp.getNodeID());

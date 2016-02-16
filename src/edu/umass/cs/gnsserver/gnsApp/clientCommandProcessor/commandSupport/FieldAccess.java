@@ -143,6 +143,7 @@ public class FieldAccess {
           String message,
           ClientRequestHandlerInterface handler) {
 
+    //NSFieldAccess.lookupListFieldOnThisServer(guid, field, activeReplica)
     String resultString;
     // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
     QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message,

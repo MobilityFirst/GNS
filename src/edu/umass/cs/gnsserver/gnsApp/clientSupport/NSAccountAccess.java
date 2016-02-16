@@ -24,6 +24,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
@@ -48,8 +49,8 @@ public class NSAccountAccess {
    * @return an {@link edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo} instance
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, null);
+  public static GuidInfo lookupGuidInfo(String guid, BasicRecordMap database) throws FailedDBOperationException {
+    return NSAccountAccess.lookupGuidInfo(guid, false, database);
   }
 
   /**
@@ -59,15 +60,13 @@ public class NSAccountAccess {
    *
    * @param guid
    * @param allowQueryToOtherNSs
-   * @param activeReplica
-   * @param lnsAddress
+   * @param database
    * @return a {@link GuidInfo} instance or null
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, 
-          GnsApplicationInterface<String> activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, AccountAccess.GUID_INFO, activeReplica, lnsAddress);
+          BasicRecordMap database) throws FailedDBOperationException {
+    ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, AccountAccess.GUID_INFO, database);
 //    ResultValue guidResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
 //            lnsAddress);
     //GNS.getLogger().info("VALUESMAP=" + valuesMap.toString());
