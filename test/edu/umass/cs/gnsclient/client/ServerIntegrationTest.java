@@ -97,6 +97,8 @@ public class ServerIntegrationTest {
     if (connected == false) {
       fail("Server startup failure: ; aborting all tests.");
     }
+    System.out.println("CONNECTED. NOW WAITING 60 SECONDS");
+    ThreadUtils.sleep(60000);
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
