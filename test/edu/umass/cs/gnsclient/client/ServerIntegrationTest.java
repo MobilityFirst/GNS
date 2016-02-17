@@ -87,22 +87,29 @@ public class ServerIntegrationTest {
     boolean connected = false;
     do {
       try {
-        System.out.println("Connectivity check: " +  (tries - 1) + " attempt remaining.");
+        System.out.println("Connectivity check: " + (tries - 1) + " attempt remaining.");
         client.checkConnectivity(); // this will throw the IOException if we cannot connect
         connected = true;
-      } catch (IOException e) {  
+      } catch (IOException e) {
         ThreadUtils.sleep((10 - tries) * 2000);
       }
     } while (!connected && --tries > 0);
     if (connected == false) {
       fail("Server startup failure: ; aborting all tests.");
     }
-    System.out.println("CONNECTED. NOW WAITING 60 SECONDS");
-    ThreadUtils.sleep(60000);
-    try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-    } catch (Exception e) {
-      fail("Failure setting up account guid: " + e + "; aborting all tests.");
+    tries = 5;
+    boolean accountCreated = false;
+    do {
+      try {
+        System.out.println("Creating account guid: " + (tries - 1) + " attempt remaining.");
+        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        accountCreated = true;
+      } catch (Exception e) {
+        ThreadUtils.sleep((5 - tries) * 5000);
+      }
+    } while (!accountCreated && --tries > 0);
+    if (accountCreated == false) {
+      fail("Failure setting up account guid; aborting all tests.");
     }
   }
 
@@ -398,7 +405,7 @@ public class ServerIntegrationTest {
       fail("Exception when we were not expecting it: " + e);
     }
   }
-  
+
   // Travis CI started failing after adding this test
 //  @Test
 //  public void test_14_ACLCreateDeeperField() {
@@ -425,7 +432,6 @@ public class ServerIntegrationTest {
 //      fail("Exception when we were not expecting it: " + e);
 //    }
 //  }
-
   @Test
   public void test_17_DB() {
     //testCreateEntity();
@@ -784,7 +790,6 @@ public class ServerIntegrationTest {
 //      fail("Exception when we were not expecting it: " + e);
 //    }
 //  }
-
   @Test
   public void test_24_WriteAccess() {
     String fieldName = "whereAmI";
@@ -1258,7 +1263,6 @@ public class ServerIntegrationTest {
 //      fail("Exception while fetching account record: " + e);
 //    }
 //  }
-
 //  @Test
 //  public void test_52_CreateBatchFast() {
 //    GuidEntry masterGuid = null;
@@ -1294,7 +1298,6 @@ public class ServerIntegrationTest {
 //      fail("Exception while fetching account record: " + e);
 //    }
 //  }
-
 //  @Test
 //  public void test_53_CreateBatchFastest() {
 //    GuidEntry masterGuid = null;
@@ -1326,7 +1329,6 @@ public class ServerIntegrationTest {
 //      fail("Exception while fetching account record: " + e);
 //    }
 //  }
-  
   @Test
   public void test_998_Client_Stop() {
     try {
@@ -1335,7 +1337,7 @@ public class ServerIntegrationTest {
       fail("Exception during client stop: " + e);
     }
   }
-  
+
   @Test
   public void test_999_Server_Stop() {
     try {
