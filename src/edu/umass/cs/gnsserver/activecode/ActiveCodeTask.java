@@ -63,15 +63,15 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	ValuesMap result = null;
     	ActiveCodeClient client = clientPool.getClient(pid);
     	int port = client.getPort();
-    	long startWait = System.nanoTime();
+    	long startWait = System.currentTimeMillis();
     	
     	//check the state of the client's worker
     	while(!ClientPool.getClientState(port)){
     		// wait until it's ready
     		clientPool.waitFor();
     	}
-    	if(System.nanoTime() - startWait > 1000){
-    		DelayProfiler.updateDelayNano("activeCodeTaskWait", startWait);
+    	if(System.currentTimeMillis() - startWait > 100){
+    		DelayProfiler.updateDelay("activeCodeTaskWait", startWait);
     	}
     	
     	guard.registerThread(this, Thread.currentThread());   	
