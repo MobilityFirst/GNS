@@ -285,7 +285,7 @@ public class AccountAccess {
    * @param allowRemoteLookup
    * @return an {@link GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler, 
+  public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is " + allowRemoteLookup);
@@ -1091,10 +1091,12 @@ public class AccountAccess {
 
   private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-
     try {
       JSONObject json = new JSONObject();
       json.put(GUID_INFO, guidInfo.toJSONObject());
+//      NSResponseCode response = FieldAccess.update(guidInfo.getGuid(), 
+//              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+//              writer, signature, message, handler);
       NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
               new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
               writer, signature, message);

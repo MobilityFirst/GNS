@@ -337,7 +337,17 @@ public class FieldAccess {
    */
   public static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
           String writer, String signature, String message, ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(json), operation, writer, signature, message);
+    try {
+      return NSUpdateSupport.executeUpdateLocal(guid, null,
+              writer, signature, message, operation,
+              null, null, -1, null, handler.getApp(), false);
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
+            SignatureException | JSONException | IOException |
+            FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
+      return NSResponseCode.ERROR;
+    }
+//    return handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(json),
+//            operation, writer, signature, message);
   }
 
   /**

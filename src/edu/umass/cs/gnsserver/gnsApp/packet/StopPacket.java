@@ -138,7 +138,6 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     this.needsCoordination = needsCoordination;
   }
 
-@Override
 public long getRequestID() {
 	return this.requestID;
 }

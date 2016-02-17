@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
+import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -98,6 +99,8 @@ public class ActiveCode {
     } catch (JSONException e) {
       return NSResponseCode.ERROR;
     }
+//    NSResponseCode response = FieldAccess.update(guid, json, UpdateOperation.USER_JSON_REPLACE,
+//            writer, signature, message, handler);
     NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
             new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
             writer, signature, message);

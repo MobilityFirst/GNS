@@ -55,9 +55,6 @@ public class NSAccessSupport {
 
   private static boolean debuggingEnabled = false;
 
-  // try this for now
-  private static final Set<String> WORLDREADABLEFIELDS = new HashSet<String>(Arrays.asList(GroupAccess.JOINREQUESTS, GroupAccess.LEAVEREQUESTS));
-
   private static KeyFactory keyFactory;
   private static Signature sig;
 
@@ -185,10 +182,6 @@ public class NSAccessSupport {
 
   private static boolean checkForAccess(MetaDataTypeName access, String guid, String field, String accessorGuid,
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    // first check the always world readable ones
-    if (WORLDREADABLEFIELDS.contains(field)) {
-      return true;
-    }
     try {
       // FIXME: Tidy this mess up.
       @SuppressWarnings("unchecked")
