@@ -37,6 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.
@@ -49,6 +50,7 @@ public class ClientPool implements Runnable{
 	private GnsApplicationInterface<String> app;
 	private ActiveCodeHandler ach;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
+	private static ConcurrentHashMap<Integer, Long> timeMap;
 	private ExecutorService executorPool;
 	private final int numSpareWorker = AppReconfigurableNodeOptions.activeCodeSpareWorker;
 	private Lock lock = new ReentrantLock();
@@ -136,7 +138,12 @@ public class ClientPool implements Runnable{
 	
 	protected static void updateClientState(int port, boolean state){
 		// update the state of the worker
-		readyMap.put(port, state);		
+		readyMap.put(port, state);	
+		if(state){
+			DelayProfiler.updateDelay("activeStartNewWorker", timeMap.get(port));
+		}else{
+			timeMap.put(port, System.currentTimeMillis());
+		}
 	}
 	
 	protected static boolean getClientState(int port){

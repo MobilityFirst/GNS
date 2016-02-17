@@ -70,6 +70,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     		// wait until it's ready
     		clientPool.waitFor();
     	}
+    	
     	if(System.currentTimeMillis() - startWait > 100){
     		DelayProfiler.updateDelay("activeCodeTaskWait", startWait);
     	}
