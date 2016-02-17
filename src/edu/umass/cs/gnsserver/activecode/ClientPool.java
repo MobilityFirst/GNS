@@ -237,7 +237,7 @@ public class ClientPool implements Runnable{
 		// maintain state for a worker
 		updateClientState(serverPort, false);		
 		
-		Process process = startNewWorker(serverPort, 16);
+		Process process = startNewWorker(serverPort, 64);
 		
 		spareWorkers.put(serverPort, process);
 		synchronized(spareWorkers){
