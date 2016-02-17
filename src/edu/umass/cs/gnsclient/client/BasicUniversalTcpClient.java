@@ -124,7 +124,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   private final Object monitor = new Object();
 
   // Enables all the debug logging statements in the client.
-  protected boolean debuggingEnabled = false;
+  protected boolean debuggingEnabled = true;
 
   // When this is ture we don't use SSL.
   private final boolean disableSSL;

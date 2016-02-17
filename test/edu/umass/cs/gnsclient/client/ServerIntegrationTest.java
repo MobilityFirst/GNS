@@ -52,7 +52,7 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client = null;
   /**
@@ -101,7 +101,6 @@ public class ServerIntegrationTest {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
       fail("Failure setting up account guid: " + e + "; aborting all tests.");
-      //System.exit(1);
     }
   }
 
