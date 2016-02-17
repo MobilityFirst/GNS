@@ -50,7 +50,7 @@ public class ClientPool implements Runnable{
 	private GnsApplicationInterface<String> app;
 	private ActiveCodeHandler ach;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
-	private static ConcurrentHashMap<Integer, Long> timeMap;
+	private static ConcurrentHashMap<Integer, Long> timeMap = new ConcurrentHashMap<Integer, Long>();
 	private ExecutorService executorPool;
 	private final int numSpareWorker = AppReconfigurableNodeOptions.activeCodeSpareWorker;
 	private Lock lock = new ReentrantLock();
