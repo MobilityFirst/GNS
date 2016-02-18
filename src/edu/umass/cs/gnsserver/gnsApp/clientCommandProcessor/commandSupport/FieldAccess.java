@@ -51,6 +51,10 @@ import org.json.JSONObject;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -159,7 +163,7 @@ public class FieldAccess {
           String message,
           ClientRequestHandlerInterface handler) {
 
-    //NSFieldAccess.lookupListFieldOnThisServer(guid, field, activeReplica)
+    //NSFieldAccess.lookupListFieldOnThisServerWithoutAuthentication(guid, field, activeReplica)
     String resultString;
     // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
     QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message,

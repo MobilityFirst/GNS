@@ -114,7 +114,7 @@ public class NSUpdateSupport {
       try {
         newValue = handleActiveCode(guid, field, userJSON, db, activeCodeHandler);
       } catch (JSONException e) {
-        GNS.getLogger().severe("JSON problem while handlding active code: " + e);
+        GNS.getLogger().severe("JSON problem while handling active code: " + e);
       }
     }
     if (newValue == null) {
@@ -122,7 +122,7 @@ public class NSUpdateSupport {
     }
     // END ACTIVE CODE HANDLING
     if (AppReconfigurableNodeOptions.debuggingEnabled && field != null) {
-      GNS.getLogger().info("****** field= " + field + " operation= " + operation.toString() + " value= " + updateValue.toString() + " name Record=" + nameRecord.toReasonableString());
+      GNS.getLogger().info("****** field= " + field + " operation= " + operation.toString() + " value= " + updateValue.toString() + " name Record=" + nameRecord.toString());
     }
     // Apply update to record in the database
     return nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);

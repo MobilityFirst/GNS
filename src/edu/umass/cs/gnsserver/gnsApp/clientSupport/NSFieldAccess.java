@@ -129,7 +129,7 @@ public class NSFieldAccess {
    * @param database
    * @return ResultValue
    */
-  public static ResultValue lookupListFieldOnThisServer(String guid, String field,
+  public static ResultValue lookupListFieldOnThisServerWithoutAuthentication(String guid, String field,
           BasicRecordMap database) {
     ResultValue result = null;
     try {
@@ -170,7 +170,7 @@ public class NSFieldAccess {
    */
   public static String lookupSingletonFieldOnThisServer(String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    ResultValue guidResult = lookupListFieldOnThisServer(guid, field, database);
+    ResultValue guidResult = lookupListFieldOnThisServerWithoutAuthentication(guid, field, database);
     if (guidResult != null && !guidResult.isEmpty()) {
       return (String) guidResult.get(0);
     } else {
@@ -193,7 +193,7 @@ public class NSFieldAccess {
    */
   public static ResultValue lookupListFieldAnywhere(String guid, String field, 
           boolean allowQueryToOtherNSs, BasicRecordMap database) throws FailedDBOperationException {
-    ResultValue result = lookupListFieldOnThisServer(guid, field, database);
+    ResultValue result = lookupListFieldOnThisServerWithoutAuthentication(guid, field, database);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result.isEmpty() && !database.containsName(guid) && allowQueryToOtherNSs) {
       try {
