@@ -87,9 +87,26 @@ public class NSUpdateSupport {
     if (errorCode.isAnError()) {
       return errorCode;
     }
-    NameRecord nameRecord = getNameRecord(guid, field, operation, app.getDB());
-    boolean result = updateNameRecord(nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON, app.getDB(), app.getActiveCodeHandler());
-    return result ? NSResponseCode.NO_ERROR : NSResponseCode.ERROR;
+    if (operation.equals(UpdateOperation.CREATE_INDEX)) {
+      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().info("Creating index for " + field + " " + updateValue);
+        }
+        app.getDB().createIndex(field, (String) updateValue.get(0));
+
+        return NSResponseCode.NO_ERROR;
+      } else {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().severe("Invalid index value:" + updateValue);
+        }
+        return NSResponseCode.ERROR;
+      }
+    } else {
+      NameRecord nameRecord = getNameRecord(guid, field, operation, app.getDB());
+      boolean result = updateNameRecord(nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON,
+              app.getDB(), app.getActiveCodeHandler());
+      return result ? NSResponseCode.NO_ERROR : NSResponseCode.ERROR;
+    }
   }
 
   private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation, BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
@@ -97,13 +114,11 @@ public class NSUpdateSupport {
       // some operations don't require a read first
       return new NameRecord(db, guid);
     } else //try {
-    {
-      if (field == null) {
+     if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
         return NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.LIST_STRING, field);
       }
-    }
   }
 
   private static boolean updateNameRecord(NameRecord nameRecord, String guid, String field,

@@ -80,6 +80,7 @@ public class GnsProtocol {
   public final static String QUERY = "query";
   public final static String INTERVAL = "interval";
   public final static String REPLACE_USER_JSON = "replaceUserJSON";
+  public final static String CREATE_INDEX = "createIndex";
   public final static String MAX_DISTANCE = "maxDistance";
   //
   public final static String ACL_ADD = "aclAdd";
@@ -294,7 +295,7 @@ public class GnsProtocol {
           = Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
                   APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
                   APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
-                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON,
+                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
                   //
                   //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
                   VERIFY_ACCOUNT, SET_PASSWORD,

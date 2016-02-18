@@ -44,6 +44,9 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import java.awt.geom.Point2D;
+import java.util.Set;
+import org.json.JSONException;
 
 /**
  * Functionality test for core elements in the client using the UniversalGnsClientFull.
@@ -1325,107 +1328,188 @@ public class ServerIntegrationTest {
     }
   }
 
-//  @Test
-//  public void test_51_CreateBatch() {
-//    GuidEntry masterGuid = null;
-//    try {
-//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-//      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
-//    } catch (Exception e) {
-//      fail("Exception when we were not expecting it: " + e);
-//    }
-//    int numberTocreate = 100;
-//    if (System.getProperty("count") != null
-//            && !System.getProperty("count").isEmpty()) {
-//      numberTocreate = Integer.parseInt(System.getProperty("count"));
-//    }
-//    Set<String> aliases = new HashSet<>();
-//    for (int i = 0; i < numberTocreate; i++) {
-//      aliases.add("testGUID" + RandomString.randomString(6));
-//    }
-//    String result = null;
-//    int oldTimeout = client.getReadTimeout();
-//    try {
-//      client.setReadTimeout(15 * 1000); // 30 seconds
-//      result = client.guidBatchCreate(masterGuid, aliases, true);
-//      client.setReadTimeout(oldTimeout);
-//    } catch (Exception e) {
-//      fail("Exception while creating guids: " + e);
-//    }
-//    assertEquals(GnsProtocol.OK_RESPONSE, result);
-//    try {
-//      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
-//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-//    } catch (JSONException | GnsClientException | IOException e) {
-//      fail("Exception while fetching account record: " + e);
-//    }
-//  }
-//  @Test
-//  public void test_52_CreateBatchFast() {
-//    GuidEntry masterGuid = null;
-//    try {
-//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-//      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
-//    } catch (Exception e) {
-//      fail("Exception when we were not expecting it: " + e);
-//    }
-//    int numberTocreate = 100;
-//    if (System.getProperty("count") != null
-//            && !System.getProperty("count").isEmpty()) {
-//      numberTocreate = Integer.parseInt(System.getProperty("count"));
-//    }
-//    Set<String> aliases = new HashSet<>();
-//    for (int i = 0; i < numberTocreate; i++) {
-//      aliases.add("testGUID" + RandomString.randomString(6));
-//    }
-//    String result = null;
-//    int oldTimeout = client.getReadTimeout();
-//    try {
-//      client.setReadTimeout(60 * 1000); // 30 seconds
-//      result = client.guidBatchCreate(masterGuid, aliases, false);
-//      client.setReadTimeout(oldTimeout);
-//    } catch (Exception e) {
-//      fail("Exception while creating guids: " + e);
-//    }
-//    assertEquals(GnsProtocol.OK_RESPONSE, result);
-//    try {
-//      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
-//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-//    } catch (JSONException | GnsClientException | IOException e) {
-//      fail("Exception while fetching account record: " + e);
-//    }
-//  }
-//  @Test
-//  public void test_53_CreateBatchFastest() {
-//    GuidEntry masterGuid = null;
-//    try {
-//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-//      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
-//    } catch (Exception e) {
-//      fail("Exception when we were not expecting it: " + e);
-//    }
-//    int numberTocreate = 100;
-//    if (System.getProperty("count") != null
-//            && !System.getProperty("count").isEmpty()) {
-//      numberTocreate = Integer.parseInt(System.getProperty("count"));
-//    }
-//    String result = null;
-//    int oldTimeout = client.getReadTimeout();
-//    try {
-//      client.setReadTimeout(60 * 1000); // 30 seconds
-//      result = client.guidBatchCreateFast(masterGuid, numberTocreate);
-//      client.setReadTimeout(oldTimeout);
-//    } catch (Exception e) {
-//      fail("Exception while creating guids: " + e);
-//    }
-//    assertEquals(GnsProtocol.OK_RESPONSE, result);
-//    try {
-//      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
-//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-//    } catch (JSONException | GnsClientException | IOException e) {
-//      fail("Exception while fetching account record: " + e);
-//    }
-//  }
+  @Test
+  public void test_51_CreateBatch() {
+    GuidEntry masterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
+    Set<String> aliases = new HashSet<>();
+    for (int i = 0; i < numberTocreate; i++) {
+      aliases.add("testGUID" + RandomString.randomString(6));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(15 * 1000); // 30 seconds
+      result = client.guidBatchCreate(masterGuid, aliases, true);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsClientException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+  @Test
+  public void test_52_CreateBatchFast() {
+    GuidEntry masterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
+    Set<String> aliases = new HashSet<>();
+    for (int i = 0; i < numberTocreate; i++) {
+      aliases.add("testGUID" + RandomString.randomString(6));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(60 * 1000); // 30 seconds
+      result = client.guidBatchCreate(masterGuid, aliases, false);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsClientException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+  @Test
+  public void test_53_CreateBatchFastest() {
+    GuidEntry masterGuid = null;
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+    int numberTocreate = 100;
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(60 * 1000); // 30 seconds
+      result = client.guidBatchCreateFast(masterGuid, numberTocreate);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsClientException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+  
+  private static String createIndexTestField;
+  
+  @Test
+  public void test_81_CreateField() {
+    createIndexTestField = "testField" + RandomString.randomString(6);
+    try {
+      client.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception during create field: " + e);
+    }
+  }
+
+  @Test
+  public void test_82_CreateIndex() {
+    try {
+      client.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
+    } catch (Exception e) {
+      fail("Exception while creating index: " + e);
+    }
+  }
+
+  @Test
+  public void test_83_SelectPass() {
+    try {
+      JSONArray result = client.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (Exception e) {
+      fail("Exception executing second selectNear: " + e);
+    }
+  }
+
+  // HELPER STUFF
+  private static final String POLYGON = "Polygon";
+  private static final String COORDINATES = "coordinates";
+  private static final String TYPE = "type";
+
+  private static JSONObject createGeoJSONPolygon(List<Point2D> coordinates) throws JSONException {
+    JSONArray ring = new JSONArray();
+    for (int i = 0; i < coordinates.size(); i++) {
+      ring.put(i, new JSONArray(
+              Arrays.asList(coordinates.get(i).getX(), coordinates.get(i).getY())));
+    }
+    JSONArray jsonCoordinates = new JSONArray();
+    jsonCoordinates.put(0, ring);
+    JSONObject json = new JSONObject();
+    json.put(TYPE, POLYGON);
+    json.put(COORDINATES, jsonCoordinates);
+    return json;
+  }
+
+  private static final double LEFT = -98.08;
+  private static final double RIGHT = -96.01;
+  private static final double TOP = 33.635;
+  private static final double BOTTOM = 31.854;
+
+  private static final Point2D UPPER_LEFT = new Point2D.Double(LEFT, TOP);
+  //private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(33.45, -98.08);
+  private static final Point2D UPPER_RIGHT = new Point2D.Double(RIGHT, TOP);
+  //private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(33.45, -96.01);
+  private static final Point2D LOWER_RIGHT = new Point2D.Double( RIGHT, BOTTOM);
+  //private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(32.23, -96.01);
+  private static final Point2D LOWER_LEFT = new Point2D.Double(LEFT, BOTTOM);
+  //private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(32.23, -98.08);
+
+  private static final List<Point2D> AREA_EXTENT = new ArrayList<>(
+          Arrays.asList(UPPER_LEFT, UPPER_RIGHT, LOWER_RIGHT, LOWER_LEFT, UPPER_LEFT));
+
+  private static String buildQuery(String locationField, List<Point2D> coordinates) throws JSONException {
+    return "~" + locationField + ":{"
+            + "$geoIntersects :{"
+            + "$geometry:"
+            + createGeoJSONPolygon(coordinates).toString()
+            + "}"
+            + "}";
+  }
   @Test
   public void test_998_Client_Stop() {
     try {

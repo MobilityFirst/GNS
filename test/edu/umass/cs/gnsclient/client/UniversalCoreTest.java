@@ -29,6 +29,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -1389,9 +1390,90 @@ public class UniversalCoreTest {
       fail("Exception while fetching account record: " + e);
     }
   }
+  
+  private static String createIndexTestField;
+  
+  @Test
+  public void test_81_CreateField() {
+    createIndexTestField = "testField" + RandomString.randomString(6);
+    try {
+      client.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception during create field: " + e);
+    }
+  }
 
   @Test
-  public void test_99_Stop() {
+  public void test_82_CreateIndex() {
+    try {
+      client.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
+    } catch (Exception e) {
+      fail("Exception while creating index: " + e);
+    }
+  }
+
+  @Test
+  public void test_83_SelectPass() {
+    try {
+      JSONArray result = client.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (Exception e) {
+      fail("Exception executing second selectNear: " + e);
+    }
+  }
+
+  // HELPER STUFF
+  private static final String POLYGON = "Polygon";
+  private static final String COORDINATES = "coordinates";
+  private static final String TYPE = "type";
+
+  private static JSONObject createGeoJSONPolygon(List<Point2D> coordinates) throws JSONException {
+    JSONArray ring = new JSONArray();
+    for (int i = 0; i < coordinates.size(); i++) {
+      ring.put(i, new JSONArray(
+              Arrays.asList(coordinates.get(i).getX(), coordinates.get(i).getY())));
+    }
+    JSONArray jsonCoordinates = new JSONArray();
+    jsonCoordinates.put(0, ring);
+    JSONObject json = new JSONObject();
+    json.put(TYPE, POLYGON);
+    json.put(COORDINATES, jsonCoordinates);
+    return json;
+  }
+
+  private static final double LEFT = -98.08;
+  private static final double RIGHT = -96.01;
+  private static final double TOP = 33.635;
+  private static final double BOTTOM = 31.854;
+
+  private static final Point2D UPPER_LEFT = new Point2D.Double(LEFT, TOP);
+  //private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(33.45, -98.08);
+  private static final Point2D UPPER_RIGHT = new Point2D.Double(RIGHT, TOP);
+  //private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(33.45, -96.01);
+  private static final Point2D LOWER_RIGHT = new Point2D.Double( RIGHT, BOTTOM);
+  //private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(32.23, -96.01);
+  private static final Point2D LOWER_LEFT = new Point2D.Double(LEFT, BOTTOM);
+  //private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(32.23, -98.08);
+
+  private static final List<Point2D> AREA_EXTENT = new ArrayList<>(
+          Arrays.asList(UPPER_LEFT, UPPER_RIGHT, LOWER_RIGHT, LOWER_LEFT, UPPER_LEFT));
+
+  private static String buildQuery(String locationField, List<Point2D> coordinates) throws JSONException {
+    return "~" + locationField + ":{"
+            + "$geoIntersects :{"
+            + "$geometry:"
+            + createGeoJSONPolygon(coordinates).toString()
+            + "}"
+            + "}";
+  }
+
+  @Test
+  public void test_999_Stop() {
     try {
       client.stop();
     } catch (Exception e) {

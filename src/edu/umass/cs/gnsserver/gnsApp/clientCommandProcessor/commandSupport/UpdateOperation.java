@@ -46,6 +46,11 @@ public enum UpdateOperation {
    * Fields already in the record not in the JSON Object are not touched.
    */
   USER_JSON_REPLACE_OR_CREATE(false, true, true, USER_JSON_REPLACE), // doesn't require a read
+  /**
+   * Updates the value of field using the JSON Object. 
+   * Fields already in the record not in the JSON Object are not touched.
+   */
+  CREATE_INDEX(false, true, false), // doesn't require a read
   //
   // NOTE: The following all user the "older" JSONArray format. 
   //

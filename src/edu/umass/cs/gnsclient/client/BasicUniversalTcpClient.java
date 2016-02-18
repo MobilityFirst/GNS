@@ -262,11 +262,32 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws GnsClientException
    * @throws JSONException
    */
-  public void fieldUpdate(String targetGuid, String field, Object value, GuidEntry writer) throws IOException, GnsClientException, JSONException {
+  public void fieldUpdate(String targetGuid, String field, Object value, GuidEntry writer) 
+          throws IOException, GnsClientException, JSONException {
     JSONObject json = new JSONObject();
     json.put(field, value);
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, GUID,
-            targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
+    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
+            GUID, targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
+    String response = sendCommandAndWait(command);
+
+    checkResponse(command, response);
+  }
+  
+  /**
+   * Creates an index for a field. The guid is only used for
+   * authentication purposes.
+   * 
+   * @param guid
+   * @param field
+   * @param index
+   * @throws IOException
+   * @throws GnsClientException
+   * @throws JSONException 
+   */
+  public void fieldCreateIndex(GuidEntry guid, String field, String index) 
+          throws IOException, GnsClientException, JSONException {
+    JSONObject command = createAndSignCommand(guid.getPrivateKey(), CREATE_INDEX, 
+            GUID, guid.getGuid(), FIELD, field, VALUE, index, WRITER, guid.getGuid());
     String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
@@ -283,7 +304,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws GnsClientException
    * @throws JSONException
    */
-  public void fieldUpdate(GuidEntry targetGuid, String field, Object value) throws IOException, GnsClientException, JSONException {
+  public void fieldUpdate(GuidEntry targetGuid, String field, Object value) 
+          throws IOException, GnsClientException, JSONException {
     fieldUpdate(targetGuid.getGuid(), field, value, targetGuid);
   }
 

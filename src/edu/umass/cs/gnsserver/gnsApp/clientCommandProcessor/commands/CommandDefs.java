@@ -86,6 +86,7 @@ public class CommandDefs {
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReplaceUnsigned",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReplaceUserJSON",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned",
+    "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.CreateIndex",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.Select",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.SelectGroupLookupQuery",
     "edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data.SelectGroupSetupQuery",
