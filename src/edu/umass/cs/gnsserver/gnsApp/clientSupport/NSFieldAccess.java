@@ -90,12 +90,12 @@ public class NSFieldAccess {
    * @return ResultValue
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupFieldOnThisServer(String guid, String field, BasicRecordMap database)
+  public static ValuesMap lookupFieldOnThisServerWithoutAuthentication(String guid, String field, BasicRecordMap database)
           throws FailedDBOperationException {
     return lookupFieldLocally(guid, field, ColumnFieldType.USER_JSON, database);
   }
 
-  public static ValuesMap lookupFieldsLocally(String guid, List<String> fields, ColumnFieldType returnFormat,
+  public static ValuesMap lookupFieldsOnThisServerWithoutAuthentication(String guid, List<String> fields, ColumnFieldType returnFormat,
           BasicRecordMap database) throws FailedDBOperationException {
     // Try to look up the value in the database
     try {
@@ -233,7 +233,7 @@ public class NSFieldAccess {
    */
   public static ValuesMap lookupFieldAnywhere(String guid, String field, 
           BasicRecordMap database) throws FailedDBOperationException {
-    ValuesMap result = lookupFieldOnThisServer(guid, field, database);
+    ValuesMap result = lookupFieldOnThisServerWithoutAuthentication(guid, field, database);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !database.containsName(guid)) {
       try {

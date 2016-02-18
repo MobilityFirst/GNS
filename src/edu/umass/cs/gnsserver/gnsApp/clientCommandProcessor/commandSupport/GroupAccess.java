@@ -26,11 +26,15 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess.update;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
 import java.io.IOException;
 import java.util.Arrays;
 import org.json.JSONException;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess.update;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess.update;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess.update;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
 /**
@@ -77,17 +81,22 @@ public class GroupAccess {
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
-    handler.setReallySendUpdateToReplica(false);
-    // We could roll back the above operation if the one below gets an error, but we don't
+    NSResponseCode groupResponse = FieldAccess.update(guid, GROUP, memberGuid, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
+
+//    handler.setReallySendUpdateToReplica(true);
+//    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
+//    handler.setReallySendUpdateToReplica(false);
+    // FIXME: We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
-      handler.setReallySendUpdateToReplica(true);
-      handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
-      handler.setReallySendUpdateToReplica(false);
+      FieldAccess.update(memberGuid, GROUPS, guid, null, -1,
+              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, handler);
+//      handler.setReallySendUpdateToReplica(true);
+//      handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
+//              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+//      handler.setReallySendUpdateToReplica(false);
     }
     return groupResponse;
   }
@@ -105,18 +114,23 @@ public class GroupAccess {
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, true);
-    handler.setReallySendUpdateToReplica(false);
+    NSResponseCode groupResponse = FieldAccess.update(guid, GROUP, members, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
+
+//    handler.setReallySendUpdateToReplica(true);
+//    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, true);
+//    handler.setReallySendUpdateToReplica(false);
     if (!groupResponse.isAnError()) {
-      // We could fix the above operation if any one below gets an error, but we don't
+      // FIXME: We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
-        handler.setReallySendUpdateToReplica(true);
-        handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
-        handler.setReallySendUpdateToReplica(false);
+        FieldAccess.update(memberGuid, GROUPS, guid, null, -1,
+                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
+//        handler.setReallySendUpdateToReplica(true);
+//        handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
+//                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+//        handler.setReallySendUpdateToReplica(false);
       }
     }
     return groupResponse;

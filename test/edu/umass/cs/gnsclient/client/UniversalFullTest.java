@@ -50,7 +50,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UniversalTcpClientTest {
+public class UniversalFullTest {
 
   private static String accountAlias = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
@@ -67,7 +67,7 @@ public class UniversalTcpClientTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
-  public UniversalTcpClientTest() {
+  public UniversalFullTest() {
     if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
@@ -995,11 +995,6 @@ public class UniversalTcpClientTest {
 
   @Test
   public void test_48_ListOrderAndSetElement() {
-//    try {
-//      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
-//    } catch (Exception e) {
-//      fail("Exception during creation of westyEntry: " + e);
-//    }
     try {
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), "numbers", "one", westyEntry);
@@ -1281,7 +1276,7 @@ public class UniversalTcpClientTest {
       json.put("name", "frank");
       json.put("occupation", "busboy");
       json.put("location", "work");
-      json.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      json.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1296,7 +1291,7 @@ public class UniversalTcpClientTest {
       expected.put("name", "frank");
       expected.put("occupation", "busboy");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1321,7 +1316,7 @@ public class UniversalTcpClientTest {
       expected.put("name", "frank");
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1347,7 +1342,7 @@ public class UniversalTcpClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1371,7 +1366,7 @@ public class UniversalTcpClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject actual = client.read(updateEntry);
       JSONAssert.assertEquals(expected, actual, true);
       //System.out.println(actual);
@@ -1403,7 +1398,7 @@ public class UniversalTcpClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1454,7 +1449,7 @@ public class UniversalTcpClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1469,7 +1464,7 @@ public class UniversalTcpClientTest {
       fail("Exception while reading JSON: " + e);
     }
     try {
-      client.fieldUpdate(updateEntry.getGuid(), "flapjack.sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")), updateEntry);
+      client.fieldUpdate(updateEntry.getGuid(), "flapjack.sammy", new ArrayList<>(Arrays.asList("One", "Ready", "Frap")), updateEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack.sammy\": " + e);
     }
@@ -1479,9 +1474,9 @@ public class UniversalTcpClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
-      subJson.put("sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")));
+      subJson.put("sammy", new ArrayList<>(Arrays.asList("One", "Ready", "Frap")));
       JSONObject subsubJson = new JSONObject();
       subsubJson.put("right", "crank");
       subsubJson.put("left", "eight");
@@ -1497,7 +1492,7 @@ public class UniversalTcpClientTest {
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<>(Arrays.asList("Tango", "Sierra", "Alpha")));
       client.fieldUpdate(updateEntry.getGuid(), "flapjack", moreJson, updateEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack\": " + e);
@@ -1508,11 +1503,11 @@ public class UniversalTcpClientTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<>(Arrays.asList("Tango", "Sierra", "Alpha")));
       expected.put("flapjack", moreJson);
       JSONObject actual = client.read(updateEntry);
       JSONAssert.assertEquals(expected, actual, true);
@@ -1525,7 +1520,7 @@ public class UniversalTcpClientTest {
   @Test
   public void test_74_MultiFieldLookup() {
     try {
-      String actual = client.fieldRead(updateEntry, new ArrayList(Arrays.asList("name", "occupation")));
+      String actual = client.fieldRead(updateEntry, new ArrayList<>(Arrays.asList("name", "occupation")));
       JSONAssert.assertEquals("{\"name\":\"frank\",\"occupation\":\"rocket scientist\"}", actual, true);
     } catch (Exception e) {
       fail("Exception while reading \"name\" and \"occupation\": " + e);

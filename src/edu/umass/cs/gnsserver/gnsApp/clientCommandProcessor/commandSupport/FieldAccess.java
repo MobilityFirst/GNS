@@ -44,9 +44,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -113,7 +117,7 @@ public class FieldAccess {
       if (field != null) {
         valuesMap = NSFieldAccess.lookupFieldLocally(guid, field, ColumnFieldType.USER_JSON, handler.getApp().getDB());
       } else {
-        valuesMap = NSFieldAccess.lookupFieldsLocally(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+        valuesMap = NSFieldAccess.lookupFieldsOnThisServerWithoutAuthentication(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
       }
       if (reader != null) {
         // read is null means a magic internal request so we
@@ -287,7 +291,36 @@ public class FieldAccess {
   }
 
   /**
-   * Sends an update request to the server.
+   * Updates the field with value.
+   *
+   * @param guid - the guid to update
+   * @param key - the field to update
+   * @param value - the new value
+   * @param oldValue - the old value - only applicable for certain operations, null otherwise
+   * @param argument - for operations that require an index, -1 otherwise
+   * @param operation - the update operation to perform... see <code>UpdateOperation</code>
+   * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
+   * readable or writable fields or for internal operations done without a signature.
+   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
+   * readable or writable fields or for internal operations done without a signature.
+   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
+   * readable or writable fields or for internal operations done without a signature.
+   * @param handler
+   * @return an NSResponseCode
+   */
+  public static NSResponseCode update(String guid, String key, String value, String oldValue,
+          int argument, UpdateOperation operation,
+          String writer, String signature, String message, ClientRequestHandlerInterface handler) {
+    return update(guid, key,
+            new ResultValue(Arrays.asList(value)),
+            oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
+            argument,
+            operation,
+            writer, signature, message, handler);
+  }
+
+  /**
+   * Updates the field with value.
    *
    * @param guid - the guid to update
    * @param key - the field to update
@@ -340,7 +373,7 @@ public class FieldAccess {
     try {
       return NSUpdateSupport.executeUpdateLocal(guid, null,
               writer, signature, message, operation,
-              null, null, -1, null, handler.getApp(), false);
+              null, null, -1, new ValuesMap(json), handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | JSONException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
@@ -366,10 +399,13 @@ public class FieldAccess {
    * @param handler
    * @return a {@link NSResponseCode}
    */
-  public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message,
+  public static NSResponseCode create(String guid, String key, ResultValue value,
+          String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateRecord(guid, key, value, null, -1,
-            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
+    return update(guid, key, value, null, -1,
+            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message, handler);
+//    return handler.getIntercessor().sendUpdateRecord(guid, key, value, null, -1,
+//            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
   }
 
   /**

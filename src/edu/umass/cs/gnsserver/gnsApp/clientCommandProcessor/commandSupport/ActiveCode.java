@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldMetaData.makeFieldMetaDataKey;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,14 +100,11 @@ public class ActiveCode {
     } catch (JSONException e) {
       return NSResponseCode.ERROR;
     }
-//    NSResponseCode response = FieldAccess.update(guid, json, UpdateOperation.USER_JSON_REPLACE,
-//            writer, signature, message, handler);
-    NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
-            new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-            writer, signature, message);
-//    String field = codeField(action);
-//    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, code, null, 1,
-//            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, writer, signature, message);
+    NSResponseCode response = FieldAccess.update(guid, json, UpdateOperation.USER_JSON_REPLACE,
+            writer, signature, message, handler);
+//    NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
+//            new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+//            writer, signature, message);
     return response;
   }
 
@@ -125,11 +123,10 @@ public class ActiveCode {
           ClientRequestHandlerInterface handler) {
     String field = codeField(action);
 
-    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, "", null, 0,
-            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message);
-    //String clear = null;
-//    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, clear, null, 0,
-//            UpdateOperation.SINGLE_FIELD_CLEAR, writer, signature, message);
+    NSResponseCode response = FieldAccess.update(guid, field, "", null, -1,
+            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
+//    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, "", null, 0,
+//            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message);
     return response;
   }
 

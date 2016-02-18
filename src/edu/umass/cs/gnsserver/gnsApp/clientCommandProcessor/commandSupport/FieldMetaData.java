@@ -60,9 +60,13 @@ public class FieldMetaData {
    */
   public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
-            writer, signature, message);
+    return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
+    
+//    return handler.getIntercessor().sendUpdateRecord(guid, 
+//            makeFieldMetaDataKey(type, key), value, null, -1,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
+//            writer, signature, message);
   }
 
   /**
@@ -97,8 +101,12 @@ public class FieldMetaData {
    * @param handler
    */
   public static void add(MetaDataTypeName type, String guid, String key, String value, ClientRequestHandlerInterface handler) {
-    handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, makeFieldMetaDataKey(type, key), value, null,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+    FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, handler);
+
+//    handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid,
+//            makeFieldMetaDataKey(type, key), value, null,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }
 
   /**
@@ -115,8 +123,11 @@ public class FieldMetaData {
    */
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
+     return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
+     
+//    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+//            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
 }

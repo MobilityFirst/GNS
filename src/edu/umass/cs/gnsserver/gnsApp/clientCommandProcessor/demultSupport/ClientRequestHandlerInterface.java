@@ -229,12 +229,14 @@ public interface ClientRequestHandlerInterface {
    * returns true or false
    * @return true or false
    */
+   @Deprecated
   public boolean reallySendUpdateToReplica();
 
   /**
    * Returns set the value which determines if update packets will be sent to the co-located replica instead of being handled locally.
    * @param reallySend
    */
+  @Deprecated
   public void setReallySendUpdateToReplica(boolean reallySend);
 
   // Below are for the new app

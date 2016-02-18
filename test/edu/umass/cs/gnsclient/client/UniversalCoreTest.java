@@ -914,6 +914,103 @@ public class UniversalCoreTest {
       fail("Unexpected exception during test: " + e);
     }
   }
+  
+  @Test
+  public void test_31_BasicSelect() {
+    try {
+      JSONArray result = client.select("cats", "fred");
+      // best we can do since there will be one, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  @Test
+  public void test_32_GeoSpatialSelect() {
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "geoTest-" + RandomString.randomString(6));
+        client.setLocation(testEntry, 0.0, 0.0);
+      }
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+
+    try {
+
+      JSONArray loc = new JSONArray();
+      loc.put(1.0);
+      loc.put(1.0);
+      JSONArray result = client.selectNear(GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectNear: " + e);
+    }
+
+    try {
+
+      JSONArray rect = new JSONArray();
+      JSONArray upperLeft = new JSONArray();
+      upperLeft.put(1.0);
+      upperLeft.put(1.0);
+      JSONArray lowerRight = new JSONArray();
+      lowerRight.put(-1.0);
+      lowerRight.put(-1.0);
+      rect.put(upperLeft);
+      rect.put(lowerRight);
+      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectWithin: " + e);
+    }
+  }
+  
+  @Test
+  public void test_33_QuerySelect() {
+    String fieldName = "testQuery";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
+        JSONArray array = new JSONArray(Arrays.asList(25));
+        client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
+      }
+    } catch (Exception e) {
+      fail("Exception while tryint to create the guids: " + e);
+    }
+
+    try {
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = client.selectQuery(query);
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectNear: " + e);
+    }
+
+    try {
+
+      JSONArray rect = new JSONArray();
+      JSONArray upperLeft = new JSONArray();
+      upperLeft.put(1.0);
+      upperLeft.put(1.0);
+      JSONArray lowerRight = new JSONArray();
+      lowerRight.put(-1.0);
+      lowerRight.put(-1.0);
+      rect.put(upperLeft);
+      rect.put(lowerRight);
+      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectWithin: " + e);
+    }
+  }
 
   @Test
   public void test_40_SetFieldNull() {

@@ -475,6 +475,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
@@ -593,6 +594,7 @@ public class Intercessor implements IntercessorInterface {
    * @param operation the {@link UpdateOperation} to perform
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
     // currently don't support the argument parameter
@@ -609,6 +611,7 @@ public class Intercessor implements IntercessorInterface {
    * @param operation the {@link UpdateOperation} to perform
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
     // currently don't support the argument parameter

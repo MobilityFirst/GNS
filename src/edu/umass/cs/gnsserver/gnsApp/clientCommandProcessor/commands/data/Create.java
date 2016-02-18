@@ -72,7 +72,8 @@ public class Create extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     NSResponseCode responseCode;
-    if (!(responseCode = FieldAccess.create(guid, field, (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
+    if (!(responseCode = FieldAccess.create(guid, field, 
+            (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
             writer, signature, message, handler)).isAnError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {

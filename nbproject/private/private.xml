@@ -12,20 +12,7 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/CommandModule.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/AppUpdate.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/GnsCommand.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/CCPPacketDemultiplexer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/AppLookup.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/installer/EC2ConfigParser.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/SideToSideQuery.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsclient/client/UniversalTcpClientExtended.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/installer/GNSInstaller.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/ClientCommandProcessor.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/CommandHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/GnsApp.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsclient/client/BasicUniversalTcpClient.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/installer/EC2Runner.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/data/Create.java</file>
         </group>
     </open-files>
 </project-private>
