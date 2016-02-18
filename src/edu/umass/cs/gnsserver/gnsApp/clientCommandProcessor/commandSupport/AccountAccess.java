@@ -357,11 +357,11 @@ public class AccountAccess {
     return null;
   }
   private static final String VERIFY_COMMAND = "account_verify";
-  private static final String EMAIL_BODY = "This is an automated message informing you that an account has been created for %s on the GNS server.\n\n"
-          + "This is the verification code: %s\n\n"
-          + "To verify this account you can enter this query into a browser:\n\n"
+  private static final String EMAIL_BODY = "This is an automated message informing you that an application has created an account for %s on the GNS server.\n\n"
+          + "This is your verification code: %s\n\n"
+          + "To verify this account you can click on the link below or enter this query into a browser:\n\n"
           + "http://%s/" + GNS.GNS_URL_PATH + "/verifyAccount?guid=%s&code=%s\n\n"
-          + "or enter this command into the GNS CLI that you used to create the account:\n\n"
+          + "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
           + VERIFY_COMMAND + " %s %s\n\n"
           + "If you did not create this account please ignore this message.";
   private static final String SUCCESS_NOTICE = "A confirmation email has been sent to %s. "
