@@ -72,7 +72,7 @@ public class NSFieldMetaData {
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
           BasicRecordMap database) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
-    ResultValue result = NSFieldAccess.lookupListFieldOnThisServerWithoutAuthentication(guid, FieldMetaData.makeFieldMetaDataKey(type, key), database);
+    ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, FieldMetaData.makeFieldMetaDataKey(type, key), database);
     if (result != null) {
       return new HashSet<Object>(result);
     } else {

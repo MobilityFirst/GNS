@@ -65,7 +65,6 @@ public class SingleReadTest {
   }
 
   @Test
-  @Order(1)
   public void test_01_CreateEntity() {
     try {
       GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID" + RandomString.randomString(6));
@@ -75,7 +74,6 @@ public class SingleReadTest {
   }
 
   @Test
-  @Order(3)
   public void test_02_CreateSubGuid() {
     try {
       subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
@@ -86,7 +84,6 @@ public class SingleReadTest {
   }
 
   @Test
-  @Order(3)
   public void test_03_CreateField() {
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
@@ -97,7 +94,6 @@ public class SingleReadTest {
   }
 
   @Test
-  @Order(4)
   public void test_04_ReadFieldTwice() {
     try {
       // read my own field

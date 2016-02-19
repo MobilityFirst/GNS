@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class NSFieldAccess {
 
-  public static ValuesMap lookupFieldLocally(String guid, String field, ColumnFieldType returnFormat,
+  public static ValuesMap lookupFieldLocalNoAuth(String guid, String field, ColumnFieldType returnFormat,
           BasicRecordMap database) throws FailedDBOperationException {
     NameRecord nameRecord = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -90,12 +90,12 @@ public class NSFieldAccess {
    * @return ResultValue
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupFieldOnThisServerWithoutAuthentication(String guid, String field, BasicRecordMap database)
+  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field, BasicRecordMap database)
           throws FailedDBOperationException {
-    return lookupFieldLocally(guid, field, ColumnFieldType.USER_JSON, database);
+    return lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, database);
   }
 
-  public static ValuesMap lookupFieldsOnThisServerWithoutAuthentication(String guid, List<String> fields, ColumnFieldType returnFormat,
+  public static ValuesMap lookupFieldsLocalNoAuth(String guid, List<String> fields, ColumnFieldType returnFormat,
           BasicRecordMap database) throws FailedDBOperationException {
     // Try to look up the value in the database
     try {
@@ -129,7 +129,7 @@ public class NSFieldAccess {
    * @param database
    * @return ResultValue
    */
-  public static ResultValue lookupListFieldOnThisServerWithoutAuthentication(String guid, String field,
+  public static ResultValue lookupListFieldLocallyNoAuth(String guid, String field,
           BasicRecordMap database) {
     ResultValue result = null;
     try {
@@ -170,7 +170,7 @@ public class NSFieldAccess {
    */
   public static String lookupSingletonFieldOnThisServer(String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    ResultValue guidResult = lookupListFieldOnThisServerWithoutAuthentication(guid, field, database);
+    ResultValue guidResult = lookupListFieldLocallyNoAuth(guid, field, database);
     if (guidResult != null && !guidResult.isEmpty()) {
       return (String) guidResult.get(0);
     } else {
@@ -193,7 +193,7 @@ public class NSFieldAccess {
    */
   public static ResultValue lookupListFieldAnywhere(String guid, String field, 
           boolean allowQueryToOtherNSs, BasicRecordMap database) throws FailedDBOperationException {
-    ResultValue result = lookupListFieldOnThisServerWithoutAuthentication(guid, field, database);
+    ResultValue result = lookupListFieldLocallyNoAuth(guid, field, database);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result.isEmpty() && !database.containsName(guid) && allowQueryToOtherNSs) {
       try {
@@ -233,7 +233,7 @@ public class NSFieldAccess {
    */
   public static ValuesMap lookupFieldAnywhere(String guid, String field, 
           BasicRecordMap database) throws FailedDBOperationException {
-    ValuesMap result = lookupFieldOnThisServerWithoutAuthentication(guid, field, database);
+    ValuesMap result = lookupJSONFieldLocalNoAuth(guid, field, database);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !database.containsName(guid)) {
       try {

@@ -77,9 +77,9 @@ public class Read extends GnsCommand {
     if (ALL_FIELDS.equals(field)) {
       return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
     } else if (field != null) {
-      return FieldAccess.lookup(guid, field, null, reader, signature, message, handler);
+      return FieldAccess.lookupSingleField(guid, field, reader, signature, message, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookup(guid, null, fields, reader, signature, message, handler);
+      return FieldAccess.lookupMultipleFields(guid, fields, reader, signature, message, handler);
     } 
   }
 

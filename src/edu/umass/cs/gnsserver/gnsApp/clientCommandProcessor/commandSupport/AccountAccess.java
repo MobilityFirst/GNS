@@ -133,7 +133,7 @@ public class AccountAccess {
   public static AccountInfo lookupAccountInfoFromGuid(String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServerWithoutAuthentication(guid, ACCOUNT_INFO,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, ACCOUNT_INFO,
               handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for " + guid + " / " + ACCOUNT_INFO + ": " + result);
@@ -201,7 +201,7 @@ public class AccountAccess {
   public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler) {
 
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServerWithoutAuthentication(guid, PRIMARY_GUID,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, PRIMARY_GUID,
               handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
@@ -236,7 +236,7 @@ public class AccountAccess {
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
 
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServerWithoutAuthentication(name, HRN_GUID,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name, HRN_GUID,
               handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
@@ -292,7 +292,7 @@ public class AccountAccess {
     }
 
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldOnThisServerWithoutAuthentication(guid, GUID_INFO,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GUID_INFO,
               handler.getApp().getDB());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + GUID_INFO + ": " + result);

@@ -203,7 +203,7 @@ public class GroupAccess {
   public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
     // FIXME: handle authentication
-    return NSFieldAccess.lookupListFieldOnThisServerWithoutAuthentication(guid, GROUP, handler.getApp().getDB());
+    return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUP, handler.getApp().getDB());
 //    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
 //    if (!result.isError()) {
 //      return new ResultValue(result.getArray(GROUP));
@@ -225,7 +225,7 @@ public class GroupAccess {
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
     // FIXME: handle authentication
-    return NSFieldAccess.lookupListFieldOnThisServerWithoutAuthentication(guid, GROUPS, handler.getApp().getDB());
+    return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUPS, handler.getApp().getDB());
 //    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
 //    if (!result.isError()) {
 //      return new ResultValue(result.getArray(GROUPS));

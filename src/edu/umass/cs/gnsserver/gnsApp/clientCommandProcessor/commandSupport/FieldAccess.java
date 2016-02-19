@@ -55,6 +55,511 @@ import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSuppor
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -104,6 +609,7 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
+  @Deprecated
   public static CommandResponse<String> lookup(String guid, String field, ArrayList<String> fields,
           String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -119,9 +625,9 @@ public class FieldAccess {
     ValuesMap valuesMap;
     try {
       if (field != null) {
-        valuesMap = NSFieldAccess.lookupFieldLocally(guid, field, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+        valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, handler.getApp().getDB());
       } else {
-        valuesMap = NSFieldAccess.lookupFieldsOnThisServerWithoutAuthentication(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+        valuesMap = NSFieldAccess.lookupFieldsLocalNoAuth(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
       }
       if (reader != null) {
         // read is null means a magic internal request so we
@@ -144,6 +650,47 @@ public class FieldAccess {
             NSResponseCode.NO_ERROR, 0, "");
   }
 
+  public static CommandResponse<String> lookupSingleField(String guid, String field,
+          String reader, String signature, String message,
+          ClientRequestHandlerInterface handler) {
+    String resultString;
+    ValuesMap valuesMap;
+    try {
+      valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      if (reader != null) {
+        // read is null means a magic internal request so we
+        // only strip internal fields when read is not null
+        valuesMap = valuesMap.removeInternalFields();
+      }
+      resultString = valuesMap.getString(field);
+    } catch (FailedDBOperationException e) {
+      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.GENERIC_ERROR + " " + e;
+    } catch (JSONException e) {
+      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e;
+    }
+    return new CommandResponse<String>(resultString, NSResponseCode.NO_ERROR, 0, "");
+  }
+
+  public static CommandResponse<String> lookupMultipleFields(String guid, ArrayList<String> fields,
+          String reader, String signature, String message,
+          ClientRequestHandlerInterface handler) {
+    String resultString;
+    ValuesMap valuesMap;
+    try {
+      valuesMap = NSFieldAccess.lookupFieldsLocalNoAuth(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+
+      if (reader != null) {
+        // read is null means a magic internal request so we
+        // only strip internal fields when read is not null
+        valuesMap = valuesMap.removeInternalFields();
+      }
+      resultString = valuesMap.toString(); // multiple field return
+    } catch (FailedDBOperationException e) {
+      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.GENERIC_ERROR + " " + e;
+    }
+    return new CommandResponse<String>(resultString, NSResponseCode.NO_ERROR, 0, "");
+  }
+
   /**
    * Supports reading of the old style data formatted as a JSONArray of strings.
    * Much of the internal system data is still stored in this format.
@@ -163,27 +710,35 @@ public class FieldAccess {
           String message,
           ClientRequestHandlerInterface handler) {
 
-    //NSFieldAccess.lookupListFieldOnThisServerWithoutAuthentication(guid, field, activeReplica)
     String resultString;
-    // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message,
-            ColumnFieldType.LIST_STRING);
-    if (result.isError()) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
+    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
+    if (!value.isEmpty()) {
+      resultString = new JSONArray(value).toString();
     } else {
-      ResultValue value = result.getArray(field);
-      if (value != null) {
-        resultString = new JSONArray(value).toString();
-      } else {
-        resultString = emptyJSONArrayString;
-      }
+      resultString = emptyJSONArrayString;
     }
-    return new CommandResponse<String>(resultString,
-            result.getErrorCode(),
-            result.getRoundTripTime(),
-            result.getResponder()
-    //,result.getLookupTime()
-    );
+    return new CommandResponse<String>(resultString, NSResponseCode.NO_ERROR, 0, "");
+
+//    String resultString;
+//    // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message,
+//            ColumnFieldType.LIST_STRING);
+//    if (result.isError()) {
+//      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
+//    } else {
+//      ResultValue value = result.getArray(field);
+//      if (value != null) {
+//        resultString = new JSONArray(value).toString();
+//      } else {
+//        resultString = emptyJSONArrayString;
+//      }
+//    }
+//    return new CommandResponse<String>(resultString,
+//            result.getErrorCode(),
+//            result.getRoundTripTime(),
+//            result.getResponder()
+//    //,result.getLookupTime()
+//    );
   }
 
   /**
@@ -201,19 +756,38 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocol.ALL_FIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
-    if (result.isError()) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
-    } else {
-      // pull out all the key pairs ignoring "system" (ie., non-user) fields
-      resultString = result.getValuesMapSansInternalFields().toString();
+    NSResponseCode responseCode;
+    try {
+      ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
+              GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      if (valuesMap != null) {
+        resultString = valuesMap.removeInternalFields().toString();
+        responseCode = NSResponseCode.NO_ERROR;
+      } else {
+        resultString = GnsProtocol.BAD_RESPONSE;
+        responseCode = NSResponseCode.ERROR;
+      }
+    } catch (FailedDBOperationException e) {
+      resultString = GnsProtocol.BAD_RESPONSE;
+      responseCode = NSResponseCode.ERROR;
     }
-    return new CommandResponse<String>(resultString,
-            result.getErrorCode(),
-            result.getRoundTripTime(),
-            result.getResponder()
-    //,result.getLookupTime()
-    );
+    return new CommandResponse<>(resultString, responseCode, 0, "");
+
+//
+//    String resultString;
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocol.ALL_FIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+//    if (result.isError()) {
+//      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
+//    } else {
+//      // pull out all the key pairs ignoring "system" (ie., non-user) fields
+//      resultString = result.getValuesMapSansInternalFields().toString();
+//    }
+//    return new CommandResponse<String>(resultString,
+//            result.getErrorCode(),
+//            result.getRoundTripTime(),
+//            result.getResponder()
+//    //,result.getLookupTime()
+//    );
   }
 
   /**
@@ -230,34 +804,61 @@ public class FieldAccess {
   public static CommandResponse<String> lookupOne(String guid, String field, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
-    String resultString;
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (result.isError()) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
-    } else {
-      ResultValue value = result.getArray(field);
-      if (value != null && !value.isEmpty()) {
-        // Ideally we could return Strings or Numbers here, but 
-        // this is the "older" return type and we already support 
-        // Strings or Numbers via the new JSONObject return type.
-        // So for now here we're just
-        // going to punt if we see a number and make it into a string.
-        Object singleValue = value.get(0);
-        if (singleValue instanceof Number) {
-          resultString = ((Number) singleValue).toString();
-        } else {
-          resultString = (String) value.get(0);
-        }
-      } else {
-        resultString = emptyString;
+    NSResponseCode errorCode = NSResponseCode.NO_ERROR;
+    try {
+      if (reader != null && field != null) {
+        errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader,
+                signature, message, MetaDataTypeName.READ_WHITELIST, handler.getApp());
       }
+    } catch (InvalidKeyException | InvalidKeySpecException | SignatureException | NoSuchAlgorithmException | FailedDBOperationException | UnsupportedEncodingException e) {
+      errorCode = NSResponseCode.SIGNATURE_ERROR;
     }
-    return new CommandResponse<String>(resultString,
-            result.getErrorCode(),
-            result.getRoundTripTime(),
-            result.getResponder()
-    //,result.getLookupTime()
-    );
+    if (errorCode.isAnError()) {
+      return new CommandResponse<>(BAD_RESPONSE + errorCode.getProtocolCode(), errorCode, 0, "");
+    }
+    String resultString;
+    ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
+    if (!value.isEmpty()) {
+      Object singleValue = value.get(0);
+      if (singleValue instanceof Number) {
+        resultString = singleValue.toString();
+      } else {
+        resultString = (String) value.get(0);
+      }
+    } else {
+      return new CommandResponse<>(BAD_RESPONSE + " " + GnsProtocol.FIELD_NOT_FOUND,
+              NSResponseCode.NO_ERROR, 0, "");
+    }
+    return new CommandResponse<>(resultString, NSResponseCode.NO_ERROR, 0, "");
+
+//    String resultString;
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+//    if (result.isError()) {
+//      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
+//    } else {
+//      ResultValue value = result.getArray(field);
+//      if (value != null && !value.isEmpty()) {
+//        // Ideally we could return Strings or Numbers here, but 
+//        // this is the "older" return type and we already support 
+//        // Strings or Numbers via the new JSONObject return type.
+//        // So for now here we're just
+//        // going to punt if we see a number and make it into a string.
+//        Object singleValue = value.get(0);
+//        if (singleValue instanceof Number) {
+//          resultString = ((Number) singleValue).toString();
+//        } else {
+//          resultString = (String) value.get(0);
+//        }
+//      } else {
+//        resultString = emptyString;
+//      }
+//    }
+//    return new CommandResponse<String>(resultString,
+//            result.getErrorCode(),
+//            result.getRoundTripTime(),
+//            result.getResponder()
+//    //,result.getLookupTime()
+//    );
   }
 
   /**
@@ -274,24 +875,45 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocol.ALL_FIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
-    if (result.isError()) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
-    } else {
-      try {
-        // pull out the first value of each key pair ignoring "system" (ie., non-user) fields
-        resultString = result.getValuesMapSansInternalFields().toJSONObjectFirstOnes().toString();
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem parsing multiple value return:" + e);
+    NSResponseCode responseCode;
+    try {
+      ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
+              GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      if (valuesMap != null) {
+        resultString = valuesMap.removeInternalFields().toJSONObjectFirstOnes().toString();
+        responseCode = NSResponseCode.NO_ERROR;
+      } else {
+        resultString = GnsProtocol.BAD_RESPONSE;
+        responseCode = NSResponseCode.ERROR;
       }
-      resultString = emptyJSONObjectString;
+    } catch (FailedDBOperationException e) {
+      resultString = GnsProtocol.BAD_RESPONSE;
+      responseCode = NSResponseCode.ERROR;
+    } catch (JSONException e) {
+      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e.getMessage();
+      responseCode = NSResponseCode.ERROR;
     }
-    return new CommandResponse<String>(resultString,
-            result.getErrorCode(),
-            result.getRoundTripTime(),
-            result.getResponder()
-    //,result.getLookupTime()
-    );
+    return new CommandResponse<>(resultString, responseCode, 0, "");
+
+//    String resultString;
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocol.ALL_FIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+//    if (result.isError()) {
+//      resultString = GnsProtocol.BAD_RESPONSE + " " + result.getErrorCode().getProtocolCode();
+//    } else {
+//      try {
+//        // pull out the first value of each key pair ignoring "system" (ie., non-user) fields
+//        resultString = result.getValuesMapSansInternalFields().toJSONObjectFirstOnes().toString();
+//      } catch (JSONException e) {
+//        GNS.getLogger().severe("Problem parsing multiple value return:" + e);
+//      }
+//      resultString = emptyJSONObjectString;
+//    }
+//    return new CommandResponse<String>(resultString,
+//            result.getErrorCode(),
+//            result.getRoundTripTime(),
+//            result.getResponder()
+//    //,result.getLookupTime()
+//    );
   }
 
   /**

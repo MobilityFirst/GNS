@@ -874,6 +874,7 @@ public class UniversalCoreTest {
 
     try {
       String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), fieldToDelete, westyEntry);
+      
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
     } catch (GnsClientException e) {
