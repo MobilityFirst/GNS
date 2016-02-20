@@ -21,12 +21,16 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldMetaData.makeFieldMetaDataKey;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import java.util.HashSet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -100,7 +104,7 @@ public class ActiveCode {
     } catch (JSONException e) {
       return NSResponseCode.ERROR;
     }
-    NSResponseCode response = FieldAccess.update(guid, json, UpdateOperation.USER_JSON_REPLACE,
+    NSResponseCode response = FieldAccess.updateUserJSON(guid, json,
             writer, signature, message, handler);
 //    NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
 //            new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
@@ -144,14 +148,27 @@ public class ActiveCode {
   public static String getCode(String guid, String action, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
     String field = codeField(action);
-    QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader,
-            signature, message, ColumnFieldType.USER_JSON);
-    try {
-      if (!guidResult.isError()) {
-        return guidResult.getValuesMap().getString(field);
-      }
-    } catch (JSONException e) {
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field,
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
+      return GnsProtocol.NULL_RESPONSE;
     }
-    return GnsProtocol.NULL_RESPONSE;
+    try {
+      ValuesMap result = NSFieldAccess.lookupFieldLocalNoAuth(guid, field,
+              ColumnFieldType.USER_JSON,
+              handler.getApp().getDB());
+      return result.getString(field);
+    } catch (FailedDBOperationException | JSONException e) {
+      return GnsProtocol.NULL_RESPONSE;
+    }
+//    QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader,
+//            signature, message, ColumnFieldType.USER_JSON);
+//    try {
+//      if (!guidResult.isError()) {
+//        return guidResult.getValuesMap().getString(field);
+//      }
+//    } catch (JSONException e) {
+//    }
+//    return GnsProtocol.NULL_RESPONSE;
   }
 }

@@ -763,10 +763,13 @@ public class AccountAccess {
       // first we create the HRN records as a batch
       NSResponseCode returnCode;
       // First try to create the HRNS to insure that that name does not already exist
-      if (!(returnCode = handler.getIntercessor().sendAddBatchRecord(new HashSet<String>(names), hrnMap)).isAnError()) {
+      if (!(returnCode = handler.getRemoteQuery().
+              createRecordBatch(new HashSet<String>(names), hrnMap, handler)).isAnError()) {
+        //if (!(returnCode = handler.getIntercessor().sendAddBatchRecord(new HashSet<String>(names), hrnMap)).isAnError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
-          handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
+          handler.getRemoteQuery().createRecordBatch(guids, guidInfoMap, handler);
+          //handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
           GNS.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse<String>(OK_RESPONSE);
         }
@@ -1053,8 +1056,7 @@ public class AccountAccess {
           String writer, String signature, String message,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
-      JSONObject json = new JSONObject();
-      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
+
 //      if (sendToReplica) {
 //        handler.setReallySendUpdateToReplica(true);
 //      }
@@ -1068,9 +1070,12 @@ public class AccountAccess {
           response = NSResponseCode.ERROR;
         }
       } else {
-        response = handler.getIntercessor().sendUpdateUserJSON(guid,
-                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-                writer, signature, message, sendToReplica);
+        JSONObject json = new JSONObject();
+        json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
+        response = FieldAccess.updateUserJSON(guid, json, writer, signature, message, handler);
+//        response = handler.getIntercessor().sendUpdateUserJSON(guid,
+//                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+//                writer, signature, message, sendToReplica);
       }
 //      if (sendToReplica) {
 //        handler.setReallySendUpdateToReplica(false);
@@ -1094,12 +1099,11 @@ public class AccountAccess {
     try {
       JSONObject json = new JSONObject();
       json.put(GUID_INFO, guidInfo.toJSONObject());
-//      NSResponseCode response = FieldAccess.update(guidInfo.getGuid(), 
+      NSResponseCode response = FieldAccess.updateUserJSON(guidInfo.getGuid(), json,
+              writer, signature, message, handler);
+//      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
 //              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//              writer, signature, message, handler);
-      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
-              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-              writer, signature, message);
+//              writer, signature, message);
       return response;
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing guid info:" + e);

@@ -37,6 +37,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
+@Deprecated
 public class ConfirmUpdatePacket<NodeIDType> extends BasicPacketWithClientAddress implements Request {
 
   private final static String REQUESTID = "reqid";

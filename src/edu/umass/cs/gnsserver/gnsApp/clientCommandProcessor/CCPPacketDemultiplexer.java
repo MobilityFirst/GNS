@@ -47,7 +47,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-// FIXME: Do we even need a Demultiplexer here anymore?
+@Deprecated
 public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
   private ClientRequestHandlerInterface handler;

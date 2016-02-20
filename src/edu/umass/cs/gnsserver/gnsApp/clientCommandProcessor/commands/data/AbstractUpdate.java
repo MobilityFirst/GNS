@@ -28,7 +28,6 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Updat
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -77,8 +76,9 @@ public abstract class AbstractUpdate extends GnsCommand {
 
     NSResponseCode responseCode;
     if (field == null) {
-      responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON),
-              getUpdateOperation(), writer, signature, message, false);
+      responseCode = FieldAccess.updateUserJSON(guid, userJSON, writer, signature, message, handler);
+//      responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON),
+//              getUpdateOperation(), writer, signature, message, false);
       // full JSON object update
       if (!responseCode.isAnError()) {
         return new CommandResponse<String>(OK_RESPONSE);

@@ -23,13 +23,20 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.json.JSONException;
@@ -138,10 +145,57 @@ public class SideToSideQuery extends ClientAsynchBase {
     } catch (GnsClientException | IOException e) {
       GNS.getLogger().info("Problem creating " + name + " :" + e);
       // FIXME: return better error codes.
-      return  NSResponseCode.ERROR;
+      return NSResponseCode.ERROR;
     }
   }
-  
+
+  public NSResponseCode createRecordBatch(Set<String> names, Map<String, JSONObject> values,
+          ClientRequestHandlerInterface handler) {
+    try {
+      CreateServiceName[] creates = makeBatchedCreateNameRequest(names, values, handler);
+      for (CreateServiceName create : creates) {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().severe("??????????????????????????? Sending recon packet for NAME = "
+                  + create.getServiceName());
+        }
+        sendReconRequest(create);
+      }
+      return NSResponseCode.NO_ERROR;
+    } catch (JSONException | IOException | GnsClientException e) {
+      GNS.getLogger().info("Problem creating " + names + " :" + e);
+      // FIXME: return better error codes.
+      return NSResponseCode.ERROR;
+    }
+//    try {
+//      CreateServiceName packet = new CreateServiceName(name, value.toString());
+//      return sendReconRequest(packet);
+//    } catch (GnsClientException | IOException e) {
+//      GNS.getLogger().info("Problem creating " + name + " :" + e);
+//      // FIXME: return better error codes.
+//      return  NSResponseCode.ERROR;
+//    }
+  }
+
+  // based on edu.umass.cs.reconfiguration.testing.ReconfigurableClientCreateTester but this one
+  // handles multiple states
+  private static CreateServiceName[] makeBatchedCreateNameRequest(Set<String> names,
+          Map<String, JSONObject> states, ClientRequestHandlerInterface handler) throws JSONException {
+    Collection<Set<String>> batches = ConsistentReconfigurableNodeConfig
+            .splitIntoRCGroups(names, handler.getGnsNodeConfig().getReconfigurators());
+
+    Set<CreateServiceName> creates = new HashSet<CreateServiceName>();
+    // each batched create corresponds to a different RC group
+    for (Set<String> batch : batches) {
+      Map<String, String> nameStates = new HashMap<String, String>();
+      for (String name : batch) {
+        nameStates.put(name, states.get(name).toString());
+      }
+      // a single batched create
+      creates.add(new CreateServiceName(null, nameStates));
+    }
+    return creates.toArray(new CreateServiceName[0]);
+  }
+
   public NSResponseCode deleteRecord(String name) {
     try {
       DeleteServiceName packet = new DeleteServiceName(name);
@@ -149,7 +203,7 @@ public class SideToSideQuery extends ClientAsynchBase {
     } catch (GnsClientException | IOException e) {
       GNS.getLogger().info("Problem creating " + name + " :" + e);
       // FIXME: return better error codes.
-      return  NSResponseCode.ERROR;
+      return NSResponseCode.ERROR;
     }
   }
 
@@ -210,6 +264,25 @@ public class SideToSideQuery extends ClientAsynchBase {
     }
   }
   
+  public String fieldUpdateArray(String guid, String field, ResultValue value) throws IOException, JSONException, GnsClientException {
+    // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+    }
+    int requestId = (int) fieldUpdateArray(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    if (packet == null) {
+      throw new GnsClientException("Packet not found in table " + requestId);
+    } else {
+      String returnValue = packet.getReturnValue();
+      if (debuggingEnabled) {
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
+                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
+      }
+      return checkResponse(returnValue);
+    }
+  }
+
   public String fieldRemove(String guid, String field, Object value) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     assert value instanceof String || value instanceof Number;
@@ -229,7 +302,7 @@ public class SideToSideQuery extends ClientAsynchBase {
       return checkResponse(returnValue);
     }
   }
-  
+
   public String fieldRemoveMultiple(String guid, String field, ResultValue value) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
@@ -309,7 +382,7 @@ public class SideToSideQuery extends ClientAsynchBase {
         if (error.startsWith(VERIFICATION_ERROR)) {
           throw new GnsVerificationException(error + rest);
         }
-        
+
         if (error.startsWith(OPERATION_NOT_SUPPORTED)) {
           throw new GnsOperationNotSupportedException(error + rest);
         }

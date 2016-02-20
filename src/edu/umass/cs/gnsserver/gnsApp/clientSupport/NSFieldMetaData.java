@@ -27,6 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import java.net.InetSocketAddress;
@@ -78,41 +79,5 @@ public class NSFieldMetaData {
     } else {
       return new HashSet<Object>();
     }
-  }
-
-  /**
-   * Add a value to a metadata field.
-   * 
-   * @param type
-   * @param guid
-   * @param key
-   * @param value
-   * @param activeReplica
-   * @param lnsAddress
-   */
-  @Deprecated
-  public static void add(MetaDataTypeName type, String guid, String key, String value, 
-          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
-
-    LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica, lnsAddress);
-  }
-
-  /**
-   * Remove a value from a metadata field.
-   * 
-   * @param type
-   * @param guid
-   * @param key
-   * @param value
-   * @param activeReplica
-   * @param lnsAddress
-   */
-  @Deprecated
-  public static void remove(MetaDataTypeName type, String guid, String key, String value, 
-          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
-
-    LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
-            UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
   }
 }

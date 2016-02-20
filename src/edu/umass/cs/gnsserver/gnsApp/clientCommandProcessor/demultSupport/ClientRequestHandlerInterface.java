@@ -101,6 +101,7 @@ public interface ClientRequestHandlerInterface {
    * 
    * @return an Intercessor instance
    */
+  @Deprecated
   public Intercessor getIntercessor();
 
   /**

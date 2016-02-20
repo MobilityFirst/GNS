@@ -37,6 +37,7 @@ import java.util.Random;
  *
  * @author abhigyan
  */
+@Deprecated
 public class Lookup {
 
   private static Random random = new Random();

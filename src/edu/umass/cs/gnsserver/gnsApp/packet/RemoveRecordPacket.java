@@ -41,6 +41,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
+@Deprecated
 public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
 
   private final static String REQUESTID = "reqID";

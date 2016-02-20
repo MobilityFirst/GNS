@@ -24,6 +24,7 @@ package edu.umass.cs.gnsserver.gnsApp;
  * All Rights Reserved
  */
 
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNS;
@@ -123,8 +124,8 @@ public class Select {
     // If sufficient time hasn't passed we just send the current value back
     if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // grab the timing parameters that we squirreled away from the SETUP
-      Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), app, packet.getCppAddress());
-      int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), app, packet.getCppAddress());
+      Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), app.getDB());
+      int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), app.getDB());
       if (lastUpdate != null) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
@@ -157,7 +158,7 @@ public class Select {
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
     if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
-      packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), app, packet.getCppAddress()));
+      packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), app.getDB()));
     }
     packet.setNameServerID(app.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
@@ -225,7 +226,7 @@ public class Select {
    * @throws JSONException
    */
   public static void handleSelectResponse(JSONObject json, 
-          GnsApplicationInterface<String> replica) throws JSONException {
+          GnsApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
     SelectResponsePacket<String> packet = new SelectResponsePacket<>(json, replica.getGNSNodeConfig());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " recvd from NS " + packet.getNameServerID().toString());
@@ -268,7 +269,7 @@ public class Select {
   }
 
   private static void handledAllServersResponded(SelectResponsePacket<String> packet, NSSelectInfo<String> info, 
-          GnsApplicationInterface<String> replica) throws JSONException {
+          GnsApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     // Pull the records out of the info structure and send a response back to the LNS
@@ -281,8 +282,8 @@ public class Select {
         GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " storing query string and other info");
       }
       // for setup we need to squirrel away the query for later lookups
-      NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery(), replica, packet.getCppAddress());
-      NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval(), replica, packet.getCppAddress());
+      NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery());
+      NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval());
     }
     if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
@@ -291,7 +292,7 @@ public class Select {
       }
       NSGroupAccess.updateMembers(guid, guids, replica, packet.getCppAddress());
       //NSGroupAccess.updateRecords(guid, processResponsesIntoJSONArray(info.getResponsesAsMap()), replica); 
-      NSGroupAccess.updateLastUpdate(guid, new Date(), replica, packet.getCppAddress());
+      NSGroupAccess.updateLastUpdate(guid, new Date());
     }
   }
 

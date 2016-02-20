@@ -44,6 +44,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author abhigyan
  */
+@Deprecated
 public class Update {
 
   private static Random r = new Random();
@@ -179,6 +180,7 @@ updatePacket.getRequestIDInteger(),
    * @param updateInfo state for this request stored at local name server
    * @throws JSONException
    */
+  @Deprecated
   private static void handleInvalidActiveError(UpdateInfo<String> updateInfo, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t"

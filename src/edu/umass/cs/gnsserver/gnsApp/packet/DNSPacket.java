@@ -46,6 +46,7 @@ import java.util.Set;
  *
  * @param <NodeIDType>
  */
+@Deprecated
 public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAddress 
 implements Request, ClientRequest {
 

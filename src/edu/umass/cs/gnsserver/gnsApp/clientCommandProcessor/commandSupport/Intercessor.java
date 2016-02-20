@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.IntercessorInterface;
@@ -241,6 +240,7 @@ public class Intercessor implements IntercessorInterface {
    * @param returnFormat
    * @return a {@link QueryResult}
    */
+  @Deprecated
   public QueryResult<String> sendSingleFieldQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
   }
@@ -266,6 +266,7 @@ public class Intercessor implements IntercessorInterface {
     return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
   }
 
+  @Deprecated
   private QueryResult<String> sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     final Long startTime = System.currentTimeMillis(); // instrumentation
     if (debuggingEnabled) {
@@ -404,6 +405,7 @@ public class Intercessor implements IntercessorInterface {
    * @param values
    * @return an {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendAddBatchRecord(Set<String> names, Map<String, JSONObject> values) {
     int id = nextUpdateRequestID();
     AddBatchRecordPacket<String> pkt = new AddBatchRecordPacket<>(null, id, names, values, nodeAddress);
@@ -501,6 +503,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
@@ -522,6 +525,7 @@ public class Intercessor implements IntercessorInterface {
    * @param wait determines whether we wait for a response
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message, boolean wait) {
@@ -551,6 +555,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {
     return sendUpdateUserJSON(name, userJSON, operation, writer, signature, message, true);
@@ -568,6 +573,7 @@ public class Intercessor implements IntercessorInterface {
    * @param wait indicates if we wait for a confirmation packet
    * @return a {@link NSResponseCode}
    */
+  @Deprecated
   public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message, boolean wait) {
     int id = nextUpdateRequestID();
@@ -706,6 +712,7 @@ public class Intercessor implements IntercessorInterface {
    *
    * @param jsonObject
    */
+  @Deprecated
   public void injectPacketIntoCCPQueue(JSONObject jsonObject) {
 
     boolean isPacketTypeFound = ccpPacketDemultiplexer.handleMessage(jsonObject);

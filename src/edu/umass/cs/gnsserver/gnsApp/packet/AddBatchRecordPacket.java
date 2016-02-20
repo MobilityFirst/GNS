@@ -108,6 +108,7 @@ public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<No
    * @param unstringer
    * @throws org.json.JSONException
    */
+  @Deprecated
   public AddBatchRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json, unstringer);
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_BATCH_RECORD) {

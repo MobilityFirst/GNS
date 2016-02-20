@@ -24,6 +24,9 @@ import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess.GROUPS;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.utils.ResultValue;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -81,15 +84,25 @@ public class FieldMetaData {
    * @param handler
    * @return a set of strings
    */
-  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature,
+  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, 
+          String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
-            ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new HashSet<>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());
-    } else {
+    String field = makeFieldMetaDataKey(type, key);
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, 
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
       return new HashSet<>();
     }
+    ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field,
+            handler.getApp().getDB());
+    return new HashSet<>(result.toStringSet());
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
+//            ColumnFieldType.LIST_STRING);
+//    if (!result.isError()) {
+//      return new HashSet<>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());
+//    } else {
+//      return new HashSet<>();
+//    }
   }
 
   /**

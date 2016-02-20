@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -44,14 +45,10 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 //import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSQueryHandler;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSUpdateHandler;
-import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.NoopPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsApp.packet.StopPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
@@ -68,10 +65,6 @@ import edu.umass.cs.utils.DelayProfiler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -203,13 +196,13 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   private static PacketType[] types = {
-    PacketType.DNS,
-    PacketType.UPDATE,
+//    PacketType.DNS,
+//    PacketType.UPDATE,
     PacketType.SELECT_REQUEST,
     PacketType.SELECT_RESPONSE,
-    PacketType.UPDATE_CONFIRM,
-    PacketType.ADD_CONFIRM,
-    PacketType.REMOVE_CONFIRM,
+//    PacketType.UPDATE_CONFIRM,
+//    PacketType.ADD_CONFIRM,
+//    PacketType.REMOVE_CONFIRM,
     PacketType.STOP,
     PacketType.NOOP,
     PacketType.COMMAND,
@@ -228,20 +221,20 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
                 //+ " packet: " + json.toReasonableString());
       }
       switch (packetType) {
-        case DNS:
-          // the only dns response we should see are coming in response to LNSQueryHandler requests
-          DNSPacket<String> dnsPacket = new DNSPacket<String>(json, nodeConfig);
-          if (!dnsPacket.isQuery()) {
-            GNS.getLogger().severe("App should not be getting query packets!!");
-            //LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
-          } else {
-            // otherwise it's a query
-            AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient);
-          }
-          break;
-        case UPDATE:
-          AppUpdate.executeUpdateLocalUpdatePacket(new UpdatePacket<String>(json, nodeConfig), this, doNotReplyToClient);
-          break;
+//        case DNS:
+//          // the only dns response we should see are coming in response to LNSQueryHandler requests
+//          DNSPacket<String> dnsPacket = new DNSPacket<String>(json, nodeConfig);
+//          if (!dnsPacket.isQuery()) {
+//            GNS.getLogger().severe("App should not be getting query packets!!");
+//            //LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
+//          } else {
+//            // otherwise it's a query
+//            AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient);
+//          }
+//          break;
+//        case UPDATE:
+//          AppUpdate.executeUpdateLocalUpdatePacket(new UpdatePacket<String>(json, nodeConfig), this, doNotReplyToClient);
+//          break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
           break;
@@ -249,11 +242,11 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
           Select.handleSelectResponse(json, this);
           break;
         // HANDLE CONFIRMATIONS COMING BACK FROM AN LNS (SIDE-TO-SIDE)
-        case UPDATE_CONFIRM:
-        case ADD_CONFIRM:
-        case REMOVE_CONFIRM:
-          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<String>(json, nodeConfig), this);
-          break;
+//        case UPDATE_CONFIRM:
+//        case ADD_CONFIRM:
+//        case REMOVE_CONFIRM:
+//          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<String>(json, nodeConfig), this);
+//          break;
         case STOP:
           break;
         case NOOP:
@@ -270,17 +263,9 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
           return false;
       }
       executed = true;
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-    } catch (SignatureException e) {
-      e.printStackTrace();
-    } catch (InvalidKeySpecException e) {
-      e.printStackTrace();
-    } catch (InvalidKeyException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
+       } catch (JSONException | IOException | GnsClientException e) {
+//    } catch (JSONException | NoSuchAlgorithmException | SignatureException 
+//            | InvalidKeySpecException | InvalidKeyException | IOException | GnsClientException e) {
       e.printStackTrace();
     } catch (FailedDBOperationException e) {
       // all database operations throw this exception, therefore we keep throwing this exception upwards and catch this

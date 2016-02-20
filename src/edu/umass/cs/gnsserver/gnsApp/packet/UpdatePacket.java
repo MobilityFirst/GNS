@@ -61,6 +61,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
+@Deprecated
 public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndCCP implements
         ReplicableRequest, ClientRequest {
 

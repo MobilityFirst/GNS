@@ -193,6 +193,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
+  @Deprecated
   public Intercessor getIntercessor() {
     return intercessor;
   }

@@ -69,6 +69,10 @@ public abstract class AbstractUpdateList extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     NSResponseCode responseCode;
+    if (writer.equals(MAGIC_STRING)) {
+      writer = null;
+    }
+    
     if (!(responseCode = FieldAccess.update(guid, field,
             JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,

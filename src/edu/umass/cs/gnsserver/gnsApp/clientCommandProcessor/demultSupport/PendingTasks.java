@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author abhigyan
  */
+@Deprecated
 public class PendingTasks {
 
   /**

@@ -19,15 +19,11 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.main.GNS;
-import java.io.IOException;
-import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
 /**
@@ -202,7 +198,10 @@ public class GroupAccess {
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    // FIXME: handle authentication
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, guid, reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
+      return new ResultValue();
+    }
     return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUP, handler.getApp().getDB());
 //    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
 //    if (!result.isError()) {
@@ -224,7 +223,10 @@ public class GroupAccess {
    */
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    // FIXME: handle authentication
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, guid, reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
+      return new ResultValue();
+    }
     return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUPS, handler.getApp().getDB());
 //    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
 //    if (!result.isError()) {

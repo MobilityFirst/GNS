@@ -438,6 +438,13 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             WRITER, MAGIC_STRING), callback);
   }
   
+   public long fieldUpdateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a read command that doesn't need authentication.
+    return sendCommandAsynch(createCommand(REPLACE_OR_CREATE_LIST, GUID, guid,
+            USER_JSON, value.toString(),
+            WRITER, MAGIC_STRING), callback);
+  }
+  
   public long fieldRemove(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
