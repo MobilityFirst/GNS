@@ -366,7 +366,9 @@ public abstract class AbstractHttpClient {
    * @throws Exception
    */
   public void removeAccountGuid(GuidEntry guid) throws Exception {
-    String command = createAndSignQuery(guid, GnsProtocol.REMOVE_ACCOUNT, GnsProtocol.GUID, guid.getGuid(),
+    String command = createAndSignQuery(guid, 
+            GnsProtocol.REMOVE_ACCOUNT, 
+            GnsProtocol.GUID, guid.getGuid(),
             GnsProtocol.NAME, guid.getEntityName());
     String response = sendGetCommand(command);
     checkResponse(command, response);
@@ -405,7 +407,7 @@ public abstract class AbstractHttpClient {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command = createAndSignQuery(accountGuid, GnsProtocol.ADD_GUID,
-            GnsProtocol.ACCOUNT_GUID, accountGuid.getGuid(),
+            GnsProtocol.GUID, accountGuid.getGuid(),
             GnsProtocol.NAME, URIEncoderDecoder.quoteIllegal(name, ""),
             GnsProtocol.PUBLIC_KEY, publicKeyString);
     String response = sendGetCommand(command);
@@ -419,7 +421,9 @@ public abstract class AbstractHttpClient {
    * @throws Exception
    */
   public void removeGuid(GuidEntry guid) throws Exception {
-    String command = createAndSignQuery(guid, GnsProtocol.REMOVE_GUID, GnsProtocol.GUID, guid.getGuid());
+    String command = createAndSignQuery(guid, 
+            GnsProtocol.REMOVE_GUID, 
+            GnsProtocol.GUID, guid.getGuid());
     String response = sendGetCommand(command);
 
     checkResponse(command, response);
@@ -433,8 +437,10 @@ public abstract class AbstractHttpClient {
    * @throws Exception
    */
   public void removeGuid(GuidEntry accountGuid, String guidToRemove) throws Exception {
-    String command = createAndSignQuery(accountGuid, GnsProtocol.REMOVE_GUID, GnsProtocol.GUID, guidToRemove,
-            GnsProtocol.ACCOUNT_GUID, accountGuid.getGuid());
+    String command = createAndSignQuery(accountGuid, 
+            GnsProtocol.REMOVE_GUID, 
+            GnsProtocol.ACCOUNT_GUID, accountGuid.getGuid(),
+            GnsProtocol.GUID, guidToRemove);
     String response = sendGetCommand(command);
 
     checkResponse(command, response);

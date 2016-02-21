@@ -53,7 +53,7 @@ public class RemoveGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, ACCOUNT_GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{ACCOUNT_GUID, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -64,9 +64,6 @@ public class RemoveGuid extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
       String guidToRemove = json.getString(GUID);
       String accountGuid = json.optString(ACCOUNT_GUID, null);
       String signature = json.getString(SIGNATURE);
@@ -74,11 +71,11 @@ public class RemoveGuid extends GnsCommand {
       GuidInfo accountGuidInfo = null;
       GuidInfo guidInfoToRemove;
       if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
       }
       if (accountGuid != null) {
         if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+          return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
         }
       }
       if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey() 
@@ -87,14 +84,13 @@ public class RemoveGuid extends GnsCommand {
         if (accountGuid != null) {
           accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
           if (accountInfo == null) {
-            return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+            return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
           }
         }
         return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
-    //}
   }
 
   @Override

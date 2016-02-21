@@ -82,8 +82,6 @@ public class RegisterAccount extends GnsCommand {
     CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
             password, handler);
     if (result.getReturnValue().equals(OK_RESPONSE)) {
-      // set up the default read access
-      //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALL_FIELDS, EVERYONE, handler);
       return new CommandResponse<String>(guid);
     } else {
       return result;

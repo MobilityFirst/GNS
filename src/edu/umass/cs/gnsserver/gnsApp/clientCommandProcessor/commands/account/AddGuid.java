@@ -57,7 +57,7 @@ public class AddGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, ACCOUNT_GUID, PUBLIC_KEY, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{NAME, GUID, PUBLIC_KEY, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -69,7 +69,7 @@ public class AddGuid extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
       String name = json.getString(NAME);
-      String accountGuid = json.getString(ACCOUNT_GUID);
+      String accountGuid = json.getString(GUID);
       String publicKey = json.getString(PUBLIC_KEY);
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);

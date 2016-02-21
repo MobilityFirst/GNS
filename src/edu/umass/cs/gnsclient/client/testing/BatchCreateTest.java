@@ -101,7 +101,7 @@ public class BatchCreateTest {
         System.out.print("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
         command = client.createAndSignCommand(masterGuid.getPrivateKey(),
                 GnsProtocol.ADD_MULTIPLE_GUIDS,
-                GnsProtocol.ACCOUNT_GUID, masterGuid.getGuid(),
+                GnsProtocol.GUID, masterGuid.getGuid(),
                 GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
         result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.equals(GnsProtocol.OK_RESPONSE)) {

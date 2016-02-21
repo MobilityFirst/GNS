@@ -44,7 +44,7 @@ public class RemoveAccount extends GnsCommand {
 
   /**
    * Creates a RemoveAccount instance.
-   * 
+   *
    * @param module
    */
   public RemoveAccount(CommandModule module) {
@@ -64,28 +64,24 @@ public class RemoveAccount extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String name = json.getString(NAME);
-      String guid = json.getString(GUID);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
-      if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler);
-        if (accountInfo != null) {
-          return AccountAccess.removeAccount(accountInfo, handler);
-        } else {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
-        }
+    String name = json.getString(NAME);
+    String guid = json.getString(GUID);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler, true);
+      if (accountInfo != null) {
+        return AccountAccess.removeAccount(accountInfo, handler);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
       }
-    //}
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+    }
   }
 
   @Override

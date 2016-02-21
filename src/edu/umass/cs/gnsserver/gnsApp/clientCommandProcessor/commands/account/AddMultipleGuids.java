@@ -57,7 +57,7 @@ public class AddMultipleGuids extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAMES, ACCOUNT_GUID, PUBLIC_KEYS, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{NAMES, GUID, PUBLIC_KEYS, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -69,7 +69,7 @@ public class AddMultipleGuids extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 
-    String accountGuid = json.getString(ACCOUNT_GUID);
+    String guid = json.getString(GUID);
     String guidCntString = json.optString(GUIDCNT);
     JSONArray names = json.optJSONArray(NAMES);
     JSONArray publicKeys = json.optJSONArray(PUBLIC_KEYS);
@@ -77,13 +77,13 @@ public class AddMultipleGuids extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
 
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (AccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
       if (accountInfo == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
       }
       if (!accountInfo.isVerified()) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");

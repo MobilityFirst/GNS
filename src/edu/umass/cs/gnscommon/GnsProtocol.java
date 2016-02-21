@@ -170,7 +170,9 @@ public class GnsProtocol {
   public final static String NAME = "name";
   public final static String NAMES = "names";
   public final static String GUID = "guid";
+  public final static String GUID_TO_REMOVE = "guidToRemove";
   public final static String GUID_2 = "guid2";
+  // only used for for remove
   public final static String ACCOUNT_GUID = "accountGuid";
   public final static String READER = "reader";
   public final static String WRITER = "writer";

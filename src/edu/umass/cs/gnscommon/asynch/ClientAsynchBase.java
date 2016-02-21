@@ -229,7 +229,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws Exception
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(guid.getPrivateKey(), REMOVE_ACCOUNT, GUID, guid.getGuid(),
+    return sendCommandAsynch(createAndSignCommand(guid.getPrivateKey(), 
+            REMOVE_ACCOUNT, 
+            GUID, guid.getGuid(),
             NAME, guid.getEntityName()), callback);
   }
 
@@ -328,11 +330,14 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * Removes a guid (not for account Guids - use removeAccountGuid for them).
    *
    * @param guid the guid to remove
+   * @param callback
+   * @return 
    * @throws Exception
    */
   public long guidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(guid.getPrivateKey(),
-            REMOVE_GUID, GUID, guid.getGuid()), callback);
+            REMOVE_GUID, 
+            GUID, guid.getGuid()), callback);
   }
 
   /**
@@ -340,18 +345,26 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @param accountGuid
    * @param guidToRemove
+   * @param callback
+   * @return 
    * @throws Exception
    */
   public long guidRemove(GuidEntry accountGuid, String guidToRemove, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(accountGuid.getPrivateKey(), REMOVE_GUID, GUID, guidToRemove,
-            ACCOUNT_GUID, accountGuid.getGuid()), callback);
+    return sendCommandAsynch(createAndSignCommand(accountGuid.getPrivateKey(), 
+            REMOVE_GUID, 
+            ACCOUNT_GUID, accountGuid.getGuid(),
+            GUID, guidToRemove
+            ), callback);
   }
 
   /**
    * Obtains the guid of the alias from the GNS server.
    *
    * @param alias
+   * @param callback
+   * @return 
    * @throws IOException
+   * @throws org.json.JSONException
    * @throws UnsupportedEncodingException
    * @throws GnsClientException
    */

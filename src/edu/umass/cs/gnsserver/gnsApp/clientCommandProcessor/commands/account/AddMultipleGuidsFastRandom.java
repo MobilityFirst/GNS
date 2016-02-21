@@ -42,7 +42,7 @@ public class AddMultipleGuidsFastRandom extends AddMultipleGuids {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUIDCNT, ACCOUNT_GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUIDCNT, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override

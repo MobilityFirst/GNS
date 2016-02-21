@@ -36,6 +36,7 @@ import java.net.UnknownHostException;
  * <p>
  *
  */
+@Deprecated
 public class AddRemove {
 
   /**

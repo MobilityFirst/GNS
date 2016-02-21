@@ -39,6 +39,7 @@ import java.util.TimerTask;
  * 
  * @author westy
  */
+@Deprecated
 public class SendReconfiguratorPacketTask extends TimerTask {
 
   private final String name;

@@ -32,6 +32,7 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 5/29/14.
  */
+@Deprecated
 public abstract class RequestInfo {
 
   /** The name. */

@@ -67,7 +67,7 @@ public class ClearTagged extends GnsCommand {
     String tagName = json.getString(NAME);
     for (Iterator<?> it = handler.getAdmintercessor().collectTaggedGuids(tagName, handler).iterator(); it.hasNext();) {
       String guid = (String) it.next();
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
       if (accountInfo != null) {
         AccountAccess.removeAccount(accountInfo, handler);
       }

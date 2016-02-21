@@ -38,6 +38,7 @@ import org.json.JSONObject;
  * @author abhigyan
  * @param <NodeIDType>
  */
+@Deprecated
 public class UpdateInfo<NodeIDType> extends RequestInfo {
 
   /**

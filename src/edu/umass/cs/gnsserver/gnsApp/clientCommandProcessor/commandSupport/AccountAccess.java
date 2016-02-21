@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnscommon.utils.Base64;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
@@ -108,7 +107,6 @@ public class AccountAccess {
   }
 
   public static AccountInfo lookupAccountInfoFromGuid(String guid,
-          //boolean allowSubGuids, 
           ClientRequestHandlerInterface handler) {
     return lookupAccountInfoFromGuid(guid, handler, false);
   }
@@ -222,7 +220,11 @@ public class AccountAccess {
 //    }
     return null;
   }
-
+  
+   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
+     return lookupGuid(name, handler, false);
+   }
+   
   /**
    * Returns the GUID associated with name which is a HRN or null if one of that name does not exist.
    * <p>
@@ -231,9 +233,11 @@ public class AccountAccess {
    *
    * @param name
    * @param handler
+   * @param allowRemoteLookup
    * @return a GUID
    */
-  public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
+  public static String lookupGuid(String name, ClientRequestHandlerInterface handler, 
+          boolean allowRemoteLookup) {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name, HRN_GUID,
@@ -256,10 +260,24 @@ public class AccountAccess {
 //      }
 //    } catch (JSONException e) {
 //    }
+    /***********
+     * 
+     */
+    String value = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for " + name);
     }
-    return null;
+    if (allowRemoteLookup) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for " + name);
+      }
+      try {
+        value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
+      } catch (IOException | JSONException | GnsClientException e) {
+        GNS.getLogger().severe("Problem getting HRN_GUID for " + name + " from remote server: " + e);
+      }
+    }
+    return value;
   }
 
   /**
@@ -349,10 +367,11 @@ public class AccountAccess {
    * @param handler
    * @return an {@link AccountInfo} instance
    */
-  public static AccountInfo lookupAccountInfoFromName(String name, ClientRequestHandlerInterface handler) {
-    String guid = lookupGuid(name, handler);
+  public static AccountInfo lookupAccountInfoFromName(String name, ClientRequestHandlerInterface handler, 
+          boolean allowRemoteLookup) {
+    String guid = lookupGuid(name, handler, allowRemoteLookup);
     if (guid != null) {
-      return lookupAccountInfoFromGuid(guid, handler);
+      return lookupAccountInfoFromGuid(guid, handler, allowRemoteLookup);
     }
     return null;
   }
@@ -594,18 +613,6 @@ public class AccountAccess {
           //handler.getIntercessor().sendRemoveRecord(name);
           return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
         }
-
-//        if (!(returnCode = handler.getIntercessor().sendAddRecordWithSingleField(guid, ACCOUNT_INFO, accountInfo.toDBFormat())).isAnError()) {
-//          GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-//          handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(),
-//                  null, UpdateOperation.SINGLE_FIELD_CREATE);
-//          return new CommandResponse<String>(OK_RESPONSE);
-//        } else {
-//          // delete the record we added above
-//          // might be nice to have a notion of a transaction that we could roll back
-//          handler.getIntercessor().sendRemoveRecord(name);
-//          return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
-//        }
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + name);
       }
@@ -865,10 +872,12 @@ public class AccountAccess {
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid,
           ClientRequestHandlerInterface handler) {
-    // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
+    // First make sure guid is not an account GUID 
+    // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuid(guid.getGuid(), handler) != null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid.getGuid() + " is an account guid");
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " 
+                + guid.getGuid() + " is an account guid");
       }
     }
     // Fill in a missing account info
@@ -878,7 +887,7 @@ public class AccountAccess {
       if (accountGuid == null) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid.getGuid() + " does not have a primary account guid");
       }
-      if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, handler)) == null) {
+      if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, handler, true)) == null) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid);
       }
     }
@@ -1056,10 +1065,6 @@ public class AccountAccess {
           String writer, String signature, String message,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
-
-//      if (sendToReplica) {
-//        handler.setReallySendUpdateToReplica(true);
-//      }
       NSResponseCode response;
       if (sendToReplica) {
         try {
@@ -1077,15 +1082,11 @@ public class AccountAccess {
 //                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
 //                writer, signature, message, sendToReplica);
       }
-//      if (sendToReplica) {
-//        handler.setReallySendUpdateToReplica(false);
-//      }
       return response;
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing account info:" + e);
       return NSResponseCode.ERROR;
     }
-    //return NSResponseCode.NO_ERROR;
   }
 
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,

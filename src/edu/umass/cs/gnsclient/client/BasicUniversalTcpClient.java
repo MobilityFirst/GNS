@@ -548,7 +548,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectSetupGroupQuery(GuidEntry accountGuid, String publicKey, String query, int interval) throws Exception {
-    JSONObject command = createCommand(SELECT_GROUP, ACCOUNT_GUID, accountGuid.getGuid(),
+    JSONObject command = createCommand(SELECT_GROUP, GUID, accountGuid.getGuid(),
             PUBLIC_KEY, publicKey, QUERY, query,
             INTERVAL, interval);
     String response = sendCommandAndWait(command);
@@ -743,7 +743,9 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void accountGuidRemove(GuidEntry guid) throws Exception {
-    JSONObject command = createAndSignCommand(guid.getPrivateKey(), REMOVE_ACCOUNT, GUID, guid.getGuid(),
+    JSONObject command = createAndSignCommand(guid.getPrivateKey(), 
+            REMOVE_ACCOUNT, 
+            GUID, guid.getGuid(),
             NAME, guid.getEntityName());
     String response = sendCommandAndWait(command);
     checkResponse(command, response);
@@ -809,13 +811,13 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     JSONObject command;
     if (createPublicKeys) {
       command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
-              ACCOUNT_GUID, accountGuid.getGuid(),
+              GUID, accountGuid.getGuid(),
               NAMES, new JSONArray(aliasList),
               PUBLIC_KEYS, new JSONArray(publicKeys));
     } else {
       // This version creates guids that have bogus public keys
       command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
-              ACCOUNT_GUID, accountGuid.getGuid(),
+              GUID, accountGuid.getGuid(),
               NAMES, new JSONArray(aliasList));
     }
     String result = checkResponse(command, sendCommandAndWait(command));
@@ -835,7 +837,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     JSONObject command;
     // This version creates guids that have bogus public keys
     command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
-            ACCOUNT_GUID, accountGuid.getGuid(),
+            GUID, accountGuid.getGuid(),
             GUIDCNT, guidCnt);
     String result = checkResponse(command, sendCommandAndWait(command));
     return result;
@@ -848,7 +850,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void guidRemove(GuidEntry guid) throws Exception {
-    JSONObject command = createAndSignCommand(guid.getPrivateKey(), REMOVE_GUID, GUID, guid.getGuid());
+    JSONObject command = createAndSignCommand(guid.getPrivateKey(), 
+            REMOVE_GUID, GUID, guid.getGuid());
     String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
@@ -862,8 +865,10 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void guidRemove(GuidEntry accountGuid, String guidToRemove) throws Exception {
-    JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(), REMOVE_GUID, GUID, guidToRemove,
-            ACCOUNT_GUID, accountGuid.getGuid());
+    JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(), 
+            REMOVE_GUID, 
+            ACCOUNT_GUID, accountGuid.getGuid(),
+            GUID, guidToRemove);
     String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
@@ -1259,9 +1264,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(), ADD_GUID,
-            ACCOUNT_GUID, accountGuid.getGuid(),
+            GUID, accountGuid.getGuid(),
             NAME, name,
-            //GUID, guid,
             PUBLIC_KEY, publicKeyString);
     String result = checkResponse(command, sendCommandAndWait(command));
     DelayProfiler.updateDelay("guidCreate", startTime);

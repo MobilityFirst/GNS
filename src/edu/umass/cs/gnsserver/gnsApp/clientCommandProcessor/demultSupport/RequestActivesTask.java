@@ -43,6 +43,7 @@ import java.util.TimerTask;
  *
  * @author abhigyan
  */
+@Deprecated
 public class RequestActivesTask extends TimerTask {
 
   /**

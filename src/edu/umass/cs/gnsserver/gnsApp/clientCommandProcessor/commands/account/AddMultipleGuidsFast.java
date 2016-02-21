@@ -42,7 +42,7 @@ public class AddMultipleGuidsFast extends AddMultipleGuids {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAMES, ACCOUNT_GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{NAMES, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override

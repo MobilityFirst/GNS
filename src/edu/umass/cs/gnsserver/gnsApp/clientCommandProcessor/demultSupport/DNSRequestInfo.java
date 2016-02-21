@@ -37,6 +37,7 @@ import org.json.JSONObject;
  * @param <NodeIDType>
  ************************************************************
  */
+@Deprecated
 public class DNSRequestInfo<NodeIDType> extends RequestInfo {
 
   private final DNSPacket<NodeIDType> incomingPacket;
