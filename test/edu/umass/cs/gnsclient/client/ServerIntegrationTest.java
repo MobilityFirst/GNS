@@ -73,7 +73,7 @@ public class ServerIntegrationTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Run the server.
-    ArrayList<String> output = RunServer.command("scripts/3nodeslocal/reset_and_restart.sh", ".");
+    ArrayList<String> output = RunServer.command("scripts/3nodeslocal/quiet_reset_and_restart.sh", ".");
     if (output != null) {
       for (String line : output) {
         System.out.println(line);
@@ -662,7 +662,6 @@ public class ServerIntegrationTest {
 
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
-      //System.exit(2);
     }
     // now remove a guid and check for group updates
     try {
@@ -686,7 +685,6 @@ public class ServerIntegrationTest {
 
     } catch (Exception e) {
       fail("Exception during remove guid group update test: " + e);
-      //System.exit(2);
     }
 
   }
