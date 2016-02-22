@@ -46,7 +46,7 @@ public class RetrieveAliases extends GnsCommand {
 
   /**
    * Creates a RetriveAliases instance.
-   * 
+   *
    * @param module
    */
   public RetrieveAliases(CommandModule module) {
@@ -69,20 +69,25 @@ public class RetrieveAliases extends GnsCommand {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {
-      String guid = json.getString(GUID);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    String guid = json.getString(GUID);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+      if (accountInfo == null) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      } else if (!accountInfo.isVerified()) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       }
-      if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
-        ArrayList<String> aliases = accountInfo.getAliases();
-        return new CommandResponse<String>(new JSONArray(aliases).toString());
-      } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
-      }
+      ArrayList<String> aliases = accountInfo.getAliases();
+      return new CommandResponse<String>(new JSONArray(aliases).toString());
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+    }
     //}
   }
 

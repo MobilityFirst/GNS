@@ -37,7 +37,7 @@ public class LookupGuidRecord extends GnsCommand {
 
   /**
    * Creates a LookupGuidRecord instance.
-   * 
+   *
    * @param module
    */
   public LookupGuidRecord(CommandModule module) {
@@ -56,21 +56,20 @@ public class LookupGuidRecord extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-      String guid = json.getString(GUID);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    String guid = json.getString(GUID);
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    if (guidInfo != null) {
+      try {
+        return new CommandResponse<String>(guidInfo.toJSONObject().toString());
+      } catch (JSONException e) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
       }
-      if (guidInfo != null) {
-        try {
-          return new CommandResponse<String>(guidInfo.toJSONObject().toString());
-        } catch (JSONException e) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
-        }
-      } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
-   // }
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
   }
 
   @Override

@@ -41,7 +41,7 @@ public class SetPassword extends GnsCommand {
 
   /**
    * Creates a SetPassword instance.
-   * 
+   *
    * @param module
    */
   public SetPassword(CommandModule module) {
@@ -68,6 +68,8 @@ public class SetPassword extends GnsCommand {
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
     if (accountInfo == null) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    } else if (!accountInfo.isVerified()) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
     }
     return AccountAccess.setPassword(accountInfo, password, guid, signature, message, handler);
   }

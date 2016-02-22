@@ -44,7 +44,7 @@ public class RegisterAccount extends GnsCommand {
 
   /**
    * Creates a RegisterAccount instance.
-   * 
+   *
    * @param module
    */
   public RegisterAccount(CommandModule module) {
@@ -53,7 +53,7 @@ public class RegisterAccount extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, PUBLIC_KEY, PASSWORD};
+    return new String[]{NAME, PUBLIC_KEY, PASSWORD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override

@@ -320,17 +320,17 @@ public class NSGroupAccess {
    *
    * @param groupGuid
    * @param field
-   * @param database
+   * @param gnsApp
    * @return a ValuesMap containing the field with an array of the values
    * @throws FailedDBOperationException
    * @throws JSONException
    */
   public static ValuesMap lookupFieldInGroupGuid(String groupGuid, String field,
-          BasicRecordMap database) throws FailedDBOperationException, JSONException {
+          GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException, JSONException {
     JSONArray resultArray = new JSONArray();
-    for (Object guidObject : lookupMembers(groupGuid, false, database)) {
+    for (Object guidObject : lookupMembers(groupGuid, false, gnsApp.getDB())) {
       String guid = (String) guidObject;
-      ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, field, database);
+      ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, field, gnsApp);
       if (valuesMap != null && valuesMap.has(field)) {
         resultArray.put(valuesMap.get(field));
       }

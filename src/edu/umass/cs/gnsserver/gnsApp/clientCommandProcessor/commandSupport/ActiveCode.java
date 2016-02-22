@@ -20,17 +20,12 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldMetaData.makeFieldMetaDataKey;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import java.util.HashSet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -68,20 +63,6 @@ public class ActiveCode {
     }
   }
 
-  // THIS IS NOW DONE IN DIRECTLY IN AccountAccess.addGuid
-//	/**
-//	 * Initializes the fields (called upon guid creation) to prevent undefined behavior
-//	 * @param guid
-//	 * @param handler
-//	 */
-//	public static void initCodeFields(String guid, 
-//			ClientRequestHandlerInterface handler) {
-//		String empty = null;
-//		handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, ON_READ, empty, null, 
-//				UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE);
-//		handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, ON_WRITE, empty, null, 
-//				UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE);
-//	}
   /**
    * Sets active code for the guid and action.
    *

@@ -39,46 +39,48 @@ import org.json.JSONObject;
  * @author westy
  */
 public class RemoveAlias extends GnsCommand {
-  
+
   /**
    * Creates a RemoveAlias instance.
-   * 
+   *
    * @param module
    */
   public RemoveAlias(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-  
+
   @Override
   public String getCommandName() {
     return REMOVE_ALIAS;
   }
-  
+
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {
-      String guid = json.getString(GUID);
-      String name = json.getString(NAME);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
-      if (accountInfo == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
-      }
-      return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, handler);
-      
+    String guid = json.getString(GUID);
+    String name = json.getString(NAME);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+    if (!accountInfo.isVerified()) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+    } else if (accountInfo == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    }
+    return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, handler);
+
 //      GuidInfo guidInfo;
 //      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
 //        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
@@ -94,11 +96,11 @@ public class RemoveAlias extends GnsCommand {
 //      }
     //}
   }
-  
+
   @Override
   public String getCommandDescription() {
     return "Removes the alias from the account associated with the GUID. Must be signed by the guid. Returns "
             + BAD_GUID + " if the GUID has not been registered.";
-    
+
   }
 }

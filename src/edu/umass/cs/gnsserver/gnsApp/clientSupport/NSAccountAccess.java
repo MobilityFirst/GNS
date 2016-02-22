@@ -49,8 +49,9 @@ public class NSAccountAccess {
    * @return an {@link edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo} instance
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static GuidInfo lookupGuidInfo(String guid, BasicRecordMap database) throws FailedDBOperationException {
-    return NSAccountAccess.lookupGuidInfo(guid, false, database);
+  public static GuidInfo lookupGuidInfo(String guid,  GnsApplicationInterface<String> gnsApp) 
+          throws FailedDBOperationException {
+    return NSAccountAccess.lookupGuidInfo(guid, false, gnsApp);
   }
 
   /**
@@ -60,13 +61,13 @@ public class NSAccountAccess {
    *
    * @param guid
    * @param allowQueryToOtherNSs
-   * @param database
+   * @param gnsApp
    * @return a {@link GuidInfo} instance or null
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, 
-          BasicRecordMap database) throws FailedDBOperationException {
-    ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, AccountAccess.GUID_INFO, database);
+           GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+    ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, AccountAccess.GUID_INFO, gnsApp);
 //    ResultValue guidResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
 //            lnsAddress);
     //GNS.getLogger().info("VALUESMAP=" + valuesMap.toString());

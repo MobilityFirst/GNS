@@ -71,10 +71,10 @@ public class AddAlias extends GnsCommand {
       String name = json.getString(NAME);
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
+//      GuidInfo guidInfo;
+//      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+//      }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
         if (accountInfo == null) {
           return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);

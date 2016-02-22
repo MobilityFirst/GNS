@@ -132,7 +132,7 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, ACCOUNT_INFO,
-              handler.getApp().getDB());
+              handler.getApp());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for " + guid + " / " + ACCOUNT_INFO + ": " + result);
       }
@@ -200,7 +200,7 @@ public class AccountAccess {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, PRIMARY_GUID,
-              handler.getApp().getDB());
+              handler.getApp());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
       }
@@ -220,11 +220,11 @@ public class AccountAccess {
 //    }
     return null;
   }
-  
-   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
-     return lookupGuid(name, handler, false);
-   }
-   
+
+  public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
+    return lookupGuid(name, handler, false);
+  }
+
   /**
    * Returns the GUID associated with name which is a HRN or null if one of that name does not exist.
    * <p>
@@ -236,12 +236,12 @@ public class AccountAccess {
    * @param allowRemoteLookup
    * @return a GUID
    */
-  public static String lookupGuid(String name, ClientRequestHandlerInterface handler, 
+  public static String lookupGuid(String name, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name, HRN_GUID,
-              handler.getApp().getDB());
+              handler.getApp());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
       }
@@ -260,8 +260,9 @@ public class AccountAccess {
 //      }
 //    } catch (JSONException e) {
 //    }
-    /***********
-     * 
+    /**
+     * *********
+     *
      */
     String value = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -311,7 +312,7 @@ public class AccountAccess {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GUID_INFO,
-              handler.getApp().getDB());
+              handler.getApp());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + GUID_INFO + ": " + result);
       }
@@ -367,7 +368,7 @@ public class AccountAccess {
    * @param handler
    * @return an {@link AccountInfo} instance
    */
-  public static AccountInfo lookupAccountInfoFromName(String name, ClientRequestHandlerInterface handler, 
+  public static AccountInfo lookupAccountInfoFromName(String name, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
     String guid = lookupGuid(name, handler, allowRemoteLookup);
     if (guid != null) {
@@ -489,7 +490,7 @@ public class AccountAccess {
   }
 
   /**
-   * Reset the public key for a guid.
+   * Reset the public key for an account guid.
    *
    * @param guid
    * @param password
@@ -500,8 +501,12 @@ public class AccountAccess {
   public static CommandResponse<String> resetPublicKey(String guid, String password, String publicKey,
           ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
-    if ((accountInfo = lookupAccountInfoFromGuid(guid, handler, true)) == null) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Not an account guid");
+    if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
+      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE
+              + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Not an account guid");
+    } else if (!accountInfo.isVerified()) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR 
+              + " Account not verified");
     }
     if (verifyPassword(accountInfo, password)) {
       GuidInfo guidInfo;
@@ -876,7 +881,7 @@ public class AccountAccess {
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuid(guid.getGuid(), handler) != null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " 
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " "
                 + guid.getGuid() + " is an account guid");
       }
     }

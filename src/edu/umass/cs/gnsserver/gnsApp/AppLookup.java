@@ -76,6 +76,7 @@ public class AppLookup {
    * @throws java.security.SignatureException
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
+  @Deprecated
   public static void executeLookupLocal(DNSPacket<String> dnsPacket, GnsApplicationInterface<String> gnsApp,
           boolean doNotReplyToClient)
           throws IOException, JSONException, InvalidKeyException,
@@ -93,7 +94,8 @@ public class AppLookup {
     //
     // if all replicas are coordinating on a read request, then check if this node should reply to client.
     // whether coordination is done or not, only the replica receiving client's request replies to the client.
-    if (dnsPacket.getResponder() != null && // null means that we are not coordinating with other replicas upon reads.
+    if (dnsPacket.getResponder() != null
+            && // null means that we are not coordinating with other replicas upon reads.
             // so this replica should reply to client
             !dnsPacket.getResponder().equals(gnsApp.getNodeID())) {
       return;
@@ -140,7 +142,7 @@ public class AppLookup {
         //gnsApp.getMessenger().sendToAddress(dnsPacket.getCppAddress(), dnsPacket.toJSONObjectForErrorResponse());
       }
     } else {
-        // All signature and ACL checks passed see if we can find the field to return;
+      // All signature and ACL checks passed see if we can find the field to return;
 
       //Otherwise we do a standard lookup
       NameRecord nameRecord = lookupNameRecordLocally(dnsPacket, guid, field, fields, gnsApp.getDB());
@@ -148,62 +150,60 @@ public class AppLookup {
         // But before we continue handle the group guid indirection case, but only
         // if the name record doesn't contain the field we are looking for
         // and only for single field lookups.
-        if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null && !GnsProtocol.ALL_FIELDS.equals(field)
+        if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null
+                && !GnsProtocol.ALL_FIELDS.equals(field)
                 && nameRecord != null && !nameRecord.containsKey(field) && !doNotReplyToClient) {
           if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
             // We got the values and sent them out above so we're done here.
             return;
           }
         }
-        // FIXME: THIS STATEMENT CAUSES THIS TO HANG!
-//        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-//          GNS.getLogger().info("Name record read is: " + nameRecord.toReasonableString());
-//        }
       } catch (FieldNotFoundException e) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
         }
       }
 
-      // START ACTIVE CODE HANDLING
-      ValuesMap newResult = null;
-      // Only do this for user fields.
-      if (field == null || !InternalField.isInternalField(field)) {
-        int hopLimit = 1;
-
-        // Grab the code because it is of a different type
-        //FIXME: Maybe change this to not use LIST_STRING?
-        NameRecord codeRecord = null;
-
-        try {
-          codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
-                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
-//        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
-//                ColumnFieldType.LIST_STRING, ActiveCode.ON_READ);
-        } catch (RecordNotFoundException e) {
-          //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
-        }
-
-        if (codeRecord != null && nameRecord != null && gnsApp.getActiveCodeHandler().hasCode(codeRecord, "read")) {
-          try {
-            String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
-            ValuesMap originalValues = nameRecord.getValuesMap();
-//          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
-//          String code64 = codeResult.get(0).toString();
-            if (AppReconfigurableNodeOptions.debuggingEnabled) {
-              //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
-              GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toReasonableString());
-            }
-            newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field, "read", originalValues, hopLimit);
-            if (AppReconfigurableNodeOptions.debuggingEnabled) {
-              //GNS.getLogger().info("AC--->>> " + newResult.toString());
-              GNS.getLogger().info("AC--->>> " + newResult.toReasonableString());
-            }
-          } catch (Exception e) {
-            GNS.getLogger().info("Active code error: " + e.getMessage());
-          }
-        }
-      }
+      ValuesMap newResult = handleActiveCode(field, guid, nameRecord, gnsApp);
+//      // START ACTIVE CODE HANDLING
+//      ValuesMap newResult = null;
+//      // Only do this for user fields.
+//      if (field == null || !InternalField.isInternalField(field)) {
+//        int hopLimit = 1;
+//
+//        // Grab the code because it is of a different type
+//        //FIXME: Maybe change this to not use LIST_STRING?
+//        NameRecord codeRecord = null;
+//
+//        try {
+//          codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+//                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+////        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+////                ColumnFieldType.LIST_STRING, ActiveCode.ON_READ);
+//        } catch (RecordNotFoundException e) {
+//          //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
+//        }
+//
+//        if (codeRecord != null && nameRecord != null && gnsApp.getActiveCodeHandler().hasCode(codeRecord, "read")) {
+//          try {
+//            String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+//            ValuesMap originalValues = nameRecord.getValuesMap();
+////          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
+////          String code64 = codeResult.get(0).toString();
+//            if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//              //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+//              GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toReasonableString());
+//            }
+//            newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field, "read", originalValues, hopLimit);
+//            if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//              //GNS.getLogger().info("AC--->>> " + newResult.toString());
+//              GNS.getLogger().info("AC--->>> " + newResult.toReasonableString());
+//            }
+//          } catch (Exception e) {
+//            GNS.getLogger().info("Active code error: " + e.getMessage());
+//          }
+//        }
+//      }
       // END ACTIVE CODE HANDLING
 
       // Now we either have a name record with stuff it in or a null one
@@ -216,6 +216,41 @@ public class AppLookup {
       }
       DelayProfiler.updateDelay("totalLookup", receiptTime);
     }
+  }
+
+  public static ValuesMap handleActiveCode(String field, String guid,
+          NameRecord nameRecord, GnsApplicationInterface<String> gnsApp)
+          throws FailedDBOperationException {
+    ValuesMap newResult = null;
+    // Only do this for user fields.
+    if (field == null || !InternalField.isInternalField(field)) {
+      int hopLimit = 1;
+      // Grab the code because it is of a different type
+      NameRecord codeRecord = null;
+      try {
+        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+                ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+      } catch (RecordNotFoundException e) {
+        //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
+      }
+
+      if (codeRecord != null && nameRecord != null && gnsApp.getActiveCodeHandler().hasCode(codeRecord, "read")) {
+        try {
+          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+          ValuesMap originalValues = nameRecord.getValuesMap();
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
+            GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+          }
+          newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field, "read", originalValues, hopLimit);
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
+            GNS.getLogger().info("AC--->>> " + newResult.toString());
+          }
+        } catch (Exception e) {
+          GNS.getLogger().info("Active code error: " + e.getMessage());
+        }
+      }
+    }
+    return newResult;
   }
 
   /**
@@ -239,7 +274,7 @@ public class AppLookup {
   private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket<String> dnsPacket, String guid, String field, NameRecord nameRecord,
           GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException, IOException, JSONException {
     if (NSGroupAccess.isGroupGuid(guid, gnsApp.getDB())) {
-      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp.getDB());
+      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp);
       // Set up the response packet
       dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
       dnsPacket.setResponder(gnsApp.getNodeID());

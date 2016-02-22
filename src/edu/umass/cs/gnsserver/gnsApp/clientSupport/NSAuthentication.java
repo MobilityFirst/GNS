@@ -67,7 +67,8 @@ public class NSAuthentication {
    * @throws FailedDBOperationException
    * @throws UnsupportedEncodingException
    */
-  public static NSResponseCode signatureAndACLCheck(String guid, String field, String accessorGuid, String signature,
+  public static NSResponseCode signatureAndACLCheck(String guid, String field, 
+          String accessorGuid, String signature,
           String message, MetaDataTypeName access, 
           GnsApplicationInterface<String> gnsApp)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
@@ -89,7 +90,7 @@ public class NSAuthentication {
     } else {
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.
-      publicKey = lookupPublicKeyInAcl(guid, field, accessorGuid, access, gnsApp.getDB());
+      publicKey = lookupPublicKeyInAcl(guid, field, accessorGuid, access, gnsApp);
       if (publicKey != null) {
         // If we found the public key in the lookupPublicKey call then our access control list
         // check is done.
@@ -97,7 +98,7 @@ public class NSAuthentication {
         // otherwise handle the other cases (group guid in acl) with a last ditch lookup
       } else {
         GuidInfo accessorGuidInfo;
-        if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp.getDB())) != null) {
+        if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp)) != null) {
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("================> Catchall lookup returned: " + accessorGuidInfo);
           }
@@ -160,17 +161,17 @@ public class NSAuthentication {
    * @throws FailedDBOperationException
    */
   private static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,
-          MetaDataTypeName access, BasicRecordMap database)
+          MetaDataTypeName access,  GnsApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     String publicKey;
-    Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, database);
+    Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp.getDB());
     publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("================> " + access.toString() + " Lookup for " + field + " returned: " + publicKey + " public keys=" + publicKeys);
     }
     if (publicKey == null) {
       // also catch all the keys that are stored in the +ALL+ record
-      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALL_FIELDS, database));
+      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALL_FIELDS, gnsApp.getDB()));
       publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("================> " + access.toString() + " Lookup with +ALL+ returned: " + publicKey + " public keys=" + publicKeys);
@@ -180,7 +181,7 @@ public class NSAuthentication {
     // because it's not going to have an entry in the ACL
     if (publicKey == null && publicKeys.contains(EVERYONE)) {
       GuidInfo accessorGuidInfo;
-      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, database)) != null) {
+      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp)) != null) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("================> " + access.toString() + " Lookup for EVERYONE returned: " + accessorGuidInfo);
         }
@@ -203,7 +204,7 @@ public class NSAuthentication {
       return result;
     }
     GuidInfo guidInfo;
-    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, gnsApp.getDB())) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, gnsApp)) == null) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Name " + guid + " : BAD_GUID_ERROR");
       }

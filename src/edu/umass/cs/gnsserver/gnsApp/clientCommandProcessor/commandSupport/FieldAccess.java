@@ -31,6 +31,7 @@ import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsApp.AppLookup;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
@@ -107,7 +108,9 @@ public class FieldAccess {
     String resultString;
     ValuesMap valuesMap;
     try {
-      valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON,
+              handler.getApp().getDB());
+      valuesMap = NSFieldAccess.handleActiveCode(field, guid, valuesMap, handler.getApp());
       if (reader != null) {
         // read is null means a magic internal request so we
         // only strip internal fields when read is not null
@@ -119,7 +122,7 @@ public class FieldAccess {
     } catch (JSONException e) {
       resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e;
     }
-    return new CommandResponse<>(resultString, NSResponseCode.NO_ERROR, 0, "");
+    return new CommandResponse<>(resultString);
   }
 
   /**
@@ -152,7 +155,7 @@ public class FieldAccess {
     } catch (FailedDBOperationException e) {
       resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.GENERIC_ERROR + " " + e;
     }
-    return new CommandResponse<String>(resultString, NSResponseCode.NO_ERROR, 0, "");
+    return new CommandResponse<String>(resultString);
   }
 
   /**
@@ -186,7 +189,7 @@ public class FieldAccess {
     } else {
       resultString = emptyJSONArrayString;
     }
-    return new CommandResponse<String>(resultString, NSResponseCode.NO_ERROR, 0, "");
+    return new CommandResponse<String>(resultString);
 
 //    String resultString;
 //    // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
@@ -224,11 +227,17 @@ public class FieldAccess {
   public static CommandResponse<String> lookupMultipleValues(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GnsProtocol.ALL_FIELDS,
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
+    }
     String resultString;
     NSResponseCode responseCode;
     try {
       ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
               GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      valuesMap = NSFieldAccess.handleActiveCode(GnsProtocol.ALL_FIELDS, guid, valuesMap, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toString();
         responseCode = NSResponseCode.NO_ERROR;
@@ -292,7 +301,7 @@ public class FieldAccess {
       return new CommandResponse<>(BAD_RESPONSE + " " + GnsProtocol.FIELD_NOT_FOUND,
               NSResponseCode.NO_ERROR, 0, "");
     }
-    return new CommandResponse<>(resultString, NSResponseCode.NO_ERROR, 0, "");
+    return new CommandResponse<>(resultString);
 
 //    String resultString;
 //    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
@@ -337,12 +346,17 @@ public class FieldAccess {
   public static CommandResponse<String> lookupOneMultipleValues(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
-    // FIXME: add multifield auth check
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GnsProtocol.ALL_FIELDS,
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
+    }
     String resultString;
     NSResponseCode responseCode;
     try {
       ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
               GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      valuesMap = NSFieldAccess.handleActiveCode(GnsProtocol.ALL_FIELDS, guid, valuesMap, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toJSONObjectFirstOnes().toString();
         responseCode = NSResponseCode.NO_ERROR;
@@ -489,7 +503,7 @@ public class FieldAccess {
    */
   public static NSResponseCode updateUserJSON(String guid, JSONObject json,
           String writer, String signature, String message, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(guid, new ValuesMap(json), 
+    return FieldAccess.update(guid, new ValuesMap(json),
             UpdateOperation.USER_JSON_REPLACE,
             writer, signature, message, handler);
   }

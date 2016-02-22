@@ -36,7 +36,7 @@ public class LookupGuid extends GnsCommand {
 
   /**
    * Creates a LookupGuid instance.
-   * 
+   *
    * @param module
    */
   public LookupGuid(CommandModule module) {
@@ -55,18 +55,14 @@ public class LookupGuid extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String name = json.getString(NAME);
-      // look for an account guid
-      String result = AccountAccess.lookupGuid(name, handler);
-      if (result != null) {
-        return new CommandResponse<String>(result);
-      } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
-      }
-    //}
+    String name = json.getString(NAME);
+    // look for an account guid
+    String result = AccountAccess.lookupGuid(name, handler);
+    if (result != null) {
+      return new CommandResponse<String>(result);
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
+    }
   }
 
   @Override
