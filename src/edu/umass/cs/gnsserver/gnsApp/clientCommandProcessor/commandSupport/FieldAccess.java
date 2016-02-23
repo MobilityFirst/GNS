@@ -36,6 +36,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSUpdateSupport;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -542,7 +543,7 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse<String> select(String key, Object value, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, key, value, null, handler);
+    String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
     if (result != null) {
       return new CommandResponse<String>(result);
     } else {
@@ -559,7 +560,7 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse<String> selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, key, value, null, handler);
+    String result = SelectHandler.sendSelectRequest(SelectOperation.WITHIN, key, value, null, handler);
     if (result != null) {
       return new CommandResponse<String>(result);
     } else {
@@ -577,7 +578,7 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse<String> selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, key, value, maxDistance, handler);
+    String result = SelectHandler.sendSelectRequest(SelectOperation.NEAR, key, value, maxDistance, handler);
     if (result != null) {
       return new CommandResponse<String>(result);
     } else {
@@ -599,6 +600,7 @@ public class FieldAccess {
     } else {
       return new CommandResponse<String>(emptyJSONArrayString);
     }
+    
   }
 
   /**

@@ -7,8 +7,10 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
@@ -23,8 +25,13 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SelectHandler.DEFAULT_MIN_REFRESH_INTERVAL;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
@@ -39,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,7 +59,7 @@ public class SideToSideQuery extends ClientAsynchBase {
 
   // For synchronus replica messages
   private long replicaReadTimeout = 10000;
-  private final ConcurrentMap<Integer, CommandValueReturnPacket> replicaResultMap
+  private final ConcurrentMap<Long, ClientRequest> replicaResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
   private final Object replicaCommandMonitor = new Object();
   private boolean debuggingEnabled = true;
@@ -69,8 +77,8 @@ public class SideToSideQuery extends ClientAsynchBase {
    * A callback that notifys any waits and records the response from a replica.
    */
   private RequestCallback replicaCommandCallback = (Request response) -> {
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) response;
-    replicaResultMap.put(packet.getClientRequestId(), packet);
+    ClientRequest packet = (ClientRequest) response;
+    replicaResultMap.put(packet.getRequestID(), packet);
     synchronized (replicaCommandMonitor) {
       replicaCommandMonitor.notifyAll();
     }
@@ -86,7 +94,7 @@ public class SideToSideQuery extends ClientAsynchBase {
     }
   };
 
-  private CommandValueReturnPacket waitForReplicaResponse(int id) throws GnsClientException {
+  private ClientRequest waitForReplicaResponse(long id) throws GnsClientException {
     try {
       synchronized (replicaCommandMonitor) {
         long monitorStartTime = System.currentTimeMillis();
@@ -212,8 +220,8 @@ public class SideToSideQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + guid + "/" + field);
     }
-    int requestId = (int) fieldRead(guid, field, replicaCommandCallback);
-    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    long requestId = fieldRead(guid, field, replicaCommandCallback);
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
     if (packet == null) {
       throw new GnsClientException("Packet not found in table " + requestId);
     } else {
@@ -231,8 +239,8 @@ public class SideToSideQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + guid + "/" + field);
     }
-    int requestId = (int) fieldReadArray(guid, field, replicaCommandCallback);
-    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    long requestId = fieldReadArray(guid, field, replicaCommandCallback);
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
     if (packet == null) {
       throw new GnsClientException("Packet not found in table " + requestId);
     } else {
@@ -245,32 +253,14 @@ public class SideToSideQuery extends ClientAsynchBase {
     }
   }
 
-  public String fieldUpdate(String guid, String field, Object value) throws IOException, JSONException, GnsClientException {
+  public String fieldUpdate(String guid, String field, Object value)
+          throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
-    int requestId = (int) fieldUpdate(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
-                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
-  }
-  
-  public String fieldUpdateArray(String guid, String field, ResultValue value) throws IOException, JSONException, GnsClientException {
-    // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
-    }
-    int requestId = (int) fieldUpdateArray(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    long requestId = fieldUpdate(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
     if (packet == null) {
       throw new GnsClientException("Packet not found in table " + requestId);
     } else {
@@ -283,14 +273,35 @@ public class SideToSideQuery extends ClientAsynchBase {
     }
   }
 
-  public String fieldRemove(String guid, String field, Object value) throws IOException, JSONException, GnsClientException {
+  public String fieldUpdateArray(String guid, String field, ResultValue value)
+          throws IOException, JSONException, GnsClientException {
+    // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+    }
+    long requestId = fieldUpdateArray(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
+    if (packet == null) {
+      throw new GnsClientException("Packet not found in table " + requestId);
+    } else {
+      String returnValue = packet.getReturnValue();
+      if (debuggingEnabled) {
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
+                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
+      }
+      return checkResponse(returnValue);
+    }
+  }
+
+  public String fieldRemove(String guid, String field, Object value)
+          throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     assert value instanceof String || value instanceof Number;
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
-    int requestId = (int) fieldRemove(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    long requestId = fieldRemove(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
     if (packet == null) {
       throw new GnsClientException("Packet not found in table " + requestId);
     } else {
@@ -303,13 +314,14 @@ public class SideToSideQuery extends ClientAsynchBase {
     }
   }
 
-  public String fieldRemoveMultiple(String guid, String field, ResultValue value) throws IOException, JSONException, GnsClientException {
+  public String fieldRemoveMultiple(String guid, String field, ResultValue value)
+          throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
-    int requestId = (int) fieldRemoveMultiple(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = waitForReplicaResponse(requestId);
+    long requestId = fieldRemoveMultiple(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
     if (packet == null) {
       throw new GnsClientException("Packet not found in table " + requestId);
     } else {
@@ -319,6 +331,54 @@ public class SideToSideQuery extends ClientAsynchBase {
                 + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
       }
       return checkResponse(returnValue);
+    }
+  }
+
+  // Select commands
+  public JSONArray sendSelect(SelectOperation operation, String key, Object value, Object otherValue)
+          throws IOException, GnsClientException {
+    long requestId = sendSelect(operation, key, value, otherValue, replicaCommandCallback);
+    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
+      return packet.getGuids();
+    } else {
+      return null;
+    }
+  }
+
+  public JSONArray sendSelectQuery(String query) throws IOException, GnsClientException {
+    long requestId = sendSelectQuery(query, replicaCommandCallback);
+    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
+      return packet.getGuids();
+    } else {
+      return null;
+    }
+  }
+
+  public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid, int interval)
+          throws IOException, GnsClientException {
+    long requestId = sendGroupGuidSetupSelectQuery(query, guid, interval, replicaCommandCallback);
+    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
+      return packet.getGuids();
+    } else {
+      return null;
+    }
+  }
+
+  public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid)
+          throws IOException, GnsClientException {
+    return sendGroupGuidSetupSelectQuery(query, guid, DEFAULT_MIN_REFRESH_INTERVAL);
+  }
+
+  public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, GnsClientException {
+    long requestId = sendGroupGuidLookupSelectQuery(guid, replicaCommandCallback);
+    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
+      return packet.getGuids();
+    } else {
+      return null;
     }
   }
 

@@ -41,8 +41,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket.SelectOperation;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket.GroupBehavior;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.Util;
 import java.net.InetSocketAddress;
@@ -122,7 +122,7 @@ public class Select {
     SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
-    if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
+    if (packet.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       // grab the timing parameters that we squirreled away from the SETUP
       Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), app.getDB());
       int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), app.getDB());
@@ -156,7 +156,7 @@ public class Select {
     // store the info for later
     int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
-    if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
+    if (packet.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
       packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), app.getDB()));
     }
@@ -277,7 +277,7 @@ public class Select {
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff
-    if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP)) {
+    if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP)) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " storing query string and other info");
       }
@@ -285,7 +285,7 @@ public class Select {
       NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery());
       NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval());
     }
-    if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
+    if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " updating group members");
@@ -308,7 +308,7 @@ public class Select {
   }
 
   private static int addQueryInfo(Set<String> serverIds, SelectOperation selectOperation, 
-          GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+          SelectGroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     int id;
     do {
       id = randomID.nextInt();

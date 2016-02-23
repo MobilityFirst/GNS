@@ -23,8 +23,8 @@ import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket.SelectOperation;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket.GroupBehavior;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectResponsePacket;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
@@ -75,7 +75,7 @@ public class SelectHandler {
   public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
     return sendSelectHelper(id, new SelectRequestPacket(id, handler.getNodeAddress(), operation, 
-            GroupBehavior.NONE, key, value, otherValue), handler);
+            SelectGroupBehavior.NONE, key, value, otherValue), handler);
   }
 
   /**

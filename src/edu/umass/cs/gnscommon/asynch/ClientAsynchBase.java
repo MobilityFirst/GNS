@@ -63,8 +63,12 @@ import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSuppor
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SelectHandler.DEFAULT_MIN_REFRESH_INTERVAL;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -163,7 +167,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     CommandPacket packet = new CommandPacket(id, null, -1, command);
     return sendRequest(packet, callback);
   }
-
+  
   /**
    * Creates an account guid.
    *
@@ -229,8 +233,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws Exception
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(guid.getPrivateKey(), 
-            REMOVE_ACCOUNT, 
+    return sendCommandAsynch(createAndSignCommand(guid.getPrivateKey(),
+            REMOVE_ACCOUNT,
             GUID, guid.getGuid(),
             NAME, guid.getEntityName()), callback);
   }
@@ -331,12 +335,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @param guid the guid to remove
    * @param callback
-   * @return 
+   * @return
    * @throws Exception
    */
   public long guidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(guid.getPrivateKey(),
-            REMOVE_GUID, 
+            REMOVE_GUID,
             GUID, guid.getGuid()), callback);
   }
 
@@ -346,15 +350,15 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @param accountGuid
    * @param guidToRemove
    * @param callback
-   * @return 
+   * @return
    * @throws Exception
    */
   public long guidRemove(GuidEntry accountGuid, String guidToRemove, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(accountGuid.getPrivateKey(), 
-            REMOVE_GUID, 
+    return sendCommandAsynch(createAndSignCommand(accountGuid.getPrivateKey(),
+            REMOVE_GUID,
             ACCOUNT_GUID, accountGuid.getGuid(),
             GUID, guidToRemove
-            ), callback);
+    ), callback);
   }
 
   /**
@@ -362,7 +366,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @param alias
    * @param callback
-   * @return 
+   * @return
    * @throws IOException
    * @throws org.json.JSONException
    * @throws UnsupportedEncodingException
@@ -450,28 +454,28 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
   }
-  
-   public long fieldUpdateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+
+  public long fieldUpdateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(REPLACE_OR_CREATE_LIST, GUID, guid,
             USER_JSON, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
-  
+
   public long fieldRemove(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REMOVE, GUID, guid, 
+    return sendCommandAsynch(createCommand(REMOVE, GUID, guid,
             FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
-  
+
   public long fieldRemoveMultiple(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REMOVE_LIST, GUID, guid, 
+    return sendCommandAsynch(createCommand(REMOVE_LIST, GUID, guid,
             FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
@@ -481,6 +485,39 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid,
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
+  }
+
+  // Select commands
+  public long sendSelect(SelectOperation operation, String key, Object value, Object otherValue, RequestCallback callback) throws IOException {
+    int id = generateNextRequestID();
+    SelectRequestPacket<String> packet = new SelectRequestPacket<>(id, null, operation,
+            SelectGroupBehavior.NONE, key, value, otherValue);
+    return sendRequest(packet, callback);
+  }
+
+  public long sendSelectQuery(String query, RequestCallback callback) throws IOException {
+    int id = generateNextRequestID();
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(id, null, query);
+    return sendRequest(packet, callback);
+  }
+
+  public long sendGroupGuidSetupSelectQuery(String query, String guid, int interval,
+          RequestCallback callback) throws IOException {
+    int id = generateNextRequestID();
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(id, null,
+            query, guid, interval);
+    return sendRequest(packet, callback);
+  }
+  
+  public long sendGroupGuidSetupSelectQuery(String query, String guid, RequestCallback callback)
+          throws IOException {
+    return sendGroupGuidSetupSelectQuery(query, guid, DEFAULT_MIN_REFRESH_INTERVAL, callback);
+  }
+  
+  public long sendGroupGuidLookupSelectQuery(String guid, RequestCallback callback) throws IOException {
+    int id = generateNextRequestID();
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(id, null, guid);
+    return sendRequest(packet, callback);
   }
 
   // NEED TO CREATE A DUMMY GUID FOR THIS TO WORK

@@ -167,25 +167,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return json;
   }
 
-//  /**
-//   * Converts the command object into a JSONObject.
-//   *
-//   * @return a JSONObject
-//   * @throws org.json.JSONException
-//   */
-//  @Override
-//  public JSONObject toJSONObject() throws JSONException {
-//    JSONObject json = new JSONObject();
-//    Packet.putPacketType(json, getType());
-//    json.put(CLIENTREQUESTID, this.clientRequestId);
-//    if (this.LNSRequestId != -1) {
-//      json.put(LNSREQUESTID, this.LNSRequestId);
-//    }
-//    json.put(COMMAND, this.command);
-//    json.put(SENDERADDRESS, this.senderAddress);
-//    json.put(SENDERPORT, this.senderPort);
-//    return json;
-//  }
   /**
    * Return the client request id.
    *
