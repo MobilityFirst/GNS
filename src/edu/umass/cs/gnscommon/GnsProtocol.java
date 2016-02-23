@@ -98,13 +98,6 @@ public class GnsProtocol {
   public final static String GET_GROUP_MEMBERS = "getGroupMembers";
   public final static String GET_GROUPS = "getGroups";
   //
-  public final static String REQUEST_JOIN_GROUP = "requestJoinGroup";
-  public final static String RETRIEVE_GROUP_JOIN_REQUESTS = "retrieveGroupJoinRequests";
-  public final static String GRANT_MEMBERSHIP = "grantMembership";
-  public final static String REQUEST_LEAVE_GROUP = "requestLeaveGroup";
-  public final static String RETRIEVE_GROUP_LEAVE_REQUESTS = "retrieveGroupLeaveRequests";
-  public final static String REVOKE_MEMBERSHIP = "revokeMembership";
-  //
   public final static String HELP = "help";
   // Admin commands (some not accesible in unless the server is in "admin mode")
   public final static String ADMIN = "admin";
@@ -170,7 +163,6 @@ public class GnsProtocol {
   public final static String NAME = "name";
   public final static String NAMES = "names";
   public final static String GUID = "guid";
-  public final static String GUID_TO_REMOVE = "guidToRemove";
   public final static String GUID_2 = "guid2";
   // only used for for remove
   public final static String ACCOUNT_GUID = "accountGuid";

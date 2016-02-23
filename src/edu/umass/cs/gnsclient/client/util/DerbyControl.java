@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
-import edu.umass.cs.gigapaxos.paxosutil.SQL;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import java.sql.Connection;
 import java.sql.DriverManager;
