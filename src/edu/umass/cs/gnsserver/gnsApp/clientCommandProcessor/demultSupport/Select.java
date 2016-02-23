@@ -32,6 +32,7 @@ import java.net.UnknownHostException;
  *
  * @author westy
  */
+@Deprecated
 public class Select {
 
   /**

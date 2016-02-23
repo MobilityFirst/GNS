@@ -42,7 +42,7 @@ import org.json.JSONObject;
  * @param <NodeIDType>
  */
 @Deprecated
-public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
+public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType> implements Request {
 
   private final static String REQUESTID = "reqID";
   private final static String CCPREQID = "ccpreqID";

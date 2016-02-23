@@ -24,7 +24,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport;
  * about queries (SELECT like lookup) transmitted by the local name
  * server.
  */
-
+@Deprecated
 public class SelectInfo {
 
   private final int id;

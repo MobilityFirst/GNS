@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
@@ -543,12 +544,15 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse<String> select(String key, Object value, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
-    if (result != null) {
-      return new CommandResponse<String>(result);
-    } else {
-      return new CommandResponse<String>(emptyJSONArrayString);
+    try {
+      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
+      //String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
+      if (result != null) {
+        return new CommandResponse<>(result.toString());
+      }
+    } catch (GnsClientException | IOException e) {
     }
+    return new CommandResponse<>(emptyJSONArrayString);
   }
 
   /**
@@ -559,13 +563,23 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendSelectRequest(SelectOperation.WITHIN, key, value, null, handler);
-    if (result != null) {
-      return new CommandResponse<String>(result);
-    } else {
-      return new CommandResponse<String>(emptyJSONArrayString);
+  public static CommandResponse<String> selectWithin(String key, String value,
+          ClientRequestHandlerInterface handler) {
+    try {
+      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
+      //String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
+      if (result != null) {
+        return new CommandResponse<>(result.toString());
+      }
+    } catch (GnsClientException | IOException e) {
     }
+    return new CommandResponse<>(emptyJSONArrayString);
+//    String result = SelectHandler.sendSelectRequest(SelectOperation.WITHIN, key, value, null, handler);
+//    if (result != null) {
+//      return new CommandResponse<String>(result);
+//    } else {
+//      return new CommandResponse<String>(emptyJSONArrayString);
+//    }
   }
 
   /**
@@ -577,13 +591,23 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendSelectRequest(SelectOperation.NEAR, key, value, maxDistance, handler);
-    if (result != null) {
-      return new CommandResponse<String>(result);
-    } else {
-      return new CommandResponse<String>(emptyJSONArrayString);
+  public static CommandResponse<String> selectNear(String key, String value, String maxDistance,
+          ClientRequestHandlerInterface handler) {
+    try {
+      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
+      //String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
+      if (result != null) {
+        return new CommandResponse<>(result.toString());
+      }
+    } catch (GnsClientException | IOException e) {
     }
+    return new CommandResponse<>(emptyJSONArrayString);
+//    String result = SelectHandler.sendSelectRequest(SelectOperation.NEAR, key, value, maxDistance, handler);
+//    if (result != null) {
+//      return new CommandResponse<String>(result);
+//    } else {
+//      return new CommandResponse<String>(emptyJSONArrayString);
+//    }
   }
 
   /**
@@ -594,13 +618,20 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse<String> selectQuery(String query, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendSelectQuery(query, handler);
-    if (result != null) {
-      return new CommandResponse<String>(result);
-    } else {
-      return new CommandResponse<String>(emptyJSONArrayString);
+    try {
+      JSONArray result = handler.getRemoteQuery().sendSelectQuery(query);
+      if (result != null) {
+        return new CommandResponse<>(result.toString());
+      }
+    } catch (GnsClientException | IOException e) {
     }
-    
+    return new CommandResponse<>(emptyJSONArrayString);
+//    String result = SelectHandler.sendSelectQuery(query, handler);
+//    if (result != null) {
+//      return new CommandResponse<String>(result);
+//    } else {
+//      return new CommandResponse<String>(emptyJSONArrayString);
+//    }
   }
 
   /**
@@ -623,16 +654,16 @@ public class FieldAccess {
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
       if (accountInfo == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+        return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNS.MAXGUIDS) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
+        return new CommandResponse<>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
@@ -643,13 +674,21 @@ public class FieldAccess {
         }
       }
     }
-    // We either found or created the guid above so now we set up the actual query structure.
-    String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid, interval, handler);
-    if (result != null) {
-      return new CommandResponse<String>(result);
-    } else {
-      return new CommandResponse<String>(emptyJSONArrayString);
+    try {
+      JSONArray result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
+      if (result != null) {
+        return new CommandResponse<>(result.toString());
+      }
+    } catch (GnsClientException | IOException e) {
     }
+    return new CommandResponse<>(emptyJSONArrayString);
+    // We either found or created the guid above so now we set up the actual query structure.
+//    String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid, interval, handler);
+//    if (result != null) {
+//      return new CommandResponse<String>(result);
+//    } else {
+//      return new CommandResponse<String>(emptyJSONArrayString);
+//    }
   }
 
   /**
@@ -660,12 +699,20 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse<String> selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
-    String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid, handler);
-    if (result != null) {
-      return new CommandResponse<String>(result);
-    } else {
-      return new CommandResponse<String>(emptyJSONArrayString);
+    try {
+      JSONArray result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
+      if (result != null) {
+        return new CommandResponse<>(result.toString());
+      }
+    } catch (GnsClientException | IOException e) {
     }
+    return new CommandResponse<>(emptyJSONArrayString);
+//    String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid, handler);
+//    if (result != null) {
+//      return new CommandResponse<String>(result);
+//    } else {
+//      return new CommandResponse<String>(emptyJSONArrayString);
+//    }
   }
 
   public static NSResponseCode signatureAndACLCheckForRead(String guid, String field,

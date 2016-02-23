@@ -28,17 +28,17 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class BasicPacketWithCCPAddress extends BasicPacketWithClientAddress {
+public abstract class BasicPacketWithReturnAddress extends BasicPacketWithClientAddress {
 
   /**
    * ccpAddress
    */
-  private final static String CCP_ADDRESS = "ccpAddress";
+  private final static String RETURN_ADDRESS = "returnAddress";
 
   /**
    * ccpPort
    */
-  private final static String CCP_PORT = "ccpPort";
+  private final static String RETURN_PORT = "ccpPort";
 
   /**
    * An invalid port.
@@ -49,45 +49,45 @@ public abstract class BasicPacketWithCCPAddress extends BasicPacketWithClientAdd
    * This is used by the Nameservers so they know which CCP to send the packet back to.
    * Replaces lnsId.
    */
-  private InetSocketAddress ccpAddress = null;
+  private InetSocketAddress returnAddress = null;
 
   /**
-   * Creates a BasicPacketWithCCPAddress from a JSONObject.
+   * Creates a BasicPacketWithReturnAddress from a JSONObject.
    * 
    * @param json
    * @throws JSONException 
    */
-  public BasicPacketWithCCPAddress(JSONObject json) throws JSONException {
+  public BasicPacketWithReturnAddress(JSONObject json) throws JSONException {
     super(json);
-    String address = json.optString(CCP_ADDRESS, null);
-    int port = json.optInt(CCP_PORT, INVALID_PORT);
-    this.ccpAddress = address != null && port != INVALID_PORT
+    String address = json.optString(RETURN_ADDRESS, null);
+    int port = json.optInt(RETURN_PORT, INVALID_PORT);
+    this.returnAddress = address != null && port != INVALID_PORT
             ? new InetSocketAddress(address, port) : null;
   }
   
   /**
    * Creates a BasicPacketWithCCPAddress with a null CPP address.
    */
-  public BasicPacketWithCCPAddress() {
-    this.ccpAddress = null;
+  public BasicPacketWithReturnAddress() {
+    this.returnAddress = null;
   }
   
   /**
-   * Creates a BasicPacketWithCCPAddress using address as the CPP address.
+   * Creates a BasicPacketWithReturnAddress using address as the CPP address.
    *
    * @param address
    */
-  public BasicPacketWithCCPAddress(InetSocketAddress address) {
-    this.ccpAddress = address;
+  public BasicPacketWithReturnAddress(InetSocketAddress address) {
+    this.returnAddress = address;
   }
   
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
     super.addToJSONObject(json);
-    if (ccpAddress != null) {
-      json.put(CCP_ADDRESS, ccpAddress.getHostString());
-      json.put(CCP_PORT, ccpAddress.getPort());
+    if (returnAddress != null) {
+      json.put(RETURN_ADDRESS, returnAddress.getHostString());
+      json.put(RETURN_PORT, returnAddress.getPort());
     }
   }
 
@@ -96,17 +96,17 @@ public abstract class BasicPacketWithCCPAddress extends BasicPacketWithClientAdd
    *
    * @return an address
    */
-  public InetSocketAddress getCppAddress() {
-    return ccpAddress;
+  public InetSocketAddress getReturnAddress() {
+    return returnAddress;
   }
 
   /**
    * Set the address to which LNS to send the packet back to.
    *
-   * @param lnsAddress
+   * @param returnAddress
    */
-  public void setCppAddress(InetSocketAddress lnsAddress) {
-    this.ccpAddress = lnsAddress;
+  public void setReturnAddress(InetSocketAddress returnAddress) {
+    this.returnAddress = returnAddress;
   }
 
 }

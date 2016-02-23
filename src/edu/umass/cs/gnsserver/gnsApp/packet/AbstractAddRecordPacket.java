@@ -48,7 +48,7 @@ import org.json.JSONObject;
  * @param <NodeIDType>
  */
 @Deprecated
-public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType>
+public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType>
         implements Request, ClientRequest {
 
   /**

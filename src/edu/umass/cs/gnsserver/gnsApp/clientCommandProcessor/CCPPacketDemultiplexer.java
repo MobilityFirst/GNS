@@ -66,21 +66,21 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    */
   public CCPPacketDemultiplexer() {
     // probably should get these from the event handler
-    register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
-    register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
-    //register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
-    // From current LNS
-    register(Packet.PacketType.DNS);
-    register(Packet.PacketType.UPDATE);
-    register(Packet.PacketType.ADD_RECORD);
-    register(Packet.PacketType.ADD_BATCH_RECORD);
-    register(Packet.PacketType.REMOVE_RECORD);
-    register(Packet.PacketType.ADD_CONFIRM);
-    register(Packet.PacketType.REMOVE_CONFIRM);
-    register(Packet.PacketType.UPDATE_CONFIRM);
-    //register(Packet.PacketType.REQUEST_ACTIVES);
-    register(Packet.PacketType.SELECT_REQUEST);
-    register(Packet.PacketType.SELECT_RESPONSE);
+//    register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
+//    register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
+//    //register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
+//    // From current LNS
+//    register(Packet.PacketType.DNS);
+//    register(Packet.PacketType.UPDATE);
+//    register(Packet.PacketType.ADD_RECORD);
+//    register(Packet.PacketType.ADD_BATCH_RECORD);
+//    register(Packet.PacketType.REMOVE_RECORD);
+//    register(Packet.PacketType.ADD_CONFIRM);
+//    register(Packet.PacketType.REMOVE_CONFIRM);
+//    register(Packet.PacketType.UPDATE_CONFIRM);
+//    //register(Packet.PacketType.REQUEST_ACTIVES);
+//    register(Packet.PacketType.SELECT_REQUEST);
+//    register(Packet.PacketType.SELECT_RESPONSE);
   }
 
   @Override
@@ -106,65 +106,67 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         GNS.getLogger().finer("MsgType " + type + " Msg " + json);
         GNS.getLogger().info("MsgType " + type);
       }
-      if (type != null) {
-        switch (type) {
-          case DNS:
-            DNSPacket<String> dnsPacket = new DNSPacket<String>(json, handler.getGnsNodeConfig());
-            Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
-            switch (incomingPacketType) {
-              // Lookup
-              case DNS_SUBTYPE_QUERY:
-                Lookup.handlePacketLookupRequest(dnsPacket, handler);
-                return true;
-              case DNS_SUBTYPE_RESPONSE:
-                Lookup.handlePacketLookupResponse(dnsPacket, handler);
-                return true;
-              case DNS_SUBTYPE_ERROR_RESPONSE:
-                Lookup.handlePacketLookupErrorResponse(dnsPacket, handler);
-                return true;
-              default:
-                GNS.getLogger().warning("Unknown DNS packet subtype: " + incomingPacketType);
-                return false;
-            }
-          case UPDATE:
-            Update.handlePacketUpdate(json, handler);
-            return true;
-          case UPDATE_CONFIRM:
-            Update.handlePacketConfirmUpdate(json, handler);
-            return true;
-          // Add/remove
-          case ADD_RECORD:
-            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
-            CreateDelete.handleAddPacket(json, handler);
-            return true;
-          case ADD_BATCH_RECORD:
-            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
-            CreateDelete.handleAddBatchPacket(json, handler);
-            return true;
-          case REMOVE_RECORD:
-            // New code which creates DeleteService packets and sends them to the Reconfigurator.
-            CreateDelete.handleRemovePacket(json, handler);
-            return true;
-          case ADD_CONFIRM:
-            AddRemove.handlePacketConfirmAdd(json, handler);
-            return true;
-          case REMOVE_CONFIRM:
-            AddRemove.handlePacketConfirmRemove(json, handler);
-            return true;
-          case SELECT_REQUEST:
-            Select.handlePacketSelectRequest(json, handler);
-            return true;
-          case SELECT_RESPONSE:
-            Select.handlePacketSelectResponse(json, handler);
-            return true;
-          default:
-            GNS.getLogger().warning("************************* CCP IGNORING: " + json);
-            return false;
-        }
-      }
+//      if (type != null) {
+//        switch (type) {
+//          case DNS:
+//            DNSPacket<String> dnsPacket = new DNSPacket<String>(json, handler.getGnsNodeConfig());
+//            Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
+//            switch (incomingPacketType) {
+//              // Lookup
+//              case DNS_SUBTYPE_QUERY:
+//                Lookup.handlePacketLookupRequest(dnsPacket, handler);
+//                return true;
+//              case DNS_SUBTYPE_RESPONSE:
+//                Lookup.handlePacketLookupResponse(dnsPacket, handler);
+//                return true;
+//              case DNS_SUBTYPE_ERROR_RESPONSE:
+//                Lookup.handlePacketLookupErrorResponse(dnsPacket, handler);
+//                return true;
+//              default:
+//                GNS.getLogger().warning("Unknown DNS packet subtype: " + incomingPacketType);
+//                return false;
+//            }
+//          case UPDATE:
+//            Update.handlePacketUpdate(json, handler);
+//            return true;
+//          case UPDATE_CONFIRM:
+//            Update.handlePacketConfirmUpdate(json, handler);
+//            return true;
+//          // Add/remove
+//          case ADD_RECORD:
+//            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
+//            CreateDelete.handleAddPacket(json, handler);
+//            return true;
+//          case ADD_BATCH_RECORD:
+//            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
+//            CreateDelete.handleAddBatchPacket(json, handler);
+//            return true;
+//          case REMOVE_RECORD:
+//            // New code which creates DeleteService packets and sends them to the Reconfigurator.
+//            CreateDelete.handleRemovePacket(json, handler);
+//            return true;
+//          case ADD_CONFIRM:
+//            AddRemove.handlePacketConfirmAdd(json, handler);
+//            return true;
+//          case REMOVE_CONFIRM:
+//            AddRemove.handlePacketConfirmRemove(json, handler);
+//            return true;
+//          case SELECT_REQUEST:
+//            Select.handlePacketSelectRequest(json, handler);
+//            return true;
+//          case SELECT_RESPONSE:
+//            Select.handlePacketSelectResponse(json, handler);
+//            return true;
+//          default:
+//            GNS.getLogger().warning("************************* CCP IGNORING: " + json);
+//            return false;
+//        }
+//      }
       GNS.getLogger().warning("************************* CCP CAN'T GET PACKET TYPE... IGNORING: " + json);
-    } catch (IOException | JSONException e) {
+    } catch (JSONException e) {
       e.printStackTrace();
+//    } catch (IOException e) {
+//      e.printStackTrace();
     }
     return false;
   }

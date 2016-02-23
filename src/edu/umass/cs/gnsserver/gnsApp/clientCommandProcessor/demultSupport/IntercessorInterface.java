@@ -28,6 +28,7 @@ import org.json.JSONObject;
  * The intercessor for the GNS client library is in {@link edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Intercessor}
  *
  */
+@Deprecated
 public interface IntercessorInterface {
 
   /**

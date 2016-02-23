@@ -30,7 +30,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public abstract class BasicPacketWithSignatureInfoAndNSAndCCP<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> {
+public abstract class BasicPacketWithSignatureInfoAndNSAndCCP<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType> {
 
   /** accessor */
   private final static String ACCESSOR = "si_accessor";

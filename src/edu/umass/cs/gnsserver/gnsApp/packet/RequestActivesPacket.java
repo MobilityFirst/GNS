@@ -41,7 +41,7 @@ import java.util.Set;
  * @author Abhigyan
  * @param <NodeIDType>
  */
-public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
+public class RequestActivesPacket<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType> implements Request {
 
   /** NAME */
   public static final String NAME = "name";

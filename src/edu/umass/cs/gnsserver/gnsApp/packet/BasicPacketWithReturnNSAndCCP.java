@@ -31,7 +31,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacketWithClientAddress {
+public abstract class BasicPacketWithReturnNSAndCCP<NodeIDType> extends BasicPacketWithReturnAddress {
 
   /** ns_ID */
   private final static String NAMESERVER_ID = "ns_ID";
@@ -49,7 +49,7 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacketWit
    * @param unstringer
    * @throws JSONException 
    */
-  public BasicPacketWithNSAndCCP(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+  public BasicPacketWithReturnNSAndCCP(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json);
     this.nameServerID = json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null;
   }
@@ -58,8 +58,14 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacketWit
    * Creates an instance of BasicPacketWithNSAndLnsAddress.
    *
    * @param nameServerID
+   * @param address
    */
-  public BasicPacketWithNSAndCCP(NodeIDType nameServerID) {
+  public BasicPacketWithReturnNSAndCCP(NodeIDType nameServerID, InetSocketAddress address) {
+    super(address);
+    this.nameServerID = nameServerID;
+  }
+  
+  public BasicPacketWithReturnNSAndCCP(NodeIDType nameServerID) {
     super();
     this.nameServerID = nameServerID;
   }

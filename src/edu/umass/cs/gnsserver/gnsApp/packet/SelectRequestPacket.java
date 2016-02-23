@@ -23,9 +23,6 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.nio.interfaces.Stringifiable;
-
-import java.net.InetSocketAddress;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -75,7 +72,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param otherValue
    */
   @SuppressWarnings("unchecked")
-  public SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior, String key, Object value, Object otherValue) {
+  public SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
+          String key, Object value, Object otherValue) {
     super(null);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
@@ -100,7 +98,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param minRefreshInterval
    */
   @SuppressWarnings("unchecked")
-  private SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
+  private SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupOperation, 
+          String query, String guid, int minRefreshInterval) {
     super(null);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
@@ -135,7 +134,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param refreshInterval
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupSetupRequest(int id, String query, String guid, int refreshInterval) {
+  public static SelectRequestPacket<String> MakeGroupSetupRequest(int id, String query, String guid,
+          int refreshInterval) {
     return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
   }
 
@@ -348,7 +348,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
       return Base64.encodeToString(SHA1HashFunction.getInstance().hash(this.query), false);
     } else {
       // FIXME:
-      return "SelectRequest";
+      return "_SelectRequest_";
     }
   }
 

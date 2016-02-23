@@ -92,7 +92,11 @@ import java.util.Set;
 public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
   private static Set<IntegerPacketType> clientPacketTypes
-          = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND, Packet.PacketType.COMMAND_RETURN_VALUE));
+          = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND,
+                  Packet.PacketType.COMMAND_RETURN_VALUE,
+                  Packet.PacketType.SELECT_REQUEST,
+                  Packet.PacketType.SELECT_RESPONSE
+          ));
   /**
    * Used to generate unique ids
    */
@@ -167,7 +171,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     CommandPacket packet = new CommandPacket(id, null, -1, command);
     return sendRequest(packet, callback);
   }
-  
+
   /**
    * Creates an account guid.
    *
@@ -488,35 +492,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   }
 
   // Select commands
-  public long sendSelect(SelectOperation operation, String key, Object value, Object otherValue, RequestCallback callback) throws IOException {
+  public long sendSelectPacket(SelectRequestPacket<String> packet, RequestCallback callback) throws IOException {
     int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = new SelectRequestPacket<>(id, operation,
-            SelectGroupBehavior.NONE, key, value, otherValue);
-    return sendRequest(packet, callback);
-  }
-
-  public long sendSelectQuery(String query, RequestCallback callback) throws IOException {
-    int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(id, query);
-    return sendRequest(packet, callback);
-  }
-
-  public long sendGroupGuidSetupSelectQuery(String query, String guid, int interval,
-          RequestCallback callback) throws IOException {
-    int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(id,
-            query, guid, interval);
-    return sendRequest(packet, callback);
-  }
-  
-  public long sendGroupGuidSetupSelectQuery(String query, String guid, RequestCallback callback)
-          throws IOException {
-    return sendGroupGuidSetupSelectQuery(query, guid, DEFAULT_MIN_REFRESH_INTERVAL, callback);
-  }
-  
-  public long sendGroupGuidLookupSelectQuery(String guid, RequestCallback callback) throws IOException {
-    int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(id, guid);
+    packet.setRequestId(id);
     return sendRequest(packet, callback);
   }
 

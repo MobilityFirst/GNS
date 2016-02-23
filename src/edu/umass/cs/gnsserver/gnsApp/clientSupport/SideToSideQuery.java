@@ -10,7 +10,6 @@ package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
@@ -337,20 +336,27 @@ public class SideToSideQuery extends ClientAsynchBase {
   // Select commands
   public JSONArray sendSelect(SelectOperation operation, String key, Object value, Object otherValue)
           throws IOException, GnsClientException {
-    long requestId = sendSelect(operation, key, value, otherValue, replicaCommandCallback);
-    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
-      return packet.getGuids();
+    SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
+            SelectGroupBehavior.NONE, key, value, otherValue);
+    createRecord(packet.getServiceName(), new JSONObject());
+    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    @SuppressWarnings("unchecked")
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+      return responsePacket.getGuids();
     } else {
       return null;
     }
   }
 
   public JSONArray sendSelectQuery(String query) throws IOException, GnsClientException {
-    long requestId = sendSelectQuery(query, replicaCommandCallback);
-    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
-      return packet.getGuids();
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
+    createRecord(packet.getServiceName(), new JSONObject());
+    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    @SuppressWarnings("unchecked")
+    SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
+      return reponsePacket.getGuids();
     } else {
       return null;
     }
@@ -358,10 +364,14 @@ public class SideToSideQuery extends ClientAsynchBase {
 
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid, int interval)
           throws IOException, GnsClientException {
-    long requestId = sendGroupGuidSetupSelectQuery(query, guid, interval, replicaCommandCallback);
-    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
-      return packet.getGuids();
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
+            query, guid, interval);
+    createRecord(packet.getServiceName(), new JSONObject());
+    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    @SuppressWarnings("unchecked")
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+      return responsePacket.getGuids();
     } else {
       return null;
     }
@@ -373,10 +383,13 @@ public class SideToSideQuery extends ClientAsynchBase {
   }
 
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, GnsClientException {
-    long requestId = sendGroupGuidLookupSelectQuery(guid, replicaCommandCallback);
-    SelectResponsePacket<String> packet = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
-      return packet.getGuids();
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
+    createRecord(packet.getServiceName(), new JSONObject());
+    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    @SuppressWarnings("unchecked")
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+      return responsePacket.getGuids();
     } else {
       return null;
     }

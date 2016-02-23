@@ -28,7 +28,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPacketWithCCPAddress {
+public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPacketWithReturnAddress {
 
   /** accessor */
   private final static String ACCESSOR = "si_accessor";

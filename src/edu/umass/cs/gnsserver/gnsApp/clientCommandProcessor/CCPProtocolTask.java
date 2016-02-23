@@ -50,6 +50,7 @@ import org.json.JSONException;
  *
  * @param <NodeIDType>
  */
+@Deprecated
 public class CCPProtocolTask<NodeIDType> implements
         ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 

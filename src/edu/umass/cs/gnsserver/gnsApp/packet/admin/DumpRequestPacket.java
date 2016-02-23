@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet.admin;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithCCPAddress;
+import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithReturnAddress;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
@@ -37,7 +37,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCCPAddress {
+public class DumpRequestPacket<NodeIDType> extends BasicPacketWithReturnAddress {
 
   /** id */
   public final static String ID = "id";

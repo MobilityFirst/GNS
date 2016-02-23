@@ -134,12 +134,12 @@ public class AppLookup {
       dnsPacket.getHeader().setResponseCode(errorCode);
       dnsPacket.setResponder(gnsApp.getNodeID());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("Sending to " + dnsPacket.getCppAddress() + " this error packet "
+        GNS.getLogger().fine("Sending to " + dnsPacket.getReturnAddress() + " this error packet "
                 + dnsPacket.toJSONObjectForErrorResponse());
       }
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObjectForErrorResponse());
-        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCppAddress(), dnsPacket.toJSONObjectForErrorResponse());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getReturnAddress(), dnsPacket.toJSONObjectForErrorResponse());
       }
     } else {
       // All signature and ACL checks passed see if we can find the field to return;
@@ -212,7 +212,7 @@ public class AppLookup {
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp, newResult);
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCppAddress(), dnsPacket.toJSONObject());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getReturnAddress(), dnsPacket.toJSONObject());
       }
       DelayProfiler.updateDelay("totalLookup", receiptTime);
     }
@@ -282,7 +282,7 @@ public class AppLookup {
       dnsPacket.setRecordValue(valuesMap);
       // .. and send it
       gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-      //gnsApp.getMessenger().sendToAddress(dnsPacket.getCppAddress(), dnsPacket.toJSONObject());
+      //gnsApp.getMessenger().sendToAddress(dnsPacket.getReturnAddress(), dnsPacket.toJSONObject());
       return true;
     }
     return false;

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
-import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
 import java.net.InetSocketAddress;
@@ -35,7 +35,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements Request {
+public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType> implements ClientRequest {
 
   /**
    * The possible response codes for select packets.
@@ -61,7 +61,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
 
-  private int id;
+  private int requestId;
   private int lnsQueryId;
   private int nsQueryId;
   private JSONArray records;
@@ -80,7 +80,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
           String errorMessage) {
     super(nameServerID, lnsAddress);
     this.type = Packet.PacketType.SELECT_RESPONSE;
-    this.id = id;
+    this.requestId = id;
     this.lnsQueryId = lnsQueryId;
     this.nsQueryId = nsQueryId;
     this.records = records;
@@ -155,7 +155,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
-    this.id = json.getInt(ID);
+    this.requestId = json.getInt(ID);
     //this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.nsQueryId = json.getInt(NSQUERYID);
@@ -179,7 +179,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(ID, id);
+    json.put(ID, requestId);
     //json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
     json.put(NSQUERYID, nsQueryId);
@@ -198,12 +198,12 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
   }
 
   /**
-   * Return the id.
+   * Return the requestId.
    * 
-   * @return the id
+   * @return the requestId
    */
   public int getId() {
-    return id;
+    return requestId;
   }
 
   /**
@@ -225,18 +225,18 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
   }
 
   /**
-   * Return the LNS query id.
+   * Return the LNS query requestId.
    * 
-   * @return the LNS query id
+   * @return the LNS query requestId
    */
   public int getLnsQueryId() {
     return lnsQueryId;
   }
 
   /**
-   * Return the NS query id.
+   * Return the NS query requestId.
    * 
-   * @return the NS query id
+   * @return the NS query requestId
    */
   public int getNsQueryId() {
     return nsQueryId;
@@ -266,4 +266,13 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     return "SelectResponse";
   }
 
+   @Override
+  public ClientRequest getResponse() {
+   return null;
+  }
+
+  @Override
+  public long getRequestID() {
+    return requestId;
+  }
 }
