@@ -74,7 +74,7 @@ public class SelectHandler {
    */
   public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, new SelectRequestPacket(id, handler.getNodeAddress(), operation, 
+    return sendSelectHelper(id, new SelectRequestPacket(id, operation, 
             SelectGroupBehavior.NONE, key, value, otherValue), handler);
   }
 
@@ -88,7 +88,7 @@ public class SelectHandler {
    */
   public static String sendSelectQuery(String query, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, handler.getNodeAddress(), query), handler);
+    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, query), handler);
   }
 
   /**
@@ -106,7 +106,7 @@ public class SelectHandler {
     if (interval == INVALID_REFRESH_INTERVAL) {
       interval = DEFAULT_MIN_REFRESH_INTERVAL;
     }
-    return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, handler.getNodeAddress(), query, guid, interval), 
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, query, guid, interval), 
             handler);
   }
 
@@ -133,7 +133,7 @@ public class SelectHandler {
    */
   public static String sendGroupGuidLookupSelectQuery(String guid, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, handler.getNodeAddress(), guid), handler);
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, guid), handler);
   }
 
   private static String sendSelectHelper(int id, SelectRequestPacket sendPacket, ClientRequestHandlerInterface handler) {

@@ -68,7 +68,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * Constructs a new QueryResponsePacket
    *
    * @param id
-   * @param ccpAddress
    * @param selectOperation
    * @param key
    * @param groupBehavior
@@ -76,8 +75,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param otherValue
    */
   @SuppressWarnings("unchecked")
-  public SelectRequestPacket(int id, InetSocketAddress ccpAddress, SelectOperation selectOperation, SelectGroupBehavior groupBehavior, String key, Object value, Object otherValue) {
-    super(null, ccpAddress);
+  public SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior, String key, Object value, Object otherValue) {
+    super(null);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
     this.key = key;
@@ -101,8 +100,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param minRefreshInterval
    */
   @SuppressWarnings("unchecked")
-  private SelectRequestPacket(int id, InetSocketAddress ccpAddress, SelectOperation selectOperation, SelectGroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
-    super(null, ccpAddress);
+  private SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
+    super(null);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.requestId = id;
     this.query = query;
@@ -119,12 +118,11 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
-   * @param ccpAddress
    * @param query
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeQueryRequest(int id, InetSocketAddress ccpAddress, String query) {
-    return new SelectRequestPacket<String>(id, ccpAddress, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
+  public static SelectRequestPacket<String> MakeQueryRequest(int id, String query) {
+    return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
   }
 
   /**
@@ -132,14 +130,13 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
-   * @param ccpAddress
    * @param query
    * @param guid
    * @param refreshInterval
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupSetupRequest(int id, InetSocketAddress ccpAddress, String query, String guid, int refreshInterval) {
-    return new SelectRequestPacket<String>(id, ccpAddress, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
+  public static SelectRequestPacket<String> MakeGroupSetupRequest(int id, String query, String guid, int refreshInterval) {
+    return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
   }
 
   /**
@@ -147,12 +144,11 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
-   * @param ccpAddress
    * @param guid
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupLookupRequest(int id, InetSocketAddress ccpAddress, String guid) {
-    return new SelectRequestPacket<String>(id, ccpAddress, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
+  public static SelectRequestPacket<String> MakeGroupLookupRequest(int id, String guid) {
+    return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
   /**
@@ -165,8 +161,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
   @SuppressWarnings("unchecked")
   public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json, unstringer);
-//    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-//            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
     }

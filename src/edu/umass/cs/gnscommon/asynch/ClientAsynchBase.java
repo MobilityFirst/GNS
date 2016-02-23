@@ -490,21 +490,21 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   // Select commands
   public long sendSelect(SelectOperation operation, String key, Object value, Object otherValue, RequestCallback callback) throws IOException {
     int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = new SelectRequestPacket<>(id, null, operation,
+    SelectRequestPacket<String> packet = new SelectRequestPacket<>(id, operation,
             SelectGroupBehavior.NONE, key, value, otherValue);
     return sendRequest(packet, callback);
   }
 
   public long sendSelectQuery(String query, RequestCallback callback) throws IOException {
     int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(id, null, query);
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(id, query);
     return sendRequest(packet, callback);
   }
 
   public long sendGroupGuidSetupSelectQuery(String query, String guid, int interval,
           RequestCallback callback) throws IOException {
     int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(id, null,
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(id,
             query, guid, interval);
     return sendRequest(packet, callback);
   }
@@ -516,7 +516,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   
   public long sendGroupGuidLookupSelectQuery(String guid, RequestCallback callback) throws IOException {
     int id = generateNextRequestID();
-    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(id, null, guid);
+    SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(id, guid);
     return sendRequest(packet, callback);
   }
 

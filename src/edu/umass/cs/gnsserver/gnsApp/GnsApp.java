@@ -448,10 +448,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   @Override
-  public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {
-//    InetSocketAddress clientAddress = new InetSocketAddress(isa.getAddress(),
-//            ActiveReplica.getClientFacingPort(isa.getPort()));
-    //GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Sending to: " + isa + " " + msg);
+  public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {;
     if (!disableSSL) {
       messenger.getClientMessenger().sendToAddress(isa, msg);
     } else {

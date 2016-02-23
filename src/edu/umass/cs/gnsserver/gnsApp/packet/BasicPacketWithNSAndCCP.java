@@ -64,6 +64,11 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacketWit
     super(address);
     this.nameServerID = nameServerID;
   }
+  
+  public BasicPacketWithNSAndCCP(NodeIDType nameServerID) {
+    super();
+    this.nameServerID = nameServerID;
+  }
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
