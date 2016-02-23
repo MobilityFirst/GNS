@@ -150,7 +150,7 @@ public class SideToSideQuery extends ClientAsynchBase {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
       return sendReconRequest(packet);
     } catch (GnsClientException | IOException e) {
-      GNS.getLogger().info("Problem creating " + name + " :" + e);
+      GNS.getLogger().severe("Problem creating " + name + " :" + e);
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
@@ -208,7 +208,7 @@ public class SideToSideQuery extends ClientAsynchBase {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
     } catch (GnsClientException | IOException e) {
-      GNS.getLogger().info("Problem creating " + name + " :" + e);
+      GNS.getLogger().severe("Problem creating " + name + " :" + e);
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }

@@ -244,11 +244,9 @@ public class Select {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getRecords(), info, replica);
     } else // error response
-    {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+     if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " processing error response: " + packet.getErrorMessage());
       }
-    }
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServerID());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -266,11 +264,13 @@ public class Select {
     SelectResponsePacket<String> response
             = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
                     -1, null, new JSONArray(guids));
-    GNS.getLogger().info("NS " + app.getNodeID().toString()
-            + " 888888888 CLIENT ADDRESS: " + address.toString());
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("NS " + app.getNodeID().toString()
+              + " 888888888 CLIENT ADDRESS: " + address.toString());
+    }
     try {
-    //app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
-    app.sendToClient(address, response.toJSONObject());
+      //app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
+      app.sendToClient(address, response.toJSONObject());
     } catch (IOException f) {
       GNS.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
     }
