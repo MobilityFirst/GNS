@@ -71,8 +71,10 @@ public class RegisterAccount extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     byte[] publicKeyBytes = Base64.decode(publicKey);
     String guid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
-
-    if (signature != null && message != null) { //FIXME: this is for temporary backward compatability... remove it. 
+    
+    // FIXME: this lacking signature check is for temporary backward compatability... remove it.
+    // See RegisterAccountUnsigned
+    if (signature != null && message != null) { 
       if (!AccessSupport.verifySignature(publicKey, signature, message)) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
 //      } else {
