@@ -3,6 +3,10 @@ package edu.umass.cs.gnsclient.examples;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 
+/**
+ * @author gaozy
+ *
+ */
 public class SingleClient implements Runnable{
 	// the total number of requests need to be sent
 	private int numReq;
@@ -10,14 +14,19 @@ public class SingleClient implements Runnable{
     private UniversalTcpClient client;
     private boolean malicious;
     
+	/**
+	 * @param client
+	 * @param entry
+	 * @param malicious
+	 */
 	public SingleClient(UniversalTcpClient client, GuidEntry entry, boolean malicious){
 		this.client = client;
 		this.entry = entry;
 		this.malicious = malicious;
 		if (malicious){
-			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestChainClient.MAL_INTERVAL/CapacityTestChainClient.DEPTH;
+			this.numReq = MessageStats.DURATION*1000/MessageStats.MAL_INTERVAL/MessageStats.DEPTH;
 		} else{
-			this.numReq = CapacityTestSequentialClient.DURATION*1000/CapacityTestChainClient.INTERVAL;
+			this.numReq = MessageStats.DURATION*1000/MessageStats.INTERVAL;
 		} 
 	}
 	
@@ -33,9 +42,9 @@ public class SingleClient implements Runnable{
 			long eclapsed = System.nanoTime() - start;			
 			
 			if (malicious){
-				CapacityTestChainClient.mal_request.add(eclapsed);
+				MessageStats.mal_request.add(eclapsed);
 			}else{
-				CapacityTestChainClient.latency.add(eclapsed);
+				MessageStats.latency.add(eclapsed);
 			}
 			
 		}

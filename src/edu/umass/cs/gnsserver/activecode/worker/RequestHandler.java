@@ -43,6 +43,7 @@ public class RequestHandler {
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
 	 * @param runner
+	 * @param port 
 	 */
 	public RequestHandler(ActiveCodeRunner runner, int port) {
 		this.runner = runner;
@@ -78,6 +79,7 @@ public class RequestHandler {
 			    //System.out.println("Got the message from port "+socket.getLocalPort());
 			    if(params == null){
 			    	System.out.println("The value is null!");
+			    	//return true;
 			    }
 			    //System.out.println("The hop is "+params.getHopLimit()+". The guid is "+params.getGuid());
 			    querier.setParam(params.getHopLimit(), params.getGuid());

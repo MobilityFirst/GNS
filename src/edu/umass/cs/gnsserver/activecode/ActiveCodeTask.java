@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.concurrent.Callable;
 
+import edu.umass.cs.gnsserver.activecode.interfaces.ClientPoolInterface;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -32,15 +33,18 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeTask implements Callable<ValuesMap> {
 	
-    private ActiveCodeParams acp;
-    private ClientPool clientPool;
+    private final ActiveCodeParams acp;
+    private final ClientPoolInterface clientPool;
     private ActiveCodeGuardian guard;
+    private boolean running = false;
+    
     /**
      * Initialize a ActiveCodeTask
      * @param acp
      * @param clientPool
+     * @param guard 
      */
-    public ActiveCodeTask(ActiveCodeParams acp, ClientPool clientPool, ActiveCodeGuardian guard) {
+    public ActiveCodeTask(ActiveCodeParams acp, ClientPoolInterface clientPool, ActiveCodeGuardian guard) {
         this.acp = acp; 
         this.clientPool = clientPool;
         this.guard = guard;
@@ -50,11 +54,19 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	guard.removeThread(this);
     }
     
+    protected boolean isRunning(){
+    	return running;
+    }
+    
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
      */
-    public ValuesMap call() throws InterruptedException{  
+    public ValuesMap call() throws InterruptedException{ 
+    	/*
+    	 * Set the running state to true if call method is called. 
+    	 */
+    	this.running = true;
     	
     	long startTime = System.nanoTime();
     	long pid = Thread.currentThread().getId();
@@ -62,17 +74,13 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	
     	ValuesMap result = null;
     	ActiveCodeClient client = clientPool.getClient(pid);
-    	int port = client.getPort();
-    	long startWait = System.currentTimeMillis();
     	
     	//check the state of the client's worker
-    	while(!ClientPool.getClientState(port)){
+    	while(!client.isReady()){
     		// wait until it's ready
-    		clientPool.waitFor();
-    	}
-    	
-    	if(System.currentTimeMillis() - startWait > 100){
-    		DelayProfiler.updateDelay("activeCodeTaskWait", startWait);
+    		synchronized(client){
+    			client.wait();
+    		}
     	}
     	
     	guard.registerThread(this, Thread.currentThread());   	
@@ -85,4 +93,5 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	
     	return result;
     }
+    
 }

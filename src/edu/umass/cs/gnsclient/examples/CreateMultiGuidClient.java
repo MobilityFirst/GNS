@@ -20,15 +20,28 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
+/**
+ * @author gaozy
+ *
+ */
 public class CreateMultiGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT = 100;
-	private final static String filename = "/home/ubuntu/test.js"; //"/Users/gaozy/WebStorm/test.js"; //
-	private final static String mal_file = "/home/ubuntu/mal.js"; //"/Users/gaozy/WebStorm/test.js"; //
+	private final static String filename = "/Users/gaozy/WebStorm/test.js"; //"/home/ubuntu/test.js"; //
+	private final static String mal_file = "/Users/gaozy/WebStorm/mal.js"; //"/home/ubuntu/mal.js"; //
 	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/gaozy/GNS/gns_key/"; //
 	private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	
+	/**
+	 * @param args
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, 
     InvalidKeyException, SignatureException, Exception {
@@ -57,7 +70,7 @@ public class CreateMultiGuidClient {
 				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*1000+i)+ACCOUNT_ALIAS, "password");
 				System.out.println("test"+(node*1000+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
 				
-				KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i) );
+				//KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i) );
 			}catch (Exception e) {
 			      System.out.println("Exception during accountGuid creation: " + e);
 			      System.exit(1);

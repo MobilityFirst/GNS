@@ -44,8 +44,8 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
-	protected Lock lock = new ReentrantLock();
-	
+//	protected Lock lock = new ReentrantLock();
+	private boolean ready = false;
 	private int serverPort;
 	private Process process;
 	private final GnsApplicationInterface<String> app;
@@ -56,12 +56,14 @@ public class ActiveCodeClient {
 	
 	/**
 	 * @param app the gns app
+	 * @param ach 
      * @param port 
+	 * @param proc 
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<String> app, ActiveCodeHandler ach, ClientPool clientPool, int port, Process proc) {
+	public ActiveCodeClient(GnsApplicationInterface<String> app, ActiveCodeHandler ach, int port, Process proc) {
 		this.app = app;
 		this.ach = ach;
-		
+		this.ready = false;
 		//initialize the clientSocket first
 		try{
 			clientSocket = new DatagramSocket();
@@ -69,11 +71,7 @@ public class ActiveCodeClient {
 			e.printStackTrace();
 		}
 		
-		while(!ClientPool.getClientState(port)){
-			clientPool.waitFor();
-		}
-		
-		setNewWorker(port, proc);		
+		setNewWorker(port, proc);
 	}
 	
 	protected int getPort(){
@@ -182,17 +180,6 @@ public class ActiveCodeClient {
         return vm;
 	}
 	
-	
-	protected void waitLock(){
-		synchronized(lock){
-			try{
-				lock.wait();
-			}catch(InterruptedException ie){
-				ie.printStackTrace();
-			}
-		}
-	}
-	
 	/**
 	 * Cleanly shuts down the worker
 	 */
@@ -207,9 +194,16 @@ public class ActiveCodeClient {
 		clientSocket.close();
 	}
 	
-	public void forceShutdownServer() {
+	protected boolean isReady(){
+		return ready;
+	}
+	
+	protected void setReady(boolean ready){
+		this.ready = ready;
+	}
+	
+	protected void forceShutdownServer() {
 		process.destroyForcibly();
-		ClientPool.removeClientState(serverPort);
 		clientSocket.close();
 		try{
 			clientSocket = new DatagramSocket();
@@ -222,8 +216,11 @@ public class ActiveCodeClient {
 		this.process = proc;
 		this.serverPort = port;
 		
+		notifyWorkerOfClientPort(port);
+	}
+	
+	protected void notifyWorkerOfClientPort(int port){
 		//notify new worker about the client's new port number
 		ActiveCodeUtils.sendMessage(clientSocket, new ActiveCodeMessage(), port);
-		//System.out.println("Bind the client to the new port "+port);
 	}
 }

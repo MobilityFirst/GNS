@@ -139,6 +139,7 @@ public class ActiveCodeHandler {
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
 		String values = valuesMap.toString();
+		
 		//System.out.println("Got the request from guid "+guid+" for the field "+field+" with original value "+valuesMap);
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
@@ -173,8 +174,15 @@ public class ActiveCodeHandler {
 			System.out.println("Interrupt "+guid+" Task "+act+" thread "+Thread.currentThread());
 			futureTask.cancel(true);
 			//ie.printStackTrace();
-			guard.cancelTask(act);
-			act.deregisterTask();
+			if(act != null){
+				if(act.isRunning()){
+					guard.cancelTask(act);
+					act.deregisterTask();
+				}else{
+					// clean up the task in scheduler
+					scheduler.removeTask(guid, futureTask);
+				}
+			}
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (Exception e){

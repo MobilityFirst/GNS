@@ -7,7 +7,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -17,20 +16,28 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 
+/**
+ * @author gaozy
+ *
+ */
 public class CapacityTestSequentialClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
-		
-		public static ArrayList<Long> latency = new ArrayList<Long>();
-		public static ArrayList<Long> mal_request = new ArrayList<Long>();
 	    
 		private static int NUM_THREAD = 100;
 	    private static int NUM_CLIENT = 0;
-	    public static final int DURATION = 10;
-	    public static final int INTERVAL = 5;
-	    public static final int MAL_INTERVAL = 1000;
 	    private static SingleClient[] clients;
 	    private static ThreadPoolExecutor executorPool;  
 	    
+	    /**
+	     * @param args
+	     * @throws IOException
+	     * @throws InvalidKeySpecException
+	     * @throws NoSuchAlgorithmException
+	     * @throws GnsException
+	     * @throws InvalidKeyException
+	     * @throws SignatureException
+	     * @throws Exception
+	     */
 	    public static void main(String[] args) throws IOException,
 	    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
 	    InvalidKeyException, SignatureException, Exception {
@@ -71,12 +78,12 @@ public class CapacityTestSequentialClient {
 			int max = 0;
 			int thruput = 0;
 			while (executorPool.getCompletedTaskCount() < NUM_CLIENT){
-				thruput = latency.size() - received;
+				thruput = (MessageStats.latency.size()+MessageStats.mal_request.size()) - received;
 				if(max<thruput){
 					max = thruput;
 				}
 				System.out.println(t+" Throuput:"+thruput+" reqs/sec" );
-				received = latency.size();
+				received = MessageStats.latency.size()+MessageStats.mal_request.size();
 				t++;
 				try{
 					Thread.sleep(1000);
@@ -87,7 +94,7 @@ public class CapacityTestSequentialClient {
 						
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(latency.size()+mal_request.size())/eclapsed)+" req/sec.");
+			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(MessageStats.latency.size()+MessageStats.mal_request.size())/eclapsed)+" req/sec.");
 			
 			Socket socket = new Socket("128.119.245.5", 60001);
 	    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);

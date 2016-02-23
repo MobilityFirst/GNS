@@ -7,7 +7,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -17,21 +16,28 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 
+/**
+ * @author gaozy
+ *
+ */
 public class CapacityTestChainClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
-		
-		public static ArrayList<Long> latency = new ArrayList<Long>();
-		public static ArrayList<Long> mal_request = new ArrayList<Long>();
-	    
+			    
 		private static int NUM_THREAD = 100;
 	    private static int NUM_CLIENT = 0;
-	    public static final int DURATION = 10;
-	    public static final int INTERVAL = 5;
-	    public static final int MAL_INTERVAL = 1000;
-	    public static int DEPTH = 1;
 	    private static SingleClient[] clients;
 	    private static ThreadPoolExecutor executorPool;  
 	    
+	    /**
+	     * @param args
+	     * @throws IOException
+	     * @throws InvalidKeySpecException
+	     * @throws NoSuchAlgorithmException
+	     * @throws GnsException
+	     * @throws InvalidKeyException
+	     * @throws SignatureException
+	     * @throws Exception
+	     */
 	    public static void main(String[] args) throws IOException,
 	    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
 	    InvalidKeyException, SignatureException, Exception {
@@ -39,8 +45,8 @@ public class CapacityTestChainClient {
 			int node = Integer.parseInt(args[1]); 			
 			int BENIGN = Integer.parseInt(args[2]);	
 			NUM_CLIENT = Integer.parseInt(args[3]);
-			DEPTH = Integer.parseInt(args[4]);
-			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is "+DEPTH);
+			MessageStats.DEPTH = Integer.parseInt(args[4]);
+			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is "+MessageStats.DEPTH);
 			
 			clients = new SingleClient[NUM_CLIENT];
 			UniversalTcpClient client = new UniversalTcpClient(address, 24398, true);
@@ -56,7 +62,7 @@ public class CapacityTestChainClient {
 					clients[index] = new SingleClient(client, accountGuid, false);
 				} else {
 					// otherwise create malicious users
-					String account = "test"+(node*1000+index*10+DEPTH-1)+ACCOUNT_ALIAS;
+					String account = "test"+(node*1000+index*10+MessageStats.DEPTH-1)+ACCOUNT_ALIAS;
 					GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
 					clients[index] = new SingleClient(client, accountGuid, true);
 				}
@@ -77,12 +83,12 @@ public class CapacityTestChainClient {
 			int max = 0;
 			int thruput = 0;
 			while (executorPool.getCompletedTaskCount() < NUM_CLIENT){
-				thruput = (latency.size()+mal_request.size()) - received;
+				thruput = (MessageStats.latency.size()+MessageStats.mal_request.size()) - received;
 				if(max<thruput){
 					max = thruput;
 				}
 				System.out.println(t+" Throuput:"+thruput+" reqs/sec" );
-				received = latency.size()+mal_request.size();
+				received = MessageStats.latency.size()+MessageStats.mal_request.size();
 				t++;
 				try{
 					Thread.sleep(1000);
@@ -93,7 +99,7 @@ public class CapacityTestChainClient {
 						
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
-			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(latency.size()+mal_request.size())/eclapsed)+" req/sec.");
+			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(MessageStats.latency.size()+MessageStats.mal_request.size())/eclapsed)+" req/sec.");
 			
 			Socket socket = new Socket("128.119.245.5", 60001);
 	    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);

@@ -2,7 +2,6 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,7 +19,7 @@ public class ActiveCodeScheduler implements Runnable{
 	private ThreadPoolExecutor executorPool;
 	
 	private ArrayList<String> guidList = new ArrayList<String>();
-	private HashMap<String, LinkedList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, LinkedList<FutureTask<ValuesMap>>>();
+	private HashMap<String, ArrayList<FutureTask<ValuesMap>>> fairQueue = new HashMap<String, ArrayList<FutureTask<ValuesMap>>>();
 	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
 	//private HashMap<FutureTask<ValuesMap>, Long> timeMap = new HashMap<FutureTask<ValuesMap>, Long>();
@@ -106,9 +105,10 @@ public class ActiveCodeScheduler implements Runnable{
 			if (!fairQueue.containsKey(guid)){
 				return null;
 			}
-			futureTask = fairQueue.get(guid).removeFirst();
-			if(fairQueue.get(guid).isEmpty()){
-				remove(guid);
+			ArrayList<FutureTask<ValuesMap>> taskList = fairQueue.get(guid);
+			futureTask = taskList.remove(0);
+			if(taskList.isEmpty()){
+				removeGuid(guid);
 				if(ptr > 0){
 					ptr--;
 				}
@@ -126,13 +126,23 @@ public class ActiveCodeScheduler implements Runnable{
 		}
 	}
 	
+	protected void removeTask(String guid, FutureTask<ValuesMap> task){
+		synchronized(queueLock){
+			ArrayList<FutureTask<ValuesMap>> taskList = fairQueue.get(guid);
+			taskList.remove(task);
+			if(taskList.isEmpty()){
+				removeGuid(guid);
+			}
+		}
+	}
+	
 	protected void submit(FutureTask<ValuesMap> futureTask, String guid){
 		//timeMap.put(futureTask, System.nanoTime());
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);				
 			}else{
-				LinkedList<FutureTask<ValuesMap>> taskList = new LinkedList<FutureTask<ValuesMap>>();
+				ArrayList<FutureTask<ValuesMap>> taskList = new ArrayList<FutureTask<ValuesMap>>();
 				taskList.add(futureTask);
 				fairQueue.put(guid, taskList);
 				guidList.add(guid);
@@ -141,7 +151,7 @@ public class ActiveCodeScheduler implements Runnable{
 		release();		
 	}
 	
-	protected void remove(String guid){
+	protected void removeGuid(String guid){
 			guidList.remove(guid);
 			fairQueue.remove(guid);
 	}
@@ -156,7 +166,7 @@ public class ActiveCodeScheduler implements Runnable{
 		return guidList;
 	}
 	
-	protected HashMap<String, LinkedList<FutureTask<ValuesMap>>> getFairQueue(){
+	protected HashMap<String, ArrayList<FutureTask<ValuesMap>>> getFairQueue(){
 		return fairQueue;
 	}
 	

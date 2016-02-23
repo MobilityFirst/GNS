@@ -33,6 +33,7 @@ public class SequentialRequestClient {
 	private static UniversalTcpClient client;
 	private final static String filename =  "/Users/gaozy/WebStorm/test.js"; //"/home/ubuntu/test.js"; //
 	private static ArrayList<Long> latency = new ArrayList<Long>();
+	private static int numReqs = 10;
 	
 	/**
 	 * @param args
@@ -51,7 +52,8 @@ public class SequentialRequestClient {
 		boolean flag = Boolean.parseBoolean(args[1]);
 		int size = 10;
 		if(args.length > 2){
-			size = Integer.parseInt(args[2]);
+			numReqs = Integer.parseInt(args[2]);
+			size = Integer.parseInt(args[3]);
 		}
 		size = size*8;
 		
@@ -82,7 +84,7 @@ public class SequentialRequestClient {
 		    client.activeCodeSet(guidAccount.getGuid(), "read", code64, guidAccount);
 	    }
 	    
-	    for (int i=0; i<5000; i++){
+	    for (int i=0; i<numReqs; i++){
 	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
 	    	//System.out.println("The nextGuid is "+result);
@@ -93,11 +95,10 @@ public class SequentialRequestClient {
 	    }
 	    latency.clear();
 	    
-	    for (int i=0; i<5000; i++){
+	    for (int i=0; i<numReqs; i++){
 	    	long t1 = System.nanoTime();
-	    	client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
-	    	//System.out.println("The nextGuid is "+result);
-	    	//System.out.println("Get response "+result);
+	    	String result = client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
+	    	System.out.println("The nextGuid is "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);

@@ -43,7 +43,9 @@ public class ActiveCodeRunner {
   private final Invocable invocable;
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
-  //private final ExecutorService executor = Executors.newSingleThreadExecutor();
+  //private static ExecutorService executor = Executors.newSingleThreadExecutor();
+  
+ 
   /**
    * Initialize an ActiveCodeRunner with nashorn script engine
    * by default.
@@ -67,7 +69,8 @@ public class ActiveCodeRunner {
     // Globals globals = JsePlatform.standardGlobals();
     // LuaJC.install(globals);
   }
-
+  
+  
   /**
    * Initializes the script context and re-evals the code when a change is detected
    *
@@ -159,21 +162,41 @@ public class ActiveCodeRunner {
       ScriptContext sc = contexts.get(codeId);
       //engine.eval(code, sc);      
       engine.setContext(sc);
-
+      
+      //FutureTask<JSONObject> task = new FutureTask<JSONObject>(new ActiveCodeWorkerTask(invocable, value, field, querier));
+      //executor.execute(task);
+      //ret = task.get(200, TimeUnit.MILLISECONDS);
       ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
       
     } catch(ScriptException e){
     	//e.printStackTrace();
     	querier.setError(e.toString());
     	return value;
-    } catch(Exception e){
-    	//e.printStackTrace();
-    	querier.setError(e.toString());
-    	return value;
-    }
+    } catch (NoSuchMethodException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} 
     
     DelayProfiler.updateDelayNano("activeWorkerEngineExecution", startTime);
     //System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");
     return ret;
+  }
+  
+  
+  /**************************** TEST SUITE **********************************/
+  
+  
+  protected static ActiveCodeRunner generateRunner(){
+	  //executor = Executors.newFixedThreadPool(5);
+	  return new ActiveCodeRunner();
+  }
+  
+  /**
+   * Main function for all the test cases
+   * @param args
+   */
+  public static void main(String[] args){
+	  // Test with a normal code
+	  
   }
 }

@@ -101,11 +101,6 @@ public class ActiveCodeUtils {
 	}
 	*/
 	
-	/**
-	 * Receive the serialize the message
-	 * @param in
-	 * @return an {@link ActiveCodeMessage} ready to cast
-	 */
 	/*
 	public static ActiveCodeMessage getMessage(BufferedReader in) {
 		
@@ -145,8 +140,9 @@ public class ActiveCodeUtils {
 			os.writeObject(acm);
 			byte[] data = outputStream.toByteArray();
 			DatagramPacket pkt = new DatagramPacket(data, data.length, addr, port);
-			socket.send(pkt);
-			
+			if(!socket.isClosed()){
+				socket.send(pkt);
+			}
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -166,6 +162,7 @@ public class ActiveCodeUtils {
 		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
 		try{
 			socket.receive(pkt);
+			
 			ByteArrayInputStream in = new ByteArrayInputStream(pkt.getData());
 			ObjectInputStream is = new ObjectInputStream(in);			 
 			acm = (ActiveCodeMessage) is.readObject();			

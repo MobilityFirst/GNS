@@ -22,13 +22,25 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
+/**
+ * @author gaozy
+ *
+ */
 public class CreateChainGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT;
-	private static String filename = "/home/ubuntu/chain.js"; // "/Users/gaozy/WebStorm/chain.js"; //
-	private final static String key_folder = "/home/ubuntu/gns_key/"; // "/Users/gaozy/GNS/gns_key/"; //
+	private static String filename =  "/Users/gaozy/WebStorm/chain.js"; // "/home/ubuntu/chain.js"; //
 	
+	/**
+	 * @param args
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, 
     InvalidKeyException, SignatureException, Exception {
@@ -36,7 +48,9 @@ public class CreateChainGuidClient {
 		int node = Integer.parseInt(args[1]);
 		int depth = Integer.parseInt(args[2]);
 		NUM_CLIENT = Integer.parseInt(args[3]);
-		
+		if (args.length>4){
+			filename = args[4];
+		}
 		//Read in the code and serialize
 		String code = new String(Files.readAllBytes(Paths.get(filename)));
 		String code64 = Base64.encodeToString(code.getBytes("utf-8"), true);
@@ -51,8 +65,6 @@ public class CreateChainGuidClient {
 				try{
 					guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*1000+i*10+j)+ACCOUNT_ALIAS, "password");
 					System.out.println("test"+(node*1000+i*10+j)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
-					
-					KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i*10+j) );
 				}catch (Exception e) {
 				      System.exit(1);
 				}

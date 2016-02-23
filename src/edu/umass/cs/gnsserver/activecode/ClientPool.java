@@ -27,17 +27,14 @@ import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
+import edu.umass.cs.gnsserver.activecode.interfaces.ClientPoolInterface;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.
@@ -45,34 +42,55 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author mbadov
  *
  */
-public class ClientPool implements Runnable{
-	private Map<Long, ActiveCodeClient> clients;
+public class ClientPool implements Runnable, ClientPoolInterface{
+	private HashMap<Long, ActiveCodeClient> clients;
 	private GnsApplicationInterface<String> app;
 	private ActiveCodeHandler ach;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
+	
+	/**
+	 * Maintain the map from a port of worker to an ActiveCodeClient
+	 * When an ActiveCodeClient's corresponding worker is shutdown,
+	 * this map should be updated accordingly.
+	 * This client pool should be able to retrieve the ActiveCodeClient
+	 * based on the worker's port number.
+	 */
+	private ConcurrentHashMap<Integer, ActiveCodeClient> workerPortToClient;
+	private ConcurrentHashMap<Integer, Boolean> portStatus;
+	
 	private static ConcurrentHashMap<Integer, Long> timeMap = new ConcurrentHashMap<Integer, Long>();
 	private ExecutorService executorPool;
 	private final int numSpareWorker = AppReconfigurableNodeOptions.activeCodeSpareWorker;
-	private Lock lock = new ReentrantLock();
+	//private Lock lock = new ReentrantLock();
+	
+	private static DatagramSocket tempSocket;
 	
 	private final static int CALLBACK_PORT = 60000;
-	/**
-	 * Maintain the state of all available ports, including active and spare
-	 */
-	private static ConcurrentHashMap<Integer, Boolean> readyMap;
 	
 	
 	/**
 	 * Initialize a ClientPool
 	 * @param app
+	 * @param ach 
 	 */
 	public ClientPool(GnsApplicationInterface<String> app, ActiveCodeHandler ach) {
+		try{
+			tempSocket = new DatagramSocket();
+			tempSocket.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		
 		clients = new HashMap<>();
 		this.app = app;
 		this.ach = ach;
 		spareWorkers = new ConcurrentHashMap<Integer, Process>();
-		readyMap = new ConcurrentHashMap<Integer, Boolean>();
-		executorPool = Executors.newFixedThreadPool(5);
+		
+		// Initialize the worker port to client map
+		workerPortToClient = new ConcurrentHashMap<Integer, ActiveCodeClient>();
+		portStatus = new ConcurrentHashMap<Integer, Boolean>();
+		
+		executorPool = Executors.newFixedThreadPool(numSpareWorker);
 		System.out.println("Starting "+AppReconfigurableNodeOptions.activeCodeWorkerCount+
 				" workers with "+AppReconfigurableNodeOptions.activeCodeSpareWorker+" spare workers");
 	}
@@ -91,10 +109,21 @@ public class ClientPool implements Runnable{
     		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
     		try{
     			socket.receive(pkt);
-    			int clientPort = pkt.getPort();
-    			updateClientState(clientPort, true);
-    			synchronized(lock){
-    				lock.notifyAll();
+    			int workerPort = pkt.getPort();
+    			/*
+    			 * Invariant: the worker port must already exist 
+    			 */
+    			assert(!portStatus.contains(workerPort));
+    			
+    			//System.out.println("Get the ready message from port "+workerPort);
+    			portStatus.put(workerPort, true);
+    			ActiveCodeClient client = workerPortToClient.get(workerPort);
+    			if(client != null){
+    				// If client is not null, then it's not a spare client, it's an ActiveCodeClient
+    				synchronized (client) {
+    					client.setReady(true);
+    					client.notify();
+    				}
     			}
     		}catch(IOException e){
     			e.printStackTrace();
@@ -104,14 +133,56 @@ public class ClientPool implements Runnable{
 		socket.close();
 	}
 	
+	/**
+	 * Thread factory uses this method to map a thread to an ActiveCodeClient
+	 * @param t
+	 */
+	protected void addClient(Thread t) {
+		int workerPort = getOpenUDPPort();
+		// This port is not ready
+		portStatus.put(workerPort, false);
+		
+		Process proc = startNewWorker(workerPort, 64);
+		ActiveCodeClient client = new ActiveCodeClient(app, ach, workerPort, proc);
+		clients.put(t.getId(), client);
+		workerPortToClient.put(workerPort, client);
+		
+		while(!client.isReady()){
+			synchronized(client){
+				try{
+					client.wait();
+				} catch(InterruptedException e){
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		client.notifyWorkerOfClientPort(workerPort);
+	}
+	
+	/**
+	 * The getter for fetching an ActiveCodeClient through its thread id
+	 * @param tid
+	 * @return an ActiveCodeClient
+	 */
+	public ActiveCodeClient getClient(long tid) {
+		return clients.get(tid);
+	}
+	
+	/**
+	 * grab a port that is available at this point
+	 * @return an available port number
+	 */
 	protected static int getOpenUDPPort() {
 		int port = 0;
-		try{
-			DatagramSocket serverSocket = new DatagramSocket(0);
-			port = serverSocket.getLocalPort();
-			serverSocket.close();
-		} catch(IOException e) {
-			e.printStackTrace();
+		synchronized(tempSocket){
+			try{
+				tempSocket = new DatagramSocket(0);
+				port = tempSocket.getLocalPort();
+				tempSocket.close();
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return port;
 	}
@@ -122,47 +193,10 @@ public class ClientPool implements Runnable{
 		}
 	}
 	
-	protected void waitFor(){
-		synchronized(lock){
-			try{
-				lock.wait();
-			}catch(InterruptedException e){
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	protected static void removeClientState(int port){
-		readyMap.remove(port);
-	}
-	
-	protected static void updateClientState(int port, boolean state){
-		// update the state of the worker
-		readyMap.put(port, state);	
-		if(state){
-			DelayProfiler.updateDelay("activeStartNewWorker", timeMap.get(port));
-		}else{
-			timeMap.put(port, System.currentTimeMillis());
-		}
-	}
-	
-	protected static boolean getClientState(int port){
-		return readyMap.get(port);
-	}
-	
-	protected void addClient(Thread t) {
-		int serverPort = getOpenUDPPort();
-		updateClientState(serverPort, false);
-		
-		Process proc = startNewWorker(serverPort, 64);
-		clients.put(t.getId(), new ActiveCodeClient(app, ach, this, serverPort, proc));
-	}
-	
-	protected ActiveCodeClient getClient(long pid) {
-		return clients.get(pid);
-	}
-	
-	protected void shutdown() {
+	/**
+	 * Shutdown all the workers
+	 */
+	public void shutdown() {
 		for(ActiveCodeClient client : clients.values()) {
 		    client.shutdownServer();
 		}
@@ -186,21 +220,32 @@ public class ClientPool implements Runnable{
 		socket.close();
 	}
 	
+	protected void updatePortToClientMap(int oldPort, int newPort, ActiveCodeClient client){
+		/*
+		 * Invariant: port and client pair must always exist, otherwise we will lose a worker
+		 */
+		boolean portExists = workerPortToClient.remove(oldPort, client);
+		assert(portExists);
+		workerPortToClient.put(newPort, client);
+	}
 	
-	protected int getSpareWorkerPort(){
+	
+	protected int getSpareWorkerPort(){		
 		while(spareWorkers.keySet().isEmpty()){
 			System.out.println("The spare worker set is empty.");
 			synchronized(spareWorkers){
 				try{
 					spareWorkers.wait();
-				} catch(InterruptedException e) {
-					e.printStackTrace();
+				} catch(InterruptedException ie) {
+					ie.printStackTrace();
 				}
 			}
 		}
-		//assert(spareWorkers.keySet().isEmpty());
+		/*
+		 * Invariant: the spare worker set should not be empty
+		 */
+		assert(!spareWorkers.keySet().isEmpty());
 		int port = spareWorkers.keys().nextElement();
-		//System.out.println("The port is "+port);
 		return port;
 	}
 	
@@ -208,7 +253,11 @@ public class ClientPool implements Runnable{
 		return spareWorkers.remove(port);
 	}
 	
-	protected Process startNewWorker(int serverPort, int initMemory){
+	protected boolean getPortStatus(int port){
+		return portStatus.get(port);
+	}
+	
+	protected Process startNewWorker(int workerPort, int initMemory){
 		List<String> command = new ArrayList<>();
 		// Get the current classpath
 		String classpath = System.getProperty("java.class.path");
@@ -218,7 +267,7 @@ public class ClientPool implements Runnable{
 	    command.add("-cp");
 	    command.add(classpath);
 	    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
-	    command.add(Integer.toString(serverPort));
+	    command.add(Integer.toString(workerPort));
 	    command.add(Integer.toString(-1));
 	    command.add(Integer.toString(-1));
 	    
@@ -239,23 +288,28 @@ public class ClientPool implements Runnable{
 		return process;
 	}
 	
-	protected void addSpareWorker(){
-		int serverPort = getOpenUDPPort();
-		// maintain state for a worker
-		updateClientState(serverPort, false);		
+	/**
+	 * Start a spare worker
+	 */
+	public void addSpareWorker(){
+		System.out.println("Start adding a new spare worker ...");
+		int workerPort = getOpenUDPPort();	
+		portStatus.put(workerPort, false);
 		
-		Process process = startNewWorker(serverPort, 64);
+		Process process = startNewWorker(workerPort, 16);
 		
-		spareWorkers.put(serverPort, process);
+		spareWorkers.put(workerPort, process);
+		
 		synchronized(spareWorkers){
-			spareWorkers.notifyAll();
+			spareWorkers.notify();
 		}
 	}
 	
 	protected void generateNewWorker(){
-		executorPool.execute(new WorkerGeneratorRunanble());
+		//executorPool.execute(new WorkerGeneratorRunanble());
+		(new Thread(new WorkerGeneratorRunanble()) ).start();;
 	}
-	
+
 	private class WorkerGeneratorRunanble implements Runnable{
 		
 		public void run(){			

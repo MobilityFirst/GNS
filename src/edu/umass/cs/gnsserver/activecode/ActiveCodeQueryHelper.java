@@ -131,14 +131,16 @@ public class ActiveCodeQueryHelper {
 			//System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
 			if(acqreq.getAction().equals("read")) {
 				try{
+					boolean allowAccess = true;
+					/*
 					long t1 = System.nanoTime();
-					boolean allowAccess = false;
 					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
 							MetaDataTypeName.READ_WHITELIST, app, ach.getAddress());
 					DelayProfiler.updateDelayNano("activeCodeWhiteListVerification", t1);
 					if (publicKey != null){
 						allowAccess = true;
 					}
+					*/
 					if (allowAccess){
 						long start = System.nanoTime();
 						//Read the record and code from DB
@@ -177,15 +179,16 @@ public class ActiveCodeQueryHelper {
 			} else if(acqreq.getAction().equals("write")){
 				//TODO: implement write operation for external guid write
 				try{
-					long t1 = System.nanoTime();
-					boolean allowAccess = false;
+					boolean allowAccess = true;
+					/*
+					long t1 = System.nanoTime();					
 					String publicKey = NSAuthentication.lookupPublicKeyInAcl(currentGuid, field, targetGuid, 
 							MetaDataTypeName.WRITE_WHITELIST, app, ach.getAddress());
 					DelayProfiler.updateDelayNano("activeCodeWhiteListVerification", t1);
-					
 					if (publicKey != null){
 						allowAccess = true;
 					}
+					*/
 					if (allowAccess){
 						long start = System.nanoTime();
 						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,

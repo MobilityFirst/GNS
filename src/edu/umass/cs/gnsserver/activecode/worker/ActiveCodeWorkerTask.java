@@ -13,22 +13,16 @@ public class ActiveCodeWorkerTask implements Callable<JSONObject>{
 	private String field;
 	private ActiveCodeGuidQuerier querier;
 	
-	public ActiveCodeWorkerTask(Invocable inv, JSONObject value, String field, ActiveCodeGuidQuerier querier){
+	protected ActiveCodeWorkerTask(Invocable inv, JSONObject value, String field, ActiveCodeGuidQuerier querier){
 		this.inv = inv;
 		this.value = value;
 		this.field = field;
 		this.querier = querier;
 	}
 	
-	public JSONObject call(){
+	public JSONObject call() throws NoSuchMethodException, ScriptException{
 		JSONObject obj = null;
-		try{
-			obj = (JSONObject) inv.invokeFunction("run", value, field, querier);
-		}catch(ScriptException e){
-			e.printStackTrace();
-		}catch(NoSuchMethodException e){
-			e.printStackTrace();
-		}
+		obj = (JSONObject) inv.invokeFunction("run", value, field, querier);		
 		return obj;
 	}
 }

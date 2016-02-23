@@ -18,6 +18,10 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 
+/**
+ * @author gaozy
+ *
+ */
 public class CapacityTestClient {
 	private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static ArrayList<Long> latency = new ArrayList<Long>();
