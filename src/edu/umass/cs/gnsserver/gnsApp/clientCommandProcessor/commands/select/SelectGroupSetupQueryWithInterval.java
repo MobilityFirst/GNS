@@ -17,34 +17,34 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.select;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 
 /**
- * Initializes the group guid to automatically update and maintain all records that satisfy the query.
+ * Initializes a new group guid to automatically update and maintain all records that satisfy the query.
  * 
  * @author westy
  */
-public class SelectGroupSetupQueryWithGuidAndInterval extends SelectGroupSetupQuery {
+public class SelectGroupSetupQueryWithInterval extends SelectGroupSetupQuery {
 
   /**
    *
    * @param module
    */
-  public SelectGroupSetupQueryWithGuidAndInterval(CommandModule module) {
+  public SelectGroupSetupQueryWithInterval(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, QUERY, INTERVAL};
+    return new String[]{QUERY, INTERVAL};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Initializes the group guid to automatically update and maintain all records that satisfy the query."
+    return "Initializes a new group guid to automatically update and maintain all records that satisfy the query."
             + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this"
             + "interval will retrieve a stale value." 
             + "For details see http://gns.name/wiki/index.php/Query_Syntax "

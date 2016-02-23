@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.select;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -29,23 +29,23 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * A query that returns all guids that have a location field within the given area.
+ * A query that returns all guids that satisfy the given query.
  * 
  * @author westy
  */
-public class SelectWithin extends GnsCommand {
+public class SelectQuery extends GnsCommand {
 
   /**
    *
    * @param module
    */
-  public SelectWithin(CommandModule module) {
+  public SelectQuery(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{FIELD, WITHIN};
+    return new String[]{QUERY};
   }
 
   @Override
@@ -55,14 +55,14 @@ public class SelectWithin extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    String field = json.getString(FIELD);
-    String within = json.getString(WITHIN);
-    return FieldAccess.selectWithin(field, within, handler);
+    String query = json.getString(QUERY);
+    return FieldAccess.selectQuery(query, handler);
   }
 
   @Override
   public String getCommandDescription() {
-    return "Key must be a GeoSpatial field. Returns all records whose fields are within value which is a bounding box specified. "
-            + "Bounding box is a nested JSONArray string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]";
+    return "Returns all records that satisfy the query. "
+            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
+            + "Values are returned as a JSON array of JSON Objects.";
   }
 }

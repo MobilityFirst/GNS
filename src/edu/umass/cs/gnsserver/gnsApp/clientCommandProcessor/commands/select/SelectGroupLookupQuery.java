@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.select;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
@@ -29,23 +29,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Initializes a new group guid to automatically update and maintain all records that satisfy the query.
- * 
+ *
  * @author westy
  */
-public class SelectGroupSetupQuery extends GnsCommand {
+public class SelectGroupLookupQuery extends GnsCommand {
 
   /**
    *
    * @param module
    */
-  public SelectGroupSetupQuery(CommandModule module) {
+  public SelectGroupLookupQuery(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, QUERY};
+    return new String[]{GUID};
   }
 
   @Override
@@ -55,17 +54,13 @@ public class SelectGroupSetupQuery extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    String accountGuid = json.getString(GUID);
-    String query = json.getString(QUERY);
-    String publicKey = json.getString(PUBLIC_KEY);
-    int interval = json.optInt(INTERVAL, -1);
-    
-    return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKey, interval, handler);
+    String guid = json.getString(GUID);
+    return FieldAccess.selectGroupLookupQuery(guid, handler);
   }
 
   @Override
   public String getCommandDescription() {
-    return "Initializes a new group guid to automatically update and maintain all records that satisfy the query."
+    return "Returns all records for a group guid that was previously setup with a query. "
             + "For details see http://gns.name/wiki/index.php/Query_Syntax "
             + "Values are returned as a JSON array of JSON Objects.";
   }
