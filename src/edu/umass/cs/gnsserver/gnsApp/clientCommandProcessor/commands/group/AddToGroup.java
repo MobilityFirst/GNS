@@ -21,11 +21,13 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.group;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -68,10 +70,14 @@ public class AddToGroup extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     NSResponseCode responseCode;
-    if (!(responseCode = GroupAccess.addToGroup(guid, member, writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse<String>(OK_RESPONSE);
-    } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+    try {
+      if (!(responseCode = GroupAccess.addToGroup(guid, member, writer, signature, message, handler)).isAnError()) {
+        return new CommandResponse<String>(OK_RESPONSE);
+      } else {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      }
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
 

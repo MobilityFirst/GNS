@@ -51,6 +51,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import java.io.UnsupportedEncodingException;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -232,7 +233,8 @@ public class FieldAccess {
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GnsProtocol.ALL_FIELDS,
             reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
+      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0,
+              handler.getApp().getNodeID());
     }
     String resultString;
     NSResponseCode responseCode;
@@ -251,7 +253,7 @@ public class FieldAccess {
       resultString = GnsProtocol.BAD_RESPONSE;
       responseCode = NSResponseCode.ERROR;
     }
-    return new CommandResponse<>(resultString, responseCode, 0, "");
+    return new CommandResponse<>(resultString, responseCode, 0, handler.getApp().getNodeID());
 
 //
 //    String resultString;

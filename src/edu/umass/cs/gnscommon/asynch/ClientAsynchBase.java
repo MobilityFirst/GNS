@@ -454,15 +454,27 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     // Send a read command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid,
+    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, 
+            GUID, guid,
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 
-  public long fieldUpdateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long fieldReplaceOrCreateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
-    return sendCommandAsynch(createCommand(REPLACE_OR_CREATE_LIST, GUID, guid,
-            USER_JSON, value.toString(),
+    return sendCommandAsynch(createCommand(REPLACE_OR_CREATE_LIST, 
+            GUID, guid,
+            FIELD, field,
+            VALUE, value.toString(),
+            WRITER, MAGIC_STRING), callback);
+  }
+  
+  public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a read command that doesn't need authentication.
+    return sendCommandAsynch(createCommand(APPEND_LIST, 
+            GUID, guid,
+            FIELD, field,
+            VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 

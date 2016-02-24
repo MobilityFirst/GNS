@@ -93,7 +93,7 @@ public class NSFieldAccess {
    * @return ResultValue
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field, 
+  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
           GnsApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     ValuesMap valuesMap = lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, gnsApp.getDB());
@@ -204,14 +204,18 @@ public class NSFieldAccess {
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result.isEmpty() && !database.containsName(guid) && allowQueryToOtherNSs) {
       try {
-        String stringResult = new SideToSideQuery().fieldRead(guid, field);
+        String stringResult = new RemoteQuery().fieldReadArray(guid, field);
         result = new ResultValue(stringResult);
       } catch (Exception e) {
         GNS.getLogger().severe("Problem getting record from remote server: " + e);
       }
       //result = lookupListFieldQueryLNS(guid, field, activeReplica, lnsAddress);
-      if (!result.isEmpty()) {
-        GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru LNS query.");
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        if (!result.isEmpty()) {
+          GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " "
+                  + "not found on this server but was found thru remote query. "
+                  + "Returning " + result.toString());
+        }
       }
     }
     return result;
@@ -239,12 +243,12 @@ public class NSFieldAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ValuesMap lookupFieldAnywhere(String guid, String field,
-           GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+          GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException {
     ValuesMap result = lookupJSONFieldLocalNoAuth(guid, field, gnsApp);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
-        String stringResult = new SideToSideQuery().fieldRead(guid, field);
+        String stringResult = new RemoteQuery().fieldRead(guid, field);
         result = new ValuesMap();
         result.put(field, stringResult);
       } catch (Exception e) {

@@ -402,10 +402,14 @@ public class AccountAccess {
    * @param password
    * @param handler
    * @return the command response
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
   public static CommandResponse<String> addAccountWithVerification(final String host, final String name, final String guid,
           String publicKey, String password,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler)
+          throws GnsClientException, IOException, JSONException {
 
     CommandResponse<String> response;
     String verifyCode = createVerificationCode(name); // make this even if we don't need it
@@ -426,14 +430,16 @@ public class AccountAccess {
         }).start();
 
         if (emailOK) {
-          return new CommandResponse<String>(OK_RESPONSE);
+          return new CommandResponse<String>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {
           // if we can't send the confirmation back out of the account creation
           AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler);
           if (accountInfo != null) {
             removeAccount(accountInfo, handler);
           }
-          return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " " + "Unable to send verification email");
+          return new CommandResponse<String>(BAD_RESPONSE + " "
+                  + VERIFICATION_ERROR + " " + "Unable to send verification email",
+                  handler.getApp().getNodeID());
         }
       } else if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
@@ -505,7 +511,7 @@ public class AccountAccess {
       return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE
               + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Not an account guid");
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR 
+      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR
               + " Account not verified");
     }
     if (verifyPassword(accountInfo, password)) {
@@ -610,7 +616,7 @@ public class AccountAccess {
         // set up the default read access
         if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isAnError()) {
           //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
-          return new CommandResponse<String>(OK_RESPONSE);
+          return new CommandResponse<String>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
@@ -633,7 +639,8 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> removeAccount(AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> removeAccount(AccountInfo accountInfo, ClientRequestHandlerInterface handler)
+          throws GnsClientException, IOException, JSONException {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
@@ -846,8 +853,12 @@ public class AccountAccess {
    * @param guid
    * @param handler
    * @return the command response
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
-  public static CommandResponse<String> removeGuid(GuidInfo guid, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> removeGuid(GuidInfo guid, ClientRequestHandlerInterface handler)
+          throws GnsClientException, IOException, JSONException {
     return removeGuid(guid, null, false, handler);
   }
 
@@ -858,8 +869,12 @@ public class AccountAccess {
    * @param guid
    * @param handler
    * @return status result
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
-  public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo,
+          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
     return removeGuid(guid, accountInfo, false, handler);
   }
 
@@ -876,7 +891,7 @@ public class AccountAccess {
    * @return the command response
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
     // First make sure guid is not an account GUID 
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {

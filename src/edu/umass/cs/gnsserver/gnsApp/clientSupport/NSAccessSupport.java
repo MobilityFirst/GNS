@@ -53,7 +53,7 @@ import java.security.SignatureException;
  */
 public class NSAccessSupport {
 
-  private static boolean debuggingEnabled = false;
+  private static boolean debuggingEnabled = true;
 
   private static KeyFactory keyFactory;
   private static Signature sig;
@@ -69,7 +69,7 @@ public class NSAccessSupport {
 
   /**
    * Verifies that the signature corresponds to the message using the public key.
-   * 
+   *
    * @param accessorPublicKey
    * @param signature
    * @param message
@@ -138,8 +138,6 @@ public class NSAccessSupport {
       return true; // can always read your own stuff
     } else if (hierarchicalAccessCheck(access, guid, field, accessorGuid, activeReplica)) {
       return true; // accessor can see this field
-//    } else if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
-//      return true; // accessor can see this field
     } else if (checkForAccess(access, guid, ALL_FIELDS, accessorGuid, activeReplica)) {
       return true; // accessor can see all fields
     } else {
@@ -162,7 +160,7 @@ public class NSAccessSupport {
    * @return true if the accessor has access
    * @throws FailedDBOperationException
    */
-  private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid, 
+  private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid,
           String field, String accessorGuid,
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (debuggingEnabled) {
@@ -218,6 +216,10 @@ public class NSAccessSupport {
       // see if allowed users (the public keys for the guids and group guids that is in the ACL) 
       // intersects with the groups that this
       // guid is a member of (which is stored with this guid)
+      if (debuggingEnabled) {
+        GNS.getLogger().info("Looking up groups for " + accessorGuid
+                + " and check against " + ClientUtils.convertPublicKeysToGuids(allowedUsers));
+      }
       return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers),
               NSGroupAccess.lookupGroups(accessorGuid, activeReplica.getDB())).isEmpty();
     }
@@ -225,7 +227,7 @@ public class NSAccessSupport {
 
   /**
    * Returns true if the field has access setting that allow it to be read globally.
-   * 
+   *
    * @param access
    * @param guid
    * @param field
@@ -249,7 +251,7 @@ public class NSAccessSupport {
 
   /**
    * Looks up the public key for a guid using the acl of a field.
-   * 
+   *
    * @param access
    * @param guid
    * @param field

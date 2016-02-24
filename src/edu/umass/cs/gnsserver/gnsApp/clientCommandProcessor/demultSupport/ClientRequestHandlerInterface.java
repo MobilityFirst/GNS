@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApp;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.RequestHandlerParameters;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.SideToSideQuery;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
@@ -51,7 +51,7 @@ public interface ClientRequestHandlerInterface {
    * 
    * @return the remote query handler
    */
-  public SideToSideQuery getRemoteQuery();
+  public RemoteQuery getRemoteQuery();
   
   /**
    * The executor that runs tasks.

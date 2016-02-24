@@ -99,7 +99,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_01_CreateEntity() {
+  public void test_010_CreateEntity() {
     String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
@@ -112,7 +112,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_02_RemoveGuid() {
+  public void test_020_RemoveGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
@@ -136,7 +136,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_03_RemoveGuidSansAccountInfo() {
+  public void test_030_RemoveGuidSansAccountInfo() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
@@ -160,7 +160,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_04_LookupPrimaryGuid() {
+  public void test_040_LookupPrimaryGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
@@ -176,7 +176,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_05_CreateSubGuid() {
+  public void test_050_CreateSubGuid() {
     try {
       subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
@@ -186,7 +186,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_06_FieldNotFoundException() {
+  public void test_060_FieldNotFoundException() {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
@@ -198,7 +198,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_07_FieldExistsFalse() {
+  public void test_070_FieldExistsFalse() {
     try {
       assertFalse(client.fieldExists(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (Exception e) {
@@ -207,7 +207,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_08_CreateFieldForFieldExists() {
+  public void test_080_CreateFieldForFieldExists() {
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
     } catch (Exception e) {
@@ -217,7 +217,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_09_FieldExistsTrue() {
+  public void test_090_FieldExistsTrue() {
     try {
       assertTrue(client.fieldExists(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (Exception e) {
@@ -226,7 +226,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_10_CreateFields() {
+  public void test_100_CreateFields() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
@@ -263,7 +263,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_11_ACLPartOne() {
+  public void test_110_ACLPartOne() {
     //testCreateField();
 
     try {
@@ -290,7 +290,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_12_ACLPartTwo() {
+  public void test_120_ACLPartTwo() {
     try {
       String barneyName = "barney" + RandomString.randomString(6);
       try {
@@ -350,7 +350,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_13_ACLALLFields() {
+  public void test_130_ACLALLFields() {
     //testACL();
     String superUserName = "superuser" + RandomString.randomString(6);
     try {
@@ -376,7 +376,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_14_ACLCreateDeeperField() {
+  public void test_140_ACLCreateDeeperField() {
     try {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
@@ -402,7 +402,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_17_DB() {
+  public void test_170_DB() {
     //testCreateEntity();
     try {
 
@@ -461,7 +461,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_18_DBUpserts() {
+  public void test_180_DBUpserts() {
     HashSet<String> expected = null;
     HashSet<String> actual = null;
     try {
@@ -516,7 +516,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_19_Substitute() {
+  public void test_190_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -558,7 +558,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_20_SubstituteList() {
+  public void test_200_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -603,7 +603,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_21_Group() {
+  public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
@@ -616,6 +616,10 @@ public class UniversalCoreTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
+  }
+
+  @Test
+  public void test_211_GroupAdd() {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
@@ -633,8 +637,12 @@ public class UniversalCoreTest {
       assertEquals(expected, actual);
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while getting members and groups: " + e);
     }
+  }
+
+  @Test
+  public void test_212_GroupRemoveGuid() {
     // now remove a guid and check for group updates
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
@@ -649,7 +657,10 @@ public class UniversalCoreTest {
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
     }
+  }
 
+  @Test
+  public void test_213_GroupRemoveCheck() {
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
@@ -659,11 +670,10 @@ public class UniversalCoreTest {
       fail("Exception during remove guid group update test: " + e);
       System.exit(2);
     }
-
   }
 
   @Test
-  public void test_22_GroupAndACL() {
+  public void test_220_GroupAndACL() {
     //testGroup();
     String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
@@ -733,7 +743,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_23_Alias() {
+  public void test_230_Alias() {
     String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
     try {
       //
@@ -765,7 +775,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_24_WriteAccess() {
+  public void test_240_WriteAccess() {
     String fieldName = "whereAmI";
     try {
       try {
@@ -808,7 +818,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_25_UnsignedRead() {
+  public void test_250_UnsignedRead() {
     String unsignedReadFieldName = "allreadaccess";
     String standardReadFieldName = "standardreadaccess";
     try {
@@ -831,7 +841,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_26_UnsignedWrite() {
+  public void test_260_UnsignedWrite() {
     String unsignedWriteFieldName = "allwriteaccess";
     String standardWriteFieldName = "standardwriteaccess";
     try {
@@ -874,7 +884,7 @@ public class UniversalCoreTest {
 
     try {
       String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), fieldToDelete, westyEntry);
-      
+
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
     } catch (GnsClientException e) {
@@ -916,9 +926,9 @@ public class UniversalCoreTest {
       fail("Unexpected exception during test: " + e);
     }
   }
-  
+
   @Test
-  public void test_31_BasicSelect() {
+  public void test_310_BasicSelect() {
     try {
       JSONArray result = client.select("cats", "fred");
       // best we can do since there will be one, but possibly more objects in results
@@ -929,7 +939,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_32_GeoSpatialSelect() {
+  public void test_320_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "geoTest-" + RandomString.randomString(6));
@@ -969,9 +979,9 @@ public class UniversalCoreTest {
       fail("Exception executing selectWithin: " + e);
     }
   }
-  
+
   @Test
-  public void test_33_QuerySelect() {
+  public void test_330_QuerySelect() {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
@@ -1015,7 +1025,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_40_SetFieldNull() {
+  public void test_400_SetFieldNull() {
     String field = "fieldToSetToNull";
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
@@ -1048,7 +1058,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_41_JSONUpdate() {
+  public void test_410_JSONUpdate() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
@@ -1160,7 +1170,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_42_NewRead() {
+  public void test_420_NewRead() {
     try {
       JSONObject json = new JSONObject();
       JSONObject subJson = new JSONObject();
@@ -1220,7 +1230,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_43_NewUpdate() {
+  public void test_430_NewUpdate() {
     try {
       client.fieldUpdate(westyEntry.getGuid(), "flapjack.sally.right", "crank", westyEntry);
     } catch (Exception e) {
@@ -1301,7 +1311,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_51_CreateBatch() {
+  public void test_510_CreateBatch() {
     GuidEntry batchMasterGuid = null;
     try {
       String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
@@ -1333,7 +1343,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_52_CreateBatchFast() {
+  public void test_520_CreateBatchFast() {
     GuidEntry batchMasterGuid = null;
     try {
       String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
@@ -1365,7 +1375,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_53_CreateBatchFastest() {
+  public void test_530_CreateBatchFastest() {
     GuidEntry batchMasterGuid = null;
     try {
       String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
@@ -1391,11 +1401,11 @@ public class UniversalCoreTest {
       fail("Exception while fetching account record: " + e);
     }
   }
-  
+
   private static String createIndexTestField;
-  
+
   @Test
-  public void test_81_CreateField() {
+  public void test_810_CreateField() {
     createIndexTestField = "testField" + RandomString.randomString(6);
     try {
       client.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
@@ -1406,7 +1416,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_82_CreateIndex() {
+  public void test_820_CreateIndex() {
     try {
       client.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
     } catch (Exception e) {
@@ -1415,7 +1425,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_83_SelectPass() {
+  public void test_830_SelectPass() {
     try {
       JSONArray result = client.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
       for (int i = 0; i < result.length(); i++) {
@@ -1456,7 +1466,7 @@ public class UniversalCoreTest {
   //private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(33.45, -98.08);
   private static final Point2D UPPER_RIGHT = new Point2D.Double(RIGHT, TOP);
   //private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(33.45, -96.01);
-  private static final Point2D LOWER_RIGHT = new Point2D.Double( RIGHT, BOTTOM);
+  private static final Point2D LOWER_RIGHT = new Point2D.Double(RIGHT, BOTTOM);
   //private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(32.23, -96.01);
   private static final Point2D LOWER_LEFT = new Point2D.Double(LEFT, BOTTOM);
   //private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(32.23, -98.08);

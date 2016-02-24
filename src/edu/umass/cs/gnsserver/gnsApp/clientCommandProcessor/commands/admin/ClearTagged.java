@@ -23,9 +23,11 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -35,7 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 
+ *
  * Note: Currently doesn't handle subGuids that are tagged! Only deletes account GUIDs that are tagged.
  *
  * @author westy
@@ -65,14 +67,18 @@ public class ClearTagged extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
-    for (Iterator<?> it = handler.getAdmintercessor().collectTaggedGuids(tagName, handler).iterator(); it.hasNext();) {
-      String guid = (String) it.next();
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
-      if (accountInfo != null) {
-        AccountAccess.removeAccount(accountInfo, handler);
+    try {
+      for (Iterator<?> it = handler.getAdmintercessor().collectTaggedGuids(tagName, handler).iterator(); it.hasNext();) {
+        String guid = (String) it.next();
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
+        if (accountInfo != null) {
+          AccountAccess.removeAccount(accountInfo, handler);
+        }
       }
+      return new CommandResponse<String>(OK_RESPONSE);
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
-    return new CommandResponse<String>(OK_RESPONSE);
   }
 
   @Override

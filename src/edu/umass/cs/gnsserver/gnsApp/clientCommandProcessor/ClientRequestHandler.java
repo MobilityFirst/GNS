@@ -26,7 +26,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Inter
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.GnsApp;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.SideToSideQuery;
+import edu.umass.cs.gnsserver.gnsApp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.utils.MovingAverage;
@@ -67,7 +67,7 @@ import org.json.JSONException;
  */
 public class ClientRequestHandler implements ClientRequestHandlerInterface {
   
-  private final SideToSideQuery remoteQuery;
+  private final RemoteQuery remoteQuery;
   private final Intercessor intercessor;
   private final Admintercessor admintercessor;
   private final RequestHandlerParameters parameters;
@@ -126,7 +126,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
           GnsApp app,
           GNSNodeConfig<String> gnsNodeConfig,
           JSONMessenger<String> messenger, RequestHandlerParameters parameters) throws IOException {
-    this.remoteQuery = new SideToSideQuery();
+    this.remoteQuery = new RemoteQuery();
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
@@ -160,7 +160,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
-  public SideToSideQuery getRemoteQuery() {
+  public RemoteQuery getRemoteQuery() {
     return remoteQuery;
   }
   

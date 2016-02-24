@@ -19,11 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.main.GNS;
+import java.io.IOException;
+import java.util.Arrays;
+import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
 /**
@@ -58,7 +62,7 @@ public class GroupAccess {
    * @return a response code
    */
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler) throws IOException, JSONException, GnsClientException {
 
     NSResponseCode groupResponse = FieldAccess.update(guid, GROUP, memberGuid, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
@@ -70,8 +74,8 @@ public class GroupAccess {
     // FIXME: We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
-      FieldAccess.update(memberGuid, GROUPS, guid, null, -1,
-              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, handler);
+      // do a remote since memberGuid might ot be local
+      handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
 //      handler.setReallySendUpdateToReplica(true);
 //      handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
 //              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
@@ -92,7 +96,7 @@ public class GroupAccess {
    * @return a response code
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
     NSResponseCode groupResponse = FieldAccess.update(guid, GROUP, members, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
 
@@ -104,8 +108,7 @@ public class GroupAccess {
       // FIXME: We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
-        FieldAccess.update(memberGuid, GROUPS, guid, null, -1,
-                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
+        handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
 //        handler.setReallySendUpdateToReplica(true);
 //        handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
 //                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
@@ -125,19 +128,19 @@ public class GroupAccess {
    * @param message
    * @param handler
    * @return a response code
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    NSResponseCode response = FieldAccess.update(guid, GROUP, memberGuid, null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
-    //handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
-    if (response == NSResponseCode.NO_ERROR) {
-      FieldAccess.update(memberGuid, GROUPS, guid, null, -1,
+          ClientRequestHandlerInterface handler, boolean localGuid) throws GnsClientException, IOException, JSONException {
+    if (localGuid) {
+      FieldAccess.update(guid, GROUP, memberGuid, null, -1,
               UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
-      //handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     } else {
-      return response;
+      handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
     }
+    handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     return NSResponseCode.NO_ERROR;
   }
 
@@ -151,21 +154,15 @@ public class GroupAccess {
    * @param message
    * @param handler
    * @return a response code
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-
-    NSResponseCode response = FieldAccess.update(guid, GROUP, members, null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
-    // handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
-    if (response == NSResponseCode.NO_ERROR) {
-      for (String memberGuid : members.toStringSet()) {
-        FieldAccess.update(memberGuid, GROUPS, guid, null, -1,
-                UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
-        //handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
-      }
-    } else {
-      return response;
+          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
+    handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
+    for (String memberGuid : members.toStringSet()) {
+      handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     }
     return NSResponseCode.NO_ERROR;
 
@@ -198,7 +195,8 @@ public class GroupAccess {
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, guid, reader, signature, message, handler.getApp());
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUP,
+            reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();
     }
@@ -223,7 +221,8 @@ public class GroupAccess {
    */
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, guid, reader, signature, message, handler.getApp());
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS,
+            reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();
     }
@@ -241,11 +240,21 @@ public class GroupAccess {
    *
    * @param guid
    * @param handler
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
-  public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler) {
+  public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler)
+          throws GnsClientException, IOException, JSONException {
     // just so you know all the nulls mean we're ignoring signatures and authentication
+    if (true) {
+      GNS.getLogger().info("DELETE CLEANUP: " + guid);
+    }
     for (String groupGuid : GroupAccess.lookupGroups(guid, null, null, null, handler).toStringSet()) {
-      removeFromGroup(groupGuid, guid, null, null, null, handler);
+      if (true) {
+        GNS.getLogger().info("GROUP CLEANUP: " + groupGuid);
+      }
+      removeFromGroup(groupGuid, guid, null, null, null, handler, false);
     }
   }
 

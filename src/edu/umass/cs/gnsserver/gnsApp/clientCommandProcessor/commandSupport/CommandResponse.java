@@ -75,6 +75,16 @@ public class CommandResponse<NodeIDType> {
   public CommandResponse(String returnValue) {
     this(returnValue, NSResponseCode.NO_ERROR, -1, null);
   }
+  
+  /**
+   * Create a command response object from a return value with no error.
+   * 
+   * @param returnValue
+   * @param responder
+   */
+  public CommandResponse(String returnValue, NodeIDType responder) {
+    this(returnValue, NSResponseCode.NO_ERROR, -1, responder);
+  }
 
   /**
    * Gets the return value.

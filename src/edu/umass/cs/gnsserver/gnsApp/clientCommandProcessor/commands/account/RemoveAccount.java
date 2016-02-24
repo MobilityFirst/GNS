@@ -24,10 +24,12 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -72,15 +74,19 @@ public class RemoveAccount extends GnsCommand {
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
-    if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler, true);
-      if (accountInfo != null) {
-        return AccountAccess.removeAccount(accountInfo, handler);
+    try {
+      if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler, true);
+        if (accountInfo != null) {
+          return AccountAccess.removeAccount(accountInfo, handler);
+        } else {
+          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
+        }
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
-    } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
 

@@ -50,7 +50,7 @@ public class NSAuthentication {
 
   /**
    * Does access and signature checking for a field in a guid.
-   * 
+   *
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed
    * @param accessorGuid - the guid doing the access
@@ -58,7 +58,6 @@ public class NSAuthentication {
    * @param message
    * @param access - the type of access
    * @param gnsApp
-   * @param lnsAddress - used in case we need to do a query for more records
    * @return an {@link NSResponseCode}
    * @throws InvalidKeyException
    * @throws InvalidKeySpecException
@@ -67,9 +66,9 @@ public class NSAuthentication {
    * @throws FailedDBOperationException
    * @throws UnsupportedEncodingException
    */
-  public static NSResponseCode signatureAndACLCheck(String guid, String field, 
+  public static NSResponseCode signatureAndACLCheck(String guid, String field,
           String accessorGuid, String signature,
-          String message, MetaDataTypeName access, 
+          String message, MetaDataTypeName access,
           GnsApplicationInterface<String> gnsApp)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
@@ -95,7 +94,8 @@ public class NSAuthentication {
         // If we found the public key in the lookupPublicKey call then our access control list
         // check is done.
         aclCheckPassed = true;
-        // otherwise handle the other cases (group guid in acl) with a last ditch lookup
+        // otherwise handle the case where the accessor is a group guid and we need to lookup the 
+        // public key from the guid record which might not be local
       } else {
         GuidInfo accessorGuidInfo;
         if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp)) != null) {
@@ -110,10 +110,8 @@ public class NSAuthentication {
       // If we haven't found the publicKey of the accessorGuid yet it's not allowed access
       return NSResponseCode.BAD_ACCESSOR_ERROR;
     } else if (!aclCheckPassed) {
-      // Otherwise, in case we found the accessor public key by looking on another server
-      // but we still need to verify the ACL.
-      // Our last attempt to check the ACL - handles all the edge cases like group guid in acl
-      // FIXME: This ACL check Probably does more than it needs to.
+      // Otherwise, we need to find out if this accessorGuid is in a group guid that
+      // is in the acl of the field
       aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp);
     }
     DelayProfiler.updateDelay("authACL", aclStartTime);
@@ -132,7 +130,6 @@ public class NSAuthentication {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         }
         return NSResponseCode.SIGNATURE_ERROR;
-        //} else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, accessorGuid, gnsApp, lnsAddress)) {
       } else if (!aclCheckPassed) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
@@ -161,7 +158,7 @@ public class NSAuthentication {
    * @throws FailedDBOperationException
    */
   private static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,
-          MetaDataTypeName access,  GnsApplicationInterface<String> gnsApp)
+          MetaDataTypeName access, GnsApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     String publicKey;
     Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp.getDB());

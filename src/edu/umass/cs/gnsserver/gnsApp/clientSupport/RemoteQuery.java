@@ -54,7 +54,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class SideToSideQuery extends ClientAsynchBase {
+public class RemoteQuery extends ClientAsynchBase {
 
   // For synchronus replica messages
   private long replicaReadTimeout = 10000;
@@ -69,7 +69,7 @@ public class SideToSideQuery extends ClientAsynchBase {
           = new ConcurrentHashMap<>(10, 0.75f, 3);
   private final Object reconMonitor = new Object();
 
-  public SideToSideQuery() throws IOException {
+  public RemoteQuery() throws IOException {
   }
 
   /**
@@ -272,20 +272,40 @@ public class SideToSideQuery extends ClientAsynchBase {
     }
   }
 
-  public String fieldUpdateArray(String guid, String field, ResultValue value)
+  public String fieldReplaceOrCreateArray(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldReplaceOrCreateArray " + guid + " / " + field + " = " + value);
     }
-    long requestId = fieldUpdateArray(guid, field, value, replicaCommandCallback);
+    long requestId = fieldReplaceOrCreateArray(guid, field, value, replicaCommandCallback);
     CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
     if (packet == null) {
       throw new GnsClientException("Packet not found in table " + requestId);
     } else {
       String returnValue = packet.getReturnValue();
       if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldReplaceOrCreateArray of " + packet.getServiceName()
+                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
+      }
+      return checkResponse(returnValue);
+    }
+  }
+  
+  public String fieldAppendToArray(String guid, String field, ResultValue value)
+          throws IOException, JSONException, GnsClientException {
+    // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
+    if (debuggingEnabled) {
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldAppendToArray " + guid + " / " + field + " = " + value);
+    }
+    long requestId = fieldAppendToArray(guid, field, value, replicaCommandCallback);
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
+    if (packet == null) {
+      throw new GnsClientException("Packet not found in table " + requestId);
+    } else {
+      String returnValue = packet.getReturnValue();
+      if (debuggingEnabled) {
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldAppendToArray of " + packet.getServiceName()
                 + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
       }
       return checkResponse(returnValue);
@@ -317,7 +337,7 @@ public class SideToSideQuery extends ClientAsynchBase {
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldRemoveMultiple " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldRemoveMultiple(guid, field, value, replicaCommandCallback);
     CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
@@ -326,7 +346,7 @@ public class SideToSideQuery extends ClientAsynchBase {
     } else {
       String returnValue = packet.getReturnValue();
       if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldRemoveMultiple of " + packet.getServiceName()
                 + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
       }
       return checkResponse(returnValue);

@@ -24,10 +24,12 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +46,7 @@ public class RemoveGuid extends GnsCommand {
 
   /**
    * Creates a RemoveGuid instance.
-   * 
+   *
    * @param module
    */
   public RemoveGuid(CommandModule module) {
@@ -64,21 +66,22 @@ public class RemoveGuid extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-      String guidToRemove = json.getString(GUID);
-      String accountGuid = json.optString(ACCOUNT_GUID, null);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo accountGuidInfo = null;
-      GuidInfo guidInfoToRemove;
-      if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+    String guidToRemove = json.getString(GUID);
+    String accountGuid = json.optString(ACCOUNT_GUID, null);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    GuidInfo accountGuidInfo = null;
+    GuidInfo guidInfoToRemove;
+    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+    }
+    if (accountGuid != null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
-      if (accountGuid != null) {
-        if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
-          return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
-        }
-      }
-      if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey() 
+    }
+    try {
+      if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey()
               : guidInfoToRemove.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = null;
         if (accountGuid != null) {
@@ -91,6 +94,9 @@ public class RemoveGuid extends GnsCommand {
       } else {
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+    }
   }
 
   @Override

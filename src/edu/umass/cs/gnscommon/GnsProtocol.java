@@ -285,6 +285,7 @@ public class GnsProtocol {
   /**
    * The list of command types that are updated commands.
    */
+  // FIXME: hang this off the individual commands
   public final static List<String> UPDATE_COMMANDS
           = Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
                   APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
@@ -292,12 +293,13 @@ public class GnsProtocol {
                   SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
                   //
                   //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
-                  VERIFY_ACCOUNT, SET_PASSWORD,
+                  VERIFY_ACCOUNT, SET_PASSWORD, RESET_KEY,
                   //
                   ACL_ADD, ACL_REMOVE,
-                  //ADDTOGROUP, REMOVEFROMGROUP,
+                  ADD_TO_GROUP, REMOVE_FROM_GROUP,
                   //
                   ADD_TAG, REMOVE_TAG
+                  
           );
   // Currently unused
 
