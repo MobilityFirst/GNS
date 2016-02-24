@@ -328,7 +328,8 @@ public class TestReconfigurableClient {
                 new InetSocketAddress(InetAddress.getByName("localhost"),
                         3103)));
         while (client.exists
-                .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
+                .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODES
+                //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
                         .toString()))
 				;
         Thread.sleep(1000);
@@ -339,7 +340,8 @@ public class TestReconfigurableClient {
         client.sendRequest(new ReconfigureRCNodeConfig<Integer>(null, null,
                 deleted));
         while (client.exists
-                .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
+                .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODES
+                //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
                         .toString()));
         Thread.sleep(500);
       }
