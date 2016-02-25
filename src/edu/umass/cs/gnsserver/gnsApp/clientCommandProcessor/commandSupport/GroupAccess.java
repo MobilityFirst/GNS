@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
@@ -247,11 +248,11 @@ public class GroupAccess {
   public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
     // just so you know all the nulls mean we're ignoring signatures and authentication
-    if (true) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("DELETE CLEANUP: " + guid);
     }
     for (String groupGuid : GroupAccess.lookupGroups(guid, null, null, null, handler).toStringSet()) {
-      if (true) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("GROUP CLEANUP: " + groupGuid);
       }
       removeFromGroup(groupGuid, guid, null, null, null, handler, false);

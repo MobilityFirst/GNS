@@ -103,9 +103,9 @@ public class NSUpdateSupport {
       }
     } else {
       NameRecord nameRecord = getNameRecord(guid, field, operation, app.getDB());
-      boolean result = updateNameRecord(nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON,
+      updateNameRecord(nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON,
               app.getDB(), app.getActiveCodeHandler());
-      return result ? NSResponseCode.NO_ERROR : NSResponseCode.ERROR;
+      return NSResponseCode.NO_ERROR;
     }
   }
 
@@ -121,7 +121,7 @@ public class NSUpdateSupport {
       }
   }
 
-  private static boolean updateNameRecord(NameRecord nameRecord, String guid, String field,
+  private static void updateNameRecord(NameRecord nameRecord, String guid, String field,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException {
     ValuesMap newValue = null;
@@ -140,7 +140,7 @@ public class NSUpdateSupport {
       GNS.getLogger().info("****** field= " + field + " operation= " + operation.toString() + " value= " + updateValue.toString() + " name Record=" + nameRecord.toString());
     }
     // Apply update to record in the database
-    return nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
+    nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
   }
 
   private static ValuesMap handleActiveCode(String guid, String field, ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException, JSONException {

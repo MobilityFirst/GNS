@@ -659,21 +659,10 @@ public class UniversalCoreTest {
     }
   }
 
-  @Test
-  public void test_213_GroupRemoveCheck() {
-    try {
-      HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid()));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
-
-    } catch (Exception e) {
-      fail("Exception during remove guid group update test: " + e);
-      System.exit(2);
-    }
-  }
+  private static GuidEntry groupAccessUserEntry = null;
 
   @Test
-  public void test_220_GroupAndACL() {
+  public void test_220_GroupAndACLCreateGuids() {
     //testGroup();
     String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
@@ -685,7 +674,6 @@ public class UniversalCoreTest {
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
     }
-    GuidEntry groupAccessUserEntry = null;
 
     try {
       groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupAccessUserName);
@@ -693,7 +681,6 @@ public class UniversalCoreTest {
       client.aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
-      return;
     }
 
     try {
@@ -702,14 +689,16 @@ public class UniversalCoreTest {
       client.fieldCreateOneElementList(groupAccessUserEntry.getGuid(), "hometown", "whoville", groupAccessUserEntry);
     } catch (Exception e) {
       fail("Exception creating group user fields: " + e);
-      return;
     }
     try {
       client.aclAdd(AccessType.READ_WHITELIST, groupAccessUserEntry, "hometown", mygroupEntry.getGuid());
     } catch (Exception e) {
       fail("Exception adding mygroup to acl for group user hometown field: " + e);
-      return;
     }
+  }
+
+  @Test
+  public void test_221_GroupAndACLTestBadAccess() {
     try {
       try {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
@@ -720,17 +709,24 @@ public class UniversalCoreTest {
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
     }
+  }
+
+  @Test
+  public void test_222_GroupAndACLTestGoodAccess() {
     try {
       assertEquals("whoville", client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "hometown", westyEntry));
     } catch (Exception e) {
       fail("Exception while attempting read of groupAccessUser's hometown by westy: " + e);
     }
+  }
+  
+  @Test
+  public void test_223_GroupAndACLTestRemoveGuid() {
     try {
       try {
         client.groupRemoveGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       } catch (Exception e) {
         fail("Exception removing westy from mygroup: " + e);
-        return;
       }
 
       HashSet<String> expected = new HashSet<String>(Arrays.asList(samEntry.getGuid()));
@@ -863,7 +859,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_27_RemoveField() {
+  public void test_270_RemoveField() {
     String fieldToDelete = "fieldToDelete";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), fieldToDelete, "work", westyEntry);
@@ -895,7 +891,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_28_ListOrderAndSetElement() {
+  public void test_280_ListOrderAndSetElement() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
     } catch (Exception e) {

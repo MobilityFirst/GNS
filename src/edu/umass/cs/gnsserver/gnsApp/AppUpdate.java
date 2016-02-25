@@ -54,6 +54,7 @@ import java.security.spec.InvalidKeySpecException;
  * is complete.
  *
  */
+@Deprecated
 public class AppUpdate {
     
   /**
@@ -70,6 +71,7 @@ public class AppUpdate {
    * @throws IOException
    * @throws FailedDBOperationException
    */
+  @Deprecated
   public static void executeUpdateLocalUpdatePacket(UpdatePacket<String> updatePacket,
           GnsApplicationInterface<String> app,
           boolean doNotReplyToClient)
