@@ -69,19 +69,20 @@ public class ActiveCodeWorker {
 			ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
 		}
 		
-        while (keepGoing) {
-        	if (clientPort == -1){
-        		byte[] buffer = new byte[1024];
-        		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
-        		try{
-        			serverSocket.receive(pkt);
-        			clientPort = pkt.getPort();
-        			handler.setPort(clientPort);
-        		}catch(IOException e){
-        			e.printStackTrace();
-        		}
-        		continue;
-        	}
+		if (clientPort == -1){
+			byte[] buffer = new byte[8096];
+    		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
+    		try{
+    			serverSocket.receive(pkt);
+    			clientPort = pkt.getPort();
+    			handler.setPort(clientPort);
+    			System.out.println("The response port is set to "+clientPort);
+    		}catch(IOException e){
+    			e.printStackTrace();
+    		}
+    	}
+		
+        while (keepGoing) {        	
         	keepGoing = handler.handleRequest(serverSocket);
         	numReqs++;
         	if(numReqs%1000 == 0){

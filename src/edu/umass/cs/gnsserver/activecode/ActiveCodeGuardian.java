@@ -1,10 +1,8 @@
 package edu.umass.cs.gnsserver.activecode;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.FutureTask;
 
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -15,11 +13,11 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeGuardian implements Runnable {
 	private ClientPool clientPool;
-	private ConcurrentHashMap<ActiveCodeTask, Thread> threadMap = new ConcurrentHashMap<ActiveCodeTask, Thread>();
-	private static ConcurrentHashMap<ActiveCodeTask, Long> tasks = new ConcurrentHashMap<ActiveCodeTask, Long>();
-	private ConcurrentHashMap<ActiveCodeTask, FutureTask<ValuesMap>> runnableMap = new ConcurrentHashMap<ActiveCodeTask, FutureTask<ValuesMap>>();
-	private ConcurrentHashMap<ActiveCodeTask, ActiveCodeTask> relationMap = new ConcurrentHashMap<ActiveCodeTask, ActiveCodeTask>();
-	
+	private static ConcurrentHashMap<ActiveCodeFutureTask, Long> tasks = new ConcurrentHashMap<ActiveCodeFutureTask, Long>();
+			
+	/**
+	 * @param clientPool
+	 */
 	public ActiveCodeGuardian(ClientPool clientPool){
 		 this.clientPool = clientPool;
 	}
@@ -32,7 +30,7 @@ public class ActiveCodeGuardian implements Runnable {
 			assert(tasks.size() <= AppReconfigurableNodeOptions.activeCodeWorkerCount);
 			long now = System.currentTimeMillis();
 			synchronized(tasks){
-				for(ActiveCodeTask task:tasks.keySet()){
+				for(ActiveCodeFutureTask task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
 						cancelTask(task);
 					}
@@ -51,13 +49,13 @@ public class ActiveCodeGuardian implements Runnable {
 		}
 	}
 	
-	protected void cancelTask(ActiveCodeTask task){
+	protected void cancelTask(ActiveCodeFutureTask task){
 		
 		long start = System.currentTimeMillis();
 		synchronized(clientPool){
 			// shutdown the previous worker process 
-			Thread th = getThread(task);
-			ActiveCodeClient client = clientPool.getClient(th.getId());
+			ActiveCodeTask wrappedTask = task.getWrappedTask();
+			ActiveCodeClient client = wrappedTask.getClient();
 			int oldPort = client.getPort();
 			client.forceShutdownServer();
 														
@@ -72,54 +70,26 @@ public class ActiveCodeGuardian implements Runnable {
 			long t1 = System.nanoTime();
 			clientPool.generateNewWorker();
 			DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
+			
+			// deregister the task and cancel it
+			task.cancel(true);			
 		}
-		// deregister the task and cancel it
-		removeThread(task);
-		runnableMap.get(task).cancel(true);
 		
-		deregisterFutureTask(task);
+		
+		
 		DelayProfiler.updateDelay("ActiveCodeRestart", start);
 	}
 	
-	protected void registerFutureTask(ActiveCodeTask act, FutureTask<ValuesMap> task){
-		runnableMap.put(act, task);
-	}
-	
-	protected void deregisterFutureTask(ActiveCodeTask act){
-		runnableMap.remove(act);
-	}
-	
-	protected void register(ActiveCodeTask task){
+	protected void register(ActiveCodeFutureTask task){
 		synchronized(tasks){
 			tasks.put(task, System.currentTimeMillis());
 		}
 	}
 	
-	protected void remove(ActiveCodeTask task){
+	protected Long deregister(ActiveCodeFutureTask task){
 		synchronized(tasks){
-			tasks.remove(task);
+			return tasks.remove(task);
 		}
 	}
 	
-	protected void registerThread(ActiveCodeTask r, Thread t){
-		threadMap.put(r, t);
-		register(r);
-	}
-	
-	protected void removeThread(ActiveCodeTask r){
-		remove(r);
-		threadMap.remove(r);
-	}
-	
-	protected Thread getThread(ActiveCodeTask r){
-		return threadMap.get(r);
-	}
-	
-	protected void registerParent(ActiveCodeTask parent, ActiveCodeTask child){
-		relationMap.put(parent, child);
-	}
-	
-	protected void deregisterParent(ActiveCodeTask parent){
-		relationMap.remove(parent);
-	}
 }

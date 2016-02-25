@@ -30,9 +30,7 @@ import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -45,16 +43,13 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeQueryHelper {
 	private GnsApplicationInterface<String> app;
-	private ActiveCodeHandler ach;
 	
 	/**
 	 * Initialize an ActiveCodeQueryHelper
 	 * @param app
-	 * @param ach 
 	 */
-	public ActiveCodeQueryHelper(GnsApplicationInterface<String> app, ActiveCodeHandler ach) {
+	public ActiveCodeQueryHelper(GnsApplicationInterface<String> app) {
 		this.app = app;
-		this.ach = ach;
 	}
 
 	/**
@@ -152,12 +147,12 @@ public class ActiveCodeQueryHelper {
 						acqr = new ActiveCodeQueryResponse(true, nameRecord.getValuesMap().toString());
 						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
 						start = System.nanoTime();
-						if (codeRecord != null && nameRecord != null && ach.hasCode(codeRecord, "read")) {
+						if (codeRecord != null && nameRecord != null && ActiveCodeHandler.hasCode(codeRecord, "read")) {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
 							ValuesMap originalValues = nameRecord.getValuesMap();
 							ValuesMap newResult = null;
 							//System.out.println("Ready to do this external query for "+targetGuid+" on field "+field+" with the original value "+originalValues.toString());
-							newResult = ach.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+							newResult = ActiveCodeHandler.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
 							
 							if (newResult != null){
 								acqr = new ActiveCodeQueryResponse(true, newResult.toString());
@@ -195,13 +190,13 @@ public class ActiveCodeQueryHelper {
 				                  ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
 						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
 						start = System.nanoTime();
-						if (codeRecord != null && ach.hasCode(codeRecord, "write")) {
+						if (codeRecord != null && ActiveCodeHandler.hasCode(codeRecord, "write")) {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
 							ValuesMap userJSON = new ValuesMap(new JSONObject(acqreq.getValuesMapString()));
 							NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, ColumnFieldType.USER_JSON, field);
 							nameRecord.updateNameRecord(field, null, null, 0, userJSON,
 						              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
-							ach.runCode(code64, targetGuid, field, "write", nameRecord.getValuesMap(), hopLimit);
+							ActiveCodeHandler.runCode(code64, targetGuid, field, "write", nameRecord.getValuesMap(), hopLimit);
 							acqr = new ActiveCodeQueryResponse(true, null);
 						}
 						DelayProfiler.updateDelayNano("activeCodeQuerierWriteExecution", start);

@@ -45,7 +45,6 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 public class ClientPool implements Runnable, ClientPoolInterface{
 	private HashMap<Long, ActiveCodeClient> clients;
 	private GnsApplicationInterface<String> app;
-	private ActiveCodeHandler ach;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
 	
 	/**
@@ -58,10 +57,9 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 	private ConcurrentHashMap<Integer, ActiveCodeClient> workerPortToClient;
 	private ConcurrentHashMap<Integer, Boolean> portStatus;
 	
-	private static ConcurrentHashMap<Integer, Long> timeMap = new ConcurrentHashMap<Integer, Long>();
+	//private static ConcurrentHashMap<Integer, Long> timeMap = new ConcurrentHashMap<Integer, Long>();
 	private ExecutorService executorPool;
 	private final int numSpareWorker = AppReconfigurableNodeOptions.activeCodeSpareWorker;
-	//private Lock lock = new ReentrantLock();
 	
 	private static DatagramSocket tempSocket;
 	
@@ -70,10 +68,9 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 	
 	/**
 	 * Initialize a ClientPool
-	 * @param app
-	 * @param ach 
+	 * @param app 
 	 */
-	public ClientPool(GnsApplicationInterface<String> app, ActiveCodeHandler ach) {
+	public ClientPool(GnsApplicationInterface<String> app) {
 		try{
 			tempSocket = new DatagramSocket();
 			tempSocket.close();
@@ -83,7 +80,6 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 		
 		clients = new HashMap<>();
 		this.app = app;
-		this.ach = ach;
 		spareWorkers = new ConcurrentHashMap<Integer, Process>();
 		
 		// Initialize the worker port to client map
@@ -143,7 +139,7 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 		portStatus.put(workerPort, false);
 		
 		Process proc = startNewWorker(workerPort, 64);
-		ActiveCodeClient client = new ActiveCodeClient(app, ach, workerPort, proc);
+		ActiveCodeClient client = new ActiveCodeClient(app, workerPort, proc);
 		clients.put(t.getId(), client);
 		workerPortToClient.put(workerPort, client);
 		
@@ -292,26 +288,22 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 	 * Start a spare worker
 	 */
 	public void addSpareWorker(){
-		System.out.println("Start adding a new spare worker ...");
 		int workerPort = getOpenUDPPort();	
 		portStatus.put(workerPort, false);
 		
 		Process process = startNewWorker(workerPort, 16);
 		
 		spareWorkers.put(workerPort, process);
-		
 		synchronized(spareWorkers){
 			spareWorkers.notify();
 		}
 	}
 	
 	protected void generateNewWorker(){
-		//executorPool.execute(new WorkerGeneratorRunanble());
-		(new Thread(new WorkerGeneratorRunanble()) ).start();;
+		executorPool.execute(new WorkerGeneratorRunanble());
 	}
 
-	private class WorkerGeneratorRunanble implements Runnable{
-		
+	private class WorkerGeneratorRunanble implements Runnable{		
 		public void run(){			
 			addSpareWorker();
 		}

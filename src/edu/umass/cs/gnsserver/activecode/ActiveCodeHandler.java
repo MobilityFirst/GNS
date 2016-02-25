@@ -19,13 +19,11 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
-
-
-import java.net.InetSocketAddress;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -51,26 +49,22 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeHandler {	
 	private GnsApplicationInterface<?> gnsApp;
-	private ClientPool clientPool;
-	private ThreadFactory threadFactory;
-	private ActiveCodeExecutor executorPool;
-	private ActiveCodeGuardian guard;
-	private ActiveCodeScheduler scheduler;
-	private InetSocketAddress addr;
+	private static ClientPool clientPool;
+	private static ThreadFactory threadFactory;
+	private static ActiveCodeExecutor executorPool;
+	private static ActiveCodeGuardian guard;
+	private static ActiveCodeScheduler scheduler;
 	
-	protected static final long MILLISECONDS_PER_SEC = 1000;
 	
 	/**
 	 * Initializes an ActiveCodeHandler
 	 * @param app
-	 * @param numProcesses
-	 * @param addr 
 	 */
-	public ActiveCodeHandler(GnsApplicationInterface<String> app, int numProcesses, InetSocketAddress addr) {
-		this.setGnsApp(app);			    		
-	    this.addr = addr;
+	public ActiveCodeHandler(GnsApplicationInterface<String> app) {
+		int numProcesses = AppReconfigurableNodeOptions.activeCodeWorkerCount;
+		this.setGnsApp(app);
 	    
-		clientPool = new ClientPool(app, this); 
+		clientPool = new ClientPool(app); 
 		(new Thread(clientPool)).start();
 		
 		
@@ -83,9 +77,11 @@ public class ActiveCodeHandler {
 	    threadFactory = new ActiveCodeThreadFactory(clientPool);
 	    // Create the ThreadPoolExecutor
 	    executorPool = new ActiveCodeExecutor(numProcesses, numProcesses, 0, TimeUnit.SECONDS, 
-	    		new LinkedBlockingQueue<Runnable>(), 
-	    		//new SynchronousQueue<Runnable>(),
-	    		threadFactory, new ThreadPoolExecutor.DiscardPolicy());
+	    		new LinkedBlockingQueue<Runnable>(),
+	    		threadFactory, 
+	    		new ThreadPoolExecutor.DiscardPolicy(),
+	    		guard);
+	    
 	    // Start the processes
 	    int numThread = executorPool.prestartAllCoreThreads();
 	    System.out.println("##################### "+numThread+" threads have been started! ##################");
@@ -104,24 +100,14 @@ public class ActiveCodeHandler {
 	 * @param action can be 'read' or 'write'
 	 * @return whether or not there is active code
 	 */
-	public boolean hasCode(NameRecord nameRecord, String action) {
+	public static boolean hasCode(NameRecord nameRecord, String action) {
 		try {
             return nameRecord.getValuesMap().has(ActiveCode.codeField(action));
-			//ResultValue code = nameRecord.getKeyAsArray(ActiveCode.codeField(action));
-			//return code != null && !code.isEmpty();
 		} catch (FieldNotFoundException e) {
 			return false;
 		}
 	}
 	
-	
-	/**
-	 * return the local address
-	 * @return the address being bound with the local name server
-	 */
-	protected InetSocketAddress getAddress(){
-		return addr;
-	}
 	
 	/**
 	 * Runs the active code. Returns a {@link ValuesMap}.
@@ -134,7 +120,7 @@ public class ActiveCodeHandler {
 	 * @param activeCodeTTL the remaining active code TTL
 	 * @return a Valuesmap
 	 */
-	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
+	public static ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
 		long startTime = System.nanoTime();		
 		//Construct Value parameters
 		String code = new String(Base64.decodeBase64(code64));
@@ -143,9 +129,7 @@ public class ActiveCodeHandler {
 		//System.out.println("Got the request from guid "+guid+" for the field "+field+" with original value "+valuesMap);
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
-		ActiveCodeTask act = new ActiveCodeTask(acp, clientPool, guard);
-		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(act);
-		guard.registerFutureTask(act, futureTask);
+		ActiveCodeFutureTask futureTask = new ActiveCodeFutureTask(new ActiveCodeTask(acp, clientPool));
 		
 		DelayProfiler.updateDelayNano("activeHandlerPrepare", startTime);		
 		
@@ -155,34 +139,33 @@ public class ActiveCodeHandler {
 		
 		try {
 			result = futureTask.get();
-			guard.deregisterFutureTask(act);
 		} catch (ExecutionException ee) {
-			System.out.println("Execution "+guid+" Task "+act);
+			System.out.println("Execution "+guid+" Task "+futureTask);
 			//ee.printStackTrace();
-			act.deregisterTask();
 			scheduler.finish(guid);
 			//System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap+Thread.currentThread());
 			return valuesMap;
 		} catch(CancellationException ce) {
-			System.out.println("Cancel "+guid+" Task "+act);
+			System.out.println("Cancel "+guid+" Task "+futureTask);
 			//ce.printStackTrace();
-			act.deregisterTask();
 			scheduler.finish(guid);
 			//System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap+Thread.currentThread());
 			return valuesMap;
 		} catch(InterruptedException ie) {
-			System.out.println("Interrupt "+guid+" Task "+act+" thread "+Thread.currentThread());
+			System.out.println("Interrupt "+guid+" Task "+futureTask+" thread "+Thread.currentThread());
 			futureTask.cancel(true);
-			//ie.printStackTrace();
+			
+			/*
 			if(act != null){
 				if(act.isRunning()){
 					guard.cancelTask(act);
 					act.deregisterTask();
 				}else{
 					// clean up the task in scheduler
-					scheduler.removeTask(guid, futureTask);
+					System.out.println("The task "+ act + "is not running.");
 				}
 			}
+			*/
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (Exception e){
@@ -194,6 +177,7 @@ public class ActiveCodeHandler {
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
 		
 	    return result;
+		
 	}
 
 
@@ -210,5 +194,29 @@ public class ActiveCodeHandler {
 	 */
 	public void setGnsApp(GnsApplicationInterface<?> gnsApp) {
 		this.gnsApp = gnsApp;
+	}
+	
+	static class Task implements Runnable {
+		public void run() {
+			System.out.println("Task running");
+			throw new RuntimeException("TaskException " + System.currentTimeMillis());
+		}
+	}
+	
+	/**
+	 * @param args
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(4);
+		Future<?> future  = executor.submit(new Task());
+		Thread.sleep(1000);
+		try {
+			future.get();
+		} catch(ExecutionException re) {
+			re.printStackTrace();
+			future.get();
+		}
 	}
 }

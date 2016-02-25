@@ -84,11 +84,10 @@ public class SequentialRequestClient {
 		    client.activeCodeSet(guidAccount.getGuid(), "read", code64, guidAccount);
 	    }
 	    
+	    // Warm up
 	    for (int i=0; i<numReqs; i++){
 	    	long t1 = System.nanoTime();
 	    	client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
-	    	//System.out.println("The nextGuid is "+result);
-	    	//System.out.println("Get response "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);
@@ -98,7 +97,7 @@ public class SequentialRequestClient {
 	    for (int i=0; i<numReqs; i++){
 	    	long t1 = System.nanoTime();
 	    	String result = client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
-	    	System.out.println("The nextGuid is "+result);
+	    	//System.out.println("The nextGuid is "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;
 	    	latency.add(elapsed);

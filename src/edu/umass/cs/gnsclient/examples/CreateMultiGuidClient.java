@@ -30,7 +30,6 @@ public class CreateMultiGuidClient {
 	private static int NUM_CLIENT = 100;
 	private final static String filename = "/Users/gaozy/WebStorm/test.js"; //"/home/ubuntu/test.js"; //
 	private final static String mal_file = "/Users/gaozy/WebStorm/mal.js"; //"/home/ubuntu/mal.js"; //
-	private final static String key_folder = "/home/ubuntu/gns_key/"; //"/Users/gaozy/GNS/gns_key/"; //
 	private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	
 	/**

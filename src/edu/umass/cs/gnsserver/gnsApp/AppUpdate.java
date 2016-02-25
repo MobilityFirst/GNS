@@ -164,7 +164,7 @@ public class AppUpdate {
             //GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toString());
             GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toReasonableString());
           }
-          newValue = activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
+          newValue = ActiveCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
         } catch (Exception e) {
           GNS.getLogger().info("Active code error: " + e.getMessage());
         }

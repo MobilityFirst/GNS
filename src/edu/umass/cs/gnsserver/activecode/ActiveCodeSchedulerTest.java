@@ -3,7 +3,6 @@ package edu.umass.cs.gnsserver.activecode;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import org.junit.Test;
@@ -11,8 +10,15 @@ import org.junit.Test;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeScheduler;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+/**
+ * @author gaozy
+ *
+ */
 public class ActiveCodeSchedulerTest {
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testSubmit() {
 		// Initialize for test only
@@ -20,26 +26,29 @@ public class ActiveCodeSchedulerTest {
 		
 		//submit the first task
 		String guid = "1";
-		FutureTask<ValuesMap> task1 = new FutureTask<ValuesMap>(new FakeTask());
+		ActiveCodeFutureTask task1 = new ActiveCodeFutureTask(new FakeTask());
 		scheduler.submit(task1, guid);
 		assertEquals(1, scheduler.getGuidList().size());
 		assertEquals(1, scheduler.getFairQueue().size());
 		
 		//submit the second task
 		guid = "2";
-		FutureTask<ValuesMap> task2 = new FutureTask<ValuesMap>(new FakeTask());
+		ActiveCodeFutureTask task2 = new ActiveCodeFutureTask(new FakeTask());
 		scheduler.submit(task2, guid);
 		assertEquals(2, scheduler.getGuidList().size());
 		assertEquals(2, scheduler.getFairQueue().size());
 		
 		//submit the third task with an existing guid
 		guid = "1"; 
-		FutureTask<ValuesMap> task3 = new FutureTask<ValuesMap>(new FakeTask());
+		ActiveCodeFutureTask task3 = new ActiveCodeFutureTask(new FakeTask());
 		scheduler.submit(task3, guid);
 		assertEquals(2, scheduler.getGuidList().size());
 		assertEquals(2, scheduler.getFairQueue().size());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testRemove() {
 		// Initialize for test only
@@ -47,21 +56,21 @@ public class ActiveCodeSchedulerTest {
 		
 		//submit the first task
 		String guid = "1";
-		FutureTask<ValuesMap> task1 = new FutureTask<ValuesMap>(new FakeTask());
+		ActiveCodeFutureTask task1 = new ActiveCodeFutureTask(new FakeTask());
 		scheduler.submit(task1, guid);
 		assertEquals(1, scheduler.getGuidList().size());
 		assertEquals(1, scheduler.getFairQueue().size());
 		
 		//submit the second task
 		guid = "2";
-		FutureTask<ValuesMap> task2 = new FutureTask<ValuesMap>(new FakeTask());
+		ActiveCodeFutureTask task2 = new ActiveCodeFutureTask(new FakeTask());
 		scheduler.submit(task2, guid);
 		assertEquals(2, scheduler.getGuidList().size());
 		assertEquals(2, scheduler.getFairQueue().size());
 		
 		//submit the third task with an existing guid
 		guid = "1"; 
-		FutureTask<ValuesMap> task3 = new FutureTask<ValuesMap>(new FakeTask());
+		ActiveCodeFutureTask task3 = new ActiveCodeFutureTask(new FakeTask());
 		scheduler.submit(task3, guid);
 		assertEquals(2, scheduler.getGuidList().size());
 		assertEquals(2, scheduler.getFairQueue().size());
@@ -77,15 +86,18 @@ public class ActiveCodeSchedulerTest {
 		assertEquals(0, scheduler.getFairQueue().size());
 	}
 		
+	/**
+	 * 
+	 */
 	@Test
 	public void testGetNextGuid() {
 		// Initialize for test only
 		ActiveCodeScheduler scheduler = new ActiveCodeScheduler(null);
 		String[] guids = {"1", "2", "3"};
-		ArrayList<FutureTask<ValuesMap>> tasks = new ArrayList<FutureTask<ValuesMap>>();
+		ArrayList<ActiveCodeFutureTask> tasks = new ArrayList<ActiveCodeFutureTask>();
 		
 		for (int i=0; i<guids.length; i++){
-			tasks.add(new FutureTask<ValuesMap>(new FakeTask()));
+			tasks.add(new ActiveCodeFutureTask(new FakeTask()));
 		}
 		
 		for (int i=0; i<tasks.size(); i++){
@@ -99,21 +111,24 @@ public class ActiveCodeSchedulerTest {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testGetNextTask() {
 		ActiveCodeScheduler scheduler = new ActiveCodeScheduler(null);
 		String[] guids = {"1", "2", "3"};
-		ArrayList<FutureTask<ValuesMap>> tasks = new ArrayList<FutureTask<ValuesMap>>();
+		ArrayList<ActiveCodeFutureTask> tasks = new ArrayList<ActiveCodeFutureTask>();
 		
 		for (int i=0; i<guids.length*2; i++){
-			tasks.add(new FutureTask<ValuesMap>(new FakeTask()));
+			tasks.add(new ActiveCodeFutureTask(new FakeTask()));
 		}
-		FutureTask<ValuesMap> task = new FutureTask<ValuesMap>(new FakeTask());
+		ActiveCodeFutureTask task = new ActiveCodeFutureTask(new FakeTask());
 		
 		for (int i=0; i<tasks.size(); i++){
 			int index = i%guids.length;
 			scheduler.submit(tasks.get(i), guids[index]);
-			System.out.println(tasks.get(i)+" "+index);
+			//System.out.println(tasks.get(i)+" "+index);
 		}
 		scheduler.submit(task, guids[1]);
 		
@@ -122,14 +137,18 @@ public class ActiveCodeSchedulerTest {
 			assertEquals(tasks.get(i), t);
 			scheduler.finish(guids[i%guids.length]);
 		}
-		/*
+		
 		assertEquals(task, scheduler.getNextTask());
 		
 		assertEquals(null, scheduler.getNextGuid());
-		*/
+		
 	}
 	
-	private class FakeTask implements Callable<ValuesMap>{
+	private class FakeTask extends ActiveCodeTask{
+		FakeTask(){
+			super(null,null);
+		}
+		
 		public ValuesMap call(){
 			ValuesMap result = null;
 			return result;

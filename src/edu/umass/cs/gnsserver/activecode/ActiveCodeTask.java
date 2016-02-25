@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
+
 import java.util.concurrent.Callable;
 
 import edu.umass.cs.gnsserver.activecode.interfaces.ClientPoolInterface;
@@ -35,63 +36,70 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	
     private final ActiveCodeParams acp;
     private final ClientPoolInterface clientPool;
-    private ActiveCodeGuardian guard;
+    private ActiveCodeClient client;
     private boolean running = false;
+    private long startTime = System.currentTimeMillis();
     
     /**
      * Initialize a ActiveCodeTask
      * @param acp
      * @param clientPool
-     * @param guard 
      */
-    public ActiveCodeTask(ActiveCodeParams acp, ClientPoolInterface clientPool, ActiveCodeGuardian guard) {
+    public ActiveCodeTask(ActiveCodeParams acp, ClientPoolInterface clientPool) {
         this.acp = acp; 
         this.clientPool = clientPool;
-        this.guard = guard;
     }
     
-    protected void deregisterTask(){
-    	guard.removeThread(this);
-    }
-    
-    protected boolean isRunning(){
-    	return running;
-    }
     
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
      */
     public ValuesMap call() throws InterruptedException{ 
-    	/*
-    	 * Set the running state to true if call method is called. 
-    	 */
-    	this.running = true;
-    	
-    	long startTime = System.nanoTime();
-    	long pid = Thread.currentThread().getId();
-    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
-    	
-    	ValuesMap result = null;
-    	ActiveCodeClient client = clientPool.getClient(pid);
-    	
-    	//check the state of the client's worker
-    	while(!client.isReady()){
-    		// wait until it's ready
-    		synchronized(client){
-    			client.wait();
-    		}
+    	try {
+	    	running = true;
+	
+	    	long startTime = System.nanoTime();
+	    	long pid = Thread.currentThread().getId();
+	    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
+	    	
+	    	ValuesMap result = null;
+	    	client = clientPool.getClient(pid);
+	    	
+	    	//check the state of the client's worker
+	    	while(!client.isReady()){
+	    		// wait until it's ready
+	    		synchronized(client){
+	    			client.wait();
+	    		}
+	    	}
+	    	DelayProfiler.updateDelayNano("activeCodeBeforeSending", startTime);
+	  	
+	    	if(acp != null) {
+	    		result = client.runActiveCode(acp);
+	    	}
+	    	
+	    	DelayProfiler.updateDelayNano("activeCodeTask", startTime);
+	    	
+	    	return result;    	
+    	} finally {
+    		// arun
+    		assert(System.currentTimeMillis() - this.startTime < 2000);
     	}
-    	
-    	guard.registerThread(this, Thread.currentThread());   	
-    	if(acp != null) {
-    		result = client.runActiveCode(acp);
-    	}    	
-    	guard.removeThread(this);
-    	
-    	DelayProfiler.updateDelayNano("activeTask", startTime);
-    	
-    	return result;
     }
     
+    protected Thread getThread(){
+    	//Invariant: this task must be running when being called this method 
+    	assert(running == true);
+    	return Thread.currentThread();
+    }
+    
+    protected ActiveCodeClient getClient(){
+    	assert(client != null);
+    	return client;
+    }
+    
+    protected void interrupt(){
+    	
+    }
 }

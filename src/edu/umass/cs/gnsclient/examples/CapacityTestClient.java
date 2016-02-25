@@ -70,8 +70,10 @@ public class CapacityTestClient {
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
     			if(j%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
+    				//send benign request
     				clients[j].sendSingleRequest(client, false);
     			}else{
+    				//send malicious request
     				clients[j].sendSingleRequest(client, true);
     			}
     			r.record();

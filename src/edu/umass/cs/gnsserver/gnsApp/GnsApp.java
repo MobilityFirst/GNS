@@ -139,9 +139,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
     GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
-    this.activeCodeHandler = new ActiveCodeHandler(this,
-            AppReconfigurableNodeOptions.activeCodeWorkerCount,
-            new InetSocketAddress(nodeConfig.getBindAddress(id), nodeConfig.getCcpPort(id)));
+    this.activeCodeHandler = new ActiveCodeHandler(this);
   }
   
   

@@ -28,6 +28,7 @@ public class SingleClient implements Runnable{
 		} else{
 			this.numReq = MessageStats.DURATION*1000/MessageStats.INTERVAL;
 		} 
+		numReq = 100;
 	}
 	
 	public void run(){

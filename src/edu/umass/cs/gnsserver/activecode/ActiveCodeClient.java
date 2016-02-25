@@ -21,8 +21,6 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,25 +42,21 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeClient {
-//	protected Lock lock = new ReentrantLock();
 	private boolean ready = false;
 	private int serverPort;
 	private Process process;
 	private final GnsApplicationInterface<String> app;
 	private DatagramSocket clientSocket;
-	private byte[] buffer = new byte[8096*10];
-	private ActiveCodeHandler ach;
+	private byte[] buffer = new byte[8096];
 	
 	
 	/**
-	 * @param app the gns app
-	 * @param ach 
+	 * @param app the gnsApp
      * @param port 
 	 * @param proc 
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<String> app, ActiveCodeHandler ach, int port, Process proc) {
+	public ActiveCodeClient(GnsApplicationInterface<String> app, int port, Process proc) {
 		this.app = app;
-		this.ach = ach;
 		this.ready = false;
 		//initialize the clientSocket first
 		try{
@@ -89,7 +83,7 @@ public class ActiveCodeClient {
 		acm.setAcp(acp);
 		ValuesMap vm = null;
 		
-		vm = submitRequest(acm, ach);
+		vm = submitRequest(acm);
 		
 		return vm;
 	}
@@ -113,16 +107,16 @@ public class ActiveCodeClient {
 	 * @param acmReq
 	 * @return the ValuesMap object returned by the active code
 	 */
-	protected ValuesMap submitRequest(ActiveCodeMessage acmReq, ActiveCodeHandler ach) {
+	protected ValuesMap submitRequest(ActiveCodeMessage acmReq) {
 		long startTime = System.nanoTime();
 		boolean crashed = false;
 		
-		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app, ach);
+		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
 		
 		boolean codeFinished = false;
 		String valuesMapString = null;
 		
-		// Serialize the request
+		// Send the request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
 				
@@ -187,7 +181,7 @@ public class ActiveCodeClient {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setShutdown(true);
 		try {
-			submitRequest(acm, ach);
+			submitRequest(acm);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

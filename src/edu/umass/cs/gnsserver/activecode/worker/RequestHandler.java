@@ -60,7 +60,8 @@ public class RequestHandler {
 		
 		try {			
 			// Get the ActiveCodeMessage from the GNS
-		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, buffer);		    
+		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, buffer);		
+		    //FIXME: do not need to initialize new querier everytime
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);
 		    
 		    if( acm.isShutdown() ) {
@@ -77,10 +78,8 @@ public class RequestHandler {
 			    ActiveCodeParams params = acm.getAcp();			    
 			   
 			    //System.out.println("Got the message from port "+socket.getLocalPort());
-			    if(params == null){
-			    	System.out.println("The value is null!");
-			    	//return true;
-			    }
+			    assert(params != null);
+			    
 			    //System.out.println("The hop is "+params.getHopLimit()+". The guid is "+params.getGuid());
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    JSONParser parser = new JSONParser();
@@ -98,6 +97,7 @@ public class RequestHandler {
 			    acmResp.setCrashed(querier.getError());
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
 			    ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
+			    //System.out.println("Send the response back through port "+socket.getLocalPort());
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }
 		    
