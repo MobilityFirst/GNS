@@ -24,10 +24,12 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Base64;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -71,22 +73,26 @@ public class RegisterAccount extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     byte[] publicKeyBytes = Base64.decode(publicKey);
     String guid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
-    
+
     // FIXME: this lacking signature check is for temporary backward compatability... remove it.
     // See RegisterAccountUnsigned
-    if (signature != null && message != null) { 
+    if (signature != null && message != null) {
       if (!AccessSupport.verifySignature(publicKey, signature, message)) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
 //      } else {
 //        GNS.getLogger().info("########SIGNATURE VERIFIED FOR CREATE " + name);
       }
     }
-    CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
-            password, handler);
-    if (result.getReturnValue().equals(OK_RESPONSE)) {
-      return new CommandResponse<String>(guid);
-    } else {
-      return result;
+    try {
+      CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
+              password, handler);
+      if (result.getReturnValue().equals(OK_RESPONSE)) {
+        return new CommandResponse<String>(guid);
+      } else {
+        return result;
+      }
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
 
