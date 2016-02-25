@@ -69,32 +69,16 @@ public class RemoveAlias extends GnsCommand {
     String name = json.getString(NAME);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    if (AccountAccess.lookupGuidInfo(guid, handler, true) == null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
-    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
-    if (!accountInfo.isVerified()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-    } else if (accountInfo == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
-    }
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
+    if (accountInfo == null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    } else if (!accountInfo.isVerified()) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+    } 
     return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, handler);
-
-//      GuidInfo guidInfo;
-//      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-//      }
-//      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-//        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
-//        if (accountInfo == null) {
-//          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
-//        }
-//        return AccountAccess.removeAlias(accountInfo, name);
-//      } else {
-//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
-//      }
-    //}
   }
 
   @Override

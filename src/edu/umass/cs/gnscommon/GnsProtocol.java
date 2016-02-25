@@ -290,9 +290,7 @@ public class GnsProtocol {
           = Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
                   APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
                   APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
-                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
-                  //
-                  //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
+                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX, 
                   VERIFY_ACCOUNT, SET_PASSWORD, RESET_KEY,
                   //
                   ACL_ADD, ACL_REMOVE,
@@ -301,7 +299,13 @@ public class GnsProtocol {
                   ADD_TAG, REMOVE_TAG
                   
           );
-  // Currently unused
+  
+  /**
+   * The list of command types that create and delete records.
+   */
+   public final static List<String> CREATE_DELETE_COMMANDS
+          = Arrays.asList(REGISTER_ACCOUNT, REMOVE_ACCOUNT, ADD_GUID, 
+                  REMOVE_GUID, ADD_ALIAS, REMOVE_ALIAS);
 
   /**
    * The list of command types that are read commands.

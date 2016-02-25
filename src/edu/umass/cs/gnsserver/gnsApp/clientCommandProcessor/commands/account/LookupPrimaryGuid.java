@@ -55,7 +55,7 @@ public class LookupPrimaryGuid extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
-    String result = AccountAccess.lookupPrimaryGuid(guid, handler);
+    String result = AccountAccess.lookupPrimaryGuid(guid, handler, false);
     if (result != null) {
       return new CommandResponse<String>(result);
     } else {

@@ -194,9 +194,11 @@ public class AccountAccess {
    *
    * @param guid
    * @param handler
+   * @param allowRemoteLookup
    * @return a GUID
    */
-  public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler) {
+  public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler,
+          boolean allowRemoteLookup) {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, PRIMARY_GUID,
@@ -218,7 +220,21 @@ public class AccountAccess {
 //      }
 //    } catch (JSONException e) {
 //    }
-    return null;
+    String value = null;
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX PRIMARY_GUID NOT FOUND LOCALLY for " + guid);
+    }
+    if (allowRemoteLookup) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for " + guid);
+      }
+      try {
+        value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
+      } catch (IOException | JSONException | GnsClientException e) {
+        GNS.getLogger().severe("Problem getting HRN_GUID for " + guid + " from remote server: " + e);
+      }
+    }
+    return value;
   }
 
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
@@ -902,7 +918,7 @@ public class AccountAccess {
     }
     // Fill in a missing account info
     if (accountInfo == null) {
-      String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid(), handler);
+      String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid(), handler, true);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid.getGuid() + " does not have a primary account guid");
