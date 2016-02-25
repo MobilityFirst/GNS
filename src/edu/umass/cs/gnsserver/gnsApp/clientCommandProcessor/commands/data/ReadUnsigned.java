@@ -49,10 +49,11 @@ public class ReadUnsigned extends Read {
     return new String[]{GUID, FIELD};
   }
   
+  @Override
    public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
      // Tells the lookup handler that we don't need to authenticate.
-     // Will be something more secure in the future.
+     // Will be moved to the client and will something more secure in the future.
      json.put(READER, MAGIC_STRING);
      return super.execute(json, handler);
    }

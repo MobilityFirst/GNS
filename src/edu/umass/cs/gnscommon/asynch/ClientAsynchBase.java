@@ -442,11 +442,13 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long fieldRead(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
+    // FIXME: MAGIC_STRING stuff is currently on the server.
     return sendCommandAsynch(createCommand(READ, GUID, guid, FIELD, field), callback);
   }
 
   public long fieldReadArray(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
+    // FIXME: MAGIC_STRING stuff is currently on the server.
     return sendCommandAsynch(createCommand(READ_ARRAY, GUID, guid, FIELD, field), callback);
   }
 
