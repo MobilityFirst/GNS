@@ -57,14 +57,14 @@ import org.json.JSONObject;
 public class RemoteQuery extends ClientAsynchBase {
 
   // For synchronus replica messages
-  private long replicaReadTimeout = 10000;
+  private long defaultReplicaTimeout = 2000;
   private final ConcurrentMap<Long, ClientRequest> replicaResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
   private final Object replicaCommandMonitor = new Object();
   private boolean debuggingEnabled = true;
 
   // For synchronus recon messages
-  private long recondReadTimeout = 10000;
+  private long defaultReconTimeout = 2000;
   private final ConcurrentMap<String, ClientReconfigurationPacket> reconResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
   private final Object reconMonitor = new Object();
@@ -76,6 +76,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * A callback that notifys any waits and records the response from a replica.
    */
   private RequestCallback replicaCommandCallback = (Request response) -> {
+    GNS.getLogger().severe("RRRRRRRRRRRRRRRRRRRRRRR REPLICA CALLBACK: " + response.toString());
     ClientRequest packet = (ClientRequest) response;
     replicaResultMap.put(packet.getRequestID(), packet);
     synchronized (replicaCommandMonitor) {
@@ -92,16 +93,20 @@ public class RemoteQuery extends ClientAsynchBase {
       reconMonitor.notifyAll();
     }
   };
-
+  
   private ClientRequest waitForReplicaResponse(long id) throws GnsClientException {
+    return waitForReplicaResponse(id, defaultReplicaTimeout);
+  }
+
+  private ClientRequest waitForReplicaResponse(long id, long timeout) throws GnsClientException {
     try {
       synchronized (replicaCommandMonitor) {
         long monitorStartTime = System.currentTimeMillis();
         while (!replicaResultMap.containsKey(id)
-                && (replicaReadTimeout == 0 || System.currentTimeMillis() - monitorStartTime < replicaReadTimeout)) {
-          replicaCommandMonitor.wait(replicaReadTimeout);
+                && (timeout == 0 || System.currentTimeMillis() - monitorStartTime < timeout)) {
+          replicaCommandMonitor.wait(timeout);
         }
-        if (replicaReadTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= replicaReadTimeout) {
+        if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
           throw new GnsClientException("Timeout waiting for response packet for " + id);
         }
       }
@@ -110,16 +115,21 @@ public class RemoteQuery extends ClientAsynchBase {
     }
     return replicaResultMap.remove(id);
   }
-
+  
   private ClientReconfigurationPacket waitForReconResponse(String serviceName) throws GnsClientException {
+    return waitForReconResponse(serviceName, defaultReconTimeout);
+  }
+
+  private ClientReconfigurationPacket waitForReconResponse(String serviceName, long timeout) 
+          throws GnsClientException {
     try {
       synchronized (reconMonitor) {
         long monitorStartTime = System.currentTimeMillis();
         while (!reconResultMap.containsKey(serviceName)
-                && (recondReadTimeout == 0 || System.currentTimeMillis() - monitorStartTime < recondReadTimeout)) {
-          reconMonitor.wait(recondReadTimeout);
+                && (timeout == 0 || System.currentTimeMillis() - monitorStartTime < timeout)) {
+          reconMonitor.wait(timeout);
         }
-        if (recondReadTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= recondReadTimeout) {
+        if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
           throw new GnsClientException("Timeout waiting for response packet for " + serviceName);
         }
       }
@@ -320,7 +330,8 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldRemove(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
+    // NOTE THE LONGER TIMEOUT!!!
+    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId, 4000);
     if (packet == null) {
       throw new GnsClientException("Packet not found in table " + requestId);
     } else {

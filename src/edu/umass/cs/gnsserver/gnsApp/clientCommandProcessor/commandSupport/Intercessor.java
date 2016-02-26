@@ -73,6 +73,7 @@ import java.util.Set;
  *
  * @author westy
  */
+@Deprecated
 public class Intercessor implements IntercessorInterface {
 
   /* Used by the wait/notify calls */

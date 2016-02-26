@@ -75,7 +75,7 @@ public class AddAlias extends GnsCommand {
 //      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
 //        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
 //      }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
         if (accountInfo == null) {
           return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
         }

@@ -719,7 +719,7 @@ public class UniversalCoreTest {
       fail("Exception while attempting read of groupAccessUser's hometown by westy: " + e);
     }
   }
-  
+
   @Test
   public void test_223_GroupAndACLTestRemoveGuid() {
     try {
@@ -738,35 +738,46 @@ public class UniversalCoreTest {
     }
   }
 
+  private static String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
+
   @Test
-  public void test_230_Alias() {
-    String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
+  public void test_230_AliasAdd() {
     try {
-      //
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
-      //
       // add an alias to the masterGuid
       client.addAlias(masterGuid, alias);
       // lookup the guid using the alias
       assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
+    } catch (Exception e) {
+      fail("Exception while adding alias: " + e);
+    }
+  }
 
+  @Test
+  public void test_231_AliasRemove() {
+    try {
       // grab all the alias from the guid
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.getAliases(masterGuid));
       // make sure our new one is in there
       assertThat(actual, hasItem(alias));
-
       // now remove it 
       client.removeAlias(masterGuid, alias);
+    } catch (Exception e) {
+      fail("Exception removing alias: " + e);
+    }
+  }
 
+  @Test
+  public void test_232_AliasCheck() {
+    try {
       // an make sure it is gone
       try {
         client.lookupGuid(alias);
         fail(alias + " should not exist");
       } catch (GnsClientException e) {
       }
-
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while checking alias: " + e);
     }
   }
 

@@ -97,7 +97,6 @@ public class TestSignatureTest {
   }
 
   @Test
-  @Order(1)
   public void test_01() {
     try {
       JSONObject command = client.createAndSignCommand(guid.getPrivateKey(), GnsProtocol.READ_ARRAY,

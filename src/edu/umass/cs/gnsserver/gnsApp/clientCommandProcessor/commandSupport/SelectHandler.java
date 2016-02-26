@@ -44,6 +44,7 @@ import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
  *
  * @author westy
  */
+@Deprecated
 public class SelectHandler {
 
   /**

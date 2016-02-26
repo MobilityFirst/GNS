@@ -58,7 +58,7 @@ public class CommandHandler {
 
   private static long commandCount = 0;
 
-  private static final boolean USE_EXEC_POOL_TO_RUN_COMMANDS = true;
+  private static final boolean USE_EXEC_POOL_TO_RUN_COMMANDS = false;
 
   private static final ExecutorService execPool
           = USE_EXEC_POOL_TO_RUN_COMMANDS == true ? Executors.newFixedThreadPool(100) : null;

@@ -133,9 +133,9 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     if (actives != null) {
       if (handler.isDebugMode()) {
         if (!disableRequestActives) {
-          GNS.getLogger().info("Found actives in cache for " + packet.getServiceName() + ": " + actives);
+          GNS.getLogger().fine("Found actives in cache for " + packet.getServiceName() + ": " + actives);
         } else {
-          GNS.getLogger().info("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
+          GNS.getLogger().fine("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
         }
       }
       if (disableCommandRetransmitter) {
@@ -185,14 +185,14 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
       }
     } else {
       if (handler.isDebugMode()) {
-        GNS.getLogger().info("Duplicate response for " + id + ": " + json);
+        GNS.getLogger().fine("Duplicate response for " + id + ": " + json);
       }
     }
   }
 
   private void handleRequestActives(JSONObject json) {
     if (handler.isDebugMode()) {
-      GNS.getLogger().info(")))))))))))))))))))))))))))) REQUEST ACTIVES RECEIVED: " + json.toString());
+      GNS.getLogger().fine(")))))))))))))))))))))))))))) REQUEST ACTIVES RECEIVED: " + json.toString());
 
     }
     try {
@@ -200,7 +200,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
       if (requestActives.getActives() != null) {
         if (handler.isDebugMode()) {
           for (InetSocketAddress address : requestActives.getActives()) {
-            GNS.getLogger().info("ACTIVE ADDRESS HOST: " + address.toString());
+            GNS.getLogger().fine("ACTIVE ADDRESS HOST: " + address.toString());
           }
         }
         // Update the cache so that request actives task will now complete

@@ -72,7 +72,7 @@ public class RemoveGuid extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
-    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
+    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler, true)) == null) {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
     }
     if (accountGuid != null) {

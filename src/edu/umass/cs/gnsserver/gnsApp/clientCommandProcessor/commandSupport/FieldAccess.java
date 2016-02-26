@@ -651,14 +651,14 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
     String guid = ClientUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
-    if (lookupGuidInfo(guid, handler) == null) {
+    if (lookupGuidInfo(guid, handler, true) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
       if (accountInfo == null) {
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }

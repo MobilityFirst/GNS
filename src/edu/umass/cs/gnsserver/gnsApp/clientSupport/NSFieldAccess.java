@@ -48,8 +48,7 @@ public class NSFieldAccess {
           BasicRecordMap database) throws FailedDBOperationException {
     NameRecord nameRecord = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKUP_FIELD_LOCALLY: "
-              + guid + " : " + field + "->" + nameRecord);
+      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKUP_FIELD_LOCALLY: " + guid + " : " + field);
     }
     // Try to look up the value in the database
     try {

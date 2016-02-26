@@ -217,13 +217,14 @@ public class GnsProtocol {
   // This one is special, used for the action part of the command
   public final static String COMMANDNAME = "COMMANDNAME"; // aka "action"
 
-   // Active code actions and fields
-  public final static String  AC_SET                        = "acSet";
-  public final static String  AC_GET                        = "acGet";
-  public final static String  AC_CLEAR                      = "acClear";
-  public final static String  AC_ACTION                     = "acAction";
-  public final static String  AC_CODE                       = "acCode";
- //
+  // Active code actions and fields
+  public final static String AC_SET = "acSet";
+  public final static String AC_GET = "acGet";
+  public final static String AC_CLEAR = "acClear";
+  public final static String AC_ACTION = "acAction";
+  public final static String AC_CODE = "acCode";
+  //
+
   /**
    * This class defines AccessType for ACLs
    *
@@ -281,7 +282,7 @@ public class GnsProtocol {
   public static boolean isInternalField(String key) {
     return key.startsWith(INTERNAL_PREFIX);
   }
-  
+
   /**
    * The list of command types that are updated commands.
    */
@@ -290,22 +291,22 @@ public class GnsProtocol {
           = Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
                   APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
                   APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
-                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX, 
+                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
                   VERIFY_ACCOUNT, SET_PASSWORD, RESET_KEY,
                   //
                   ACL_ADD, ACL_REMOVE,
                   ADD_TO_GROUP, REMOVE_FROM_GROUP,
                   //
                   ADD_TAG, REMOVE_TAG
-                  
           );
-  
+
   /**
    * The list of command types that create and delete records.
    */
-   public final static List<String> CREATE_DELETE_COMMANDS
-          = Arrays.asList(REGISTER_ACCOUNT, REMOVE_ACCOUNT, ADD_GUID, 
-                  REMOVE_GUID, ADD_ALIAS, REMOVE_ALIAS);
+  public final static List<String> CREATE_DELETE_COMMANDS
+          = Arrays.asList(REGISTER_ACCOUNT, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
+                  REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS
+          );
 
   /**
    * The list of command types that are read commands.
@@ -313,6 +314,6 @@ public class GnsProtocol {
   public final static List<String> READ_COMMANDS
           = Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE);
   //
-  
+
   public final static String NEWLINE = System.getProperty("line.separator");
 }

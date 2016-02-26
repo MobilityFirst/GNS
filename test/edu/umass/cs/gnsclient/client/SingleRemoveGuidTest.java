@@ -70,7 +70,6 @@ public class SingleRemoveGuidTest {
   }
 
   @Test
-  @Order(1)
   public void test_01_RemoveGuidUsingAccount() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;

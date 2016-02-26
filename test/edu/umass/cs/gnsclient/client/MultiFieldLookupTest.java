@@ -71,7 +71,6 @@ public class MultiFieldLookupTest {
   }
 
   @Test
-  @Order(1)
   public void test_01_JSONUpdate() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
@@ -96,7 +95,6 @@ public class MultiFieldLookupTest {
   }
 
   @Test
-  @Order(2)
   public void test_02_MultiFieldLookup() {
     try {
       String actual = client.fieldRead(westyEntry, new ArrayList(Arrays.asList("name", "occupation")));

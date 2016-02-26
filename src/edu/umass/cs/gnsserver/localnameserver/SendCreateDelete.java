@@ -69,7 +69,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     reconfigurators = new ArrayList<InetSocketAddress>(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
     this.key = this.refreshKey();
     if (handler.isDebugMode()) {
-      GNS.getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
+      GNS.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
     }
   }
 
@@ -79,7 +79,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
       ProtocolExecutor.cancel(this);
     }
     if (handler.isDebugMode()) {
-      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " re-sending ");
+      log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " re-sending ");
     }
     return start();
   }
@@ -89,7 +89,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
       return true;
     } else if (requestCount >= reconfigurators.size()) {
       if (handler.isDebugMode()) {
-        log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " No answer, using defaults");
+        log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " No answer, using defaults");
       }
       return true;
     } else {
@@ -104,7 +104,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
 
     int reconfigIndex = requestCount % reconfigurators.size();
     if (handler.isDebugMode()) {
-      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
+      log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
               + " Sending to " + reconfigurators.get(reconfigIndex)
               + " " + packet);
     }

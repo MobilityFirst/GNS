@@ -77,11 +77,11 @@ public class AddMultipleGuids extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
 
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (AccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
       if (accountInfo == null) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
       }

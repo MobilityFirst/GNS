@@ -84,7 +84,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
       ProtocolExecutor.cancel(this);
     }
     if (handler.isDebugMode()) {
-      GNS.getLogger().info(this.refreshKey() + " re-sending ");
+      GNS.getLogger().fine(this.refreshKey() + " re-sending ");
     }
     return start();
   }
@@ -94,7 +94,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
       return true;
     } else if (activesAlreadyContacted.size() == actives.size()) {
       if (handler.isDebugMode()) {
-        GNS.getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
+        GNS.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
                 + " No answer after trying all actives.");
       }
       // should we return an NACK here or just let the client timeout?
@@ -111,7 +111,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     json.remove(MessageNIOTransport.SNDR_IP_FIELD);
     json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     if (handler.isDebugMode()) {
-      GNS.getLogger().info(this.refreshKey()
+      GNS.getLogger().fine(this.refreshKey()
               + " Sending to " + address
               + " " + json);
     }

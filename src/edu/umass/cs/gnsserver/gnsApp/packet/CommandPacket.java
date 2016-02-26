@@ -176,7 +176,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return clientRequestId;
   }
 
-  
   /**
    * Return the client request id as a long.
    *
@@ -189,8 +188,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
 
   /**
    * For ClientRequest.
-   * 
-   * @return 
+   *
+   * @return
    */
   @Override
   public ClientRequest getResponse() {
@@ -251,6 +250,14 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   public String getServiceName() {
     try {
       if (command != null) {
+        if (GnsProtocol.CREATE_DELETE_COMMANDS.contains(getCommandName())) {
+          if (command.has(GnsProtocol.GUID)) {
+            return getCommandName() + "_" + command.getString(GnsProtocol.GUID);
+          }
+          if (command.has(GnsProtocol.NAME)) {
+            return getCommandName() + "_" + command.getString(GnsProtocol.NAME);
+          }
+        }
         if (command.has(GnsProtocol.GUID)) {
           return command.getString(GnsProtocol.GUID);
         }

@@ -134,12 +134,12 @@ public class GroupAccess {
    * @throws org.json.JSONException
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler, boolean localGuid) throws GnsClientException, IOException, JSONException {
-    if (localGuid) {
+          ClientRequestHandlerInterface handler, boolean remoteGuid) throws GnsClientException, IOException, JSONException {
+    if (remoteGuid) {
+      handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
+    } else {
       FieldAccess.update(guid, GROUP, memberGuid, null, -1,
               UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
-    } else {
-      handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
     }
     handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     return NSResponseCode.NO_ERROR;
@@ -255,7 +255,7 @@ public class GroupAccess {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("GROUP CLEANUP: " + groupGuid);
       }
-      removeFromGroup(groupGuid, guid, null, null, null, handler, false);
+      removeFromGroup(groupGuid, guid, null, null, null, handler, true);
     }
   }
 

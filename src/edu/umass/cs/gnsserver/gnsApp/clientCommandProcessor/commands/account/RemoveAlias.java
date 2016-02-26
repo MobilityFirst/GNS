@@ -62,9 +62,6 @@ public class RemoveAlias extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
     String guid = json.getString(GUID);
     String name = json.getString(NAME);
     String signature = json.getString(SIGNATURE);

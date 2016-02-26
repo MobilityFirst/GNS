@@ -71,7 +71,7 @@ public class RemoveAccount extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     try {

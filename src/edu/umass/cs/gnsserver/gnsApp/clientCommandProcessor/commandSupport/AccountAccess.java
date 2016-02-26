@@ -449,7 +449,7 @@ public class AccountAccess {
           return new CommandResponse<String>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {
           // if we can't send the confirmation back out of the account creation
-          AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler);
+          AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler, true);
           if (accountInfo != null) {
             removeAccount(accountInfo, handler);
           }
@@ -700,47 +700,35 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> addGuid(AccountInfo accountInfo, GuidInfo accountGuidInfo, String name,
-          String guid, String publicKey, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> addGuid(AccountInfo accountInfo, GuidInfo accountGuidInfo,
+          String name, String guid, String publicKey, ClientRequestHandlerInterface handler) {
+    if ((AccountAccess.lookupGuid(name, handler, true)) != null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + DUPLICATE_NAME + " " + name);
+    }
+    if ((AccountAccess.lookupGuidInfo(guid, handler, true)) != null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + DUPLICATE_GUID + " " + name);
+    }
     try {
-      // insure that the guid doesn't exist already
-      if (lookupGuidInfo(guid, handler) != null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + DUPLICATE_GUID + " " + guid);
-      }
-      accountInfo.addGuid(guid);
-      accountInfo.noteUpdate();
-
-      NSResponseCode returnCode;
-      // First try to create the HRN to insure that that name does not already exist
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isAnError()) {
-        //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
-        // now we update the account info
-        if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
-          GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          JSONObject json = new JSONObject();
-          json.put(GUID_INFO, guidInfo.toJSONObject());
-          json.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
-          // set up ACL to look like this
-          //"_GNS_ACL": {
-          //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
-          //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
-          JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
-                  ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
-          // prefix is the same for all acls so just pick one to use here
-          json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
-          // For active code
-          //json.put(ActiveCode.ON_READ, new JSONArray());
-          //json.put(ActiveCode.ON_WRITE, new JSONArray());
-          handler.getRemoteQuery().createRecord(guid, json);
-          //handler.getIntercessor().sendFullAddRecord(guid, json);
-          return new CommandResponse<String>(OK_RESPONSE);
-        }
-      }
-      // otherwise roll it back
-      //accountInfo.removeGuid(guid);
-      return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + name);
+      handler.getRemoteQuery().createRecord(name, jsonHRN);
+      GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
+      JSONObject json = new JSONObject();
+      json.put(GUID_INFO, guidInfo.toJSONObject());
+      json.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
+      // set up ACL to look like this
+      //"_GNS_ACL": {
+      //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
+      //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
+      JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
+              ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
+      // prefix is the same for all acls so just pick one to use here
+      json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
+      handler.getRemoteQuery().createRecord(guid, json);
+      accountInfo.addGuid(guid);
+      accountInfo.noteUpdate();
+      updateAccountInfoNoAuthentication(accountInfo, handler, true);
+      return new CommandResponse<String>(OK_RESPONSE);
     } catch (JSONException e) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     } catch (GnsRuntimeException e) {
@@ -911,7 +899,7 @@ public class AccountAccess {
     // First make sure guid is not an account GUID 
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
-      if (lookupAccountInfoFromGuid(guid.getGuid(), handler) != null) {
+      if (lookupAccountInfoFromGuid(guid.getGuid(), handler, true) != null) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " "
                 + guid.getGuid() + " is an account guid");
       }
