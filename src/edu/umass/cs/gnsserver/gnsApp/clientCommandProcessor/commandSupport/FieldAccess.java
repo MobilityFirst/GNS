@@ -119,7 +119,11 @@ public class FieldAccess {
         // only strip internal fields when read is not null
         valuesMap = valuesMap.removeInternalFields();
       }
-      resultString = valuesMap.getString(field);
+      if (valuesMap != null) {
+        resultString = valuesMap.getString(field);
+      } else {
+        resultString = emptyString;
+      }
     } catch (FailedDBOperationException e) {
       resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.GENERIC_ERROR + " " + e;
     } catch (JSONException e) {
