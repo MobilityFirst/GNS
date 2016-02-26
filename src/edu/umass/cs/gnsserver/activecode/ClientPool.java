@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import edu.umass.cs.gnsserver.activecode.interfaces.ClientPoolInterface;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
@@ -42,7 +41,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
  * @author mbadov
  *
  */
-public class ClientPool implements Runnable, ClientPoolInterface{
+public class ClientPool implements Runnable{
 	private HashMap<Long, ActiveCodeClient> clients;
 	private GnsApplicationInterface<String> app;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
@@ -134,6 +133,7 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 	 * @param t
 	 */
 	protected void addClient(Thread t) {
+		System.out.println("Add a client for thread "+t);
 		int workerPort = getOpenUDPPort();
 		// This port is not ready
 		portStatus.put(workerPort, false);
@@ -216,7 +216,7 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 		socket.close();
 	}
 	
-	protected void updatePortToClientMap(int oldPort, int newPort, ActiveCodeClient client){
+	protected synchronized void updatePortToClientMap(int oldPort, int newPort, ActiveCodeClient client){
 		/*
 		 * Invariant: port and client pair must always exist, otherwise we will lose a worker
 		 */
@@ -226,9 +226,10 @@ public class ClientPool implements Runnable, ClientPoolInterface{
 	}
 	
 	
-	protected int getSpareWorkerPort(){		
+	protected int getSpareWorkerPort(){	
+		int count = 0;
 		while(spareWorkers.keySet().isEmpty()){
-			System.out.println("The spare worker set is empty.");
+			System.out.println("The spare worker set is empty "+(++count));
 			synchronized(spareWorkers){
 				try{
 					spareWorkers.wait();

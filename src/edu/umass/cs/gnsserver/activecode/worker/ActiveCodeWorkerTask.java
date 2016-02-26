@@ -7,6 +7,10 @@ import javax.script.ScriptException;
 
 import org.json.simple.JSONObject;
 
+/**
+ * @author gaozy
+ *
+ */
 public class ActiveCodeWorkerTask implements Callable<JSONObject>{
 	private Invocable inv;
 	private JSONObject value;

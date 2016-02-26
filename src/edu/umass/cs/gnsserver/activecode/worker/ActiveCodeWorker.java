@@ -52,6 +52,7 @@ public class ActiveCodeWorker {
 	
 	/**
 	 * Starts the worker listener 
+	 * @param readyPort 
 	 * @throws IOException
 	 */
 	public void run(int readyPort) throws IOException {	
@@ -76,7 +77,7 @@ public class ActiveCodeWorker {
     			serverSocket.receive(pkt);
     			clientPort = pkt.getPort();
     			handler.setPort(clientPort);
-    			System.out.println("The response port is set to "+clientPort);
+    			//System.out.println("The response port is set to "+clientPort);
     		}catch(IOException e){
     			e.printStackTrace();
     		}

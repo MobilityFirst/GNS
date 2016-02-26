@@ -25,9 +25,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import edu.umass.cs.utils.DelayProfiler;
-
-
 
 /**
  * This class is a hotfix for catching exceptions when using Future
@@ -37,34 +34,41 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	private ActiveCodeGuardian guard;
+	private ClientPool clientPool;
 	
 	protected ActiveCodeExecutor(int numCoreThreads, int numMaxThreads, int timeout,
 			TimeUnit timeUnit,
 			BlockingQueue<Runnable> queue,
 			ThreadFactory threadFactory,
 			RejectedExecutionHandler handler,
-			ActiveCodeGuardian guard) {
+			ActiveCodeGuardian guard,
+			ClientPool clientPool) {
 		super(numCoreThreads, numMaxThreads, timeout, timeUnit, queue, threadFactory, handler);
 		this.guard = guard;
+		this.clientPool = clientPool;
 	}
 	
 	
 	@Override
-	protected void beforeExecute(Thread t, Runnable r){
-		long t1 = System.currentTimeMillis();
+	protected synchronized void beforeExecute(Thread t, Runnable r){
 		// register the runnable here
-		guard.register((ActiveCodeFutureTask) r); 
+		ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
+		// The running task should not be cancelled
+		//assert(task.isCancelled());
+		ActiveCodeClient previousClient = task.getWrappedTask().setClient(clientPool.getClient(t.getId()));
+		assert(previousClient == null);
+		guard.register(task); 	
 		super.beforeExecute(t, r);
-		DelayProfiler.updateDelay("ActiveCodeExecutorBeforeExecute", t1);
+		
 	}
 	
     @Override
-	protected void afterExecute(Runnable r, Throwable t) {	
-    	long t1 =System.currentTimeMillis();
+	protected synchronized void afterExecute(Runnable r, Throwable t) {	
         super.afterExecute(r, t);
         // deregister the runnable (ActiveCodeFutureTask) here
-        guard.deregister((ActiveCodeFutureTask) r);
-        DelayProfiler.updateDelay("ActiveCodeExecutorAfterExecute", t1);
+        ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
+        guard.deregister(task);        
+       
 	}
 
 }

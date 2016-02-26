@@ -27,8 +27,9 @@ public class SingleClient implements Runnable{
 			this.numReq = MessageStats.DURATION*1000/MessageStats.MAL_INTERVAL/MessageStats.DEPTH;
 		} else{
 			this.numReq = MessageStats.DURATION*1000/MessageStats.INTERVAL;
-		} 
-		numReq = 100;
+		}
+		numReq = 20;
+		System.out.println("Start Sending "+numReq+" requests...");
 	}
 	
 	public void run(){

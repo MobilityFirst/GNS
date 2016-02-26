@@ -24,6 +24,7 @@ public class ActiveCodeScheduler implements Runnable{
 	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
 	private HashMap<ActiveCodeFutureTask, Long> timeMap = new HashMap<ActiveCodeFutureTask, Long>();
+	private static int numReq = 0;
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
@@ -32,9 +33,13 @@ public class ActiveCodeScheduler implements Runnable{
 		this.executorPool = executorPool;
 	}
 	
-	public void run(){		
-		while(true){			
+	public void run(){	
+		//System.out.println(this.getClass().getName()+" runs in thread "+Thread.currentThread());
+		while(true){
 			while(guidList.isEmpty()){
+				if(numReq%1000 == 0){
+					System.out.println(DelayProfiler.getStats());
+				}
 				synchronized (lock){
 					try{
 						lock.wait();
@@ -43,6 +48,7 @@ public class ActiveCodeScheduler implements Runnable{
 					}
 				}
 			}
+			numReq++;
 			
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			
@@ -52,6 +58,7 @@ public class ActiveCodeScheduler implements Runnable{
 				synchronized(timeMap){
 					DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 				}
+				
 			}
 		}
 	}
@@ -60,27 +67,18 @@ public class ActiveCodeScheduler implements Runnable{
 	protected String getNextGuid(){
 		String guid = null;
 		if (guidList.size() > ptr){
-			if (ptr > 0){
-				guid = guidList.get(ptr);
-			}else{ 
-				if(guidList.isEmpty()){
-					return null;
-				}else{
-					assert(ptr == 0);
-					guid = guidList.get(ptr);
-				}
-			}
+			// in this case, it's impossible to fetch from guidList out of boundary
+			guid = guidList.get(ptr);
 		}else{
+			// in this case, either guidList is empty, or it should go back to the first element
 			ptr = 0;
 			if(guidList.isEmpty()){
 				return null;
-			}else{
-				assert(ptr == 0);
-				guid = guidList.get(ptr);
 			}
+			guid = guidList.get(ptr);
 		}
-		
 		ptr++;
+		
 		return guid;
 	}
 	
@@ -94,11 +92,11 @@ public class ActiveCodeScheduler implements Runnable{
 			if (guid == null){
 				return null;
 			}
-			
+			/*
 			if(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
 				return null;
 			}
-			
+			*/
 			if (runningGuid.containsKey(guid)){
 				runningGuid.put(guid, runningGuid.get(guid)+1);
 			} else{
@@ -146,9 +144,11 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void submit(ActiveCodeFutureTask futureTask, String guid){
+		
 		synchronized(timeMap){
 			timeMap.put(futureTask, System.nanoTime());
 		}
+		
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);				
@@ -162,7 +162,7 @@ public class ActiveCodeScheduler implements Runnable{
 		release();		
 	}
 	
-	protected void removeGuid(String guid){
+	protected synchronized void removeGuid(String guid){
 			guidList.remove(guid);
 			fairQueue.remove(guid);
 	}

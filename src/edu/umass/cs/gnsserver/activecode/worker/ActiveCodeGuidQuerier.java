@@ -30,7 +30,6 @@ import java.net.URL;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsserver.activecode.ActiveCodeException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
@@ -53,8 +52,8 @@ public class ActiveCodeGuidQuerier {
   
   /**
    * Initialize an ActiveCodeGuidQuerier
-   * @param in
-   * @param out
+ * @param socket 
+ * @param clientPort 
    */
   public ActiveCodeGuidQuerier(DatagramSocket socket, int clientPort) {
     this.socket = socket;
@@ -128,7 +127,7 @@ public class ActiveCodeGuidQuerier {
    * @param field the field
    * @return the ValuesMap response
    */
-  public ValuesMap readGuid(String guid, String field) throws ActiveCodeException {
+  public ValuesMap readGuid(String guid, String field) {
 	  if (!accounting(guid)){
 		  error = "Out of read limitation";
 		  return null;
@@ -157,7 +156,7 @@ public class ActiveCodeGuidQuerier {
    * @param newValue the new values as a object
    * @return whether or not the write succeeded
    */
-  public boolean writeGuid(String guid, String field, Object newValue) throws ActiveCodeException{
+  public boolean writeGuid(String guid, String field, Object newValue){
 	  if (!accounting(guid)){
 		  //throw new ActiveCodeException("Out of write limitation");
 		  error = "Out of write limitation";

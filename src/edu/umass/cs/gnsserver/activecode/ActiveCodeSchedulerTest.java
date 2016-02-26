@@ -107,7 +107,9 @@ public class ActiveCodeSchedulerTest {
 		
 		for (int i=0; i<tasks.size(); i++){
 			int index = i%guids.length;
-			assertEquals(guids[index], scheduler.getNextGuid());
+			String guid = scheduler.getNextGuid();
+			//System.out.println(guids[index]+" "+guid);
+			assertEquals(guids[index], guid);
 		}
 	}
 
@@ -146,7 +148,7 @@ public class ActiveCodeSchedulerTest {
 	
 	private class FakeTask extends ActiveCodeTask{
 		FakeTask(){
-			super(null,null);
+			super(null);
 		}
 		
 		public ValuesMap call(){

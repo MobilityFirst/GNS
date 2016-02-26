@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.concurrent.Callable;
 
-import edu.umass.cs.gnsserver.activecode.interfaces.ClientPoolInterface;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -35,21 +34,22 @@ import edu.umass.cs.utils.DelayProfiler;
 public class ActiveCodeTask implements Callable<ValuesMap> {
 	
     private final ActiveCodeParams acp;
-    private final ClientPoolInterface clientPool;
     private ActiveCodeClient client;
-    private boolean running = false;
     private long startTime = System.currentTimeMillis();
     
     /**
      * Initialize a ActiveCodeTask
      * @param acp
-     * @param clientPool
      */
-    public ActiveCodeTask(ActiveCodeParams acp, ClientPoolInterface clientPool) {
+    public ActiveCodeTask(ActiveCodeParams acp) {
         this.acp = acp; 
-        this.clientPool = clientPool;
     }
     
+    protected ActiveCodeClient setClient(ActiveCodeClient client){
+    	ActiveCodeClient prev = this.client;
+    	this.client = client;
+    	return prev;
+    }
     
     @Override
     /**
@@ -57,15 +57,11 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
      */
     public ValuesMap call() throws InterruptedException{ 
     	try {
-	    	running = true;
-	
 	    	long startTime = System.nanoTime();
-	    	long pid = Thread.currentThread().getId();
 	    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
 	    	
 	    	ValuesMap result = null;
-	    	client = clientPool.getClient(pid);
-	    	
+	    		    	
 	    	//check the state of the client's worker
 	    	while(!client.isReady()){
 	    		// wait until it's ready
@@ -88,18 +84,12 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	}
     }
     
-    protected Thread getThread(){
-    	//Invariant: this task must be running when being called this method 
-    	assert(running == true);
-    	return Thread.currentThread();
-    }
     
     protected ActiveCodeClient getClient(){
+    	/*
+    	 * If call() is called, client can not be null
+    	 */
     	assert(client != null);
     	return client;
-    }
-    
-    protected void interrupt(){
-    	
     }
 }

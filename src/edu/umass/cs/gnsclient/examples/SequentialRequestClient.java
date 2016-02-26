@@ -33,7 +33,7 @@ public class SequentialRequestClient {
 	private static UniversalTcpClient client;
 	private final static String filename =  "/Users/gaozy/WebStorm/test.js"; //"/home/ubuntu/test.js"; //
 	private static ArrayList<Long> latency = new ArrayList<Long>();
-	private static int numReqs = 10;
+	private static int numReqs = 100;
 	
 	/**
 	 * @param args
@@ -96,7 +96,8 @@ public class SequentialRequestClient {
 	    
 	    for (int i=0; i<numReqs; i++){
 	    	long t1 = System.nanoTime();
-	    	String result = client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
+	    	//String result = 
+	    			client.fieldRead(guidAccount.getGuid(), "nextGuid", guidAccount);
 	    	//System.out.println("The nextGuid is "+result);
 	    	long t2 = System.nanoTime();
 	    	long elapsed = t2 - t1;

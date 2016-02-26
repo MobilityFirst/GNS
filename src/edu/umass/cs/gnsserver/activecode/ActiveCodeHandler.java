@@ -80,7 +80,8 @@ public class ActiveCodeHandler {
 	    		new LinkedBlockingQueue<Runnable>(),
 	    		threadFactory, 
 	    		new ThreadPoolExecutor.DiscardPolicy(),
-	    		guard);
+	    		guard,
+	    		clientPool);
 	    
 	    // Start the processes
 	    int numThread = executorPool.prestartAllCoreThreads();
@@ -129,7 +130,7 @@ public class ActiveCodeHandler {
 		//System.out.println("Got the request from guid "+guid+" for the field "+field+" with original value "+valuesMap);
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
-		ActiveCodeFutureTask futureTask = new ActiveCodeFutureTask(new ActiveCodeTask(acp, clientPool));
+		ActiveCodeFutureTask futureTask = new ActiveCodeFutureTask(new ActiveCodeTask(acp));
 		
 		DelayProfiler.updateDelayNano("activeHandlerPrepare", startTime);		
 		
@@ -140,32 +141,18 @@ public class ActiveCodeHandler {
 		try {
 			result = futureTask.get();
 		} catch (ExecutionException ee) {
-			System.out.println("Execution "+guid+" Task "+futureTask);
+			System.out.println("Execution "+guid+" Task "+futureTask+" thread "+Thread.currentThread());
 			//ee.printStackTrace();
 			scheduler.finish(guid);
-			//System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap+Thread.currentThread());
 			return valuesMap;
 		} catch(CancellationException ce) {
-			System.out.println("Cancel "+guid+" Task "+futureTask);
+			System.out.println("Cancel "+guid+" Task "+futureTask+" thread "+Thread.currentThread());
 			//ce.printStackTrace();
 			scheduler.finish(guid);
-			//System.out.println(">>>>>>>>>>>>> Handler returns result "+valuesMap+Thread.currentThread());
 			return valuesMap;
 		} catch(InterruptedException ie) {
-			System.out.println("Interrupt "+guid+" Task "+futureTask+" thread "+Thread.currentThread());
-			futureTask.cancel(true);
-			
-			/*
-			if(act != null){
-				if(act.isRunning()){
-					guard.cancelTask(act);
-					act.deregisterTask();
-				}else{
-					// clean up the task in scheduler
-					System.out.println("The task "+ act + "is not running.");
-				}
-			}
-			*/
+			System.out.println("Interrupt "+guid+" Task "+futureTask+" thread "+Thread.currentThread());			
+			guard.cancelTask(futureTask);
 			scheduler.finish(guid);
 			return valuesMap;
 		} catch (Exception e){

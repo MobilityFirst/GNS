@@ -23,6 +23,7 @@ public class ActiveCodeGuardian implements Runnable {
 	}
 	
 	public void run(){
+		System.out.println(this.getClass().getName()+" runs in thread "+Thread.currentThread());
 		while(true){
 			/*
 			 * Invariant: total number of registered tasks should be less than the total number of active code worker
@@ -37,9 +38,9 @@ public class ActiveCodeGuardian implements Runnable {
 				}		
 			}
 			long eclapsed = System.currentTimeMillis() - now;
-			if(eclapsed < 100){
+			if(eclapsed < 500){
 				try{
-					Thread.sleep(100-eclapsed);
+					Thread.sleep(500-eclapsed);
 				}catch(InterruptedException e){
 					e.printStackTrace();
 				}
@@ -52,10 +53,9 @@ public class ActiveCodeGuardian implements Runnable {
 	protected void cancelTask(ActiveCodeFutureTask task){
 		
 		long start = System.currentTimeMillis();
-		synchronized(clientPool){
+		synchronized(task){
 			// shutdown the previous worker process 
-			ActiveCodeTask wrappedTask = task.getWrappedTask();
-			ActiveCodeClient client = wrappedTask.getClient();
+			ActiveCodeClient client = task.getWrappedTask().getClient();
 			int oldPort = client.getPort();
 			client.forceShutdownServer();
 														
@@ -72,10 +72,9 @@ public class ActiveCodeGuardian implements Runnable {
 			DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
 			
 			// deregister the task and cancel it
-			task.cancel(true);			
-		}
-		
-		
+			task.cancel(true);	
+			assert(deregister(task) != null);
+		}		
 		
 		DelayProfiler.updateDelay("ActiveCodeRestart", start);
 	}
