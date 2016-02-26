@@ -22,6 +22,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.GnsActiveReplicaException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SelectHandler.DEFAULT_MIN_REFRESH_INTERVAL;
@@ -33,6 +34,7 @@ import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
@@ -58,7 +60,7 @@ public class RemoteQuery extends ClientAsynchBase {
 
   // For synchronus replica messages
   private long defaultReplicaTimeout = 2000;
-  private final ConcurrentMap<Long, ClientRequest> replicaResultMap
+  private final ConcurrentMap<Long, Request> replicaResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
   private final Object replicaCommandMonitor = new Object();
   private boolean debuggingEnabled = true;
@@ -76,9 +78,18 @@ public class RemoteQuery extends ClientAsynchBase {
    * A callback that notifys any waits and records the response from a replica.
    */
   private RequestCallback replicaCommandCallback = (Request response) -> {
-    GNS.getLogger().severe("RRRRRRRRRRRRRRRRRRRRRRR REPLICA CALLBACK: " + response.toString());
-    ClientRequest packet = (ClientRequest) response;
-    replicaResultMap.put(packet.getRequestID(), packet);
+
+    long requestId;
+    if (response instanceof ActiveReplicaError) {
+      requestId = ((ActiveReplicaError) response).getRequestID();
+    } else if (response instanceof ClientRequest) {
+      requestId = ((ClientRequest) response).getRequestID();
+    } else {
+      GNS.getLogger().severe("Bad response type: " + response.getClass());
+      return;
+    }
+
+    replicaResultMap.put(requestId, response);
     synchronized (replicaCommandMonitor) {
       replicaCommandMonitor.notifyAll();
     }
@@ -93,12 +104,14 @@ public class RemoteQuery extends ClientAsynchBase {
       reconMonitor.notifyAll();
     }
   };
-  
-  private ClientRequest waitForReplicaResponse(long id) throws GnsClientException {
+
+  private ClientRequest waitForReplicaResponse(long id)
+          throws GnsClientException, GnsActiveReplicaException {
     return waitForReplicaResponse(id, defaultReplicaTimeout);
   }
 
-  private ClientRequest waitForReplicaResponse(long id, long timeout) throws GnsClientException {
+  private ClientRequest waitForReplicaResponse(long id, long timeout)
+          throws GnsClientException, GnsActiveReplicaException {
     try {
       synchronized (replicaCommandMonitor) {
         long monitorStartTime = System.currentTimeMillis();
@@ -113,14 +126,21 @@ public class RemoteQuery extends ClientAsynchBase {
     } catch (InterruptedException x) {
       throw new GnsClientException("Wait for return packet was interrupted " + x);
     }
-    return replicaResultMap.remove(id);
+    Request response = replicaResultMap.remove(id);
+    if (response instanceof ActiveReplicaError) {
+      throw new GnsActiveReplicaException("No replicas found for " + ((ActiveReplicaError) response).getServiceName());
+    } else if (response instanceof ClientRequest) {
+      return (ClientRequest) response;
+    } else { // shouldn't ever get here because callback can't find a request id
+      throw new GnsClientException("Bad response type: " + response.getClass());
+    }
   }
-  
+
   private ClientReconfigurationPacket waitForReconResponse(String serviceName) throws GnsClientException {
     return waitForReconResponse(serviceName, defaultReconTimeout);
   }
 
-  private ClientReconfigurationPacket waitForReconResponse(String serviceName, long timeout) 
+  private ClientReconfigurationPacket waitForReconResponse(String serviceName, long timeout)
           throws GnsClientException {
     try {
       synchronized (reconMonitor) {
@@ -224,42 +244,68 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   }
 
+  private String handleQueryResponse(long requestId, String notFoundReponse) throws GnsClientException {
+    return handleQueryResponse(requestId, defaultReplicaTimeout, notFoundReponse);
+  }
+
+  private String handleQueryResponse(long requestId, long timeout, String notFoundReponse) throws GnsClientException {
+    try {
+      CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId, timeout);
+      if (packet == null) {
+        throw new GnsClientException("Packet not found in table " + requestId);
+      } else {
+        String returnValue = packet.getReturnValue();
+        if (debuggingEnabled) {
+          GNS.getLogger().info("RRRRRRRRRRRRRRRRRRRRRR Remote query " + packet.getServiceName()
+                  + " got from " + packet.getResponder() + " this: " + returnValue);
+        }
+        // FIX ME: Tidy up all these error reponses for updates
+        return checkResponse(returnValue);
+      }
+    } catch (GnsActiveReplicaException e) {
+      return notFoundReponse;
+    }
+  }
+
+  /**
+   * Lookup the field on another server.
+   * Will return null if it doesn't exist.
+   *
+   * @param guid
+   * @param field
+   * @return the value of the field as a string
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException
+   */
   public String fieldRead(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + guid + "/" + field);
     }
     long requestId = fieldRead(guid, field, replicaCommandCallback);
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + packet.getServiceName()
-                + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
+    return handleQueryResponse(requestId, null);
   }
 
+  private static final String emptyJSONArrayString = new JSONArray().toString();
+
+  /**
+   * Lookup the field on another server.
+   *
+   * @param guid
+   * @param field
+   * @return the value of the field as a JSON array string
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException
+   */
   public String fieldReadArray(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + guid + "/" + field);
     }
     long requestId = fieldReadArray(guid, field, replicaCommandCallback);
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + packet.getServiceName()
-                + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
+    return handleQueryResponse(requestId, emptyJSONArrayString);
   }
 
   public String fieldUpdate(String guid, String field, Object value)
@@ -269,17 +315,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldUpdate(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
-                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
+    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldReplaceOrCreateArray(String guid, String field, ResultValue value)
@@ -289,19 +325,9 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldReplaceOrCreateArray " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldReplaceOrCreateArray(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldReplaceOrCreateArray of " + packet.getServiceName()
-                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
+    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
-  
+
   public String fieldAppendToArray(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
@@ -309,17 +335,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldAppendToArray " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldAppendToArray(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldAppendToArray of " + packet.getServiceName()
-                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
+    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldRemove(String guid, String field, Object value)
@@ -330,18 +346,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldRemove(guid, field, value, replicaCommandCallback);
-    // NOTE THE LONGER TIMEOUT!!!
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId, 4000);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update of " + packet.getServiceName()
-                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
+    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldRemoveMultiple(String guid, String field, ResultValue value)
@@ -351,17 +356,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldRemoveMultiple " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldRemoveMultiple(guid, field, value, replicaCommandCallback);
-    CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId);
-    if (packet == null) {
-      throw new GnsClientException("Packet not found in table " + requestId);
-    } else {
-      String returnValue = packet.getReturnValue();
-      if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldRemoveMultiple of " + packet.getServiceName()
-                + " / " + field + " got from " + packet.getResponder() + " this: " + returnValue);
-      }
-      return checkResponse(returnValue);
-    }
+    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   // Select commands

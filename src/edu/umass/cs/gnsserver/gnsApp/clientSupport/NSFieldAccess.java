@@ -192,16 +192,16 @@ public class NSFieldAccess {
    *
    * @param guid
    * @param field
-   * @param allowQueryToOtherNSs
+   * @param allowRemoteQuery
    * @param database
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ResultValue lookupListFieldAnywhere(String guid, String field,
-          boolean allowQueryToOtherNSs, BasicRecordMap database) throws FailedDBOperationException {
+          boolean allowRemoteQuery, BasicRecordMap database) throws FailedDBOperationException {
     ResultValue result = lookupListFieldLocallyNoAuth(guid, field, database);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
-    if (result.isEmpty() && !database.containsName(guid) && allowQueryToOtherNSs) {
+    if (result.isEmpty() && !database.containsName(guid) && allowRemoteQuery) {
       try {
         String stringResult = new RemoteQuery().fieldReadArray(guid, field);
         result = new ResultValue(stringResult);
@@ -248,8 +248,10 @@ public class NSFieldAccess {
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
         String stringResult = new RemoteQuery().fieldRead(guid, field);
-        result = new ValuesMap();
-        result.put(field, stringResult);
+        if (stringResult != null) {
+          result = new ValuesMap();
+          result.put(field, stringResult);
+        }
       } catch (Exception e) {
         GNS.getLogger().severe("Problem getting record from remote server: " + e);
       }

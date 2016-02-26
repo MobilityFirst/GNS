@@ -12,52 +12,10 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/ClientRequestHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/test/edu/umass/cs/gnsclient/client/UniversalCoreTest.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/CCPPacketDemultiplexer.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/FieldMetaData.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSAccessSupport.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSFieldMetaData.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/AddBatchRecordPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/asynch/ClientAsynchBase.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/data/AbstractUpdateList.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/DNSRecordType.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsclient/client/UniversalTcpClient.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/DNSPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/SideToSideQuery.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/demultSupport/PendingTasks.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/ActiveCode.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/data/ReplaceOrCreate.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/ClientCommandProcessor.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSAuthentication.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/AccountAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/test/edu/umass/cs/gnsclient/client/CreateGuidBatchTest.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/CreateDelete.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/RemoveRecordPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/AbstractAddRecordPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnamed/NameResolution.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnamed/LookupWorker.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnamed/GnsDnsLookupTask.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/Intercessor.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/FieldAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/SelectHandler.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/GroupAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/AppLookup.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/SelectRequestPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/UpdatePacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/demultSupport/Lookup.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/data/AbstractUpdate.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/data/ReplaceOrCreateList.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/ConfirmUpdatePacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSFieldAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/demultSupport/Update.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/demultSupport/SendUpdatesTask.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/packet/AddRecordPacket.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/GnsApp.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/demultSupport/ClientRequestHandlerInterface.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/demultSupport/Select.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/Select.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSGroupAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/RemoteQuery.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsClientException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsFieldNotFoundException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsActiveReplicaException.java</file>
         </group>
     </open-files>
 </project-private>
