@@ -50,11 +50,11 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	
 	
 	@Override
-	protected synchronized void beforeExecute(Thread t, Runnable r){
+	protected void beforeExecute(Thread t, Runnable r){
 		// register the runnable here
 		ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
 		// The running task should not be cancelled
-		//assert(task.isCancelled());
+		System.out.println("Run task "+task +" with thread "+t);
 		ActiveCodeClient previousClient = task.getWrappedTask().setClient(clientPool.getClient(t.getId()));
 		assert(previousClient == null);
 		guard.register(task); 	
@@ -63,7 +63,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	}
 	
     @Override
-	protected synchronized void afterExecute(Runnable r, Throwable t) {	
+	protected void afterExecute(Runnable r, Throwable t) {	
         super.afterExecute(r, t);
         // deregister the runnable (ActiveCodeFutureTask) here
         ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;

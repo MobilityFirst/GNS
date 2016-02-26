@@ -53,8 +53,8 @@ public class ClientPool implements Runnable{
 	 * This client pool should be able to retrieve the ActiveCodeClient
 	 * based on the worker's port number.
 	 */
-	private ConcurrentHashMap<Integer, ActiveCodeClient> workerPortToClient;
-	private ConcurrentHashMap<Integer, Boolean> portStatus;
+	private final ConcurrentHashMap<Integer, ActiveCodeClient> workerPortToClient;
+	private final ConcurrentHashMap<Integer, Boolean> portStatus;
 	
 	//private static ConcurrentHashMap<Integer, Long> timeMap = new ConcurrentHashMap<Integer, Long>();
 	private ExecutorService executorPool;
@@ -221,7 +221,10 @@ public class ClientPool implements Runnable{
 		 * Invariant: port and client pair must always exist, otherwise we will lose a worker
 		 */
 		boolean portExists = workerPortToClient.remove(oldPort, client);
-		assert(portExists);
+		if (!portExists){
+			System.out.println(workerPortToClient+ " \n The port to be removed is "+oldPort+" "+newPort+" "+client);
+			assert(portExists);
+		}
 		workerPortToClient.put(newPort, client);
 	}
 	

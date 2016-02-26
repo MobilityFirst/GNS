@@ -38,9 +38,9 @@ public class ActiveCodeGuardian implements Runnable {
 				}		
 			}
 			long eclapsed = System.currentTimeMillis() - now;
-			if(eclapsed < 500){
+			if(eclapsed < 100){
 				try{
-					Thread.sleep(500-eclapsed);
+					Thread.sleep(100-eclapsed);
 				}catch(InterruptedException e){
 					e.printStackTrace();
 				}
@@ -54,7 +54,7 @@ public class ActiveCodeGuardian implements Runnable {
 		
 		long start = System.currentTimeMillis();
 		synchronized(task){
-			// shutdown the previous worker process 
+			// shutdown the previous worker process x
 			ActiveCodeClient client = task.getWrappedTask().getClient();
 			int oldPort = client.getPort();
 			client.forceShutdownServer();

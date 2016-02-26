@@ -51,6 +51,14 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	return prev;
     }
     
+    protected ActiveCodeClient getClient(){
+    	/*
+    	 * If call() is called, client can not be null
+    	 */
+    	assert(client != null);
+    	return client;
+    }
+    
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
@@ -65,6 +73,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    	//check the state of the client's worker
 	    	while(!client.isReady()){
 	    		// wait until it's ready
+	    		System.out.println("My client is not ready, I need to wait for client "+client+", I'm thread "+Thread.currentThread());
 	    		synchronized(client){
 	    			client.wait();
 	    		}
@@ -84,12 +93,4 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	}
     }
     
-    
-    protected ActiveCodeClient getClient(){
-    	/*
-    	 * If call() is called, client can not be null
-    	 */
-    	assert(client != null);
-    	return client;
-    }
 }

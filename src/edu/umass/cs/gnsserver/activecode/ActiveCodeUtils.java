@@ -82,55 +82,10 @@ public class ActiveCodeUtils {
 	
 	/**
 	 * Send the serialized message
-	 * @param out
+	 * @param socket 
 	 * @param acm
+	 * @param port 
 	 */
-	/*
-	public static void sendMessage(PrintWriter out, ActiveCodeMessage acm) {
-		long t1 = System.nanoTime();
-		byte[] data = serializeObject(acm);
-		DelayProfiler.updateDelayNano("activeSerialize", t1);
-		
-		long t2 = System.nanoTime();
-		String data64 = Base64.getEncoder().encodeToString(data);
-		DelayProfiler.updateDelayNano("activeEncode", t2);
-		
-		long t3 = System.nanoTime();
-		out.println(data64);
-		DelayProfiler.updateDelayNano("activeSendOutMsg", t3);
-	}
-	*/
-	
-	/*
-	public static ActiveCodeMessage getMessage(BufferedReader in) {
-		
-		long t1 = System.nanoTime();
-		String res64 = null;
-		
-		try {
-			res64 = in.readLine();
-		} catch (IOException e) {
-			// We timed out, but that's OK
-			e.printStackTrace();
-		}
-		
-		if(res64 == null) {
-			// We crashed, but still mark the request as finished
-			ActiveCodeMessage acm = new ActiveCodeMessage();
-			acm.setFinished(true);
-			acm.setCrashed(true);
-			return acm;
-		}
-		DelayProfiler.updateDelayNano("activeReadInMessage", t1);
-		
-		long t2 = System.nanoTime();
-		byte[] res = Base64.getDecoder().decode(res64);
-		DelayProfiler.updateDelayNano("activeDecode", t2);
-		
-		return (ActiveCodeMessage) deserializeObject(res);
-	}
-	*/
-	
 	public static void sendMessage(DatagramSocket socket, ActiveCodeMessage acm, int port){
 		long t = System.nanoTime();
 		try{
@@ -152,6 +107,7 @@ public class ActiveCodeUtils {
 	/**
 	 * receive a datagram through a datgram socket
 	 * @param socket
+	 * @param buffer 
 	 * @return an ActiveCodeMessage
 	 */
 	public static ActiveCodeMessage receiveMessage(DatagramSocket socket, byte[] buffer){

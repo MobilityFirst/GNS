@@ -61,6 +61,7 @@ public class ActiveCodeClient {
 		//initialize the clientSocket first
 		try{
 			clientSocket = new DatagramSocket();
+			//clientSocket.setSoTimeout(1000);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -115,6 +116,10 @@ public class ActiveCodeClient {
 		
 		boolean codeFinished = false;
 		String valuesMapString = null;
+		/*
+		 * Invariant: this thread can't be interrupted, because 
+		 */
+		assert(!Thread.currentThread().isInterrupted());
 		
 		// Send the request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
@@ -124,6 +129,13 @@ public class ActiveCodeClient {
 		// Keeping going until we have received a 'finished' message
 		while(!codeFinished) {
 		    ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
+		    /*
+		     * If socket timeout is set, then this would work, but result in some unknown blocking problem
+		     */
+		    if(acmResp == null){
+		    	crashed = true;
+		    	break;
+		    }
 		    
 		    if(acmResp.isFinished()) {
 		    	// We are done!		
@@ -199,8 +211,11 @@ public class ActiveCodeClient {
 	protected void forceShutdownServer() {
 		process.destroyForcibly();
 		clientSocket.close();
+		assert( clientSocket.isClosed() );
+
 		try{
 			clientSocket = new DatagramSocket();
+			//clientSocket.setSoTimeout(1000);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
