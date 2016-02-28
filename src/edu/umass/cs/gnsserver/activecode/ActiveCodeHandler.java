@@ -219,7 +219,7 @@ public class ActiveCodeHandler {
 		System.out.println(result);
 		assert(executor.getActiveCount() == 0);
 		assert(executor.getCompletedTaskCount() == completed);
-		System.out.println("############# TEST FOR NOOP PASSED! ##############");
+		System.out.println("############# TEST FOR NOOP PASSED! ##############\n\n");
 		Thread.sleep(1000);
 		
 		
@@ -234,7 +234,7 @@ public class ActiveCodeHandler {
 		
 		assert(executor.getActiveCount() == 0);
 		assert(executor.getCompletedTaskCount() == completed);
-		System.out.println("############# TEST FOR MALICOUS PASSED! ##############");
+		System.out.println("############# TEST FOR MALICOUS PASSED! ##############\n\n");
 		Thread.sleep(1000);
 		
 		/************** Test chain code *************/
@@ -255,7 +255,7 @@ public class ActiveCodeHandler {
 		}
 		assert(executor.getActiveCount() == 0);
 		assert(executor.getCompletedTaskCount() == completed);
-		System.out.println("############# TEST FOR CHAIN PASSED! ##############");
+		System.out.println("############# TEST FOR CHAIN PASSED! ##############\n\n");
 		Thread.sleep(1000);
 		
 		System.exit(0);
