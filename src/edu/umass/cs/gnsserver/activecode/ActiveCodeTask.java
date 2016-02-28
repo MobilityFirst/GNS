@@ -59,6 +59,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	return client;
     }
     
+    private static final long MAX_CLIENT_READY_WAIT_TIME = 1000;
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
@@ -75,8 +76,9 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    		// wait until it's ready
 	    		System.out.println("My client is not ready, I need to wait for client "+client+", I'm thread "+Thread.currentThread());
 	    		synchronized(client){
-	    			client.wait();
+	    			client.wait(MAX_CLIENT_READY_WAIT_TIME);
 	    		}
+	    		assert(client.isReady());
 	    	}
 	    	DelayProfiler.updateDelayNano("activeCodeBeforeSending", startTime);
 	  	

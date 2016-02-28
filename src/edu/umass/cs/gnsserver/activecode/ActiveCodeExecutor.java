@@ -54,7 +54,6 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 		// register the runnable here
 		ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
 		// The running task should not be cancelled
-		System.out.println("Run task "+task +" with thread "+t);
 		ActiveCodeClient previousClient = task.getWrappedTask().setClient(clientPool.getClient(t.getId()));
 		assert(previousClient == null);
 		guard.register(task); 	

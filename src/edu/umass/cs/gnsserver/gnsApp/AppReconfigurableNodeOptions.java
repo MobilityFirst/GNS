@@ -117,7 +117,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * Number of active code worker.
    */
-  public static int activeCodeWorkerCount = 10;
+  public static int activeCodeWorkerCount = 5;
   /**
    * How long (in seconds) to blacklist active code.
    */
@@ -125,7 +125,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * Number of spare workers.
    */
-  public static int activeCodeSpareWorker = 20;
+  public static int activeCodeSpareWorker = 10;
   /**
    * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
    */

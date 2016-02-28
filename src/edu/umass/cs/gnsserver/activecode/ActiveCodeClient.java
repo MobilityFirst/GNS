@@ -21,6 +21,9 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,10 +37,9 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
- * This class is used to communicate with active worker.
- * It sends active code to the worker, receives request
- * from the worker, and gets the execution result from
- * the worker.
+ * This class is used to communicate with active worker. It sends active code to
+ * the worker, receives request from the worker, and gets the execution result
+ * from the worker.
  * 
  * @author Zhaoyu Gao
  */
@@ -48,144 +50,151 @@ public class ActiveCodeClient {
 	private final GnsApplicationInterface<String> app;
 	private DatagramSocket clientSocket;
 	private byte[] buffer = new byte[8096];
-	
-	
+
 	/**
-	 * @param app the gnsApp
-     * @param port 
-	 * @param proc 
+	 * @param app
+	 *            the gnsApp
+	 * @param port
+	 * @param proc
 	 */
 	public ActiveCodeClient(GnsApplicationInterface<String> app, int port, Process proc) {
 		this.app = app;
 		this.ready = false;
-		//initialize the clientSocket first
-		try{
+		// initialize the clientSocket first
+		try {
 			clientSocket = new DatagramSocket();
 			//clientSocket.setSoTimeout(1000);
-		}catch(IOException e){
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		setNewWorker(port, proc);
 	}
-	
-	protected int getPort(){
+
+	protected int getPort() {
 		return serverPort;
 	}
-	  
-	
+
 	/**
 	 * 
-	 * @param acp the parameters to send to the worker
+	 * @param acp
+	 *            the parameters to send to the worker
 	 * @return the ValuesMap object returned by the active code
 	 */
 	public ValuesMap runActiveCode(ActiveCodeParams acp) {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setAcp(acp);
 		ValuesMap vm = null;
-		
+
 		vm = submitRequest(acm);
-		
+
 		return vm;
 	}
-	
+
 	/**
 	 * Checks to see if the worker is still running.
+	 * 
 	 * @return true if the worker is still running
 	 */
 	protected boolean isRunning() {
 		try {
 			process.exitValue();
-		}
-		catch (IllegalThreadStateException e) {
+		} catch (IllegalThreadStateException e) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Submits the request to the worker via socket comm.
+	 * 
 	 * @param acmReq
 	 * @return the ValuesMap object returned by the active code
 	 */
 	protected ValuesMap submitRequest(ActiveCodeMessage acmReq) {
 		long startTime = System.nanoTime();
 		boolean crashed = false;
-		
+
 		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
-		
+
 		boolean codeFinished = false;
 		String valuesMapString = null;
 		/*
-		 * Invariant: this thread can't be interrupted, because 
+		 * Invariant: this thread can't be interrupted, because
 		 */
-		assert(!Thread.currentThread().isInterrupted());
-		
+		assert (!Thread.currentThread().isInterrupted());
+
 		// Send the request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
-				
+
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
-		while(!codeFinished) {
-		    ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
-		    /*
-		     * If socket timeout is set, then this would work, but result in some unknown blocking problem
-		     */
-		    if(acmResp == null){
-		    	crashed = true;
-		    	break;
-		    }
-		    
-		    if(acmResp.isFinished()) {
-		    	// We are done!		
-		    	codeFinished = true;
-		    	valuesMapString = acmResp.getValuesMapString();
-		    	crashed = acmResp.isCrashed();
-		    }
-		    else {
-		    	// We aren't finished, which means that the response asked us to query a guid
-		    	// Can be read or write query (writes are only supported locally)
-		    	String currentGuid = acmReq.getAcp().getGuid();
-		    	ActiveCodeQueryRequest acqreq = acmResp.getAcqreq();
-		    	// Perform the query
-		    	ActiveCodeQueryResponse acqresp = acqh.handleQuery(currentGuid, acqreq);
-		    	// Send the results back
-		    	ActiveCodeMessage acmres = new ActiveCodeMessage();
-		    	acmres.setAcqresp(acqresp);
-		    	ActiveCodeUtils.sendMessage(clientSocket, acmres, serverPort);
-		    }
+		while (!codeFinished) {
+			ActiveCodeMessage acmResp = null;
+			
+			acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
+			
+			/*
+			 * If socket timeout is set, then this would work, but result in
+			 * some unknown blocking problem
+			 */
+			if (acmResp == null) {
+				crashed = true;
+				break;
+			}
+
+			if (acmResp.isFinished()) {
+				// We are done!
+				codeFinished = true;
+				valuesMapString = acmResp.getValuesMapString();
+				crashed = acmResp.isCrashed();
+			} else {
+				// We aren't finished, which means that the response asked us to
+				// query a guid
+				// Can be read or write query (writes are only supported
+				// locally)
+				String currentGuid = acmReq.getAcp().getGuid();
+				ActiveCodeQueryRequest acqreq = acmResp.getAcqreq();
+				// Perform the query
+				ActiveCodeQueryResponse acqresp = acqh.handleQuery(currentGuid, acqreq);
+				// Send the results back
+				ActiveCodeMessage acmres = new ActiveCodeMessage();
+				acmres.setAcqresp(acqresp);
+				ActiveCodeUtils.sendMessage(clientSocket, acmres, serverPort);
+			}
 		}
 
 		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
-		
+
 		long convertTime = System.nanoTime();
 		ValuesMap vm = null;
-		
-        // Try to convert back to a valuesMap
-        if(crashed) {
-        	System.out.println("################### "+ acmReq.getAcp().getGuid()+" Crashed! #################### "+acmReq.getValuesMapString());
-        	try{
-        		//If there is an error, send the original value back
-        		vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
-        	} catch (JSONException e) {
-        		e.printStackTrace();
-        	}
-        	return vm;
-        }else if(valuesMapString != null) {        	
-        	try {
-        		vm = new ValuesMap(new JSONObject(valuesMapString));
- 	        } catch (JSONException e) {
- 	        	e.printStackTrace();
- 	        }
-        }else{    
-        	System.out.println("ValuesMapString is "+acmReq.toString());
-        }
-        DelayProfiler.updateDelayNano("activeConvert", convertTime);
-        DelayProfiler.updateDelayNano("communication", startTime);
-        return vm;
+
+		// Try to convert back to a valuesMap
+		if (crashed) {
+			//System.out.println("################### " + acmReq.getAcp().getGuid() + " Crashed! #################### "
+			//		+ acmReq.getValuesMapString());
+			try {
+				// If there is an error, send the original value back
+				vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			return vm;
+		} else if (valuesMapString != null) {
+			try {
+				vm = new ValuesMap(new JSONObject(valuesMapString));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("ValuesMapString is " + acmReq.toString());
+		}
+		DelayProfiler.updateDelayNano("activeConvert", convertTime);
+		DelayProfiler.updateDelayNano("communication", startTime);
+		return vm;
 	}
-	
+
 	/**
 	 * Cleanly shuts down the worker
 	 */
@@ -199,37 +208,63 @@ public class ActiveCodeClient {
 		}
 		clientSocket.close();
 	}
-	
-	protected boolean isReady(){
+
+	protected boolean isReady() {
 		return ready;
 	}
-	
-	protected void setReady(boolean ready){
+
+	protected void setReady(boolean ready) {
 		this.ready = ready;
 	}
-	
+
+	static class Instrumenter {
+		static Set<DatagramSocket> closedSockets = new HashSet<DatagramSocket>();
+		static Object monitor = new Object();
+		static Set<DatagramSocket> blockedSockets = new HashSet<DatagramSocket>();
+	}
+
+	private long INSTRUMENTER_MONIOR_WAIT_TIME = 100;
+
 	protected void forceShutdownServer() {
 		process.destroyForcibly();
 		clientSocket.close();
-		assert( clientSocket.isClosed() );
+		assert (clientSocket.isClosed());
+		
+		/*
+		synchronized (Instrumenter.monitor) {
+			clientSocket.close();
+			assert (clientSocket.isClosed());
+			Instrumenter.closedSockets.add(clientSocket);
+			for (int i = 0; i < 10; i++) {
+				if (Instrumenter.blockedSockets.contains(clientSocket))
+					try {
+						Instrumenter.monitor.wait(INSTRUMENTER_MONIOR_WAIT_TIME);
+					} catch (InterruptedException e) {
+						assert (false);
+						e.printStackTrace();
+					}
+			}
+			assert (!Instrumenter.blockedSockets.contains(clientSocket));
+		}
+		*/
 
-		try{
+		try {
 			clientSocket = new DatagramSocket();
 			//clientSocket.setSoTimeout(1000);
-		}catch(IOException e){
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	protected void setNewWorker(int port, Process proc){
+
+	protected void setNewWorker(int port, Process proc) {
 		this.process = proc;
 		this.serverPort = port;
-		
+
 		notifyWorkerOfClientPort(port);
 	}
-	
-	protected void notifyWorkerOfClientPort(int port){
-		//notify new worker about the client's new port number
+
+	protected void notifyWorkerOfClientPort(int port) {
+		// notify new worker about the client's new port number
 		ActiveCodeUtils.sendMessage(clientSocket, new ActiveCodeMessage(), port);
 	}
 }

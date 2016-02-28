@@ -6,10 +6,11 @@ import java.util.concurrent.FutureTask;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
+ * This class holds the reference to the ActiveCodeTask
  * @author gaozy
- *
  */
 public class ActiveCodeFutureTask extends FutureTask<ValuesMap>{
+	
 	private ActiveCodeTask callable;
 	/**
 	 * @param callable

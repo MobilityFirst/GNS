@@ -33,6 +33,7 @@ public class ActiveCodeGuardian implements Runnable {
 			synchronized(tasks){
 				for(ActiveCodeFutureTask task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
+						System.out.println("Task "+task+" is timed out...");
 						cancelTask(task);
 					}
 				}		
@@ -74,7 +75,7 @@ public class ActiveCodeGuardian implements Runnable {
 			// deregister the task and cancel it
 			task.cancel(true);	
 			assert(deregister(task) != null);
-		}		
+		}
 		
 		DelayProfiler.updateDelay("ActiveCodeRestart", start);
 	}

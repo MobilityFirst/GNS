@@ -19,9 +19,13 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -123,7 +127,7 @@ public class ActiveCodeQueryHelper {
 		}
 		// Otherwise, we need to do an external guid read
 		else {
-			//System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
+			System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
 			if(acqreq.getAction().equals("read")) {
 				try{
 					boolean allowAccess = true;
@@ -138,27 +142,53 @@ public class ActiveCodeQueryHelper {
 					*/
 					if (allowAccess){
 						long start = System.nanoTime();
-						//Read the record and code from DB
-						NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, 
-								  ColumnFieldType.USER_JSON, field);
-						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
-				                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
-						//set the response value to the code before running the active code
-						acqr = new ActiveCodeQueryResponse(true, nameRecord.getValuesMap().toString());
-						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
-						start = System.nanoTime();
-						if (codeRecord != null && nameRecord != null && ActiveCodeHandler.hasCode(codeRecord, "read")) {
-							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
-							ValuesMap originalValues = nameRecord.getValuesMap();
+						// testGuid is a field for test chain guid
+						if(! field.equals("testGuid") ){
+							//Read the record and code from DB
+							NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, 
+									  ColumnFieldType.USER_JSON, field);
+							NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
+					                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+							//set the response value to the code before running the active code
+							acqr = new ActiveCodeQueryResponse(true, nameRecord.getValuesMap().toString());
+							DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
+							start = System.nanoTime();
+							if (codeRecord != null && nameRecord != null && ActiveCodeHandler.hasCode(codeRecord, "read")) {
+								String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+								ValuesMap originalValues = nameRecord.getValuesMap();
+								ValuesMap newResult = null;
+								//System.out.println("Ready to do this external query for "+targetGuid+" on field "+field+" with the original value "+originalValues.toString());
+								newResult = ActiveCodeHandler.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+								
+								if (newResult != null){
+									acqr = new ActiveCodeQueryResponse(true, newResult.toString());
+									//System.out.println("Send the request with new result value "+newResult.toString());
+								} else {
+									acqr = new ActiveCodeQueryResponse(true, nameRecord.toString());
+									//System.out.println("Send the request with new record value "+nameRecord.toString());
+								}
+							}
+						} else {
+							// This part is just for test chain guid
+							
+							System.out.println("Let start testing chain experiemnt...");
+							// initialize the parameters used in the test 
+							JSONObject obj = new JSONObject();
+							obj.put("testGuid", "");
+							ValuesMap valuesMap = new ValuesMap(obj);
+							final String guid2 = "guid2";
+							final String field2 = "testGuid";
+							acqr = new ActiveCodeQueryResponse(true, valuesMap.toString());
+							String mal_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
+							String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 							ValuesMap newResult = null;
-							//System.out.println("Ready to do this external query for "+targetGuid+" on field "+field+" with the original value "+originalValues.toString());
-							newResult = ActiveCodeHandler.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+							newResult = ActiveCodeHandler.runCode(mal_code64, guid2, field2, "read", valuesMap, 100);
 							
 							if (newResult != null){
 								acqr = new ActiveCodeQueryResponse(true, newResult.toString());
 								//System.out.println("Send the request with new result value "+newResult.toString());
 							} else {
-								acqr = new ActiveCodeQueryResponse(true, nameRecord.toString());
+								acqr = new ActiveCodeQueryResponse(true, valuesMap.toString());
 								//System.out.println("Send the request with new record value "+nameRecord.toString());
 							}
 						}

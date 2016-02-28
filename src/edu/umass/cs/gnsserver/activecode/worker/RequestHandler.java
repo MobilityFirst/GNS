@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.net.DatagramSocket;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -60,7 +61,11 @@ public class RequestHandler {
 		
 		try {			
 			// Get the ActiveCodeMessage from the GNS
-		    ActiveCodeMessage acm = ActiveCodeUtils.receiveMessage(socket, buffer);		
+			ActiveCodeMessage acm = null;
+
+			acm = ActiveCodeUtils.receiveMessage(socket, buffer);
+			
+			
 		    //FIXME: do not need to initialize new querier everytime
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);
 		    

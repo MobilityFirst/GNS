@@ -19,16 +19,20 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.codec.binary.Base64;
+import edu.umass.cs.gnscommon.utils.Base64;
+//import org.apache.commons.codec.binary.Base64;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
@@ -62,7 +66,7 @@ public class ActiveCodeHandler {
 	 */
 	public ActiveCodeHandler(GnsApplicationInterface<String> app) {
 		int numProcesses = AppReconfigurableNodeOptions.activeCodeWorkerCount;
-		this.setGnsApp(app);
+		gnsApp = app;
 	    
 		clientPool = new ClientPool(app); 
 		(new Thread(clientPool)).start();
@@ -124,7 +128,7 @@ public class ActiveCodeHandler {
 	public static ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
 		long startTime = System.nanoTime();		
 		//Construct Value parameters
-		String code = new String(Base64.decodeBase64(code64));
+		String code = new String(Base64.decode(code64));
 		String values = valuesMap.toString();
 		
 		//System.out.println("Got the request from guid "+guid+" for the field "+field+" with original value "+valuesMap);
@@ -166,44 +170,94 @@ public class ActiveCodeHandler {
 	    return result;
 		
 	}
-
-
-	/**
-	 * @return gnsApp
-	 */
-	public GnsApplicationInterface<?> getGnsApp() {
-		return gnsApp;
-	}
-
-
-	/**
-	 * @param gnsApp
-	 */
-	public void setGnsApp(GnsApplicationInterface<?> gnsApp) {
-		this.gnsApp = gnsApp;
+	
+	public ActiveCodeExecutor getExecutor(){
+		return executorPool;
 	}
 	
-	static class Task implements Runnable {
-		public void run() {
-			System.out.println("Task running");
-			throw new RuntimeException("TaskException " + System.currentTimeMillis());
-		}
-	}
+	
+	/***************************** TEST CODE *********************/
+	
 	
 	/**
 	 * @param args
 	 * @throws InterruptedException
 	 * @throws ExecutionException
+	 * @throws IOException 
+	 * @throws JSONException 
 	 */
-	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(4);
-		Future<?> future  = executor.submit(new Task());
+	public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException {
+		// Initialize the handler and get the executor for instrument
+		ActiveCodeHandler handler = new ActiveCodeHandler(null);
+		ActiveCodeExecutor executor = handler.getExecutor();
+		Thread.sleep(2000);
+		
+		// The variable to record the total number of tasks that should be completed
+		int completed = 0;
+		
+		// initialize the parameters used in the test 
+		JSONObject obj = new JSONObject();
+		obj.put("testGuid", "success");
+		ValuesMap valuesMap = new ValuesMap(obj);
+		final String guid1 = "guid1";
+		final String field1 = "testGuid";
+		final String read_action = "read";
+				
+		/************** Test normal code *************/
+		System.out.println("################# Start testing normal active code ... ###################");
+		String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
+		String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
+		
+		ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+		Thread.sleep(2000);
+		completed++;
+		
+		System.out.println("Active count number is "+executor.getActiveCount()+
+				", the number of completed tasks is "+executor.getCompletedTaskCount());
+		
+		// test result, # of completed tasks, and # of active threads
+		System.out.println(result);
+		assert(executor.getActiveCount() == 0);
+		assert(executor.getCompletedTaskCount() == completed);
+		System.out.println("############# TEST FOR NOOP PASSED! ##############");
 		Thread.sleep(1000);
-		try {
-			future.get();
-		} catch(ExecutionException re) {
-			re.printStackTrace();
-			future.get();
+		
+		
+		/************** Test malicious code *************/
+		System.out.println("################# Start testing malicious active code ... ###################");
+		String mal_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
+		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
+				
+		result = ActiveCodeHandler.runCode(mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
+		Thread.sleep(2000); 
+		completed++;
+		
+		assert(executor.getActiveCount() == 0);
+		assert(executor.getCompletedTaskCount() == completed);
+		System.out.println("############# TEST FOR MALICOUS PASSED! ##############");
+		Thread.sleep(1000);
+		
+		/************** Test chain code *************/
+		System.out.println("################# Start testing chain active code ... ###################");
+		String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain.js")));
+		String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
+				
+		result = ActiveCodeHandler.runCode(chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
+		Thread.sleep(2000); 
+		completed++;
+		completed++;
+		
+		int count = 0;
+		while(count <10){
+			System.out.println(""+executor.getCompletedTaskCount()+" "+executor.getActiveCount());
+			Thread.sleep(1000);
+			count++;
 		}
+		assert(executor.getActiveCount() == 0);
+		assert(executor.getCompletedTaskCount() == completed);
+		System.out.println("############# TEST FOR CHAIN PASSED! ##############");
+		Thread.sleep(1000);
+		
+		System.exit(0);
 	}
 }

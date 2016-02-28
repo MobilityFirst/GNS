@@ -28,25 +28,28 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.concurrent.TimeoutException;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeClient.Instrumenter;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
- * This class is used to serialize and deserialize, send 
- * and receive message between active worker and active client.
+ * This class is used to serialize and deserialize, send and receive message
+ * between active worker and active client.
  * 
  * @author mbadov
  */
 public class ActiveCodeUtils {
 	/**
 	 * Serialize an object, ready to send
+	 * 
 	 * @param o
 	 * @return a byte array ready to send
 	 */
 	public static byte[] serializeObject(Object o) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
+
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(o);
@@ -56,19 +59,20 @@ public class ActiveCodeUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		return baos.toByteArray();
 	}
-	
+
 	/**
 	 * Deserialize a byte array, ready to cast
+	 * 
 	 * @param data
 	 * @return a object, ready to cast
 	 */
 	public static Object deserializeObject(byte[] data) {
 		long t = System.nanoTime();
 		ByteArrayInputStream bais = new ByteArrayInputStream(data);
-	    Object o = null;
+		Object o = null;
 		try {
 			ObjectInputStream oin = new ObjectInputStream(bais);
 			o = oin.readObject();
@@ -77,55 +81,72 @@ public class ActiveCodeUtils {
 			e.printStackTrace();
 		}
 		DelayProfiler.updateDelayNano("activeDeserialize", t);
-	    return o;
+		return o;
 	}
-	
+
 	/**
 	 * Send the serialized message
-	 * @param socket 
+	 * 
+	 * @param socket
 	 * @param acm
-	 * @param port 
+	 * @param port
 	 */
-	public static void sendMessage(DatagramSocket socket, ActiveCodeMessage acm, int port){
+	public static void sendMessage(DatagramSocket socket, ActiveCodeMessage acm, int port) {
 		long t = System.nanoTime();
-		try{
+		try {
 			InetAddress addr = InetAddress.getByName("localhost");
 			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 			ObjectOutputStream os = new ObjectOutputStream(outputStream);
 			os.writeObject(acm);
 			byte[] data = outputStream.toByteArray();
 			DatagramPacket pkt = new DatagramPacket(data, data.length, addr, port);
-			if(!socket.isClosed()){
+			if (!socket.isClosed()) {
 				socket.send(pkt);
 			}
-		}catch(IOException e){
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		DelayProfiler.updateDelayNano("activeSend", t);
 	}
-	
+
 	/**
 	 * receive a datagram through a datgram socket
+	 * 
 	 * @param socket
-	 * @param buffer 
+	 * @param buffer
 	 * @return an ActiveCodeMessage
 	 */
-	public static ActiveCodeMessage receiveMessage(DatagramSocket socket, byte[] buffer){
+	public static ActiveCodeMessage receiveMessage(DatagramSocket socket, byte[] buffer) {
 		long t = System.nanoTime();
 		ActiveCodeMessage acm = null;
-		//byte[] buffer = new byte[8096*10];
 		Arrays.fill(buffer, (byte) 0);
 		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
-		try{
+		try {
+			/*
+			if (socket.isClosed())
+				throw new IOException("Socket already closed");			
+			assert (Instrumenter.blockedSockets.add(socket));
+			*/
 			socket.receive(pkt);
-			
+			/*
+			if (pkt.getLength() == 0) {
+				throw new TimeoutException("Socket timed out");
+			}
+			*/
 			ByteArrayInputStream in = new ByteArrayInputStream(pkt.getData());
-			ObjectInputStream is = new ObjectInputStream(in);			 
-			acm = (ActiveCodeMessage) is.readObject();			
-		}catch(IOException e){
+			ObjectInputStream is = new ObjectInputStream(in);
+			acm = (ActiveCodeMessage) is.readObject();
+		} catch (IOException e) {
 			//e.printStackTrace();
-		}catch(ClassNotFoundException e){
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} finally {
+			/*
+			assert (Instrumenter.blockedSockets.remove(socket));
+			synchronized (Instrumenter.monitor) {
+				Instrumenter.monitor.notify();
+			}
+			*/
 		}
 		DelayProfiler.updateDelayNano("activeReceive", t);
 		return acm;
