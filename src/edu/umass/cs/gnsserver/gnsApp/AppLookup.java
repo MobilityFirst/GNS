@@ -205,12 +205,13 @@ public class AppLookup {
             DelayProfiler.updateDelayNano("activeBeforeRunning", activeCheckTime);
             
             newResult = ActiveCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
+            //assert(newResult != null);
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               //GNS.getLogger().info("AC--->>> " + newResult.toString());
               GNS.getLogger().info("AC--->>> " + newResult.toReasonableString());
             }
           } catch (Exception e) {
-            GNS.getLogger().info("Active code error: " + e.getMessage());
+            GNS.getLogger().severe("Active code error: " + e.getMessage());
           }
         }  
         

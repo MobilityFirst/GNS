@@ -23,6 +23,7 @@ public class ActiveCodeGuardian implements Runnable {
 	}
 	
 	public void run(){
+		try {
 		System.out.println(this.getClass().getName()+" runs in thread "+Thread.currentThread());
 		while(true){
 			/*
@@ -33,8 +34,8 @@ public class ActiveCodeGuardian implements Runnable {
 			synchronized(tasks){
 				for(ActiveCodeFutureTask task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
-						System.out.println("Task "+task+" is timed out...");
 						cancelTask(task);
+						System.out.println(this + " canceled timed out task "+task);
 					}
 				}		
 			}
@@ -49,6 +50,9 @@ public class ActiveCodeGuardian implements Runnable {
 				System.out.println(">>>>>>>>>>>>>>>>>>>>> It takes more than 100ms to check all tasks!");
 			}
 		}
+		} catch(Exception | Error e) {
+			e.printStackTrace();
+		} 
 	}
 	
 	protected void cancelTask(ActiveCodeFutureTask task){
@@ -78,6 +82,10 @@ public class ActiveCodeGuardian implements Runnable {
 		}
 		
 		DelayProfiler.updateDelay("ActiveCodeRestart", start);
+	}
+	
+	public String toString() {
+		return this.getClass().getSimpleName();
 	}
 	
 	protected void register(ActiveCodeFutureTask task){

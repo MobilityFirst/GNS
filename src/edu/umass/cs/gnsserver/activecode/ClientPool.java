@@ -132,7 +132,7 @@ public class ClientPool implements Runnable{
 	 * Thread factory uses this method to map a thread to an ActiveCodeClient
 	 * @param t
 	 */
-	protected void addClient(Thread t) {
+	protected ActiveCodeClient addClient(Thread t) {
 		System.out.println("Add a client for thread "+t);
 		int workerPort = getOpenUDPPort();
 		// This port is not ready
@@ -154,6 +154,7 @@ public class ClientPool implements Runnable{
 		}
 		
 		client.notifyWorkerOfClientPort(workerPort);
+		return client;
 	}
 	
 	/**

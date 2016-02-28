@@ -38,8 +38,9 @@ public class ActiveCodeThreadFactory implements ThreadFactory {
 	 */
     @Override
 	public Thread newThread(Runnable r) {
-		Thread t = new Thread(r);		
-		clientPool.addClient(t);
+		Thread t = new Thread(r);
+		ActiveCodeClient client = clientPool.addClient(t);
+		t.setName("ActiveCodeClient:" + client.getPort());
 	    return t;
 	} 
     

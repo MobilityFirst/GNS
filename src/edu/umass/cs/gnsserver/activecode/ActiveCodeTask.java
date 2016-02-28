@@ -59,17 +59,22 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	return client;
     }
     
+    public String toString() {
+    	return this.acp.toString();
+    }
+    
     private static final long MAX_CLIENT_READY_WAIT_TIME = 1000;
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
      */
     public ValuesMap call() throws InterruptedException{ 
+    	ValuesMap result = null;
+    	Throwable thrown = null;
     	try {
 	    	long startTime = System.nanoTime();
 	    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
 	    	
-	    	ValuesMap result = null;
 	    		    	
 	    	//check the state of the client's worker
 	    	while(!client.isReady()){
@@ -88,11 +93,17 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    	
 	    	DelayProfiler.updateDelayNano("activeCodeTask", startTime);
 	    	
-	    	return result;    	
-    	} finally {
+    	} catch(Exception | Error e) {
+    		thrown = e;
+    		//e.printStackTrace();
+    		throw e;
+    	}
+   		finally {
     		// arun
     		assert(System.currentTimeMillis() - this.startTime < 2000);
+    		if(thrown != null) thrown.printStackTrace();
     	}
+    	return result;    	
     }
     
 }

@@ -20,6 +20,9 @@ public class ActiveCodeFutureTask extends FutureTask<ValuesMap>{
 		this.callable = (ActiveCodeTask) callable;
 	}
 	
+	public String toString() {
+		return this.callable.toString();
+	}
 	/**
 	 * @return the callable wrapped by the future task, i.e., the ActiveCodeTask
 	 */

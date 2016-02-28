@@ -178,6 +178,9 @@ public class ActiveCodeParams implements Serializable {
   public void setHopLimit(int hopLimit) {
     this.hopLimit = hopLimit;
   }
-        
+
+	public String toString() {
+		return this.guid + "." + this.field + ":" + this.action;
+	}
         
 }

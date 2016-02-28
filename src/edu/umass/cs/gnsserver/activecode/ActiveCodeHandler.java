@@ -137,36 +137,79 @@ public class ActiveCodeHandler {
 		ActiveCodeFutureTask futureTask = new ActiveCodeFutureTask(new ActiveCodeTask(acp));
 		
 		DelayProfiler.updateDelayNano("activeHandlerPrepare", startTime);		
-		
-		scheduler.submit(futureTask, guid);
-		
+
+		Throwable thrown = null;
 		ValuesMap result = null;
-		
+
 		try {
+
+			scheduler.submit(futureTask, guid);
+
 			result = futureTask.get();
 		} catch (ExecutionException ee) {
 			//System.out.println("Execution "+guid+" Task "+futureTask);
 			//ee.printStackTrace();
+			//thrown = ee;
+			try {
 			scheduler.finish(guid);
+			} catch (Exception | Error e) {
+				e.printStackTrace();
+			}
 			return valuesMap;
 		} catch(CancellationException ce) {
+			//thrown = ce;
 			//System.out.println("Cancel "+guid+" Task "+futureTask);
 			//ce.printStackTrace();
-			scheduler.finish(guid);
+			try {
+				scheduler.finish(guid);
+			} catch (Exception | Error e) {
+				e.printStackTrace();
+			}
 			return valuesMap;
 		} catch(InterruptedException ie) {
-			System.out.println("Interrupt "+guid+" Task "+futureTask+" thread "+Thread.currentThread());			
-			guard.cancelTask(futureTask);
+			//thrown = ie;
+			System.out.println(ActiveCodeHandler.class.getSimpleName() + " got interrupt for task " + futureTask + " thread "
+					+ Thread.currentThread() + "; activeCount = "
+					+ executorPool.getActiveCount());
+			try {
+				guard.cancelTask(futureTask);
+			} catch(Exception | Error e) {
+				//thrown = e;
+				e.printStackTrace();
+			}
+			System.out.println(ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " activeCount = "
+					+ executorPool.getActiveCount());
+			try {
 			scheduler.finish(guid);
+			} catch (Exception | Error e) {
+				//thrown = e;
+				e.printStackTrace();
+			}
 			return valuesMap;
-		} catch (Exception e){
+		} catch (Exception | Error e){
+			thrown = e;
+			e.printStackTrace();
+		} finally {
+			System.out.println(ActiveCodeHandler.class.getSimpleName() + " finally block: " +futureTask + " thread "
+					+ Thread.currentThread() +  " activeCount = " + executorPool.getActiveCount());
+			if(thrown !=null)
+				thrown.printStackTrace();
+		}
+
+		System.out.println(ActiveCodeHandler.class.getSimpleName()
+				+ ".runCode before final scheduler.finish(), activeCount = "
+				+ executorPool.getActiveCount());
+		try {
+		scheduler.finish(guid);
+		} catch (Exception | Error e) {
 			e.printStackTrace();
 		}
 		
-		scheduler.finish(guid);
-		
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
-		
+		System.out.println(ActiveCodeHandler.class.getSimpleName()
+				+ ".runCode returning, activeCount = "
+				+ executorPool.getActiveCount());
+		 
 	    return result;
 		
 	}
@@ -250,10 +293,11 @@ public class ActiveCodeHandler {
 		int count = 0;
 		while(count <10){
 			System.out.println(""+executor.getCompletedTaskCount()+" "+executor.getActiveCount());
+			if(executor.getActiveCount()==0) break;
 			Thread.sleep(1000);
 			count++;
 		}
-		assert(executor.getActiveCount() == 0);
+		assert(executor.getActiveCount() == 0) : executor.getActiveCount();
 		assert(executor.getCompletedTaskCount() == completed);
 		System.out.println("############# TEST FOR CHAIN PASSED! ##############\n\n");
 		Thread.sleep(1000);
