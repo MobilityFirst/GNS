@@ -81,37 +81,41 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
      */
     public ValuesMap call() throws InterruptedException{ 
     	incrNumActiveCount();
-    	System.out.println(this + " STARTING");
+    	if(ActiveCodeHandler.enableDebugging)
+    		System.out.println(this + " STARTING");
+    	
     	ValuesMap result = null;
     	Throwable thrown = null;
     	try {
 	    	long startTime = System.nanoTime();
 	    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
-	    	
-	    	System.out.println(this + " waiting on client to be ready");
+	    	if(ActiveCodeHandler.enableDebugging)
+	    		System.out.println(this + " waiting on client to be ready");
 	    	//check the state of the client's worker
 	    	while(!client.isReady()){
 	    		// wait until it's ready
-	    		System.out.println("My client is not ready, I need to wait for client "+client+", I'm thread "+Thread.currentThread());
 	    		synchronized(client){
 	    			client.wait(MAX_CLIENT_READY_WAIT_TIME);
 	    		}
 	    		assert(client.isReady());
 	    	}
-	    	System.out.println( this + " client ready; before runActiveCode");
+	    	if(ActiveCodeHandler.enableDebugging)
+	    		System.out.println( this + " client ready; before runActiveCode");
 	    	
 	    	DelayProfiler.updateDelayNano("activeCodeBeforeSending", startTime);
 	  	
 	    	if(acp != null) {
 	    		result = client.runActiveCode(acp);
 	    	}
-	    	System.out.println(this + " after runActiveCode");
+	    	if(ActiveCodeHandler.enableDebugging)
+	    		System.out.println(this + " after runActiveCode");
 	    	
 	    	DelayProfiler.updateDelayNano("activeCodeTask", startTime);
 	    	
     	} catch(Exception | Error e) {
     		thrown = e;
-    		System.out.println(this + " re-throwing uncaught exception/error " + e);
+    		if(ActiveCodeHandler.enableDebugging)
+    			System.out.println(this + " re-throwing uncaught exception/error " + e);
     		e.printStackTrace();
     		throw e;
     	}
@@ -120,8 +124,10 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     		//assert(System.currentTimeMillis() - this.startTime < 2000);
     		if(thrown != null) GNS.getLogger().severe(thrown.toString());
     		decrNumActiveCount();
-    		System.out.println(this + " finally block just before returning result " + result );
-   			System.out.println(this + " ENDING");
+    		if(ActiveCodeHandler.enableDebugging){
+    			System.out.println(this + " finally block just before returning result " + result );
+    			System.out.println(this + " ENDING");
+    		}
     	}
     	return result;    	
     }

@@ -69,7 +69,7 @@ public class ActiveCodeClient {
 		// initialize the clientSocket first
 		try {
 			clientSocket = new DatagramSocket();
-			//clientSocket.setSoTimeout(1000);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -121,7 +121,6 @@ public class ActiveCodeClient {
 	 * @return the ValuesMap object returned by the active code
 	 */
 	protected ValuesMap submitRequest(ActiveCodeMessage acmReq) {
-		System.out.println(this + " gets an active code message "+acmReq.getAcp().getValuesMapString());
 		long startTime = System.nanoTime();
 		boolean crashed = false;
 
@@ -142,10 +141,13 @@ public class ActiveCodeClient {
 		// Keeping going until we have received a 'finished' message
 		while (!codeFinished) {
 			ActiveCodeMessage acmResp = null;
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(this + " submitRequest waiting for socket message");
 			
-			System.out.println(this + " submitRequest waiting for socket message");
 			acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
-			System.out.println(this + " submitRequest received socket message: " + (acmResp != null ? "acmResp.valuesMapString = " + acmResp.valuesMapString : "[NULL]"));
+			
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(this + " submitRequest received socket message: " + (acmResp != null ? "acmResp.valuesMapString = " + acmResp.valuesMapString : "[NULL]"));
 			
 			/*
 			 * If socket timeout is set, then this would work, but result in
@@ -188,8 +190,8 @@ public class ActiveCodeClient {
 				}
 			}
 		}
-		
-		System.out.println(this + " submitRequest out of while(!codeFinished) loop");
+		if(ActiveCodeHandler.enableDebugging)
+			System.out.println(this + " submitRequest out of while(!codeFinished) loop");
 
 		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
 
@@ -206,7 +208,6 @@ public class ActiveCodeClient {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			System.out.println(this + " submitRequest returning null");
 			return vm;
 		} else if (valuesMapString != null) {
 			try {
@@ -262,8 +263,9 @@ public class ActiveCodeClient {
 
 		try {
 			clientSocket = new DatagramSocket();
-			System.out.println(this + " DESTROYED worker and opened new socket on " + clientSocket.getLocalPort());
-			//clientSocket.setSoTimeout(1000);
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(this + " DESTROYED worker and opened new socket on " + clientSocket.getLocalPort());
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

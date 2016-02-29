@@ -60,6 +60,10 @@ public class ActiveCodeHandler {
 	private static ActiveCodeGuardian guard;
 	private static ActiveCodeScheduler scheduler;
 	
+	/**
+	 * enable debug output
+	 */
+	public static final boolean enableDebugging = AppReconfigurableNodeOptions.activeCodeEnableDebugging;
 	
 	/**
 	 * Initializes an ActiveCodeHandler
@@ -132,8 +136,6 @@ public class ActiveCodeHandler {
 		String code = new String(Base64.decode(code64));
 		String values = valuesMap.toString();
 		
-		//System.out.println("Got the request from guid "+guid+" for the field "+field+" with original value "+valuesMap);
-		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		ActiveCodeFutureTask futureTask = new ActiveCodeFutureTask(new ActiveCodeTask(acp));
 		
@@ -148,8 +150,6 @@ public class ActiveCodeHandler {
 
 			result = futureTask.get();
 		} catch (ExecutionException ee) {
-			//System.out.println("Execution "+guid+" Task "+futureTask);
-			//ee.printStackTrace();
 			//thrown = ee;
 			try {
 			scheduler.finish(guid);
@@ -159,8 +159,6 @@ public class ActiveCodeHandler {
 			return valuesMap;
 		} catch(CancellationException ce) {
 			//thrown = ce;
-			//System.out.println("Cancel "+guid+" Task "+futureTask);
-			//ce.printStackTrace();
 			try {
 				scheduler.finish(guid);
 			} catch (Exception | Error e) {
@@ -169,7 +167,8 @@ public class ActiveCodeHandler {
 			return valuesMap;
 		} catch(InterruptedException ie) {
 			//thrown = ie;
-			System.out.println(ActiveCodeHandler.class.getSimpleName()
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(ActiveCodeHandler.class.getSimpleName()
 					+ " got interrupt for task " + futureTask + " thread "
 					+ Thread.currentThread() + "; activeCount = "
 					+ executorPool.getActiveCount() + "; actualActiveCount = "
@@ -180,7 +179,9 @@ public class ActiveCodeHandler {
 				//thrown = e;
 				e.printStackTrace();
 			}
-			System.out.println(ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
+			
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
 					+ executorPool.getActiveCount() + "; actualActiveCount = " + ActiveCodeTask.getActiveCount());
 			try {
 			scheduler.finish(guid);
@@ -193,7 +194,8 @@ public class ActiveCodeHandler {
 			thrown = e;
 			e.printStackTrace();
 		} finally {
-			System.out.println(ActiveCodeHandler.class.getSimpleName()
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(ActiveCodeHandler.class.getSimpleName()
 					+ " finally block: " + futureTask + " thread "
 					+ Thread.currentThread() + " activeCount = "
 					+ executorPool.getActiveCount() + "; actualActiveCount = "
@@ -205,7 +207,8 @@ public class ActiveCodeHandler {
 		// if thrown != null, we never come here
 		assert(thrown==null);
 		
-		System.out.println(ActiveCodeHandler.class.getSimpleName()
+		if(ActiveCodeHandler.enableDebugging)
+			System.out.println(ActiveCodeHandler.class.getSimpleName()
 				+ ".runCode before final scheduler.finish(), activeCount = "
 				+ executorPool.getActiveCount());
 		try {
@@ -215,7 +218,9 @@ public class ActiveCodeHandler {
 		}
 		
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
-		System.out.println(ActiveCodeHandler.class.getSimpleName()
+		
+		if(ActiveCodeHandler.enableDebugging)
+			System.out.println(ActiveCodeHandler.class.getSimpleName()
 				+ ".runCode returning, activeCount = "
 				+ executorPool.getActiveCount());
 		 
@@ -223,7 +228,7 @@ public class ActiveCodeHandler {
 		
 	}
 	
-	public ActiveCodeExecutor getExecutor(){
+	protected ActiveCodeExecutor getExecutor(){
 		return executorPool;
 	}
 	

@@ -125,16 +125,13 @@ public class ActiveCodeUtils {
 			ObjectInputStream is = new ObjectInputStream(in);
 			acm = (ActiveCodeMessage) is.readObject();
 		} catch (IOException e) {
-			e.printStackTrace();
+			if(ActiveCodeHandler.enableDebugging)
+				e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			if(ActiveCodeHandler.enableDebugging)
+				e.printStackTrace();
 		} finally {
-			/*
-			assert (Instrumenter.blockedSockets.remove(socket));
-			synchronized (Instrumenter.monitor) {
-				Instrumenter.monitor.notify();
-			}
-			*/
+			
 		}
 		DelayProfiler.updateDelayNano("activeReceive", t);
 		return acm;

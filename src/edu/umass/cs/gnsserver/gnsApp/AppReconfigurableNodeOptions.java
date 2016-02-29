@@ -119,10 +119,6 @@ public class AppReconfigurableNodeOptions {
    */
   public static int activeCodeWorkerCount = 5;
   /**
-   * How long (in seconds) to blacklist active code.
-   */
-  public static long activeCodeBlacklistSeconds = 75;
-  /**
    * Number of spare workers.
    */
   public static int activeCodeSpareWorker = 10;
@@ -130,16 +126,14 @@ public class AppReconfigurableNodeOptions {
    * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
    */
   public static boolean activeCodeEnableTimeout = true;
-  
   /**
-   * Default port numbers for active workers, the default
-   * value for each worker's port is -1, it means the worker
-   * will be launched inside the handler's pool. If it's not
-   * -1, it means the active client will keep the port number
-   * and connect to the worker through a socket, and the real
-   * worker needs to be started seperately.
+   * How long (in seconds) to blacklist active code.
    */
-  public static ArrayList<Integer> ports = new ArrayList<Integer>();
+  public static long activeCodeTimeOut = 1000;
+  /**
+   * Enable debug message in active code package
+   */
+  public static boolean activeCodeEnableDebugging = false;
   
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -226,6 +220,8 @@ public class AppReconfigurableNodeOptions {
   private static final String ACTIVE_CODE_SPARE_WORKER = "activeCodeSpareWorker";
   
   private static final String ACTIVE_CODE_ENABLE_TIMEOUT = "activeCodeEnableTimeout";
+  
+  private static final String ACTIVE_CODE_ENABLE_DEBUGGING = "activeCodeEnableDebugging";
   
   /**
    * Returns all the options.
@@ -434,6 +430,10 @@ public class AppReconfigurableNodeOptions {
     
     if (allValues.containsKey(ACTIVE_CODE_ENABLE_TIMEOUT)) {
     	activeCodeEnableTimeout = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_TIMEOUT));
+    }
+    
+    if (allValues.containsKey(ACTIVE_CODE_ENABLE_DEBUGGING)) {
+    	activeCodeEnableDebugging = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_DEBUGGING));
     }
   }
 

@@ -127,7 +127,8 @@ public class ActiveCodeQueryHelper {
 		}
 		// Otherwise, we need to do an external guid read
 		else {
-			System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println("Got the query from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
 			if(acqreq.getAction().equals("read")) {
 				try{
 					boolean allowAccess = true;
@@ -171,7 +172,6 @@ public class ActiveCodeQueryHelper {
 						} else {
 							// This part is just for test chain guid
 							
-							System.out.println("Let's start testing chain experiemnt...");
 							// initialize the parameters used in the test 
 							JSONObject obj = new JSONObject();
 							obj.put("testGuid", "");
@@ -240,7 +240,6 @@ public class ActiveCodeQueryHelper {
 				}
 			}
 		}
-		System.out.println("Return the result" + acqr + " from guid "+currentGuid+" to access the field "+field+" of guid "+targetGuid);
 		return acqr;
 	}
 }

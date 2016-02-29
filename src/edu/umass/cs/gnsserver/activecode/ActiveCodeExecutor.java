@@ -70,11 +70,16 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
         super.afterExecute(r, t);
         // deregister the runnable (ActiveCodeFutureTask) here
         ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
-        System.out.println(this + " received throwable " + t + " for task " + task);
+        if(ActiveCodeHandler.enableDebugging)
+        	System.out.println(this + " received throwable " + t + " for task " + task);
         try {
-        	System.out.print(this + " waiting to deregister " + task + "...");
-        	guard.deregister(task);        
-        	System.out.println(" successfully deregistered " + task);
+        	if(ActiveCodeHandler.enableDebugging)
+        		System.out.print(this + " waiting to deregister " + task + "...");
+        	
+        	guard.deregister(task);  
+        	
+        	if(ActiveCodeHandler.enableDebugging)
+        		System.out.println(" successfully deregistered " + task);
         } catch(Exception | Error e) {
         	e.printStackTrace();
         }

@@ -34,9 +34,13 @@ public class ActiveCodeGuardian implements Runnable {
 			synchronized(tasks){
 				for(ActiveCodeFutureTask task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
-						System.out.println(this + " about to cancel timed out task "+task);
+						if(ActiveCodeHandler.enableDebugging)
+							System.out.println(this + " about to cancel timed out task "+task);
+						
 						cancelTask(task, true);
-						System.out.println(this + " canceled timed out task "+task);
+						
+						if(ActiveCodeHandler.enableDebugging)
+							System.out.println(this + " canceled timed out task "+task);
 					}
 				}		
 			}
