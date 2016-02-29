@@ -28,9 +28,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
-import java.util.concurrent.TimeoutException;
 
-import edu.umass.cs.gnsserver.activecode.ActiveCodeClient.Instrumenter;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -122,22 +120,12 @@ public class ActiveCodeUtils {
 		Arrays.fill(buffer, (byte) 0);
 		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
 		try {
-			/*
-			if (socket.isClosed())
-				throw new IOException("Socket already closed");			
-			assert (Instrumenter.blockedSockets.add(socket));
-			*/
 			socket.receive(pkt);
-			/*
-			if (pkt.getLength() == 0) {
-				throw new TimeoutException("Socket timed out");
-			}
-			*/
 			ByteArrayInputStream in = new ByteArrayInputStream(pkt.getData());
 			ObjectInputStream is = new ObjectInputStream(in);
 			acm = (ActiveCodeMessage) is.readObject();
 		} catch (IOException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} finally {

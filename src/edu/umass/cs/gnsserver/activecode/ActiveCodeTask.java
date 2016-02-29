@@ -36,7 +36,6 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	
     private final ActiveCodeParams acp;
     private ActiveCodeClient client;
-    private long startTime = System.currentTimeMillis();
     
     /**
      * Initialize a ActiveCodeTask

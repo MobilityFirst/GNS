@@ -64,6 +64,10 @@ public class ClientPool implements Runnable{
 	
 	private final static int CALLBACK_PORT = 60000;
 	
+	private static int clientID = 0;
+	static synchronized int getClientID(){
+		return ++clientID;
+	}
 	
 	/**
 	 * Initialize a ClientPool
@@ -133,6 +137,11 @@ public class ClientPool implements Runnable{
 	 * @param t
 	 */
 	protected ActiveCodeClient addClient(Thread t) {
+		/*
+		 * Invariant: after the client starts, no new thread and client should be created.
+		 */
+		assert(getClientID() <= AppReconfigurableNodeOptions.activeCodeWorkerCount);
+		
 		System.out.println("Add a client for thread "+t);
 		int workerPort = getOpenUDPPort();
 		// This port is not ready
@@ -194,6 +203,7 @@ public class ClientPool implements Runnable{
 	 * Shutdown all the workers
 	 */
 	public void shutdown() {
+		System.out.println(this.getClass().getSimpleName()+":close all workers!");
 		for(ActiveCodeClient client : clients.values()) {
 		    client.shutdownServer();
 		}
@@ -209,6 +219,8 @@ public class ClientPool implements Runnable{
 			ActiveCodeMessage acm = new ActiveCodeMessage();
 			acm.setShutdown(true);
 			try {
+				// One message for setting socket number, another for shutdown the worker
+				ActiveCodeUtils.sendMessage(socket, acm, port);
 				ActiveCodeUtils.sendMessage(socket, acm, port);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -261,6 +273,7 @@ public class ClientPool implements Runnable{
 	protected Process startNewWorker(int workerPort, int initMemory){
 		List<String> command = new ArrayList<>();
 		// Get the current classpath
+		// client port is unknown in the beginning for the worker
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
 	    command.add("-Xms"+initMemory+"m");
@@ -269,7 +282,6 @@ public class ClientPool implements Runnable{
 	    command.add(classpath);
 	    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
 	    command.add(Integer.toString(workerPort));
-	    command.add(Integer.toString(-1));
 	    command.add(Integer.toString(-1));
 	    
 	    ProcessBuilder builder = new ProcessBuilder(command);

@@ -8,6 +8,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 public class TestCancelTask {
 	
 	static class Task implements Runnable {
+		
 		public void run() {
 			System.out.println("Task running");
 			throw new RuntimeException("TaskException " + System.currentTimeMillis());
@@ -16,7 +17,8 @@ public class TestCancelTask {
 	
 	public static void main(String[] args) throws InterruptedException, ExecutionException{
 		ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(4);
-		Future<?> future  = executor.submit(new Task());
+		Task task = new Task();
+		Future<?> future  = executor.submit(task);
 		Thread.sleep(1000);
 		try {
 			future.get();

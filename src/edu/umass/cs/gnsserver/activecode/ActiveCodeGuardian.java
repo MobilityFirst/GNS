@@ -35,7 +35,7 @@ public class ActiveCodeGuardian implements Runnable {
 				for(ActiveCodeFutureTask task:tasks.keySet()){
 					if (now - tasks.get(task) > 1000){
 						System.out.println(this + " about to cancel timed out task "+task);
-						cancelTask(task);
+						cancelTask(task, true);
 						System.out.println(this + " canceled timed out task "+task);
 					}
 				}		
@@ -56,7 +56,7 @@ public class ActiveCodeGuardian implements Runnable {
 		} 
 	}
 	
-	protected void cancelTask(ActiveCodeFutureTask task){
+	protected void cancelTask(ActiveCodeFutureTask task, boolean remove){
 		
 		long start = System.currentTimeMillis();
 		synchronized(task){
@@ -77,9 +77,10 @@ public class ActiveCodeGuardian implements Runnable {
 			clientPool.generateNewWorker();
 			DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
 			
-			// deregister the task and cancel it
+			// cancel the task
 			task.cancel(true);	
-			assert(deregister(task) != null);
+			if(remove)
+				deregister(task);
 		}
 		
 		DelayProfiler.updateDelay("ActiveCodeRestart", start);

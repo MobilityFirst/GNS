@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeoutException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,7 +44,7 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeClient {
 	private boolean ready = false;
-	private int serverPort;
+	private int workerPort;
 	private Process process;
 	private final GnsApplicationInterface<String> app;
 	private DatagramSocket clientSocket;
@@ -79,7 +78,7 @@ public class ActiveCodeClient {
 	}
 
 	protected int getPort() {
-		return serverPort;
+		return workerPort;
 	}
 
 	/**
@@ -122,6 +121,7 @@ public class ActiveCodeClient {
 	 * @return the ValuesMap object returned by the active code
 	 */
 	protected ValuesMap submitRequest(ActiveCodeMessage acmReq) {
+		System.out.println(this + " gets an active code message "+acmReq.getAcp().getValuesMapString());
 		long startTime = System.nanoTime();
 		boolean crashed = false;
 
@@ -135,7 +135,7 @@ public class ActiveCodeClient {
 		assert (!Thread.currentThread().isInterrupted());
 
 		// Send the request
-		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, serverPort);
+		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, workerPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
 
 		long receivedTime = System.nanoTime();
@@ -164,16 +164,28 @@ public class ActiveCodeClient {
 			} else {
 				// We aren't finished, which means that the response asked us to
 				// query a guid
-				// Can be read or write query (writes are only supported
-				// locally)
+				
+				/*
+				 * Before calling querier to read or write guid, we need to record the
+				 * clientPort number, if it is changed after query, it means this task
+				 * has timed out and the socket has been reset, so we don't need to do
+				 * anything but exit the while loop.
+				 */
+				int previousPort = clientSocket.getLocalPort();
 				String currentGuid = acmReq.getAcp().getGuid();
 				ActiveCodeQueryRequest acqreq = acmResp.getAcqreq();
 				// Perform the query
 				ActiveCodeQueryResponse acqresp = acqh.handleQuery(currentGuid, acqreq);
-				// Send the results back
-				ActiveCodeMessage acmres = new ActiveCodeMessage();
-				acmres.setAcqresp(acqresp);
-				ActiveCodeUtils.sendMessage(clientSocket, acmres, serverPort);
+				if (clientSocket.getLocalPort() == previousPort){
+					// Send the results back
+					ActiveCodeMessage acmres = new ActiveCodeMessage();
+					acmres.setAcqresp(acqresp);
+					ActiveCodeUtils.sendMessage(clientSocket, acmres, workerPort);
+				} else{
+					// The port number has been changed, let's get out of the loop
+					crashed = true;
+					break;
+				}
 			}
 		}
 		
@@ -190,7 +202,7 @@ public class ActiveCodeClient {
 			//		+ acmReq.getValuesMapString());
 			try {
 				// If there is an error, send the original value back
-				vm = new ValuesMap(new JSONObject(acmReq.getValuesMapString()));
+				vm = new ValuesMap(new JSONObject(acmReq.getAcp().getValuesMapString()));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -217,7 +229,11 @@ public class ActiveCodeClient {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		acm.setShutdown(true);
 		try {
-			submitRequest(acm);
+			//submitRequest(acm);
+			while(!isReady()){
+				this.wait();
+			}
+			ActiveCodeUtils.sendMessage(clientSocket, acm, workerPort);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -238,30 +254,11 @@ public class ActiveCodeClient {
 		static Set<DatagramSocket> blockedSockets = new HashSet<DatagramSocket>();
 	}
 
-	private long INSTRUMENTER_MONIOR_WAIT_TIME = 100;
 
 	protected void forceShutdownServer() {
 		process.destroyForcibly();
 		clientSocket.close();
 		assert (clientSocket.isClosed());
-		
-		/*
-		synchronized (Instrumenter.monitor) {
-			clientSocket.close();
-			assert (clientSocket.isClosed());
-			Instrumenter.closedSockets.add(clientSocket);
-			for (int i = 0; i < 10; i++) {
-				if (Instrumenter.blockedSockets.contains(clientSocket))
-					try {
-						Instrumenter.monitor.wait(INSTRUMENTER_MONIOR_WAIT_TIME);
-					} catch (InterruptedException e) {
-						assert (false);
-						e.printStackTrace();
-					}
-			}
-			assert (!Instrumenter.blockedSockets.contains(clientSocket));
-		}
-		*/
 
 		try {
 			clientSocket = new DatagramSocket();
@@ -274,8 +271,8 @@ public class ActiveCodeClient {
 
 	protected void setNewWorker(int port, Process proc) {
 		this.process = proc;
-		this.serverPort = port;
-
+		this.workerPort = port;
+		
 		notifyWorkerOfClientPort(port);
 	}
 

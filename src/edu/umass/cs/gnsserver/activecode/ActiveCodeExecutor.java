@@ -73,8 +73,8 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
         System.out.println(this + " received throwable " + t + " for task " + task);
         try {
         	System.out.print(this + " waiting to deregister " + task + "...");
-        guard.deregister(task);        
-    	System.out.println(" successfully deregistered " + task);
+        	guard.deregister(task);        
+        	System.out.println(" successfully deregistered " + task);
         } catch(Exception | Error e) {
         	e.printStackTrace();
         }

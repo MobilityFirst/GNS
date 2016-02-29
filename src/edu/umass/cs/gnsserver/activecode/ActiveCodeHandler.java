@@ -176,7 +176,7 @@ public class ActiveCodeHandler {
 					+ executorPool.getActiveCount() + "; actualActiveCount = "
 					+ ActiveCodeTask.getActiveCount());
 			try {
-				guard.cancelTask(futureTask);
+				guard.cancelTask(futureTask, true);
 			} catch(Exception | Error e) {
 				//thrown = e;
 				e.printStackTrace();
@@ -255,64 +255,71 @@ public class ActiveCodeHandler {
 		final String guid1 = "guid1";
 		final String field1 = "testGuid";
 		final String read_action = "read";
-				
-		/************** Test normal code *************/
-		System.out.println("################# Start testing normal active code ... ###################");
-		String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
-		String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
 		
-		ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
-		Thread.sleep(2000);
-		completed++;
+		try{		
 		
-		System.out.println("Active count number is "+executor.getActiveCount()+
-				", the number of completed tasks is "+executor.getCompletedTaskCount());
-		
-		// test result, # of completed tasks, and # of active threads
-		System.out.println(result);
-		assert(executor.getActiveCount() == 0);
-		assert(executor.getCompletedTaskCount() == completed);
-		System.out.println("############# TEST FOR NOOP PASSED! ##############\n\n");
-		Thread.sleep(1000);
-		
-		
-		/************** Test malicious code *************/
-		System.out.println("################# Start testing malicious active code ... ###################");
-		String mal_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
-		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
-				
-		result = ActiveCodeHandler.runCode(mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
-		Thread.sleep(2000); 
-		completed++;
-		
-		assert(executor.getActiveCount() == 0);
-		assert(executor.getCompletedTaskCount() == completed);
-		System.out.println("############# TEST FOR MALICOUS PASSED! ##############\n\n");
-		Thread.sleep(1000);
-		
-		/************** Test chain code *************/
-		System.out.println("################# Start testing chain active code ... ###################");
-		String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain.js")));
-		String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
-				
-		result = ActiveCodeHandler.runCode(chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
-		Thread.sleep(2000); 
-		completed++;
-		completed++;
-		
-		int count = 0;
-		while(count <10){
-			System.out.println("" + executor.getCompletedTaskCount() + " "
-					+ executor.getActiveCount() + "; actualActiveCount = "
-					+ ActiveCodeTask.getActiveCount());
-			if(executor.getActiveCount()==0) break;
+			/************** Test normal code *************/
+			System.out.println("################# Start testing normal active code ... ###################");
+			String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
+			String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
+			
+			ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			Thread.sleep(2000);
+			completed++;
+			
+			System.out.println("Active count number is "+executor.getActiveCount()+
+					", the number of completed tasks is "+executor.getCompletedTaskCount());
+			
+			// test result, # of completed tasks, and # of active threads
+			System.out.println(result);
+			assert(executor.getActiveCount() == 0);
+			assert(executor.getCompletedTaskCount() == completed);
+			System.out.println("############# TEST FOR NOOP PASSED! ##############\n\n");
 			Thread.sleep(1000);
-			count++;
+			
+			
+			/************** Test malicious code *************/
+			System.out.println("################# Start testing malicious active code ... ###################");
+			String mal_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
+			String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
+					
+			result = ActiveCodeHandler.runCode(mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
+			Thread.sleep(2000); 
+			completed++;
+			
+			assert(executor.getActiveCount() == 0);
+			assert(executor.getCompletedTaskCount() == completed);
+			System.out.println("############# TEST FOR MALICOUS PASSED! ##############\n\n");
+			Thread.sleep(1000);
+			
+			/************** Test chain code *************/
+			System.out.println("################# Start testing chain active code ... ###################");
+			String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain.js")));
+			String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
+					
+			result = ActiveCodeHandler.runCode(chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
+			Thread.sleep(2000); 
+			completed++;
+			completed++;
+			
+			int count = 0;
+			while(count <10){
+				System.out.println("" + executor.getCompletedTaskCount() + " "
+						+ executor.getActiveCount() + "; actualActiveCount = "
+						+ ActiveCodeTask.getActiveCount());
+				if(executor.getActiveCount()==0) break;
+				Thread.sleep(1000);
+				count++;
+			}
+			assert(executor.getActiveCount() == 0) : executor.getActiveCount();
+			assert(executor.getCompletedTaskCount() == completed);
+			System.out.println("############# TEST FOR CHAIN PASSED! ##############\n\n");
+			Thread.sleep(1000);
+		}catch(Exception | Error e){
+			e.printStackTrace();
+		}finally{
+			clientPool.shutdown();
 		}
-		assert(executor.getActiveCount() == 0) : executor.getActiveCount();
-		assert(executor.getCompletedTaskCount() == completed);
-		System.out.println("############# TEST FOR CHAIN PASSED! ##############\n\n");
-		Thread.sleep(1000);
 		
 		System.exit(0);
 	}

@@ -70,7 +70,7 @@ public class RequestHandler {
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);
 		    
 		    if( acm.isShutdown() ) {
-		    	System.out.println("Shutting down...");
+		    	//System.out.println("Shutting down...");
 		    	ret = false;
 		    } else if(acm.getAcqresp() != null) {
 		    	// notify and return
