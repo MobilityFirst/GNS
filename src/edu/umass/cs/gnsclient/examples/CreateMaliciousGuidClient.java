@@ -22,7 +22,7 @@ import edu.umass.cs.gnscommon.utils.Base64;
  */
 public class CreateMaliciousGuidClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
-		private final static String filename = "../scripts/activeCode/mal.js";
+		private final static String filename = "./scripts/activeCode/mal.js";
 		
 		private static int NUM_CLIENT;
 	    

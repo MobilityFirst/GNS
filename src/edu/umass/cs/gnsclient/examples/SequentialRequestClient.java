@@ -31,7 +31,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 public class SequentialRequestClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
-	private final static String filename =  "../scripts/activeCode/noop.js"; //"/Users/gaozy/WebStorm/test.js"; //
+	private final static String filename =  "./scripts/activeCode/noop.js"; //"/Users/gaozy/WebStorm/test.js"; //
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	private static int numReqs = 100;
 	
