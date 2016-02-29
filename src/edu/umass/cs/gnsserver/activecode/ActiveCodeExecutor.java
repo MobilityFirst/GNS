@@ -80,15 +80,16 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
         	 * Invariant: if derigistrating a task results in a null, then the task 
         	 * must have been cancelled or have been completed.
         	 */
-        	if(guard.deregister(task) == null)
-        		assert( task.isCancelled() || task.isDone());  
+        	//if(guard.deregister(task) == null)
+        		//assert( task.isCancelled() || task.isDone());  
+        	guard.deregister(task);
         	
         	if(ActiveCodeHandler.enableDebugging)
         		System.out.println(" successfully deregistered " + task);
         } catch(Exception | Error e) {
         	e.printStackTrace();
         } finally {
-        	assert(task.setRunning(false) == true);
+        	//assert(task.setRunning(false) == true);
         }
 	}
 
