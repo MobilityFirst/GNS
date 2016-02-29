@@ -12,6 +12,8 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveCodeFutureTask extends FutureTask<ValuesMap>{
 	
 	private ActiveCodeTask callable;
+	private boolean running = false;
+	
 	/**
 	 * @param callable
 	 */
@@ -30,4 +32,13 @@ public class ActiveCodeFutureTask extends FutureTask<ValuesMap>{
 		return callable;
 	}
 	
+    protected boolean isRunning(){
+    	return running;
+    }
+    
+    protected boolean setRunning(boolean running){
+    	boolean prev = this.running;
+    	this.running = running;
+    	return prev;
+    }
 }

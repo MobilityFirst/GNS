@@ -79,7 +79,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     /**
      * Called by the ThreadPoolExecutor to run the active code task
      */
-    public ValuesMap call() throws InterruptedException{ 
+    public ValuesMap call() throws InterruptedException{
     	incrNumActiveCount();
     	if(ActiveCodeHandler.enableDebugging)
     		System.out.println(this + " STARTING");

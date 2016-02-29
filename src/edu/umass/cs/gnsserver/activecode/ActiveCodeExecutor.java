@@ -53,8 +53,8 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	protected void beforeExecute(Thread t, Runnable r){
 		// register the runnable here
 		ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
-		// The running task should not be cancelled
 		ActiveCodeClient previousClient = task.getWrappedTask().setClient(clientPool.getClient(t.getId()));
+		assert(task.setRunning(true) == false);
 		assert(previousClient == null);
 		guard.register(task); 	
 		super.beforeExecute(t, r);
@@ -76,12 +76,19 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
         	if(ActiveCodeHandler.enableDebugging)
         		System.out.print(this + " waiting to deregister " + task + "...");
         	
-        	guard.deregister(task);  
+        	/*
+        	 * Invariant: if derigistrating a task results in a null, then the task 
+        	 * must have been cancelled or have been completed.
+        	 */
+        	if(guard.deregister(task) == null)
+        		assert( task.isCancelled() || task.isDone());  
         	
         	if(ActiveCodeHandler.enableDebugging)
         		System.out.println(" successfully deregistered " + task);
         } catch(Exception | Error e) {
         	e.printStackTrace();
+        } finally {
+        	assert(task.setRunning(false) == true);
         }
 	}
 
