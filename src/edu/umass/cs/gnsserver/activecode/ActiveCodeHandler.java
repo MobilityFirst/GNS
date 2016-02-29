@@ -41,7 +41,6 @@ import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -294,7 +293,7 @@ public class ActiveCodeHandler {
 			
 			/************** Test chain code *************/
 			System.out.println("################# Start testing chain active code ... ###################");
-			String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain.js")));
+			String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain-test.js")));
 			String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
 					
 			result = ActiveCodeHandler.runCode(chain_code64, "guid1", "testGuid", "read", valuesMap, 100);

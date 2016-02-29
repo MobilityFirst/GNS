@@ -28,8 +28,8 @@ public class CreateMultiGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT = 100;
-	private final static String filename = "/Users/gaozy/WebStorm/test.js"; //"/home/ubuntu/test.js"; //
-	private final static String mal_file = "/Users/gaozy/WebStorm/mal.js"; //"/home/ubuntu/mal.js"; //
+	private final static String filename = "../scripts/activeCode/noop.js"; //"/Users/gaozy/WebStorm/test.js"; //
+	private final static String mal_file = "../scripts/activeCode/mal.js"; // "/Users/gaozy/WebStorm/mal.js"; //
 	private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	
 	/**

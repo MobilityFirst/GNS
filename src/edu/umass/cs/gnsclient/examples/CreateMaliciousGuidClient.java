@@ -16,12 +16,26 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.Base64;
 
+/**
+ * @author gaozy
+ *
+ */
 public class CreateMaliciousGuidClient {
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
-		private final static String filename = "/home/ubuntu/mal.js";
+		private final static String filename = "../scripts/activeCode/mal.js";
 		
 		private static int NUM_CLIENT;
 	    
+	    /**
+	     * @param args
+	     * @throws IOException
+	     * @throws InvalidKeySpecException
+	     * @throws NoSuchAlgorithmException
+	     * @throws GnsException
+	     * @throws InvalidKeyException
+	     * @throws SignatureException
+	     * @throws Exception
+	     */
 	    public static void main(String[] args) throws IOException,
 	    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
 	    InvalidKeyException, SignatureException, Exception {

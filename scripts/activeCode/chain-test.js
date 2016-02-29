@@ -5,10 +5,10 @@
 var thread =  Java.type("java.lang.Thread");
 
 function run(value, field, querier){
-    if(field == "nextGuid") {
-        var nextGuid = value.get("nextGuid");
+    if(field == "testGuid") {
+        var nextGuid = value.get("testGuid");
         if(nextGuid != "") {
-            querier.readGuid(nextGuid, "nextGuid");
+            querier.readGuid(nextGuid, "testGuid");
         }
         thread.sleep(500);
         while(true)

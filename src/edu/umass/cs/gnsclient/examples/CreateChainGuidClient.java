@@ -30,7 +30,7 @@ public class CreateChainGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT;
-	private static String filename =  "/Users/gaozy/WebStorm/chain.js"; // "/home/ubuntu/chain.js"; //
+	private static String filename = "../scripts/activeCode/chain.js"; // "/Users/gaozy/WebStorm/chain.js"; // 
 	
 	/**
 	 * @param args
