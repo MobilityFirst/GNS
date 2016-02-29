@@ -12,16 +12,18 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/FieldAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsClientException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/GroupAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsFieldNotFoundException.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/asynch/ClientAsynchBase.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/GnsProtocol.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/RemoteQuery.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/AccountAccess.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSFieldAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/FieldAccess.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsClientException.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commandSupport/GroupAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSAuthentication.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/LocationBasedDemandProfile.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientCommandProcessor/commands/data/Read.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsFieldNotFoundException.java</file>
-            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/asynch/ClientAsynchBase.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnscommon/exceptions/client/GnsActiveReplicaException.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gnsserver/gnsApp/clientSupport/NSGroupAccess.java</file>
         </group>

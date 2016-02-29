@@ -110,7 +110,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   // FIXME: We might need a separate timeout just for certain ops like 
   // gui creation that sometimes take a while
   // 10 seconds is too short on EC2 
-  private int readTimeout = 15000; // 15 seconds... was 40 seconds
+  private int readTimeout = 20000; // 20 seconds... was 40 seconds
 
   /* Keeps track of requests that are sent out and the reponses to them */
   private final ConcurrentMap<Integer, CommandResult> resultMap = new ConcurrentHashMap<Integer, CommandResult>(

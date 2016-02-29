@@ -894,8 +894,10 @@ public class AccountAccess {
    * @param handler
    * @return the command response
    */
-  public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid,
-          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
+  public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, 
+          boolean ignoreAccountGuid,
+          ClientRequestHandlerInterface handler) 
+          throws GnsClientException, IOException, JSONException {
     // First make sure guid is not an account GUID 
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {

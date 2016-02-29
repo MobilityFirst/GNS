@@ -72,7 +72,7 @@ public class RemoveFromGroup extends GnsCommand {
     NSResponseCode responseCode;
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, member,
-              writer, signature, message, handler, true)).isAnError()) {
+              writer, signature, message, handler)).isAnError()) {
         return new CommandResponse<String>(OK_RESPONSE);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

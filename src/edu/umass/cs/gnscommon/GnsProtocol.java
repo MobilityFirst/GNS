@@ -295,7 +295,7 @@ public class GnsProtocol {
                   VERIFY_ACCOUNT, SET_PASSWORD, RESET_KEY,
                   //
                   ACL_ADD, ACL_REMOVE,
-                  ADD_TO_GROUP, REMOVE_FROM_GROUP,
+                  //ADD_TO_GROUP, REMOVE_FROM_GROUP,
                   //
                   ADD_TAG, REMOVE_TAG
           );

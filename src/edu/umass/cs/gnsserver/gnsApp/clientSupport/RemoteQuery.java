@@ -59,14 +59,15 @@ import org.json.JSONObject;
 public class RemoteQuery extends ClientAsynchBase {
 
   // For synchronus replica messages
-  private long defaultReplicaTimeout = 2000;
+  private static final long defaultReplicaReadTimeout = 5000;
+  private static final long defaultReplicaUpdateTimeout = 10000;
   private final ConcurrentMap<Long, Request> replicaResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
   private final Object replicaCommandMonitor = new Object();
   private boolean debuggingEnabled = true;
 
   // For synchronus recon messages
-  private long defaultReconTimeout = 2000;
+  private static final long defaultReconTimeout = 2000;
   private final ConcurrentMap<String, ClientReconfigurationPacket> reconResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
   private final Object reconMonitor = new Object();
@@ -107,7 +108,7 @@ public class RemoteQuery extends ClientAsynchBase {
 
   private ClientRequest waitForReplicaResponse(long id)
           throws GnsClientException, GnsActiveReplicaException {
-    return waitForReplicaResponse(id, defaultReplicaTimeout);
+    return waitForReplicaResponse(id, defaultReplicaReadTimeout);
   }
 
   private ClientRequest waitForReplicaResponse(long id, long timeout)
@@ -245,7 +246,7 @@ public class RemoteQuery extends ClientAsynchBase {
   }
 
   private String handleQueryResponse(long requestId, String notFoundReponse) throws GnsClientException {
-    return handleQueryResponse(requestId, defaultReplicaTimeout, notFoundReponse);
+    return handleQueryResponse(requestId, defaultReplicaReadTimeout, notFoundReponse);
   }
 
   private String handleQueryResponse(long requestId, long timeout, String notFoundReponse) throws GnsClientException {
@@ -315,7 +316,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldUpdate(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldReplaceOrCreateArray(String guid, String field, ResultValue value)
@@ -325,7 +326,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldReplaceOrCreateArray " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldReplaceOrCreateArray(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldAppendToArray(String guid, String field, ResultValue value)
@@ -335,7 +336,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldAppendToArray " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldAppendToArray(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldRemove(String guid, String field, Object value)
@@ -346,7 +347,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldRemove(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldRemoveMultiple(String guid, String field, ResultValue value)
@@ -356,7 +357,7 @@ public class RemoteQuery extends ClientAsynchBase {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldRemoveMultiple " + guid + " / " + field + " = " + value);
     }
     long requestId = fieldRemoveMultiple(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, 5000, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   // Select commands
