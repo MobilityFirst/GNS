@@ -92,11 +92,11 @@ public class ActiveCodeScheduler implements Runnable{
 			if (guid == null){
 				return null;
 			}
-			
+			/*
 			if(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
 				return null;
 			}
-			
+			*/
 			if (runningGuid.containsKey(guid)){
 				runningGuid.put(guid, runningGuid.get(guid)+1);
 			} else{
