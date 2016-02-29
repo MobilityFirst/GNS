@@ -50,6 +50,13 @@ public class ActiveCodeClient {
 	private final GnsApplicationInterface<String> app;
 	private DatagramSocket clientSocket;
 	private byte[] buffer = new byte[8096];
+	protected final int myID = getNextID();
+	
+	
+	private static int globalID = getNextID();
+	private synchronized static int getNextID() {
+		return globalID++;
+	}
 
 	/**
 	 * @param app
@@ -105,6 +112,9 @@ public class ActiveCodeClient {
 		return false;
 	}
 
+	public String toString() {
+		return "  " + this.getClass().getSimpleName() + myID + ":"+this.clientSocket.getLocalPort();
+	}
 	/**
 	 * Submits the request to the worker via socket comm.
 	 * 
@@ -133,7 +143,9 @@ public class ActiveCodeClient {
 		while (!codeFinished) {
 			ActiveCodeMessage acmResp = null;
 			
+			System.out.println(this + " submitRequest waiting for socket message");
 			acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
+			System.out.println(this + " submitRequest received socket message: " + (acmResp != null ? "acmResp.valuesMapString = " + acmResp.valuesMapString : "[NULL]"));
 			
 			/*
 			 * If socket timeout is set, then this would work, but result in
@@ -164,6 +176,8 @@ public class ActiveCodeClient {
 				ActiveCodeUtils.sendMessage(clientSocket, acmres, serverPort);
 			}
 		}
+		
+		System.out.println(this + " submitRequest out of while(!codeFinished) loop");
 
 		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
 
@@ -180,6 +194,7 @@ public class ActiveCodeClient {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
+			System.out.println(this + " submitRequest returning null");
 			return vm;
 		} else if (valuesMapString != null) {
 			try {
@@ -250,6 +265,7 @@ public class ActiveCodeClient {
 
 		try {
 			clientSocket = new DatagramSocket();
+			System.out.println(this + " DESTROYED worker and opened new socket on " + clientSocket.getLocalPort());
 			//clientSocket.setSoTimeout(1000);
 		} catch (IOException e) {
 			e.printStackTrace();

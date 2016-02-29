@@ -30,6 +30,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import edu.umass.cs.gnscommon.utils.Base64;
+
 //import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,6 +41,7 @@ import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -168,17 +170,19 @@ public class ActiveCodeHandler {
 			return valuesMap;
 		} catch(InterruptedException ie) {
 			//thrown = ie;
-			System.out.println(ActiveCodeHandler.class.getSimpleName() + " got interrupt for task " + futureTask + " thread "
+			System.out.println(ActiveCodeHandler.class.getSimpleName()
+					+ " got interrupt for task " + futureTask + " thread "
 					+ Thread.currentThread() + "; activeCount = "
-					+ executorPool.getActiveCount());
+					+ executorPool.getActiveCount() + "; actualActiveCount = "
+					+ ActiveCodeTask.getActiveCount());
 			try {
 				guard.cancelTask(futureTask);
 			} catch(Exception | Error e) {
 				//thrown = e;
 				e.printStackTrace();
 			}
-			System.out.println(ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " activeCount = "
-					+ executorPool.getActiveCount());
+			System.out.println(ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
+					+ executorPool.getActiveCount() + "; actualActiveCount = " + ActiveCodeTask.getActiveCount());
 			try {
 			scheduler.finish(guid);
 			} catch (Exception | Error e) {
@@ -190,12 +194,18 @@ public class ActiveCodeHandler {
 			thrown = e;
 			e.printStackTrace();
 		} finally {
-			System.out.println(ActiveCodeHandler.class.getSimpleName() + " finally block: " +futureTask + " thread "
-					+ Thread.currentThread() +  " activeCount = " + executorPool.getActiveCount());
+			System.out.println(ActiveCodeHandler.class.getSimpleName()
+					+ " finally block: " + futureTask + " thread "
+					+ Thread.currentThread() + " activeCount = "
+					+ executorPool.getActiveCount() + "; actualActiveCount = "
+					+ ActiveCodeTask.getActiveCount());
 			if(thrown !=null)
 				thrown.printStackTrace();
 		}
 
+		// if thrown != null, we never come here
+		assert(thrown==null);
+		
 		System.out.println(ActiveCodeHandler.class.getSimpleName()
 				+ ".runCode before final scheduler.finish(), activeCount = "
 				+ executorPool.getActiveCount());
@@ -292,7 +302,9 @@ public class ActiveCodeHandler {
 		
 		int count = 0;
 		while(count <10){
-			System.out.println(""+executor.getCompletedTaskCount()+" "+executor.getActiveCount());
+			System.out.println("" + executor.getCompletedTaskCount() + " "
+					+ executor.getActiveCount() + "; actualActiveCount = "
+					+ ActiveCodeTask.getActiveCount());
 			if(executor.getActiveCount()==0) break;
 			Thread.sleep(1000);
 			count++;
