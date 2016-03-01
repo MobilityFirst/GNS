@@ -46,7 +46,7 @@ public class ActiveCode {
    * ON_WRITE - the string key for the field that stores the write information.
    */
   public static final String ON_WRITE = InternalField.makeInternalFieldString("on_write");
-  
+
   public static final String READ_ACTION = "read";
   public static final String WRITE_ACTION = "write";
 
@@ -125,7 +125,8 @@ public class ActiveCode {
    * @param handler
    * @return a string
    */
-  public static String getCode(String guid, String action, String reader, String signature, String message,
+  public static String getCode(String guid, String action, String reader,
+          String signature, String message,
           ClientRequestHandlerInterface handler) {
     String field = getCodeField(action);
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field,
@@ -134,9 +135,8 @@ public class ActiveCode {
       return GnsProtocol.NULL_RESPONSE;
     }
     try {
-      ValuesMap result = NSFieldAccess.lookupFieldLocalNoAuth(guid, field,
-              ColumnFieldType.USER_JSON,
-              handler.getApp().getDB());
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, field,
+              handler.getApp(), false);
       return result.getString(field);
     } catch (FailedDBOperationException | JSONException e) {
       return GnsProtocol.NULL_RESPONSE;

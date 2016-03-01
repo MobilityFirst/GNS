@@ -132,7 +132,7 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, ACCOUNT_INFO,
-              handler.getApp());
+              handler.getApp(), false);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for " + guid + " / " + ACCOUNT_INFO + ": " + result);
       }
@@ -202,7 +202,7 @@ public class AccountAccess {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, PRIMARY_GUID,
-              handler.getApp());
+              handler.getApp(), false);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
       }
@@ -257,7 +257,7 @@ public class AccountAccess {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name, HRN_GUID,
-              handler.getApp());
+              handler.getApp(), false);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
       }
@@ -328,7 +328,7 @@ public class AccountAccess {
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GUID_INFO,
-              handler.getApp());
+              handler.getApp(), false);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + GUID_INFO + ": " + result);
       }

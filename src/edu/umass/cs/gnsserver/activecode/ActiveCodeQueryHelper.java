@@ -66,7 +66,7 @@ public class ActiveCodeQueryHelper {
 		
 		try {
 			NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
-			if(nameRecord.containsKey(field)) {
+			if(nameRecord.containsUserKey(field)) {
 				ValuesMap vm = nameRecord.getValuesMap();
 				valuesMapString = vm.toString();
 				success = true;

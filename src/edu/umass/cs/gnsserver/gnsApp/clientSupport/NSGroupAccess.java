@@ -329,7 +329,7 @@ public class NSGroupAccess {
     JSONArray resultArray = new JSONArray();
     for (Object guidObject : lookupMembers(groupGuid, false, gnsApp.getDB())) {
       String guid = (String) guidObject;
-      ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, field, gnsApp);
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, field, gnsApp);
       if (valuesMap != null && valuesMap.has(field)) {
         resultArray.put(valuesMap.get(field));
       }

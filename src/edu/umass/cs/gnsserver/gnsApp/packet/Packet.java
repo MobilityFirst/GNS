@@ -62,21 +62,21 @@ public class Packet {
     /**
      * DNS
      */
-    DNS(1, "edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket"),
+    //DNS(1, "edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket"),
 
     /**
      * ADD_RECORD
      */
-    ADD_RECORD(2, "edu.umass.cs.gnsserver.gnsApp.packet.AddRecordPacket"),
+    //ADD_RECORD(2, "edu.umass.cs.gnsserver.gnsApp.packet.AddRecordPacket"),
     /**
      * ADD_CONFIRM
      */
-    ADD_CONFIRM(3, "edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket"),
+    //ADD_CONFIRM(3, "edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket"),
 
     /**
      * ADD_BATCH_RECORD - 9/15 NEW
      */
-    ADD_BATCH_RECORD(4, "edu.umass.cs.gnsserver.gnsApp.packet.AddBatchRecordPacket"),
+    //ADD_BATCH_RECORD(4, "edu.umass.cs.gnsserver.gnsApp.packet.AddBatchRecordPacket"),
     /**
      * COMMAND
      */
@@ -89,26 +89,26 @@ public class Packet {
     /**
      * REMOVE_RECORD
      */
-    REMOVE_RECORD(10, "edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket"),
+    //REMOVE_RECORD(10, "edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket"),
     /**
      * REMOVE_CONFIRM
      */
-    REMOVE_CONFIRM(11, "edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket"),
+    //REMOVE_CONFIRM(11, "edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket"),
 
     /**
      * UPDATE
      */
-    UPDATE(20, "edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket"), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
+    //UPDATE(20, "edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket"), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
 
     /**
      * UPDATE_CONFIRM
      */
-    UPDATE_CONFIRM(21, "edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket"),
+    //UPDATE_CONFIRM(21, "edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket"),
 
     /**
      * REQUEST_ACTIVES
      */
-    REQUEST_ACTIVES(30, "edu.umass.cs.gnsserver.gnsApp.packet.RequestActivesPacket"),
+    //REQUEST_ACTIVES(30, "edu.umass.cs.gnsserver.gnsApp.packet.RequestActivesPacket"),
     // Admin:
 
     /**
@@ -167,13 +167,13 @@ public class Packet {
     /**
      * ACTIVE_COORDINATION
      */
-    ACTIVE_COORDINATION(120, null), // after transition from old to the new active replicas 
+    //ACTIVE_COORDINATION(120, null), // after transition from old to the new active replicas 
     // is complete, the active replica confirms to replica controller
 
     /**
      * REPLICA_CONTROLLER_COORDINATION
      */
-    REPLICA_CONTROLLER_COORDINATION(121, null), // after transition from old to the 
+    //REPLICA_CONTROLLER_COORDINATION(121, null), // after transition from old to the 
     //new active replicas is complete, the active replica confirms to replica controller
     // for finite ping pong protocol task example
     /**
@@ -193,16 +193,17 @@ public class Packet {
     /**
      * DNS_SUBTYPE_QUERY
      */
-    DNS_SUBTYPE_QUERY(-1, null),
+    //DNS_SUBTYPE_QUERY(-1, null),
     /**
      * DNS_SUBTYPE_RESPONSE
      */
-    DNS_SUBTYPE_RESPONSE(-2, null),
+    //DNS_SUBTYPE_RESPONSE(-2, null),
     /**
      * DNS_SUBTYPE_ERROR_RESPONSE
      */
-    DNS_SUBTYPE_ERROR_RESPONSE(-3, null);
+    //DNS_SUBTYPE_ERROR_RESPONSE(-3, null)
 
+    ;
     private int number;
     private String className;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
@@ -630,39 +631,6 @@ public class Packet {
         }
       } while (tries < numRetry);
     }
-  }
-
-  //
-  // DEBUGGING AIDS: Could move them somewhere else
-  //
-  /**
-   * A debugging aid that returns true if the packet is not a Paxos packet or another "chatty" packet.
-   *
-   * @param jsonData
-   * @return returns true if the packet is not chatty
-   */
-  public static boolean filterOutChattyPackets(JSONObject jsonData) {
-    try {
-//      if (PaxosPacket.hasPacketTypeField(jsonData)) {
-//        // handle Paxos packets
-//        PaxosPacketType packetType = PaxosPacket.getPacketType(jsonData);
-//        if (packetType != PaxosPacketType.FAILURE_DETECT
-//                && packetType != PaxosPacketType.FAILURE_RESPONSE) {
-//          return true;
-//        }
-//      } else {
-      // handle Regular packets
-      PacketType packetType = getPacketType(jsonData);
-      if (//packetType != PacketType.NAME_SERVER_LOAD && 
-              packetType != PacketType.ACTIVE_COORDINATION
-              && packetType != PacketType.REPLICA_CONTROLLER_COORDINATION) {
-        return true;
-      }
-      //}
-    } catch (JSONException e) {
-
-    }
-    return false;
   }
 
   /**

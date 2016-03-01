@@ -109,9 +109,9 @@ public class AppAdmin extends Thread implements Shutdownable{
                 }
                 if (nameRecord != null) {
                   try {
-                    if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
+                    if (nameRecord.containsUserKey(AccountAccess.GUID_INFO)) {
                       GuidInfo userInfo = new GuidInfo(nameRecord.getValuesMap().getJSONObject(AccountAccess.GUID_INFO));
-                      //GuidInfo userInfo = new GuidInfo(nameRecord.getKeyAsArray(AccountAccess.GUID_INFO).toResultValueString());
+                      //GuidInfo userInfo = new GuidInfo(nameRecord.getUserKeyAsArray(AccountAccess.GUID_INFO).toResultValueString());
                       if (userInfo.containsTag(tag)) {
                         jsonArray.put(nameRecord.toJSONObject());
                       }

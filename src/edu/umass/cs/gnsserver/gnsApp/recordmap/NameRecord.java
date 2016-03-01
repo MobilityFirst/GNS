@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp.recordmap;
@@ -42,12 +42,13 @@ import java.util.Set;
  * The name record.
  * It specifies what is store in the database for system and user fields.
  * This is also the in memory version of what is store in the database.
+ * 
+ * Probably could just be a JSON Object.
  *
  *
  * @author abhigyan
  */
-// FIXME: All this needs to be cleaned up. There are many unused system fields and
-// why is this not just JSON anyway? - Westy
+
 public class NameRecord implements Comparable<NameRecord> {
 
   /**
@@ -68,10 +69,6 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   public final static ColumnField ACTIVE_VERSION = new ColumnField("nr_version", ColumnFieldType.INTEGER);
   /**
-   * OLD_ACTIVE_VERSION
-   */
-  public final static ColumnField OLD_ACTIVE_VERSION = new ColumnField("nr_oldVersion", ColumnFieldType.INTEGER);
-  /**
    * TIME_TO_LIVE
    */
   public final static ColumnField TIME_TO_LIVE = new ColumnField("nr_ttl", ColumnFieldType.INTEGER);
@@ -79,18 +76,6 @@ public class NameRecord implements Comparable<NameRecord> {
    * VALUES_MAP
    */
   public final static ColumnField VALUES_MAP = new ColumnField("nr_valuesMap", ColumnFieldType.VALUES_MAP);
-  /**
-   * OLD_VALUES_MAP
-   */
-  public final static ColumnField OLD_VALUES_MAP = new ColumnField("nr_oldValuesMap", ColumnFieldType.VALUES_MAP);
-  /**
-   * TOTAL_UPDATE_REQUEST
-   */
-  public final static ColumnField TOTAL_UPDATE_REQUEST = new ColumnField("nr_totalUpdate", ColumnFieldType.INTEGER);
-  /**
-   * TOTAL_LOOKUP_REQUEST
-   */
-  public final static ColumnField TOTAL_LOOKUP_REQUEST = new ColumnField("nr_totalLookup", ColumnFieldType.INTEGER);
   /**
    * LOOKUP_TIME - instrumentation
    */
@@ -123,12 +108,8 @@ public class NameRecord implements Comparable<NameRecord> {
     hashMap.put(NAME, name);
     hashMap.put(PRIMARY_NAMESERVERS, replicaControllers);
     hashMap.put(ACTIVE_VERSION, activeVersion);
-    hashMap.put(OLD_ACTIVE_VERSION, 0);
     hashMap.put(TIME_TO_LIVE, ttl);
     hashMap.put(VALUES_MAP, values);
-    hashMap.put(OLD_VALUES_MAP, new ValuesMap());
-    hashMap.put(TOTAL_LOOKUP_REQUEST, 0);
-    hashMap.put(TOTAL_UPDATE_REQUEST, 0);
     hashMap.put(LOOKUP_TIME, -1);
 
   }
@@ -156,29 +137,12 @@ public class NameRecord implements Comparable<NameRecord> {
       hashMap.put(ACTIVE_VERSION, JSONUtils.getObject(ACTIVE_VERSION, jsonObject));
     }
 
-    if (jsonObject.has(OLD_ACTIVE_VERSION.getName())) {
-      hashMap.put(OLD_ACTIVE_VERSION, JSONUtils.getObject(OLD_ACTIVE_VERSION, jsonObject));
-    }
-
     if (jsonObject.has(TIME_TO_LIVE.getName())) {
       hashMap.put(TIME_TO_LIVE, JSONUtils.getObject(TIME_TO_LIVE, jsonObject));
     }
 
     if (jsonObject.has(VALUES_MAP.getName())) {
       hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
-    }
-
-    //FIXME: is this correct or is it a typo and should be OLD_VALUES_MAP in the other two places?
-    if (jsonObject.has(OLD_VALUES_MAP.getName())) {
-      hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
-    }
-
-    if (jsonObject.has(TOTAL_LOOKUP_REQUEST.getName())) {
-      hashMap.put(TOTAL_LOOKUP_REQUEST, JSONUtils.getObject(TOTAL_LOOKUP_REQUEST, jsonObject));
-    }
-
-    if (jsonObject.has(TOTAL_UPDATE_REQUEST.getName())) {
-      hashMap.put(TOTAL_UPDATE_REQUEST, JSONUtils.getObject(TOTAL_UPDATE_REQUEST, jsonObject));
     }
 
     if (jsonObject.has(LOOKUP_TIME.getName())) {
@@ -268,9 +232,9 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return the primary name server
    * @throws FieldNotFoundException
    */
-  public Set getPrimaryNameservers() throws FieldNotFoundException {
+  public Set<String> getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
-      return (Set) hashMap.get(PRIMARY_NAMESERVERS);
+      return (Set<String>) hashMap.get(PRIMARY_NAMESERVERS);
     }
     throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
   }
@@ -322,13 +286,14 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Checks whether the key exists in the values map for this name record.
    *
-   * Call this method after reading this key from the database. If the key is not found, then name record does not exist.
+   * Call this method after reading this key from the database. 
+   * If the key is not found, then field does not exist.
    *
    * @param key
    * @return true if the key exists in the values map
    * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    */
-  public boolean containsKey(String key) throws FieldNotFoundException {
+  public boolean containsUserKey(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
       ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
       return valuesMap.has(key);
@@ -347,7 +312,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return the list of values as a {@link ResultValue}
    * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    */
-  public ResultValue getKeyAsArray(String key) throws FieldNotFoundException {
+  public ResultValue getUserKeyAsArray(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
       ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
       if (valuesMap.has(key)) {
@@ -403,8 +368,8 @@ public class NameRecord implements Comparable<NameRecord> {
     // FIXME: might want to handle this without a special case at some point
     boolean updated = UpdateOperation.USER_JSON_REPLACE.equals(operation)
             || UpdateOperation.USER_JSON_REPLACE_OR_CREATE.equals(operation)
-                    ? true
-                    : UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
+            ? true
+            : UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
     if (updated) {
       // commit update to database
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();

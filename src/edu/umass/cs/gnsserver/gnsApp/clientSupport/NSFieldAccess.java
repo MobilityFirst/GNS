@@ -47,7 +47,48 @@ import org.json.JSONException;
  */
 public class NSFieldAccess {
 
-  public static ValuesMap lookupFieldLocalNoAuth(String guid, String field, ColumnFieldType returnFormat,
+  /**
+   * Looks up the value of a field in the guid on this NameServer.
+   * Active code is automatically handled during this call.
+   * 
+   * Returns the value of a field in a GUID as a ValuesMap.
+   *
+   * @param guid
+   * @param field
+   * @param gnsApp
+   * @return ResultValue
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   */
+  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
+          GnsApplicationInterface<String> gnsApp)
+          throws FailedDBOperationException {
+    return lookupJSONFieldLocalNoAuth(guid, field, gnsApp, true);
+  }
+
+  /**
+   * Looks up the value of a field in the guid on this NameServer.
+   * Active code is handled if handleActiveCode is true.
+   * 
+   * Returns the value of a field in a GUID as a ValuesMap.
+   *
+   * @param guid
+   * @param field
+   * @param gnsApp
+   * @param handleActiveCode
+   * @return ResultValue
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   */
+  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
+          GnsApplicationInterface<String> gnsApp, boolean handleActiveCode)
+          throws FailedDBOperationException {
+    ValuesMap valuesMap = lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, gnsApp.getDB());
+    if (handleActiveCode) {
+      valuesMap = NSFieldAccess.handleActiveCode(field, guid, valuesMap, gnsApp);
+    }
+    return valuesMap;
+  }
+
+  private static ValuesMap lookupFieldLocalNoAuth(String guid, String field, ColumnFieldType returnFormat,
           BasicRecordMap database) throws FailedDBOperationException {
     NameRecord nameRecord = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -84,25 +125,7 @@ public class NSFieldAccess {
     return null;
   }
 
-  /**
-   * Looks up the value of a field in the guid on this NameServer.
-   *
-   * Returns the value of a field in a GUID as a ValuesMap.
-   *
-   * @param guid
-   * @param field
-   * @param gnsApp
-   * @return ResultValue
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
-          GnsApplicationInterface<String> gnsApp)
-          throws FailedDBOperationException {
-    ValuesMap valuesMap = lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, gnsApp.getDB());
-    valuesMap = NSFieldAccess.handleActiveCode(GnsProtocol.ALL_FIELDS, guid, valuesMap, gnsApp);
-    return valuesMap;
-  }
-
+  // FIXME: Active code is not handled yet in here.
   public static ValuesMap lookupFieldsLocalNoAuth(String guid, List<String> fields,
           ColumnFieldType returnFormat, BasicRecordMap database)
           throws FailedDBOperationException {
@@ -131,7 +154,8 @@ public class NSFieldAccess {
 
   /**
    * Looks up the value of an old-style list field in the guid on this NameServer.
-   * Returns the value of a field in a GUID as a ResultValue or an empty ResultValue if field cannot be found.
+   * Returns the value of a field in a GUID as a ResultValue or 
+   * an empty ResultValue if field cannot be found.
    *
    * @param guid
    * @param field
@@ -142,11 +166,12 @@ public class NSFieldAccess {
           BasicRecordMap database) {
     ResultValue result = null;
     try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null, ColumnFieldType.LIST_STRING, field);
+      NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null,
+              ColumnFieldType.LIST_STRING, field);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       }
-      result = nameRecord.getKeyAsArray(field);
+      result = nameRecord.getUserKeyAsArray(field);
     } catch (FieldNotFoundException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Field not found " + guid + " : " + field);
@@ -222,16 +247,7 @@ public class NSFieldAccess {
     }
     return result;
   }
-
-//  private static ResultValue lookupListFieldQueryLNS(String guid, String field, GnsApplicationInterface<String> activeReplica,
-//          InetSocketAddress lnsAddress) {
-//    QueryResult<String> queryResult = LNSQueryHandler.sendListFieldQuery(guid, field, activeReplica, lnsAddress);
-//    if (!queryResult.isError()) {
-//      return queryResult.getArray(field);
-//    } else {
-//      return new ResultValue();
-//    }
-//  }
+  
   /**
    * Looks up the value of a field in the guid.
    * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
@@ -244,7 +260,7 @@ public class NSFieldAccess {
    * @return ValuesMap containing the value of the field or null if field cannot be found
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupFieldAnywhere(String guid, String field,
+  public static ValuesMap lookupJSONFieldAnywhere(String guid, String field,
           GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException {
     ValuesMap result = lookupJSONFieldLocalNoAuth(guid, field, gnsApp);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
@@ -267,7 +283,7 @@ public class NSFieldAccess {
     return result;
   }
 
-  public static ValuesMap handleActiveCode(String field, String guid,
+  private static ValuesMap handleActiveCode(String field, String guid,
           ValuesMap originalValues, GnsApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     ValuesMap newResult = originalValues;

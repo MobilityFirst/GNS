@@ -49,6 +49,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -108,9 +109,10 @@ public class FieldAccess {
     String resultString;
     ValuesMap valuesMap;
     try {
-      valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON,
-              handler.getApp().getDB());
-      valuesMap = NSFieldAccess.handleActiveCode(field, guid, valuesMap, handler.getApp());
+      valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, field, handler.getApp());
+//      valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON,
+//              handler.getApp().getDB());
+//      valuesMap = NSFieldAccess.handleActiveCode(field, guid, valuesMap, handler.getApp());
       if (reader != null) {
         // read is null means a magic internal request so we
         // only strip internal fields when read is not null
@@ -240,9 +242,10 @@ public class FieldAccess {
     String resultString;
     NSResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
-              GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
-      valuesMap = NSFieldAccess.handleActiveCode(GnsProtocol.ALL_FIELDS, guid, valuesMap, handler.getApp());
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GnsProtocol.ALL_FIELDS, handler.getApp());
+//     ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
+//              GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+//      valuesMap = NSFieldAccess.handleActiveCode(GnsProtocol.ALL_FIELDS, guid, valuesMap, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toString();
         responseCode = NSResponseCode.NO_ERROR;
@@ -359,9 +362,11 @@ public class FieldAccess {
     String resultString;
     NSResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
-              GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
-      valuesMap = NSFieldAccess.handleActiveCode(GnsProtocol.ALL_FIELDS, guid, valuesMap, handler.getApp());
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid,
+              GnsProtocol.ALL_FIELDS, handler.getApp());
+//      ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalNoAuth(guid,
+//              GnsProtocol.ALL_FIELDS, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+//      valuesMap = NSFieldAccess.handleActiveCode(GnsProtocol.ALL_FIELDS, guid, valuesMap, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toJSONObjectFirstOnes().toString();
         responseCode = NSResponseCode.NO_ERROR;
