@@ -245,8 +245,9 @@ public class ActiveCodeClient {
 		return ready;
 	}
 
-	protected void setReady(boolean ready) {
+	protected synchronized void setReady(boolean ready) {
 		this.ready = ready;
+		this.notify();
 	}
 
 	static class Instrumenter {

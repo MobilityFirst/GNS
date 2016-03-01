@@ -110,19 +110,13 @@ public class ClientPool implements Runnable{
     			socket.receive(pkt);
     			int workerPort = pkt.getPort();
     			/*
-    			 * Invariant: the worker port must already exist 
+    			 * Invariant: the worker port must already exist, and its value should be false
     			 */
-    			assert(!portStatus.contains(workerPort));
-    			
-    			//System.out.println("Get the ready message from port "+workerPort);
-    			portStatus.put(workerPort, true);
+    			assert(portStatus.put(workerPort, true) == false);
     			ActiveCodeClient client = workerPortToClient.get(workerPort);
     			if(client != null){
     				// If client is not null, then it's not a spare client, it's an ActiveCodeClient
-    				synchronized (client) {
-    					client.setReady(true);
-    					client.notify();
-    				}
+    				client.setReady(true);
     			}
     		}catch(IOException e){
     			e.printStackTrace();
