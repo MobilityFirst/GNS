@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
 import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess.GROUPS;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;

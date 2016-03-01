@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
@@ -71,10 +71,11 @@ public class CommandHandler {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  private static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler,
+  private static void handlePacketCommandRequest(JSONObject incomingJSON,
           GnsApp app)
           throws JSONException, UnknownHostException {
     final Long receiptTime = System.currentTimeMillis(); // instrumentation
+    ClientRequestHandlerInterface handler = app.getRequestHandler();
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
     }
@@ -288,7 +289,7 @@ public class CommandHandler {
     app.outStandingQueries.put(packet.getClientRequestId(),
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
                     commandString, guid));
-    handlePacketCommandRequest(json, app.getClientCommandProcessor().getRequestHandler(), app);
+    handlePacketCommandRequest(json, app);
   }
 
   private static long lastStatsTime = 0;

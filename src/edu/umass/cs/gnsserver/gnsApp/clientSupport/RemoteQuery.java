@@ -25,7 +25,7 @@ import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.GnsActiveReplicaException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;

@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport;
+package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
 
 import edu.umass.cs.gnsserver.gnsApp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.admin.AdminResponsePacket;

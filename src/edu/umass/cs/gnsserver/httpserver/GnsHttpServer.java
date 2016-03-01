@@ -46,7 +46,7 @@ import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;

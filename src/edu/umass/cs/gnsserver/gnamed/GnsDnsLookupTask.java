@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnamed;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import java.util.concurrent.Callable;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.SimpleResolver;

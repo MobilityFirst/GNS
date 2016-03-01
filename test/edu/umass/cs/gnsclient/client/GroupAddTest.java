@@ -38,7 +38,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GroupTest {
+public class GroupAddTest {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -52,7 +52,7 @@ public class GroupTest {
   private static GuidEntry samEntry;
   private static GuidEntry mygroupEntry;
 
-  public GroupTest() {
+  public GroupAddTest() {
     if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
@@ -129,50 +129,4 @@ public class GroupTest {
     }
   }
 
-  @Test
-  public void test_214_GroupAddCheck() {
-    try {
-      HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
-
-      expected = new HashSet<String>(Arrays.asList(mygroupEntry.getGuid()));
-      actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(westyEntry.getGuid(), westyEntry));
-      assertEquals(expected, actual);
-
-    } catch (Exception e) {
-      fail("Exception while getting members and groups: " + e);
-    }
-  }
-
-  @Test
-  public void test_215_GroupRemoveGuid() {
-    // now remove a guid and check for group updates
-    try {
-      client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
-    } catch (Exception e) {
-      fail("Exception while removing testGuid: " + e);
-    }
-    try {
-      client.lookupGuidRecord(guidToDeleteEntry.getGuid());
-      fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
-
-    } catch (IOException e) {
-      fail("Exception while doing Lookup testGuid: " + e);
-    }
-  }
-
-  @Test
-  public void test_213_GroupRemoveCheck() {
-    try {
-      HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid()));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
-
-    } catch (Exception e) {
-      fail("Exception during remove guid group update test: " + e);
-      System.exit(2);
-    }
-  }
 }

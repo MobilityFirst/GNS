@@ -19,24 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.RequestInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.SelectInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.GnsApp;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.utils.MovingAverage;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
 import org.json.JSONObject;
@@ -74,8 +67,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    */
-  private final ConcurrentMap<Integer, RequestInfo> requestInfoMap;
-  private final ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
   // For backward compatibility between old Add and Remove record code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
   private final ConcurrentMap<String, Integer> createServiceNameMap;
@@ -132,8 +123,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig<String>(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
-    this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
-    this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
     this.messenger = messenger;
     this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);

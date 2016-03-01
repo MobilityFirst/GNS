@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnamed;
 
 import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.net.DatagramPacket;
