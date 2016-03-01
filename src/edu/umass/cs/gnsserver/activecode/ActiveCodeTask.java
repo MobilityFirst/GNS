@@ -95,7 +95,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    	while(!client.isReady()){
 	    		// wait until it's ready
 	    		synchronized(client){
-	    			client.wait(MAX_CLIENT_READY_WAIT_TIME);
+	    			client.wait();
 	    		}
 	    		assert(client.isReady());
 	    	}
