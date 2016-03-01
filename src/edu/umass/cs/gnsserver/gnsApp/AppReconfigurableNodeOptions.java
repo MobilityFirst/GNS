@@ -133,7 +133,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * Enable debug message in active code package
    */
-  public static boolean activeCodeEnableDebugging = false;
+  public static boolean activeCodeEnableDebugging = true;
   
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.

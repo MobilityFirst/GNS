@@ -223,7 +223,10 @@ public class ActiveCodeHandler {
 			System.out.println(ActiveCodeHandler.class.getSimpleName()
 				+ ".runCode returning, activeCount = "
 				+ executorPool.getActiveCount());
-		 
+		
+		if (result == null){
+			result = valuesMap;
+		}
 	    return result;
 		
 	}

@@ -105,7 +105,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    		 *  if client is still not ready, then we are done, don't submit the
 	    		 *  task to the worker. 
 	    		 */
-	    		return new ValuesMap(new JSONObject(acp.getValuesMapString()));
+	    		return null;
 	    	}
 	    	
 	    	
@@ -132,12 +132,8 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     		if(ActiveCodeHandler.enableDebugging)
     			System.out.println(this + " re-throwing uncaught exception/error " + e);
     		e.printStackTrace();
-    		try {
-				throw e;
-			} catch (Throwable e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			throw e;
+			
     	}
    		finally {
     		// arun
