@@ -43,8 +43,8 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeQueryHelper {
-	private static final ArrayList<ColumnField> empty = new ArrayList<ColumnField>();
-	private GnsApplicationInterface<?> app;
+	private static final ArrayList<ColumnField> empty = new ArrayList<>();
+	private final GnsApplicationInterface<?> app;
 	
 	/**
 	 * Initialize an ActiveCodeQueryHelper

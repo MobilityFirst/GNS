@@ -31,8 +31,8 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
  *
  */
 public class ClientPool {
-	Map<Long, ActiveCodeClient> clients;
-	GnsApplicationInterface<?> app;
+	private Map<Long, ActiveCodeClient> clients;
+	private GnsApplicationInterface<?> app;
 	
 	/**
 	 * Initialize a ClientPool

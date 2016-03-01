@@ -37,21 +37,6 @@ import org.json.JSONObject;
  */
 public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType> implements ClientRequest {
 
-  /**
-   * The possible response codes for select packets.
-   */
-  public enum ResponseCode {
-
-    /**
-     * NOERROR
-     */
-    NOERROR,
-
-    /**
-     * ERROR
-     */
-    ERROR
-  }
   //
   private final static String ID = "id";
   private final static String RECORDS = "records";

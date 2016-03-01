@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp;
@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
+import edu.umass.cs.gnsserver.gnsApp.packet.ResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectResponsePacket;
@@ -240,7 +241,7 @@ public class Select {
       return;
     }
     // if there is no error update our results list
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
+    if (ResponseCode.NOERROR.equals(packet.getResponseCode())) {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getRecords(), info, replica);
     } else // error response

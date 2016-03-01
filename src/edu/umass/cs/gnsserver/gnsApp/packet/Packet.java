@@ -14,15 +14,13 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
@@ -40,7 +38,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.json.JSONArray;
 
 /**
  * So we have these packets see and we convert them back and forth to and from JSON Objects.
@@ -257,24 +254,24 @@ public class Packet {
     }
   }
 
-  /**
-   * Return the packet sub type.
-   * 
-   * @param dnsPacket
-   * @return the packet sub type
-   * @throws JSONException
-   */
-  public static PacketType getDNSPacketSubType(DNSPacket<String> dnsPacket) throws JSONException {
-
-    if (dnsPacket.isQuery()) { // Query
-      return PacketType.DNS_SUBTYPE_QUERY;
-    } else if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
-      return PacketType.DNS_SUBTYPE_RESPONSE;
-    } else if (dnsPacket.containsAnyError()) {
-      return PacketType.DNS_SUBTYPE_ERROR_RESPONSE;
-    }
-    return null;
-  }
+//  /**
+//   * Return the packet sub type.
+//   * 
+//   * @param dnsPacket
+//   * @return the packet sub type
+//   * @throws JSONException
+//   */
+//  public static PacketType getDNSPacketSubType(DNSPacket<String> dnsPacket) throws JSONException {
+//
+//    if (dnsPacket.isQuery()) { // Query
+//      return PacketType.DNS_SUBTYPE_QUERY;
+//    } else if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
+//      return PacketType.DNS_SUBTYPE_RESPONSE;
+//    } else if (dnsPacket.containsAnyError()) {
+//      return PacketType.DNS_SUBTYPE_ERROR_RESPONSE;
+//    }
+//    return null;
+//  }
 
   // some shorthand helpers
   /**
@@ -339,13 +336,13 @@ public class Packet {
           throws JSONException {
     try {
       switch (getPacketType(json)) {
-        case DNS:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket<>(json, unstringer);
-        // Add
-        case ADD_RECORD:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.AddRecordPacket<>(json, unstringer);
-        case ADD_CONFIRM:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket<>(json, unstringer);
+//        case DNS:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket<>(json, unstringer);
+//        // Add
+//        case ADD_RECORD:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.AddRecordPacket<>(json, unstringer);
+//        case ADD_CONFIRM:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket<>(json, unstringer);
 //        case ACTIVE_ADD:
 //          return new edu.umass.cs.gnsserver.gnsApp.packet.AddRecordPacket<String>(json, unstringer); // on an add request replica controller sends to active replica
 //        case ACTIVE_ADD_CONFIRM:
@@ -355,23 +352,23 @@ public class Packet {
           return new edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket(json);
         case COMMAND_RETURN_VALUE:
           return new edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket(json);
-        // Remove
-        case REMOVE_RECORD:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket<>(json, unstringer);
-        case REMOVE_CONFIRM:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket<>(json, unstringer);
+//        // Remove
+//        case REMOVE_RECORD:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket<>(json, unstringer);
+//        case REMOVE_CONFIRM:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket<>(json, unstringer);
 //        case ACTIVE_REMOVE:
 //          return null; // on a remove request, replica controller sends to active replica
 //       case RC_REMOVE:
 //          return new edu.umass.cs.gnsserver.gnsApp.packet.RemoveRecordPacket<String>(json, unstringer);
         // Update
-        case UPDATE:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket<>(json, unstringer); // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
-        case UPDATE_CONFIRM:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket<>(json, unstringer);
+//        case UPDATE:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket<>(json, unstringer); // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
+//        case UPDATE_CONFIRM:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket<>(json, unstringer);
         // Lookup actives
-        case REQUEST_ACTIVES:
-          return new edu.umass.cs.gnsserver.gnsApp.packet.RequestActivesPacket<>(json, unstringer);
+//        case REQUEST_ACTIVES:
+//          return new edu.umass.cs.gnsserver.gnsApp.packet.RequestActivesPacket<>(json, unstringer);
         // Admin:
         case DUMP_REQUEST:
           return new edu.umass.cs.gnsserver.gnsApp.packet.admin.DumpRequestPacket<>(json, unstringer);
@@ -401,25 +398,25 @@ public class Packet {
         case NOOP:
           return new edu.umass.cs.gnsserver.gnsApp.packet.NoopPacket(json);
         // coordination
-        case ACTIVE_COORDINATION:
-          return null; // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
-        case REPLICA_CONTROLLER_COORDINATION:
-          return null; // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
-        // for finite ping pong protocol task example
-        case TEST_PING:
-          return new edu.umass.cs.protocoltask.examples.PingPongPacket(json);
-        case TEST_PONG:
-          return new edu.umass.cs.protocoltask.examples.PingPongPacket(json);
+//        case ACTIVE_COORDINATION:
+//          return null; // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+//        case REPLICA_CONTROLLER_COORDINATION:
+//          return null; // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+//        // for finite ping pong protocol task example
+//        case TEST_PING:
+//          return new edu.umass.cs.protocoltask.examples.PingPongPacket(json);
+//        case TEST_PONG:
+//          return new edu.umass.cs.protocoltask.examples.PingPongPacket(json);
         case TEST_NOOP:
           return null;
         // SPECIAL CASES FOR DNS_SUBTYPE_QUERY PACKETS WHICH USE ONE PACKET FOR ALL THESE
         // these 3 are here for completeness and instrumentation
-        case DNS_SUBTYPE_QUERY:
-          return null;
-        case DNS_SUBTYPE_RESPONSE:
-          return null;
-        case DNS_SUBTYPE_ERROR_RESPONSE:
-          return null;
+//        case DNS_SUBTYPE_QUERY:
+//          return null;
+//        case DNS_SUBTYPE_RESPONSE:
+//          return null;
+//        case DNS_SUBTYPE_ERROR_RESPONSE:
+//          return null;
         default:
           GNS.getLogger().severe("Packet type not found: " + getPacketType(json) + " JSON: " + json);
           return null;
@@ -688,59 +685,59 @@ public class Packet {
     }
   }
 
-  /**
-   * Test
-   *
-   * @param args
-   * @throws java.io.IOException *
-   */
-  public static void main(String[] args) throws IOException {
-    Stringifiable<String> unstringer = new Stringifiable<String>() {
-      @Override
-      public String valueOf(String nodeAsString) {
-        return nodeAsString;
-      }
-
-      @Override
-      public Set<String> getValuesFromStringSet(Set strNodes) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-      }
-
-      @Override
-      public Set<String> getValuesFromJSONArray(JSONArray array) throws JSONException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-      }
-    };
-    System.out.println(PacketType.DNS);
-    System.out.println(getPacketType(5));
-    System.out.println(getPacketType(5).toString());
-    System.out.println(PacketType.valueOf("REQUEST_ACTIVES").toString());
-    System.out.println(PacketType.valueOf("REQUEST_ACTIVES").getInt());
-    // createInstance testing
-    ResultValue x = new ResultValue();
-    x.add("12345678");
-    UpdatePacket<String> up = new UpdatePacket<String>(null, 32234234, 123, "12322323",
-            "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
-            GNS.DEFAULT_TTL_SECONDS, null, null, null);
-    System.out.println(up.toString());
-    JSONObject json = null;
-    try {
-      json = up.toJSONObject();
-    } catch (JSONException e) {
-      System.out.println("Problem converting packet to JSON: " + e);
-    }
-    if (json != null) {
-      Object object = null;
-      try {
-        object = createInstance(json, unstringer);
-      } catch (JSONException e) {
-        System.out.println("Problem creating instance: " + e);
-      }
-      if (object != null) {
-        System.out.println(object.toString());
-      } else {
-        System.out.println("OBJECT IS NULL");
-      }
-    }
-  }
+//  /**
+//   * Test
+//   *
+//   * @param args
+//   * @throws java.io.IOException *
+//   */
+//  public static void main(String[] args) throws IOException {
+//    Stringifiable<String> unstringer = new Stringifiable<String>() {
+//      @Override
+//      public String valueOf(String nodeAsString) {
+//        return nodeAsString;
+//      }
+//
+//      @Override
+//      public Set<String> getValuesFromStringSet(Set strNodes) {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//      }
+//
+//      @Override
+//      public Set<String> getValuesFromJSONArray(JSONArray array) throws JSONException {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//      }
+//    };
+//    System.out.println(PacketType.DNS);
+//    System.out.println(getPacketType(5));
+//    System.out.println(getPacketType(5).toString());
+//    System.out.println(PacketType.valueOf("REQUEST_ACTIVES").toString());
+//    System.out.println(PacketType.valueOf("REQUEST_ACTIVES").getInt());
+//    // createInstance testing
+//    ResultValue x = new ResultValue();
+//    x.add("12345678");
+//    UpdatePacket<String> up = new UpdatePacket<String>(null, 32234234, 123, "12322323",
+//            "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
+//            GNS.DEFAULT_TTL_SECONDS, null, null, null);
+//    System.out.println(up.toString());
+//    JSONObject json = null;
+//    try {
+//      json = up.toJSONObject();
+//    } catch (JSONException e) {
+//      System.out.println("Problem converting packet to JSON: " + e);
+//    }
+//    if (json != null) {
+//      Object object = null;
+//      try {
+//        object = createInstance(json, unstringer);
+//      } catch (JSONException e) {
+//        System.out.println("Problem creating instance: " + e);
+//      }
+//      if (object != null) {
+//        System.out.println(object.toString());
+//      } else {
+//        System.out.println("OBJECT IS NULL");
+//      }
+//    }
+//  }
 }

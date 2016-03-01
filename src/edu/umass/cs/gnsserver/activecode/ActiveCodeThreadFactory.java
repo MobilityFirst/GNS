@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadFactory;
  *
  */
 public class ActiveCodeThreadFactory implements ThreadFactory {
-	ClientPool clientPool;
+	private final ClientPool clientPool;
 	
 	protected ActiveCodeThreadFactory(ClientPool clientPool) {
 		this.clientPool = clientPool;

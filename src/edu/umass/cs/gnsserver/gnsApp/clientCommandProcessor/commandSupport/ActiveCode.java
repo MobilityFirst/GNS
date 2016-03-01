@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
@@ -46,6 +46,9 @@ public class ActiveCode {
    * ON_WRITE - the string key for the field that stores the write information.
    */
   public static final String ON_WRITE = InternalField.makeInternalFieldString("on_write");
+  
+  public static final String READ_ACTION = "read";
+  public static final String WRITE_ACTION = "write";
 
   /**
    * Returns the internal field corresponding to the given action.
@@ -53,13 +56,14 @@ public class ActiveCode {
    * @param action
    * @return a string
    */
-  public static String codeField(String action) {
-    if (action.equals("read")) {
-      return ON_READ;
-    } else if (action.equals("write")) {
-      return ON_WRITE;
-    } else {
-      return null;
+  public static String getCodeField(String action) {
+    switch (action) {
+      case READ_ACTION:
+        return ON_READ;
+      case WRITE_ACTION:
+        return ON_WRITE;
+      default:
+        return null;
     }
   }
 
@@ -81,15 +85,12 @@ public class ActiveCode {
     JSONObject json;
     try {
       json = new JSONObject();
-      json.put(codeField(action), code);
+      json.put(getCodeField(action), code);
     } catch (JSONException e) {
       return NSResponseCode.ERROR;
     }
     NSResponseCode response = FieldAccess.updateUserJSON(guid, json,
             writer, signature, message, handler);
-//    NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
-//            new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//            writer, signature, message);
     return response;
   }
 
@@ -106,12 +107,10 @@ public class ActiveCode {
    */
   public static NSResponseCode clearCode(String guid, String action, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    String field = codeField(action);
+    String field = getCodeField(action);
 
     NSResponseCode response = FieldAccess.update(guid, field, "", null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
-//    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, "", null, 0,
-//            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message);
     return response;
   }
 
@@ -128,7 +127,7 @@ public class ActiveCode {
    */
   public static String getCode(String guid, String action, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    String field = codeField(action);
+    String field = getCodeField(action);
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field,
             reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
@@ -142,14 +141,5 @@ public class ActiveCode {
     } catch (FailedDBOperationException | JSONException e) {
       return GnsProtocol.NULL_RESPONSE;
     }
-//    QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader,
-//            signature, message, ColumnFieldType.USER_JSON);
-//    try {
-//      if (!guidResult.isError()) {
-//        return guidResult.getValuesMap().getString(field);
-//      }
-//    } catch (JSONException e) {
-//    }
-//    return GnsProtocol.NULL_RESPONSE;
   }
 }

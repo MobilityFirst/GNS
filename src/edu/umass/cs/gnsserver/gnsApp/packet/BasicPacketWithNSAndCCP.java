@@ -14,13 +14,12 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp.packet;
 
 import edu.umass.cs.nio.interfaces.Stringifiable;
-import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 

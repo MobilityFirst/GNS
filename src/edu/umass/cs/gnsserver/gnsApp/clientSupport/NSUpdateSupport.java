@@ -34,7 +34,7 @@ import org.json.JSONException;
 
 /**
  *
- * @author westy
+ * @author Westy
  */
 public class NSUpdateSupport {
 
@@ -155,7 +155,8 @@ public class NSUpdateSupport {
         GNS.getLogger().info("AC--->>> " + activeCodeNameRecord.toString());
       }
       int hopLimit = 1;
-      if (activeCodeNameRecord != null && activeCodeHandler.hasCode(activeCodeNameRecord, "write")) {
+      if (activeCodeNameRecord != null 
+              && activeCodeHandler.hasCode(activeCodeNameRecord, ActiveCode.WRITE_ACTION)) {
         String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
         ValuesMap packetValuesMap = userJSON;
         if (AppReconfigurableNodeOptions.debuggingEnabled) {

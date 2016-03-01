@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsApp;
@@ -107,8 +107,9 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   private ActiveCodeHandler activeCodeHandler;
 
   public GnsApp(String[] args) throws IOException {
-	  AppReconfigurableNode.initOptions(args);
+    AppReconfigurableNode.initOptions(args);
   }
+
   /**
    * Creates the application.
    *
@@ -117,7 +118,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
    */
   public void GnsAppConstructor(JSONMessenger<String> messenger) throws IOException {
     this.nodeID = messenger.getMyID();
-    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>((GNSNodeConfig<String>)messenger.getNodeConfig());
+    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>((GNSNodeConfig<String>) messenger.getNodeConfig());
     // Start a ping server, but not a client.
     this.pingManager = new PingManager<String>(nodeID, this.nodeConfig, true);
     GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
@@ -129,12 +130,12 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(AppReconfigurableNodeOptions.debuggingEnabled);
     this.requestHandler = new ClientRequestHandler(
-            new Admintercessor(), 
+            new Admintercessor(),
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
-            nodeID, this, 
-            ((GNSNodeConfig<String>)messenger.getNodeConfig()),
+            nodeID, this,
+            ((GNSNodeConfig<String>) messenger.getNodeConfig()),
             messenger, parameters);
-            
+
 //    this.clientCommandProcessor = new ClientCommandProcessor(messenger,
 //            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
 //            ((GNSNodeConfig<String>)messenger.getNodeConfig()),
@@ -152,7 +153,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
     constructed = true;
   }
-  
+
   /**
    * Creates the application.
    *
@@ -175,10 +176,10 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(AppReconfigurableNodeOptions.debuggingEnabled);
     this.requestHandler = new ClientRequestHandler(
-            new Admintercessor(), 
+            new Admintercessor(),
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
-            nodeID, this, 
-            ((GNSNodeConfig<String>)messenger.getNodeConfig()),
+            nodeID, this,
+            ((GNSNodeConfig<String>) messenger.getNodeConfig()),
             messenger, parameters);
 //    this.clientCommandProcessor = new ClientCommandProcessor(messenger,
 //            new InetSocketAddress(nodeConfig.getBindAddress(id), nodeConfig.getCcpPort(id)),
@@ -198,31 +199,25 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     constructed = true;
   }
 
-  
   @Override
+  @SuppressWarnings("unchecked")
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
-    this.messenger = (SSLMessenger<String, JSONObject>)messenger;
+    this.messenger = (SSLMessenger<String, JSONObject>) messenger;
     this.nodeID = messenger.getMyID().toString();
     try {
-    	if(!constructed)
-    		this.GnsAppConstructor((JSONMessenger<String>)messenger);
-    } catch(IOException e) {
-    	e.printStackTrace();
-    	GNS.getLogger().severe("Unable to create app: exiting");
-    	System.exit(1);
+      if (!constructed) {
+        this.GnsAppConstructor((JSONMessenger<String>) messenger);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+      GNS.getLogger().severe("Unable to create app: exiting");
+      System.exit(1);
     }
-//    this.nodeConfig 
-//            = new GNSConsistentReconfigurableNodeConfig<String>(((SSLMessenger<String, JSONObject>)messenger).getNodeConfig());
   }
 
   private static PacketType[] types = {
-//    PacketType.DNS,
-//    PacketType.UPDATE,
     PacketType.SELECT_REQUEST,
     PacketType.SELECT_RESPONSE,
-//    PacketType.UPDATE_CONFIRM,
-//    PacketType.ADD_CONFIRM,
-//    PacketType.REMOVE_CONFIRM,
     PacketType.STOP,
     PacketType.NOOP,
     PacketType.COMMAND,
@@ -237,7 +232,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name()
                 + " packet: " + json.toString());
-                //+ " packet: " + json.toReasonableString());
+        //+ " packet: " + json.toReasonableString());
       }
       switch (packetType) {
         case SELECT_REQUEST:
@@ -262,9 +257,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
           return false;
       }
       executed = true;
-       } catch (JSONException | IOException | GnsClientException e) {
-//    } catch (JSONException | NoSuchAlgorithmException | SignatureException 
-//            | InvalidKeySpecException | InvalidKeyException | IOException | GnsClientException e) {
+    } catch (JSONException | IOException | GnsClientException e) {
       e.printStackTrace();
     } catch (FailedDBOperationException e) {
       // all database operations throw this exception, therefore we keep throwing this exception upwards and catch this
@@ -343,7 +336,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 
   /**
    * Updates the state for the given named record.
-   * 
+   *
    * @param name
    * @param state
    * @return true if we were able to update the state
@@ -398,7 +391,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
 
   /**
    * Returns a stop request packet.
-   * 
+   *
    * @param name
    * @param epoch
    * @return the stop request packet
@@ -459,16 +452,11 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   public void sendToID(String id, JSONObject msg) throws IOException {
     messenger.sendToID(id, msg);
   }
-  
+
   @Override
   public PingManager<String> getPingManager() {
     return pingManager;
   }
-
-//  @Override
-//  public ClientCommandProcessor getClientCommandProcessor() {
-//    return clientCommandProcessor;
-//  }
 
   @Override
   public ActiveCodeHandler getActiveCodeHandler() {
@@ -479,5 +467,5 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }
- 
+
 }

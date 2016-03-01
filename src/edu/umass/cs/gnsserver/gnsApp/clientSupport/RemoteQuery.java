@@ -27,6 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedExceptio
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.ResponseCode;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
@@ -368,7 +369,7 @@ public class RemoteQuery extends ClientAsynchBase {
     long requestId = sendSelectPacket(packet, replicaCommandCallback);
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+    if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
       return null;
@@ -381,7 +382,7 @@ public class RemoteQuery extends ClientAsynchBase {
     long requestId = sendSelectPacket(packet, replicaCommandCallback);
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
+    if (ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
       return reponsePacket.getGuids();
     } else {
       return null;
@@ -396,7 +397,7 @@ public class RemoteQuery extends ClientAsynchBase {
     long requestId = sendSelectPacket(packet, replicaCommandCallback);
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+    if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
       return null;
@@ -414,7 +415,7 @@ public class RemoteQuery extends ClientAsynchBase {
     long requestId = sendSelectPacket(packet, replicaCommandCallback);
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
-    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+    if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
       return null;

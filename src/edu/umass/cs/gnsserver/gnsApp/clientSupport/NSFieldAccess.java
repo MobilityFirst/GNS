@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -33,7 +34,9 @@ import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import java.io.IOException;
 import java.util.List;
+import org.json.JSONException;
 
 /**
  * Methods for reading field information in guids on NameServers.
@@ -252,12 +255,13 @@ public class NSFieldAccess {
           result = new ValuesMap();
           result.put(field, stringResult);
         }
-      } catch (Exception e) {
+      } catch (IOException | JSONException | GnsClientException e) {
         GNS.getLogger().severe("Problem getting record from remote server: " + e);
       }
-      //result = lookupFieldQueryLNS(guid, field, activeReplica, lnsAddress);
       if (result != null) {
-        GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru remote query.");
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru remote query.");
+        }
       }
     }
     return result;
@@ -280,7 +284,7 @@ public class NSFieldAccess {
       }
 
       if (codeRecord != null && originalValues != null
-              && gnsApp.getActiveCodeHandler().hasCode(codeRecord, "read")) {
+              && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
         try {
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
