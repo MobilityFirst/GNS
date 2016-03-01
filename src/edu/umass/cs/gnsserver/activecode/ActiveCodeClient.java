@@ -123,7 +123,8 @@ public class ActiveCodeClient {
 	protected ValuesMap submitRequest(ActiveCodeMessage acmReq) {
 		long startTime = System.nanoTime();
 		boolean crashed = false;
-
+		DatagramSocket firstSocket = clientSocket;
+		
 		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
 
 		boolean codeFinished = false;
@@ -168,17 +169,16 @@ public class ActiveCodeClient {
 				// query a guid
 				
 				/*
-				 * Before calling querier to read or write guid, we need to record the
-				 * clientPort number, if it is changed after query, it means this task
-				 * has timed out and the socket has been reset, so we don't need to do
-				 * anything but exit the while loop.
+				 * Before calling querier to read or write guid, we record the
+				 * clientPort, if it is changed after query, it means this task
+				 * has timed out and the socket has been reset, so we don't need
+				 * to do anything but exit the while loop.
 				 */
-				int previousPort = clientSocket.getLocalPort();
 				String currentGuid = acmReq.getAcp().getGuid();
 				ActiveCodeQueryRequest acqreq = acmResp.getAcqreq();
 				// Perform the query
 				ActiveCodeQueryResponse acqresp = acqh.handleQuery(currentGuid, acqreq);
-				if (clientSocket.getLocalPort() == previousPort){
+				if (clientSocket == firstSocket){
 					// Send the results back
 					ActiveCodeMessage acmres = new ActiveCodeMessage();
 					acmres.setAcqresp(acqresp);
