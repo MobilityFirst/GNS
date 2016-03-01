@@ -22,6 +22,8 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.concurrent.Callable;
 
+import org.json.JSONObject;
+
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -74,7 +76,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 		return activeCount;
 	}
 
-    private static final long MAX_CLIENT_READY_WAIT_TIME = 1000;
+    private static final long MAX_CLIENT_READY_WAIT_TIME = 500;
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
@@ -92,13 +94,24 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    	if(ActiveCodeHandler.enableDebugging)
 	    		System.out.println(this + " waiting on client to be ready");
 	    	//check the state of the client's worker
-	    	while(!client.isReady()){
+	    	if(!client.isReady()){
 	    		// wait until it's ready
 	    		synchronized(client){
 	    			client.wait(MAX_CLIENT_READY_WAIT_TIME);
 	    		}
-	    		
 	    	}
+	    	
+	    	if (!client.isReady()){
+	    		/*
+	    		 *  if client is still not ready, then we are done, don't submit the
+	    		 *  task to the worker. 
+	    		 */
+	    		return new ValuesMap(new JSONObject(acp.getValuesMapString()));
+	    	}
+	    	
+	    	/*
+	    	 * Invariant: client must be ready to proceed
+	    	 */
 	    	assert(client.isReady());
 	    	
 	    	if(ActiveCodeHandler.enableDebugging)
