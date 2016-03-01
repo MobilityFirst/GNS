@@ -100,7 +100,6 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    			client.wait(MAX_CLIENT_READY_WAIT_TIME);
 	    		}
 	    	}
-	    	
 	    	if (!client.isReady()){
 	    		/*
 	    		 *  if client is still not ready, then we are done, don't submit the
@@ -108,6 +107,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    		 */
 	    		return new ValuesMap(new JSONObject(acp.getValuesMapString()));
 	    	}
+	    	
 	    	
 	    	/*
 	    	 * Invariant: client must be ready to proceed
