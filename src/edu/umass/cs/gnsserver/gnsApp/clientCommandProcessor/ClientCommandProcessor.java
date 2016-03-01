@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
 
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.CCPListenerAdmin;
 import edu.umass.cs.gnsserver.gnamed.DnsTranslator;
 import edu.umass.cs.gnsserver.gnamed.UdpDnsServer;
@@ -49,10 +48,6 @@ import org.json.JSONObject;
 public class ClientCommandProcessor implements Shutdownable {
 
   private final InetSocketAddress nodeAddress;
-  /**
-   * Handles the client support processing for the CCP.
-   */
-  private Intercessor intercessor;
 
   /**
    * Handles administrative client support for the CCP.
@@ -111,7 +106,7 @@ public class ClientCommandProcessor implements Shutdownable {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
     }
     this.demultiplexer = new CCPPacketDemultiplexer<>();
-    this.intercessor = new Intercessor(nodeAddress, nodeConfig, demultiplexer);
+    //this.intercessor = new Intercessor(nodeAddress, nodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor();
     this.nodeAddress = nodeAddress;
 
@@ -122,7 +117,7 @@ public class ClientCommandProcessor implements Shutdownable {
     
     try {
       messenger.addPacketDemultiplexer(demultiplexer);
-      this.requestHandler = new ClientRequestHandler(intercessor, admintercessor, nodeAddress,
+      this.requestHandler = new ClientRequestHandler(admintercessor, nodeAddress,
               replicaID,
               app,
               nodeConfig, messenger, parameters);

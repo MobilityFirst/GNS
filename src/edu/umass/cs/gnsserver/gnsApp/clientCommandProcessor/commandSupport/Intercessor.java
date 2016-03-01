@@ -144,84 +144,84 @@ public class Intercessor implements IntercessorInterface {
    */
   @Override
   public void handleIncomingPacket(JSONObject json) {
-    try {
-      if (ReconfigurationPacket.isReconfigurationPacket(json)) {
-        switch (ReconfigurationPacket.getReconfigurationPacketType(json)) {
-          case CREATE_SERVICE_NAME:
-            CreateServiceName csnPacket = new CreateServiceName(json, nodeConfig);
-            createSuccessResult.put(csnPacket.getServiceName(),
-                    csnPacket.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR);
-            monitorCreate.notifyAll();
-            break;
-          case DELETE_SERVICE_NAME:
-            DeleteServiceName dsnPacket = new DeleteServiceName(json, nodeConfig);
-            synchronized (monitorDelete) {
-              deleteSuccessResult.put(dsnPacket.getServiceName(),
-                      dsnPacket.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR);
-              monitorDelete.notifyAll();
-            }
-          default:
-            break;
-        }
-      } else {
-        switch (getPacketType(json)) {
-          case UPDATE_CONFIRM:
-          case ADD_CONFIRM:
-          case REMOVE_CONFIRM:
-            ConfirmUpdatePacket<String> packet = new ConfirmUpdatePacket<String>(json,
-                    nodeConfig);
-            int id = packet.getRequestID();
-            //Packet is a response and does not have a response error
-            if (debuggingEnabled) {
-              GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update/Add/Remove (" + id + ") ");
-            }
-            synchronized (monitorUpdate) {
-              updateSuccessResult.put(id, packet.getResponseCode());
-              monitorUpdate.notifyAll();
-            }
-            break;
-          case DNS:
-            DNSPacket<String> dnsResponsePacket = new DNSPacket<>(json, nodeConfig);
-            id = dnsResponsePacket.getQueryId();
-            if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
-              //Packet is a response and does not have a response error
-              if (debuggingEnabled) {
-                GNS.getLogger().fine("Query (" + id + "): "
-                        + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
-                        + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
-              }
-              synchronized (monitor) {
-                queryResultMap.put(id,
-                        new QueryResult<>(dnsResponsePacket.getRecordValue(),
-                                dnsResponsePacket.getResponder()
-                                //,dnsResponsePacket.getLookupTime()
-                        ));
-                monitor.notifyAll();
-              }
-            } else {
-              if (debuggingEnabled) {
-                GNS.getLogger().info("Intercessor: Query (" + id + "): "
-                        + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
-                        + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
-              }
-              synchronized (monitor) {
-                queryResultMap.put(id,
-                        new QueryResult<>(dnsResponsePacket.getHeader().getResponseCode(),
-                                dnsResponsePacket.getResponder()
-                                //,dnsResponsePacket.getLookupTime()
-                        ));
-                monitor.notifyAll();
-              }
-            }
-            break;
-          case SELECT_RESPONSE:
-            SelectHandler.processSelectResponsePackets(json, nodeConfig);
-            break;
-        }
-      }
-    } catch (JSONException e) {
-      GNS.getLogger().severe("JSON error: " + e);
-    }
+//    try {
+//      if (ReconfigurationPacket.isReconfigurationPacket(json)) {
+//        switch (ReconfigurationPacket.getReconfigurationPacketType(json)) {
+//          case CREATE_SERVICE_NAME:
+//            CreateServiceName csnPacket = new CreateServiceName(json, nodeConfig);
+//            createSuccessResult.put(csnPacket.getServiceName(),
+//                    csnPacket.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR);
+//            monitorCreate.notifyAll();
+//            break;
+//          case DELETE_SERVICE_NAME:
+//            DeleteServiceName dsnPacket = new DeleteServiceName(json, nodeConfig);
+//            synchronized (monitorDelete) {
+//              deleteSuccessResult.put(dsnPacket.getServiceName(),
+//                      dsnPacket.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR);
+//              monitorDelete.notifyAll();
+//            }
+//          default:
+//            break;
+//        }
+//      } else {
+//        switch (getPacketType(json)) {
+//          case UPDATE_CONFIRM:
+//          case ADD_CONFIRM:
+//          case REMOVE_CONFIRM:
+//            ConfirmUpdatePacket<String> packet = new ConfirmUpdatePacket<String>(json,
+//                    nodeConfig);
+//            int id = packet.getRequestID();
+//            //Packet is a response and does not have a response error
+//            if (debuggingEnabled) {
+//              GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update/Add/Remove (" + id + ") ");
+//            }
+//            synchronized (monitorUpdate) {
+//              updateSuccessResult.put(id, packet.getResponseCode());
+//              monitorUpdate.notifyAll();
+//            }
+//            break;
+//          case DNS:
+//            DNSPacket<String> dnsResponsePacket = new DNSPacket<>(json, nodeConfig);
+//            id = dnsResponsePacket.getQueryId();
+//            if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
+//              //Packet is a response and does not have a response error
+//              if (debuggingEnabled) {
+//                GNS.getLogger().fine("Query (" + id + "): "
+//                        + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
+//                        + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
+//              }
+//              synchronized (monitor) {
+//                queryResultMap.put(id,
+//                        new QueryResult<>(dnsResponsePacket.getRecordValue(),
+//                                dnsResponsePacket.getResponder()
+//                                //,dnsResponsePacket.getLookupTime()
+//                        ));
+//                monitor.notifyAll();
+//              }
+//            } else {
+//              if (debuggingEnabled) {
+//                GNS.getLogger().info("Intercessor: Query (" + id + "): "
+//                        + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
+//                        + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
+//              }
+//              synchronized (monitor) {
+//                queryResultMap.put(id,
+//                        new QueryResult<>(dnsResponsePacket.getHeader().getResponseCode(),
+//                                dnsResponsePacket.getResponder()
+//                                //,dnsResponsePacket.getLookupTime()
+//                        ));
+//                monitor.notifyAll();
+//              }
+//            }
+//            break;
+//          case SELECT_RESPONSE:
+//            SelectHandler.processSelectResponsePackets(json, nodeConfig);
+//            break;
+//        }
+//      }
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("JSON error: " + e);
+//    }
   }
 
   /**

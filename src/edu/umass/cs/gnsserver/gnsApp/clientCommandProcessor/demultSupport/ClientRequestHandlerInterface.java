@@ -54,13 +54,6 @@ public interface ClientRequestHandlerInterface {
   public RemoteQuery getRemoteQuery();
   
   /**
-   * The executor that runs tasks.
-   *
-   * @return the executorService
-   */
-  public ScheduledThreadPoolExecutor getExecutorService();
-
-  /**
    * Maintains information about other nodes.
    *
    * @return a GNSNodeConfig instance
@@ -97,14 +90,6 @@ public interface ClientRequestHandlerInterface {
   public String getActiveReplicaID();
 
   /**
-   * Returns the intercessor.
-   * 
-   * @return an Intercessor instance
-   */
-  @Deprecated
-  public Intercessor getIntercessor();
-
-  /**
    * Returns the Admintercessor.
    * 
    * @return an Admintercessor instance
@@ -119,53 +104,6 @@ public interface ClientRequestHandlerInterface {
    * @return 
    */
   public int getUniqueRequestID();
-
-  /**
-   * Adds a new RequestInfo entry to the map for the query id.
-   * @param id
-   * @param requestInfo 
-   */
-  public void addRequestInfo(int id, RequestInfo requestInfo);
-
-  /**
-   **
-   * Removes and returns RequestInfo entry from the map for a query Id..
-   *
-   * @param id Query Id
-   * @return an query id
-   */
-  public RequestInfo removeRequestInfo(int id);
-
-  /**
-   * Returns the update info for id.
-   *
-   * @param id
-   * @return the requestinfo
-   */
-  public RequestInfo getRequestInfo(int id);
-
-  /**
-   * Adds information of a transmitted select to a query transmitted map.
-   *
-   * @param recordKey
-   * @param incomingPacket
-   * @return the id
-   */
-  public int addSelectInfo(String recordKey, SelectRequestPacket<String> incomingPacket);
-
-  /**
-   * @param id
-   * @return the id
-   */
-  public SelectInfo removeSelectInfo(int id);
-
-  /**
-   * Returns the select info for id.
-   *
-   * @param id
-   * @return the id
-   */
-  public SelectInfo getSelectInfo(int id);
 
   // NETWORK METHODS
   /**
@@ -224,22 +162,6 @@ public interface ClientRequestHandlerInterface {
    */
   public int getRequestsPerSecond();
 
-  /**
-   * Returns true if update packets will be sent to the co-located replica instead of being handled locally.
-   *
-   * returns true or false
-   * @return true or false
-   */
-   @Deprecated
-  public boolean reallySendUpdateToReplica();
-
-  /**
-   * Returns set the value which determines if update packets will be sent to the co-located replica instead of being handled locally.
-   * @param reallySend
-   */
-  @Deprecated
-  public void setReallySendUpdateToReplica(boolean reallySend);
-
   // Below are for the new app
   /**
    * Returns a randomly selected active replica.
@@ -277,16 +199,7 @@ public interface ClientRequestHandlerInterface {
    * @throws JSONException
    * @throws IOException 
    */
-  public void sendRequestToReconfigurator(BasicReconfigurationPacket req, String id) throws JSONException, IOException;
-
-  /**
-   * Invokes the handleEvent method of the associated protocol executor.
-   *
-   * @param json
-   * @return a boolean indicating if the request was actually handled
-   * @throws JSONException
-   */
-  public boolean handleEvent(JSONObject json) throws JSONException;
+  public void sendRequestToReconfigurator(BasicReconfigurationPacket<String> req, String id) throws JSONException, IOException;
 
   /**
    * Adds a mapping between a ServiceName request and a CCPREquestID.

@@ -20,11 +20,10 @@
 package edu.umass.cs.gnsserver.gnsApp.clientSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SelectHandler;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnsserver.main.GNS;
@@ -288,7 +287,7 @@ public class NSGroupAccess {
       return Integer.parseInt((String) resultValue.get(0));
     } else {
       // if we can't get it just return the default. No harm, no foul.
-      return SelectHandler.DEFAULT_MIN_REFRESH_INTERVAL;
+      return ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL;
     }
   }
 

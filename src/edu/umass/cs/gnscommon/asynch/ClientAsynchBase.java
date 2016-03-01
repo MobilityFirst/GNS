@@ -63,11 +63,7 @@ import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSuppor
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SelectHandler.DEFAULT_MIN_REFRESH_INTERVAL;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -97,6 +93,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
                   Packet.PacketType.SELECT_REQUEST,
                   Packet.PacketType.SELECT_RESPONSE
           ));
+  /**
+   * The default interval (in seconds) before which a query will not be refreshed. In other words
+   * if you wait this interval you will get the latest from the database, otherwise you will get the
+   * cached value.
+   */
+  public static final int DEFAULT_MIN_REFRESH_INTERVAL = 60; //seconds
   /**
    * Used to generate unique ids
    */

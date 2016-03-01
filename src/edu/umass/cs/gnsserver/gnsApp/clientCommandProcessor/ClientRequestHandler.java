@@ -68,7 +68,6 @@ import org.json.JSONException;
 public class ClientRequestHandler implements ClientRequestHandlerInterface {
   
   private final RemoteQuery remoteQuery;
-  private final Intercessor intercessor;
   private final Admintercessor admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
@@ -95,9 +94,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
   private final Random random;
 
-  private final ProtocolExecutor<String, ReconfigurationPacket.PacketType, String> protocolExecutor;
-  private final CCPProtocolTask<String> protocolTask;
-
   /**
    * Host address of the local name server.
    */
@@ -111,7 +107,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   /**
    * Creates an instance of the ClientRequestHandler.
    *
-   * @param intercessor
    * @param admintercessor
    * @param nodeAddress
    * @param activeReplicaID
@@ -120,14 +115,13 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
    * @param messenger
    * @param parameters
    */
-  public ClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
+  public ClientRequestHandler(Admintercessor admintercessor,
           InetSocketAddress nodeAddress,
           String activeReplicaID,
           GnsApp app,
           GNSNodeConfig<String> gnsNodeConfig,
           JSONMessenger<String> messenger, RequestHandlerParameters parameters) throws IOException {
     this.remoteQuery = new RemoteQuery();
-    this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
@@ -142,9 +136,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
     this.messenger = messenger;
-    this.protocolExecutor = new ProtocolExecutor<>(messenger);
-    this.protocolTask = new CCPProtocolTask<>(this);
-    this.protocolExecutor.register(this.protocolTask.getEventTypes(), this.protocolTask);
     this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.createServiceIdToNamesMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.deleteServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -152,26 +143,10 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
-  public boolean handleEvent(JSONObject json) throws JSONException {
-    @SuppressWarnings("unchecked")
-    BasicReconfigurationPacket<String> rcEvent
-            = (BasicReconfigurationPacket<String>) ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
-    return this.protocolExecutor.handleEvent(rcEvent);
-  }
-
-  @Override
   public RemoteQuery getRemoteQuery() {
     return remoteQuery;
   }
   
-  /**
-   * @return the executorService
-   */
-  @Override
-  public ScheduledThreadPoolExecutor getExecutorService() {
-    return executorService;
-  }
-
   @Override
   public GNSNodeConfig<String> getGnsNodeConfig() {
     return gnsNodeConfig;
@@ -190,12 +165,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   @Override
   public String getActiveReplicaID() {
     return activeReplicaID;
-  }
-
-  @Override
-  @Deprecated
-  public Intercessor getIntercessor() {
-    return intercessor;
   }
 
   @Override
@@ -219,11 +188,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   @Override
   public synchronized int getUniqueRequestID() {
     return currentRequestID++;
-  }
-
-  @Override
-  public void addRequestInfo(int id, RequestInfo requestInfo) {
-    requestInfoMap.put(id, requestInfo);
   }
 
   // These next four are for backward compatibility between old Add and Remove record 
@@ -321,76 +285,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
    */
   public Integer removeActivesRequestNameToIDMapping(String name) {
     return activesServiceNameMap.remove(name);
-  }
-
-  @Override
-  public int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket) {
-    int id;
-    do {
-      id = random.nextInt();
-    } while (selectTransmittedMap.containsKey(id));
-    //Add query info
-    SelectInfo query = new SelectInfo(id);
-    selectTransmittedMap.put(id, query);
-    return id;
-  }
-
-  @Override
-  public RequestInfo getRequestInfo(int id) {
-    return requestInfoMap.get(id);
-  }
-
-  /**
-   * Removes and returns QueryInfo entry from the map for a query Id.
-   *
-   * @param id Query Id
-   * @return the entry or null if it was not found
-   */
-  @Override
-  public RequestInfo removeRequestInfo(int id) {
-    return requestInfoMap.remove(id);
-  }
-
-  /**
-   * Removes and returns SelectInfo entry from the map for a query Id.
-   * @param id
-   * @return the entry or null if it was not found
-   */
-  @Override
-  public SelectInfo removeSelectInfo(int id) {
-    return selectTransmittedMap.remove(id);
-  }
-
-  /**
-   * Returns SelectInfo entry from the map for a query Id.
-   * @param id
-   * @return the entry or null if it was not found
-   */
-  @Override
-  public SelectInfo getSelectInfo(int id) {
-    return selectTransmittedMap.get(id);
-  }
-
-  private boolean reallySendtoReplica = false;
-
-  /**
-   * Returns the value of reallySendtoReplica.
-   * 
-   * @return true if we're sending to the Replica
-   */
-  @Override
-  public boolean reallySendUpdateToReplica() {
-    return reallySendtoReplica;
-  }
-
-  /**
-   * Sets the value of reallySendtoReplica.
-   * 
-   * @param reallySend 
-   */
-  @Override
-  public void setReallySendUpdateToReplica(boolean reallySend) {
-    reallySendtoReplica = reallySend;
   }
 
   /**

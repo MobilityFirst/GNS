@@ -25,7 +25,6 @@ import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.GnsActiveReplicaException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SelectHandler.DEFAULT_MIN_REFRESH_INTERVAL;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
@@ -406,7 +405,7 @@ public class RemoteQuery extends ClientAsynchBase {
 
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid)
           throws IOException, GnsClientException {
-    return sendGroupGuidSetupSelectQuery(query, guid, DEFAULT_MIN_REFRESH_INTERVAL);
+    return sendGroupGuidSetupSelectQuery(query, guid, ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL);
   }
 
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, GnsClientException {

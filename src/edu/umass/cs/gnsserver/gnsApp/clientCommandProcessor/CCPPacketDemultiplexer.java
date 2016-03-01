@@ -19,22 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.AddRemove;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.Lookup;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.Select;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.Update;
-import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsApp.packet.DNSPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
-
-import edu.umass.cs.utils.MyLogger;
-import java.io.IOException;
-import java.util.logging.Level;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -85,89 +71,89 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   @Override
   public boolean handleMessage(JSONObject json) {
-    handler.updateRequestStatistics();
-    if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().log(Level.FINER, MyLogger.FORMAT[1],
-              new Object[]{"*****************************> CCP RECEIVED: ", json});
-    }
-    try {
-      if (ReconfigurationPacket.isReconfigurationPacket(json)) {
-        if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1],
-                  new Object[]{"*****************************> CCP RECEIVED PACKET TYPE: ",
-                    ReconfigurationPacket.getReconfigurationPacketType(json)});
-        }
-        if (handler.handleEvent(json)) {
-          return true;
-        }
-      }
-      Packet.PacketType type = Packet.getPacketType(json);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().finer("MsgType " + type + " Msg " + json);
-        GNS.getLogger().info("MsgType " + type);
-      }
-//      if (type != null) {
-//        switch (type) {
-//          case DNS:
-//            DNSPacket<String> dnsPacket = new DNSPacket<String>(json, handler.getGnsNodeConfig());
-//            Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
-//            switch (incomingPacketType) {
-//              // Lookup
-//              case DNS_SUBTYPE_QUERY:
-//                Lookup.handlePacketLookupRequest(dnsPacket, handler);
-//                return true;
-//              case DNS_SUBTYPE_RESPONSE:
-//                Lookup.handlePacketLookupResponse(dnsPacket, handler);
-//                return true;
-//              case DNS_SUBTYPE_ERROR_RESPONSE:
-//                Lookup.handlePacketLookupErrorResponse(dnsPacket, handler);
-//                return true;
-//              default:
-//                GNS.getLogger().warning("Unknown DNS packet subtype: " + incomingPacketType);
-//                return false;
-//            }
-//          case UPDATE:
-//            Update.handlePacketUpdate(json, handler);
-//            return true;
-//          case UPDATE_CONFIRM:
-//            Update.handlePacketConfirmUpdate(json, handler);
-//            return true;
-//          // Add/remove
-//          case ADD_RECORD:
-//            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
-//            CreateDelete.handleAddPacket(json, handler);
-//            return true;
-//          case ADD_BATCH_RECORD:
-//            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
-//            CreateDelete.handleAddBatchPacket(json, handler);
-//            return true;
-//          case REMOVE_RECORD:
-//            // New code which creates DeleteService packets and sends them to the Reconfigurator.
-//            CreateDelete.handleRemovePacket(json, handler);
-//            return true;
-//          case ADD_CONFIRM:
-//            AddRemove.handlePacketConfirmAdd(json, handler);
-//            return true;
-//          case REMOVE_CONFIRM:
-//            AddRemove.handlePacketConfirmRemove(json, handler);
-//            return true;
-//          case SELECT_REQUEST:
-//            Select.handlePacketSelectRequest(json, handler);
-//            return true;
-//          case SELECT_RESPONSE:
-//            Select.handlePacketSelectResponse(json, handler);
-//            return true;
-//          default:
-//            GNS.getLogger().warning("************************* CCP IGNORING: " + json);
-//            return false;
+//    handler.updateRequestStatistics();
+//    if (handler.getParameters().isDebugMode()) {
+//      GNS.getLogger().log(Level.FINER, MyLogger.FORMAT[1],
+//              new Object[]{"*****************************> CCP RECEIVED: ", json});
+//    }
+//    try {
+//      if (ReconfigurationPacket.isReconfigurationPacket(json)) {
+//        if (handler.getParameters().isDebugMode()) {
+//          GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1],
+//                  new Object[]{"*****************************> CCP RECEIVED PACKET TYPE: ",
+//                    ReconfigurationPacket.getReconfigurationPacketType(json)});
+//        }
+//        if (handler.handleEvent(json)) {
+//          return true;
 //        }
 //      }
-      GNS.getLogger().warning("************************* CCP CAN'T GET PACKET TYPE... IGNORING: " + json);
-    } catch (JSONException e) {
-      e.printStackTrace();
-//    } catch (IOException e) {
+//      Packet.PacketType type = Packet.getPacketType(json);
+//      if (handler.getParameters().isDebugMode()) {
+//        GNS.getLogger().finer("MsgType " + type + " Msg " + json);
+//        GNS.getLogger().info("MsgType " + type);
+//      }
+////      if (type != null) {
+////        switch (type) {
+////          case DNS:
+////            DNSPacket<String> dnsPacket = new DNSPacket<String>(json, handler.getGnsNodeConfig());
+////            Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
+////            switch (incomingPacketType) {
+////              // Lookup
+////              case DNS_SUBTYPE_QUERY:
+////                Lookup.handlePacketLookupRequest(dnsPacket, handler);
+////                return true;
+////              case DNS_SUBTYPE_RESPONSE:
+////                Lookup.handlePacketLookupResponse(dnsPacket, handler);
+////                return true;
+////              case DNS_SUBTYPE_ERROR_RESPONSE:
+////                Lookup.handlePacketLookupErrorResponse(dnsPacket, handler);
+////                return true;
+////              default:
+////                GNS.getLogger().warning("Unknown DNS packet subtype: " + incomingPacketType);
+////                return false;
+////            }
+////          case UPDATE:
+////            Update.handlePacketUpdate(json, handler);
+////            return true;
+////          case UPDATE_CONFIRM:
+////            Update.handlePacketConfirmUpdate(json, handler);
+////            return true;
+////          // Add/remove
+////          case ADD_RECORD:
+////            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
+////            CreateDelete.handleAddPacket(json, handler);
+////            return true;
+////          case ADD_BATCH_RECORD:
+////            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
+////            CreateDelete.handleAddBatchPacket(json, handler);
+////            return true;
+////          case REMOVE_RECORD:
+////            // New code which creates DeleteService packets and sends them to the Reconfigurator.
+////            CreateDelete.handleRemovePacket(json, handler);
+////            return true;
+////          case ADD_CONFIRM:
+////            AddRemove.handlePacketConfirmAdd(json, handler);
+////            return true;
+////          case REMOVE_CONFIRM:
+////            AddRemove.handlePacketConfirmRemove(json, handler);
+////            return true;
+////          case SELECT_REQUEST:
+////            Select.handlePacketSelectRequest(json, handler);
+////            return true;
+////          case SELECT_RESPONSE:
+////            Select.handlePacketSelectResponse(json, handler);
+////            return true;
+////          default:
+////            GNS.getLogger().warning("************************* CCP IGNORING: " + json);
+////            return false;
+////        }
+////      }
+//      GNS.getLogger().warning("************************* CCP CAN'T GET PACKET TYPE... IGNORING: " + json);
+//    } catch (JSONException e) {
 //      e.printStackTrace();
-    }
+////    } catch (IOException e) {
+////      e.printStackTrace();
+//    }
     return false;
   }
 
