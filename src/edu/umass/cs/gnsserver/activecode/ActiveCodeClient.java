@@ -129,10 +129,6 @@ public class ActiveCodeClient {
 
 		boolean codeFinished = false;
 		String valuesMapString = null;
-		/*
-		 * Invariant: this thread can't be interrupted, because
-		 */
-		assert (!Thread.currentThread().isInterrupted());
 
 		// Send the request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, workerPort);

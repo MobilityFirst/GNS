@@ -67,20 +67,25 @@ public class ActiveCodeGuardian implements Runnable {
 			if(task.isRunning()){
 				// shutdown the previous worker process x
 				ActiveCodeClient client = task.getWrappedTask().getClient();
-				int oldPort = client.getPort();
-				client.forceShutdownServer();
-															
-				// get the spare worker and set the client port to the new worker
-				int newPort = clientPool.getSpareWorkerPort();
-				client.setReady(clientPool.getPortStatus(newPort));
-				clientPool.updatePortToClientMap(oldPort, newPort, client);
-				Process proc = clientPool.getSpareWorker(newPort);
-				client.setNewWorker(newPort, proc);
-				
-				// generate a spare worker in another thread
-				long t1 = System.nanoTime();
-				clientPool.generateNewWorker();
-				DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
+				if(client.isReady()){
+					int oldPort = client.getPort();
+					client.forceShutdownServer();
+																
+					// get the spare worker and set the client port to the new worker
+					int newPort = clientPool.getSpareWorkerPort();
+					client.setReady(clientPool.getPortStatus(newPort));
+					clientPool.updatePortToClientMap(oldPort, newPort, client);
+					Process proc = clientPool.getSpareWorker(newPort);
+					client.setNewWorker(newPort, proc);
+					
+					// generate a spare worker in another thread
+					long t1 = System.nanoTime();
+					clientPool.generateNewWorker();
+					DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
+				}else{
+					// this task is timed out because its client is not ready, 
+					// do not reset the client again.
+				}
 			}
 			
 			// cancel the task
