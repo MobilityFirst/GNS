@@ -53,7 +53,8 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 	protected void beforeExecute(Thread t, Runnable r){
 		// register the runnable here
 		ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
-        	
+		if(ActiveCodeHandler.enableDebugging)
+			System.out.println(this + " runs thread " + t + " for task " + task);
 		ActiveCodeClient previousClient = task.getWrappedTask().setClient(clientPool.getClient(t.getId()));
 		assert(task.setRunning(true) == false);
 		assert(previousClient == null);

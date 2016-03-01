@@ -227,9 +227,6 @@ public class ActiveCodeClient {
 		acm.setShutdown(true);
 		try {
 			//submitRequest(acm);
-			while(!isReady()){
-				this.wait();
-			}
 			ActiveCodeUtils.sendMessage(clientSocket, acm, workerPort);
 		} catch (Exception e) {
 			e.printStackTrace();
