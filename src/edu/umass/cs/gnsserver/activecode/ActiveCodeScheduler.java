@@ -24,7 +24,6 @@ public class ActiveCodeScheduler implements Runnable{
 	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
 	private HashMap<ActiveCodeFutureTask, Long> timeMap = new HashMap<ActiveCodeFutureTask, Long>();
-	//private static int numReq = 0;
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
@@ -33,8 +32,7 @@ public class ActiveCodeScheduler implements Runnable{
 		this.executorPool = executorPool;
 	}
 	
-	public void run(){	
-		//System.out.println(this.getClass().getName()+" runs in thread "+Thread.currentThread());
+	public void run(){
 		while(true){
 			while(guidList.isEmpty()){
 				synchronized (lock){
@@ -93,7 +91,7 @@ public class ActiveCodeScheduler implements Runnable{
 			if(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
 				return null;
 			}
-		
+			
 			if (runningGuid.containsKey(guid)){
 				runningGuid.put(guid, runningGuid.get(guid)+1);
 			} else{

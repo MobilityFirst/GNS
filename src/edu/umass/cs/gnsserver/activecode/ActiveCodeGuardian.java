@@ -44,16 +44,7 @@ public class ActiveCodeGuardian implements Runnable {
 					}
 				}		
 			}
-			long eclapsed = System.currentTimeMillis() - now;
-			if(eclapsed < 100){
-				try{
-					Thread.sleep(100-eclapsed);
-				}catch(InterruptedException e){
-					e.printStackTrace();
-				}
-			}else{
-				System.out.println(">>>>>>>>>>>>>>>>>>>>> It takes more than 100ms to check all tasks!");
-			}
+			
 		}
 		} catch(Exception | Error e) {
 			e.printStackTrace();
@@ -103,6 +94,9 @@ public class ActiveCodeGuardian implements Runnable {
 	}
 	
 	protected Long deregister(ActiveCodeFutureTask task){
+		/*
+		 * FIXME: it could trigger a deadlock with calling cancelTask together
+		 */
 		synchronized(tasks){
 			return tasks.remove(task);
 		}
