@@ -131,6 +131,7 @@ public class ClientPool implements Runnable{
 	 * @param t
 	 */
 	protected ActiveCodeClient addClient(Thread t) {
+		long t1 = System.currentTimeMillis();
 		/*
 		 * Invariant: after the client starts, no new thread and client should be created.
 		 */

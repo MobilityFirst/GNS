@@ -63,16 +63,16 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	return "    " +  this.getClass().getSimpleName() + this.client.myID + ":"+this.acp.toString();
     }
     
-    	private static int activeCount = 0;
-    	synchronized static void incrNumActiveCount() {
-    		activeCount++;
-    	}
-    	synchronized static void decrNumActiveCount() {
-    		activeCount--;
-    	}
-    	synchronized static int getActiveCount() {
-    		return activeCount;
-    	}
+	private static int activeCount = 0;
+	synchronized static void incrNumActiveCount() {
+		activeCount++;
+	}
+	synchronized static void decrNumActiveCount() {
+		activeCount--;
+	}
+	synchronized static int getActiveCount() {
+		return activeCount;
+	}
 
     private static final long MAX_CLIENT_READY_WAIT_TIME = 1000;
     @Override
