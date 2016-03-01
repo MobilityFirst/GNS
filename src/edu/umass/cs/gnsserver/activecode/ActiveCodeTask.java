@@ -132,7 +132,12 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     		if(ActiveCodeHandler.enableDebugging)
     			System.out.println(this + " re-throwing uncaught exception/error " + e);
     		e.printStackTrace();
-    		throw e;
+    		try {
+				throw e;
+			} catch (Throwable e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
     	}
    		finally {
     		// arun
