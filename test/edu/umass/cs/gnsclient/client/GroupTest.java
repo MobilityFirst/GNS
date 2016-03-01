@@ -88,7 +88,7 @@ public class GroupTest {
   }
 
   private static GuidEntry guidToDeleteEntry;
-  
+
   @Test
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
@@ -106,14 +106,33 @@ public class GroupTest {
   }
 
   @Test
-  public void test_211_GroupAdd() {
+  public void test_211_GroupAddWesty() {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
+    } catch (Exception e) {
+      fail("Exception while adding Westy: " + e);
+    }
+  }
+  
+   @Test
+  public void test_212_GroupAddSam() {
+    try {
       client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
+    } catch (Exception e) {
+      fail("Exception while adding Sam: " + e);
+    }
+  }
+   @Test
+  public void test_213_GroupAddGuidToDelete() {
+    try {
       client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);
     } catch (Exception e) {
-      fail("Exception while adding to groups: " + e);
+      fail("Exception while adding GuidToDelete: " + e);
     }
+  }
+
+  @Test
+  public void test_214_GroupAddCheck() {
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
@@ -129,7 +148,7 @@ public class GroupTest {
   }
 
   @Test
-  public void test_212_GroupRemoveGuid() {
+  public void test_215_GroupRemoveGuid() {
     // now remove a guid and check for group updates
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());

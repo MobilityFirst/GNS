@@ -305,7 +305,8 @@ public class GnsProtocol {
    */
   public final static List<String> CREATE_DELETE_COMMANDS
           = Arrays.asList(REGISTER_ACCOUNT, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
-                  REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS
+                  REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS,
+                  ADD_TO_GROUP, REMOVE_FROM_GROUP
           );
 
   /**
