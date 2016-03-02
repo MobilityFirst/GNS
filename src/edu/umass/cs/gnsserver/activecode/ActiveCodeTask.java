@@ -76,7 +76,6 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 		return activeCount;
 	}
 
-    private static final long MAX_CLIENT_READY_WAIT_TIME = 500;
     @Override
     /**
      * Called by the ThreadPoolExecutor to run the active code task
@@ -93,21 +92,6 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
 	    	if(ActiveCodeHandler.enableDebugging)
 	    		System.out.println(this + " waiting on client to be ready");
-	    	//check the state of the client's worker
-	    	if(!client.isReady()){
-	    		// wait until it's ready
-	    		synchronized(client){
-	    			client.wait(MAX_CLIENT_READY_WAIT_TIME);
-	    		}
-	    	}
-	    	if (!client.isReady()){
-	    		/*
-	    		 *  if client is still not ready, then we are done, don't submit the
-	    		 *  task to the worker. 
-	    		 */
-	    		return null;
-	    	}
-	    	
 	    	
 	    	/*
 	    	 * Invariant: client must be ready to proceed

@@ -48,14 +48,30 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 		this.clientPool = clientPool;
 	}
 	
+	private static final long MAX_CLIENT_READY_WAIT_TIME = 500;
 	
 	@Override
 	protected void beforeExecute(Thread t, Runnable r){
 		// register the runnable here
 		ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
-		ActiveCodeClient previousClient = task.getWrappedTask().setClient(clientPool.getClient(t.getId()));
+		ActiveCodeClient client = clientPool.getClient(t.getId());
+		ActiveCodeClient previousClient = task.getWrappedTask().setClient(client);
 		assert(task.setRunning(true) == false);
 		assert(previousClient == null);
+		
+		//check the state of the client's worker
+    	while(!client.isReady()){
+    		// wait until it's ready
+    		synchronized(client){
+    			try {
+					client.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		}
+    	}    	
+    	
 		guard.register(task); 	
 		super.beforeExecute(t, r);
 		

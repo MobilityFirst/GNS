@@ -45,15 +45,6 @@ public class ActiveCodeGuardian implements Runnable {
 				}		
 			}
 			
-			long eclapsed = System.currentTimeMillis() - now;
-			if (eclapsed < 200){
-				try{
-					Thread.sleep(200-eclapsed);
-				} catch(InterruptedException e){
-					e.printStackTrace();
-				}
-			}
-			
 		}
 		} catch(Exception | Error e) {
 			e.printStackTrace();
