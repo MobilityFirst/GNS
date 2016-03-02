@@ -232,6 +232,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return the primary name server
    * @throws FieldNotFoundException
    */
+  @SuppressWarnings("unchecked")
   public Set<String> getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
       return (Set<String>) hashMap.get(PRIMARY_NAMESERVERS);

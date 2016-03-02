@@ -20,14 +20,10 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
-import java.util.HashSet;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -111,8 +107,8 @@ public class GroupAddTest {
       fail("Exception while adding Westy: " + e);
     }
   }
-  
-   @Test
+
+  @Test
   public void test_212_GroupAddSam() {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
@@ -120,7 +116,8 @@ public class GroupAddTest {
       fail("Exception while adding Sam: " + e);
     }
   }
-   @Test
+
+  @Test
   public void test_213_GroupAddGuidToDelete() {
     try {
       client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);

@@ -792,6 +792,17 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   public String toString() {
     return "DB " + dbName;
   }
+  
+   /**
+   * *
+   * Close mongo client before shutting down name server.
+   * As per mongo doc:
+   * "to dispose of an instance, make sure you call MongoClient.close() to clean up resources."
+   */
+  public void close() {
+    mongoClient.close();
+  }
+
 
   //THIS ISN'T JUST TEST CODE - DO NOT REMOVE
   // the -clear option is currently used by the EC2 installer so keep it working
@@ -806,11 +817,11 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
-    } else if (args.length == 3) {
-      //testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);
-      queryTest(args[0], args[1], args[2], null);
-    } else if (args.length == 4) {
-      queryTest(args[0], args[1], args[2], args[3]);
+//    } else if (args.length == 3) {
+//      //testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);
+//      queryTest(args[0], args[1], args[2], null);
+//    } else if (args.length == 4) {
+//      queryTest(args[0], args[1], args[2], args[3]);
     } else {
     }
     // important to include this!!
@@ -875,67 +886,58 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 //      System.out.println("Lookup failed: " + e);
 //    }
 //  }
-  @SuppressWarnings("unchecked") /// because it's static
-  private static void queryTest(Object nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
-    Set nameServerIDs = new HashSet();
-    nameServerIDs.add("0");
-    nameServerIDs.add("1");
-    nameServerIDs.add("2");
-    //ConsistentHashing.reInitialize(3, nameServerIDs);
-    MongoRecords instance = new MongoRecords(nodeID, -1);
-    System.out.println("***ALL RECORDS***");
-    instance.printAllEntries(DBNAMERECORD);
+//  @SuppressWarnings("unchecked") /// because it's static
+//  private static void queryTest(Object nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
+//    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
+//    Set nameServerIDs = new HashSet();
+//    nameServerIDs.add("0");
+//    nameServerIDs.add("1");
+//    nameServerIDs.add("2");
+//    //ConsistentHashing.reInitialize(3, nameServerIDs);
+//    MongoRecords instance = new MongoRecords(nodeID, -1);
+//    System.out.println("***ALL RECORDS***");
+//    instance.printAllEntries(DBNAMERECORD);
+//
+//    Object search;
+//    try {
+//      search = Double.parseDouble(searchArg);
+//    } catch (NumberFormatException e) {
+//      search = searchArg;
+//    }
+//
+//    Object other = null;
+//    if (otherArg != null) {
+//      try {
+//        other = Double.parseDouble(otherArg);
+//      } catch (NumberFormatException e) {
+//        other = otherArg;
+//      }
+//    }
+//
+//    System.out.println("***LOCATION QUERY***");
+//    MongoRecordCursor cursor;
+//    if (search instanceof Double) {
+//      cursor = instance.selectRecords(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
+//    } else if (other != null) {
+//      cursor = instance.selectRecordsNear(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, (Double) other, true);
+//    } else {
+//      cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, true);
+//    }
+//    while (cursor.hasNext()) {
+//      try {
+//        JSONObject json = cursor.nextJSONObject();
+//        System.out.println(json.getString(NameRecord.NAME.getName()) + " -> " + json.toString());
+//      } catch (Exception e) {
+//        System.out.println("Exception: " + e);
+//        e.printStackTrace();
+//      }
+//    }
+//    System.out.println("***ALL RECORDS ACTIVE FIELD***");
+//    cursor = instance.getAllRowsIterator(DBNAMERECORD, NameRecord.NAME, new ArrayList<ColumnField>(Arrays.asList(NameRecord.PRIMARY_NAMESERVERS)));
+//    while (cursor.hasNext()) {
+//      System.out.println(cursor.nextJSONObject().toString());
+//    }
+//  }
 
-    Object search;
-    try {
-      search = Double.parseDouble(searchArg);
-    } catch (NumberFormatException e) {
-      search = searchArg;
-    }
-
-    Object other = null;
-    if (otherArg != null) {
-      try {
-        other = Double.parseDouble(otherArg);
-      } catch (NumberFormatException e) {
-        other = otherArg;
-      }
-    }
-
-    System.out.println("***LOCATION QUERY***");
-    MongoRecordCursor cursor;
-    if (search instanceof Double) {
-      cursor = instance.selectRecords(DBNAMERECORD, NameRecord.VALUES_MAP, key, search, true);
-    } else if (other != null) {
-      cursor = instance.selectRecordsNear(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, (Double) other, true);
-    } else {
-      cursor = instance.selectRecordsWithin(DBNAMERECORD, NameRecord.VALUES_MAP, key, (String) search, true);
-    }
-    while (cursor.hasNext()) {
-      try {
-        JSONObject json = cursor.nextJSONObject();
-        System.out.println(json.getString(NameRecord.NAME.getName()) + " -> " + json.toString());
-      } catch (Exception e) {
-        System.out.println("Exception: " + e);
-        e.printStackTrace();
-      }
-    }
-    System.out.println("***ALL RECORDS ACTIVE FIELD***");
-    cursor = instance.getAllRowsIterator(DBNAMERECORD, NameRecord.NAME, new ArrayList<ColumnField>(Arrays.asList(NameRecord.PRIMARY_NAMESERVERS)));
-    while (cursor.hasNext()) {
-      System.out.println(cursor.nextJSONObject().toString());
-    }
-  }
-
-  /**
-   * *
-   * Close mongo client before shutting down name server.
-   * As per mongo doc:
-   * "to dispose of an instance, make sure you call MongoClient.close() to clean up resources."
-   */
-  public void close() {
-    mongoClient.close();
-  }
-
+ 
 }

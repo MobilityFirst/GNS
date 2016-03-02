@@ -230,7 +230,7 @@
   
   <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
-    <!-- Allows use to pass in some standard args from command line using -Dhost=127.0.0.1/>-->
+    <!-- Allows use to pass in some standard args from command line using things like -Dhost=127.0.0.1/>-->
     <property name="host" value=""/>
     <property name="port" value=""/>
     <property name="alias" value=""/>
@@ -268,6 +268,7 @@
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=true"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>

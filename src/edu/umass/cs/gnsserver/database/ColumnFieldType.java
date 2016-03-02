@@ -42,10 +42,10 @@ import java.util.HashMap;
  */
 public enum ColumnFieldType {
 
-  /**
-   * Column type that is a Boolean.
-   */
-  BOOLEAN,
+//  /**
+//   * Column type that is a Boolean.
+//   */
+//  BOOLEAN,
 
   /**
    * Column type that is a Integer.
@@ -57,25 +57,25 @@ public enum ColumnFieldType {
    */
   STRING,
 
-  /**
-   * Column type that is a set of Integers.
-   */
-  SET_INTEGER,
+//  /**
+//   * Column type that is a set of Integers.
+//   */
+//  SET_INTEGER,
 
-  /**
-   * Column type that is a set of Strings.
-   */
-  SET_STRING,
+//  /**
+//   * Column type that is a set of Strings.
+//   */
+//  SET_STRING,
 
   /**
    * Column type that is a NodeID.
    */
   SET_NODE_ID_STRING,
 
-  /**
-   * Column type that is a list of Integer.
-   */
-  LIST_INTEGER,
+//  /**
+//   * Column type that is a list of Integer.
+//   */
+//  LIST_INTEGER,
 
   /**
    * Column type that is a list of Strings.
@@ -86,16 +86,6 @@ public enum ColumnFieldType {
    * Column type that a map of user values.
    */
   VALUES_MAP,
-
-//  /**
-//   * Votes column type
-//   */
-//  VOTES_MAP,
-//
-//  /**
-//   * Stats storage 
-//   */
-//  STATS_MAP,
 
   /**
    * Column type which is a JSON Object.
@@ -121,31 +111,31 @@ public enum ColumnFieldType {
         } else {
           String value = fieldValue.toString();
           switch (field.type()) {
-            case BOOLEAN:
-              hashMap.put(field, Boolean.parseBoolean(value));
-              break;
+//            case BOOLEAN:
+//              hashMap.put(field, Boolean.parseBoolean(value));
+//              break;
             case INTEGER:
               hashMap.put(field, Integer.parseInt(value));
               break;
             case STRING:
               hashMap.put(field, value);
               break;
-            case SET_INTEGER:
-              try {
-                hashMap.put(field, JSONUtils.JSONArrayToSetInteger(new JSONArray(value)));
-              } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for SET_INTEGER: " + e);
-                e.printStackTrace();
-              }
-              break;
-            case SET_STRING:
-              try {
-                hashMap.put(field, JSONUtils.JSONArrayToSetString(new JSONArray(value)));
-              } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
-                e.printStackTrace();
-              }
-              break;
+//            case SET_INTEGER:
+//              try {
+//                hashMap.put(field, JSONUtils.JSONArrayToSetInteger(new JSONArray(value)));
+//              } catch (JSONException e) {
+//                GNS.getLogger().severe("Problem populating hash map for SET_INTEGER: " + e);
+//                e.printStackTrace();
+//              }
+//              break;
+//            case SET_STRING:
+//              try {
+//                hashMap.put(field, JSONUtils.JSONArrayToSetString(new JSONArray(value)));
+//              } catch (JSONException e) {
+//                GNS.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
+//                e.printStackTrace();
+//              }
+//              break;
             case SET_NODE_ID_STRING:
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToSetNodeIdString(new JSONArray(value)));
@@ -154,14 +144,14 @@ public enum ColumnFieldType {
                 e.printStackTrace();
               }
               break;
-            case LIST_INTEGER:
-              try {
-                hashMap.put(field, JSONUtils.JSONArrayToArrayListInteger(new JSONArray(value)));
-              } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for LIST_INTEGER: " + e);
-                e.printStackTrace();
-              }
-              break;
+//            case LIST_INTEGER:
+//              try {
+//                hashMap.put(field, JSONUtils.JSONArrayToArrayListInteger(new JSONArray(value)));
+//              } catch (JSONException e) {
+//                GNS.getLogger().severe("Problem populating hash map for LIST_INTEGER: " + e);
+//                e.printStackTrace();
+//              }
+//              break;
             case LIST_STRING:
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToArrayListString(new JSONArray(value)));
@@ -178,22 +168,6 @@ public enum ColumnFieldType {
                 e.printStackTrace();
               }
               break;
-//            case VOTES_MAP:
-//              try {
-//                hashMap.put(field, JSONUtils.toIntegerMap(new JSONObject(value)));
-//              } catch (JSONException e) {
-//                GNS.getLogger().severe("Problem populating hash map for VOTES_MAP: " + e);
-//                e.printStackTrace();
-//              }
-//              break;
-//            case STATS_MAP:
-//              try {
-//                hashMap.put(field, JSONUtils.toStatsMap(new JSONObject(value)));
-//              } catch (JSONException e) {
-//                GNS.getLogger().severe("Problem populating hash map for STATS_MAP: " + e);
-//                e.printStackTrace();
-//              }
-//              break;
             default:
               GNS.getLogger().severe("Exception Error Unknown type " + field + "value = " + value);
               break;
