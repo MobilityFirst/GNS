@@ -156,6 +156,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     protocolExecutor.stop();
   }
 
+  private static boolean usePublicIP = false;
+
   /**
    * The main routine.
    *
@@ -174,8 +176,10 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     printOptions(options);
     LocalNameServerOptions.initializeFromOptions(options);
     try {
-      InetSocketAddress address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-              options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : DEFAULT_LNS_TCP_PORT);
+      InetSocketAddress address
+              = new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress().getHostAddress()
+                      : "127.0.0.1",
+                      options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : DEFAULT_LNS_TCP_PORT);
       LocalNameServer lns = new LocalNameServer(address, new LNSNodeConfig(options.get(NS_FILE)));
       //lns.testCache();
     } catch (IOException e) {

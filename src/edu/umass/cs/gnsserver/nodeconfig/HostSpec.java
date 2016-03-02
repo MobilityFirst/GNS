@@ -33,20 +33,24 @@ public class HostSpec {
   private final String externalIP;
   private final Integer startPort;
 
+  private boolean enablePublicIPConversion = false;
+
   /**
    * Returns a HostSpec instance.
-   * 
+   *
    * @param id
    * @param name
    * @param externalIP
    * @param startPort
    */
   public HostSpec(String id, String name, String externalIP, Integer startPort) {
-    if ("127.0.0.1".equals(name) || "localhost".equals(name)) {
-      try {
-        name = NetworkUtils.getLocalHostLANAddress().getHostAddress();
-      } catch (UnknownHostException e) {
-        // punt if we can't get it
+    if (enablePublicIPConversion) {
+      if ("127.0.0.1".equals(name) || "localhost".equals(name)) {
+        try {
+          name = NetworkUtils.getLocalHostLANAddress().getHostAddress();
+        } catch (UnknownHostException e) {
+          // punt if we can't get it
+        }
       }
     }
 
@@ -58,7 +62,7 @@ public class HostSpec {
 
   /**
    * Return the id.
-   * 
+   *
    * @return the id
    */
   public String getId() {
@@ -67,7 +71,7 @@ public class HostSpec {
 
   /**
    * Return the name.
-   * 
+   *
    * @return the name
    */
   public String getName() {
@@ -76,7 +80,7 @@ public class HostSpec {
 
   /**
    * Return the external ip.
-   * 
+   *
    * @return the external ip
    */
   public String getExternalIP() {
@@ -85,7 +89,7 @@ public class HostSpec {
 
   /**
    * Return the start port.
-   * 
+   *
    * @return the start port
    */
   public Integer getStartPort() {

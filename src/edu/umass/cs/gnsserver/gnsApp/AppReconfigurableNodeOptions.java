@@ -28,11 +28,7 @@ import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.nio.NIOTransport;
-import edu.umass.cs.nio.SSLDataProcessingWorker;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
-import edu.umass.cs.utils.Config;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -280,42 +276,42 @@ public class AppReconfigurableNodeOptions {
     // make sure this has been initialized
     GNS.getLogger();
 
-    if (!allValues.containsKey(DISABLE_SSL)) {
-      disableSSL = false;
-//      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
-//              100);
-      // old
-      ReconfigurationConfig.setClientPortOffset(100);
-
-//      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
-//              SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH);
-      // old
-      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
-
-//      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
-//              SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH);
-      // old
-      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
-
-      System.out.println("NS: SSL is enabled");
-    } else {
-      disableSSL = true;
-//      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
-//              0);
-      // old
-      ReconfigurationConfig.setClientPortOffset(0);
-
-//      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
-//              SSLDataProcessingWorker.SSL_MODES.CLEAR);
-      // old
-      ReconfigurationConfig.setClientSSLMode(CLEAR);
-
-//      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
-//              SSLDataProcessingWorker.SSL_MODES.CLEAR);
-      // old
-      ReconfigurationConfig.setServerSSLMode(CLEAR);
-      System.out.println("NS: SSL is disabled");
-    }
+//    if (!allValues.containsKey(DISABLE_SSL)) {
+//      disableSSL = false;
+////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
+////              100);
+//      // old
+//      ReconfigurationConfig.setClientPortOffset(100);
+//
+////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH);
+//      // old
+//      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
+//
+////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH);
+//      // old
+//      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
+//
+//      System.out.println("NS: SSL is enabled");
+//    } else {
+//      disableSSL = true;
+////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
+////              0);
+//      // old
+//      ReconfigurationConfig.setClientPortOffset(0);
+//
+////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
+//      // old
+//      ReconfigurationConfig.setClientSSLMode(CLEAR);
+//
+////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
+//      // old
+//      ReconfigurationConfig.setServerSSLMode(CLEAR);
+//      System.out.println("NS: SSL is disabled");
+//    }
 
     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
       System.out.println("******** Email Verification is OFF *********");
@@ -394,25 +390,25 @@ public class AppReconfigurableNodeOptions {
       standAloneApp = true;
     }
 
-    boolean demandProfileSet = false;
-    if (allValues.containsKey(DEMAND_PROFILE_CLASS)) {
-      String className = allValues.get(DEMAND_PROFILE_CLASS);
-      try {
-        Class klass = Class.forName(className);
-        ReconfigurationConfig.setDemandProfile(klass);
-        demandProfileSet = true;
-      } catch (ClassNotFoundException e) {
-        System.out.println("Demand profile class " + className + " not found");
-      }
-    }
-    if (!demandProfileSet) {
-      // FIXME: Make this the value of DEFAULT_DEMAND_PROFILE_TYPE?
-      ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
-    }
-    System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
-
-    ReconfigurationConfig.setReconfigureInPlace(false);
-    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
+//    boolean demandProfileSet = false;
+//    if (allValues.containsKey(DEMAND_PROFILE_CLASS)) {
+//      String className = allValues.get(DEMAND_PROFILE_CLASS);
+//      try {
+//        Class klass = Class.forName(className);
+//        ReconfigurationConfig.setDemandProfile(klass);
+//        demandProfileSet = true;
+//      } catch (ClassNotFoundException e) {
+//        System.out.println("Demand profile class " + className + " not found");
+//      }
+//    }
+//    if (!demandProfileSet) {
+//      // FIXME: Make this the value of DEFAULT_DEMAND_PROFILE_TYPE?
+//      ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
+//    }
+//    System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
+//
+//    ReconfigurationConfig.setReconfigureInPlace(false);
+//    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
 
     // CCP options
     if (allValues.containsKey(DNS_GNS_ONLY)) {

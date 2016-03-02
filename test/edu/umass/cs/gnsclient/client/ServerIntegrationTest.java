@@ -92,7 +92,10 @@ public class ServerIntegrationTest {
       address = new InetSocketAddress(System.getProperty("host"),
               Integer.parseInt(System.getProperty("port")));
     } else {
-      address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNSClient.LNS_PORT);
+      address = new InetSocketAddress(
+              "127.0.0.1",
+              //NetworkUtils.getLocalHostLANAddress().getHostAddress(),
+              GNSClient.LNS_PORT);
     }
     System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
     client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
@@ -1366,15 +1369,15 @@ public class ServerIntegrationTest {
   }
 
   private static int numberTocreate = 100;
- private static GuidEntry accountGuidForBatch = null;
+  private static GuidEntry accountGuidForBatch = null;
 
   @Test
   public void test_510_CreateBatchAccountGuid() {
     // can change the number to create on the command line
-     if (System.getProperty("count") != null
-              && !System.getProperty("count").isEmpty()) {
-        numberTocreate = Integer.parseInt(System.getProperty("count"));
-      }
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
     try {
       String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
       accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
