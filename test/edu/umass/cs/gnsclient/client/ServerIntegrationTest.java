@@ -75,7 +75,7 @@ public class ServerIntegrationTest {
   public static void setUpBeforeClass() throws Exception {
     // Run the server.
     if (System.getProperty("startServer") != null
-            && !System.getProperty("startServer").equals("true")) {
+            && System.getProperty("startServer").equals("true")) {
       ArrayList<String> output = RunServer.command("scripts/3nodeslocal/quiet_reset_and_restart.sh", ".");
       if (output != null) {
         for (String line : output) {
@@ -130,7 +130,7 @@ public class ServerIntegrationTest {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     if (System.getProperty("startServer") != null
-            && !System.getProperty("startServer").equals("true")) {
+            && System.getProperty("startServer").equals("true")) {
       ArrayList<String> output = RunServer.command("scripts/3nodeslocal/shutdown.sh", ".");
       if (output != null) {
         for (String line : output) {
