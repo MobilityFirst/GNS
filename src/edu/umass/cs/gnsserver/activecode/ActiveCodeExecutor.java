@@ -59,8 +59,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 		assert(task.setRunning(true) == false);
 		assert(previousClient == null);
 		if(ActiveCodeHandler.enableDebugging)
-    		System.out.println(this + " waiting on client to be ready");
-    	
+    		System.out.println(this + " waiting on client to be ready");    	
     	
 		//check the state of the client's worker
     	while(!client.isReady()){
@@ -83,7 +82,9 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
     		System.out.println( this + " client ready; before calling task");
     	
 		guard.register(task); 
-		System.out.println(this + " successfully registers taks "+task);
+		if(ActiveCodeHandler.enableDebugging)
+			System.out.println(this + " successfully registers task "+task);
+		
 		super.beforeExecute(t, r);
 		
 	}

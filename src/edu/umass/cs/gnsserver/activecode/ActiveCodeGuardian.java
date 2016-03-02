@@ -43,7 +43,10 @@ public class ActiveCodeGuardian implements Runnable {
 					}
 				}		
 			}
-			
+			long elapsed = System.currentTimeMillis() - now;
+			if(elapsed < 200){
+				Thread.sleep(200-elapsed);
+			}
 		}
 		} catch(Exception | Error e) {
 			e.printStackTrace();
