@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.concurrent.Callable;
 
-import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.main.GNS;
@@ -89,19 +88,6 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	Throwable thrown = null;
     	try {
 	    	long startTime = System.nanoTime();
-	    	//System.out.println("Start running the task with the thread "+Thread.currentThread());
-	    	if(ActiveCodeHandler.enableDebugging)
-	    		System.out.println(this + " waiting on client to be ready");
-	    	
-	    	/*
-	    	 * Invariant: client must be ready to proceed
-	    	 */
-	    	assert(client.isReady());
-	    	
-	    	if(ActiveCodeHandler.enableDebugging)
-	    		System.out.println( this + " client ready; before runActiveCode");
-	    	
-	    	DelayProfiler.updateDelayNano("activeCodeBeforeSending", startTime);
 	  	
 	    	if(acp != null) {
 	    		result = client.runActiveCode(acp);
@@ -116,8 +102,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     		if(ActiveCodeHandler.enableDebugging)
     			System.out.println(this + " re-throwing uncaught exception/error " + e);
     		e.printStackTrace();
-			throw e;
-			
+			throw e;			
     	}
    		finally {
     		// arun

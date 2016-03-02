@@ -58,7 +58,10 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 		ActiveCodeClient previousClient = task.getWrappedTask().setClient(client);
 		assert(task.setRunning(true) == false);
 		assert(previousClient == null);
-		
+		if(ActiveCodeHandler.enableDebugging)
+    		System.out.println(this + " waiting on client to be ready");
+    	
+    	
 		//check the state of the client's worker
     	while(!client.isReady()){
     		// wait until it's ready
@@ -70,9 +73,17 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 					e.printStackTrace();
 				}
     		}
-    	}    	
+    	}
+    	/*
+    	 * Invariant: client must be ready to proceed
+    	 */
+    	assert(client.isReady());
     	
-		guard.register(task); 	
+    	if(ActiveCodeHandler.enableDebugging)
+    		System.out.println( this + " client ready; before calling task");
+    	
+		guard.register(task); 
+		System.out.println(this + " successfully registers taks "+task);
 		super.beforeExecute(t, r);
 		
 	}

@@ -254,6 +254,7 @@ public class ActiveCodeClient {
 		process.destroyForcibly();
 		clientSocket.close();
 		assert (clientSocket.isClosed());
+		//assert (isRunning() == false);
 
 		try {
 			clientSocket = new DatagramSocket();
