@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.activecode;
 
 import java.util.concurrent.Callable;
 
-
+import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -92,7 +92,10 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    	long startTime = System.nanoTime();
 	  	
 	    	if(acp != null) {
-	    		result = client.runActiveCode(acp);
+	    		ActiveCodeMessage acm = new ActiveCodeMessage();
+	    		acm.setAcp(acp);
+	    		
+	    		result = client.submitRequest(acm);
 	    	}
 	    	if(ActiveCodeHandler.enableDebugging)
 	    		System.out.println(this + " after runActiveCode");
@@ -107,8 +110,6 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 			throw e;			
     	}
    		finally {
-    		// arun
-    		//assert(System.currentTimeMillis() - this.startTime < 2000);
     		if(thrown != null) GNS.getLogger().severe(thrown.toString());
     		if(ActiveCodeHandler.enableDebugging){
     			decrNumActiveCount();

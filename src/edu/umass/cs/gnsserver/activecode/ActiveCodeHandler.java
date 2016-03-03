@@ -149,24 +149,22 @@ public class ActiveCodeHandler {
 			scheduler.submit(futureTask, guid);
 
 			result = futureTask.get();
+			
 		} catch (ExecutionException ee) {
-			//thrown = ee;
-			try {
+			thrown = ee;
+			
 			scheduler.finish(guid);
-			} catch (Exception | Error e) {
-				e.printStackTrace();
-			}
+			
 			return valuesMap;
 		} catch(CancellationException ce) {
-			//thrown = ce;
-			try {
-				scheduler.finish(guid);
-			} catch (Exception | Error e) {
-				e.printStackTrace();
-			}
+			thrown = ce;
+			
+			scheduler.finish(guid);
+			
 			return valuesMap;
 		} catch(InterruptedException ie) {
-			//thrown = ie;
+			thrown = ie;
+			
 			if(ActiveCodeHandler.enableDebugging)
 				System.out.println(ActiveCodeHandler.class.getSimpleName()
 					+ " got interrupt for task " + futureTask + " thread "
@@ -183,16 +181,10 @@ public class ActiveCodeHandler {
 			if(ActiveCodeHandler.enableDebugging)
 				System.out.println(ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
 					+ executorPool.getActiveCount() + "; actualActiveCount = " + ActiveCodeTask.getActiveCount());
-			try {
+			
 			scheduler.finish(guid);
-			} catch (Exception | Error e) {
-				//thrown = e;
-				e.printStackTrace();
-			}
+			
 			return valuesMap;
-		} catch (Exception | Error e){
-			thrown = e;
-			e.printStackTrace();
 		} finally {
 			if(ActiveCodeHandler.enableDebugging)
 				System.out.println(ActiveCodeHandler.class.getSimpleName()
@@ -205,7 +197,7 @@ public class ActiveCodeHandler {
 		}
 
 		// if thrown != null, we never come here
-		assert(thrown==null);
+		// assert(thrown==null);
 		
 		if(ActiveCodeHandler.enableDebugging)
 			System.out.println(ActiveCodeHandler.class.getSimpleName()
@@ -227,8 +219,8 @@ public class ActiveCodeHandler {
 		if (result == null){
 			result = valuesMap;
 		}
-	    return result;
 		
+	    return result;
 	}
 	
 	protected ActiveCodeExecutor getExecutor(){

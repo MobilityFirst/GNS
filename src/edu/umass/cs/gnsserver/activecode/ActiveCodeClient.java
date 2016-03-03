@@ -82,22 +82,6 @@ public class ActiveCodeClient {
 	}
 
 	/**
-	 * 
-	 * @param acp
-	 *            the parameters to send to the worker
-	 * @return the ValuesMap object returned by the active code
-	 */
-	public ValuesMap runActiveCode(ActiveCodeParams acp) {
-		ActiveCodeMessage acm = new ActiveCodeMessage();
-		acm.setAcp(acp);
-		ValuesMap vm = null;
-
-		vm = submitRequest(acm);
-
-		return vm;
-	}
-
-	/**
 	 * Checks to see if the worker is still running.
 	 * 
 	 * @return true if the worker is still running
@@ -114,6 +98,7 @@ public class ActiveCodeClient {
 	public String toString() {
 		return "  " + this.getClass().getSimpleName() + myID + ":"+this.clientSocket.getLocalPort();
 	}
+	
 	/**
 	 * Submits the request to the worker via socket comm.
 	 * 

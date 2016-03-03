@@ -33,11 +33,11 @@ public class ActiveCodeGuardian implements Runnable {
 			long now = System.currentTimeMillis();
 			synchronized(tasks){
 				for(ActiveCodeFutureTask task:tasks.keySet()){
-					if (now - tasks.get(task) > 1000){
+					
+					if (now - tasks.get(task) > 1000){						
+						System.out.println(this + " takes "+ (now - tasks.get(task)) + "ms and about to cancel timed out task "+task);						
 						
-						System.out.println(this + " takes "+ (now - tasks.get(task)) + "ms and about to cancel timed out task "+task);
-						
-						cancelTask(task, true);
+						cancelTask(task, true);						
 						
 						System.out.println(this + " canceled timed out task "+task);
 					}
@@ -57,31 +57,28 @@ public class ActiveCodeGuardian implements Runnable {
 		
 		long start = System.currentTimeMillis();
 		synchronized(task){
-			if(task.isRunning()){
-				// shutdown the previous worker process x
-				ActiveCodeClient client = task.getWrappedTask().getClient();
-				
-				int oldPort = client.getPort();
-				client.forceShutdownServer();
-															
-				// get the spare worker and set the client port to the new worker
-				int newPort = clientPool.getSpareWorkerPort();
-				client.setReady(clientPool.getPortStatus(newPort));
-				clientPool.updatePortToClientMap(oldPort, newPort, client);
-				Process proc = clientPool.getSpareWorker(newPort);
-				client.setNewWorker(newPort, proc);
-				
-				// generate a spare worker in another thread
-				long t1 = System.nanoTime();
-				clientPool.generateNewWorker();
-				DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
-				
-			}
+			// shutdown the previous worker process x
+			ActiveCodeClient client = task.getWrappedTask().getClient();
+			
+			int oldPort = client.getPort();
+			client.forceShutdownServer();
+														
+			// get the spare worker and set the client port to the new worker
+			int newPort = clientPool.getSpareWorkerPort();
+			client.setReady(clientPool.getPortStatus(newPort));
+			clientPool.updatePortToClientMap(oldPort, newPort, client);
+			Process proc = clientPool.getSpareWorker(newPort);
+			client.setNewWorker(newPort, proc);
+			
+			// generate a spare worker in another thread
+			long t1 = System.nanoTime();
+			clientPool.generateNewWorker();
+			DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
 			
 			// cancel the task
 			task.cancel(true);	
 			if(remove)
-				deregister(task);
+				tasks.remove(task);
 		}
 		
 		DelayProfiler.updateDelay("ActiveCodeCancel", start);

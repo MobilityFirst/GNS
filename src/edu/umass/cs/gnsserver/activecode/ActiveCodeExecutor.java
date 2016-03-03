@@ -48,22 +48,24 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 		this.clientPool = clientPool;
 	}
 	
-	private static final long MAX_CLIENT_READY_WAIT_TIME = 500;
+	//private static final long MAX_CLIENT_READY_WAIT_TIME = 500;
 	
 	@Override
 	protected void beforeExecute(Thread t, Runnable r){
 		// register the runnable here
 		ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
 		ActiveCodeClient client = clientPool.getClient(t.getId());
+		assert(client != null);
+		
 		ActiveCodeClient previousClient = task.getWrappedTask().setClient(client);
-		assert(task.setRunning(true) == false);
+
 		assert(previousClient == null);
 		if(ActiveCodeHandler.enableDebugging)
     		System.out.println(this + " waiting on client to be ready");    	
     	
 		//check the state of the client's worker
     	while(!client.isReady()){
-    		// wait until it's ready
+    		// wait until it's ready, no limit on waiting time 
     		synchronized(client){
     			try {
 					client.wait();
@@ -103,13 +105,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
         try {
         	if(ActiveCodeHandler.enableDebugging)
         		System.out.print(this + " waiting to deregister " + task + "...");
-        	
-        	/*
-        	 * Invariant: if derigistrating a task results in a null, then the task 
-        	 * must have been cancelled or have been completed.
-        	 */
-        	//if(guard.deregister(task) == null)
-        		//assert( task.isCancelled() || task.isDone());  
+        	  
         	guard.deregister(task);
         	
         	if(ActiveCodeHandler.enableDebugging)
