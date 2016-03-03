@@ -33,8 +33,9 @@ public class ActiveCodeGuardian implements Runnable {
 			long now = System.currentTimeMillis();
 			synchronized(tasks){
 				for(ActiveCodeFutureTask task:tasks.keySet()){
-					
-					if (now - tasks.get(task) > 1000){						
+					//FIXME: null pointer exception 
+					Long start = tasks.get(task);
+					if ( start != null && now - start > 1000){						
 						System.out.println(this + " takes "+ (now - tasks.get(task)) + "ms and about to cancel timed out task "+task);						
 						
 						cancelTask(task, true);						
@@ -92,7 +93,7 @@ public class ActiveCodeGuardian implements Runnable {
 		tasks.put(task, System.currentTimeMillis());
 	}
 	
-	protected Long deregister(ActiveCodeFutureTask task){
+	protected synchronized Long deregister(ActiveCodeFutureTask task){
 		/*
 		 * FIXME: it could trigger a deadlock with calling cancelTask together
 		 */
