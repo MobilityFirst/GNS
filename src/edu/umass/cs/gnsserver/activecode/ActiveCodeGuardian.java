@@ -84,7 +84,7 @@ public class ActiveCodeGuardian implements Runnable {
 				deregister(task);
 		}
 		
-		DelayProfiler.updateDelay("ActiveCodeRestart", start);
+		DelayProfiler.updateDelay("ActiveCodeCancel", start);
 	}
 	
 	public String toString() {
@@ -92,18 +92,14 @@ public class ActiveCodeGuardian implements Runnable {
 	}
 	
 	protected void register(ActiveCodeFutureTask task){
-		synchronized(tasks){
-			tasks.put(task, System.currentTimeMillis());
-		}
+		tasks.put(task, System.currentTimeMillis());
 	}
 	
 	protected Long deregister(ActiveCodeFutureTask task){
 		/*
 		 * FIXME: it could trigger a deadlock with calling cancelTask together
 		 */
-		synchronized(tasks){
-			return tasks.remove(task);
-		}
+		return tasks.remove(task);
 	}
 	
 }

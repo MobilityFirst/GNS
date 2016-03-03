@@ -18,7 +18,7 @@ public class MessageStats {
 	/**
      * benign active code takes 5ms
      */
-    public static int INTERVAL = 2;
+    public static int INTERVAL = 5;
    
     /**
      * malicious active code takes 1000ms
