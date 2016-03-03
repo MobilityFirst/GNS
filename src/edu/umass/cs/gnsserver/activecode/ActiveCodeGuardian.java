@@ -36,7 +36,7 @@ public class ActiveCodeGuardian implements Runnable {
 					//FIXME: null pointer exception 
 					Long start = tasks.get(task);
 					if ( start != null && now - start > 1000){						
-						System.out.println(this + " takes "+ (now - tasks.get(task)) + "ms and about to cancel timed out task "+task);						
+						System.out.println(this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);						
 						
 						cancelTask(task, true);						
 						
@@ -61,7 +61,7 @@ public class ActiveCodeGuardian implements Runnable {
 			// shutdown the previous worker process x
 			ActiveCodeClient client = task.getWrappedTask().getClient();
 			
-			int oldPort = client.getPort();
+			int oldPort = client.getWorkerPort();
 			client.forceShutdownServer();
 														
 			// get the spare worker and set the client port to the new worker

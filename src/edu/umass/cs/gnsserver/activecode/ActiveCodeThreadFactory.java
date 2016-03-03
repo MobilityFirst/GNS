@@ -40,7 +40,7 @@ public class ActiveCodeThreadFactory implements ThreadFactory {
 	public Thread newThread(Runnable r) {
 		Thread t = new Thread(r);
 		ActiveCodeClient client = clientPool.addClient(t);
-		t.setName("ActiveCodeClient:" + client.getPort());
+		t.setName("ActiveCodeClient:" + client.getWorkerPort());
 	    return t;
 	} 
     

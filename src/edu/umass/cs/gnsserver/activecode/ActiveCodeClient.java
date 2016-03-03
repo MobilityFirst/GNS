@@ -77,7 +77,7 @@ public class ActiveCodeClient {
 		setNewWorker(port, proc);
 	}
 
-	protected int getPort() {
+	protected int getWorkerPort() {
 		return workerPort;
 	}
 
