@@ -25,6 +25,7 @@ import java.net.DatagramSocket;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is the worker to run active code
@@ -79,11 +80,11 @@ public class ActiveCodeWorker {
     	}
 		
         while (keepGoing) {        	
-        	keepGoing = handler.handleRequest(serverSocket);
-        	numReqs++;
+        	keepGoing = handler.handleRequest(serverSocket);        	
         	if(numReqs%1000 == 0){
-        		//System.out.println(DelayProfiler.getStats());
+        		System.out.println(DelayProfiler.getStats());
         	}
+        	numReqs++;
         }
         
         serverSocket.close();
