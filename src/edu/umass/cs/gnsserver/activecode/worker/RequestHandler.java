@@ -40,7 +40,7 @@ public class RequestHandler {
 	private ActiveCodeRunner runner;
 	private int clientPort = -1;
 	private byte[] buffer = new byte[8096*10];
-	
+	JSONParser parser = new JSONParser();
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
 	 * @param runner
@@ -88,12 +88,14 @@ public class RequestHandler {
 			    
 			    //System.out.println("The hop is "+params.getHopLimit()+". The guid is "+params.getGuid());
 			    querier.setParam(params.getHopLimit(), params.getGuid());
-			    JSONParser parser = new JSONParser();
+			    
 			    JSONObject vm = (JSONObject) parser.parse(params.getValuesMapString());
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
 			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
+			    
+			    System.out.println(">>>>>>>>>>>>>>>>It takes "+(System.nanoTime()-t1)+"ns to execute this normal code!");
 			    
 			    long t2 = System.nanoTime();
 			    
