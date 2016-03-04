@@ -64,7 +64,9 @@ public class RequestHandler {
 			ActiveCodeMessage acm = null;
 
 			acm = ActiveCodeUtils.receiveMessage(socket, buffer);
-			
+			if(ActiveCodeWorker.numReqs%1000 == 0){
+				System.out.println("Got the message "+acm);
+			}
 		    //FIXME: do not need to initialize new querier everytime
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);
 		    

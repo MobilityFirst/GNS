@@ -35,7 +35,7 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeWorker {
 	
-	private static int numReqs = 0;
+	protected static int numReqs = 0;
 	private DatagramSocket serverSocket;
 	private int clientPort = -1;
 	

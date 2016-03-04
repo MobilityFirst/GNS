@@ -100,7 +100,7 @@ public class ActiveCodeUtils {
 			DatagramPacket pkt = new DatagramPacket(data, data.length, addr, port);
 			if (!socket.isClosed()) {
 				socket.send(pkt);
-			}
+			} 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
