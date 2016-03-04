@@ -174,8 +174,8 @@ public class AppLookup {
     	long activeStartTime = System.nanoTime(); 
     	// set the initial active code limit as 100
         int hopLimit = 100;
-
-      // Grab the code because it is of a different type
+        
+        //Grab the code because it is of a different type
         //FIXME: Maybe change this to not use LIST_STRING?
         NameRecord codeRecord = null;
         
@@ -188,6 +188,8 @@ public class AppLookup {
           //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
         }
         DelayProfiler.updateDelayNano("activeReadRecord", activeStartTime);
+        
+        System.out.println("Get the record for "+guid+" "+field);
         
         long activeCheckTime = System.nanoTime();
         if (codeRecord != null && nameRecord != null && ActiveCodeHandler.hasCode(codeRecord, "read")) {

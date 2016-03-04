@@ -28,6 +28,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import edu.umass.cs.gnscommon.utils.Base64;
 
@@ -41,6 +42,7 @@ import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -59,6 +61,7 @@ public class ActiveCodeHandler {
 	private static ActiveCodeExecutor executorPool;
 	private static ActiveCodeGuardian guard;
 	private static ActiveCodeScheduler scheduler;
+	
 	
 	/**
 	 * enable debug output
@@ -143,7 +146,9 @@ public class ActiveCodeHandler {
 
 		Throwable thrown = null;
 		ValuesMap result = null;
-
+		
+		System.out.println("ActiveCodeHandler: prepare to submit the request to scheduler for guid "+guid);
+		
 		try {
 
 			scheduler.submit(futureTask, guid);
@@ -151,19 +156,19 @@ public class ActiveCodeHandler {
 			result = futureTask.get();
 			
 		} catch (ExecutionException ee) {
-			thrown = ee;
+			//thrown = ee;
 			
 			scheduler.finish(guid);
 			
 			return valuesMap;
 		} catch(CancellationException ce) {
-			thrown = ce;
+			//thrown = ce;
 			
 			scheduler.finish(guid);
 			
 			return valuesMap;
 		} catch(InterruptedException ie) {
-			thrown = ie;
+			//thrown = ie;
 			
 			if(ActiveCodeHandler.enableDebugging)
 				System.out.println(ActiveCodeHandler.class.getSimpleName()
@@ -197,7 +202,7 @@ public class ActiveCodeHandler {
 		}
 
 		// if thrown != null, we never come here
-		// assert(thrown==null);
+		assert(thrown==null);
 		
 		if(ActiveCodeHandler.enableDebugging)
 			System.out.println(ActiveCodeHandler.class.getSimpleName()
@@ -263,7 +268,6 @@ public class ActiveCodeHandler {
 			String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
 			
 			ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
-			Thread.sleep(2000);
 			completed++;
 			
 			System.out.println("Active count number is "+executor.getActiveCount()+
@@ -283,7 +287,8 @@ public class ActiveCodeHandler {
 			String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 					
 			result = ActiveCodeHandler.runCode(mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
-			Thread.sleep(2000); 
+			completed++;
+			result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			
 			assert(executor.getActiveCount() == 0);
@@ -297,8 +302,9 @@ public class ActiveCodeHandler {
 			String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
 					
 			result = ActiveCodeHandler.runCode(chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
-			Thread.sleep(2000); 
 			completed++;
+			completed++;
+			result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			
 			int count = 0;

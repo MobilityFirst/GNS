@@ -28,7 +28,8 @@ public class SingleClient implements Runnable{
 		} else{
 			this.numReq = MessageStats.DURATION*1000/MessageStats.INTERVAL;
 		}
-		System.out.println("Start Sending "+numReq+" requests...");
+		numReq = 10;
+		System.out.println("Start Sending "+numReq+" requests with entry "+entry);
 	}
 	
 	public void run(){
@@ -38,7 +39,8 @@ public class SingleClient implements Runnable{
 				client.fieldRead(entry, "nextGuid");
 				//System.out.println("query result is "+result);
 			}catch (Exception e){
-				e.printStackTrace();
+				//swallow it 
+				//e.printStackTrace();
 			}
 			long eclapsed = System.nanoTime() - start;			
 			

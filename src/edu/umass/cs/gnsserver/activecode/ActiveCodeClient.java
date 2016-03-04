@@ -118,7 +118,9 @@ public class ActiveCodeClient {
 		// Send the request
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, workerPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
-
+		if(ActiveCodeHandler.enableDebugging)
+			System.out.println(this + " send request to the worker through port "+workerPort);
+		
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
 		while (!codeFinished) {

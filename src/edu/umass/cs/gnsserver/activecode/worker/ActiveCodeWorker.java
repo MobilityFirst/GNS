@@ -25,7 +25,6 @@ import java.net.DatagramSocket;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is the worker to run active code
@@ -42,11 +41,15 @@ public class ActiveCodeWorker {
 	protected ActiveCodeWorker(int port, int callbackPort) {
 		try{
 			this.serverSocket = new DatagramSocket(port);
-			System.out.println("Starting ActiveCodeWorker at port number " + port);
+			System.out.println(this+" : Starting ActiveCodeWorker at port number " + port);
 			this.clientPort = callbackPort;
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	public String toString(){
+		return "ActiveCodeWorker"+serverSocket.getLocalPort();
 	}
 	
 	/**
@@ -59,10 +62,10 @@ public class ActiveCodeWorker {
     	RequestHandler handler = new RequestHandler(runner, this.clientPort);
     	boolean keepGoing = true;
 
-		// Notify the server that we are ready
-	
+		// Notify the server that I'm ready
+    	
 		ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
-		
+		System.out.println(this + ": notify the clientPool");
 		
 		if (clientPort == -1){
 			byte[] buffer = new byte[8096];
@@ -97,10 +100,8 @@ public class ActiveCodeWorker {
 		int port = 0, callbackPort = -1;
 		port = Integer.parseInt(args[0]);
 		
-		if(args.length >= 2) {	
-			callbackPort = Integer.parseInt(args[1]);
-			ActiveCodeWorker acs = new ActiveCodeWorker(port, callbackPort);
-			acs.run();
-		}		
+		ActiveCodeWorker acs = new ActiveCodeWorker(port, callbackPort);
+		acs.run();
+		
     }
 }

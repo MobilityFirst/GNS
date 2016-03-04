@@ -52,16 +52,16 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	return prev;
     }
     
+    /**
+	 * client could be null, be careful when use this method
+	 */
     protected ActiveCodeClient getClient(){
-    	/*
-    	 * If call() is called, client can not be null
-    	 */
-    	assert(client != null);
+    	
     	return client;
     }
     
     public String toString() {
-    	return "    " +  this.getClass().getSimpleName() + this.client.myID + ":"+this.acp.toString();
+    	return "    " +  this.getClass().getSimpleName() + (this.client!=null?this.client.myID:-1) + ":"+this.acp.toString();
     }
     
 	private static int activeCount = 0;

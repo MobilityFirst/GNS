@@ -53,6 +53,7 @@ public class RequestHandler {
 	}
 	
 	protected void setPort(int port){
+		System.out.println("Set response port number to "+port);
 		clientPort = port;
 	}
 	
@@ -64,7 +65,6 @@ public class RequestHandler {
 			ActiveCodeMessage acm = null;
 
 			acm = ActiveCodeUtils.receiveMessage(socket, buffer);
-			
 			
 		    //FIXME: do not need to initialize new querier everytime
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);

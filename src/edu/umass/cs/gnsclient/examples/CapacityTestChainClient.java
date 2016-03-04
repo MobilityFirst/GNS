@@ -57,7 +57,7 @@ public class CapacityTestChainClient {
 			for (int index=0; index<NUM_CLIENT; index++){
 				if (index < BENIGN){
 					//create benign users
-					String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
+					String account = "test"+(node*1000+index*10)+ACCOUNT_ALIAS;
 					GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);				
 					clients[index] = new SingleClient(client, accountGuid, false);
 				} else {

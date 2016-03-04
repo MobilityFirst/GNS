@@ -9,7 +9,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to do a fair queue across all the GUIDs
@@ -46,14 +45,16 @@ public class ActiveCodeScheduler implements Runnable{
 			
 			
 			FutureTask<ValuesMap> futureTask = getNextTask();
+			System.out.println("	ActiveCodeScheduler: Fetch a task "+" to run.");
 			
-			if (futureTask != null){
+			if (futureTask != null){				
 				executorPool.execute(futureTask);
 				//for instrument only
+				/*
 				synchronized(timeMap){
 					DelayProfiler.updateDelayNano("activeQueued", timeMap.get(futureTask));
 				}
-				
+				*/
 			}
 		}
 	}
@@ -87,20 +88,17 @@ public class ActiveCodeScheduler implements Runnable{
 			if (guid == null){
 				return null;
 			}
-			/*
-			if(runningGuid.containsKey(guid) && runningGuid.get(guid)>0){
-				return null;
-			}
-			*/
-			if (runningGuid.containsKey(guid)){
-				runningGuid.put(guid, runningGuid.get(guid)+1);
-			} else{
-				runningGuid.put(guid, 1);
-			}
 			
 			if (!fairQueue.containsKey(guid)){
 				return null;
 			}
+			
+			if(runningGuid.contains(guid) && runningGuid.get(guid)>0){
+				return null;
+			}
+			
+			runningGuid.put(guid, 1);
+			
 			ArrayList<ActiveCodeFutureTask> taskList = fairQueue.get(guid);
 			futureTask = taskList.remove(0);
 			if(taskList.isEmpty()){
@@ -139,11 +137,12 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void submit(ActiveCodeFutureTask futureTask, String guid){
-		
+		/*
 		synchronized(timeMap){
 			timeMap.put(futureTask, System.nanoTime());
 		}
-		
+		*/
+		System.out.println("ActiveCodeScheduler: submit task to execute.");
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);				
@@ -163,8 +162,8 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void finish(String guid){
-		assert(runningGuid.get(guid) != null);
-		runningGuid.put(guid, runningGuid.get(guid)-1);
+		runningGuid.remove(guid);
+		System.out.println("ActiveCodeScheduler: finish the task for guid "+guid);
 		release();
 	}
 	
