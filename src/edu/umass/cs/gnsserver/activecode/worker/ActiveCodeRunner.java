@@ -44,7 +44,7 @@ public class ActiveCodeRunner {
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
   //private static ExecutorService executor = Executors.newSingleThreadExecutor();
-  
+  ScriptContext sc = new SimpleScriptContext();
  
   /**
    * Initialize an ActiveCodeRunner with nashorn script engine
@@ -154,18 +154,17 @@ public class ActiveCodeRunner {
 	long startTime = System.nanoTime();
     try {    	
       // Create a guid + action pair
-      String codeId = guid + "_" + action;
+      //String codeId = guid + "_" + action;
       // Update the script context if needed
-      updateCache(codeId, code);
-      
+      //updateCache(codeId, code);
+     
+    System.out.println(code);
+      engine.eval(code);
       // Set the context
-      ScriptContext sc = contexts.get(codeId);
+      // ScriptContext sc = contexts.get(codeId);
       //engine.eval(code, sc);      
-      engine.setContext(sc);
-      
-      //FutureTask<JSONObject> task = new FutureTask<JSONObject>(new ActiveCodeWorkerTask(invocable, value, field, querier));
-      //executor.execute(task);
-      //ret = task.get(200, TimeUnit.MILLISECONDS);
+      //engine.setContext(sc);
+
       ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
       
     } catch(ScriptException e){
