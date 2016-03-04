@@ -35,7 +35,7 @@ public class ActiveCodeGuardian implements Runnable {
 				for(ActiveCodeFutureTask task:tasks.keySet()){
 					//FIXME: null pointer exception 
 					Long start = tasks.get(task);
-					if ( start != null && now - start > 1000){						
+					if ( start != null && now - start > 2000){						
 						System.out.println(this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);						
 						
 						cancelTask(task, true);						
