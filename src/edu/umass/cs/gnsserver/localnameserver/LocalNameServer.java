@@ -70,6 +70,17 @@ import org.json.JSONObject;
 /**
  *
  * @author westy, arun
+ * 
+ *         Arun: This class uses knowledge of the set of all active replicas for
+ *         doing pings for nearest server selection. This is a poor design. The
+ *         LNS should not and need not know of all active replicas. It can learn
+ *         passively by observing response times to requests sent to different
+ *         active replicas.
+ * 
+ *         The LNS should be a module that is re-usable at an end-client. It
+ *         just needs to be an extremely lightweight data structure with an NIO
+ *         transport object that learns latencies (or outages) to recently 
+ *         contacted active replicas over time.
  */
 public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
