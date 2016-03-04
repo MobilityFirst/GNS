@@ -45,7 +45,6 @@ public class ActiveCodeScheduler implements Runnable{
 			
 			
 			FutureTask<ValuesMap> futureTask = getNextTask();
-			System.out.println("	ActiveCodeScheduler: Fetch a task "+" to run.");
 			
 			if (futureTask != null){				
 				executorPool.execute(futureTask);
@@ -142,7 +141,7 @@ public class ActiveCodeScheduler implements Runnable{
 			timeMap.put(futureTask, System.nanoTime());
 		}
 		*/
-		System.out.println("ActiveCodeScheduler: submit task to execute.");
+		//System.out.println("ActiveCodeScheduler: submit task to execute.");
 		synchronized(queueLock){
 			if(fairQueue.containsKey(guid)){
 				fairQueue.get(guid).add(futureTask);				
@@ -163,7 +162,7 @@ public class ActiveCodeScheduler implements Runnable{
 	
 	protected void finish(String guid){
 		runningGuid.remove(guid);
-		System.out.println("ActiveCodeScheduler: finish the task for guid "+guid);
+		//System.out.println("ActiveCodeScheduler: finish the task for guid "+guid);
 		release();
 	}
 	

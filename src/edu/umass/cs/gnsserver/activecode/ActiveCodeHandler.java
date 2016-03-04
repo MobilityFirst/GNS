@@ -147,7 +147,8 @@ public class ActiveCodeHandler {
 		Throwable thrown = null;
 		ValuesMap result = null;
 		
-		System.out.println("ActiveCodeHandler: prepare to submit the request to scheduler for guid "+guid);
+		if(ActiveCodeHandler.enableDebugging)
+			System.out.println("ActiveCodeHandler: prepare to submit the request to scheduler for guid "+guid);
 		
 		try {
 

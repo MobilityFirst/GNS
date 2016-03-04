@@ -189,7 +189,7 @@ public class AppLookup {
         }
         DelayProfiler.updateDelayNano("activeReadRecord", activeStartTime);
         
-        System.out.println("Get the record for "+guid+" "+field);
+        //System.out.println("Get the record for "+guid+" "+field);
         
         long activeCheckTime = System.nanoTime();
         if (codeRecord != null && nameRecord != null && ActiveCodeHandler.hasCode(codeRecord, "read")) {
