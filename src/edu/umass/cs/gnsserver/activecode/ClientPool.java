@@ -302,7 +302,7 @@ public class ClientPool implements Runnable{
 		int workerPort = getOpenUDPPort();	
 		portStatus.put(workerPort, false);
 		
-		Process process = startNewWorker(workerPort, 64);
+		Process process = startNewWorker(workerPort, 16);
 		
 		spareWorkers.put(workerPort, process);
 		synchronized(spareWorkers){
