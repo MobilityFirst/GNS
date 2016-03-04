@@ -93,7 +93,7 @@ public class ActiveCodeGuardian implements Runnable {
 		tasks.put(task, System.currentTimeMillis());
 	}
 	
-	protected synchronized Long deregister(ActiveCodeFutureTask task){
+	protected Long deregister(ActiveCodeFutureTask task){
 		/*
 		 * FIXME: it could trigger a deadlock with calling cancelTask together
 		 */

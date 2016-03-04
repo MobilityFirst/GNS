@@ -158,7 +158,6 @@ public class ActiveCodeRunner {
       // Update the script context if needed
       //updateCache(codeId, code);
      
-    System.out.println(code);
       engine.eval(code);
       // Set the context
       // ScriptContext sc = contexts.get(codeId);
