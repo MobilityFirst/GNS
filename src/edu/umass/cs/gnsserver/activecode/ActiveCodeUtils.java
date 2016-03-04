@@ -125,7 +125,7 @@ public class ActiveCodeUtils {
 			ObjectInputStream is = new ObjectInputStream(in);
 			acm = (ActiveCodeMessage) is.readObject();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} finally {

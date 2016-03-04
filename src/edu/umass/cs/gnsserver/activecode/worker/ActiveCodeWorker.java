@@ -65,7 +65,6 @@ public class ActiveCodeWorker {
 		// Notify the server that I'm ready
     	
 		ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
-		System.out.println(this + ": notify the clientPool");
 		
 		if (clientPort == -1){
 			byte[] buffer = new byte[8096];

@@ -53,7 +53,6 @@ public class RequestHandler {
 	}
 	
 	protected void setPort(int port){
-		System.out.println("Set response port number to "+port);
 		clientPort = port;
 	}
 	
