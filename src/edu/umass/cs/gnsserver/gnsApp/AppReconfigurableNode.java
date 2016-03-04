@@ -168,7 +168,6 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
         System.out.println("********* All nodes have been shutdown. *********");
       }
     });
-
     Map<String, String> options = initOptions(args);
 
     if (options.containsKey(STANDALONE) && options.get(NS_FILE) != null) {

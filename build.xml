@@ -263,12 +263,15 @@
   
   <target name="test" description="Runs the default integration test" 
           depends="jar, compiletest">
-    <junit printsummary="yes" fork="yes" haltonfailure="yes">
+    <junit printsummary="yes" fork="yes" haltonfailure="on"
+showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
+      <jvmarg
+value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>

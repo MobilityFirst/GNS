@@ -84,7 +84,8 @@ import java.util.concurrent.ExecutionException;
  *
  * For a more complete set of commands see also {@link UniversalTcpClient} and {@link UniversalTcpClientExtended}.
  *
- * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
+ * @author <a href="mailto:westy@cs.umass.edu">Westy</a>, arun
+ * 
  */
 public class BasicUniversalTcpClient implements GNSClientInterface {
 
@@ -156,9 +157,11 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     this.disableSSL = disableSSL;
     try {
       this.remoteAddress = new InetSocketAddress(remoteHost, remotePort);
-      SSLDataProcessingWorker.SSL_MODES sslMode = disableSSL ? CLEAR : SERVER_AUTH;
+      SSLDataProcessingWorker.SSL_MODES sslMode = ReconfigurationConfig.getClientSSLMode();
+    		  //disableSSL ? CLEAR : SERVER_AUTH;
       if (!disableSSL) {
-        ReconfigurationConfig.setClientPortOffset(100);
+    	  // arun: ssl parameters should only be set through gigapaxos properties
+        //ReconfigurationConfig.setClientPortOffset(100);
       }
       this.messenger = new JSONMessenger<>(
               (new JSONNIOTransport<>(null, new SampleNodeConfig<InetSocketAddress>(),
@@ -1771,12 +1774,15 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   private void sendCommandPacket(CommandPacket packet) throws IOException {
     long startTime = System.currentTimeMillis();
     try {
-      if (disableSSL) {
-        this.messenger.send(new GenericMessagingTask<>(remoteAddress, packet.toJSONObject()));
-      } else {
+      //if (disableSSL) {
+        //this.messenger.send(new GenericMessagingTask<>(remoteAddress, packet.toJSONObject()));
+      //} else 
+      {
         InetSocketAddress clientFacingAddress = new InetSocketAddress(remoteAddress.getAddress(),
                 ActiveReplica.getClientFacingPort(remoteAddress.getPort()));
         this.messenger.sendToAddress(clientFacingAddress, packet.toJSONObject());
+        System.out.println("Sent packet to " + clientFacingAddress.toString()
+                + " :" + packet.toString());
         if (debuggingEnabled) {
           GNSClient.getLogger().info("Sent packet to " + clientFacingAddress.toString()
                   + " :" + packet.toString());

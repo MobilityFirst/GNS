@@ -34,7 +34,7 @@ import java.util.logging.Level;
 /**
  * The command line options for LocalNameServer.
  *
- * @author westy
+ * @author westy, arun
  */
 public class LocalNameServerOptions {
 
@@ -136,7 +136,8 @@ public class LocalNameServerOptions {
 
     if (!allValues.containsKey(DISABLE_SSL)) {
       disableSSL = false;
-      ReconfigurationConfig.setClientPortOffset(100);
+      // arun
+     // ReconfigurationConfig.setClientPortOffset(100);
       System.out.println("LNS: SSL is enabled");
     } else {
       disableSSL = true;

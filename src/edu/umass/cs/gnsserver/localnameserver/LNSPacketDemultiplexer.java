@@ -27,10 +27,13 @@ import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.utils.Util;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -128,6 +131,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     if (!disableRequestActives) {
       actives = handler.getActivesIfValid(packet.getServiceName());
     } else {
+    	// arun
+    	Util.suicide("Should never get here");
       actives = handler.getReplicatedActives(packet.getServiceName());
     }
     if (actives != null) {

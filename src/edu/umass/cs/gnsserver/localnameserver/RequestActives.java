@@ -108,7 +108,9 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   private boolean amObviated() {
     if (handler.getActivesIfValid(lnsRequestInfo.getServiceName()) != null) {
       return true;
-    } else if (requestCount >= reconfigurators.size()) {
+    } else if (requestCount >= reconfigurators.size() ) {
+    	// arun
+    	log.warning("Bad hacky code");
       if (handler.isDebugMode()) {
         log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" 
                 + this.refreshKey() + " No answer, using defaults for " 

@@ -42,6 +42,9 @@ import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.JUnitCore;
+import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -76,7 +79,8 @@ public class ServerIntegrationTest {
     // Run the server.
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
-      ArrayList<String> output = RunServer.command("scripts/3nodeslocal/quiet_reset_and_restart.sh", ".");
+      ArrayList<String> output = RunServer.command("scripts/3nodeslocal/reset_and_restart.sh", ".");
+	  System.out.println("output="+output);
       if (output != null) {
         for (String line : output) {
           System.out.println(line);
@@ -113,6 +117,7 @@ public class ServerIntegrationTest {
     } while (!connected && --tries > 0);
     if (connected == false) {
       fail("Server startup failure: ; aborting all tests.");
+	  System.exit(1);
     }
     tries = 5;
     boolean accountCreated = false;
@@ -1579,4 +1584,13 @@ public class ServerIntegrationTest {
       fail("Exception during stop: " + e);
     }
   }
+
+  public static void main(String[] args) {
+	        Result result = JUnitCore.runClasses(ServerIntegrationTest.class);
+			        for (Failure failure : result.getFailures()) {
+					              System.out.println(failure.toString());
+								              failure.getException().printStackTrace();
+											          }
+  }
+
 }

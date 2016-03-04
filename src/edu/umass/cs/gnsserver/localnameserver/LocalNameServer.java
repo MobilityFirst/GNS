@@ -21,8 +21,10 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
 import static edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig.INVALID_PING_LATENCY;
 import static edu.umass.cs.gnsserver.localnameserver.LocalNameServerOptions.NS_FILE;
@@ -48,6 +50,8 @@ import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.utils.Util;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -65,7 +69,7 @@ import org.json.JSONObject;
 
 /**
  *
- * @author westy
+ * @author westy, arun
  */
 public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
@@ -113,17 +117,25 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    */
   public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
     SSLDataProcessingWorker.SSL_MODES sslMode;
+    // arun: ssl parameters should only be set through gigapaxos properties
+
     if (!LocalNameServerOptions.disableSSL) {
-      sslMode = SERVER_AUTH;
-      ReconfigurationConfig.setClientPortOffset(100);
+      //sslMode = SERVER_AUTH;
+      // ReconfigurationConfig.setClientPortOffset(100);
       // Set up a SERVER_AUTH address the client can use
-      nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), nodeAddress.getPort() + 100);
+      //nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), nodeAddress.getPort() + 100);
     } else {
-      sslMode = CLEAR;
-      ReconfigurationConfig.setClientPortOffset(0);
+      //sslMode = CLEAR;
+      //ReconfigurationConfig.setClientPortOffset(0);
     }
+    sslMode = ReconfigurationConfig.getClientSSLMode();
+    nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), ActiveReplica.getClientFacingPort(nodeAddress.getPort()));
+    
+   
     this.address = nodeAddress;
-    System.out.println("LNS: SSL Mode is " + sslMode.name());
+    System.out.println("LNS: SSL Mode is " + sslMode.name() + "; listening on " + address);
+    GNS.getLogger().warning("LNS: SSL Mode is " + sslMode.name() + "; listening on " + address);
+
     this.nodeConfig = nodeConfig;
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
     this.demultiplexer = new LNSPacketDemultiplexer(this);
@@ -168,19 +180,24 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(LocalNameServer.class.getCanonicalName(),
                     LocalNameServerOptions.getAllOptions(), args);
+
     if (options.containsKey(HELP)) {
       ParametersAndOptions.printUsage(LocalNameServer.class.getCanonicalName(),
               LocalNameServerOptions.getAllOptions());
       System.exit(0);
     }
+
     printOptions(options);
     LocalNameServerOptions.initializeFromOptions(options);
+
     try {
       InetSocketAddress address
               = new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress().getHostAddress()
                       : "127.0.0.1",
                       options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : DEFAULT_LNS_TCP_PORT);
+
       LocalNameServer lns = new LocalNameServer(address, new LNSNodeConfig(options.get(NS_FILE)));
+
       //lns.testCache();
     } catch (IOException e) {
       System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gnsserver.localnameserver <nodeConfigFile>");
@@ -288,6 +305,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    */
   @Override
   public Set<InetSocketAddress> getReplicatedActives(String name) {
+	  // arun
+	  GNS.getLogger().warning("Bad hacky code");
     // FIXME: this needs work
     if (!disableSSL) {
       Set<InetSocketAddress> result = new HashSet<>();
