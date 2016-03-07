@@ -64,12 +64,13 @@ public class ActiveCodeWorker {
     	
 		ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
 		
-        while (keepGoing) {        	
-        	keepGoing = handler.handleRequest(serverSocket);        	
+        while (keepGoing) {       	
+        	keepGoing = handler.handleRequest(serverSocket);  
+        	numReqs++;
         	if(numReqs%1000 == 0){
         		System.out.println(DelayProfiler.getStats());
         	}
-        	numReqs++;
+        	
         }
         
         serverSocket.close();
