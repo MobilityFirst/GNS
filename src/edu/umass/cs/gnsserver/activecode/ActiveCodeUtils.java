@@ -121,9 +121,7 @@ public class ActiveCodeUtils {
 		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
 		try {
 			socket.receive(pkt);
-			ByteArrayInputStream in = new ByteArrayInputStream(pkt.getData());
-			ObjectInputStream is = new ObjectInputStream(in);
-			acm = (ActiveCodeMessage) is.readObject();
+			acm = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
 		} catch (IOException e) {
 			//e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -133,5 +131,26 @@ public class ActiveCodeUtils {
 		}
 		DelayProfiler.updateDelayNano("activeReceive", t);
 		return acm;
+	}
+	
+	/**
+	 * @param socket
+	 * @param buffer
+	 * @return datagram packet received from the socket
+	 */
+	public static DatagramPacket receivePacket(DatagramSocket socket, byte[] buffer) {
+		Arrays.fill(buffer, (byte) 0);
+		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
+		
+		try {
+			socket.receive(pkt);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally{
+			
+		}
+		
+		return pkt;
 	}
 }

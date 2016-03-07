@@ -156,7 +156,6 @@ public class ClientPool implements Runnable{
 			}
 		}
 		
-		client.notifyWorkerOfClientPort(workerPort);
 		return client;
 	}
 	
@@ -276,7 +275,6 @@ public class ClientPool implements Runnable{
 	    command.add(classpath);
 	    command.add("edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker");
 	    command.add(Integer.toString(workerPort));
-	    command.add(Integer.toString(-1));
 	    
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));

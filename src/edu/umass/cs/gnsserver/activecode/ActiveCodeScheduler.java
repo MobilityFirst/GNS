@@ -7,6 +7,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -46,7 +47,10 @@ public class ActiveCodeScheduler implements Runnable{
 			
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			
-			if (futureTask != null){				
+			if (futureTask != null){
+				if (ActiveCodeHandler.enableDebugging)
+					ActiveCodeHandler.getLogger().log(Level.INFO, ActiveCodeScheduler.class.getSimpleName()+
+						" fetches a task "+futureTask+" to run.");
 				executorPool.execute(futureTask);
 				//for instrument only
 				/*
@@ -93,6 +97,8 @@ public class ActiveCodeScheduler implements Runnable{
 			}
 			
 			if(runningGuid.contains(guid) && runningGuid.get(guid)>0){
+				ActiveCodeHandler.getLogger().log(Level.INFO, ActiveCodeScheduler.class.getSimpleName()+
+						" refuses to fetch a task for guid "+guid+" because it already has a task running.");
 				return null;
 			}
 			
@@ -129,7 +135,7 @@ public class ActiveCodeScheduler implements Runnable{
 				removeGuid(guid);				
 			} 
 			if(!removed){
-				System.out.println("It does not contain the task "+task+", because the list is "+taskList);
+				ActiveCodeHandler.getLogger().log(Level.SEVERE, "It does not contain the task "+task+", because the list is "+taskList);
 			}
 		}
 		return removed;

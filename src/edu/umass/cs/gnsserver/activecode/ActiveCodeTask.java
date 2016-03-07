@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.activecode;
 
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
@@ -46,6 +47,11 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
         this.acp = acp; 
     }
     
+    //For instrument only
+    protected ActiveCodeParams getParams(){
+    	return acp;
+    }
+    
     protected ActiveCodeClient setClient(ActiveCodeClient client){
     	ActiveCodeClient prev = this.client;
     	this.client = client;
@@ -55,8 +61,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     /**
 	 * client could be null, be careful when use this method
 	 */
-    protected ActiveCodeClient getClient(){
-    	
+    protected ActiveCodeClient getClient(){    	
     	return client;
     }
     
@@ -83,7 +88,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	
     	if(ActiveCodeHandler.enableDebugging){
     		incrNumActiveCount();
-    		System.out.println(this + " STARTING");
+    		ActiveCodeHandler.getLogger().log(Level.INFO, this + " STARTING");
     	}
     	
     	ValuesMap result = null;
@@ -98,14 +103,14 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    		result = client.submitRequest(acm);
 	    	}
 	    	if(ActiveCodeHandler.enableDebugging)
-	    		System.out.println(this + " after runActiveCode");
+	    		ActiveCodeHandler.getLogger().log(Level.INFO, this + " after runActiveCode");
 	    	
 	    	DelayProfiler.updateDelayNano("activeCodeTask", startTime);
 	    	
     	} catch(Exception | Error e) {
     		thrown = e;
     		if(ActiveCodeHandler.enableDebugging)
-    			System.out.println(this + " re-throwing uncaught exception/error " + e);
+    			ActiveCodeHandler.getLogger().log(Level.SEVERE, this + " re-throwing uncaught exception/error " + e);
     		e.printStackTrace();
 			throw e;			
     	}
@@ -113,8 +118,8 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     		if(thrown != null) GNS.getLogger().severe(thrown.toString());
     		if(ActiveCodeHandler.enableDebugging){
     			decrNumActiveCount();
-    			System.out.println(this + " finally block just before returning result " + result );
-    			System.out.println(this + " ENDING");
+    			ActiveCodeHandler.getLogger().log(Level.INFO, this + " finally block just before returning result " + result );
+    			ActiveCodeHandler.getLogger().log(Level.INFO, this + " ENDING");
     		}
     	}
     	return result;    	

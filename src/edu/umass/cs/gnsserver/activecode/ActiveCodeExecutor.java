@@ -24,6 +24,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 
 /**
@@ -61,7 +62,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 
 		assert(previousClient == null);
 		if(ActiveCodeHandler.enableDebugging)
-    		System.out.println(this + " waiting on client to be ready");    	
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " waiting on client to be ready");    	
     	
 		//check the state of the client's worker
     	while(!client.isReady()){
@@ -81,11 +82,11 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
     	assert(client.isReady());
     	
     	if(ActiveCodeHandler.enableDebugging)
-    		System.out.println( this + " client ready; before calling task");
+    		ActiveCodeHandler.getLogger().log(Level.INFO, this + " client ready; before calling task");
     	
 		guard.register(task); 
 		if(ActiveCodeHandler.enableDebugging)
-			System.out.println(this + " successfully registers task "+task);
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " successfully registers task "+task);
 		
 		super.beforeExecute(t, r);
 		
@@ -101,15 +102,15 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
         // deregister the runnable (ActiveCodeFutureTask) here
         ActiveCodeFutureTask task = (ActiveCodeFutureTask) r;
         if(ActiveCodeHandler.enableDebugging)
-        	System.out.println(this + " received throwable " + t + " for task " + task);
+        	ActiveCodeHandler.getLogger().log(Level.INFO, this + " received throwable " + t + " for task " + task);
         try {
         	if(ActiveCodeHandler.enableDebugging)
-        		System.out.print(this + " waiting to deregister " + task + "...");
+        		ActiveCodeHandler.getLogger().log(Level.INFO, this + " waiting to deregister " + task + "...");
         	  
         	guard.deregister(task);
         	
         	if(ActiveCodeHandler.enableDebugging)
-        		System.out.println(" successfully deregistered " + task);
+        		ActiveCodeHandler.getLogger().log(Level.INFO, " successfully deregistered " + task);
         } catch(Exception | Error e) {
         	e.printStackTrace();
         } finally {

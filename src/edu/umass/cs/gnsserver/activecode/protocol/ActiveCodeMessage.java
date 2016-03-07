@@ -65,7 +65,11 @@ public class ActiveCodeMessage implements Serializable {
    * Returns a query response to the worker
    */
   public ActiveCodeQueryResponse acqresp;
-
+  
+  public String toString(){
+	  return "{valuesMapString:"+(valuesMapString==null?"[NULL]":valuesMapString)+",parameter:"+(acp==null?"[NULL]":acp)+"}";
+  }
+  
   /**
    * shutdown getter
    * @return true if has been shutdown
@@ -162,6 +166,9 @@ public class ActiveCodeMessage implements Serializable {
     this.acqresp = acqresp;
   }
   
+  /**
+   * @return true if error message is not null
+   */
   public boolean isCrashed(){
 	  boolean crashed = false;
 	  if (this.error != null){
@@ -170,6 +177,9 @@ public class ActiveCodeMessage implements Serializable {
 	  return crashed;
   }
   
+  /**
+   * @param errMsg
+   */
   public void setCrashed(String errMsg){
 	  error = errMsg;
   }

@@ -137,6 +137,7 @@ public class ActiveCodeRunner {
    return (ValuesMap)CoerceLuaToJava.coerce(resultValue, ValuesMap.class);
    }
    */
+  
   /**
    * Runs the specified active code
    *
@@ -194,7 +195,7 @@ public class ActiveCodeRunner {
    * @param args
    */
   public static void main(String[] args){
-	  // Test with a normal code
+	 
 	  
   }
 }

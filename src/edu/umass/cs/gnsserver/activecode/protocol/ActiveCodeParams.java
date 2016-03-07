@@ -82,7 +82,12 @@ public class ActiveCodeParams implements Serializable {
 		this.valuesMapString = null;
 		this.hopLimit = 0;
 	}
-
+	
+	@Override
+	public String toString(){
+		return "{guid:"+(guid==null?"[NULL]":guid)+",field:"+(field==null?"[NULL]":field)+"}";
+	}
+	
   /**
    * guid getter
    * @return guid
@@ -178,9 +183,5 @@ public class ActiveCodeParams implements Serializable {
   public void setHopLimit(int hopLimit) {
     this.hopLimit = hopLimit;
   }
-
-	public String toString() {
-		return this.guid + "." + this.field + ":" + this.action;
-	}
         
 }

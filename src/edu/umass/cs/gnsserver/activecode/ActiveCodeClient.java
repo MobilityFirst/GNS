@@ -23,12 +23,12 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
@@ -119,19 +119,19 @@ public class ActiveCodeClient {
 		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, workerPort);
 		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
 		if(ActiveCodeHandler.enableDebugging)
-			System.out.println(this + " send request to the worker through port "+workerPort);
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker through port "+workerPort);
 		
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
 		while (!codeFinished) {
 			ActiveCodeMessage acmResp = null;
 			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(this + " submitRequest waiting for socket message");
+				ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest waiting for socket message");
 			
 			acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
 			
 			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(this + " submitRequest received socket message: " + (acmResp != null ? "acmResp.valuesMapString = " + acmResp.valuesMapString : "[NULL]"));
+				ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest received socket message: " + (acmResp != null ? "acmResp.valuesMapString = " + acmResp.valuesMapString : "[NULL]"));
 			
 			/*
 			 * If socket timeout is set, then this would work, but result in
@@ -174,7 +174,7 @@ public class ActiveCodeClient {
 			}
 		}
 		if(ActiveCodeHandler.enableDebugging)
-			System.out.println(this + " submitRequest out of while(!codeFinished) loop");
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest out of while(!codeFinished) loop");
 
 		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
 
@@ -183,8 +183,7 @@ public class ActiveCodeClient {
 
 		// Try to convert back to a valuesMap
 		if (crashed) {
-			//System.out.println("################### " + acmReq.getAcp().getGuid() + " Crashed! #################### "
-			//		+ acmReq.getValuesMapString());
+		    ActiveCodeHandler.getLogger().log(Level.WARNING, "The task running by "+this+" has crashed.");
 			try {
 				// If there is an error, send the original value back
 				vm = new ValuesMap(new JSONObject(acmReq.getAcp().getValuesMapString()));
@@ -199,7 +198,8 @@ public class ActiveCodeClient {
 				e.printStackTrace();
 			}
 		} else {
-			System.out.println("ValuesMapString is " + acmReq.toString());
+			// this should not ever happen
+			ActiveCodeHandler.getLogger().log(Level.SEVERE, "ValuesMapString is " + acmReq.toString());
 		}
 		DelayProfiler.updateDelayNano("activeConvert", convertTime);
 		DelayProfiler.updateDelayNano("communication", startTime);
@@ -256,12 +256,6 @@ public class ActiveCodeClient {
 	protected void setNewWorker(int port, Process proc) {
 		this.process = proc;
 		this.workerPort = port;
-		
-		notifyWorkerOfClientPort(port);
 	}
-
-	protected void notifyWorkerOfClientPort(int port) {
-		// notify new worker about the client's new port number
-		ActiveCodeUtils.sendMessage(clientSocket, new ActiveCodeMessage(), port);
-	}
+	
 }

@@ -28,6 +28,7 @@ public class SingleClient implements Runnable{
 		} else{
 			this.numReq = MessageStats.DURATION*1000/MessageStats.INTERVAL;
 		}
+		
 		System.out.println("Start Sending "+numReq+" requests with entry "+entry);
 	}
 	
@@ -45,6 +46,7 @@ public class SingleClient implements Runnable{
 			
 			if (malicious){
 				MessageStats.mal_request.add(eclapsed);
+				System.out.println(entry.getGuid());
 			}else{
 				MessageStats.latency.add(eclapsed);
 			}

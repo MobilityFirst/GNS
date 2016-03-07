@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
@@ -37,13 +36,11 @@ public class ActiveCodeWorker {
 	
 	protected static int numReqs = 0;
 	private DatagramSocket serverSocket;
-	private int clientPort = -1;
 	
-	protected ActiveCodeWorker(int port, int callbackPort) {
+	protected ActiveCodeWorker(int port) {
 		try{
 			this.serverSocket = new DatagramSocket(port);
 			System.out.println(this+" : Starting ActiveCodeWorker at port number " + port);
-			this.clientPort = callbackPort;
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -60,24 +57,12 @@ public class ActiveCodeWorker {
 	public void run() throws IOException {	
         ActiveCodeRunner runner = new ActiveCodeRunner();
         
-    	RequestHandler handler = new RequestHandler(runner, this.clientPort);
+    	RequestHandler handler = new RequestHandler(runner);
     	boolean keepGoing = true;
 
 		// Notify the server that I'm ready
     	
 		ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
-		
-		if (clientPort == -1){
-			byte[] buffer = new byte[8096];
-    		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
-    		try{
-    			serverSocket.receive(pkt);
-    			clientPort = pkt.getPort();
-    			handler.setPort(clientPort);
-    		}catch(IOException e){
-    			e.printStackTrace();
-    		}
-    	}
 		
         while (keepGoing) {        	
         	keepGoing = handler.handleRequest(serverSocket);        	
@@ -97,10 +82,10 @@ public class ActiveCodeWorker {
 	 */
 	public static void main(String[] args) throws IOException  {
 		
-		int port = 0, callbackPort = -1;
+		int port = 0;
 		port = Integer.parseInt(args[0]);
 		
-		ActiveCodeWorker acs = new ActiveCodeWorker(port, callbackPort);
+		ActiveCodeWorker acs = new ActiveCodeWorker(port);
 		acs.run();
 		
     }

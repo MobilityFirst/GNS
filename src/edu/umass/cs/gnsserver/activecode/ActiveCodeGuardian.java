@@ -1,6 +1,7 @@
 package edu.umass.cs.gnsserver.activecode;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.utils.DelayProfiler;
@@ -14,7 +15,11 @@ import edu.umass.cs.utils.DelayProfiler;
 public class ActiveCodeGuardian implements Runnable {
 	private ClientPool clientPool;
 	private static ConcurrentHashMap<ActiveCodeFutureTask, Long> tasks = new ConcurrentHashMap<ActiveCodeFutureTask, Long>();
-			
+	// All these data structures are for instrument only
+	private static ConcurrentHashMap<String, Integer> stats = new ConcurrentHashMap<String, Integer>();
+	private long last = 0;
+	private boolean instrument = false;
+	
 	/**
 	 * @param clientPool
 	 */
@@ -24,7 +29,7 @@ public class ActiveCodeGuardian implements Runnable {
 	
 	public void run(){
 		try {
-		System.out.println(this.getClass().getName()+" runs in thread "+Thread.currentThread());
+		ActiveCodeHandler.getLogger().log(Level.INFO, this.getClass().getName()+" runs in thread "+Thread.currentThread());
 		while(true){
 			/*
 			 * Invariant: total number of registered tasks should be less than the total number of active code worker
@@ -33,20 +38,26 @@ public class ActiveCodeGuardian implements Runnable {
 			long now = System.currentTimeMillis();
 			synchronized(tasks){
 				for(ActiveCodeFutureTask task:tasks.keySet()){
-					//FIXME: null pointer exception 
 					Long start = tasks.get(task);
-					if ( start != null && now - start > 1000){						
-						System.out.println(this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);						
+					if ( start != null && now - start > 1000){
+						instrument = true;
+						//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);						
 						
 						cancelTask(task, true);						
-						
-						System.out.println(this + " canceled timed out task "+task);
+
+						//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " cancelled timed out task "+task);
 					}
 				}		
 			}
 			long elapsed = System.currentTimeMillis() - now;
 			if(elapsed < 200){
 				Thread.sleep(200-elapsed);
+			}
+			// For instrument only
+			if(instrument && now - last > 2000){
+				System.out.println("Stats for all cancelled guid is : "+stats);
+				last = now;
+				instrument = false;
 			}
 		}
 		} catch(Exception | Error e) {
@@ -80,6 +91,15 @@ public class ActiveCodeGuardian implements Runnable {
 			task.cancel(true);	
 			if(remove)
 				tasks.remove(task);
+			
+			// For instrument only
+			ActiveCodeTask act =  task.getWrappedTask();
+			String guid = act.getParams().getGuid();
+			if (stats.containsKey(guid)){
+				stats.put(guid, stats.get(guid)+1);
+			}else{
+				stats.put(guid, 1);
+			}
 		}
 		
 		DelayProfiler.updateDelay("ActiveCodeCancel", start);

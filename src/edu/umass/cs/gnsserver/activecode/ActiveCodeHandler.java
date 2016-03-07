@@ -28,21 +28,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umass.cs.gnscommon.utils.Base64;
 
 //import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -62,7 +61,9 @@ public class ActiveCodeHandler {
 	private static ActiveCodeGuardian guard;
 	private static ActiveCodeScheduler scheduler;
 	
+	private static final Logger logger = Logger.getLogger("ActiveGNS");
 	
+
 	/**
 	 * enable debug output
 	 */
@@ -73,8 +74,10 @@ public class ActiveCodeHandler {
 	 * @param app
 	 */
 	public ActiveCodeHandler(GnsApplicationInterface<String> app) {
+		logger.setLevel(Level.INFO); 
+		
 		int numProcesses = AppReconfigurableNodeOptions.activeCodeWorkerCount;
-		gnsApp = app;
+		setGnsApp(app);
 	    
 		clientPool = new ClientPool(app); 
 		(new Thread(clientPool)).start();
@@ -97,7 +100,7 @@ public class ActiveCodeHandler {
 	    
 	    // Start the processes
 	    int numThread = executorPool.prestartAllCoreThreads();
-	    System.out.println("##################### "+numThread+" threads have been started! ##################");
+	    logger.log(Level.INFO, "Initialize an active code handler and start "+numThread+" workers...");
 	    //System.out.println("There are "+executorPool.getActiveCount() + " threads running, and " + executorPool.getPoolSize()+" threads available.");
 	    
 	    scheduler = new ActiveCodeScheduler(executorPool);
@@ -148,7 +151,7 @@ public class ActiveCodeHandler {
 		ValuesMap result = null;
 		
 		if(ActiveCodeHandler.enableDebugging)
-			System.out.println("ActiveCodeHandler: prepare to submit the request to scheduler for guid "+guid);
+			logger.log(Level.INFO, "ActiveCodeHandler: prepare to submit the request to scheduler for guid "+guid);
 		
 		try {
 
@@ -172,7 +175,7 @@ public class ActiveCodeHandler {
 			//thrown = ie;
 			
 			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(ActiveCodeHandler.class.getSimpleName()
+				logger.log(Level.WARNING, ActiveCodeHandler.class.getSimpleName()
 					+ " got interrupt for task " + futureTask + " thread "
 					+ Thread.currentThread() + "; activeCount = "
 					+ executorPool.getActiveCount() + "; actualActiveCount = "
@@ -185,7 +188,7 @@ public class ActiveCodeHandler {
 			}
 			
 			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
+				logger.log(Level.WARNING, ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
 					+ executorPool.getActiveCount() + "; actualActiveCount = " + ActiveCodeTask.getActiveCount());
 			
 			scheduler.finish(guid);
@@ -193,7 +196,7 @@ public class ActiveCodeHandler {
 			return valuesMap;
 		} finally {
 			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(ActiveCodeHandler.class.getSimpleName()
+				logger.log(Level.INFO , ActiveCodeHandler.class.getSimpleName()
 					+ " finally block: " + futureTask + " thread "
 					+ Thread.currentThread() + " activeCount = "
 					+ executorPool.getActiveCount() + "; actualActiveCount = "
@@ -206,7 +209,7 @@ public class ActiveCodeHandler {
 		assert(thrown==null);
 		
 		if(ActiveCodeHandler.enableDebugging)
-			System.out.println(ActiveCodeHandler.class.getSimpleName()
+			logger.log(Level.INFO, ActiveCodeHandler.class.getSimpleName()
 				+ ".runCode before final scheduler.finish(), activeCount = "
 				+ executorPool.getActiveCount());
 		try {
@@ -218,7 +221,7 @@ public class ActiveCodeHandler {
 		DelayProfiler.updateDelayNano("activeHandler", startTime);
 		
 		if(ActiveCodeHandler.enableDebugging)
-			System.out.println(ActiveCodeHandler.class.getSimpleName()
+			logger.log(Level.INFO, ActiveCodeHandler.class.getSimpleName()
 				+ ".runCode returning, activeCount = "
 				+ executorPool.getActiveCount());
 		
@@ -233,6 +236,9 @@ public class ActiveCodeHandler {
 		return executorPool;
 	}
 	
+	protected static Logger getLogger(){
+		return logger;
+	}
 	
 	/***************************** TEST CODE *********************/
 	
@@ -270,12 +276,13 @@ public class ActiveCodeHandler {
 			
 			ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
-			
+			Thread.sleep(2000);
 			System.out.println("Active count number is "+executor.getActiveCount()+
 					", the number of completed tasks is "+executor.getCompletedTaskCount());
 			
 			// test result, # of completed tasks, and # of active threads
 			System.out.println(result);
+			
 			assert(executor.getActiveCount() == 0);
 			assert(executor.getCompletedTaskCount() == completed);
 			System.out.println("############# TEST FOR NOOP PASSED! ##############\n\n");
@@ -291,6 +298,7 @@ public class ActiveCodeHandler {
 			completed++;
 			result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
+			Thread.sleep(2000);
 			
 			assert(executor.getActiveCount() == 0);
 			assert(executor.getCompletedTaskCount() == completed);
@@ -328,5 +336,21 @@ public class ActiveCodeHandler {
 		}
 		
 		System.exit(0);
+	}
+
+
+	/**
+	 * @return gnsApp
+	 */
+	public GnsApplicationInterface<?> getGnsApp() {
+		return gnsApp;
+	}
+
+
+	/**
+	 * @param gnsApp
+	 */
+	public void setGnsApp(GnsApplicationInterface<?> gnsApp) {
+		this.gnsApp = gnsApp;
 	}
 }

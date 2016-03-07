@@ -48,7 +48,7 @@ public class ActiveCodeGuidQuerier {
   private String guid = "";
   private int depth = 0;
   private String error = null;
-  private ActiveCodeQueryResponse acqr;
+  private byte[] buffer = new byte[1024];
   
   /**
    * Initialize an ActiveCodeGuidQuerier
@@ -58,7 +58,6 @@ public class ActiveCodeGuidQuerier {
   public ActiveCodeGuidQuerier(DatagramSocket socket, int clientPort) {
     this.socket = socket;
     this.clientPort = clientPort;
-    this.acqr = new ActiveCodeQueryResponse();
   }
   
   
@@ -96,12 +95,9 @@ public class ActiveCodeGuidQuerier {
       acm.setAcqreq(acqreq);
       // Send off the query request
       ActiveCodeUtils.sendMessage(socket, acm, clientPort);
+      ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(socket, buffer);
+      ActiveCodeQueryResponse acqr = acmResp.getAcqresp();
       
-      synchronized(acqr){
-    	  acqr.wait();
-      }
-      
-      // Wait for a response
       System.out.println(">>>>>>>>>>>>>>>> Received the message "+acqr);
       return acqr;
 
@@ -110,14 +106,6 @@ public class ActiveCodeGuidQuerier {
     }
     // Return an empty response to designate failure
     return new ActiveCodeQueryResponse();
-  }
-  
-  protected void setResponse(ActiveCodeQueryResponse acqr){
-	  //System.out.println("The querier is "+this);
-	  this.acqr = acqr;
-	  synchronized(acqr){
-		  acqr.notify();
-	  }
   }
   
   /**

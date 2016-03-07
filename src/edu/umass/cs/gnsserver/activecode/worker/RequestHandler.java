@@ -19,6 +19,10 @@
  */
 package edu.umass.cs.gnsserver.activecode.worker;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 import org.json.simple.JSONObject;
@@ -41,15 +45,13 @@ public class RequestHandler {
 	private int clientPort = -1;
 	private byte[] buffer = new byte[8096*10];
 	JSONParser parser = new JSONParser();
+	
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
-	 * @param runner
-	 * @param port 
+	 * @param runner 
 	 */
-	public RequestHandler(ActiveCodeRunner runner, int port) {
+	public RequestHandler(ActiveCodeRunner runner) {
 		this.runner = runner;
-		this.clientPort = port;
-		
 	}
 	
 	protected void setPort(int port){
@@ -63,30 +65,30 @@ public class RequestHandler {
 			// Get the ActiveCodeMessage from the GNS
 			ActiveCodeMessage acm = null;
 
-			acm = ActiveCodeUtils.receiveMessage(socket, buffer);
-			if(ActiveCodeWorker.numReqs%1000 == 0){
-				System.out.println("Got the message "+acm);
+			DatagramPacket pkt = ActiveCodeUtils.receivePacket(socket, buffer);
+			acm = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
+			
+			/*
+			 * UDP does not guarantee the sequence of the packets, this is the only way for handler to
+			 * 
+			 */
+			if (clientPort == -1){
+				setPort(pkt.getPort());
 			}
+			
 		    //FIXME: do not need to initialize new querier everytime
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);
 		    
 		    if( acm.isShutdown() ) {
 		    	//System.out.println("Shutting down...");
 		    	ret = false;
-		    } else if(acm.getAcqresp() != null) {
-		    	// notify and return
-		    	querier.setResponse(acm.getAcqresp());
-		    	return true;
-		    }
-		    else {
+		    } else {
 		    	// Run the active code
-		    	long t1 = System.nanoTime();
+		    	long t1 = System.currentTimeMillis();
 			    ActiveCodeParams params = acm.getAcp();			    
 			   
-			    //System.out.println("Got the message from port "+socket.getLocalPort());
 			    assert(params != null);
 			    
-			    //System.out.println("The hop is "+params.getHopLimit()+". The guid is "+params.getGuid());
 			    querier.setParam(params.getHopLimit(), params.getGuid());
 			    
 			    JSONObject vm = (JSONObject) parser.parse(params.getValuesMapString());
@@ -95,7 +97,7 @@ public class RequestHandler {
 			    
 			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
 			    
-			    System.out.println(">>>>>>>>>>>>>>>>It takes "+(System.nanoTime()-t1)+"ns to execute this normal code!");
+			    //System.out.println(">>>>>>>>>>>>>>>>It takes "+(System.currentTimeMillis()-t1)+"ms to execute this normal code!");
 			    
 			    long t2 = System.nanoTime();
 			    
@@ -113,6 +115,14 @@ public class RequestHandler {
 			ActiveCodeMessage acmResp = crashedMessage(e.toString());
 			ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
 			return ret;
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally{
+			
 		}
 		
 		return ret;
