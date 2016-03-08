@@ -123,7 +123,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     		if(thrown != null) GNS.getLogger().severe(thrown.toString());
     		
     		if(ActiveCodeHandler.enableDebugging){
-    			decrNumActiveCount();
+    			//decrNumActiveCount();
     			ActiveCodeHandler.getLogger().log(Level.INFO, this + " finally block just before returning result " + result );
     			ActiveCodeHandler.getLogger().log(Level.INFO, this + " ENDING");
     		}
