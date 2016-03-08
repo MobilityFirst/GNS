@@ -75,6 +75,7 @@ public class RequestHandler {
 			if (clientPort == -1){
 				setPort(pkt.getPort());
 			}
+			System.out.println(">>>>>>>>>>> Worker received the packet from port "+clientPort+"with "+acm);
 			
 		    //FIXME: do not need to initialize new querier everytime
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);
