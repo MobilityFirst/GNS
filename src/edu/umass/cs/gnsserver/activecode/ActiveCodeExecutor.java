@@ -86,7 +86,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
     	if (!client.isJustInitialized()){
     		guard.register(task); 
     	} else{
-    		guard.register(task, 500);
+    		guard.register(task, 1000);
     		client.setInitialized(false);
     	}
     	
