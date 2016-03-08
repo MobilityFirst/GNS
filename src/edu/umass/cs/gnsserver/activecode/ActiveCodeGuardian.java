@@ -113,6 +113,10 @@ public class ActiveCodeGuardian implements Runnable {
 		tasks.put(task, System.currentTimeMillis());
 	}
 	
+	protected void register(ActiveCodeFutureTask task, long bonus){
+		tasks.put(task, bonus+System.currentTimeMillis());
+	}
+	
 	protected Long deregister(ActiveCodeFutureTask task){
 		/*
 		 * FIXME: it could trigger a deadlock with calling cancelTask together

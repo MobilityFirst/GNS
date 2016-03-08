@@ -44,10 +44,11 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeClient {
 	private boolean ready = false;
+	private boolean initialized = true;
 	private int workerPort;
 	private Process process;
 	private DatagramSocket clientSocket;
-	private byte[] buffer = new byte[8096];
+	private byte[] buffer = new byte[2048];
 	protected final int myID = getNextID();
 	private final ActiveCodeQueryHelper acqh;
 	
@@ -57,8 +58,7 @@ public class ActiveCodeClient {
 	}
 
 	/**
-	 * @param app
-	 *            the gnsApp
+	 * @param app the gnsApp
 	 * @param port
 	 * @param proc
 	 */
@@ -94,7 +94,17 @@ public class ActiveCodeClient {
 		}
 		return false;
 	}
-
+	
+	protected boolean isJustInitialized(){
+		return initialized;
+	}
+	
+	protected boolean setInitialized(boolean init){
+		boolean prev = initialized;
+		initialized = init;
+		return prev;
+	}
+	
 	public String toString() {
 		return "  " + this.getClass().getSimpleName() + myID + ":"+this.clientSocket.getLocalPort();
 	}
@@ -106,19 +116,16 @@ public class ActiveCodeClient {
 	 * @return the ValuesMap object returned by the active code
 	 */
 	protected ValuesMap submitRequest(ActiveCodeMessage acmReq) {
-		//long startTime = System.nanoTime();
-		
-
-		// Send the request
-		ActiveCodeUtils.sendMessage(clientSocket, acmReq, workerPort);		
-		if(ActiveCodeHandler.enableDebugging)
-			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker through port "+workerPort);
-		
 		boolean crashed = false;
 		DatagramSocket firstSocket = clientSocket;	
 
 		boolean codeFinished = false;
 		String valuesMapString = null;
+		
+		// Send the request
+		ActiveCodeUtils.sendMessage(clientSocket, acmReq, workerPort);		
+		if(ActiveCodeHandler.enableDebugging)
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker through port "+workerPort);
 		
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
@@ -256,6 +263,7 @@ public class ActiveCodeClient {
 	}
 
 	protected void setNewWorker(int port, Process proc) {
+		setInitialized(true);
 		this.process = proc;
 		this.workerPort = port;
 	}

@@ -83,8 +83,13 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
     	
     	if(ActiveCodeHandler.enableDebugging)
     		ActiveCodeHandler.getLogger().log(Level.INFO, this + " client ready; before calling task");
+    	if (!client.isJustInitialized()){
+    		guard.register(task); 
+    	} else{
+    		guard.register(task, 500);
+    		client.setInitialized(false);
+    	}
     	
-		guard.register(task); 
 		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, this + " successfully registers task "+task);
 		
