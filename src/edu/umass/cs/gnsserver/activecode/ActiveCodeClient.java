@@ -110,7 +110,7 @@ public class ActiveCodeClient {
 	}
 	
 	/**
-	 * Submits the request to the worker via socket comm.
+	 * Submits the request to the worker
 	 * 
 	 * @param acmReq
 	 * @return the ValuesMap object returned by the active code

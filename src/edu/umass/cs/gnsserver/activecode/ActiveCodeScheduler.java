@@ -21,7 +21,7 @@ public class ActiveCodeScheduler implements Runnable{
 	
 	private ArrayList<String> guidList = new ArrayList<String>();
 	private HashMap<String, ArrayList<ActiveCodeFutureTask>> fairQueue = new HashMap<String, ArrayList<ActiveCodeFutureTask>>();
-	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
+	//private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
 	//private HashMap<ActiveCodeFutureTask, Long> timeMap = new HashMap<ActiveCodeFutureTask, Long>();
 	
@@ -99,6 +99,7 @@ public class ActiveCodeScheduler implements Runnable{
 				return null;
 			}
 			
+			/*
 			if(runningGuid.contains(guid) && runningGuid.get(guid)>0){
 				ActiveCodeHandler.getLogger().log(Level.INFO, ActiveCodeScheduler.class.getSimpleName()+
 						" refuses to fetch a task for guid "+guid+" because it already has a task running.");
@@ -106,6 +107,7 @@ public class ActiveCodeScheduler implements Runnable{
 			}
 			
 			runningGuid.put(guid, 1);
+			*/
 			
 			ArrayList<ActiveCodeFutureTask> taskList = fairQueue.get(guid);
 			futureTask = taskList.remove(0);
@@ -170,7 +172,7 @@ public class ActiveCodeScheduler implements Runnable{
 	}
 	
 	protected void finish(String guid){
-		runningGuid.remove(guid);
+		//runningGuid.remove(guid);
 		//System.out.println("ActiveCodeScheduler: finish the task for guid "+guid);
 		release();
 	}
