@@ -150,8 +150,10 @@ public class ActiveCodeHandler {
 		Throwable thrown = null;
 		ValuesMap result = null;
 		
+		
 		if(ActiveCodeHandler.enableDebugging)
 			logger.log(Level.INFO, "ActiveCodeHandler: prepare to submit the request to scheduler for guid "+guid);
+		
 		
 		try {
 
@@ -178,8 +180,11 @@ public class ActiveCodeHandler {
 				logger.log(Level.WARNING, ActiveCodeHandler.class.getSimpleName()
 					+ " got interrupt for task " + futureTask + " thread "
 					+ Thread.currentThread() + "; activeCount = "
-					+ executorPool.getActiveCount() + "; actualActiveCount = "
-					+ ActiveCodeTask.getActiveCount());
+					+ executorPool.getActiveCount() );
+					//this synchronized call would affect the performance
+					//+ "; actualActiveCount = "+ ActiveCodeTask.getActiveCount());
+			
+			
 			try {
 				guard.cancelTask(futureTask, true);
 			} catch(Exception | Error e) {
@@ -189,18 +194,22 @@ public class ActiveCodeHandler {
 			
 			if(ActiveCodeHandler.enableDebugging)
 				logger.log(Level.WARNING, ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
-					+ executorPool.getActiveCount() + "; actualActiveCount = " + ActiveCodeTask.getActiveCount());
+					+ executorPool.getActiveCount() );
+			
+			//		+ "; actualActiveCount = " + ActiveCodeTask.getActiveCount());
 			
 			scheduler.finish(guid);
 			
 			return valuesMap;
 		} finally {
+			
 			if(ActiveCodeHandler.enableDebugging)
 				logger.log(Level.INFO , ActiveCodeHandler.class.getSimpleName()
 					+ " finally block: " + futureTask + " thread "
 					+ Thread.currentThread() + " activeCount = "
-					+ executorPool.getActiveCount() + "; actualActiveCount = "
-					+ ActiveCodeTask.getActiveCount());
+					+ executorPool.getActiveCount() );
+					//+ "; actualActiveCount = "+ ActiveCodeTask.getActiveCount());
+			
 			if(thrown !=null)
 				thrown.printStackTrace();
 		}
@@ -212,6 +221,7 @@ public class ActiveCodeHandler {
 			logger.log(Level.INFO, ActiveCodeHandler.class.getSimpleName()
 				+ ".runCode before final scheduler.finish(), activeCount = "
 				+ executorPool.getActiveCount());
+		
 		try {
 		scheduler.finish(guid);
 		} catch (Exception | Error e) {

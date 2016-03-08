@@ -23,7 +23,7 @@ public class ActiveCodeScheduler implements Runnable{
 	private HashMap<String, ArrayList<ActiveCodeFutureTask>> fairQueue = new HashMap<String, ArrayList<ActiveCodeFutureTask>>();
 	private ConcurrentHashMap<String, Integer> runningGuid = new ConcurrentHashMap<String, Integer>();
 	private int ptr = 0;
-	private HashMap<ActiveCodeFutureTask, Long> timeMap = new HashMap<ActiveCodeFutureTask, Long>();
+	//private HashMap<ActiveCodeFutureTask, Long> timeMap = new HashMap<ActiveCodeFutureTask, Long>();
 	
 	private Lock lock = new ReentrantLock();
 	private Lock queueLock = new ReentrantLock();
@@ -48,9 +48,12 @@ public class ActiveCodeScheduler implements Runnable{
 			FutureTask<ValuesMap> futureTask = getNextTask();
 			
 			if (futureTask != null){
+				
 				if (ActiveCodeHandler.enableDebugging)
 					ActiveCodeHandler.getLogger().log(Level.INFO, ActiveCodeScheduler.class.getSimpleName()+
 						" fetches a task "+futureTask+" to run.");
+						
+				
 				executorPool.execute(futureTask);
 				//for instrument only
 				/*

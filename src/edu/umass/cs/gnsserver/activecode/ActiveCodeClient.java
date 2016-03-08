@@ -173,9 +173,11 @@ public class ActiveCodeClient {
 				}
 			}
 		}
+		
 		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest out of while(!codeFinished) loop");
-
+		
+		
 		DelayProfiler.updateDelayNano("activeReceiveMessage", receivedTime);
 
 		long convertTime = System.nanoTime();
@@ -245,6 +247,7 @@ public class ActiveCodeClient {
 
 		try {
 			clientSocket = new DatagramSocket();
+			
 			if(ActiveCodeHandler.enableDebugging)
 				System.out.println(this + " DESTROYED worker and opened new socket on " + clientSocket.getLocalPort());
 			

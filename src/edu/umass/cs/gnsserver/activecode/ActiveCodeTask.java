@@ -87,7 +87,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     public ValuesMap call() throws InterruptedException{
     	
     	if(ActiveCodeHandler.enableDebugging){
-    		incrNumActiveCount();
+    		//incrNumActiveCount();
     		ActiveCodeHandler.getLogger().log(Level.INFO, this + " STARTING");
     	}
     	
@@ -102,25 +102,32 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	    		
 	    		result = client.submitRequest(acm);
 	    	}
+	    	
 	    	if(ActiveCodeHandler.enableDebugging)
 	    		ActiveCodeHandler.getLogger().log(Level.INFO, this + " after runActiveCode");
 	    	
 	    	DelayProfiler.updateDelayNano("activeCodeTask", startTime);
 	    	
+	    	
     	} catch(Exception | Error e) {
     		thrown = e;
+    		
     		if(ActiveCodeHandler.enableDebugging)
     			ActiveCodeHandler.getLogger().log(Level.SEVERE, this + " re-throwing uncaught exception/error " + e);
+    			
+    		
     		e.printStackTrace();
 			throw e;			
     	}
    		finally {
     		if(thrown != null) GNS.getLogger().severe(thrown.toString());
+    		
     		if(ActiveCodeHandler.enableDebugging){
     			decrNumActiveCount();
     			ActiveCodeHandler.getLogger().log(Level.INFO, this + " finally block just before returning result " + result );
     			ActiveCodeHandler.getLogger().log(Level.INFO, this + " ENDING");
     		}
+    		
     	}
     	return result;    	
     }
