@@ -46,11 +46,10 @@ public class ActiveCodeClient {
 	private boolean ready = false;
 	private int workerPort;
 	private Process process;
-	private final GnsApplicationInterface<String> app;
 	private DatagramSocket clientSocket;
 	private byte[] buffer = new byte[8096];
 	protected final int myID = getNextID();
-	
+	private final ActiveCodeQueryHelper acqh;
 	
 	private static int globalID = getNextID();
 	private synchronized static int getNextID() {
@@ -64,8 +63,9 @@ public class ActiveCodeClient {
 	 * @param proc
 	 */
 	public ActiveCodeClient(GnsApplicationInterface<String> app, int port, Process proc) {
-		this.app = app;
 		this.ready = false;
+		this.acqh = new ActiveCodeQueryHelper(app);
+		
 		// initialize the clientSocket first
 		try {
 			clientSocket = new DatagramSocket();
@@ -106,20 +106,19 @@ public class ActiveCodeClient {
 	 * @return the ValuesMap object returned by the active code
 	 */
 	protected ValuesMap submitRequest(ActiveCodeMessage acmReq) {
-		long startTime = System.nanoTime();
-		boolean crashed = false;
-		DatagramSocket firstSocket = clientSocket;
+		//long startTime = System.nanoTime();
 		
-		ActiveCodeQueryHelper acqh = new ActiveCodeQueryHelper(app);
+
+		// Send the request
+		ActiveCodeUtils.sendMessage(clientSocket, acmReq, workerPort);		
+		if(ActiveCodeHandler.enableDebugging)
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker through port "+workerPort);
+		
+		boolean crashed = false;
+		DatagramSocket firstSocket = clientSocket;	
 
 		boolean codeFinished = false;
 		String valuesMapString = null;
-
-		// Send the request
-		ActiveCodeUtils.sendMessage(this.clientSocket, acmReq, workerPort);
-		DelayProfiler.updateDelayNano("activeSendMessage", startTime);
-		if(ActiveCodeHandler.enableDebugging)
-			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker through port "+workerPort);
 		
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
@@ -204,7 +203,7 @@ public class ActiveCodeClient {
 			ActiveCodeHandler.getLogger().log(Level.SEVERE, "ValuesMapString is " + acmReq.toString());
 		}
 		DelayProfiler.updateDelayNano("activeConvert", convertTime);
-		DelayProfiler.updateDelayNano("communication", startTime);
+
 		return vm;
 	}
 
