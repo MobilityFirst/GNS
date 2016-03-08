@@ -41,11 +41,11 @@ public class ActiveCodeGuardian implements Runnable {
 					Long start = tasks.get(task);
 					if ( start != null && now - start > 1000){
 						instrument = true;
-						//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);						
+						ActiveCodeHandler.getLogger().log(Level.WARNING, this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);						
 						
 						cancelTask(task, true);						
 
-						//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " cancelled timed out task "+task);
+						ActiveCodeHandler.getLogger().log(Level.WARNING, this + " cancelled timed out task "+task);
 					}
 				}		
 			}
