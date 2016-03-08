@@ -26,7 +26,7 @@ public class SingleClient implements Runnable{
 		if (malicious){
 			this.numReq = MessageStats.DURATION*1000/MessageStats.MAL_INTERVAL/MessageStats.DEPTH;
 		} else{
-			this.numReq = 20; //MessageStats.DURATION*1000/MessageStats.INTERVAL;
+			this.numReq = 10; //MessageStats.DURATION*1000/MessageStats.INTERVAL;
 		}
 		
 		System.out.println("Start Sending "+numReq+" requests with entry "+entry);
