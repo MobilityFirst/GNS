@@ -123,7 +123,9 @@ public class ActiveCodeClient {
 		String valuesMapString = null;
 		
 		// Send the request
-		ActiveCodeUtils.sendMessage(clientSocket, acmReq, workerPort);		
+		ActiveCodeUtils.sendMessage(clientSocket, acmReq, workerPort);
+		
+		
 		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker through port "+workerPort);
 		
@@ -131,6 +133,7 @@ public class ActiveCodeClient {
 		// Keeping going until we have received a 'finished' message
 		while (!codeFinished) {
 			ActiveCodeMessage acmResp = null;
+			
 			if(ActiveCodeHandler.enableDebugging)
 				ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest waiting for socket message");
 			

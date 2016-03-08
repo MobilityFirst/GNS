@@ -183,8 +183,7 @@ public class ActiveCodeHandler {
 					+ executorPool.getActiveCount() );
 					//this synchronized call would affect the performance
 					//+ "; actualActiveCount = "+ ActiveCodeTask.getActiveCount());
-			
-			
+						
 			try {
 				guard.cancelTask(futureTask, true);
 			} catch(Exception | Error e) {
@@ -195,8 +194,6 @@ public class ActiveCodeHandler {
 			if(ActiveCodeHandler.enableDebugging)
 				logger.log(Level.WARNING, ActiveCodeHandler.class.getSimpleName() + " after canceling " + futureTask + " getActiveCount = "
 					+ executorPool.getActiveCount() );
-			
-			//		+ "; actualActiveCount = " + ActiveCodeTask.getActiveCount());
 			
 			scheduler.finish(guid);
 			
@@ -223,7 +220,7 @@ public class ActiveCodeHandler {
 				+ executorPool.getActiveCount());
 		
 		try {
-		scheduler.finish(guid);
+			scheduler.finish(guid);
 		} catch (Exception | Error e) {
 			e.printStackTrace();
 		}
