@@ -25,12 +25,16 @@ import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.putPacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
+import edu.umass.cs.utils.Config;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * @author westy, arun
+ * 
  * Packet format sent from a client and handled by a local name server.
  *
  */
@@ -50,11 +54,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   /**
    * Identifier of the request on the client.
    */
-  private int clientRequestId;
+  private long clientRequestId;
   /**
    * LNS identifier - filled in at the LNS.
    */
-  private int LNSRequestId;
+  private long LNSRequestId;
   /**
    * The IP address of the sender as a string
    */
@@ -82,7 +86,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * @param command
    * @param senderPort
    */
-  public CommandPacket(int requestId, String senderAddress, int senderPort, JSONObject command) {
+  public CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.clientRequestId = requestId;
     this.LNSRequestId = -1; // this will be filled in at the LNS
@@ -114,11 +118,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    */
   public CommandPacket(JSONObject json) throws JSONException {
     this.type = getPacketType(json);
-    this.clientRequestId = json.getInt(CLIENTREQUESTID);
+    this.clientRequestId = json.getLong(CLIENTREQUESTID);
     if (json.has(LNSREQUESTID)) {
-      this.LNSRequestId = json.getInt(LNSREQUESTID);
+      this.LNSRequestId = json.getLong(LNSREQUESTID);
     } else {
-      this.LNSRequestId = -1;
+      this.LNSRequestId = json.getLong(CLIENTREQUESTID);//-1;
     }
     this.senderAddress = json.optString(SENDERADDRESS, null);
     this.senderPort = json.optInt(SENDERPORT, -1);
@@ -172,7 +176,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    *
    * @return the client request id
    */
-  public int getClientRequestId() {
+  public long getClientRequestId() {
     return clientRequestId;
   }
 
@@ -197,7 +201,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   }
 
   // only for testing
-  public void setClientRequestId(int requestId) {
+  public void setClientRequestId(long requestId) {
     this.clientRequestId = requestId;
   }
 
@@ -206,7 +210,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    *
    * @return the LNS request id
    */
-  public int getLNSRequestId() {
+  public long getLNSRequestId() {
     return LNSRequestId;
   }
 
@@ -251,6 +255,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     try {
       if (command != null) {
         if (GnsProtocol.CREATE_DELETE_COMMANDS.contains(getCommandName())) {
+        	// FIXME: arun: if a random active is needed, ask explicitly
           if (command.has(GnsProtocol.GUID)) {
             return getCommandName() + "_" + command.getString(GnsProtocol.GUID);
           }
@@ -305,5 +310,17 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   public void setNeedsCoordination(boolean needsCoordination) {
     needsCoordinationExplicitlySet = true;
     this.needsCoordination = needsCoordination;
+  }
+  
+  // arun: bad hack because of poor legacy code 
+  public CommandPacket removeSenderInfo() throws JSONException{ 
+	  JSONObject json = this.toJSONObject();
+	    json.remove(MessageNIOTransport.SNDR_IP_FIELD);
+	    json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
+	    return new CommandPacket(json);
+  }
+
+  public String getSummary() {
+	  return this.getRequestType() +":" + this.getCommandName() + ":"+this.getServiceName() + ":"+this.getRequestID();
   }
 }

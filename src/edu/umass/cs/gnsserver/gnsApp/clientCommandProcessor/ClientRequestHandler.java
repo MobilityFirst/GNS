@@ -112,13 +112,14 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
           GnsApp app,
           GNSNodeConfig<String> gnsNodeConfig,
           JSONMessenger<String> messenger, RequestHandlerParameters parameters) throws IOException {
-    this.remoteQuery = new RemoteQuery();
+	  assert(activeReplicaID!=null);
     this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     // a little hair to convert fred to fred-activeReplica if we just get fred
     this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID
             : gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
+    this.remoteQuery = new RemoteQuery(activeReplicaID, new InetSocketAddress(gnsNodeConfig.getNodeAddress(activeReplicaID), gnsNodeConfig.getNodePort(activeReplicaID)));
     this.app = app;
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig<String>(gnsNodeConfig);

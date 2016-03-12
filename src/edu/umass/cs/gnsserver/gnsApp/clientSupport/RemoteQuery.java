@@ -39,7 +39,9 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfiguration
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +49,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -60,20 +64,36 @@ public class RemoteQuery extends ClientAsynchBase {
 
   // For synchronus replica messages
   private static final long defaultReplicaReadTimeout = 5000;
-  private static final long defaultReplicaUpdateTimeout = 10000;
+  private static final long defaultReplicaUpdateTimeout = 8000;
   private final ConcurrentMap<Long, Request> replicaResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
-  private final Object replicaCommandMonitor = new Object();
+  //private final Object replicaCommandMonitor = new Object();
   private boolean debuggingEnabled = true;
 
   // For synchronus recon messages
-  private static final long defaultReconTimeout = 2000;
+  private static final long defaultReconTimeout = 4000;
   private final ConcurrentMap<String, ClientReconfigurationPacket> reconResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
-  private final Object reconMonitor = new Object();
+  //private final Object reconMonitor = new Object();
+  private final String myID;
+  private final InetSocketAddress myAddr;
 
   public RemoteQuery() throws IOException {
+	  this(null,null);
   }
+  public RemoteQuery(String myID, InetSocketAddress isa) throws IOException {
+	  super();
+	  this.myID=myID;
+	  this.myAddr = isa;
+	  GNS.getLogger().info("Starting RemoteQuery " + this);
+	  assert(this.myID!=null);
+  }
+  
+	public String toString() {
+		return super.toString()
+				+ (this.myID != null ? ":" + this.myID + ":"
+						+ this.myAddr.getPort() : "");
+	}
 
   /**
    * A callback that notifys any waits and records the response from a replica.
@@ -91,39 +111,78 @@ public class RemoteQuery extends ClientAsynchBase {
     }
 
     replicaResultMap.put(requestId, response);
-    synchronized (replicaCommandMonitor) {
-      replicaCommandMonitor.notifyAll();
-    }
+    //synchronized (replicaCommandMonitor) {
+      //replicaCommandMonitor.notifyAll();
+    //}
   };
+  
+  private RequestCallback getRequestCallback(Object monitor) {
+	  return new RequestCallback() {
+
+		@Override
+		public void handleResponse(Request response) {
+			replicaCommandCallback.handleResponse(response);
+			synchronized(monitor) {
+				monitor.notifyAll();
+			}
+		}
+	  };
+  }
 
   /**
    * A callback that notifys any waits and records the response from a reconfigurator.
    */
   private RequestCallback reconCallback = (Request response) -> {
     reconResultMap.put(response.getServiceName(), (ClientReconfigurationPacket) response);
-    synchronized (reconMonitor) {
-      reconMonitor.notifyAll();
-    }
+    //synchronized (reconMonitor) {
+      //reconMonitor.notifyAll();
+    //}
   };
+  
+  private RequestCallback getReconfiguratoRequestCallback(Object monitor) {
+	  return new RequestCallback() {
 
-  private ClientRequest waitForReplicaResponse(long id)
-          throws GnsClientException, GnsActiveReplicaException {
-    return waitForReplicaResponse(id, defaultReplicaReadTimeout);
+		@Override
+		public void handleResponse(Request arg0) {
+			reconCallback.handleResponse(arg0);
+			synchronized(monitor) {
+				monitor.notifyAll();
+			}
+		}
+		  
+	  };
   }
 
-  private ClientRequest waitForReplicaResponse(long id, long timeout)
+  private ClientRequest waitForReplicaResponse(long id, Object monitor)
+          throws GnsClientException, GnsActiveReplicaException {
+    return waitForReplicaResponse(id, monitor, defaultReplicaReadTimeout);
+  }
+
+  private ClientRequest waitForReplicaResponse(long id, Object monitor, long timeout)
           throws GnsClientException, GnsActiveReplicaException {
     try {
-      synchronized (replicaCommandMonitor) {
-        long monitorStartTime = System.currentTimeMillis();
-        while (!replicaResultMap.containsKey(id)
-                && (timeout == 0 || System.currentTimeMillis() - monitorStartTime < timeout)) {
-          replicaCommandMonitor.wait(timeout);
-        }
-        if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
-          throw new GnsClientException("Timeout waiting for response packet for " + id);
-        }
-      }
+			synchronized (monitor) {
+				long monitorStartTime = System.currentTimeMillis();
+				while (!replicaResultMap.containsKey(id)
+						&& (timeout == 0 || System.currentTimeMillis()
+								- monitorStartTime < timeout)) {
+					GNS.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
+							new Object[] { this, id+"", timeout+"ms" });
+					monitor.wait(1000);
+				}
+				if (timeout != 0
+						&& System.currentTimeMillis() - monitorStartTime >= timeout) {
+					// TODO: arun
+					GnsClientException e = new GnsClientException(
+							this +": Timed out on active replica response after waiting for " + timeout + "ms for response packet for " + id);
+					GNS.getLogger().warning("\n\n\n\n"  + e.getMessage());
+					e.printStackTrace();
+					throw e;
+				} else
+					GNS.getLogger().log(Level.INFO,
+							"Remote query successful for id {0}",
+							new Object[] { id+"" });
+			}
     } catch (InterruptedException x) {
       throw new GnsClientException("Wait for return packet was interrupted " + x);
     }
@@ -137,21 +196,28 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   }
 
-  private ClientReconfigurationPacket waitForReconResponse(String serviceName) throws GnsClientException {
-    return waitForReconResponse(serviceName, defaultReconTimeout);
+  private ClientReconfigurationPacket waitForReconResponse(String serviceName, Object monitor) throws GnsClientException {
+    return waitForReconResponse(serviceName, monitor, defaultReconTimeout);
   }
 
-  private ClientReconfigurationPacket waitForReconResponse(String serviceName, long timeout)
+  private ClientReconfigurationPacket waitForReconResponse(String serviceName, Object monitor, long timeout)
           throws GnsClientException {
     try {
-      synchronized (reconMonitor) {
+      synchronized (monitor) {
         long monitorStartTime = System.currentTimeMillis();
         while (!reconResultMap.containsKey(serviceName)
                 && (timeout == 0 || System.currentTimeMillis() - monitorStartTime < timeout)) {
-          reconMonitor.wait(timeout);
+          monitor.wait(timeout);
         }
         if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
-          throw new GnsClientException("Timeout waiting for response packet for " + serviceName);
+					GnsClientException e = new GnsClientException(
+							this
+									+ ": Timed out on reconfigurator response after waiting for "
+									+ timeout + "ms response packet for "
+									+ serviceName);
+        	GNS.getLogger().warning("\n\n\n\n" + e.getMessage());
+        	e.printStackTrace();
+        	throw e;
         }
       }
     } catch (InterruptedException x) {
@@ -170,8 +236,9 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws GnsClientException
    */
   private NSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, GnsClientException {
-    sendRequest(request, reconCallback);
-    ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName());
+	  Object monitor = new Object();
+    sendRequest(request, this.getReconfiguratoRequestCallback(monitor));//reconCallback);
+    ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName(), monitor);
     // FIXME: return better error codes.
     return response.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR;
   }
@@ -245,13 +312,13 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   }
 
-  private String handleQueryResponse(long requestId, String notFoundReponse) throws GnsClientException {
-    return handleQueryResponse(requestId, defaultReplicaReadTimeout, notFoundReponse);
+  private String handleQueryResponse(long requestId, Object monitor, String notFoundReponse) throws GnsClientException {
+    return handleQueryResponse(requestId, monitor, defaultReplicaReadTimeout, notFoundReponse);
   }
 
-  private String handleQueryResponse(long requestId, long timeout, String notFoundReponse) throws GnsClientException {
+  private String handleQueryResponse(long requestId, Object monitor, long timeout, String notFoundReponse) throws GnsClientException {
     try {
-      CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId, timeout);
+      CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, timeout);
       if (packet == null) {
         throw new GnsClientException("Packet not found in table " + requestId);
       } else {
@@ -284,8 +351,9 @@ public class RemoteQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + guid + "/" + field);
     }
-    long requestId = fieldRead(guid, field, replicaCommandCallback);
-    return handleQueryResponse(requestId, null);
+    Object monitor = new Object();
+    long requestId = fieldRead(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
+    return handleQueryResponse(requestId, monitor, null);
   }
 
   private static final String emptyJSONArrayString = new JSONArray().toString();
@@ -305,18 +373,25 @@ public class RemoteQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + guid + "/" + field);
     }
-    long requestId = fieldReadArray(guid, field, replicaCommandCallback);
-    return handleQueryResponse(requestId, emptyJSONArrayString);
+    Object monitor = new Object();
+    long requestId = fieldReadArray(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
+    return handleQueryResponse(requestId, monitor, emptyJSONArrayString);
   }
 
   public String fieldUpdate(String guid, String field, Object value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+			GNS.getLogger().log(Level.FINE,
+					"HHHHHHHHHHHHHHHHHHHHHHHHH Field update {0} / {1} = {2}",
+					new Object[] { guid, field, value });
     }
-    long requestId = fieldUpdate(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
+    Object monitor = new Object();
+    long requestId = fieldUpdate(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
+    if (debuggingEnabled) {
+        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + ":" + requestId + " = " + value);
+      }
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldReplaceOrCreateArray(String guid, String field, ResultValue value)
@@ -325,8 +400,9 @@ public class RemoteQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldReplaceOrCreateArray " + guid + " / " + field + " = " + value);
     }
-    long requestId = fieldReplaceOrCreateArray(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    Object monitor = new Object();
+    long requestId = fieldReplaceOrCreateArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldAppendToArray(String guid, String field, ResultValue value)
@@ -335,8 +411,9 @@ public class RemoteQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldAppendToArray " + guid + " / " + field + " = " + value);
     }
-    long requestId = fieldAppendToArray(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    Object monitor = new Object();
+    long requestId = fieldAppendToArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldRemove(String guid, String field, Object value)
@@ -346,8 +423,9 @@ public class RemoteQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
     }
-    long requestId = fieldRemove(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    Object monitor = new Object();
+    long requestId = fieldRemove(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldRemoveMultiple(String guid, String field, ResultValue value)
@@ -356,8 +434,9 @@ public class RemoteQuery extends ClientAsynchBase {
     if (debuggingEnabled) {
       GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldRemoveMultiple " + guid + " / " + field + " = " + value);
     }
-    long requestId = fieldRemoveMultiple(guid, field, value, replicaCommandCallback);
-    return handleQueryResponse(requestId, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    Object monitor = new Object();
+    long requestId = fieldRemoveMultiple(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   // Select commands
@@ -366,9 +445,10 @@ public class RemoteQuery extends ClientAsynchBase {
     SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
             SelectGroupBehavior.NONE, key, value, otherValue);
     createRecord(packet.getServiceName(), new JSONObject());
-    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    Object monitor = new Object();
+    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));//replicaCommandCallback);
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
     if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
@@ -379,9 +459,10 @@ public class RemoteQuery extends ClientAsynchBase {
   public JSONArray sendSelectQuery(String query) throws IOException, GnsClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
     createRecord(packet.getServiceName(), new JSONObject());
-    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    Object monitor = new Object();
+    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));//replicaCommandCallback);
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
     if (ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
       return reponsePacket.getGuids();
     } else {
@@ -394,9 +475,10 @@ public class RemoteQuery extends ClientAsynchBase {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
             query, guid, interval);
     createRecord(packet.getServiceName(), new JSONObject());
-    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    Object monitor = new Object();
+    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));//replicaCommandCallback);
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
     if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
@@ -412,9 +494,10 @@ public class RemoteQuery extends ClientAsynchBase {
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, GnsClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
     createRecord(packet.getServiceName(), new JSONObject());
-    long requestId = sendSelectPacket(packet, replicaCommandCallback);
+    Object monitor = new Object();
+    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));//replicaCommandCallback);
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId);
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
     if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {

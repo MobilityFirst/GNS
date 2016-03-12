@@ -28,11 +28,14 @@ import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
+
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
@@ -107,6 +110,8 @@ public class AppReconfigurableNodeOptions {
    * If this is true SSL will not be used for communications between servers.
    */
   public static boolean disableSSL = false;
+  
+  public static boolean enableActiveCode = false;
   /**
    * Number of active code worker.
    */
@@ -198,6 +203,8 @@ public class AppReconfigurableNodeOptions {
 
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
+  private static final String ENABLE_ACTIVE_CODE = "enableActiveCode";
+
   /**
    * Returns all the options.
    *
@@ -275,6 +282,11 @@ public class AppReconfigurableNodeOptions {
 
     // make sure this has been initialized
     GNS.getLogger();
+		if (!allValues.containsKey(DISABLE_SSL))
+			disableSSL = ReconfigurationConfig.getClientSSLMode()==SSL_MODES.CLEAR;
+		else
+			disableSSL = true;    
+    
 
 //    if (!allValues.containsKey(DISABLE_SSL)) {
 //      disableSSL = false;
@@ -362,6 +374,7 @@ public class AppReconfigurableNodeOptions {
       Logger log = NIOTransport.getLogger();
       log.addHandler(handler);
       log.setLevel(Level.INFO);
+      log.setUseParentHandlers(false);
     } else {
       NIOTransport.getLogger().setLevel(Level.WARNING);
     }
@@ -424,7 +437,10 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
       activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
-
+    
+    if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {
+        enableActiveCode = true;
+      }
   }
 
 }

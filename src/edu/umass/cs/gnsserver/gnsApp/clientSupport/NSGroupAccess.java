@@ -81,6 +81,8 @@ public class NSGroupAccess {
   public static void updateMembers(String guid, Set<String> members,
           GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress)
           throws GnsClientException, IOException, JSONException {
+	  GNS.getLogger().info("RQ: ");
+
     String response = new RemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP, 
             new ResultValue(members));
 //    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
@@ -208,6 +210,8 @@ public class NSGroupAccess {
    */
   public static void updateLastUpdate(String guid, Date lastUpdate)
           throws GnsClientException, IOException, JSONException {
+	  GNS.getLogger().info("RQ: ");
+
     new RemoteQuery().fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime());
 
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_LAST_UPDATE, new ResultValue(Arrays.asList(Long.toString(lastUpdate.getTime()))),
@@ -225,6 +229,8 @@ public class NSGroupAccess {
    */
   public static void updateMinRefresh(String guid, int minRefresh)
           throws GnsClientException, IOException, JSONException {
+	  GNS.getLogger().info("RQ: ");
+
     new RemoteQuery().fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh);
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, new ResultValue(Arrays.asList(Integer.toString(minRefresh))),
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
@@ -241,6 +247,8 @@ public class NSGroupAccess {
    */
   public static void updateQueryString(String guid, String queryString)
           throws GnsClientException, IOException, JSONException {
+	  GNS.getLogger().info("RQ: ");
+
     new RemoteQuery().fieldUpdate(guid, GROUP_QUERY_STRING, queryString);
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_QUERY_STRING, new ResultValue(Arrays.asList(queryString)),
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);

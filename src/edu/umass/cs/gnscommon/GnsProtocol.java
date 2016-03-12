@@ -22,6 +22,8 @@ package edu.umass.cs.gnscommon;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+
 /**
  * This class defines a GnsProtocol. Which is to say that
  * it defines a bunch of constants that define the protocol
@@ -156,6 +158,9 @@ public class GnsProtocol {
   public final static String ALL_FIELDS = "+ALL+";
   public final static String ALL_USERS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
+  
+  public final static String NO_ACTIVE_REPLICAS = ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR.toString();
+  
   //
   public static final String RSA_ALGORITHM = "RSA";
   public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";

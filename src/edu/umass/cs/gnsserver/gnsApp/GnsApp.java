@@ -37,6 +37,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.RequestHandlerParameters;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -70,6 +71,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Level;
 
 /**
  * @author Westy
@@ -98,7 +100,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   /**
    *
    */
-  public final ConcurrentMap<Integer, CommandHandler.CommandRequestInfo> outStandingQueries
+  public final ConcurrentMap<Long, CommandHandler.CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   /**
@@ -148,9 +150,9 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) messenger.getNodeConfig()).start();
     GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
-    this.activeCodeHandler = new ActiveCodeHandler(this,
+    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
-            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
+            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
     constructed = true;
   }
 
@@ -193,9 +195,9 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
     GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
-    this.activeCodeHandler = new ActiveCodeHandler(this,
+    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
-            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
+            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
     constructed = true;
   }
 
@@ -223,14 +225,26 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     PacketType.COMMAND,
     PacketType.COMMAND_RETURN_VALUE};
 
+  private int execCount=0;
+  private int incrExecCount() {
+	 return this.execCount++;
+  }
+  private int decrExecCount() {
+	  return --this.execCount;
+  }
+  
+  
   @Override
   public boolean execute(Request request, boolean doNotReplyToClient) {
+	  this.incrExecCount();
     boolean executed = false;
     try {
+			// FIXME: arun: this is terrible. Why go back to json when you have
+			// the packet you wnat already????
       JSONObject json = new JSONObject(request.toString());
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name()
+        GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + this.execCount + " " + packetType.name()
                 + " packet: " + json.toString());
         //+ " packet: " + json.toReasonableString());
       }
@@ -268,6 +282,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
       GNS.getLogger().severe("Error handling request: " + request.toString());
       e.printStackTrace();
     }
+    this.decrExecCount();
     return executed;
   }
 
@@ -439,13 +454,27 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     return nodeConfig;
   }
 
+  	/**
+	 * arun: FIXME: This mode of calling getClientMessenger is outdated and
+	 * poor. The better way is to either delegate client messaging to gigapaxos
+	 * or to determine the right messenger to use in the app based on the
+	 * listening socket address (clear or ssl) on which the request was received
+	 * by invoking {@link SSLMessenger#getClientMessenger(InetSocketAddress)}.
+	 * Doing it like below works but requires all client requests to use the same mode
+	 * (ssl or clear).
+	 */
   @Override
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {;
     if (!disableSSL) {
-      messenger.getClientMessenger().sendToAddress(isa, msg);
+    	GNS.getLogger().log(Level.INFO, "{0} sending response back to {1}: {2}", new Object[]{this,isa, msg});
+      messenger.getSSLClientMessenger().sendToAddress(isa, msg);
     } else {
-      messenger.sendToAddress(isa, msg);
+      messenger.getClientMessenger().sendToAddress(isa, msg);
     }
+  }
+  
+  public String toString() {
+	  return this.getClass().getSimpleName() + ":"+this.nodeID;
   }
 
   @Override

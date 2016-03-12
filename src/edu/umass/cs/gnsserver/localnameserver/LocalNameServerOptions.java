@@ -21,13 +21,16 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import static edu.umass.cs.gnsserver.utils.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -135,14 +138,13 @@ public class LocalNameServerOptions {
     }
 
     if (!allValues.containsKey(DISABLE_SSL)) {
-      disableSSL = false;
+      disableSSL = ReconfigurationConfig.getClientSSLMode()==SSL_MODES.CLEAR;
       // arun
      // ReconfigurationConfig.setClientPortOffset(100);
-      System.out.println("LNS: SSL is enabled");
     } else {
       disableSSL = true;
-      System.out.println("LNS: SSL is disabled");
     }
+    System.out.println("LNS: SSL is " + (disableSSL ? "disabled" : "enabled"));
 
     if (isOptionTrue(DEBUG, allValues)) {
       LocalNameServer.debuggingEnabled = true;

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 
@@ -32,24 +33,35 @@ import static edu.umass.cs.gnsserver.localnameserver.LocalNameServerOptions.PORT
 import static edu.umass.cs.gnsserver.localnameserver.LocalNameServerOptions.disableSSL;
 import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnsserver.utils.ParametersAndOptions;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.printOptions;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.reconfiguration.ActiveReplica;
+import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
@@ -62,6 +74,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -99,7 +112,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    */
   public final static int DEFAULT_LNS_TCP_PORT = 24398;
 
-  private static final ConcurrentMap<Integer, LNSRequestInfo> outstandingRequests = new ConcurrentHashMap<>(10, 0.75f, 3);
+  private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   private final Cache<String, CacheEntry> cache;
 
@@ -125,8 +138,9 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    *
    * @param nodeAddress
    * @param nodeConfig
+ * @throws IOException 
    */
-  public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
+  public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) throws IOException {
     SSLDataProcessingWorker.SSL_MODES sslMode;
     // arun: ssl parameters should only be set through gigapaxos properties
 
@@ -135,21 +149,26 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       // ReconfigurationConfig.setClientPortOffset(100);
       // Set up a SERVER_AUTH address the client can use
       //nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), nodeAddress.getPort() + 100);
+    	sslMode = ReconfigurationConfig.getClientSSLMode();
+        nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), ReconfigurationConfig.getClientFacingSSLPort(nodeAddress.getPort()));
     } else {
-      //sslMode = CLEAR;
-      //ReconfigurationConfig.setClientPortOffset(0);
+      sslMode = CLEAR;
+      nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), ReconfigurationConfig.getClientFacingClearPort(nodeAddress.getPort()));
+      //ReconfigurationConfig.setClientPortOffset(0);  // arun: illegal
     }
-    sslMode = ReconfigurationConfig.getClientSSLMode();
-    nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), ActiveReplica.getClientFacingPort(nodeAddress.getPort()));
-    
    
     this.address = nodeAddress;
-    System.out.println("LNS: SSL Mode is " + sslMode.name() + "; listening on " + address);
-    GNS.getLogger().warning("LNS: SSL Mode is " + sslMode.name() + "; listening on " + address);
+    GNS.getLogger().info("LNS: SSL Mode is " + sslMode.name() + "; listening on " + address);
 
     this.nodeConfig = nodeConfig;
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
-    this.demultiplexer = new LNSPacketDemultiplexer(this);
+    this.demultiplexer = new LNSPacketDemultiplexer(this,new AsyncLNSClient(
+			ReconfigurationConfig.getReconfiguratorAddresses(),
+			!LocalNameServerOptions.disableSSL ? ReconfigurationConfig
+					.getClientSSLMode() : SSL_MODES.CLEAR,
+			!LocalNameServerOptions.disableSSL ? ReconfigurationConfig
+					.getClientPortSSLOffset() : ReconfigurationConfig
+					.getClientPortClearOffset()) );
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
     try {
       JSONNIOTransport<InetSocketAddress> gnsNiot = new JSONNIOTransport<>(address, crNodeConfig, demultiplexer, sslMode);
@@ -167,6 +186,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
     this.pingManager = new PingManager<InetSocketAddress>(crNodeConfig);
     pingManager.startPinging();
+    
   }
 
   /**
@@ -188,6 +208,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
+
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(LocalNameServer.class.getCanonicalName(),
                     LocalNameServerOptions.getAllOptions(), args);
@@ -195,6 +216,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     if (options.containsKey(HELP)) {
       ParametersAndOptions.printUsage(LocalNameServer.class.getCanonicalName(),
               LocalNameServerOptions.getAllOptions());
+
       System.exit(0);
     }
 
@@ -206,7 +228,6 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
               = new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress().getHostAddress()
                       : "127.0.0.1",
                       options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : DEFAULT_LNS_TCP_PORT);
-
       LocalNameServer lns = new LocalNameServer(address, new LNSNodeConfig(options.get(NS_FILE)));
 
       //lns.testCache();
@@ -271,10 +292,18 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    * @param id
    * @param requestInfo
    */
-  @Override
-  public void addRequestInfo(int id, LNSRequestInfo requestInfo) {
-    outstandingRequests.put(id, requestInfo);
-  }
+	@Override
+	public void addRequestInfo(long id, LNSRequestInfo requestInfo) {
+		GNS.getLogger().log(Level.INFO,
+				"{0} inserting outgoing request {1}:{2}",
+				new Object[] { this, id + "", requestInfo });
+		outstandingRequests.put(id, requestInfo);
+		assert (outstandingRequests.get(id) != null);
+	}
+  
+	public String toString() {
+		return this.getClass().getSimpleName();
+	}
 
   /**
    * Removes the request info.
@@ -283,9 +312,11 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    * @return the request info removed
    */
   @Override
-  public LNSRequestInfo removeRequestInfo(int id) {
-    return outstandingRequests.remove(id);
-  }
+	public LNSRequestInfo removeRequestInfo(long id) {
+		GNS.getLogger().log(Level.INFO, "{0} matching repsonse with id {1}",
+				new Object[] { this, id + "" });
+		return outstandingRequests.remove(id);
+	}
 
   /**
    * Returns the request info.
@@ -294,7 +325,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    * @return the request info
    */
   @Override
-  public LNSRequestInfo getRequestInfo(int id) {
+  public LNSRequestInfo getRequestInfo(long id) {
     return outstandingRequests.get(id);
   }
 
@@ -307,6 +338,9 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public PingManager<InetSocketAddress> getPingManager() {
     return pingManager;
   }
+  
+  // marker for broken and/or hacky code
+  protected static final String LNS_BAD_HACKY = "Bad hacky code: ";
 
   /**
    * Returns the active replicas.
@@ -317,7 +351,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   @Override
   public Set<InetSocketAddress> getReplicatedActives(String name) {
 	  // arun
-	  GNS.getLogger().warning("Bad hacky code");
+	  GNS.getLogger().warning(LNS_BAD_HACKY + "name = " + name);
     // FIXME: this needs work
     if (!disableSSL) {
       Set<InetSocketAddress> result = new HashSet<>();
@@ -327,7 +361,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
         // If we're doing SSL we need to get the correct SSL port on the server.
         if (!disableSSL) {
           result.add(new InetSocketAddress(socketAddress.getAddress(),
-                  ActiveReplica.getClientFacingPort(socketAddress.getPort())));
+                  ReconfigurationConfig.getClientFacingSSLPort(socketAddress.getPort())));
         }
       }
       return result;
@@ -335,6 +369,68 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       return crNodeConfig.getReplicatedActives(name);
     }
   }
+  private static Stringifiable<String> unstringer = new StringifiableDefault<String>("");
+  
+  static class AsyncLNSClient extends ReconfigurableAppClientAsync {
+
+	public AsyncLNSClient(Set<InetSocketAddress> reconfigurators,
+			SSL_MODES sslMode, int clientPortOffset) throws IOException {
+		super(reconfigurators, sslMode, clientPortOffset);
+	}
+	
+
+	  //@Override
+	  // This needs to return null for packet types that we don't want to handle.
+	  public Request getRequest1(String stringified) throws RequestParseException {
+	    Request request = null;
+	    try {
+	      JSONObject json = new JSONObject(stringified);
+	      if (ClientAsynchBase.clientPacketTypes.contains(Packet.getPacketType(json))) {
+	        request = (Request) Packet.createInstance(json, unstringer);
+	      }
+	    } catch (JSONException e) {
+	      e.printStackTrace();
+	    }
+	    return request;
+	  }
+	  
+		static final Set<IntegerPacketType> clientPacketTypes = new HashSet<IntegerPacketType>(
+				Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
+
+	  @Override
+		public Request getRequest(String msg) throws RequestParseException {
+			Request response = null;
+			JSONObject json = null;
+			try {
+				json = new JSONObject(msg);
+				Packet.PacketType type = Packet.getPacketType(json);
+				if (type != null) {
+					GNS.getLogger().log(Level.INFO,
+							"{0} retrieving packet from received json {1}",
+							new Object[] { this, json });
+					if (clientPacketTypes.contains(Packet.getPacketType(json)))
+						response = (Request) Packet.createInstance(json,
+								unstringer);
+					assert (response == null || response.getRequestType() == Packet.PacketType.COMMAND_RETURN_VALUE);
+				}
+			} catch (JSONException e) {
+				GNS.getLogger().warning(
+						"Problem parsing packet from " + json + ": " + e);
+			}
+			return response;
+		}
+
+		@Override
+		public Set<IntegerPacketType> getRequestTypes() {
+			return clientPacketTypes;
+		}
+		
+		public String toString() {
+			return LocalNameServer.class.getSimpleName() + "."
+					+ this.getClass().getSimpleName();
+		}
+	}
+
 
   /**
    * Selects the closest Name Server from a set of Name Servers.
@@ -497,6 +593,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public void sendToClosestReplica(Set<InetSocketAddress> servers, JSONObject packet) throws IOException {
     InetSocketAddress address = LocalNameServer.this.getClosestReplica(servers);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
+    // FIXME: arun: why not just not include them in toJSONObject()?
     packet.remove(MessageNIOTransport.SNDR_IP_FIELD);
     packet.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     // Don't get a client facing port for these because they are returned as already translated.

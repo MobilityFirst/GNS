@@ -64,7 +64,7 @@ public interface RequestHandlerInterface {
    * @param id
    * @param requestInfo
    */
-  public void addRequestInfo(int id, LNSRequestInfo requestInfo);
+  public void addRequestInfo(long id, LNSRequestInfo requestInfo);
 
   /**
    * Removes request info.
@@ -72,7 +72,7 @@ public interface RequestHandlerInterface {
    * @param id
    * @return the removed request info
    */
-  public LNSRequestInfo removeRequestInfo(int id);
+  public LNSRequestInfo removeRequestInfo(long id);
 
   /**
    * Retrieves the request info.
@@ -80,7 +80,7 @@ public interface RequestHandlerInterface {
    * @param id
    * @return the request info
    */
-  public LNSRequestInfo getRequestInfo(int id);
+  public LNSRequestInfo getRequestInfo(long id);
   
   /**
    * Is debug mode on?

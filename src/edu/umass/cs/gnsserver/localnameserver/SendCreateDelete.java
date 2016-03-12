@@ -115,7 +115,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
   }
 
   private String refreshKey() {
-    return lnsRequestInfo.getServiceName() + " | " + Integer.toString(lnsRequestInfo.getLNSReqID());
+    return lnsRequestInfo.getServiceName() + " | " + Long.toString(lnsRequestInfo.getLNSReqID());
   }
 
   @Override

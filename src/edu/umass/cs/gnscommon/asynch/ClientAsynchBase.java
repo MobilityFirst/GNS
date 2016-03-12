@@ -23,6 +23,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -34,8 +35,10 @@ import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.util.Random;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
@@ -65,6 +68,7 @@ import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -73,12 +77,14 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
@@ -87,7 +93,7 @@ import java.util.Set;
  */
 public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
-  private static Set<IntegerPacketType> clientPacketTypes
+  public static final Set<IntegerPacketType> clientPacketTypes
           = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND,
                   Packet.PacketType.COMMAND_RETURN_VALUE,
                   Packet.PacketType.SELECT_REQUEST,
@@ -129,10 +135,14 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     super(addresses,
             ReconfigurationConfig.getClientSSLMode(),
             ReconfigurationConfig.getClientPortOffset());
-    if (isDebuggingEnabled()) {
+    if (isDebuggingEnabled()) 
+    {
+      GNS.getLogger().info("Reconfigurators " + addresses);
       System.out.println("Reconfigurators " + addresses);
       System.out.println("Client port offset " + ReconfigurationConfig.getClientPortOffset());
+      GNS.getLogger().info("Client port offset " + ReconfigurationConfig.getClientPortOffset());
       System.out.println("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
+      GNS.getLogger().info("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
     }
     keyPairHostIndex = addresses.iterator().next();
   }
@@ -171,6 +181,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   private long sendCommandAsynch(JSONObject command, RequestCallback callback) throws IOException, JSONException {
     int id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, null, -1, command);
+    GNS.getLogger().log(Level.INFO, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
   }
 

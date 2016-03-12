@@ -54,7 +54,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * Identifier of the request.
    */
-  private final int clientRequestId;
+  private final long clientRequestId;
   /**
    * The service name from the request. Usually the guid or HRN.
    */
@@ -62,7 +62,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * LNS identifier used by the LNS.
    */
-  private final int LNSRequestId;
+  private final long LNSRequestId;
   /**
    * The returned value.
    */
@@ -103,7 +103,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    * @param requestRate
    * @param cppProccessingTime
    */
-  public CommandValueReturnPacket(int requestId, int CCPRequestId, String serviceName,
+  public CommandValueReturnPacket(long requestId, long CCPRequestId, String serviceName,
           CommandResponse<String> response, long requestCnt,
           int requestRate, long cppProccessingTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
@@ -127,9 +127,9 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    */
   public CommandValueReturnPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.clientRequestId = json.getInt(CLIENTREQUESTID);
+    this.clientRequestId = json.getLong(CLIENTREQUESTID);
     if (json.has(LNSREQUESTID)) {
-      this.LNSRequestId = json.getInt(LNSREQUESTID);
+      this.LNSRequestId = json.getLong(LNSREQUESTID);
     } else {
       this.LNSRequestId = -1;
     }
@@ -189,7 +189,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    *
    * @return the client request id
    */
-  public int getClientRequestId() {
+  public long getClientRequestId() {
     return clientRequestId;
   }
 
@@ -203,7 +203,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    *
    * @return the LNS request id
    */
-  public int getLNSRequestId() {
+  public long getLNSRequestId() {
     return LNSRequestId;
   }
 

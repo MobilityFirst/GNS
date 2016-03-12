@@ -102,14 +102,14 @@ public class ClientAsynchExample {
     // Create the command packet with a bogus id
     CommandPacket commandPacket = new CommandPacket(-1, null, -1, command);
     // Keep track of what we've sent for the other thread to look at.
-    Set<Integer> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+    Set<Long> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     // Create and run another thread to pick up the responses
     Runnable companion = () -> {
       lookForResponses(client, pendingIds);
     };
     new Thread(companion).start();
     while (true) {
-      int id = client.generateNextRequestID();
+      long id = client.generateNextRequestID();
       // Important to set the new request id each time
       commandPacket.setClientRequestId(id);
       // Record what we're sending
@@ -121,11 +121,11 @@ public class ClientAsynchExample {
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(BasicUniversalTcpClient client, Set<Integer> pendingIds) {
+  private static void lookForResponses(BasicUniversalTcpClient client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent
-      for (Integer id : pendingIds) {
+      for (Long id : pendingIds) {
         if (client.isAsynchResponseReceived(id)) {
           pendingIds.remove(id);
           CommandResult commandResult = client.removeAsynchResponse(id);

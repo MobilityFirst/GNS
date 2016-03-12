@@ -231,6 +231,7 @@ public class NSFieldAccess {
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result.isEmpty() && !database.containsName(guid) && allowRemoteQuery) {
       try {
+    	  GNS.getLogger().info("RQ: ");
         String stringResult = new RemoteQuery().fieldReadArray(guid, field);
         result = new ResultValue(stringResult);
       } catch (Exception e) {
@@ -266,6 +267,7 @@ public class NSFieldAccess {
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
+    	  GNS.getLogger().info("RQ: ");
         String stringResult = new RemoteQuery().fieldRead(guid, field);
         if (stringResult != null) {
           result = new ValuesMap();
@@ -299,7 +301,7 @@ public class NSFieldAccess {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
 
-      if (codeRecord != null && originalValues != null
+      if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler()!=null
               && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
         try {
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);

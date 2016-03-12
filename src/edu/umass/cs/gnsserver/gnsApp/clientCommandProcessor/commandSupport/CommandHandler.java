@@ -304,7 +304,7 @@ public class CommandHandler {
    */
   public static void handleCommandReturnValuePacketForApp(JSONObject json, GnsApp app) throws JSONException, IOException {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
-    int id = returnPacket.getClientRequestId();
+    long id = returnPacket.getClientRequestId();
     CommandRequestInfo sentInfo;
     if ((sentInfo = app.outStandingQueries.get(id)) != null) {
       app.outStandingQueries.remove(id);

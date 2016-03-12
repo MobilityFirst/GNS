@@ -46,7 +46,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
 
   private final long RESTART_PERIOD = 10000;
 
-  private final int requestId;
+  private final long requestId;
   private final RequestHandlerInterface handler;
   private final JSONObject json;
   private final String key;
@@ -66,7 +66,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
    * @param actives
    * @param handler
    */
-  public CommandRetransmitter(int requestId, JSONObject json, Set<InetSocketAddress> actives,
+  public CommandRetransmitter(long requestId, JSONObject json, Set<InetSocketAddress> actives,
           RequestHandlerInterface handler) {
     this.requestId = requestId;
     this.json = json;
@@ -121,7 +121,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
   }
 
   private String refreshKey() {
-    return Integer.toString(requestId);
+    return Long.toString(requestId);
   }
 
   @Override

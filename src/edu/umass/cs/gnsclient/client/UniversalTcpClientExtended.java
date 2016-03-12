@@ -20,12 +20,18 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
+
 import java.io.IOException;
+
 import org.json.JSONArray;
+
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnsserver.main.GNS;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+
 import org.json.JSONObject;
 
 /**
@@ -90,9 +96,16 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommandAndWait(command);
+    try {
 
+    String response = sendCommandAndWait(command);
+	  
     checkResponse(command, response);
+	  } catch(NullPointerException ne) {
+		  GNS.getLogger().severe("NPE in field create");
+		  ne.printStackTrace();
+		  System.exit(1);
+	  }
   }
 
   /**

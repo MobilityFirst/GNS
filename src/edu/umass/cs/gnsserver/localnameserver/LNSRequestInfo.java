@@ -19,7 +19,11 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.utils.Config;
 
 /**
  * Class represents the abstract class in which LNS stores info for each ongoing request,
@@ -35,7 +39,7 @@ public class LNSRequestInfo {
   private final CommandPacket commandPacket;
 
   /** Unique request ID assigned to this request by the local name server */
-  private final int lnsReqID;
+  private final long lnsReqID;
 
   /** Time that CCP started processing this request. */
   protected final long startTime;
@@ -51,7 +55,7 @@ public class LNSRequestInfo {
    * @param lnsReqId
    * @param commandPacket
    */
-  public LNSRequestInfo(int lnsReqId, CommandPacket commandPacket) {
+  public LNSRequestInfo(long lnsReqId, CommandPacket commandPacket) {
     this.lnsReqID = lnsReqId;
     this.startTime = System.currentTimeMillis();
     this.commandPacket = commandPacket;
@@ -62,9 +66,14 @@ public class LNSRequestInfo {
    * 
    * @return the service name
    */
-  public synchronized String getServiceName() {
-    return commandPacket.getServiceName();
-  }
+	public synchronized String getServiceName() {
+		// arun
+		return GnsProtocol.CREATE_DELETE_COMMANDS.contains(getCommandName()) 
+				//|| this.commandPacket.getCommandName().equals(GnsProtocol.CONNECTION_CHECK) 
+				? Config
+				.getGlobalString(RC.SPECIAL_NAME) : commandPacket
+				.getServiceName();
+	}
 
   /**
    * Returns the command packet.
@@ -107,7 +116,7 @@ public class LNSRequestInfo {
    * 
    * @return the LNS request id
    */
-  public synchronized int getLNSReqID() {
+  public synchronized long getLNSReqID() {
     return lnsReqID;
   }
 
@@ -162,4 +171,12 @@ public class LNSRequestInfo {
     this.success = success;
   }
 
+  public String toString() {
+	  return this.getCommandType() + ":" + this.getServiceName() + ":" + this.lnsReqID;
+  }
+
+  // arun
+public String getCommandName() {
+	return this.commandPacket.getCommandName();
+}
 }
