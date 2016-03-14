@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.
@@ -43,7 +43,7 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
  */
 public class ClientPool implements Runnable{
 	private HashMap<Long, ActiveCodeClient> clients;
-	private GnsApplicationInterface<String> app;
+	private ActiveDBInterface app;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
 	
 	/**
@@ -55,6 +55,7 @@ public class ClientPool implements Runnable{
 	 */
 	private final ConcurrentHashMap<Integer, ActiveCodeClient> workerPortToClient;
 	private final ConcurrentHashMap<Integer, Boolean> portStatus;
+	//private final ConcurrentHashMap<Integer, Long> startTime = new ConcurrentHashMap<Integer, Long>();
 	
 	//private static ConcurrentHashMap<Integer, Long> timeMap = new ConcurrentHashMap<Integer, Long>();
 	private ExecutorService executorPool;
@@ -73,7 +74,7 @@ public class ClientPool implements Runnable{
 	 * Initialize a ClientPool
 	 * @param app 
 	 */
-	public ClientPool(GnsApplicationInterface<String> app) {
+	public ClientPool(ActiveDBInterface app) {
 		try{
 			tempSocket = new DatagramSocket();
 			tempSocket.close();
@@ -109,6 +110,7 @@ public class ClientPool implements Runnable{
     		try{
     			socket.receive(pkt);
     			int workerPort = pkt.getPort();
+    			
     			/*
     			 * Invariant: the worker port must already exist, and its value should be false
     			 */
@@ -255,7 +257,7 @@ public class ClientPool implements Runnable{
 		return port;
 	}
 	
-	protected Process getSpareWorker(int port){
+	protected synchronized Process getSpareWorker(int port){
 		return spareWorkers.remove(port);
 	}
 	
@@ -296,7 +298,7 @@ public class ClientPool implements Runnable{
 	/**
 	 * Start a spare worker
 	 */
-	public void addSpareWorker(){
+	public synchronized void addSpareWorker(){
 		int workerPort = getOpenUDPPort();	
 		portStatus.put(workerPort, false);
 		

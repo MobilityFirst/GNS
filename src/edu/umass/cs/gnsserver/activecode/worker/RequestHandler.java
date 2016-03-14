@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.activecode.worker;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.lang.management.ManagementFactory;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -46,6 +47,8 @@ public class RequestHandler {
 	private byte[] buffer = new byte[8096*10];
 	JSONParser parser = new JSONParser();
 	
+	private com.sun.management.OperatingSystemMXBean mxbean =
+			  (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 	/**
 	 * Initialize a RequestHandler in ActiveCodeWorker
 	 * @param runner 
@@ -75,13 +78,12 @@ public class RequestHandler {
 			if (clientPort == -1){
 				setPort(pkt.getPort());
 			}
-			System.out.println(">>>>>>>>>>> Worker received the packet from port "+clientPort+"with "+acm);
 			
+			System.out.println("ActiveCodeClient:"+clientPort+"'s request "+acm+" is received by worker.");
 		    //FIXME: do not need to initialize new querier everytime
 		    ActiveCodeGuidQuerier querier = new ActiveCodeGuidQuerier(socket, clientPort);
 		    
 		    if( acm.isShutdown() ) {
-		    	//System.out.println("Shutting down...");
 		    	ret = false;
 		    } else {
 		    	// Run the active code
@@ -96,9 +98,10 @@ public class RequestHandler {
 			    
 			    DelayProfiler.updateDelayNano("activeWorkerPrepare", t1);
 			    
-			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
-			    
-			    //System.out.println(">>>>>>>>>>>>>>>>It takes "+(System.currentTimeMillis()-t1)+"ms to execute this normal code!");
+			    //long startCpuTime = mxbean.getProcessCpuTime();
+			    JSONObject result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);  
+			    //System.out.println(">>>>>>>>>>>>>>>>>>>>>>>"+(mxbean.getProcessCpuTime()-startCpuTime)+" ");			    
+			    System.out.println("ActiveCodeClient:"+clientPort+"'s request "+acm+" is executed by worker.");
 			    
 			    long t2 = System.nanoTime();
 			    
@@ -108,6 +111,8 @@ public class RequestHandler {
 			    acmResp.setCrashed(querier.getError());
 			    acmResp.setValuesMapString(result == null ? null : result.toString());
 			    ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
+			    
+			    System.out.println("ActiveCodeClient:"+clientPort+"'s request "+acm+" is responsed by worker.");
 			    //System.out.println("Send the response back through port "+socket.getLocalPort());
 			    DelayProfiler.updateDelayNano("activeWorkerAfterRun", t2);
 		    }

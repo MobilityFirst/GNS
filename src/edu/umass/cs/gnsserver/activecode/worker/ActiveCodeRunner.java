@@ -153,7 +153,7 @@ public class ActiveCodeRunner {
 	JSONObject ret = null;
 	  //	return runLuaCode(guid, action, field, code, value, querier);
 	long startTime = System.nanoTime();
-    try {    	
+    try {
       // Create a guid + action pair
       //String codeId = guid + "_" + action;
       // Update the script context if needed

@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.net.DatagramSocket;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
@@ -36,14 +37,17 @@ public class ActiveCodeWorker {
 	
 	protected static int numReqs = 0;
 	private DatagramSocket serverSocket;
+	long startTime;
 	
 	protected ActiveCodeWorker(int port) {
+		startTime = System.currentTimeMillis();
 		try{
 			this.serverSocket = new DatagramSocket(port);
 			System.out.println(this+" : Starting ActiveCodeWorker at port number " + port);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+		System.out.println("It takes "+(System.currentTimeMillis() - startTime)+"ms to open a datagram socket.");
 	}
 	
 	public String toString(){
@@ -54,23 +58,22 @@ public class ActiveCodeWorker {
 	 * Starts the worker listener 
 	 * @throws IOException
 	 */
-	public void run() throws IOException {	
+	public void run() throws IOException {
         ActiveCodeRunner runner = new ActiveCodeRunner();
         
     	RequestHandler handler = new RequestHandler(runner);
     	boolean keepGoing = true;
 
-		// Notify the server that I'm ready
-    	
+		// Notify the server that I'm ready    	
 		ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
+		//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>"+(System.currentTimeMillis() - startTime));
 		
         while (keepGoing) {       	
         	keepGoing = handler.handleRequest(serverSocket);  
         	numReqs++;
         	if(numReqs%1000 == 0){
         		System.out.println(DelayProfiler.getStats());
-        	}
-        	
+        	}        	
         }
         
         serverSocket.close();
@@ -82,7 +85,7 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException  {
-		
+		System.out.println(((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getProcessCpuTime());
 		int port = 0;
 		port = Integer.parseInt(args[0]);
 		

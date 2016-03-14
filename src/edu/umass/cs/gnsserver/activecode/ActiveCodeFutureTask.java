@@ -13,6 +13,9 @@ public class ActiveCodeFutureTask extends FutureTask<ValuesMap>{
 	
 	private ActiveCodeTask callable;
 	
+	
+	private boolean malicious = false;
+	
 	/**
 	 * @param callable
 	 */
@@ -31,4 +34,11 @@ public class ActiveCodeFutureTask extends FutureTask<ValuesMap>{
 		return callable;
 	}
 	
+	protected void setMalicious(boolean mal){
+		malicious = mal;
+	}
+	
+	protected boolean isMalicious(){
+		return malicious;
+	}
 }

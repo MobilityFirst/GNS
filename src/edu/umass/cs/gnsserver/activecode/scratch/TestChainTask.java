@@ -1,6 +1,5 @@
 package edu.umass.cs.gnsserver.activecode.scratch;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;

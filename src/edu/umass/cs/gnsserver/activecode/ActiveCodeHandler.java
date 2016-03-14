@@ -37,11 +37,16 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
+import edu.umass.cs.gnsserver.database.ColumnFieldType;
+import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
+import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
+import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -54,7 +59,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeHandler {	
-	private GnsApplicationInterface<?> gnsApp;
+	private ActiveDBInterface gnsApp;
 	private static ClientPool clientPool;
 	private static ThreadFactory threadFactory;
 	private static ActiveCodeExecutor executorPool;
@@ -63,17 +68,62 @@ public class ActiveCodeHandler {
 	
 	private static final Logger logger = Logger.getLogger("ActiveGNS");
 	
-
+	// For instrument only, to tell whether a code is malicious or not 
+	private static String noop_code;
+	
 	/**
 	 * enable debug output
 	 */
 	public static final boolean enableDebugging = AppReconfigurableNodeOptions.activeCodeEnableDebugging;
 	
+
+	/**
+	 * @param gnsApp
+	 * @return an app
+	 */
+	public static ActiveDBInterface getActiveDB(GnsApplicationInterface<?> gnsApp) {
+		return new ActiveDBInterface() {
+
+			// FIXME: do not use this hacky method!
+			@Override
+			public BasicRecordMap getDB() {
+				return gnsApp.getDB();
+			}
+
+			@Override
+			public NameRecord read(String querierGuid, String queriedGuid, String field) {
+				NameRecord record = null;
+				try {
+					NameRecord.getNameRecordMultiField(gnsApp.getDB(), queriedGuid, null, 
+						  ColumnFieldType.USER_JSON, field);
+				} catch (RecordNotFoundException | FailedDBOperationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return record;
+			}
+
+			@Override
+			public boolean write(String querierGuid, String queriedGuid, String field, ValuesMap valuesMap) {
+				// This is not used for a single server experiment
+				return false;
+			}
+		};
+	}
+	
 	/**
 	 * Initializes an ActiveCodeHandler
 	 * @param app
 	 */
-	public ActiveCodeHandler(GnsApplicationInterface<String> app) {
+	public ActiveCodeHandler(ActiveDBInterface app) {
+		
+		try {
+			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
 		logger.setLevel(Level.INFO); 
 		
 		int numProcesses = AppReconfigurableNodeOptions.activeCodeWorkerCount;
@@ -84,9 +134,6 @@ public class ActiveCodeHandler {
 		
 		
 		guard = new ActiveCodeGuardian(clientPool);
-		if (AppReconfigurableNodeOptions.activeCodeEnableTimeout){
-			(new Thread(guard)).start();
-		}
 		
 	    // Get the ThreadFactory implementation to use
 	    threadFactory = new ActiveCodeThreadFactory(clientPool);
@@ -144,6 +191,9 @@ public class ActiveCodeHandler {
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		ActiveCodeFutureTask futureTask = new ActiveCodeFutureTask(new ActiveCodeTask(acp));
+		if(!noop_code.equals(code)){
+			futureTask.setMalicious(true);
+		}
 		
 		DelayProfiler.updateDelayNano("activeHandlerPrepare", startTime);		
 
@@ -185,7 +235,7 @@ public class ActiveCodeHandler {
 					//+ "; actualActiveCount = "+ ActiveCodeTask.getActiveCount());
 						
 			try {
-				guard.cancelTask(futureTask, true);
+				ActiveCodeGuardian.cancelTask(futureTask);
 			} catch(Exception | Error e) {
 				//thrown = e;
 				e.printStackTrace();
@@ -349,7 +399,7 @@ public class ActiveCodeHandler {
 	/**
 	 * @return gnsApp
 	 */
-	public GnsApplicationInterface<?> getGnsApp() {
+	public ActiveDBInterface getGnsApp() {
 		return gnsApp;
 	}
 
@@ -357,7 +407,7 @@ public class ActiveCodeHandler {
 	/**
 	 * @param gnsApp
 	 */
-	public void setGnsApp(GnsApplicationInterface<?> gnsApp) {
+	public void setGnsApp(ActiveDBInterface gnsApp) {
 		this.gnsApp = gnsApp;
 	}
 }

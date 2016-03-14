@@ -22,20 +22,16 @@ package edu.umass.cs.gnsserver.activecode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -46,13 +42,13 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeQueryHelper {
-	private GnsApplicationInterface<String> app;
+	private ActiveDBInterface app;
 	
 	/**
 	 * Initialize an ActiveCodeQueryHelper
 	 * @param app
 	 */
-	public ActiveCodeQueryHelper(GnsApplicationInterface<String> app) {
+	public ActiveCodeQueryHelper(ActiveDBInterface app) {
 		this.app = app;
 	}
 
@@ -73,7 +69,7 @@ public class ActiveCodeQueryHelper {
 				valuesMapString = vm.toString();
 				success = true;
 			}
-		} catch (RecordNotFoundException | FailedDBOperationException | FieldNotFoundException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -97,7 +93,7 @@ public class ActiveCodeQueryHelper {
 			nameRecord.updateNameRecord(field, null, null, 0, userJSON,
 		              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 			success = true;
-		} catch (RecordNotFoundException | FailedDBOperationException | FieldNotFoundException | JSONException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -145,11 +141,17 @@ public class ActiveCodeQueryHelper {
 						long start = System.nanoTime();
 						// testGuid is a field for test chain guid
 						if(! field.equals("testGuid") ){
-							//Read the record and code from DB
-							NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, 
+							/*
+							NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, 
 									  ColumnFieldType.USER_JSON, field);
-							NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
+							NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
 					                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+							*/
+							
+							//Read the record and code from DB
+							NameRecord nameRecord = app.read(currentGuid, targetGuid, field);	
+							NameRecord codeRecord = app.read(currentGuid, targetGuid, ActiveCode.ON_READ);
+									
 							//set the response value to the code before running the active code
 							acqr = new ActiveCodeQueryResponse(true, nameRecord.getValuesMap().toString());
 							DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
@@ -186,10 +188,8 @@ public class ActiveCodeQueryHelper {
 							
 							if (newResult != null){
 								acqr = new ActiveCodeQueryResponse(true, newResult.toString());
-								//System.out.println("Send the request with new result value "+newResult.toString());
 							} else {
 								acqr = new ActiveCodeQueryResponse(true, valuesMap.toString());
-								//System.out.println("Send the request with new record value "+nameRecord.toString());
 							}
 						}
 						DelayProfiler.updateDelayNano("activeCodeQuerierReadExecution", start);
@@ -216,14 +216,20 @@ public class ActiveCodeQueryHelper {
 					*/
 					if (allowAccess){
 						long start = System.nanoTime();
-						NameRecord codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
-				                  ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
+						/*
+						NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null,
+					               ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
+						*/
+						
+						// read the code from DB
+ 						NameRecord codeRecord = app.read(currentGuid, targetGuid, ActiveCode.ON_WRITE);
+				                  
 						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
 						start = System.nanoTime();
 						if (codeRecord != null && ActiveCodeHandler.hasCode(codeRecord, "write")) {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
 							ValuesMap userJSON = new ValuesMap(new JSONObject(acqreq.getValuesMapString()));
-							NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, ColumnFieldType.USER_JSON, field);
+							NameRecord nameRecord = app.read(currentGuid, targetGuid, field); //NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, ColumnFieldType.USER_JSON, field);
 							nameRecord.updateNameRecord(field, null, null, 0, userJSON,
 						              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 							ActiveCodeHandler.runCode(code64, targetGuid, field, "write", nameRecord.getValuesMap(), hopLimit);

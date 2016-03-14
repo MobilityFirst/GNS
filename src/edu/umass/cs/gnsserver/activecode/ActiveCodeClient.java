@@ -31,7 +31,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -44,7 +44,7 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveCodeClient {
 	private boolean ready = false;
-	private boolean initialized = true;
+
 	private int workerPort;
 	private Process process;
 	private DatagramSocket clientSocket;
@@ -62,7 +62,7 @@ public class ActiveCodeClient {
 	 * @param port
 	 * @param proc
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<String> app, int port, Process proc) {
+	public ActiveCodeClient(ActiveDBInterface app, int port, Process proc) {
 		this.ready = false;
 		this.acqh = new ActiveCodeQueryHelper(app);
 		
@@ -95,15 +95,6 @@ public class ActiveCodeClient {
 		return false;
 	}
 	
-	protected boolean isJustInitialized(){
-		return initialized;
-	}
-	
-	protected boolean setInitialized(boolean init){
-		boolean prev = initialized;
-		initialized = init;
-		return prev;
-	}
 	
 	public String toString() {
 		return "  " + this.getClass().getSimpleName() + myID + ":"+this.clientSocket.getLocalPort();
@@ -126,20 +117,20 @@ public class ActiveCodeClient {
 		ActiveCodeUtils.sendMessage(clientSocket, acmReq, workerPort);
 		
 		
-		if(ActiveCodeHandler.enableDebugging)
-			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker through port "+workerPort);
+		//if(ActiveCodeHandler.enableDebugging)
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker's port "+workerPort);
 		
 		long receivedTime = System.nanoTime();
 		// Keeping going until we have received a 'finished' message
 		while (!codeFinished) {
 			ActiveCodeMessage acmResp = null;
 			
-			if(ActiveCodeHandler.enableDebugging)
+			//if(ActiveCodeHandler.enableDebugging)
 				ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest waiting for socket message");
 			
 			acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
 			
-			if(ActiveCodeHandler.enableDebugging)
+			//if(ActiveCodeHandler.enableDebugging)
 				ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest received socket message: " + (acmResp != null ? "acmResp.valuesMapString = " + acmResp.valuesMapString : "[NULL]"));
 			
 			/*
@@ -183,7 +174,7 @@ public class ActiveCodeClient {
 			}
 		}
 		
-		if(ActiveCodeHandler.enableDebugging)
+		//if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest out of while(!codeFinished) loop");
 		
 		
@@ -237,6 +228,7 @@ public class ActiveCodeClient {
 	}
 
 	protected synchronized void setReady(boolean ready) {
+		ActiveCodeHandler.getLogger().log(Level.INFO, this + " is awaken by notification.");
 		this.ready = ready;
 		this.notify();
 	}
@@ -266,7 +258,6 @@ public class ActiveCodeClient {
 	}
 
 	protected void setNewWorker(int port, Process proc) {
-		setInitialized(true);
 		this.process = proc;
 		this.workerPort = port;
 	}
