@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.utils.DelayProfiler;
@@ -86,15 +87,29 @@ public class ActiveCodeGuardian {
 			// shutdown the previous worker process 
 			ActiveCodeClient client = task.getWrappedTask().getClient();
 			if(client != null){
+				/**
+				 * This sequence is very important, otherwise it will incur bugs.
+				 * 1. Lock the client by setting its state to not ready.
+				 * 2. Shut down the client socket to unblock the I/O for canceling the task.
+				 * 3. Update the information for client.
+				 * 
+				 */
+				client.setReady(false);
 				int oldPort = client.getWorkerPort();
 				client.forceShutdownServer();
-															
+				int clientPort = client.getClientPort();
+						
 				// get the spare worker and set the client port to the new worker
 				int newPort = clientPool.getSpareWorkerPort();
-				client.setReady(clientPool.getPortStatus(newPort));
 				clientPool.updatePortToClientMap(oldPort, newPort, client);
 				Process proc = clientPool.getSpareWorker(newPort);
 				client.setNewWorker(newPort, proc);
+				
+				client.setReady(clientPool.getPortStatus(newPort));
+				if(ActiveCodeHandler.enableDebugging)
+					ActiveCodeHandler.getLogger().log(Level.INFO, client+" is shutdown on port "+clientPort
+							+" and starts on new port "+ client.getClientPort()+"."+
+					"its origianl worker is on port "+oldPort+" and starts on its worker port "+newPort);
 				
 				// generate a spare worker in another thread
 				long t1 = System.nanoTime();

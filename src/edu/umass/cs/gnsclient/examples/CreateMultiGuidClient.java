@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsclient.examples;
+		package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,7 +30,7 @@ public class CreateMultiGuidClient {
 	private static int NUM_CLIENT = 100;
 	private final static String filename = "./scripts/activeCode/noop.js"; //"/Users/gaozy/WebStorm/test.js"; //
 	private final static String mal_file = "./scripts/activeCode/mal.js"; // "/Users/gaozy/WebStorm/mal.js"; //
-	private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
+	//private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
 	
 	/**
 	 * @param args
@@ -46,12 +46,15 @@ public class CreateMultiGuidClient {
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]);
+		int BENIGN = Integer.parseInt(args[2]);
+		/*
 		int fraction = Integer.parseInt(args[2]); // deploy a malicious code for every 5 clients 
 		if(fraction > MALICIOUS_EVERY_FEW_CLIENTS){
 			System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
 			System.exit(0);
 		}
 		fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
+		*/
 		NUM_CLIENT = Integer.parseInt(args[3]);
 		boolean flag = Boolean.parseBoolean(args[4]);
 		
@@ -85,7 +88,7 @@ public class CreateMultiGuidClient {
 			String field = client.fieldRead(guidAccount, "nextGuid");
 		    System.out.println("Retrieved JSON from guid: " + result.toString()+", the field is "+field);
 		    if(flag){
-		    	if (i%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
+		    	if (i < BENIGN){
 		    		client.activeCodeSet(guid, "read", code64, guidAccount);
 		    		try{
 				    	field = client.fieldRead(guidAccount, "nextGuid");

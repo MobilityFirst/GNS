@@ -48,6 +48,11 @@ public class ActiveCodeClient {
 	private int workerPort;
 	private Process process;
 	private DatagramSocket clientSocket;
+	// For instrument only
+	int getClientPort(){
+		return clientSocket.getLocalPort();
+	}
+	
 	private byte[] buffer = new byte[2048];
 	protected final int myID = getNextID();
 	private final ActiveCodeQueryHelper acqh;

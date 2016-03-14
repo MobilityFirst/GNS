@@ -151,7 +151,7 @@ public class ActiveCodeQueryHelper {
 							//Read the record and code from DB
 							NameRecord nameRecord = app.read(currentGuid, targetGuid, field);	
 							NameRecord codeRecord = app.read(currentGuid, targetGuid, ActiveCode.ON_READ);
-									
+							
 							//set the response value to the code before running the active code
 							acqr = new ActiveCodeQueryResponse(true, nameRecord.getValuesMap().toString());
 							DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);

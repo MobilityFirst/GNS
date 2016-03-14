@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
@@ -265,6 +266,13 @@ public class ClientPool implements Runnable{
 		return portStatus.get(port);
 	}
 	
+	protected boolean hasPortStatus(int port){
+		boolean hasPort = false;
+		if(portStatus.contains(port))
+			hasPort = true;
+		return hasPort;
+	}
+	
 	protected Process startNewWorker(int workerPort, int initMemory){
 		List<String> command = new ArrayList<>();
 		// Get the current classpath
@@ -302,6 +310,7 @@ public class ClientPool implements Runnable{
 		int workerPort = getOpenUDPPort();	
 		portStatus.put(workerPort, false);
 		
+		ActiveCodeHandler.getLogger().log(Level.INFO, "ActiveCodeClient:"+workerPort+" is being started.");
 		Process process = startNewWorker(workerPort, 64);
 		
 		spareWorkers.put(workerPort, process);
@@ -311,6 +320,7 @@ public class ClientPool implements Runnable{
 	}
 	
 	protected void generateNewWorker(){
+		
 		executorPool.execute(new WorkerGeneratorRunanble());
 	}
 

@@ -31,7 +31,7 @@ public class CreateChainGuidClient {
 	private static UniversalTcpClient client;
 	private static int NUM_CLIENT;
 	private static String normal_filename = "./scripts/activeCode/noop.js";
-	private static String chain_filename = "./scripts/activeCode/chain.js"; // "/Users/gaozy/WebStorm/chain.js"; // 
+	private static String chain_filename = "./scripts/activeCode/chain";
 	
 	/**
 	 * @param args
@@ -54,7 +54,13 @@ public class CreateChainGuidClient {
 			BENIGN = Integer.parseInt(args[4]);
 		}
 		//Read in the code and serialize
-		String chain_code = new String(Files.readAllBytes(Paths.get(chain_filename)));
+		String chain_code = "";
+		if(address.equals("0.0.0.0") || address.equals("127.0.0.1")){
+			// This script is for local test only
+			chain_code = new String(Files.readAllBytes(Paths.get(chain_filename+"-test.js")));
+		} else{
+			chain_code = new String(Files.readAllBytes(Paths.get(chain_filename+".js")));
+		}
 		String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
 		String normal_code = new String(Files.readAllBytes(Paths.get(normal_filename)));
 		String normal_code64 = Base64.encodeToString(normal_code.getBytes("utf-8"), true);
