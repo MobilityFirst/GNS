@@ -17,18 +17,20 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.io.IOException;
 import java.util.Arrays;
+
 import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
@@ -198,17 +200,17 @@ public class GroupAccess {
           throws GnsClientException, IOException, JSONException {
     // just so you know all the nulls mean we're ignoring signatures and authentication
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("DELETE CLEANUP: " + guid);
+      GNSConfig.getLogger().info("DELETE CLEANUP: " + guid);
     }
     try {
       for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null, handler, true).toStringSet()) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("GROUP CLEANUP: " + groupGuid);
+          GNSConfig.getLogger().info("GROUP CLEANUP: " + groupGuid);
         }
         removeFromGroup(groupGuid, guid, null, null, null, handler);
       }
     } catch (FailedDBOperationException e) {
-      GNS.getLogger().severe("Unabled to remove guid from groups:" + e);
+      GNSConfig.getLogger().severe("Unabled to remove guid from groups:" + e);
     }
   }
 

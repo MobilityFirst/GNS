@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnscommon.utils;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
  * Sleep without worries.
@@ -36,7 +36,7 @@ public class ThreadUtils {
     try {
       Thread.sleep(ms);
     } catch (Exception c) {
-      GNS.getLogger().severe("Error sleeping :" + c);
+      GNSConfig.getLogger().severe("Error sleeping :" + c);
     }
   }
   

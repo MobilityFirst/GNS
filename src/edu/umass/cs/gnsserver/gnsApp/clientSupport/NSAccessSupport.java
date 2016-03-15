@@ -17,26 +17,32 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import com.google.common.collect.Sets;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
+
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.utils.Util;
+
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -63,7 +69,7 @@ public class NSAccessSupport {
       keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
       sig = Signature.getInstance(SIGNATURE_ALGORITHM);
     } catch (NoSuchAlgorithmException e) {
-      GNS.getLogger().severe("Unable to initialize for authentication:" + e);
+      GNSConfig.getLogger().severe("Unable to initialize for authentication:" + e);
     }
   }
 
@@ -81,23 +87,32 @@ public class NSAccessSupport {
    */
   public static boolean verifySignature(String accessorPublicKey, String signature, String message) throws
           InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
-    if (!GNS.enableSignatureAuthentication) {
+    if (!GNSConfig.enableSignatureAuthentication) {
       return true;
     }
     byte[] publickeyBytes = Base64.decode(accessorPublicKey);
     if (publickeyBytes == null) { // bogus public key
       if (debuggingEnabled) {
-        GNS.getLogger().info("&&&&Base 64 decoding is bogus!!!");
+        GNSConfig.getLogger().info("&&&&Base 64 decoding is bogus!!!");
       }
       return false;
     }
     if (debuggingEnabled) {
-      GNS.getLogger().info("NS: public key:" + accessorPublicKey + " signature:"
-              + signature + " message: " + message);
+			GNSConfig.getLogger().log(
+					Level.INFO,
+					"public_key:{0}, signature:{1}, message:{2}",
+					new Object[] { Util.truncate(accessorPublicKey, 16, 16),
+							Util.truncate(signature, 16, 16),
+							Util.truncate(message, 16, 16) });
     }
     boolean result = verifySignatureInternal(publickeyBytes, signature, message);
     if (debuggingEnabled) {
-      GNS.getLogger().info("Public key " + accessorPublicKey + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+			GNSConfig.getLogger()
+					.log(Level.INFO,
+							"public_key:{0} {1} as author of message:{2}",
+							new Object[] { Util.truncate(accessorPublicKey,16,16),
+									(result ? " verified " : " NOT verified "),
+									Util.truncate(message, 16, 16) });
     }
     return result;
   }
@@ -129,10 +144,10 @@ public class NSAccessSupport {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
-          String accessorGuid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+          String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     //String accessorGuid = ClientUtils.createGuidStringFromPublicKey(accessorPublicKey);
     if (debuggingEnabled) {
-      GNS.getLogger().info("User: " + guid + " Reader: " + accessorGuid + " Field: " + field);
+      GNSConfig.getLogger().info("User: " + guid + " Reader: " + accessorGuid + " Field: " + field);
     }
     if (guid.equals(accessorGuid)) {
       return true; // can always read your own stuff
@@ -142,7 +157,7 @@ public class NSAccessSupport {
       return true; // accessor can see all fields
     } else {
       if (debuggingEnabled) {
-        GNS.getLogger().info("User " + accessorGuid + " NOT allowed to access user " + guid + "'s " + field + " field");
+        GNSConfig.getLogger().info("User " + accessorGuid + " NOT allowed to access user " + guid + "'s " + field + " field");
       }
       return false;
     }
@@ -162,9 +177,9 @@ public class NSAccessSupport {
    */
   private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid,
           String field, String accessorGuid,
-          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+          GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (debuggingEnabled) {
-      GNS.getLogger().info("###field=" + field);
+      GNSConfig.getLogger().info("###field=" + field);
     }
     if (checkForAccess(access, guid, field, accessorGuid, activeReplica)) {
       return true;
@@ -179,18 +194,18 @@ public class NSAccessSupport {
   }
 
   private static boolean checkForAccess(MetaDataTypeName access, String guid, String field, String accessorGuid,
-          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+          GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
       // FIXME: Tidy this mess up.
       @SuppressWarnings("unchecked")
       Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access,
               guid, field, activeReplica.getDB());
       if (debuggingEnabled) {
-        GNS.getLogger().info(guid + " allowed users of " + field + " : " + allowedusers);
+        GNSConfig.getLogger().info(guid + " allowed users of " + field + " : " + allowedusers);
       }
       if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica)) {
         if (debuggingEnabled) {
-          GNS.getLogger().info("User " + accessorGuid + " allowed to access "
+          GNSConfig.getLogger().info("User " + accessorGuid + " allowed to access "
                   + (field != ALL_FIELDS ? ("user " + guid + "'s " + field + " field") : ("all of user " + guid + "'s fields")));
         }
         return true;
@@ -200,13 +215,13 @@ public class NSAccessSupport {
       // This is actually a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().warning("User " + accessorGuid + " access problem for " + guid + "'s " + field + " field: " + e);
+      GNSConfig.getLogger().warning("User " + accessorGuid + " access problem for " + guid + "'s " + field + " field: " + e);
       return false;
     }
   }
 
   private static boolean checkAllowedUsers(String accessorGuid,
-          Set<String> allowedUsers, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+          Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (ClientUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
       //if (allowedUsers.contains(accessorPublicKey)) {
       return true;
@@ -217,7 +232,7 @@ public class NSAccessSupport {
       // intersects with the groups that this
       // guid is a member of (which is stored with this guid)
       if (debuggingEnabled) {
-        GNS.getLogger().info("Looking up groups for " + accessorGuid
+        GNSConfig.getLogger().info("Looking up groups for " + accessorGuid
                 + " and check against " + ClientUtils.convertPublicKeysToGuids(allowedUsers));
       }
       return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers),
@@ -236,7 +251,7 @@ public class NSAccessSupport {
    * @throws FailedDBOperationException
    */
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
-          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
+          GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
       return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica.getDB()).contains(EVERYONE)
               || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALL_FIELDS, activeReplica.getDB()).contains(EVERYONE);
@@ -244,7 +259,7 @@ public class NSAccessSupport {
       // This is actually a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().warning("User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
+      GNSConfig.getLogger().warning("User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
       return false;
     }
   }
@@ -263,7 +278,7 @@ public class NSAccessSupport {
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
     if (debuggingEnabled) {
-      GNS.getLogger().info("###field=" + field);
+      GNSConfig.getLogger().info("###field=" + field);
     }
     try {
       //FIXME: Clean this mess up.
@@ -271,7 +286,7 @@ public class NSAccessSupport {
     } catch (FieldNotFoundException e) {
       // do nothing
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().warning("User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
+      GNSConfig.getLogger().warning("User " + guid + " access problem for " + field + "'s " + access.toString() + " field: " + e);
       return new HashSet<>();
     }
     // otherwise go up the hierarchy and check

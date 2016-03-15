@@ -17,28 +17,30 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.Email;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
 import org.json.JSONException;
 
 import java.text.ParseException;
@@ -50,6 +52,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -102,7 +106,7 @@ public class AccountAccess {
     try {
       messageDigest = MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
-      GNS.getLogger().severe("Unable to initialize for authentication:" + e);
+      GNSConfig.getLogger().severe("Unable to initialize for authentication:" + e);
     }
   }
 
@@ -134,35 +138,40 @@ public class AccountAccess {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, ACCOUNT_INFO,
               handler.getApp(), false);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for " + guid + " / " + ACCOUNT_INFO + ": " + result);
+				GNSConfig
+						.getLogger()
+						.log(Level.INFO,
+								"AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
+								new Object[] { guid, ACCOUNT_INFO,
+										result.getSummary() });
       }
       if (result != null) {
         return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-      GNS.getLogger().severe("Problem extracting ACCOUNT_INFO from " + guid + " :" + e);
+      GNSConfig.getLogger().severe("Problem extracting ACCOUNT_INFO from " + guid + " :" + e);
     }
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for " + guid);
+      GNSConfig.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for " + guid);
     }
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ACCOUNT_INFO NOT FOUND for " + guid);
+      GNSConfig.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ACCOUNT_INFO NOT FOUND for " + guid);
     }
     if (allowRemoteLookup) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for " + guid);
+        GNSConfig.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for " + guid);
       }
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
+        GNSConfig.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
       }
       if (value != null) {
         try {
           return new AccountInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-          GNS.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
+          GNSConfig.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
         }
       }
     }
@@ -204,13 +213,13 @@ public class AccountAccess {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, PRIMARY_GUID,
               handler.getApp(), false);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
+        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
       }
       if (result != null) {
         return result.getString(PRIMARY_GUID);
       }
     } catch (FailedDBOperationException | JSONException e) {
-      GNS.getLogger().severe("Problem extracting PRIMARY_GUID from " + guid + " :" + e);
+      GNSConfig.getLogger().severe("Problem extracting PRIMARY_GUID from " + guid + " :" + e);
     }
 //    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, PRIMARY_GUID);
 //     try {
@@ -222,16 +231,16 @@ public class AccountAccess {
 //    }
     String value = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX PRIMARY_GUID NOT FOUND LOCALLY for " + guid);
+      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX PRIMARY_GUID NOT FOUND LOCALLY for " + guid);
     }
     if (allowRemoteLookup) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for " + guid);
+        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for " + guid);
       }
       try {
         value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNS.getLogger().severe("Problem getting HRN_GUID for " + guid + " from remote server: " + e);
+        GNSConfig.getLogger().severe("Problem getting HRN_GUID for " + guid + " from remote server: " + e);
       }
     }
     return value;
@@ -259,13 +268,13 @@ public class AccountAccess {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name, HRN_GUID,
               handler.getApp(), false);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
+        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
       }
       if (result != null) {
         return result.getString(HRN_GUID);
       }
     } catch (FailedDBOperationException | JSONException e) {
-      GNS.getLogger().severe("Problem extracting HRN_GUID from " + name + " :" + e);
+      GNSConfig.getLogger().severe("Problem extracting HRN_GUID from " + name + " :" + e);
     }
 //    try {
 //      QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(name, HRN_GUID);
@@ -282,16 +291,16 @@ public class AccountAccess {
      */
     String value = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for " + name);
+      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for " + name);
     }
     if (allowRemoteLookup) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for " + name);
+        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for " + name);
       }
       try {
         value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNS.getLogger().severe("Problem getting HRN_GUID for " + name + " from remote server: " + e);
+        GNSConfig.getLogger().severe("Problem getting HRN_GUID for " + name + " from remote server: " + e);
       }
     }
     return value;
@@ -323,20 +332,22 @@ public class AccountAccess {
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is " + allowRemoteLookup);
+      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is " + allowRemoteLookup);
     }
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GUID_INFO,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + GUID_INFO + ": " + result);
-      }
+			if (AppReconfigurableNodeOptions.debuggingEnabled) {
+				GNSConfig.getLogger().log(Level.INFO,
+						"XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1} {2}",
+						new Object[] { guid, GUID_INFO, result!=null ? result.getSummary():result });
+			}
       if (result != null) {
         return new GuidInfo(new JSONObject(result.getString(GUID_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-      GNS.getLogger().severe("Problem extracting GUID_INFO from " + guid + " :" + e);
+      GNSConfig.getLogger().severe("Problem extracting GUID_INFO from " + guid + " :" + e);
     }
 
 //    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, GUID_INFO);
@@ -352,23 +363,23 @@ public class AccountAccess {
 //      }
 //    }
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for " + guid);
+      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for " + guid);
     }
     if (allowRemoteLookup) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for " + guid);
+        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for " + guid);
       }
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNS.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
+        GNSConfig.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
       }
       if (value != null) {
         try {
           return new GuidInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-          GNS.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
+          GNSConfig.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
         }
       }
     }
@@ -396,7 +407,7 @@ public class AccountAccess {
   private static final String EMAIL_BODY = "This is an automated message informing you that an application has created an account for %s on the GNS server.\n\n"
           + "This is your verification code: %s\n\n"
           + "To verify this account you can click on the link below or enter this query into a browser:\n\n"
-          + "http://%s/" + GNS.GNS_URL_PATH + "/verifyAccount?guid=%s&code=%s\n\n"
+          + "http://%s/" + GNSConfig.GNS_URL_PATH + "/verifyAccount?guid=%s&code=%s\n\n"
           + "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
           + VERIFY_COMMAND + " %s %s\n\n"
           + "If you did not create this account please ignore this message.";
@@ -430,8 +441,8 @@ public class AccountAccess {
     CommandResponse<String> response;
     String verifyCode = createVerificationCode(name); // make this even if we don't need it
     if ((response = addAccount(name, guid, publicKey, password,
-            GNS.enableEmailAccountVerification, verifyCode, handler)).getReturnValue().equals(OK_RESPONSE)) {
-      if (GNS.enableEmailAccountVerification) {
+            GNSConfig.enableEmailAccountVerification, verifyCode, handler)).getReturnValue().equals(OK_RESPONSE)) {
+      if (GNSConfig.enableEmailAccountVerification) {
         // if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
         boolean emailOK = Email.email("GNS Account Verification", name,
                 String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
@@ -458,7 +469,7 @@ public class AccountAccess {
                   handler.getApp().getNodeID());
         }
       } else if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
+        GNSConfig.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
       }
     }
     return response;
@@ -554,10 +565,10 @@ public class AccountAccess {
       messageDigest.update((password + SALT + accountInfo.getPrimaryName()).getBytes("UTF-8"));
       return accountInfo.getPassword().equals(encryptPassword(password, accountInfo.getPrimaryName()));
     } catch (NoSuchAlgorithmException e) {
-      GNS.getLogger().warning("Problem hashing password:" + e);
+      GNSConfig.getLogger().warning("Problem hashing password:" + e);
       return false;
     } catch (UnsupportedEncodingException e) {
-      GNS.getLogger().warning("Problem hashing password:" + e);
+      GNSConfig.getLogger().warning("Problem hashing password:" + e);
       return false;
     }
   }
@@ -793,7 +804,7 @@ public class AccountAccess {
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids, guidInfoMap, handler);
           //handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
-          GNS.getLogger().info(DelayProfiler.getStats());
+          GNSConfig.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse<String>(OK_RESPONSE);
         }
       }
@@ -1004,7 +1015,7 @@ public class AccountAccess {
   public static CommandResponse<String> removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
-    GNS.getLogger().info("ALIAS: " + alias + " ALIASES:" + accountInfo.getAliases());
+    GNSConfig.getLogger().info("ALIAS: " + alias + " ALIASES:" + accountInfo.getAliases());
     if (!accountInfo.containsAlias(alias)) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ALIAS);
     }
@@ -1097,7 +1108,7 @@ public class AccountAccess {
           handler.getRemoteQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
           response = NSResponseCode.NO_ERROR;
         } catch (GnsClientException | IOException | JSONException e) {
-          GNS.getLogger().severe("Problem with remote query:" + e);
+          GNSConfig.getLogger().severe("Problem with remote query:" + e);
           response = NSResponseCode.ERROR;
         }
       } else {
@@ -1110,7 +1121,7 @@ public class AccountAccess {
       }
       return response;
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing account info:" + e);
+      GNSConfig.getLogger().severe("Problem parsing account info:" + e);
       return NSResponseCode.ERROR;
     }
   }
@@ -1133,7 +1144,7 @@ public class AccountAccess {
 //              writer, signature, message);
       return response;
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing guid info:" + e);
+      GNSConfig.getLogger().severe("Problem parsing guid info:" + e);
       return NSResponseCode.ERROR;
     }
   }

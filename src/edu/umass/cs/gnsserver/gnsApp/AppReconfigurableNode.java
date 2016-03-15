@@ -17,21 +17,23 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import static edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions.*;
+import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.*;
+
 import java.io.IOException;
+
 import edu.umass.cs.gnsserver.utils.ParametersAndOptions;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
-
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.printOptions;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,17 +69,17 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
    */
   @Override
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {
-    GnsApp app = null;
+    GNSApp app = null;
     try {
-      app = new GnsApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
+      app = new GNSApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
               this.messenger);
     } catch (IOException e) {
-      GNS.getLogger().info("Unable to create app: " + e);
+      GNSConfig.getLogger().info("Unable to create app: " + e);
       // not sure what to do here other than just return null
       return null;
     }
 
-    GnsAppCoordinator<String> appCoordinator = new GnsAppCoordinator<String>(app, this.nodeConfig, this.messenger);
+    GNSAppCoordinator<String> appCoordinator = new GNSAppCoordinator<String>(app, this.nodeConfig, this.messenger);
     return appCoordinator;
 
   }
@@ -95,7 +97,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
   private static void startStandalone(String nodeConfigFilename) throws IOException {
     GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, true);
     String nodeID = (String) nodeConfig.getActiveReplicas().iterator().next();
-    GNS.getLogger().info("Starting standalone node " + nodeID);
+    GNSConfig.getLogger().info("Starting standalone node " + nodeID);
     allNodes.add(new AppReconfigurableNode(nodeID, nodeConfig));
   }
 

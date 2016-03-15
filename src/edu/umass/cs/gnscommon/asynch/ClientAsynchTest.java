@@ -9,7 +9,7 @@ package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import java.io.IOException;
 
@@ -38,7 +38,7 @@ public class ClientAsynchTest {
     try {
       client = new ClientAsynchBase();
     } catch (IOException e) {
-      GNSClient.getLogger().severe("Problem creating client:" + e);
+      GNSClientConfig.getLogger().severe("Problem creating client:" + e);
       return;
     }
     GuidEntry guidEntry = null;
@@ -49,10 +49,10 @@ public class ClientAsynchTest {
       waitForResponse();
       System.out.println("##### Received response: " + receivedResponse);
     } catch (Exception e) {
-      GNSClient.getLogger().severe("Problem executing command:" + e);
+      GNSClientConfig.getLogger().severe("Problem executing command:" + e);
     }
     if (guidEntry == null) {
-      GNSClient.getLogger().info("Guid entry is null!");
+      GNSClientConfig.getLogger().info("Guid entry is null!");
       return;
     }
     // Try to lookup the account info
@@ -63,7 +63,7 @@ public class ClientAsynchTest {
       waitForResponse();
       System.out.println("##### Received response: " + receivedResponse);
     } catch (Exception e) {
-      GNSClient.getLogger().severe("Problem executing command:" + e);
+      GNSClientConfig.getLogger().severe("Problem executing command:" + e);
       System.exit(-1);
     }
     System.exit(0);
@@ -77,11 +77,11 @@ public class ClientAsynchTest {
           monitor.wait(readTimeout);
         }
         if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
-          GNSClient.getLogger().info("Timeout!");
+          GNSClientConfig.getLogger().info("Timeout!");
         }
       }
     } catch (InterruptedException x) {
-      GNSClient.getLogger().severe("Wait for return packet was interrupted " + x);
+      GNSClientConfig.getLogger().severe("Wait for return packet was interrupted " + x);
     }
   }
 

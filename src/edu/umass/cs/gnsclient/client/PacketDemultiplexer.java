@@ -23,8 +23,8 @@ import java.util.logging.Level;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
@@ -53,7 +53,7 @@ public class PacketDemultiplexer extends AbstractJSONPacketDemultiplexer{
   
 	@Override
 	public boolean handleMessage(JSONObject jsonObject) {
-		GNS.getLogger().log(Level.FINE, "{0} received {1}", new Object[]{this, jsonObject});
+		GNSConfig.getLogger().log(Level.FINE, "{0} received {1}", new Object[]{this, jsonObject});
 		long receivedTime = System.currentTimeMillis();
 		try {
 			Packet.PacketType type = Packet.getPacketType(jsonObject);

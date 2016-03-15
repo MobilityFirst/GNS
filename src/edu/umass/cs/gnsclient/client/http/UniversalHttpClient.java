@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.http;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
@@ -1376,7 +1376,7 @@ public class UniversalHttpClient implements GNSClientInterface {
       if (queryString != null) {
         urlString += "/GNS/" + queryString;
       }
-      GNSClient.getLogger().fine("Sending: " + urlString);
+      GNSClientConfig.getLogger().fine("Sending: " + urlString);
       URL serverURL = new URL(urlString);
       // set up out communications stuff
       connection = null;
@@ -1400,7 +1400,7 @@ public class UniversalHttpClient implements GNSClientInterface {
           // sent
           break;
         } catch (java.net.SocketTimeoutException e) {
-          GNSClient.getLogger().info("Get Response timed out. Trying " + cnt + " more times. Query is " + queryString);
+          GNSClientConfig.getLogger().info("Get Response timed out. Trying " + cnt + " more times. Query is " + queryString);
         }
       } while (cnt-- > 0);
       try {
@@ -1409,9 +1409,9 @@ public class UniversalHttpClient implements GNSClientInterface {
         // http://docs.oracle.com/javase/6/docs/technotes/guides/net/http-keepalive.html
         inputStream.close();
       } catch (IOException e) {
-        GNSClient.getLogger().warning("Problem closing the HttpURLConnection's stream.");
+        GNSClientConfig.getLogger().warning("Problem closing the HttpURLConnection's stream.");
       }
-      GNSClient.getLogger().fine("Received: " + response);
+      GNSClientConfig.getLogger().fine("Received: " + response);
       if (response != null) {
         return response;
       } else {

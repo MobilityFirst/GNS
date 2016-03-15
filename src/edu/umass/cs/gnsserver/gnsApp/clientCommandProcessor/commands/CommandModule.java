@@ -17,9 +17,9 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -58,7 +58,7 @@ public class CommandModule {
   private void initCommands() {
     this.commands = new TreeSet<GnsCommand>();
     addCommands(CommandDefs.getCommandDefs(), commands);
-    GNS.getLogger().info(commands.size() + " commands added.");
+    GNSConfig.getLogger().info(commands.size() + " commands added.");
   }
 
   /**
@@ -82,10 +82,10 @@ public class CommandModule {
           constructor = clazz.getConstructor(new Class[]{CommandModule.class});
         }
         GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
-        GNS.getLogger().fine("Adding command " + (i + 1) + ": " + commandClassName + " with " + command.getCommandName() + ": " + command.getCommandParametersString());
+        GNSConfig.getLogger().fine("Adding command " + (i + 1) + ": " + commandClassName + " with " + command.getCommandName() + ": " + command.getCommandParametersString());
         commands.add(command);
       } catch (Exception e) {
-        GNS.getLogger().severe("Unable to add command for class " + commandClassName + ": " + e);
+        GNSConfig.getLogger().severe("Unable to add command for class " + commandClassName + ": " + e);
       }
     }
   }
@@ -101,10 +101,10 @@ public class CommandModule {
     try {
       action = json.getString(COMMANDNAME);
     } catch (JSONException e) {
-      GNS.getLogger().warning("Unable find " + COMMANDNAME + " key in JSON command: " + e);
+      GNSConfig.getLogger().warning("Unable find " + COMMANDNAME + " key in JSON command: " + e);
       return null;
     }
-    GNS.getLogger().fine("Searching " + commands.size() + " commands:");
+    GNSConfig.getLogger().fine("Searching " + commands.size() + " commands:");
     // for now a linear search is fine
     for (GnsCommand command : commands) {
       //GNS.getLogger().info("Search: " + command.toString());
@@ -116,7 +116,7 @@ public class CommandModule {
         }
       }
     }
-    GNS.getLogger().warning("***COMMAND SEARCH***: Unable to find " + json);
+    GNSConfig.getLogger().warning("***COMMAND SEARCH***: Unable to find " + json);
     return null;
   }
   

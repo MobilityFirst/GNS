@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.recordmap;
+package edu.umass.cs.gnsserver.gnsapp.recordmap;
 
 //import edu.umass.cs.gnsserver.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;

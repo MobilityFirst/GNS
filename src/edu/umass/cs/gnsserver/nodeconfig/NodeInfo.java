@@ -22,6 +22,8 @@ package edu.umass.cs.gnsserver.nodeconfig;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import edu.umass.cs.utils.Util;
+
 /**
  * The NodeInfo class is used to represent nodes in a GNSNodeConfig.
  *
@@ -146,7 +148,8 @@ public class NodeInfo<NodeIDType> {
   public synchronized InetAddress getIpAddress() {
     if (ipAddress == null) {
       try {
-        ipAddress = InetAddress.getByName(ipAddressString);
+    	  // arun: coz InetAddress produces a String it can't recognize 
+        ipAddress = Util.getInetAddressFromString(ipAddressString);//InetAddress.getByName(ipAddressString);
       } catch (UnknownHostException e) {
         e.printStackTrace();
       }
@@ -163,7 +166,8 @@ public class NodeInfo<NodeIDType> {
     if (externalIPAddress == null) {
       try {
         if (externalIPString != null) {
-          externalIPAddress = InetAddress.getByName(externalIPString);
+        	// arun
+          externalIPAddress = Util.getInetAddressFromString(externalIPString);//InetAddress.getByName(externalIPString);
         } else {
           externalIPAddress = getIpAddress();
         }

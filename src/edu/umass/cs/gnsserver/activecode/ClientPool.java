@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.activecode;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.
@@ -32,13 +32,13 @@ import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
  */
 public class ClientPool {
 	private Map<Long, ActiveCodeClient> clients;
-	private GnsApplicationInterface<?> app;
+	private GNSApplicationInterface<?> app;
 	
 	/**
 	 * Initialize a ClientPool
 	 * @param app
 	 */
-	public ClientPool(GnsApplicationInterface<?> app) {
+	public ClientPool(GNSApplicationInterface<?> app) {
 		clients = new HashMap<>();
 		this.app = app;
 	}

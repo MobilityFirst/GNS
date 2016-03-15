@@ -17,27 +17,29 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -79,9 +81,9 @@ public class NSGroupAccess {
    * @throws org.json.JSONException
    */
   public static void updateMembers(String guid, Set<String> members,
-          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress)
+          GNSApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress)
           throws GnsClientException, IOException, JSONException {
-	  GNS.getLogger().info("RQ: ");
+	  GNSConfig.getLogger().info("RQ: ");
 
     String response = new RemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP, 
             new ResultValue(members));
@@ -210,7 +212,7 @@ public class NSGroupAccess {
    */
   public static void updateLastUpdate(String guid, Date lastUpdate)
           throws GnsClientException, IOException, JSONException {
-	  GNS.getLogger().info("RQ: ");
+	  GNSConfig.getLogger().info("RQ: ");
 
     new RemoteQuery().fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime());
 
@@ -229,7 +231,7 @@ public class NSGroupAccess {
    */
   public static void updateMinRefresh(String guid, int minRefresh)
           throws GnsClientException, IOException, JSONException {
-	  GNS.getLogger().info("RQ: ");
+	  GNSConfig.getLogger().info("RQ: ");
 
     new RemoteQuery().fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh);
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, new ResultValue(Arrays.asList(Integer.toString(minRefresh))),
@@ -247,7 +249,7 @@ public class NSGroupAccess {
    */
   public static void updateQueryString(String guid, String queryString)
           throws GnsClientException, IOException, JSONException {
-	  GNS.getLogger().info("RQ: ");
+	  GNSConfig.getLogger().info("RQ: ");
 
     new RemoteQuery().fieldUpdate(guid, GROUP_QUERY_STRING, queryString);
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_QUERY_STRING, new ResultValue(Arrays.asList(queryString)),
@@ -267,7 +269,7 @@ public class NSGroupAccess {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_LAST_UPDATE,
             true, database);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("++++ResultValue = " + resultValue);
+      GNSConfig.getLogger().fine("++++ResultValue = " + resultValue);
     }
     if (!resultValue.isEmpty()) {
       return new Date(Long.parseLong((String) resultValue.get(0)));
@@ -289,7 +291,7 @@ public class NSGroupAccess {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_MIN_REFRESH_INTERVAL,
             true, database);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("++++ResultValue = " + resultValue);
+      GNSConfig.getLogger().fine("++++ResultValue = " + resultValue);
     }
     if (!resultValue.isEmpty()) {
       return Integer.parseInt((String) resultValue.get(0));
@@ -312,7 +314,7 @@ public class NSGroupAccess {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_QUERY_STRING,
             true, database);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("++++ResultValue = " + resultValue);
+      GNSConfig.getLogger().fine("++++ResultValue = " + resultValue);
     }
     if (!resultValue.isEmpty()) {
       return (String) resultValue.get(0);
@@ -333,7 +335,7 @@ public class NSGroupAccess {
    * @throws JSONException
    */
   public static ValuesMap lookupFieldInGroupGuid(String groupGuid, String field,
-          GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException, JSONException {
+          GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException, JSONException {
     JSONArray resultArray = new JSONArray();
     for (Object guidObject : lookupMembers(groupGuid, false, gnsApp.getDB())) {
       String guid = (String) guidObject;
@@ -343,7 +345,7 @@ public class NSGroupAccess {
       }
     }
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("Group result for " + groupGuid + "/" + field + " = " + resultArray.toString());
+      GNSConfig.getLogger().info("Group result for " + groupGuid + "/" + field + " = " + resultArray.toString());
     }
     ValuesMap result = new ValuesMap();
     result.put(field, resultArray);

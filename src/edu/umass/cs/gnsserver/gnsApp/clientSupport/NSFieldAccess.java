@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
@@ -25,17 +25,19 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import java.io.IOException;
 import java.util.List;
+
 import org.json.JSONException;
 
 /**
@@ -60,7 +62,7 @@ public class NSFieldAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
-          GnsApplicationInterface<String> gnsApp)
+          GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     return lookupJSONFieldLocalNoAuth(guid, field, gnsApp, true);
   }
@@ -79,7 +81,7 @@ public class NSFieldAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
-          GnsApplicationInterface<String> gnsApp, boolean handleActiveCode)
+          GNSApplicationInterface<String> gnsApp, boolean handleActiveCode)
           throws FailedDBOperationException {
     ValuesMap valuesMap = lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, gnsApp.getDB());
     if (handleActiveCode) {
@@ -92,21 +94,21 @@ public class NSFieldAccess {
           BasicRecordMap database) throws FailedDBOperationException {
     NameRecord nameRecord = null;
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKUP_FIELD_LOCALLY: " + guid + " : " + field);
+      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKUP_FIELD_LOCALLY: " + guid + " : " + field);
     }
     // Try to look up the value in the database
     try {
       // Check for the case where we're returning all the fields the entire record.
       if (GnsProtocol.ALL_FIELDS.equals(field)) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().fine("Field=" + field + " Format=" + returnFormat);
+          GNSConfig.getLogger().fine("Field=" + field + " Format=" + returnFormat);
         }
         // need everything so just grab all the fields
         nameRecord = NameRecord.getNameRecord(database, guid);
         // Otherwise if field is specified we're just looking up that single field.
       } else if (field != null) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().fine("Field=" + field + " Format=" + returnFormat);
+          GNSConfig.getLogger().fine("Field=" + field + " Format=" + returnFormat);
         }
         // otherwise grab a few system fields we need plus the field the user wanted
         nameRecord = NameRecord.getNameRecordMultiField(database, guid,
@@ -116,10 +118,10 @@ public class NSFieldAccess {
         return nameRecord.getValuesMap();
       }
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
+      GNSConfig.getLogger().fine("Record not found for name: " + guid + " Key = " + field);
     } catch (FieldNotFoundException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Field not found " + guid + " : " + e);
+        GNSConfig.getLogger().info("Field not found " + guid + " : " + e);
       }
     }
     return null;
@@ -132,7 +134,7 @@ public class NSFieldAccess {
     // Try to look up the value in the database
     try {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("Fields=" + fields + " Format=" + returnFormat);
+        GNSConfig.getLogger().fine("Fields=" + fields + " Format=" + returnFormat);
       }
       String[] fieldArray = new String[fields.size()];
       fieldArray = fields.toArray(fieldArray);
@@ -143,10 +145,10 @@ public class NSFieldAccess {
         return nameRecord.getValuesMap();
       }
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().fine("Record not found for name: " + guid);
+      GNSConfig.getLogger().fine("Record not found for name: " + guid);
     } catch (FieldNotFoundException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Field not found for " + guid + " : " + e);
+        GNSConfig.getLogger().info("Field not found for " + guid + " : " + e);
       }
     }
     return null;
@@ -169,20 +171,20 @@ public class NSFieldAccess {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null,
               ColumnFieldType.LIST_STRING, field);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
+        GNSConfig.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       }
       result = nameRecord.getUserKeyAsArray(field);
     } catch (FieldNotFoundException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Field not found " + guid + " : " + field);
+        GNSConfig.getLogger().info("Field not found " + guid + " : " + field);
       }
     } catch (RecordNotFoundException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Record not found " + guid + " : " + field);
+        GNSConfig.getLogger().info("Record not found " + guid + " : " + field);
       }
     } catch (FailedDBOperationException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Failed DB operation " + guid + " : " + field);
+        GNSConfig.getLogger().info("Failed DB operation " + guid + " : " + field);
       }
     }
     if (result != null) {
@@ -231,16 +233,16 @@ public class NSFieldAccess {
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result.isEmpty() && !database.containsName(guid) && allowRemoteQuery) {
       try {
-    	  GNS.getLogger().info("RQ: ");
+    	  GNSConfig.getLogger().info("RQ: ");
         String stringResult = new RemoteQuery().fieldReadArray(guid, field);
         result = new ResultValue(stringResult);
       } catch (Exception e) {
-        GNS.getLogger().severe("Problem getting record from remote server: " + e);
+        GNSConfig.getLogger().severe("Problem getting record from remote server: " + e);
       }
       //result = lookupListFieldQueryLNS(guid, field, activeReplica, lnsAddress);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         if (!result.isEmpty()) {
-          GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " "
+          GNSConfig.getLogger().info("@@@@@@ Field " + field + " in " + guid + " "
                   + "not found on this server but was found thru remote query. "
                   + "Returning " + result.toString());
         }
@@ -262,23 +264,23 @@ public class NSFieldAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static ValuesMap lookupJSONFieldAnywhere(String guid, String field,
-          GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+          GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
     ValuesMap result = lookupJSONFieldLocalNoAuth(guid, field, gnsApp);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
-    	  GNS.getLogger().info("RQ: ");
+    	  GNSConfig.getLogger().info("RQ: ");
         String stringResult = new RemoteQuery().fieldRead(guid, field);
         if (stringResult != null) {
           result = new ValuesMap();
           result.put(field, stringResult);
         }
       } catch (IOException | JSONException | GnsClientException e) {
-        GNS.getLogger().severe("Problem getting record from remote server: " + e);
+        GNSConfig.getLogger().severe("Problem getting record from remote server: " + e);
       }
       if (result != null) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru remote query.");
+          GNSConfig.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru remote query.");
         }
       }
     }
@@ -286,7 +288,7 @@ public class NSFieldAccess {
   }
 
   private static ValuesMap handleActiveCode(String field, String guid,
-          ValuesMap originalValues, GnsApplicationInterface<String> gnsApp)
+          ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     ValuesMap newResult = originalValues;
     // Only do this for user fields.
@@ -306,15 +308,15 @@ public class NSFieldAccess {
         try {
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+            GNSConfig.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
           }
           newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field,
                   "read", originalValues, hopLimit);
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            GNS.getLogger().info("AC--->>> " + newResult.toString());
+            GNSConfig.getLogger().info("AC--->>> " + newResult.toString());
           }
         } catch (Exception e) {
-          GNS.getLogger().info("Active code error: " + e.getMessage());
+          GNSConfig.getLogger().info("Active code error: " + e.getMessage());
         }
       }
     }

@@ -17,16 +17,17 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
-import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GroupAccess.GROUPS;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess.GROUPS;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.QueryResult;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+
 import java.util.HashSet;
 import java.util.Set;
 

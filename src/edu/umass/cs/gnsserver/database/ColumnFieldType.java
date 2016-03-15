@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.database;
 
 import com.mongodb.DBObject;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONArray;
@@ -140,7 +140,7 @@ public enum ColumnFieldType {
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToSetNodeIdString(new JSONArray(value)));
               } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
+                GNSConfig.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
                 e.printStackTrace();
               }
               break;
@@ -156,7 +156,7 @@ public enum ColumnFieldType {
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToArrayListString(new JSONArray(value)));
               } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for LIST_STRING: " + e);
+                GNSConfig.getLogger().severe("Problem populating hash map for LIST_STRING: " + e);
                 e.printStackTrace();
               }
               break;
@@ -164,12 +164,12 @@ public enum ColumnFieldType {
               try {
                 hashMap.put(field, new ValuesMap(new JSONObject(value)));
               } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for VALUES_MAP: " + e);
+                GNSConfig.getLogger().severe("Problem populating hash map for VALUES_MAP: " + e);
                 e.printStackTrace();
               }
               break;
             default:
-              GNS.getLogger().severe("Exception Error Unknown type " + field + "value = " + value);
+              GNSConfig.getLogger().severe("Exception Error Unknown type " + field + "value = " + value);
               break;
           }
         }

@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.utils;
 import com.google.common.collect.ImmutableSet;
 
 import edu.umass.cs.gnsserver.database.ColumnField;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -248,7 +248,7 @@ public class JSONUtils {
         case VALUES_MAP:
           return new ValuesMap(jsonObject.getJSONObject(field.getName()));
         default:
-          GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
+          GNSConfig.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
 
       }
@@ -300,11 +300,11 @@ public class JSONUtils {
           jsonObject.put(field.getName(), value);
           break;
         default:
-          GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
+          GNSConfig.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
       }
     } catch (JSONException e) {
-      GNS.getLogger().warning("Problem putting field in JSON Object: Value = " + value + " Field = " + field);
+      GNSConfig.getLogger().warning("Problem putting field in JSON Object: Value = " + value + " Field = " + field);
       e.printStackTrace();
     }
   }

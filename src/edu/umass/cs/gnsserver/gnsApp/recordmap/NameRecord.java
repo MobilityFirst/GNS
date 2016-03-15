@@ -17,9 +17,10 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.recordmap;
+package edu.umass.cs.gnsserver.gnsapp.recordmap;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gigapaxos.interfaces.Summarizable;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -27,12 +28,15 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.Util;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,7 +53,7 @@ import java.util.Set;
  * @author abhigyan
  */
 
-public class NameRecord implements Comparable<NameRecord> {
+public class NameRecord implements Comparable<NameRecord>, Summarizable {
 
   /**
    * null value for the ACTIVE_VERSION and OLD_ACTIVE_VERSION field.
@@ -384,7 +388,7 @@ public class NameRecord implements Comparable<NameRecord> {
             updatedFields.add(new ColumnField(key, ColumnFieldType.USER_JSON));
             updatedValues.add(userJSON.get(key));
           } catch (JSONException e) {
-            GNS.getLogger().severe("Unable to get " + key + " from userJSON:" + e);
+            GNSConfig.getLogger().severe("Unable to get " + key + " from userJSON:" + e);
           }
         }
       } else {
@@ -617,4 +621,10 @@ public class NameRecord implements Comparable<NameRecord> {
     }
     return result;
   }
+
+	@Override
+	public Object getSummary() {
+		return Util.truncate(NameRecord.this, 64, 64);
+	}
+  
 }

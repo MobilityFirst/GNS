@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
@@ -24,21 +24,22 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.GnsActiveReplicaException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsOperationNotSupportedException;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.ResponseCode;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectResponsePacket;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -85,14 +86,13 @@ public class RemoteQuery extends ClientAsynchBase {
 	  super();
 	  this.myID=myID;
 	  this.myAddr = isa;
-	  GNS.getLogger().info("Starting RemoteQuery " + this);
+	  GNSConfig.getLogger().info("Starting RemoteQuery " + this);
 	  assert(this.myID!=null);
   }
   
 	public String toString() {
 		return super.toString()
-				+ (this.myID != null ? ":" + this.myID + ":"
-						+ this.myAddr.getPort() : "");
+				+ (this.myID != null ? ":" + this.myID : "");
 	}
 
   /**
@@ -106,7 +106,7 @@ public class RemoteQuery extends ClientAsynchBase {
     } else if (response instanceof ClientRequest) {
       requestId = ((ClientRequest) response).getRequestID();
     } else {
-      GNS.getLogger().severe("Bad response type: " + response.getClass());
+      GNSConfig.getLogger().severe("Bad response type: " + response.getClass());
       return;
     }
 
@@ -166,7 +166,7 @@ public class RemoteQuery extends ClientAsynchBase {
 				while (!replicaResultMap.containsKey(id)
 						&& (timeout == 0 || System.currentTimeMillis()
 								- monitorStartTime < timeout)) {
-					GNS.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
+					GNSConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
 							new Object[] { this, id+"", timeout+"ms" });
 					monitor.wait(1000);
 				}
@@ -175,13 +175,15 @@ public class RemoteQuery extends ClientAsynchBase {
 					// TODO: arun
 					GnsClientException e = new GnsClientException(
 							this +": Timed out on active replica response after waiting for " + timeout + "ms for response packet for " + id);
-					GNS.getLogger().warning("\n\n\n\n"  + e.getMessage());
+					GNSConfig.getLogger().warning("\n\n\n\n"  + e.getMessage());
 					e.printStackTrace();
 					throw e;
 				} else
-					GNS.getLogger().log(Level.INFO,
-							"Remote query successful for id {0}",
-							new Object[] { id+"" });
+					GNSConfig
+							.getLogger()
+							.log(Level.INFO,
+									"{0} successfully completed remote query {1}",
+									new Object[] { this, id + "" });
 			}
     } catch (InterruptedException x) {
       throw new GnsClientException("Wait for return packet was interrupted " + x);
@@ -215,7 +217,7 @@ public class RemoteQuery extends ClientAsynchBase {
 									+ ": Timed out on reconfigurator response after waiting for "
 									+ timeout + "ms response packet for "
 									+ serviceName);
-        	GNS.getLogger().warning("\n\n\n\n" + e.getMessage());
+        	GNSConfig.getLogger().warning("\n\n\n\n" + e.getMessage());
         	e.printStackTrace();
         	throw e;
         }
@@ -248,7 +250,7 @@ public class RemoteQuery extends ClientAsynchBase {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
       return sendReconRequest(packet);
     } catch (GnsClientException | IOException e) {
-      GNS.getLogger().severe("Problem creating " + name + " :" + e);
+      GNSConfig.getLogger().severe("Problem creating " + name + " :" + e);
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
@@ -260,14 +262,17 @@ public class RemoteQuery extends ClientAsynchBase {
       CreateServiceName[] creates = makeBatchedCreateNameRequest(names, values, handler);
       for (CreateServiceName create : creates) {
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().severe("??????????????????????????? Sending recon packet for NAME = "
-                  + create.getServiceName());
+					GNSConfig
+							.getLogger()
+							.log(Level.INFO,
+									"{0} sending create for NAME = ",
+									new Object[] {this, create.getServiceName() });
         }
         sendReconRequest(create);
       }
       return NSResponseCode.NO_ERROR;
     } catch (JSONException | IOException | GnsClientException e) {
-      GNS.getLogger().info("Problem creating " + names + " :" + e);
+      GNSConfig.getLogger().info("Problem creating " + names + " :" + e);
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
@@ -306,7 +311,7 @@ public class RemoteQuery extends ClientAsynchBase {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
     } catch (GnsClientException | IOException e) {
-      GNS.getLogger().severe("Problem creating " + name + " :" + e);
+      GNSConfig.getLogger().severe("Problem creating " + name + " :" + e);
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
@@ -324,8 +329,11 @@ public class RemoteQuery extends ClientAsynchBase {
       } else {
         String returnValue = packet.getReturnValue();
         if (debuggingEnabled) {
-          GNS.getLogger().info("RRRRRRRRRRRRRRRRRRRRRR Remote query " + packet.getServiceName()
-                  + " got from " + packet.getResponder() + " this: " + returnValue);
+					GNSConfig.getLogger().log(
+							Level.INFO,
+							"{0} {1} {2} got from {3} this: {4}",
+							new Object[] { this, packet.getServiceName(),
+									packet.getResponder(), Util.truncate(returnValue,16,16) });
         }
         // FIX ME: Tidy up all these error reponses for updates
         return checkResponse(returnValue);
@@ -349,7 +357,9 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldRead(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read of " + guid + "/" + field);
+			GNSConfig.getLogger().log(Level.INFO,
+					"{0} Field read of {1} / {2}",
+					new Object[] { this, guid, Util.truncate(field, 16, 16) });
     }
     Object monitor = new Object();
     long requestId = fieldRead(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -371,7 +381,9 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldReadArray(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field read array of " + guid + "/" + field);
+			GNSConfig.getLogger().log(Level.INFO,
+					"{0} Field read array of {1} / {2}",
+					new Object[] {this, guid, field });
     }
     Object monitor = new Object();
     long requestId = fieldReadArray(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -382,14 +394,16 @@ public class RemoteQuery extends ClientAsynchBase {
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-			GNS.getLogger().log(Level.FINE,
-					"HHHHHHHHHHHHHHHHHHHHHHHHH Field update {0} / {1} = {2}",
-					new Object[] { guid, field, value });
+			GNSConfig.getLogger().log(Level.FINE,
+					"{0} Field update {1} / {2} = {3}",
+					new Object[] { this, guid, field, value });
     }
     Object monitor = new Object();
     long requestId = fieldUpdate(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
     if (debuggingEnabled) {
-        GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + ":" + requestId + " = " + value);
+			GNSConfig.getLogger().log(Level.INFO,
+					"{0} Field update {1} / {2} {3} = {4}",
+					new Object[] {this, guid, field, requestId, Util.truncate(value,16,16) });
       }
     return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
   }
@@ -398,7 +412,8 @@ public class RemoteQuery extends ClientAsynchBase {
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldReplaceOrCreateArray " + guid + " / " + field + " = " + value);
+      GNSConfig.getLogger().log(Level.INFO, "{0} Field fieldReplaceOrCreateArray {1} / {2} = {3}",
+    		  new Object[]{this, guid,field,value});
     }
     Object monitor = new Object();
     long requestId = fieldReplaceOrCreateArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -409,7 +424,11 @@ public class RemoteQuery extends ClientAsynchBase {
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldAppendToArray " + guid + " / " + field + " = " + value);
+			GNSConfig
+					.getLogger()
+					.log(Level.INFO,
+							"{0} Field fieldAppendToArray {1} / {2} = {3}",
+							new Object[] {this, guid, field, Util.truncate(value, 64, 64) });
     }
     Object monitor = new Object();
     long requestId = fieldAppendToArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -421,7 +440,9 @@ public class RemoteQuery extends ClientAsynchBase {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     assert value instanceof String || value instanceof Number;
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field update " + guid + " / " + field + " = " + value);
+			GNSConfig.getLogger().log(Level.INFO,
+					"{0} Field update {1} / {2} = {3}",
+					new Object[] {this, guid, field, Util.truncate(value, 16, 16) });
     }
     Object monitor = new Object();
     long requestId = fieldRemove(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -432,7 +453,11 @@ public class RemoteQuery extends ClientAsynchBase {
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     if (debuggingEnabled) {
-      GNS.getLogger().info("HHHHHHHHHHHHHHHHHHHHHHHHH Field fieldRemoveMultiple " + guid + " / " + field + " = " + value);
+			GNSConfig
+					.getLogger()
+					.log(Level.INFO,
+							"{0} Field fieldRemoveMultiple {1} / {2} = {3}",
+							new Object[] {this, guid, field, value });
     }
     Object monitor = new Object();
     long requestId = fieldRemoveMultiple(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);

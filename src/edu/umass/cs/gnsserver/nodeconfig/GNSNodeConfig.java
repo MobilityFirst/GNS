@@ -14,17 +14,19 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy
+ *  Initial developer(s): Westy, arun
  *
  */
 package edu.umass.cs.gnsserver.nodeconfig;
 
 import com.google.common.collect.ImmutableSet;
 
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -34,6 +36,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
@@ -90,7 +93,27 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    *
    */
   private ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
-
+  
+  // arun: to correct legacy hack
+  private boolean addSuffix = false;
+  
+	/**
+	 * arun: For use with gigapaxos createApp.
+	 * 
+	 * @throws IOException
+	 */
+	public GNSNodeConfig() throws IOException {
+		Map<String, InetSocketAddress> activeMap = PaxosConfig.getActives();
+		hostInfoMapping = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>();
+		for (String active : activeMap.keySet()) 
+			addHostInfo(hostInfoMapping, valueOf(active),
+					activeMap.get(active).getAddress().toString(), activeMap
+							.get(active).getAddress().toString(), activeMap
+							.get(active).getPort() > 0 ? activeMap.get(active)
+							.getPort() : GNSConfig.DEFAULT_STARTING_PORT);
+		hostsFile = null;
+	}
+  
   /**
    * Creates a GNSNodeConfig for the given nameServerID and initializes it from a name server host file.
    * This supports the new hosts.txt style format.
@@ -113,7 +136,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     readHostsFile(hostsFile);
     // Informational purposes
     for (Entry<NodeIDType, NodeInfo<NodeIDType>> hostInfoEntry : hostInfoMapping.entrySet()) {
-      GNS.getLogger().info("For "
+      GNSConfig.getLogger().info("For "
               + (nameServerID == null ? "CPP" : nameServerID.toString())
               + " Id: " + hostInfoEntry.getValue().getId().toString()
               + " Host Name:" + hostInfoEntry.getValue().getIpAddress()
@@ -138,10 +161,10 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   /**
    * Creates an empty GNSNodeConfig
    */
-  public GNSNodeConfig() {
-    this.nodeID = null;
-    hostsFile = null;
-  }
+//  public GNSNodeConfig() {
+//    this.nodeID = null;
+//    hostsFile = null;
+//  }
 
   /**
    * Returns the complete set of "top-level" IDs for all name servers (not local name servers).
@@ -293,15 +316,15 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
     NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
     if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_TCP_PORT.getOffset();
       // Special case for ActiveReplica
     } else if ((nodeInfo = getActiveReplicaInfo(id)) != null) {
-      return nodeInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset();
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.ACTIVE_REPLICA_PORT.getOffset();
       // Special case for Reconfigurator
     } else if ((nodeInfo = getReconfiguratorInfo(id)) != null) {
-      return nodeInfo.getStartingPortNumber() + GNS.PortType.RECONFIGURATOR_PORT.getOffset();
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.RECONFIGURATOR_PORT.getOffset();
     } else {
-      GNS.getLogger().warning("NodeId " + id.toString() + " not a valid Id!");
+      GNSConfig.getLogger().warning("NodeId " + id.toString() + " not a valid Id!");
       return INVALID_PORT;
     }
   }
@@ -316,7 +339,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   public int getAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
-    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
+    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_ADMIN_PORT.getOffset();
   }
 
   /**
@@ -331,7 +354,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   public int getPingPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_PING_PORT.getOffset();
     } else {
       return INVALID_PORT;
     }
@@ -341,7 +364,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   public int getCcpPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + GNS.PortType.CCP_PORT.getOffset();
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.CCP_PORT.getOffset();
     } else {
       return INVALID_PORT;
     }
@@ -351,7 +374,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   public int getCcpAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + GNS.PortType.CCP_ADMIN_PORT.getOffset();
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.CCP_ADMIN_PORT.getOffset();
     } else {
       return INVALID_PORT;
     }
@@ -361,7 +384,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   public int getCcpPingPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + GNS.PortType.CCP_PING_PORT.getOffset();
+      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.CCP_PING_PORT.getOffset();
     } else {
       return INVALID_PORT;
     }
@@ -441,7 +464,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     if (nodeInfo != null) {
       nodeInfo.setPingLatency(responseTime);
     } else {
-      GNS.getLogger().warning("Can't update latency for " + id.toString() + ".");
+      GNSConfig.getLogger().warning("Can't update latency for " + id.toString() + ".");
     }
   }
 
@@ -468,7 +491,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    *
    * @return the port
    */
-  public int getPortForTopLevelNode(NodeIDType nameServerId, GNS.PortType portType) {
+  public int getPortForTopLevelNode(NodeIDType nameServerId, GNSConfig.PortType portType) {
     switch (portType) {
       case NS_TCP_PORT:
         return getNodePort(nameServerId);
@@ -549,7 +572,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
       }
     }
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("Closest server is " + nameServerID + " exluded: " + excludeServers);
+      GNSConfig.getLogger().info("Closest server is " + nameServerID + " exluded: " + excludeServers);
     }
     return nameServerID;
   }
@@ -643,8 +666,9 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> newHostInfoMapping
             = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>(16, 0.75f, 8);
     for (HostSpec spec : hosts) {
+    	addSuffix = true;
       addHostInfo(newHostInfoMapping, (NodeIDType) spec.getId(), spec.getName(), spec.getExternalIP(),
-              spec.getStartPort() != null ? spec.getStartPort() : GNS.DEFAULT_STARTING_PORT);
+              spec.getStartPort() != null ? spec.getStartPort() : GNSConfig.DEFAULT_STARTING_PORT);
     }
     // some idiot checking of the given Id
     if (!isCPP) {
@@ -672,11 +696,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
     String idString = id.toString();
-    NodeIDType activeReplicaID = valueOf(idString + "_Repl");
-    NodeIDType ReconfiguratorID = valueOf(idString + "_Recon");
+    NodeIDType activeReplicaID = valueOf(idString + (addSuffix ? "_Repl":""));
+    NodeIDType ReconfiguratorID = valueOf(idString + (addSuffix?"_Recon":""));
     NodeInfo<NodeIDType> nodeInfo = new NodeInfo<NodeIDType>(id, activeReplicaID, ReconfiguratorID,
             ipAddress, externalIP, startingPort, pingLatency, latitude, longitude);
-    GNS.getLogger().fine(nodeInfo.toString());
+    GNSConfig.getLogger().fine(nodeInfo.toString());
     mapping.put(id, nodeInfo);
   }
 
@@ -688,7 +712,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, Integer startingPort) {
-    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort : GNS.DEFAULT_STARTING_PORT, 0, 0, 0);
+    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort : GNSConfig.DEFAULT_STARTING_PORT, 0, 0, 0);
   }
 
   private static final long updateCheckPeriod = 60000; // 60 seconds
@@ -706,18 +730,18 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
             },
             updateCheckPeriod, // run first occurrence later
             updateCheckPeriod);
-    GNS.getLogger().info("Checking for hosts updates every " + updateCheckPeriod / 1000 + " seconds");
+    GNSConfig.getLogger().info("Checking for hosts updates every " + updateCheckPeriod / 1000 + " seconds");
   }
 
   private void checkForUpdates() {
     try {
-      GNS.getLogger().fine("Checking for hosts update");
+      GNSConfig.getLogger().fine("Checking for hosts update");
       if (HostFileLoader.isChangedFileVersion(hostsFile)) {
-        GNS.getLogger().info("Reading updated hosts file");
+        GNSConfig.getLogger().info("Reading updated hosts file");
         readHostsFile(hostsFile);
       }
     } catch (IOException e) {
-      GNS.getLogger().severe("Problem reading hosts file:" + e);
+      GNSConfig.getLogger().severe("Problem reading hosts file:" + e);
     }
 
   }
@@ -740,7 +764,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
       }
       return line.split("\\s+").length > 4;
     } catch (IOException e) {
-      GNS.getLogger().severe("Problem reading hosts file:" + e);
+      GNSConfig.getLogger().severe("Problem reading hosts file:" + e);
       return false;
     }
   }

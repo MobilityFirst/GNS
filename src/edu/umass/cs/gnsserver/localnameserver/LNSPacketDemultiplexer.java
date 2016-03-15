@@ -23,10 +23,10 @@ import edu.umass.cs.gigapaxos.interfaces.NearestServerSelector;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -87,7 +87,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   @Override
   public boolean handleMessage(JSONObject json) {
     if (handler.isDebugMode()) {
-      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>> Incoming packet: " + json);
+      GNSConfig.getLogger().info(">>>>>>>>>>>>>>>>>>>>> Incoming packet: " + json);
     }
     boolean isPacketTypeFound = true;
     try {
@@ -117,7 +117,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         }
       }
     } catch (JSONException | IOException e) {
-      GNS.getLogger().warning("Problem parsing packet from " + json + ": " + e);
+      GNSConfig.getLogger().warning("Problem parsing packet from " + json + ": " + e);
     }
 
     return isPacketTypeFound;
@@ -139,7 +139,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 				LNSPacketDemultiplexer.this.handleCommandReturnValuePacket(
 						response, null);
 			} catch (JSONException | IOException e) {
-				GNS.getLogger().warning(
+				GNSConfig.getLogger().warning(
 						"Exception incurred upon receiving response: "
 								+ response);
 				e.printStackTrace();
@@ -166,18 +166,14 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 			IOException {
 
 		CommandPacket packet = new CommandPacket(json);
-		//int requestId = random.nextInt();
-		//packet.setLNSRequestId(requestId);
-		// Squirrel away the host and port so we know where to send the command
-		// return value
-		LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(), packet);
+		LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(),
+				packet);
 		handler.addRequestInfo(packet.getRequestID(), requestInfo);
 		packet = packet.removeSenderInfo();
-		
 
-		if (requestInfo.getServiceName().equals(
-				Config.getGlobalString(RC.SPECIAL_NAME)) ||
-				requestInfo.getCommandName().equals(GnsProtocol.SELECT))
+		if (GnsProtocol.CREATE_DELETE_COMMANDS.contains(requestInfo
+				.getCommandName())
+				|| requestInfo.getCommandName().equals(GnsProtocol.SELECT))
 			this.asyncLNSClient.sendRequestAnycast(packet, callback);
 		else
 			this.asyncLNSClient.sendRequest(packet, callback, redirector);
@@ -211,9 +207,9 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     if (actives != null) {
       if (handler.isDebugMode()) {
         if (!disableRequestActives) {
-          GNS.getLogger().fine("Found actives in cache for " + packet.getServiceName() + ": " + actives);
+          GNSConfig.getLogger().fine("Found actives in cache for " + packet.getServiceName() + ": " + actives);
         } else {
-          GNS.getLogger().fine("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
+          GNSConfig.getLogger().fine("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
         }
       }
       if (disableCommandRetransmitter) {
@@ -253,7 +249,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 				: null;
 		ActiveReplicaError error = response instanceof ActiveReplicaError ? (ActiveReplicaError) response
 				: null;
-		GNS.getLogger().log(
+		GNSConfig.getLogger().log(
 				Level.INFO,
 				"{0} received response {1}",
 				new Object[] {
@@ -268,7 +264,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 		String serviceName = returnPacket != null ? returnPacket
 				.getServiceName() : error.getServiceName();
 		LNSRequestInfo sentInfo;
-		GNS.getLogger().log(Level.INFO, "{0} matching {1} with {2}",
+		GNSConfig.getLogger().log(Level.INFO, "{0} matching {1} with {2}",
 				new Object[] { this, id+"", handler.getRequestInfo(id) });
 		if ((sentInfo = handler.getRequestInfo(id)) != null) {
 			// doublecheck that it is for the same service name
@@ -278,7 +274,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 			(sentInfo.getServiceName().equals(Config
 					.getGlobalString(RC.SPECIAL_NAME))))) {
 				// String serviceName = returnPacket.getServiceName();
-				GNS.getLogger().log(Level.INFO, "{0} about to remove {1}",
+				GNSConfig.getLogger().log(Level.INFO, "{0} about to remove {1}",
 						new Object[] { this, id+"" });
 				handler.removeRequestInfo(id);
 				// update cache - if the service name isn't missing (invalid)
@@ -294,7 +290,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 				// send the response back
 				if (handler.isDebugMode()) 
 				{
-					GNS.getLogger()
+					GNSConfig.getLogger()
 							.log(Level.INFO,
 									"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< LNS IS SENDING VALUE BACK TO {0}: {1}",
 									new Object[] {
@@ -309,7 +305,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 						: returnPacket != null ? returnPacket.toJSONObject()
 								: error.toJSONObject());
 			} else {
-				GNS.getLogger().severe(
+				GNSConfig.getLogger().severe(
 						"Command response packet mismatch: "
 								+ sentInfo.getServiceName() + " vs. "
 								+ returnPacket.getServiceName());
@@ -317,7 +313,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 		} else {
 			if (handler.isDebugMode()) 
 			{
-				GNS.getLogger().info(
+				GNSConfig.getLogger().info(
 						"Duplicate response for "
 								+ id
 								+ ": "
@@ -333,7 +329,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   private void handleRequestActives(JSONObject json) {
     if (handler.isDebugMode()) {
-      GNS.getLogger().fine(")))))))))))))))))))))))))))) REQUEST ACTIVES RECEIVED: " + json.toString());
+      GNSConfig.getLogger().fine(")))))))))))))))))))))))))))) REQUEST ACTIVES RECEIVED: " + json.toString());
 
     }
     try {
@@ -341,7 +337,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
       if (requestActives.getActives() != null) {
         if (handler.isDebugMode()) {
           for (InetSocketAddress address : requestActives.getActives()) {
-            GNS.getLogger().fine("ACTIVE ADDRESS HOST: " + address.toString());
+            GNSConfig.getLogger().fine("ACTIVE ADDRESS HOST: " + address.toString());
           }
         }
         // Update the cache so that request actives task will now complete
@@ -350,7 +346,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         handler.getPingManager().addActiveReplicas(requestActives.getActives());
       }
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing RequestActiveReplicas packet info from " + json + ": " + e);
+      GNSConfig.getLogger().severe("Problem parsing RequestActiveReplicas packet info from " + json + ": " + e);
     }
 
   }

@@ -17,11 +17,11 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
 //import edu.umass.cs.gnsserver.nsdesign.replicationframework.ReplicationFrameworkType;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 
 /**
@@ -39,11 +39,11 @@ public class RequestHandlerParameters {
   /**
    * Fixed timeout after which a query retransmitted.
    */
-  private int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
+  private int queryTimeout = GNSConfig.DEFAULT_QUERY_TIMEOUT;
   /**
    * Maximum time a name server waits for a response from name server query is logged as failed after this.
    */
-  private int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
+  private int maxQueryWaitTime = GNSConfig.DEFAULT_MAX_QUERY_WAIT_TIME;
   /**
    * The size of the cache used to store values and active nameservers.
    */

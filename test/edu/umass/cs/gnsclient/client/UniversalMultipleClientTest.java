@@ -59,11 +59,11 @@ public class UniversalMultipleClientTest {
    */
   private static Set<InetSocketAddress> addresses = new HashSet<>(
           // kittens.name
-          Arrays.asList(new InetSocketAddress("23.21.160.80", GNSClient.LNS_PORT),
-                  new InetSocketAddress("54.241.15.214", GNSClient.LNS_PORT),
-                  new InetSocketAddress("50.112.98.151", GNSClient.LNS_PORT),
-                  new InetSocketAddress("79.125.27.206", GNSClient.LNS_PORT),
-                  new InetSocketAddress("54.232.178.43", GNSClient.LNS_PORT)));
+          Arrays.asList(new InetSocketAddress("23.21.160.80", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("54.241.15.214", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("50.112.98.151", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("79.125.27.206", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("54.232.178.43", GNSClientConfig.LNS_PORT)));
   
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;

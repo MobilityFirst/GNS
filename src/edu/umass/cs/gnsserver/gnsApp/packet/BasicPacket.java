@@ -17,9 +17,9 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.packet;
+package edu.umass.cs.gnsserver.gnsapp.packet;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 
 import org.json.JSONException;
@@ -69,7 +69,7 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
     try {
       return this.toJSONObject().toString();
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to string:" + e);
+      GNSConfig.getLogger().severe("Problem converting packet to string:" + e);
       return "BasicPacket{" + "type=" + getType() + '}';
     }
   }
@@ -88,7 +88,7 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
     try {
       return this.toJSONObject().toReasonableString();
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to string:" + e);
+      GNSConfig.getLogger().severe("Problem converting packet to string:" + e);
       return "BasicPacket{" + "type=" + getType() + '}';
     }
   }

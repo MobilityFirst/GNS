@@ -17,10 +17,10 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.group;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
 /**
  * Command to return the groups that a GUID is a member of formatted as a JSON Array.

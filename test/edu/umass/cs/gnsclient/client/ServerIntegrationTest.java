@@ -17,6 +17,8 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -56,7 +58,7 @@ import org.junit.runners.MethodSorters;
 
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 
 import java.awt.geom.Point2D;
 import java.util.Set;
@@ -115,16 +117,25 @@ public class ServerIntegrationTest {
 		} else {
 			address = new InetSocketAddress("127.0.0.1",
 			// NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-					GNSClient.LNS_PORT);
+					GNSClientConfig.LNS_PORT);
 		}
 		System.out.println("Connecting to " + address.getHostName() + ":"
 				+ address.getPort());
-		client = new UniversalTcpClientExtended(address.getHostName(),
-				address.getPort(), System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL)!=null);
+		client = new GNSClient(
+				(InetSocketAddress)null,
+				address,
+				System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null);
+				//new UniversalTcpClientExtended(address.getHostName(),
+				//address.getPort(), System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL)!=null);
+		
+		// arun: connectivity check embedded in GNSClient constructor
+		boolean connected = client instanceof GNSClient;
+		if(connected) System.out.println("successful");
+
 		// Now we try to actualy connect to the server we created further above
 		// using the client.
 		int tries = 10;
-		boolean connected = false;
+		if(!connected)
 		do {
 			try {
 				System.out.println("Connectivity check: " + (tries - 1)
@@ -142,6 +153,7 @@ public class ServerIntegrationTest {
 		}
 		tries = 5;
 		boolean accountCreated = false;
+				
 		do {
 			try {
 				System.out.println("Creating account guid: " + (tries - 1)
@@ -172,6 +184,7 @@ public class ServerIntegrationTest {
 				System.out.println("SHUTDOWN SERVER COMMAND FAILED!");
 			}
 		}
+		client.close();
 	}
 
 	public ServerIntegrationTest() {

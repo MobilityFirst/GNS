@@ -19,8 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client.tcp;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 
 import java.io.Serializable;
@@ -90,7 +90,7 @@ public class CommandResult implements Serializable /* does it */ {
 		this.errorCode = NSResponseCode.BAD_GUID_ERROR;
 		this.CCPRoundTripTime = 0;
 		this.CCPProcessingTime = 0;
-		this.responder = packet.getSender().toString();
+		this.responder = packet.getSender()!=null ? packet.getSender().toString() : null;
 		this.requestCnt = 0;
 		this.requestRate = 0;
 		this.clientLatency = clientLatency;

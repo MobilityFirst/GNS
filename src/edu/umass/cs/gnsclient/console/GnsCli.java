@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.console;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -66,7 +66,7 @@ public class GnsCli {
       }
       module.setSilent(silent);
       if (!silent) {
-        module.printString("GNS Client Version: " + GNSClient.readBuildVersion() + "\n");
+        module.printString("GNS Client Version: " + GNSClientConfig.readBuildVersion() + "\n");
       }
       module.handlePrompt();
       System.exit(0);

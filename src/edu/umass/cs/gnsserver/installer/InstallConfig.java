@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.installer;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -111,7 +111,7 @@ public class InstallConfig {
     try {
       loadPropertiesFile(filename);
     } catch (IOException e) {
-      GNS.getLogger().severe("Problem loading installer config file: " + e);
+      GNSConfig.getLogger().severe("Problem loading installer config file: " + e);
     }
   }
 
@@ -148,7 +148,7 @@ public class InstallConfig {
    * @param args
    */
   public static void main(String[] args) {
-    String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/installer_config";
+    String filename = GNSConfig.WESTY_GNS_DIR_PATH + "/conf/ec2_small/installer_config";
     InstallConfig config = new InstallConfig(filename);
     System.out.println(config.toString());
   }

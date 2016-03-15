@@ -17,4 +17,4 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;

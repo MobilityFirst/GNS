@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
@@ -26,17 +26,18 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSAuthentication;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSFieldAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSUpdateSupport;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,12 +45,14 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -670,7 +673,7 @@ public class FieldAccess {
       }
       if (!accountInfo.isVerified()) {
         return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-      } else if (accountInfo.getGuids().size() > GNS.MAXGUIDS) {
+      } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
         return new CommandResponse<>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
@@ -725,7 +728,7 @@ public class FieldAccess {
 
   public static NSResponseCode signatureAndACLCheckForRead(String guid, String field,
           String reader, String signature, String message,
-          GnsApplicationInterface<String> app) {
+          GNSApplicationInterface<String> app) {
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     try {
       if (reader != null && field != null) {

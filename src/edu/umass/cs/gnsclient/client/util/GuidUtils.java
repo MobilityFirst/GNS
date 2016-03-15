@@ -185,18 +185,17 @@ public class GuidUtils {
    * whole thing in the local preferences.
    *
    * @param alias
-   * @param host
-   * @param port
+   * @param hostport
    * @return
    * @throws NoSuchAlgorithmException
    */
-  public static GuidEntry createAndSaveGuidEntry(String alias, String host, int port) throws NoSuchAlgorithmException {
+  public static GuidEntry createAndSaveGuidEntry(String alias, String hostport) throws NoSuchAlgorithmException {
     long keyPairStart = System.currentTimeMillis();
     KeyPair keyPair = KeyPairGenerator.getInstance(GnsProtocol.RSA_ALGORITHM).generateKeyPair();
     DelayProfiler.updateDelay("createKeyPair", keyPairStart);
     String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
     long saveStart = System.currentTimeMillis();
-    KeyPairUtils.saveKeyPair(host + ":" + port, alias, guid, keyPair);
+    KeyPairUtils.saveKeyPair(hostport, alias, guid, keyPair);
     DelayProfiler.updateDelay("saveKeyPair", saveStart);
     return new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
   }
@@ -215,7 +214,7 @@ public class GuidUtils {
     if ((entry = lookupGuidEntryFromPreferences(host, port, alias)) != null) {
       return entry;
     } else {
-      return createAndSaveGuidEntry(alias, host, port);
+      return createAndSaveGuidEntry(alias, host+":"+port);
     }
   }
 

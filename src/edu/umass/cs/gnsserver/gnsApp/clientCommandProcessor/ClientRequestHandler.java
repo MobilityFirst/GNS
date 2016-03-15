@@ -17,12 +17,12 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.GnsApp;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.RemoteQuery;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.utils.MovingAverage;
 import edu.umass.cs.gnsserver.utils.Util;
@@ -91,7 +91,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   private final InetSocketAddress nodeAddress;
   //
   private final String activeReplicaID;
-  private final GnsApp app;
+  private final GNSApp app;
 
   private long receivedRequests = 0;
 
@@ -109,7 +109,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   public ClientRequestHandler(Admintercessor admintercessor,
           InetSocketAddress nodeAddress,
           String activeReplicaID,
-          GnsApp app,
+          GNSApp app,
           GNSNodeConfig<String> gnsNodeConfig,
           JSONMessenger<String> messenger, RequestHandlerParameters parameters) throws IOException {
 	  assert(activeReplicaID!=null);
@@ -167,7 +167,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     return parameters;
   }
 
-  public GnsApp getApp() {
+  public GNSApp getApp() {
     return app;
   }
 
@@ -300,12 +300,12 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     try {
       Set<String> primaries = getReplicaControllers(name);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
+        GNSConfig.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
       }
 
       String x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Closest Primary Name Server: " + x.toString() 
+        GNSConfig.getLogger().info("Closest Primary Name Server: " + x.toString() 
                 + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
       return x;
@@ -339,7 +339,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   @Override
   public void sendRequestToReconfigurator(BasicReconfigurationPacket req, String id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {
-      GNS.getLogger().info("Sending " + req.getSummary()
+      GNSConfig.getLogger().info("Sending " + req.getSummary()
               + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":"
               + this.nodeConfig.getNodePort(id)
       //+ ": " + req // to long
@@ -360,7 +360,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     try {
       if (parameters.isDebugMode()) {
         //GNS.getLogger().info("Send to: " + id + " json: " + json.toString());
-        GNS.getLogger().info("Send to: " + id + " json: " + json.toReasonableString());
+        GNSConfig.getLogger().info("Send to: " + id + " json: " + json.toReasonableString());
       }
       messenger.sendToID(id, json);
     } catch (IOException e) {

@@ -17,12 +17,13 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.packet;
+package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SHA1HashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.nio.interfaces.Stringifiable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -380,4 +381,14 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
     return requestId;
   }
 
+	@Override
+	public Object getSummary() {
+		return new Object() {
+			public String toString() {
+				return SelectRequestPacket.this.getType() + ":"
+						+ SelectRequestPacket.this.requestId + ":"
+						+ SelectRequestPacket.this.getQuery();
+			}
+		};
+	}
 }

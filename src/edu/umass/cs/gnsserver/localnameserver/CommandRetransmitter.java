@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.localnameserver;
 
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -74,7 +74,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     this.actives = actives;
     this.key = this.refreshKey();
     if (handler.isDebugMode()) {
-      GNS.getLogger().fine("CommandSender starting: " + key);
+      GNSConfig.getLogger().fine("CommandSender starting: " + key);
     }
   }
 
@@ -84,7 +84,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
       ProtocolExecutor.cancel(this);
     }
     if (handler.isDebugMode()) {
-      GNS.getLogger().fine(this.refreshKey() + " re-sending ");
+      GNSConfig.getLogger().fine(this.refreshKey() + " re-sending ");
     }
     return start();
   }
@@ -94,7 +94,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
       return true;
     } else if (activesAlreadyContacted.size() == actives.size()) {
       if (handler.isDebugMode()) {
-        GNS.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
+        GNSConfig.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
                 + " No answer after trying all actives.");
       }
       // should we return an NACK here or just let the client timeout?
@@ -111,7 +111,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     json.remove(MessageNIOTransport.SNDR_IP_FIELD);
     json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     if (handler.isDebugMode()) {
-      GNS.getLogger().fine(this.refreshKey()
+      GNSConfig.getLogger().fine(this.refreshKey()
               + " Sending to " + address
               + " " + json);
     }

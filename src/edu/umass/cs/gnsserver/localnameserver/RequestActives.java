@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -79,7 +79,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     reconfigurators = new ArrayList<InetSocketAddress>(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
     this.key = this.refreshKey();
     if (handler.isDebugMode()) {
-      GNS.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
+      GNSConfig.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
     }
   }
 

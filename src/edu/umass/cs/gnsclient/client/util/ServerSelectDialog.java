@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import javax.swing.JOptionPane;
@@ -32,16 +32,16 @@ import edu.umass.cs.gnscommon.utils.NetworkUtils;
 public class ServerSelectDialog {
 
   private static final String[] hostStringOptions = {
-    "gnserve.net:" + GNSClient.LNS_PORT + " (LNS)",
-    "kittens.name:" + GNSClient.LNS_PORT + " (LNS)",
-    "gdns.name:" + GNSClient.LNS_PORT + " (LNS)",
-    "hazard.hpcc.umass.edu:" + GNSClient.LNS_PORT + " (LNS)",
-    getLocalHostAddressString() + ":" + GNSClient.LNS_PORT + " (LNS)",
-    "gnserve.net:" + GNSClient.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
-    "kittens.name:" + GNSClient.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
-    "gdns.name:" + GNSClient.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
-    "hazard.hpcc.umass.edu:" + GNSClient.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
-    getLocalHostAddressString() + ":" + GNSClient.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
+    "gnserve.net:" + GNSClientConfig.LNS_PORT + " (LNS)",
+    "kittens.name:" + GNSClientConfig.LNS_PORT + " (LNS)",
+    "gdns.name:" + GNSClientConfig.LNS_PORT + " (LNS)",
+    "hazard.hpcc.umass.edu:" + GNSClientConfig.LNS_PORT + " (LNS)",
+    getLocalHostAddressString() + ":" + GNSClientConfig.LNS_PORT + " (LNS)",
+    "gnserve.net:" + GNSClientConfig.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
+    "kittens.name:" + GNSClientConfig.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
+    "gdns.name:" + GNSClientConfig.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
+    "hazard.hpcc.umass.edu:" + GNSClientConfig.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
+    getLocalHostAddressString() + ":" + GNSClientConfig.ACTIVE_REPLICA_PORT + " (AR - single node test only)",
     "Other"
   };
 
@@ -55,7 +55,7 @@ public class ServerSelectDialog {
               hostStringOptions[1],
               null);
       if (hostPort == "Other") {
-        hostPort = JOptionPane.showInputDialog(null, "Enter host:port (" + GNSClient.LNS_PORT + " is the default for TCP clients)");
+        hostPort = JOptionPane.showInputDialog(null, "Enter host:port (" + GNSClientConfig.LNS_PORT + " is the default for TCP clients)");
       }
       if (hostPort == null) {
         throw new RuntimeException("No host:port choosen!");
@@ -66,7 +66,7 @@ public class ServerSelectDialog {
       }
       return address;
     } catch (RuntimeException e) {
-      return new InetSocketAddress(getLocalHostAddressString(), GNSClient.LNS_PORT);
+      return new InetSocketAddress(getLocalHostAddressString(), GNSClientConfig.LNS_PORT);
     }
   }
 

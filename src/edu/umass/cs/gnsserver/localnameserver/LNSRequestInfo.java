@@ -20,8 +20,8 @@
 package edu.umass.cs.gnsserver.localnameserver;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
 
@@ -67,11 +67,8 @@ public class LNSRequestInfo {
    * @return the service name
    */
 	public synchronized String getServiceName() {
-		// arun
-		return GnsProtocol.CREATE_DELETE_COMMANDS.contains(getCommandName()) 
-				//|| this.commandPacket.getCommandName().equals(GnsProtocol.CONNECTION_CHECK) 
-				? Config
-				.getGlobalString(RC.SPECIAL_NAME) : commandPacket
+		// arun: not needed any more, I think
+		return commandPacket
 				.getServiceName();
 	}
 

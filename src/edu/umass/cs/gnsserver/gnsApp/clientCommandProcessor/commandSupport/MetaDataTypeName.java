@@ -17,9 +17,9 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField.makeInternalFieldString;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField.makeInternalFieldString;
 
 /**
  * Provides types for various meta data fields that are stored as internal fields.

@@ -17,20 +17,23 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gigapaxos.interfaces.Summarizable;
+import edu.umass.cs.gigapaxos.interfaces.SummarizableRequest;
 import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.GnsApp;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -45,6 +48,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 /**
  * Handles sending and receiving of commands.
@@ -71,15 +75,18 @@ public class CommandHandler {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  private static void handlePacketCommandRequest(JSONObject incomingJSON,
-          GnsApp app)
+  private static void handlePacketCommandRequest(CommandPacket packet,
+          GNSApp app)
           throws JSONException, UnknownHostException {
     final Long receiptTime = System.currentTimeMillis(); // instrumentation
     ClientRequestHandlerInterface handler = app.getRequestHandler();
-    if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
-    }
-    final CommandPacket packet = new CommandPacket(incomingJSON);
+    if (handler.getParameters().isDebugMode()) 
+			GNSConfig.getLogger().log(
+					Level.INFO,
+					"{0} COMMAND packet received: {1}",
+					new Object[] { CommandHandler.class.getSimpleName(),
+							packet.getSummary() });
+    //final CommandPacket packet = new CommandPacket(incomingJSON);
     // FIXME: Don't do this every time. 
     // Set the host field. Used by the help command and email module. 
     commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":" + GnsHttpServer.getPort());
@@ -98,7 +105,7 @@ public class CommandHandler {
   }
 
   private static void runCommand(JSONObject jsonFormattedCommand, GnsCommand command,
-          ClientRequestHandlerInterface handler, CommandPacket packet, GnsApp app, long receiptTime) {
+          ClientRequestHandlerInterface handler, CommandPacket packet, GNSApp app, long receiptTime) {
     try {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
       CommandResponse<String> returnValue = executeCommand(command, jsonFormattedCommand, handler);
@@ -112,15 +119,17 @@ public class CommandHandler {
 
       try {
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("HANDLING COMMAND REPLY : " + returnPacket.toString());
+					GNSConfig.getLogger().log(Level.INFO,
+							"Handling command reply {0} ",
+							new Object[] { returnPacket.getSummary() });
         }
-        handleCommandReturnValuePacketForApp(returnPacket.toJSONObject(), app);
+        handleCommandReturnValuePacketForApp(returnPacket, app);
       } catch (IOException e) {
-        GNS.getLogger().severe("Problem replying to command: " + e);
+        GNSConfig.getLogger().severe("Problem replying to command: " + e);
       }
 
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem  executing command: " + e);
+      GNSConfig.getLogger().severe("Problem  executing command: " + e);
       e.printStackTrace();
     }
     DelayProfiler.updateDelay("handlePacketCommandRequest", receiptTime);
@@ -132,10 +141,10 @@ public class CommandHandler {
     private final GnsCommand command;
     private final ClientRequestHandlerInterface handler;
     private final CommandPacket packet;
-    private final GnsApp app;
+    private final GNSApp app;
     private final long receiptTime;
 
-    public WorkerTask(JSONObject jsonFormattedCommand, GnsCommand command, ClientRequestHandlerInterface handler, CommandPacket packet, GnsApp app, long receiptTime) {
+    public WorkerTask(JSONObject jsonFormattedCommand, GnsCommand command, ClientRequestHandlerInterface handler, CommandPacket packet, GNSApp app, long receiptTime) {
       this.jsonFormattedCommand = jsonFormattedCommand;
       this.command = command;
       this.handler = handler;
@@ -160,7 +169,7 @@ public class CommandHandler {
       String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
       //String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("########CANONICAL JSON: " + commandSansSignature);
+        GNSConfig.getLogger().fine("########CANONICAL JSON: " + commandSansSignature);
       }
       command.put(SIGNATURE, signature);
       command.put(SIGNATUREFULLMESSAGE, commandSansSignature);
@@ -179,7 +188,7 @@ public class CommandHandler {
     try {
       if (command != null) {
         //GNS.getLogger().info("Executing command: " + command.toString());
-        GNS.getLogger().fine("Executing command: " + command.toString() + " with " + json);
+        GNSConfig.getLogger().info("Executing command: " + command + " with " + json);
         return command.execute(json, handler);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " - Don't understand " + json.toString());
@@ -207,7 +216,7 @@ public class CommandHandler {
   /**
    * Encapsulates the info needed for a command request.
    */
-  public static class CommandRequestInfo {
+  public static class CommandRequestInfo implements Summarizable {
 
     private final String host;
     private final int port;
@@ -237,6 +246,16 @@ public class CommandHandler {
     public String getHost() {
       return host;
     }
+
+    @Override
+		public Object getSummary() {
+			return new Object() {
+				public String toString() {
+					return CommandRequestInfo.this.guid + ":"
+							+ CommandRequestInfo.this.command;
+				}
+			};
+		}
 
     /**
      * Returns the port.
@@ -275,8 +294,8 @@ public class CommandHandler {
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleCommandPacketForApp(JSONObject json, GnsApp app) throws JSONException, IOException {
-    CommandPacket packet = new CommandPacket(json);
+  public static void handleCommandPacketForApp(CommandPacket packet, GNSApp app) throws JSONException, IOException {
+    //CommandPacket packet = new CommandPacket(json);
     // Squirrel away the host and port so we know where to send the command return value
     // A little unnecessary hair for debugging... also peek inside the command.
     JSONObject command;
@@ -289,30 +308,34 @@ public class CommandHandler {
     app.outStandingQueries.put(packet.getClientRequestId(),
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
                     commandString, guid));
-    handlePacketCommandRequest(json, app);
+    handlePacketCommandRequest(packet, app);
   }
 
   private static long lastStatsTime = 0;
 
   /**
    * Called when a command return value packet is received by the app.
+ * @param returnPacket 
    * 
-   * @param json
    * @param app
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleCommandReturnValuePacketForApp(JSONObject json, GnsApp app) throws JSONException, IOException {
-    CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
+  public static void handleCommandReturnValuePacketForApp(CommandValueReturnPacket returnPacket, GNSApp app) throws JSONException, IOException {
+   // CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     long id = returnPacket.getClientRequestId();
     CommandRequestInfo sentInfo;
     if ((sentInfo = app.outStandingQueries.get(id)) != null) {
       app.outStandingQueries.remove(id);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("&&&&&&& For " + sentInfo.getCommand() + " | " + sentInfo.getGuid() + " APP IS SENDING VALUE BACK TO "
-                + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
+				GNSConfig
+						.getLogger()
+						.log(Level.INFO,
+								"&&&&&&& {0}  =>  {1} -> {2} ",
+								new Object[] { sentInfo.getSummary(),
+										returnPacket.getSummary(),sentInfo.getHost()+":"+sentInfo.getPort() });
       }
-      app.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), json);
+      app.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), returnPacket, returnPacket.toJSONObject());
 
       // shows us stats every 100 commands, but not more than once every 5 seconds
       if (commandCount++ % 100 == 0) {
@@ -322,7 +345,7 @@ public class CommandHandler {
         }
       }
     } else {
-      GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);
+      GNSConfig.getLogger().severe("Command packet info not found for " + id + ": " + returnPacket.getSummary());
     }
   }
 }

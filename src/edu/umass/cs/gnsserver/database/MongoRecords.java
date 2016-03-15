@@ -31,20 +31,23 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
+
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -121,7 +124,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
       initializeIndexes();
     } catch (UnknownHostException e) {
-      GNS.getLogger().severe("Unable to open Mongo DB: " + e);
+      GNSConfig.getLogger().severe("Unable to open Mongo DB: " + e);
     }
   }
 
@@ -138,7 +141,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       db.getCollection(spec.getName()).createIndex(index);
     }
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("Indexes initialized");
+      GNSConfig.getLogger().info("Indexes initialized");
     }
   }
 
@@ -158,7 +161,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         db.requestEnsureConnection();
         db.getCollection(collectionName).dropIndexes();
         db.getCollection(collectionName).drop();
-        GNS.getLogger().info("MONGO DB RESET. DBNAME: " + dbName + " Collection name: " + collectionName);
+        GNSConfig.getLogger().info("MONGO DB RESET. DBNAME: " + dbName + " Collection name: " + collectionName);
 
         // IMPORTANT... recreate the indices
         initializeIndex(collectionName);
@@ -168,7 +171,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         db.requestDone();
       }
     } else {
-      GNS.getLogger().severe("MONGO DB: No collection named: " + collectionName);
+      GNSConfig.getLogger().severe("MONGO DB: No collection named: " + collectionName);
     }
   }
 
@@ -234,7 +237,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         // older style
         int lookupTime = (int) (System.currentTimeMillis() - startTime);
         if (debuggingEnabled && lookupTime > 20) {
-          GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
+          GNSConfig.getLogger().warning(" mongoLookup Long delay " + lookupTime);
         }
         // instrumentation
         json.put(NameRecord.LOOKUP_TIME.getName(), lookupTime);
@@ -243,7 +246,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         throw new RecordNotFoundException(guid);
       }
     } catch (JSONException e) {
-      GNS.getLogger().warning("Unable to parse JSON: " + e);
+      GNSConfig.getLogger().warning("Unable to parse JSON: " + e);
       return null;
     } catch (MongoException e) {
       throw new FailedDBOperationException(collectionName, guid);
@@ -265,7 +268,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
           throws RecordNotFoundException, FailedDBOperationException {
     long startTime = System.currentTimeMillis();
     if (guid == null) {
-      GNS.getLogger().fine("GUID is null: " + guid);
+      GNSConfig.getLogger().fine("GUID is null: " + guid);
       throw new RecordNotFoundException(guid);
     }
     db.requestStart();
@@ -307,7 +310,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         // FIXME: Why not convert this to a JSONObject right now? We know that's what it is.
         BasicDBObject bson = (BasicDBObject) dbObject.get(valuesMapField.getName());
         if (debuggingEnabled) {
-          GNS.getLogger().info("@@@@@@@@ " + bson.toString());
+          GNSConfig.getLogger().info("@@@@@@@@ " + bson.toString());
         }
         // then we run thru each userkey in the valuesMapKeys and pull the
         // value put stuffing it into the values map
@@ -316,7 +319,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
           String userKey = valuesMapKeys.get(i).getName();
           if (containsFieldDotNotation(userKey, bson) == false) {
             if (debuggingEnabled) {
-              GNS.getLogger().info("DBObject doesn't contain " + userKey);
+              GNSConfig.getLogger().info("DBObject doesn't contain " + userKey);
             }
             continue;
           }
@@ -325,7 +328,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
               case USER_JSON:
                 Object value = getWithDotNotation(userKey, bson);
                 if (debuggingEnabled) {
-                  GNS.getLogger().info("Object is " + value.toString());
+                  GNSConfig.getLogger().info("Object is " + value.toString());
                 }
                 valuesMap.put(userKey, value);
                 break;
@@ -334,11 +337,11 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
                 //valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(bson.toString(userKey).toString())));
                 break;
               default:
-                GNS.getLogger().severe("ERROR: Error: User keys field " + userKey + " is not a known type:" + valuesMapKeys.get(i).type());
+                GNSConfig.getLogger().severe("ERROR: Error: User keys field " + userKey + " is not a known type:" + valuesMapKeys.get(i).type());
                 break;
             }
           } catch (JSONException e) {
-            GNS.getLogger().severe("Error parsing json: " + e);
+            GNSConfig.getLogger().severe("Error parsing json: " + e);
             e.printStackTrace();
           }
         }
@@ -350,7 +353,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       // older style
       int lookupTime = (int) (System.currentTimeMillis() - startTime);
       if (debuggingEnabled && lookupTime > 20) {
-        GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
+        GNSConfig.getLogger().warning(" mongoLookup Long delay " + lookupTime);
       }
       hashMap.put(NameRecord.LOOKUP_TIME, lookupTime);
       return hashMap;
@@ -488,7 +491,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         } else if (valuesMapKeys.get(i).type().equals(ColumnFieldType.USER_JSON)) { // value is any valid JSON
           updates.append(fieldName, JSONParse(valuesMapValues.get(i)));
         } else {
-          GNS.getLogger().warning("Ignoring unknown format: " + valuesMapKeys.get(i).type());
+          GNSConfig.getLogger().warning("Ignoring unknown format: " + valuesMapKeys.get(i).type());
         }
       }
     }
@@ -502,7 +505,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       DelayProfiler.updateDelay("updateJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
       if (debuggingEnabled && finishTime - startTime > 10) {
-        GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
+        GNSConfig.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
       }
     }
   }
@@ -552,7 +555,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     }
 
     if (debuggingEnabled) {
-      GNS.getLogger().info("UPDATES: " + updates.toString());
+      GNSConfig.getLogger().info("UPDATES: " + updates.toString());
     }
 
     if (updates.keySet().size() > 0) { // only if there are some things to update
@@ -567,11 +570,11 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       DelayProfiler.updateDelay("updateConditionalJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
       if (debuggingEnabled && finishTime - startTime > 10) {
-        GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
+        GNSConfig.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
       }
     }
     if (debuggingEnabled) {
-      GNS.getLogger().info(actuallyUpdatedTheRecord ? "ACTUALLY UPDATED " : "DIDN'T UPDATE " + guid);
+      GNSConfig.getLogger().info(actuallyUpdatedTheRecord ? "ACTUALLY UPDATED " : "DIDN'T UPDATE " + guid);
     }
     return actuallyUpdatedTheRecord;
   }
@@ -692,7 +695,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       box.add(box1);
       box.add(box2);
     } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to parse JSON: " + e);
+      GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
     }
     return box;
   }
@@ -721,7 +724,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       tuple.add(json.getDouble(0));
       tuple.add(json.getDouble(1));
     } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to parse JSON: " + e);
+      GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
     }
     String fieldName = valuesMapField.getName() + "." + key;
     BasicDBObject nearClause = new BasicDBObject("$near", tuple).append("$maxDistance", maxDistanceInRadians);
@@ -837,7 +840,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     try {
       mongoClient = new MongoClient("localhost");
     } catch (UnknownHostException e) {
-      GNS.getLogger().severe("Unable to open Mongo DB: " + e);
+      GNSConfig.getLogger().severe("Unable to open Mongo DB: " + e);
       return;
     }
     List<String> names = mongoClient.getDatabaseNames();

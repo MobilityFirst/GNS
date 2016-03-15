@@ -20,7 +20,9 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -43,6 +45,24 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
  */
 public class UniversalTcpClient extends BasicUniversalTcpClient implements GNSClientInterface {
 
+	/**
+	 * Same as {@link #UniversalTcpClient(InetSocketAddress, String, int, boolean)}
+	 * with a default reconfigurator. Either a default reconfigurator must be 
+	 * provided or the gigapaxos properties file must contain at least one
+	 * legitimate reconfigurator.
+	 * 
+	 * 
+	 * @param anyReconfigurator
+	 * @param remoteHost
+	 * @param remotePort
+	 * @param disableSSL
+	 */
+	// arun: added this for GNSClient
+	public UniversalTcpClient(InetSocketAddress anyReconfigurator,
+			String remoteHost, int remotePort, boolean disableSSL) {
+		super(anyReconfigurator, remoteHost, remotePort, disableSSL);
+	}
+	
   public UniversalTcpClient(String remoteHost, int remotePort) {
     this(remoteHost, remotePort, false);
   }

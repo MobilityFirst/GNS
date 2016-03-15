@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.recordmap;
+package edu.umass.cs.gnsserver.gnsapp.recordmap;
 
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -26,7 +26,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,7 +71,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
         JSONObject json = records.lookupEntireRecord(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
-        GNS.getLogger().severe("Error updating json record: " + e);
+        GNSConfig.getLogger().severe("Error updating json record: " + e);
         return null;
       }
     } else {
@@ -159,7 +159,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
         return new NameRecord(this, json);
       }
     } catch (JSONException e) {
-      GNS.getLogger().severe("Error getting name record " + name + ": " + e);
+      GNSConfig.getLogger().severe("Error getting name record " + name + ": " + e);
     }
     return null;
   }
@@ -169,7 +169,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
     try {
       addNameRecord(recordEntry.toJSONObject());
     } catch (JSONException e) {
-      GNS.getLogger().severe("Error adding name record: " + e);
+      GNSConfig.getLogger().severe("Error adding name record: " + e);
       return;
     }
   }
@@ -180,9 +180,9 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
     try {
       String name = json.getString(NameRecord.NAME.getName());
       records.insert(collectionName, name, json);
-      GNS.getLogger().finer(records.toString() + ":: Added " + name + " JSON: " + json);
+      GNSConfig.getLogger().finer(records.toString() + ":: Added " + name + " JSON: " + json);
     } catch (JSONException e) {
-      GNS.getLogger().severe(records.toString() + ":: Error adding name record: " + e);
+      GNSConfig.getLogger().severe(records.toString() + ":: Error adding name record: " + e);
     }
   }
 
@@ -190,7 +190,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException {
     NoSQLRecords records = mongoRecords;
     records.bulkInsert(collectionName, jsons);
-    GNS.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
+    GNSConfig.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
   }
 
   @Override
@@ -198,7 +198,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
     try {
       mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
-      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
+      GNSConfig.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
     } catch (FieldNotFoundException e) {
     }
   }

@@ -21,7 +21,7 @@ package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 
 import java.io.IOException;
@@ -40,7 +40,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -57,18 +56,19 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.ACCOUNT_INFO;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.GUID_INFO;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.PRIMARY_GUID;
-import static edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.createACL;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.main.GNS;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.ACCOUNT_INFO;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.GUID_INFO;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.PRIMARY_GUID;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.createACL;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -137,12 +137,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             ReconfigurationConfig.getClientPortOffset());
     if (isDebuggingEnabled()) 
     {
-      GNS.getLogger().info("Reconfigurators " + addresses);
-      System.out.println("Reconfigurators " + addresses);
-      System.out.println("Client port offset " + ReconfigurationConfig.getClientPortOffset());
-      GNS.getLogger().info("Client port offset " + ReconfigurationConfig.getClientPortOffset());
-      System.out.println("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
-      GNS.getLogger().info("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
+      GNSConfig.getLogger().info("Reconfigurators " + addresses);
+      //System.out.println("Reconfigurators " + addresses);
+      //System.out.println("Client port offset " + ReconfigurationConfig.getClientPortOffset());
+      GNSConfig.getLogger().info("Client port offset " + ReconfigurationConfig.getClientPortOffset());
+      //System.out.println("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
+      GNSConfig.getLogger().info("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
     }
     keyPairHostIndex = addresses.iterator().next();
   }
@@ -181,7 +181,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   private long sendCommandAsynch(JSONObject command, RequestCallback callback) throws IOException, JSONException {
     int id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, null, -1, command);
-    GNS.getLogger().log(Level.INFO, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
+    GNSConfig.getLogger().log(Level.INFO, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
   }
 
@@ -220,7 +220,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
     if (isDebuggingEnabled()) {
-      GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
+      GNSClientConfig.getLogger().info("##### Sending: " + createPacket.toString());
     }
     sendRequest(createPacket, callback);
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
@@ -291,7 +291,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
     if (isDebuggingEnabled()) {
-      GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
+      GNSClientConfig.getLogger().info("##### Sending: " + createPacket.toString());
     }
     sendRequest(createPacket, callback);
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
@@ -317,7 +317,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
       long singleEntrystartTime = System.currentTimeMillis();
       // Probably should reuse code from account and guid create
       GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-              keyPairHostIndex.getHostString(), keyPairHostIndex.getPort());
+              keyPairHostIndex.getHostString()+":"+keyPairHostIndex.getPort());
       DelayProfiler.updateDelay("updateOnePreference", singleEntrystartTime);
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, entry.getGuid());
@@ -342,7 +342,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     System.out.println(DelayProfiler.getStats());
     CreateServiceName createPacket = new CreateServiceName(null, state);
     if (isDebuggingEnabled()) {
-      GNSClient.getLogger().info("##### Sending: " + createPacket.toString());
+      GNSClientConfig.getLogger().info("##### Sending: " + createPacket.toString());
     }
     sendRequest(createPacket, callback);
   }
@@ -522,6 +522,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public long sendSelectPacket(SelectRequestPacket<String> packet, RequestCallback callback) throws IOException {
     int id = generateNextRequestID();
     packet.setRequestId(id);
+		GNSConfig.getLogger().log(Level.INFO, "{0} sending select packet {1}",
+				new Object[] { this, packet.getSummary() });
     return sendRequest(packet, callback);
   }
 

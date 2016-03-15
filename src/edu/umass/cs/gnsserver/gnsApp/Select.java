@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
 /*
  * Copyright (C) 2014
@@ -27,25 +27,30 @@ package edu.umass.cs.gnsserver.gnsApp;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.clientSupport.NSGroupAccess;
-import edu.umass.cs.gnsserver.gnsApp.packet.ResponseCode;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectResponsePacket;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectOperation;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectGroupBehavior;
+import java.util.logging.Level;
+
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSGroupAccess;
+import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.Util;
+
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashSet;
@@ -89,22 +94,23 @@ public class Select {
   private static Random randomID = new Random();
   private static ConcurrentMap<Integer, NSSelectInfo<String>> queriesInProgress = new ConcurrentHashMap<Integer, NSSelectInfo<String>>(10, 0.75f, 3);
 
-  /**
-   * Handles a select request that was received from a client.
-   *
-   * @param incomingJSON
-   * @param replica
-   * @throws JSONException
-   * @throws UnknownHostException
-   * @throws FailedDBOperationException
-   */
-  public static void handleSelectRequest(JSONObject incomingJSON,
-          GnsApplicationInterface<String> replica) throws JSONException, UnknownHostException, FailedDBOperationException {
-    SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, replica.getGNSNodeConfig());
+	/**
+	 * Handles a select request that was received from a client.
+	 * 
+	 * @param packet
+	 *
+	 * @param replica
+	 * @throws JSONException
+	 * @throws UnknownHostException
+	 * @throws FailedDBOperationException
+	 */
+  public static void handleSelectRequest(SelectRequestPacket<String> packet,
+          GNSApplicationInterface<String> replica) throws JSONException, UnknownHostException, FailedDBOperationException {
+    //SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, replica.getGNSNodeConfig());
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
-      handleSelectRequestFromNS(incomingJSON, replica);
+      handleSelectRequestFromNS(packet, replica);
     } else {
-      handleSelectRequestFromClient(incomingJSON, replica);
+      handleSelectRequestFromClient(packet, replica);
     }
   }
 
@@ -118,9 +124,9 @@ public class Select {
    * @throws UnknownHostException
    * @throws FailedDBOperationException
    */
-  private static void handleSelectRequestFromClient(JSONObject incomingJSON,
-          GnsApplicationInterface<String> app) throws JSONException, UnknownHostException, FailedDBOperationException {
-    SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
+  private static void handleSelectRequestFromClient(SelectRequestPacket<String> packet,
+          GNSApplicationInterface<String> app) throws JSONException, UnknownHostException, FailedDBOperationException {
+    //SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
     if (packet.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
@@ -129,26 +135,26 @@ public class Select {
       int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), app.getDB());
       if (lastUpdate != null) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
+          GNSConfig.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
         }
         // if not enough time has passed we just return the current value of the group
         if (new Date().getTime() - lastUpdate.getTime() <= minRefreshInterval) {
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
+            GNSConfig.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app.getDB());
           sendReponsePacketToCaller(packet.getId(), packet.getCcpQueryId(), packet.getClientAddress(), result.toStringSet(), app);
           return;
         }
       } else {
-        GNS.getLogger().info("GROUP_LOOKUP Request: No Last Update Info ");
+        GNSConfig.getLogger().info("GROUP_LOOKUP Request: No Last Update Info ");
       }
     }
     // the code below executes for regular selects and also for GROUP SETUP and GROUP LOOKUP but for lookup
     // only if enough time has elapsed since last lookup (see above)
     // OR in the anamolous situation where the update info could not be found
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info(packet.getSelectOperation().toString()
+      GNSConfig.getLogger().info(packet.getSelectOperation().toString()
               + " Request: Forwarding request for " + packet.getGuid() != null ? packet.getGuid() : "non-guid select");
     }
     // If it's not a group lookup or is but enough time has passed we do the usual thing
@@ -165,15 +171,18 @@ public class Select {
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("NS" + app.getNodeID().toString() + " sending select "
-              + outgoingJSON + " to " + Util.setOfNodeIdToString(serverIds));
+			GNSConfig.getLogger().log(
+					Level.INFO,
+					"NS {0} sending select {1} to {2}",
+					new Object[] { app.getNodeID(), packet.getSummary(),
+							Util.setOfNodeIdToString(serverIds) });
     }
     try {
       for (String serverId : serverIds) {
         app.sendToID(serverId, outgoingJSON); // send to myself too
       }
     } catch (IOException e) {
-      GNS.getLogger().severe("Exception while sending select request: " + e);
+      GNSConfig.getLogger().severe("Exception while sending select request: " + e);
     }
   }
 
@@ -187,12 +196,16 @@ public class Select {
    * @param app
    * @throws JSONException
    */
-  private static void handleSelectRequestFromNS(JSONObject incomingJSON,
-          GnsApplicationInterface<String> app) throws JSONException {
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("NS " + app.getNodeID().toString() + " recvd QueryRequest: " + incomingJSON);
-    }
-    SelectRequestPacket<String> request = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
+  private static void handleSelectRequestFromNS(SelectRequestPacket<String> request,
+          GNSApplicationInterface<String> app) throws JSONException {
+		if (AppReconfigurableNodeOptions.debuggingEnabled) {
+			GNSConfig.getLogger().log(
+					Level.INFO,
+					"NS {0} {1} received query {2}",
+					new Object[] { Select.class.getSimpleName(),
+							app.getNodeID(), request.getSummary() });
+		}
+   // SelectRequestPacket<String> request = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
@@ -201,13 +214,13 @@ public class Select {
               request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeID(), jsonRecords);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("NS " + app.getNodeID().toString() + " sending back "
-                + jsonRecords.length() + " records");
+        GNSConfig.getLogger().log(Level.INFO, "NS {0} sending back {1} record(s) in response to {2}"
+                , new Object[]{app.getNodeID(), jsonRecords.length(), request.getSummary()});
       }
       // and send them back to the originating NS
       app.sendToID(request.getNameServerID(), response.toJSONObject());
     } catch (Exception e) {
-      GNS.getLogger().severe("Exception while handling select request: " + e);
+      GNSConfig.getLogger().severe("Exception while handling select request: " + e);
       e.printStackTrace();
       SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(),
               request.getClientAddress(),
@@ -215,7 +228,7 @@ public class Select {
       try {
         app.sendToID(request.getNameServerID(), failResponse.toJSONObject());
       } catch (IOException f) {
-        GNS.getLogger().severe("Unable to send Failure SelectResponsePacket: " + f);
+        GNSConfig.getLogger().severe("Unable to send Failure SelectResponsePacket: " + f);
         return;
       }
     }
@@ -229,15 +242,15 @@ public class Select {
    * @param replica
    * @throws JSONException
    */
-  public static void handleSelectResponse(JSONObject json,
-          GnsApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
-    SelectResponsePacket<String> packet = new SelectResponsePacket<>(json, replica.getGNSNodeConfig());
+  public static void handleSelectResponse(SelectResponsePacket<String> packet,
+          GNSApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
+    //SelectResponsePacket<String> packet = new SelectResponsePacket<>(json, replica.getGNSNodeConfig());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " recvd from NS " + packet.getNameServerID().toString());
+      GNSConfig.getLogger().fine("NS " + replica.getNodeID().toString() + " recvd from NS " + packet.getNameServerID().toString());
     }
     NSSelectInfo<String> info = queriesInProgress.get(packet.getNsQueryId());
     if (info == null) {
-      GNS.getLogger().warning("NS " + replica.getNodeID().toString() + " unabled to located query info:" + packet.getNsQueryId());
+      GNSConfig.getLogger().warning("NS " + replica.getNodeID().toString() + " unabled to located query info:" + packet.getNsQueryId());
       return;
     }
     // if there is no error update our results list
@@ -246,12 +259,12 @@ public class Select {
       processJSONRecords(packet.getRecords(), info, replica);
     } else // error response
      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " processing error response: " + packet.getErrorMessage());
+        GNSConfig.getLogger().fine("NS " + replica.getNodeID().toString() + " processing error response: " + packet.getErrorMessage());
       }
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServerID());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " servers yet to respond:" + info.serversYetToRespond());
+      GNSConfig.getLogger().fine("NS" + replica.getNodeID().toString() + " servers yet to respond:" + info.serversYetToRespond());
     }
     if (info.allServersResponded()) {
       handledAllServersResponded(packet, info, replica);
@@ -260,25 +273,29 @@ public class Select {
 
   private static void sendReponsePacketToCaller(int id, int lnsQueryId,
           InetSocketAddress address, Set<String> guids,
-          GnsApplicationInterface<String> app) throws JSONException {
+          GNSApplicationInterface<String> app) throws JSONException {
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> response
             = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
                     -1, null, new JSONArray(guids));
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("NS " + app.getNodeID().toString()
-              + " 888888888 CLIENT ADDRESS: " + address.toString());
+		if (AppReconfigurableNodeOptions.debuggingEnabled) {
+			GNSConfig
+					.getLogger()
+					.log(Level.INFO,
+							"NS {0} 888888888 sending response to client address {1}: {2}",
+							new Object[] { app.getNodeID(), address,
+									response.getSummary() });
     }
     try {
       //app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
-      app.sendToClient(address, response.toJSONObject());
+      app.sendToClient(address, response, response.toJSONObject());
     } catch (IOException f) {
-      GNS.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
+      GNSConfig.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
     }
   }
 
   private static void handledAllServersResponded(SelectResponsePacket<String> packet, NSSelectInfo<String> info,
-          GnsApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
+          GNSApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     // Pull the records out of the info structure and send a response back to the caller
@@ -288,7 +305,7 @@ public class Select {
     // Now we update any group guid stuff
     if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP)) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " storing query string and other info");
+        GNSConfig.getLogger().fine("NS" + replica.getNodeID().toString() + " storing query string and other info");
       }
       // for setup we need to squirrel away the query for later lookups
       NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery());
@@ -297,7 +314,7 @@ public class Select {
     if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " updating group members");
+        GNSConfig.getLogger().fine("NS" + replica.getNodeID().toString() + " updating group members");
       }
       NSGroupAccess.updateMembers(guid, guids, replica, packet.getReturnAddress());
       //NSGroupAccess.updateRecords(guid, processResponsesIntoJSONArray(info.getResponsesAsMap()), replica); 
@@ -329,7 +346,7 @@ public class Select {
   }
 
   private static JSONArray getJSONRecordsForSelect(SelectRequestPacket<String> request,
-          GnsApplicationInterface<String> ar) throws FailedDBOperationException {
+          GNSApplicationInterface<String> ar) throws FailedDBOperationException {
     JSONArray jsonRecords = new JSONArray();
     // actually only need name and values map... fix this
     AbstractRecordCursor cursor = null;
@@ -354,7 +371,7 @@ public class Select {
         break;
       case QUERY:
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " query: " + request.getQuery());
+          GNSConfig.getLogger().fine("NS" + ar.getNodeID().toString() + " query: " + request.getQuery());
         }
         cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
         break;
@@ -371,10 +388,10 @@ public class Select {
 
   // takes the JSON records that are returned from an NS and stuffs the into the NSSelectInfo record
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo<String> info,
-          GnsApplicationInterface<String> ar) throws JSONException {
+          GNSApplicationInterface<String> ar) throws JSONException {
     int length = jsonArray.length();
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " processing " + length + " records");
+      GNSConfig.getLogger().fine("NS" + ar.getNodeID().toString() + " processing " + length + " records");
     }
     // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
@@ -382,10 +399,10 @@ public class Select {
       String name = record.getString(NameRecord.NAME.getName());
       if (info.addResponseIfNotSeenYet(name, record)) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " added record for " + name);
+          GNSConfig.getLogger().fine("NS" + ar.getNodeID().toString() + " added record for " + name);
         }
       } else if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " DID NOT ADD record for " + name);
+        GNSConfig.getLogger().fine("NS" + ar.getNodeID().toString() + " DID NOT ADD record for " + name);
       }
     }
   }

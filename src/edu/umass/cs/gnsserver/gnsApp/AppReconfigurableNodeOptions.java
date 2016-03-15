@@ -17,11 +17,11 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
 import edu.umass.cs.gigapaxos.PaxosManager;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.Logging;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.Reconfigurator;
@@ -73,14 +73,14 @@ public class AppReconfigurableNodeOptions {
   /**
    * Fixed timeout after which a query is retransmitted.
    */
-  public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
+  public static int queryTimeout = GNSConfig.DEFAULT_QUERY_TIMEOUT;
 
   //  Abhigyan: parameters related to retransmissions.
   //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
   /**
    * Maximum time a local name server waits for a response from name server query is logged as failed after this.
    */
-  public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
+  public static int maxQueryWaitTime = GNSConfig.DEFAULT_MAX_QUERY_WAIT_TIME;
 
   /**
    * If this is true sending of email by the verification mechanism is disabled.
@@ -281,7 +281,7 @@ public class AppReconfigurableNodeOptions {
     }
 
     // make sure this has been initialized
-    GNS.getLogger();
+    GNSConfig.getLogger();
 		if (!allValues.containsKey(DISABLE_SSL))
 			disableSSL = ReconfigurationConfig.getClientSSLMode()==SSL_MODES.CLEAR;
 		else
@@ -327,7 +327,7 @@ public class AppReconfigurableNodeOptions {
 
     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
       System.out.println("******** Email Verification is OFF *********");
-      GNS.enableEmailAccountVerification = false;
+      GNSConfig.enableEmailAccountVerification = false;
     }
 
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
@@ -392,12 +392,12 @@ public class AppReconfigurableNodeOptions {
     }
 
     if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
-      GNS.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
+      GNSConfig.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
 
     }
     if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
       String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
-      GNS.consoleOutputLevel = levelString;
+      GNSConfig.consoleOutputLevel = levelString;
     }
     if (allValues.containsKey(STANDALONE)) {
       standAloneApp = true;

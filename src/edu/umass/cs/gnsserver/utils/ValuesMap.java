@@ -19,12 +19,16 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
+import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnscommon.utils.JSONDotNotation;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.Iterator;
+
 import org.json.JSONArray;
 
 /**
@@ -35,7 +39,7 @@ import org.json.JSONArray;
  *
  * @author westy
  */
-public class ValuesMap extends JSONObject {
+public class ValuesMap extends JSONObject implements Summarizable {
 
   private static boolean debuggingEnabled = false;
 
@@ -61,7 +65,7 @@ public class ValuesMap extends JSONObject {
       try {
         super.put(key, json.get(key));
       } catch (JSONException e) {
-        GNS.getLogger().severe("Unable to parse JSON: " + e);
+        GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
       }
     }
   }
@@ -141,7 +145,7 @@ public class ValuesMap extends JSONObject {
         return null;
       }
     } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to parse JSON array: " + e);
+      GNSConfig.getLogger().severe("Unable to parse JSON array: " + e);
       e.printStackTrace();
       return new ResultValue();
     }
@@ -161,7 +165,7 @@ public class ValuesMap extends JSONObject {
       //GNS.getLogger().severe("@@@@@AFTER PUT (key =" + key + " value=" + value + "): " + newContent.toString());
     } catch (JSONException e) {
       e.printStackTrace();
-      GNS.getLogger().severe("Unable to add JSON array to JSON Object: " + e);
+      GNSConfig.getLogger().severe("Unable to add JSON array to JSON Object: " + e);
     }
   }
 
@@ -185,10 +189,14 @@ public class ValuesMap extends JSONObject {
         JSONDotNotation.putWithDotNotation(destination, key, super.get(key));
         somethingChanged = true;
       } catch (JSONException e) {
-        GNS.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
+        GNSConfig.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
       }
     }
     return somethingChanged;
   }
 
+  @Override
+  public Object getSummary() {
+	  return edu.umass.cs.utils.Util.truncate(ValuesMap.this.toString(), 64, 64).toString();
+  }
 }

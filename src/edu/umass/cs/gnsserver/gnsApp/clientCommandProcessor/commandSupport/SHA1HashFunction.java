@@ -17,9 +17,9 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 /**
@@ -35,7 +35,7 @@ public class SHA1HashFunction extends AbstractHashFunction {
     try {
       messageDigest = MessageDigest.getInstance("SHA1");
     } catch (NoSuchAlgorithmException e) {
-      GNS.getLogger().severe("Problem initializing digest: " + e);
+      GNSConfig.getLogger().severe("Problem initializing digest: " + e);
     }
   }
 

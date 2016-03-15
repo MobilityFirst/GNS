@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.nio.JSONMessenger;
@@ -28,9 +28,9 @@ import edu.umass.cs.reconfiguration.PaxosReplicaCoordinator;
  * @author Westy
  * @param <String>
  */
-public class GnsAppCoordinator<String> extends PaxosReplicaCoordinator<String> {
+public class GNSAppCoordinator<String> extends PaxosReplicaCoordinator<String> {
 
-  GnsAppCoordinator(Replicable app, Stringifiable<String> unstringer, 
+  GNSAppCoordinator(Replicable app, Stringifiable<String> unstringer, 
           JSONMessenger<String> messenger) {
     super(app, messenger.getMyID(), unstringer, messenger);
   }

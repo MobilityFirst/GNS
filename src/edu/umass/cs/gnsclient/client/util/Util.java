@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.client.util;
 
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -91,17 +91,17 @@ public class Util {
       object = constructor.newInstance(arguments);
       return object;
     } catch (NoSuchMethodException e) {
-      GNSClient.getLogger().severe("Problem creating instance: " + e);
+      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
     } catch (ClassNotFoundException e) {
-      GNSClient.getLogger().severe("Problem creating instance: " + e);
+      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
     } catch (InstantiationException e) {
-      GNSClient.getLogger().severe("Problem creating instance: " + e);
+      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
     } catch (IllegalAccessException e) {
-      GNSClient.getLogger().severe("Problem creating instance: " + e);
+      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
     } catch (IllegalArgumentException e) {
-      GNSClient.getLogger().severe("Problem creating instance: " + e);
+      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
     } catch (InvocationTargetException e) {
-      GNSClient.getLogger().severe("Problem creating instance: " + e);
+      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
     }
     return null;
   }

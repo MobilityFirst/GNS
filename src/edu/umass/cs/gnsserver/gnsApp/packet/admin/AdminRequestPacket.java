@@ -17,11 +17,12 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.packet.admin;
+package edu.umass.cs.gnsserver.gnsapp.packet.admin;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.BasicPacketWithReturnAddress;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet.PacketType;
+import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithReturnAddress;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
