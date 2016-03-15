@@ -19,30 +19,36 @@
  */
 package edu.umass.cs.gnsserver.gnsApp;
 
+import static edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions.disableSSL;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
-
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.MongoRecords;
 import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
 import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
 import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
 import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
-import static edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientCommandProcessor;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSQueryHandler;
 import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSUpdateHandler;
 import edu.umass.cs.gnsserver.gnsApp.packet.ConfirmUpdatePacket;
@@ -55,6 +61,9 @@ import edu.umass.cs.gnsserver.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
+import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -64,16 +73,6 @@ import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Westy
@@ -139,7 +138,7 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
     GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
-    this.activeCodeHandler = new ActiveCodeHandler(this);
+    this.activeCodeHandler = new ActiveCodeHandler(ActiveCodeHandler.getActiveDB(this));
   }
   
   
