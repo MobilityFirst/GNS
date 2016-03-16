@@ -312,7 +312,7 @@ public class ClientPool implements Runnable{
 		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, "ActiveCodeClient:"+workerPort+" is being started.");
 		
-		Process process = startNewWorker(workerPort, 64);
+		Process process = startNewWorker(workerPort, 16);
 		
 		spareWorkers.put(workerPort, process);
 		synchronized(spareWorkers){
