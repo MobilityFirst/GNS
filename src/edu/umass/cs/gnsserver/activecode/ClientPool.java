@@ -43,6 +43,10 @@ import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
  *
  */
 public class ClientPool implements Runnable{
+	
+	
+	
+	
 	private HashMap<Long, ActiveCodeClient> clients;
 	private ActiveDBInterface app;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
