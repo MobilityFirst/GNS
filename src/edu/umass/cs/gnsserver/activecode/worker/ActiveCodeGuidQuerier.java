@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.URL;
 
 import org.json.JSONException;
@@ -52,14 +53,28 @@ public class ActiveCodeGuidQuerier {
   
   /**
    * Initialize an ActiveCodeGuidQuerier
- * @param socket 
- * @param clientPort 
    */
-  public ActiveCodeGuidQuerier(DatagramSocket socket, int clientPort) {
-    this.socket = socket;
-    this.clientPort = clientPort;
+  public ActiveCodeGuidQuerier() {
+    try {
+		this.socket = new DatagramSocket();
+	} catch (SocketException e) {
+		e.printStackTrace();
+	}
   }
   
+  protected void shutdownAndRestartSocket(){
+	  socket.close();
+	  try {
+		this.socket = new DatagramSocket();
+	} catch (SocketException e) {
+		e.printStackTrace();
+	}
+
+  }
+  
+  protected void setClientPort(int port){
+	clientPort = port;  
+  }
   
   /**
    * 

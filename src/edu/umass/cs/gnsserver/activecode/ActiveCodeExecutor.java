@@ -61,7 +61,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
 		ActiveCodeClient previousClient = task.getWrappedTask().setClient(client);
 
 		assert(previousClient == null);
-		//if(ActiveCodeHandler.enableDebugging)
+		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, task + " waiting on client "+client+" to be ready");    	
     	
 		//check the state of the client's worker
@@ -81,7 +81,7 @@ public class ActiveCodeExecutor extends ThreadPoolExecutor {
     	 */
     	assert(client.isReady());
     	
-    	//if(ActiveCodeHandler.enableDebugging)
+    	if(ActiveCodeHandler.enableDebugging)
     		ActiveCodeHandler.getLogger().log(Level.INFO, this + "'s client"+client+" is ready; before calling task "+task);
     	
     	guard.register(task); 

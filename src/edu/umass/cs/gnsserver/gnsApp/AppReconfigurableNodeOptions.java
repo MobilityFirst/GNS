@@ -26,7 +26,6 @@ import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -117,19 +116,19 @@ public class AppReconfigurableNodeOptions {
   /**
    * Number of active code worker.
    */
-  public static int activeCodeWorkerCount = 5;
+  public static int activeCodeWorkerCount = 2;
   /**
    * Number of spare workers.
    */
-  public static int activeCodeSpareWorker = 10;
+  public static int activeCodeSpareWorker = 1;
   /**
    * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
    */
   public static boolean activeCodeEnableTimeout = true;
   /**
-   * How long (in seconds) to blacklist active code.
+   * The timeout for each active code task
    */
-  public static long activeCodeTimeOut = 1000;
+  public static long activeCodeTimeOut = 200000000;
   /**
    * Enable debug message in active code package
    */

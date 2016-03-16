@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.activecode.worker;
 
+import java.net.DatagramSocket;
 import java.util.HashMap;
 
 import javax.script.Invocable;
@@ -29,7 +30,12 @@ import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
+import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -43,27 +49,29 @@ public class ActiveCodeRunner {
   private final Invocable invocable;
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
-  //private static ExecutorService executor = Executors.newSingleThreadExecutor();
+  private final JSONParser parser = new JSONParser();
+  
+  private DatagramSocket socket;
+  private int clientPort = -1;
+  
   ScriptContext sc = new SimpleScriptContext();
  
   /**
    * Initialize an ActiveCodeRunner with nashorn script engine
    * by default.
-   * To get the script engine takes hundreds of milliseconds. 
+   * @param socket 
    */
-  public ActiveCodeRunner() {
-	//long start = System.currentTimeMillis();
+  public ActiveCodeRunner(DatagramSocket socket) {
+	this.socket = socket;
+	
     ScriptEngineManager engineManager = new ScriptEngineManager();
-    //System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to initialize the manager.");
     engine = engineManager.getEngineByName("nashorn");
-    //System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to get the engine.");
     // engine = engineManager.getEngineByName("luaj");
     invocable = (Invocable) engine;
-    //System.out.println("It takes "+(System.currentTimeMillis()-start)+"ms to get the invocable.");
+    
     contexts = new HashMap<>();
     codeHashes = new HashMap<>();
-    //sc = new SimpleScriptContext();
-
+    
 	// uncomment to enable the lua-to-java bytecode compiler 
     // (require bcel library in class path)
     // Globals globals = JsePlatform.standardGlobals();
@@ -78,7 +86,7 @@ public class ActiveCodeRunner {
    * @param code the code
    * @throws ScriptException
    */
-  private void updateCache(String codeId, String code) throws ScriptException {
+  protected void updateCache(String codeId, String code) throws ScriptException {
     if (!contexts.containsKey(codeId)) {
       // Create a context if one does not yet exist and eval the code
       ScriptContext sc = new SimpleScriptContext();
@@ -148,54 +156,52 @@ public class ActiveCodeRunner {
    * @param value the original value read or written
    * @param querier the querier object used for active code reads/writes
    * @return the output of the code
+   * @throws ScriptException 
+   * @throws NoSuchMethodException 
    */
-  public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) {
+  public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) throws ScriptException,NoSuchMethodException{
 	JSONObject ret = null;
-	  //	return runLuaCode(guid, action, field, code, value, querier);
+	//return runLuaCode(guid, action, field, code, value, querier);
+	
 	long startTime = System.nanoTime();
-    try {
-      // Create a guid + action pair
-      //String codeId = guid + "_" + action;
-      // Update the script context if needed
-      //updateCache(codeId, code);
-     
-      engine.eval(code);
-      // Set the context
-      // ScriptContext sc = contexts.get(codeId);
-      //engine.eval(code, sc);      
-      //engine.setContext(sc);
+	// Create a guid + action pair
+	//String codeId = guid + "_" + action;
+	// Update the script context if needed
+	//updateCache(codeId, code);
 
-      ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
-      
-    } catch(ScriptException e){
-    	//e.printStackTrace();
-    	querier.setError(e.toString());
-    	return value;
-    } catch (NoSuchMethodException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	} 
+	// Set the context
+	//ScriptContext sc = contexts.get(codeId);      
+	//engine.setContext(sc);
+
+	engine.eval(code);
+	ret = (JSONObject) invocable.invokeFunction("run", value, field, querier);
     
     DelayProfiler.updateDelayNano("activeWorkerEngineExecution", startTime);
-    //System.out.println("It takes " + (System.nanoTime() - startTime) + " to run the active code.");
     return ret;
   }
   
-  
-  /**************************** TEST SUITE **********************************/
-  
-  
-  protected static ActiveCodeRunner generateRunner(){
-	  //executor = Executors.newFixedThreadPool(5);
-	  return new ActiveCodeRunner();
+  protected JSONObject submitRequest(ActiveCodeParams params, ActiveCodeGuidQuerier querier) throws ParseException, NoSuchMethodException, ScriptException{
+	  
+	  JSONObject vm = null;
+	  vm = (JSONObject) parser.parse(params.getValuesMapString());
+	  
+	  /*
+	   * Invariant: it's meaningless to have a null json object
+	   */
+	  assert (vm != null);
+	  
+	  JSONObject result = runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
+	  
+	  return result;
   }
   
-  /**
-   * Main function for all the test cases
-   * @param args
-   */
-  public static void main(String[] args){
-	 
-	  
+  protected void sendResponse(ActiveCodeMessage acmResp){
+	  ActiveCodeUtils.sendMessage(socket, acmResp, clientPort);
+  }
+  
+  protected int setClientPort(int port){
+	  int prev = clientPort;
+	  clientPort = port;
+	  return prev;
   }
 }

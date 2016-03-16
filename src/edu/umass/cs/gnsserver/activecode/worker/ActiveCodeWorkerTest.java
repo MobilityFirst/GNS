@@ -1,6 +1,9 @@
 package edu.umass.cs.gnsserver.activecode.worker;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.nio.file.Files;
@@ -32,16 +35,14 @@ public class ActiveCodeWorkerTest {
 	 * @throws JSONException
 	 * @throws IOException
 	 * @throws ParseException
+	 * @throws ClassNotFoundException 
 	 */
-	public static void main(String[] args) throws JSONException, IOException, ParseException{
+	public static void main(String[] args) throws JSONException, IOException, ParseException, ClassNotFoundException{
 		// Start a worker
 		(new Thread(new WorkerGeneratorRunanble())).start();		
 		DatagramSocket socket = new DatagramSocket();
 		byte[] buffer = new byte[1024];
-		
-		// inform the worker about the client's port number
-		ActiveCodeUtils.sendMessage(socket, new ActiveCodeMessage(), workerPort);
-		
+				
 		
 		System.out.println("Start testing normal active code for ActiveCodeWorker...");
 		JSONObject obj1 = new JSONObject();
@@ -76,7 +77,10 @@ public class ActiveCodeWorkerTest {
 		String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain-normal.js"))); 
 		acp.setCode(chain_code);
 		ActiveCodeUtils.sendMessage(socket, acm, workerPort);
-		acmResp = ActiveCodeUtils.receiveMessage(socket, buffer);
+		
+		DatagramPacket pkt = ActiveCodeUtils.receivePacket(socket, buffer);
+		acmResp = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
+		
 		ActiveCodeQueryRequest acqreq = acmResp.getAcqreq();
 		String targetGuid = acqreq.getGuid();
 		assert(targetGuid.equals("guid2"));
@@ -93,9 +97,8 @@ public class ActiveCodeWorkerTest {
 		ActiveCodeQueryResponse acqr = new ActiveCodeQueryResponse(true, newResult.toString());
 		ActiveCodeMessage acmres = new ActiveCodeMessage();
 		acmres.setAcqresp(acqr);
-		//System.out.println(acm.getAcqresp().getValuesMapString());
 		
-		ActiveCodeUtils.sendMessage(socket, acmres, workerPort);
+		ActiveCodeUtils.sendMessage(socket, acmres, pkt.getPort());
 		
 		acmResp = ActiveCodeUtils.receiveMessage(socket, buffer);
 		

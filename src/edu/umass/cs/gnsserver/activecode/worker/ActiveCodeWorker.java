@@ -19,12 +19,19 @@
  */
 package edu.umass.cs.gnsserver.activecode.worker;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.lang.management.ManagementFactory;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
+import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -34,20 +41,42 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeWorker {
+	/**
+	 * the runner and querier is used for executor to execute the request
+	 */
+	private ActiveCodeRunner runner;
+	private ActiveCodeGuidQuerier querier;
 	
-	protected static int numReqs = 0;
 	private DatagramSocket serverSocket;
-	long startTime;
+	private byte[] buffer = new byte[2048];
+	private int clientPort = -1;
+	
+	/**
+	 * executor is used for executing requests from the client, it can only execute one request at a time
+	 */
+	private ExecutorService executor = Executors.newSingleThreadExecutor();
+	
+	
+	private com.sun.management.OperatingSystemMXBean mxbean =
+			  (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+	
+	private long last = 0;
+	private long elapsed = 0;
+	private int checkedTime = 0;
+	private final static long timeout = AppReconfigurableNodeOptions.activeCodeTimeOut;
+	
+	/**
+	 * variables for instrument only
+	 */
+	protected static int numReqs = 0;
 	
 	protected ActiveCodeWorker(int port) {
-		startTime = System.currentTimeMillis();
 		try{
 			this.serverSocket = new DatagramSocket(port);
 			System.out.println(this+" : Starting ActiveCodeWorker at port number " + port);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-		System.out.println("It takes "+(System.currentTimeMillis() - startTime)+"ms to open a datagram socket.");
 	}
 	
 	public String toString(){
@@ -59,24 +88,108 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public void run() throws IOException {
-        ActiveCodeRunner runner = new ActiveCodeRunner();
+		// Initialize the runner with the script engine
+        runner = new ActiveCodeRunner(serverSocket);
+        querier = new ActiveCodeGuidQuerier();
         
-    	RequestHandler handler = new RequestHandler(runner);
+    	//RequestHandler handler = new RequestHandler(runner, serverSocket);
     	boolean keepGoing = true;
 
 		// Notify the server that I'm ready    	
 		ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
-		//System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>"+(System.currentTimeMillis() - startTime));
 		
-        while (keepGoing) {       	
-        	keepGoing = handler.handleRequest(serverSocket);  
+        while (keepGoing) {
+        	updateTime();
+        	checkedTime = 0;
+        	keepGoing = handleRequest();       	
         	numReqs++;
         	if(numReqs%1000 == 0){
         		System.out.println(DelayProfiler.getStats());
-        	}        	
-        }
-        
+        	}
+        	updateTime();
+
+        	elapsed = 0;
+        }        
         serverSocket.close();
+	}
+	
+	private void updateTime(){		
+		elapsed = elapsed + mxbean.getProcessCpuTime() - last;
+		last = mxbean.getProcessCpuTime();
+	}
+	
+	private boolean handleRequest(){
+		boolean ret = true;
+		Throwable thr = null;
+		try {			
+			// Get the ActiveCodeMessage from the GNS
+			ActiveCodeMessage acm = null;
+
+			DatagramPacket pkt = ActiveCodeUtils.receivePacket(serverSocket, buffer);
+			acm = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
+			
+			/*
+			 * UDP does not guarantee the sequence of the packets, this is the only way for handler to
+			 */
+			if (clientPort == -1){
+				clientPort = pkt.getPort();
+				// set the client port in runner and querier
+				runner.setClientPort(clientPort);
+				querier.setClientPort(clientPort);
+			}
+			
+			if( acm.isShutdown() ) {
+		    	ret = false;
+		    } else if (acm.isCrashed() ){
+		    	/**
+		    	 * send back acknowledgement to notify the guard that this worker has dealt with
+		    	 * the timedout task by itself. 
+		    	 */
+		    	/*
+		    	 * no need to send back a response, the guardian could check whether the worker is still running
+		    	ActiveCodeMessage acmResp = new ActiveCodeMessage();
+		    	ActiveCodeUtils.sendMessage(serverSocket, acmResp, pkt.getPort());
+		    	*/
+		    	
+		    	checkedTime++;
+		    	
+		    	assert(acm.error != null && acm.error.equals("TimedOut"));
+		    	updateTime();
+		    	
+		    	System.out.println(">>>>>>>>>> Check timeout task...");
+		    	if (elapsed > timeout || checkedTime >= 2){
+		    		System.out.println(">>>>>>>>>> Task is timedout!");
+		    		
+		    		// querier's socket needs to be shutdown no matter what
+		    		querier.shutdownAndRestartSocket();
+		    		// time out shutdown the executor and restart a new one
+		    		executor.shutdownNow();
+		    		executor = Executors.newSingleThreadExecutor();
+		    	}
+		    			    	
+		    } else {
+		    	// Run the active code
+			    ActiveCodeParams params = acm.getAcp();
+			    
+			    /*
+			     * Invariant: the params should not be null
+			     */
+			    assert(params != null);
+			    
+			    querier.setParam(params.getHopLimit(), params.getGuid());
+			    executor.execute(new ActiveCodeWorkerTask(params, runner, querier));
+		    }
+			
+		}catch (ClassNotFoundException e) {
+			thr = e;
+		} catch (IOException e) {
+			thr = e;
+		} finally{		
+			if(thr != null){
+				thr.printStackTrace();
+			}
+		}				
+		return ret;
 	}
 	
 	/**
@@ -85,7 +198,6 @@ public class ActiveCodeWorker {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException  {
-		System.out.println(((com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean()).getProcessCpuTime());
 		int port = 0;
 		port = Integer.parseInt(args[0]);
 		

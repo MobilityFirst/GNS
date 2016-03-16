@@ -309,8 +309,9 @@ public class ClientPool implements Runnable{
 	public synchronized void addSpareWorker(){
 		int workerPort = getOpenUDPPort();	
 		portStatus.put(workerPort, false);
+		if(ActiveCodeHandler.enableDebugging)
+			ActiveCodeHandler.getLogger().log(Level.INFO, "ActiveCodeClient:"+workerPort+" is being started.");
 		
-		ActiveCodeHandler.getLogger().log(Level.INFO, "ActiveCodeClient:"+workerPort+" is being started.");
 		Process process = startNewWorker(workerPort, 64);
 		
 		spareWorkers.put(workerPort, process);

@@ -123,6 +123,7 @@ public class ActiveCodeUtils {
 			socket.receive(pkt);
 			acm = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
 		} catch (IOException e) {
+			// Swallow this exception
 			//e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -145,8 +146,9 @@ public class ActiveCodeUtils {
 		try {
 			socket.receive(pkt);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// Swallow this exception
+			// e.printStackTrace();
+			return null;
 		} finally{
 			
 		}

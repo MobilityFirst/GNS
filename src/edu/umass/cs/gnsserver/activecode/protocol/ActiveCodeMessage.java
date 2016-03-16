@@ -42,10 +42,10 @@ public class ActiveCodeMessage implements Serializable {
   public boolean finished;
 
   /**
-   * Inidicates that the active code execution error
+   * Indicates that the active code execution error
    */
   public String error;
-
+  
   /**
    * The active code params to execute
    */
@@ -55,12 +55,12 @@ public class ActiveCodeMessage implements Serializable {
    * Stores the result of the active code computation
    */
   public String valuesMapString;
-
+  
   /**
    * Denotes a request by the worker to perform a query
    */
   public ActiveCodeQueryRequest acqreq;
-
+  
   /**
    * Returns a query response to the worker
    */

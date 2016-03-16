@@ -19,7 +19,10 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,8 +52,8 @@ public class ActiveCodeClient {
 	private Process process;
 	private DatagramSocket clientSocket;
 	// For instrument only
-	int getClientPort(){
-		return clientSocket.getLocalPort();
+	DatagramSocket getClientSocket(){
+		return clientSocket;
 	}
 	
 	private byte[] buffer = new byte[2048];
@@ -85,7 +88,7 @@ public class ActiveCodeClient {
 	protected int getWorkerPort() {
 		return workerPort;
 	}
-
+	
 	/**
 	 * Checks to see if the worker is still running.
 	 * 
@@ -122,7 +125,7 @@ public class ActiveCodeClient {
 		ActiveCodeUtils.sendMessage(clientSocket, acmReq, workerPort);
 		
 		
-		//if(ActiveCodeHandler.enableDebugging)
+		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, this + " send request to the worker's port "+workerPort);
 		
 		long receivedTime = System.nanoTime();
@@ -130,12 +133,19 @@ public class ActiveCodeClient {
 		while (!codeFinished) {
 			ActiveCodeMessage acmResp = null;
 			
-			//if(ActiveCodeHandler.enableDebugging)
+			if(ActiveCodeHandler.enableDebugging)
 				ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest waiting for socket message");
 			
-			acmResp = ActiveCodeUtils.receiveMessage(clientSocket, this.buffer);
-			
-			//if(ActiveCodeHandler.enableDebugging)
+			DatagramPacket pkt = ActiveCodeUtils.receivePacket(clientSocket, buffer);
+			if(pkt != null){
+				try{
+					acmResp = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
+				} catch (ClassNotFoundException | IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			if(ActiveCodeHandler.enableDebugging)
 				ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest received socket message: " + (acmResp != null ? "acmResp.valuesMapString = " + acmResp.valuesMapString : "[NULL]"));
 			
 			/*
@@ -170,7 +180,8 @@ public class ActiveCodeClient {
 					// Send the results back
 					ActiveCodeMessage acmres = new ActiveCodeMessage();
 					acmres.setAcqresp(acqresp);
-					ActiveCodeUtils.sendMessage(clientSocket, acmres, workerPort);
+					// Do not respond to the workerPort, please respond to the pkt port
+					ActiveCodeUtils.sendMessage(clientSocket, acmres, pkt.getPort());
 				} else{
 					// The port number has been changed, let's get out of the loop
 					crashed = true;
@@ -179,7 +190,7 @@ public class ActiveCodeClient {
 			}
 		}
 		
-		//if(ActiveCodeHandler.enableDebugging)
+		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, this + " submitRequest out of while(!codeFinished) loop");
 		
 		
@@ -233,7 +244,8 @@ public class ActiveCodeClient {
 	}
 
 	protected synchronized void setReady(boolean ready) {
-		ActiveCodeHandler.getLogger().log(Level.INFO, this + " is awaken by notification.");
+		if (ActiveCodeHandler.enableDebugging)
+			ActiveCodeHandler.getLogger().log(Level.INFO, this + " is awaken by notification.");
 		this.ready = ready;
 		this.notify();
 	}
