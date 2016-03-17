@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode.worker;
+package edu.umass.cs.gnsserver.activecode;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
+import edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**

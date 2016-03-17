@@ -7,6 +7,9 @@ import java.util.concurrent.FutureTask;
 
 import org.junit.Test;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeFutureTask;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeScheduler;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeTask;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 

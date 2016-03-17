@@ -70,7 +70,10 @@ public class ActiveCodeWorker {
 	 */
 	protected static int numReqs = 0;
 	
-	protected ActiveCodeWorker(int port) {
+	/**
+	 * @param port
+	 */
+	public ActiveCodeWorker(int port) {
 		try{
 			this.serverSocket = new DatagramSocket(port);
 			System.out.println(this+" : Starting ActiveCodeWorker at port number " + port);
