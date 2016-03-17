@@ -59,6 +59,8 @@ import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 import java.awt.geom.Point2D;
 import java.util.Set;
@@ -124,7 +126,8 @@ public class ServerIntegrationTest {
 		client = new GNSClient(
 				(InetSocketAddress)null,
 				address,
-				System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null);
+				System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null ? ReconfigurationConfig
+						.getClientSSLMode() != SSL_MODES.CLEAR : false);
 				//new UniversalTcpClientExtended(address.getHostName(),
 				//address.getPort(), System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL)!=null);
 		

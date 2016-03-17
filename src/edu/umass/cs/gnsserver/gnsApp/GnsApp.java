@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy
+ *  Initial developer(s): Westy, arun
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -79,7 +79,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 /**
- * @author Westy
+ * @author Westy, arun
  */
 public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         implements GNSApplicationInterface<String>, Replicable, Reconfigurable,
@@ -113,17 +113,24 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    */
   private ActiveCodeHandler activeCodeHandler;
 
-  public GNSApp(String[] args) throws IOException {
+  /**
+   * Constructor invoked via reflection by gigapaxos.
+   * 
+ * @param args
+ * @throws IOException
+ */
+public GNSApp(String[] args) throws IOException {
     AppReconfigurableNode.initOptions(args);
   }
 
   /**
-   * Creates the application.
+   * Actually creates the application. This strange way of constructing the application
+   * is because of legacy code that used the createAppCoordinator interface.
    *
    * @param messenger
    * @throws java.io.IOException
    */
-  public void GnsAppConstructor(JSONMessenger<String> messenger) throws IOException {
+  private void GnsAppConstructor(JSONMessenger<String> messenger) throws IOException {
     this.nodeID = messenger.getMyID();
     GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<String>();
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
@@ -144,15 +151,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             gnsNodeConfig,
             messenger, parameters);
 
-//    this.clientCommandProcessor = new ClientCommandProcessor(messenger,
-//            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
-//            ((GNSNodeConfig<String>)messenger.getNodeConfig()),
-//            AppReconfigurableNodeOptions.debuggingEnabled,
-//            this,
-//            this.nodeID,
-//            AppReconfigurableNodeOptions.dnsGnsOnly,
-//            AppReconfigurableNodeOptions.dnsOnly,
-//            AppReconfigurableNodeOptions.gnsServerIP);
     // start the NSListenerAdmin thread
     new AppAdmin(this, gnsNodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
@@ -170,6 +168,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    * @param messenger
    * @throws java.io.IOException
    */
+  @Deprecated
   public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
@@ -189,15 +188,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             nodeID, this,
             ((GNSNodeConfig<String>) messenger.getNodeConfig()),
             messenger, parameters);
-//    this.clientCommandProcessor = new ClientCommandProcessor(messenger,
-//            new InetSocketAddress(nodeConfig.getBindAddress(id), nodeConfig.getCcpPort(id)),
-//            (GNSNodeConfig<String>) nodeConfig,
-//            AppReconfigurableNodeOptions.debuggingEnabled,
-//            this,
-//            (String) id,
-//            AppReconfigurableNodeOptions.dnsGnsOnly,
-//            AppReconfigurableNodeOptions.dnsOnly,
-//            AppReconfigurableNodeOptions.gnsServerIP);
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
@@ -297,7 +287,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   @Override
   public Request getRequest(String string)
           throws RequestParseException {
-    //GNS.getLogger().info(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNSConfig.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     }
@@ -308,10 +297,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     try {
       JSONObject json = new JSONObject(string);
       Request request = (Request) Packet.createInstance(json, nodeConfig);
-//      if (request instanceof InterfaceReplicableRequest) {
-//        GNS.getLogger().info(">>>>>>>>>>>>>>>UPDATE PACKET********* needsCoordination is "
-//                + ((InterfaceReplicableRequest) request).needsCoordination());
-//      }
       return request;
     } catch (JSONException e) {
       throw new RequestParseException(e);
@@ -465,14 +450,15 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     return nodeConfig;
   }
 
-  	/**
+	/**
 	 * arun: FIXME: This mode of calling getClientMessenger is outdated and
 	 * poor. The better way is to either delegate client messaging to gigapaxos
 	 * or to determine the right messenger to use in the app based on the
 	 * listening socket address (clear or ssl) on which the request was received
 	 * by invoking {@link SSLMessenger#getClientMessenger(InetSocketAddress)}.
-	 * Doing it like below works but requires all client requests to use the same mode
-	 * (ssl or clear).
+	 * Doing it like below works but requires all client requests to use the
+	 * same mode (ssl or clear), otherwise JSONMessenger has no through which
+	 * socket the request came in.
 	 */
   @Override
   public void sendToClient(InetSocketAddress isa, Request response, JSONObject responseJSON) throws IOException {;

@@ -188,6 +188,11 @@ public BasicUniversalTcpClient(boolean disableSSL) {
 		GNSConfig.getLogger().warning("Initializing a GNS client without a reconfigurator address is deprecated");
 	}
 
+	private static final String DEFAULT_INSTANCE = "server.gns.name";
+	BasicUniversalTcpClient() {
+		this.disableSSL = false;
+		this.GNSInstance = DEFAULT_INSTANCE;
+	}
   /**
    * Creates a new <code>BasicUniversalTcpClient</code> object
    * Optionally disables SSL if disableSSL is true.
@@ -199,7 +204,7 @@ public BasicUniversalTcpClient(boolean disableSSL) {
    */
   public BasicUniversalTcpClient(InetSocketAddress anyReconfigurator, String remoteHost, int remotePort, boolean disableSSL) {
     this.disableSSL = disableSSL;
-		this.GNSInstance = "server.gns.name"; // arun: what the heck is this for?
+		this.GNSInstance = DEFAULT_INSTANCE; // arun: what the heck is this for?
 		//this.anyReconfigurator = anyReconfigurator;
     try {
       this.localNameServerAddress = remoteHost!=null && remotePort>0 
@@ -210,10 +215,11 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     	  // arun: ssl parameters should only be set through gigapaxos properties
         //ReconfigurationConfig.setClientPortOffset(100);
       }
-      this.messenger = new JSONMessenger<>(
+      // no messenger needed if GNSClient
+      this.messenger = (this instanceof GNSClient ? null : new JSONMessenger<>(
               (new JSONNIOTransport<>(null, new SampleNodeConfig<InetSocketAddress>(),
                       new PacketDemultiplexer(this),
-                      sslMode)));
+                      sslMode))));
       if (debuggingEnabled) {
         System.out.println("SSL Mode is " + sslMode.name());
       }
@@ -1614,6 +1620,7 @@ public BasicUniversalTcpClient(boolean disableSSL) {
   private String desktopSendCommmandAndWait(JSONObject command) throws IOException {
     long startTime = System.currentTimeMillis();
     long id = desktopSendCommmandNoWait(command);
+        	
     // now we wait until the correct packet comes back
     try {
       if (debuggingEnabled) {

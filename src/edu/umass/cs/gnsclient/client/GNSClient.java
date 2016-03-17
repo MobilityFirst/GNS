@@ -39,9 +39,6 @@ import edu.umass.cs.utils.GCConcurrentHashMapCallback;
  */
 public class GNSClient extends UniversalTcpClientExtended {
 
-	private static final long CONNECTIVITY_CHECK_TIMEOUT = 4000;
-	private static final int CONNECTIVITY_CHECK_ATTEMPTS = 4;
-
 	// initialized from properties file
 	private static final Set<InetSocketAddress> staticReconfigurators = ReconfigurationConfig
 			.getReconfiguratorAddresses();
@@ -49,6 +46,8 @@ public class GNSClient extends UniversalTcpClientExtended {
 	// initialized upon contsruction
 	private final Set<InetSocketAddress> reconfigurators;
 	private final AsyncClient asyncClient;
+
+	private static final java.util.logging.Logger log = GNSConfig.getLogger();
 
 	/**
 	 * @throws IOException
@@ -87,6 +86,7 @@ public class GNSClient extends UniversalTcpClientExtended {
 				.getAddress().toString() : null,
 				localNameServer != null ? localNameServer.getPort() : -1,
 				!useSSL);
+		// super();
 		this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
 		if (this.reconfigurators == null || this.reconfigurators.isEmpty())
 			throw new IOException(
@@ -97,9 +97,7 @@ public class GNSClient extends UniversalTcpClientExtended {
 						: SSL_MODES.CLEAR,
 				useSSL ? ReconfigurationConfig.getClientPortSSLOffset()
 						: ReconfigurationConfig.getClientPortClearOffset());
-		if (!checkConnectivity(CONNECTIVITY_CHECK_TIMEOUT,
-				CONNECTIVITY_CHECK_ATTEMPTS))
-			throw new IOException(CONNECTION_CHECK_ERROR);
+		this.checkConnectivity();
 	}
 
 	/**
@@ -117,8 +115,6 @@ public class GNSClient extends UniversalTcpClientExtended {
 		this(anyReconfigurator, null, !useSSL);
 	}
 
-	private static final String CONNECTION_CHECK_ERROR = "Unable to establish connection with any reconfigurator";
-
 	/**
 	 * TODO: implement request/response to know of other reconfigurators. It is
 	 * also okay to just use a single reconfigurator address if it is an anycast
@@ -132,10 +128,6 @@ public class GNSClient extends UniversalTcpClientExtended {
 
 	public String toString() {
 		return this.asyncClient.toString();
-	}
-
-	private long genRandID() {
-		return (long) (Math.random() * Long.MAX_VALUE);
 	}
 
 	/**
@@ -167,59 +159,12 @@ public class GNSClient extends UniversalTcpClientExtended {
 			this.asyncClient.sendRequest(packet, callback);
 	}
 
-	// blocking connectivity check
-	private boolean checkConnectivity(long timeout) {
-		Object monitor = new Object();
-		boolean[] success = new boolean[1];
-		long id;
-		try {
-			this.asyncClient.sendRequest(new CommandPacket(id = genRandID(),
-					null, -1, createCommand(GnsProtocol.CONNECTION_CHECK)),
-					new RequestCallback() {
-						@Override
-						public void handleResponse(Request response) {
-							// any news is good news
-							success[0] = true;
-							synchronized (monitor) {
-								monitor.notify();
-							}
-						}
-					});
-			GNSConfig.getLogger().info(this + " sent connectivity check " + id);
-			if (!success[0])
-				synchronized (monitor) {
-					monitor.wait(timeout);
-				}
-		} catch (InterruptedException | IOException | GnsClientException e) {
-			return false;
-		}
-		if (success[0])
-			GNSConfig.getLogger().info(
-					this + " connectivity check " + id + " successful");
-		return success[0];
-	}
-
-	private boolean checkConnectivity(long attemptTimeout, int numAttempts) {
-		int attempts = 0;
-		while (attempts++ < numAttempts)
-			if (this.checkConnectivity(attemptTimeout))
-				return true;
-			else {
-				System.out
-						.print((attempts == 1 ? "Retrying connection check..."
-								: "") + attempts + " ");
-				this.checkConnectivity(attemptTimeout);
-			}
-		return false;
-	}
-
 	/**
 	 * @throws IOException
 	 */
 	@Override
 	public void checkConnectivity() throws IOException {
-		if (!this.checkConnectivity(CONNECTIVITY_CHECK_TIMEOUT, 1))
-			throw new IOException(CONNECTION_CHECK_ERROR);
+		this.asyncClient.checkConnectivity();
 	}
 
 	/**
@@ -308,6 +253,11 @@ public class GNSClient extends UniversalTcpClientExtended {
 		return this.sendSync(packet, null);
 	}
 
+	/**
+	 * Straightforward async client implementation that expects only one packet
+	 * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
+	 */
+
 	static class AsyncClient extends ReconfigurableAppClientAsync {
 		private static Stringifiable<String> unstringer = new StringifiableDefault<String>(
 				"");
@@ -328,7 +278,7 @@ public class GNSClient extends UniversalTcpClientExtended {
 				json = new JSONObject(msg);
 				Packet.PacketType type = Packet.getPacketType(json);
 				if (type != null) {
-					GNSConfig.getLogger().log(Level.INFO,
+					log.log(Level.INFO,
 							"{0} retrieving packet from received json {1}",
 							new Object[] { this, json });
 					if (clientPacketTypes.contains(Packet.getPacketType(json)))
@@ -337,8 +287,7 @@ public class GNSClient extends UniversalTcpClientExtended {
 					assert (response == null || response.getRequestType() == Packet.PacketType.COMMAND_RETURN_VALUE);
 				}
 			} catch (JSONException e) {
-				GNSConfig.getLogger().warning(
-						"Problem parsing packet from " + json + ": " + e);
+				log.warning("Problem parsing packet from " + json + ": " + e);
 			}
 			return response;
 		}
@@ -347,5 +296,13 @@ public class GNSClient extends UniversalTcpClientExtended {
 		public Set<IntegerPacketType> getRequestTypes() {
 			return clientPacketTypes;
 		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		GNSClient client = new GNSClient((InetSocketAddress) null, null,
+				ReconfigurationConfig.getClientSSLMode() != SSL_MODES.CLEAR);
+		client.close();
+		System.out
+				.println("Client created, successfully checked connectivity, and closing");
 	}
 }

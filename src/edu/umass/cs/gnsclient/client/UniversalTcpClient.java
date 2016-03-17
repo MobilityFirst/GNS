@@ -45,6 +45,9 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
  */
 public class UniversalTcpClient extends BasicUniversalTcpClient implements GNSClientInterface {
 
+	UniversalTcpClient() {
+		
+	}
 	/**
 	 * Same as {@link #UniversalTcpClient(InetSocketAddress, String, int, boolean)}
 	 * with a default reconfigurator. Either a default reconfigurator must be 

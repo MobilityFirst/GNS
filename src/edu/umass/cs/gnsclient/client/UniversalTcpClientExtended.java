@@ -45,6 +45,8 @@ import org.json.JSONObject;
  */
 public class UniversalTcpClientExtended extends UniversalTcpClient {
 
+	UniversalTcpClientExtended() {
+	}
 	/**
 	 * @param anyReconfigurator
 	 * @param remoteHost
