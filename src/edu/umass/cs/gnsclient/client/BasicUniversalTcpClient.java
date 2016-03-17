@@ -473,7 +473,10 @@ public BasicUniversalTcpClient(boolean disableSSL) {
               READER, reader.getGuid());
     }
 
+    long t = System.currentTimeMillis();
     String response = sendCommandAndWait(command);
+    DelayProfiler.updateDelay("fieldRead", t);
+    GNSConfig.getLogger().info(DelayProfiler.getStats());
 
     return checkResponse(command, response);
   }
