@@ -14,13 +14,12 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.packet;
+package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.nio.interfaces.Stringifiable;
-import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,7 +30,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacketWithCCPAddress {
+public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacketWithClientAddress {
 
   /** ns_ID */
   private final static String NAMESERVER_ID = "ns_ID";
@@ -58,10 +57,9 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacketWit
    * Creates an instance of BasicPacketWithNSAndLnsAddress.
    *
    * @param nameServerID
-   * @param address
    */
-  public BasicPacketWithNSAndCCP(NodeIDType nameServerID, InetSocketAddress address) {
-    super(address);
+  public BasicPacketWithNSAndCCP(NodeIDType nameServerID) {
+    super();
     this.nameServerID = nameServerID;
   }
 

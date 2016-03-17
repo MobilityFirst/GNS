@@ -5,10 +5,10 @@ import java.lang.management.ManagementFactory;
 public class TestMXBean {
 	
 	static class Monitor implements Runnable{
-		com.sun.management.OperatingSystemMXBean mxbean;
+		java.lang.management.OperatingSystemMXBean mxbean;
 		private int id = 0;
 		
-		Monitor(com.sun.management.OperatingSystemMXBean mxbean, int id){
+		Monitor(java.lang.management.OperatingSystemMXBean mxbean, int id){
 			this.mxbean = mxbean;
 			this.id = id;
 		}
@@ -16,12 +16,13 @@ public class TestMXBean {
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			long last = mxbean.getProcessCpuTime();
+			//long last = mxbean.getProcessCpuTime();
+			long last = 0;
 			int count = 0;
 			int cnt_limit = 100;
 			long total = 0;
 			while (count < cnt_limit){
-				long now = mxbean.getProcessCpuTime();
+				long now = 0; //mxbean.getProcessCpuTime();
 				System.out.println(this.id+ " "+(now - last)+" ");
 				total += (now - last);
 				last = now;
@@ -39,8 +40,8 @@ public class TestMXBean {
 	
 	public static void main(String[] args){
 		int id = 0;
-		com.sun.management.OperatingSystemMXBean mxbean =
-				  (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+		java.lang.management.OperatingSystemMXBean mxbean =
+				  (java.lang.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 		(new Thread(new Monitor(mxbean, id++))).start();
 	}
 }

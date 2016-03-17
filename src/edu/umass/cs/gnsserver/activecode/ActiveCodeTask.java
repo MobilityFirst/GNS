@@ -25,7 +25,6 @@ import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnsserver.main.GNS;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -120,7 +119,7 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 			throw e;			
     	}
    		finally {
-    		if(thrown != null) GNS.getLogger().severe(thrown.toString());
+    		//if(thrown != null) GNS.getLogger().severe(thrown.toString());
     		
     		if(ActiveCodeHandler.enableDebugging){
     			//decrNumActiveCount();

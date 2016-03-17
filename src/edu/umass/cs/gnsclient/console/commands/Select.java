@@ -92,14 +92,14 @@ public class Select extends ConsoleCommand
       String value = st.nextToken();
 
       JSONArray result = gnsClient.select(field, value);
-      // console.printString(result.toString());
-      // console.printNewline();
-      for (int i = 0; i < result.length(); i++)
-      {
-        console.printString(result.getJSONObject(i).getString("GUID") + " -> "
-            + toPrettyRecordString(result.getJSONObject(i)));
-        console.printNewline();
-      }
+      console.printString(result.toString());
+      console.printNewline();
+//      for (int i = 0; i < result.length(); i++)
+//      {
+//        console.printString(result.getJSONObject(i).getString("GUID") + " -> "
+//            + toPrettyRecordString(result.getJSONObject(i)));
+//        console.printNewline();
+//      }
     }
     catch (Exception e)
     {

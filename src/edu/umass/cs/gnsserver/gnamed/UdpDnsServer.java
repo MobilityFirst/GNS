@@ -19,10 +19,11 @@
  */
 package edu.umass.cs.gnsserver.gnamed;
 
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
@@ -32,6 +33,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.Cache;
 
@@ -86,12 +88,12 @@ public class UdpDnsServer extends Thread implements Shutdownable {
 
   @Override
   public void run() {
-    GNS.getLogger().info(
+    GNSConfig.getLogger().info(
             "CCP Node at starting local DNS Server on port " + sock.getLocalPort() 
             + (gnsServerIP != null ? (" with GNS server at " + gnsServerIP + " and ") : " with ")
             + "fallback DNS server at " + dnsServerIP);
     if (NameResolution.debuggingEnabled) {
-      GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gnsserver.localnameserver.gnamed.NameResolution *********");
+      GNSConfig.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gnsserver.localnameserver.gnamed.NameResolution *********");
     }
     while (true) {
       try {
@@ -109,7 +111,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
           executor.execute(new LookupWorker(sock, incomingPacket, incomingData, gnsServer, dnsServer, dnsCache, handler));
         }
       } catch (IOException e) {
-        GNS.getLogger().severe("Error in UDP Server (will sleep for 3 seconds and try again): " + e);
+        GNSConfig.getLogger().severe("Error in UDP Server (will sleep for 3 seconds and try again): " + e);
         ThreadUtils.sleep(3000);
       }
     }

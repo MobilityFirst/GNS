@@ -14,26 +14,27 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
-import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,7 +54,7 @@ public abstract class AbstractUpdate extends GnsCommand {
 
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   public abstract UpdateOperation getUpdateOperation();
@@ -71,17 +72,23 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    if (writer.equals(MAGIC_STRING)) {
+      writer = null;
+    }
+
     NSResponseCode responseCode;
     if (field == null) {
+      responseCode = FieldAccess.updateUserJSON(guid, userJSON, writer, signature, message, handler);
+//      responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON),
+//              getUpdateOperation(), writer, signature, message, false);
       // full JSON object update
-      if (!(responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
-              getUpdateOperation(), writer, signature, message, false)).isAnError()) {
-         return new CommandResponse<String>(OK_RESPONSE);
+      if (!responseCode.isAnError()) {
+        return new CommandResponse<String>(OK_RESPONSE);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
     } else {
-      // single field update 
+      // single field update
       if (!(responseCode = FieldAccess.update(guid, field,
               // special case for the ops which do not need a value
               value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),

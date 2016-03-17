@@ -32,7 +32,7 @@ import java.util.Set;
  * 
  * @param <NodeIDType>
  */
-public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeIDType>,
+public interface GNSInterfaceNodeConfig<NodeIDType> extends
         ReconfigurableNodeConfig<NodeIDType> {
 
   @Override

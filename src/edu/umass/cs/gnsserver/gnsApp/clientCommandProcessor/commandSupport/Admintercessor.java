@@ -17,29 +17,32 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.CCPListenerAdmin;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.packet.admin.AdminRequestPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.admin.AdminResponsePacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.admin.SentinalPacket;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import static edu.umass.cs.gnsserver.gnsApp.packet.Packet.getPacketType;
+
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.Util;
+
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Map;
@@ -47,6 +50,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -111,7 +116,7 @@ public class Admintercessor {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject(), handler);
       return true;
     } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring this error while sending RESETDB request: " + e);
+      GNSConfig.getLogger().warning("Ignoring this error while sending RESETDB request: " + e);
     }
     return false;
   }
@@ -127,7 +132,7 @@ public class Admintercessor {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject(), handler);
       return true;
     } catch (Exception e) {
-      GNS.getLogger().warning("Error while sending DELETEALLRECORDS request: " + e);
+      GNSConfig.getLogger().warning("Error while sending DELETEALLRECORDS request: " + e);
     }
     return false;
   }
@@ -143,7 +148,7 @@ public class Admintercessor {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
       return true;
     } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring error while sending CLEARCACHE request: " + e);
+      GNSConfig.getLogger().warning("Ignoring error while sending CLEARCACHE request: " + e);
     }
     return false;
   }
@@ -166,7 +171,7 @@ public class Admintercessor {
         return null;
       }
     } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring error while sending DUMPCACHE request: " + e);
+      GNSConfig.getLogger().warning("Ignoring error while sending DUMPCACHE request: " + e);
       return null;
     }
   }
@@ -193,7 +198,7 @@ public class Admintercessor {
         return null;
       }
     } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring error while sending PINGTABLE request: " + e);
+      GNSConfig.getLogger().warning("Ignoring error while sending PINGTABLE request: " + e);
       return null;
     }
   }
@@ -236,7 +241,7 @@ public class Admintercessor {
         return null;
       }
     } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring error while sending PINGVALUE request: " + e);
+      GNSConfig.getLogger().warning("Ignoring error while sending PINGVALUE request: " + e);
       return null;
     }
   }
@@ -254,22 +259,22 @@ public class Admintercessor {
       sendAdminPacket(packet.toJSONObject(), handler);
       return true;
     } catch (Exception e) {
-      GNS.getLogger().warning("Ignoring error while sending CHANGELOGLEVEL request: " + e);
+      GNSConfig.getLogger().warning("Ignoring error while sending CHANGELOGLEVEL request: " + e);
     }
     return false;
   }
 
   private void waitForAdminResponse(int id) {
     try {
-      GNS.getLogger().finer("Waiting for admin response id: " + id);
+      GNSConfig.getLogger().finer("Waiting for admin response id: " + id);
       synchronized (adminResponseMonitor) {
         while (!adminResult.containsKey(id)) {
           adminResponseMonitor.wait();
         }
       }
-      GNS.getLogger().finer("Admin response id received: " + id);
+      GNSConfig.getLogger().finer("Admin response id received: " + id);
     } catch (InterruptedException x) {
-      GNS.getLogger().severe("Wait for return packet was interrupted " + x);
+      GNSConfig.getLogger().severe("Wait for return packet was interrupted " + x);
     }
   }
 
@@ -286,20 +291,20 @@ public class Admintercessor {
           try {
             AdminResponsePacket response = new AdminResponsePacket(json);
             int id = response.getId();
-            GNS.getLogger().finer("Processing admin response for " + id);
+            GNSConfig.getLogger().finer("Processing admin response for " + id);
             synchronized (adminResponseMonitor) {
               adminResult.put(id, response.getJsonObject());
               adminResponseMonitor.notifyAll();
             }
           } catch (JSONException e) {
-            GNS.getLogger().warning("JSON error during admin response processing: " + e);
+            GNSConfig.getLogger().warning("JSON error during admin response processing: " + e);
           } catch (ParseException e) {
-            GNS.getLogger().warning("Parse error during admin response processing: " + e);
+            GNSConfig.getLogger().warning("Parse error during admin response processing: " + e);
           }
           break;
       }
     } catch (JSONException e) {
-      GNS.getLogger().warning("JSON error while getting packet type: " + e);
+      GNSConfig.getLogger().warning("JSON error while getting packet type: " + e);
     }
   }
 
@@ -327,7 +332,7 @@ public class Admintercessor {
 
   private void waitForDumpResponse(int id) {
     try {
-      GNS.getLogger().finer("Waiting for dump response id: " + id);
+      GNSConfig.getLogger().finer("Waiting for dump response id: " + id);
       synchronized (dumpMonitor) {
         long timeoutExpiredMs = System.currentTimeMillis() + 10000;
         while (!dumpResult.containsKey(id)) {
@@ -344,9 +349,9 @@ public class Admintercessor {
         }
       }
 
-      GNS.getLogger().finer("Dump response id received: " + id);
+      GNSConfig.getLogger().finer("Dump response id received: " + id);
     } catch (InterruptedException x) {
-      GNS.getLogger().severe("Wait for return packet was interrupted " + x);
+      GNSConfig.getLogger().severe("Wait for return packet was interrupted " + x);
     }
   }
 
@@ -366,10 +371,16 @@ public class Admintercessor {
     // process all the entries into a nice string
     for (Map.Entry<String, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("RECEIVED DUMP RECORD FROM NS: " + entry.getKey());
+        GNSConfig.getLogger().info("RECEIVED DUMP RECORD FROM NS: " + entry.getKey());
       }
+      result.append("========================================================================");
+      result.append(LINE_SEPARATOR);
       result.append("Nameserver: " + entry.getKey().toString()
-              + " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
+              + " ("
+              + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() 
+              + ":"
+              + handler.getGnsNodeConfig().getNodePort(entry.getKey())
+              + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
         try {
@@ -392,7 +403,7 @@ public class Admintercessor {
           }
           result.append(LINE_SEPARATOR);
         } catch (FieldNotFoundException e) {
-          GNS.getLogger().severe("FieldNotFoundException. " + e.getMessage());
+          GNSConfig.getLogger().severe("FieldNotFoundException. " + e.getMessage());
         }
       }
     }
@@ -428,7 +439,7 @@ public class Admintercessor {
             }
             recordsMap.put(serverID, records);
           } catch (JSONException e) {
-            GNS.getLogger().warning("JSON error during dump reponse processing: " + e);
+            GNSConfig.getLogger().warning("JSON error during dump reponse processing: " + e);
           }
           break;
         case SENTINAL:
@@ -436,19 +447,19 @@ public class Admintercessor {
           try {
             SentinalPacket sentinal = new SentinalPacket(json);
             int id = sentinal.getId();
-            GNS.getLogger().finer("Processing sentinel for " + id);
+            GNSConfig.getLogger().finer("Processing sentinel for " + id);
             synchronized (dumpMonitor) {
               dumpResult.put(id, dumpStorage.get(id));
               dumpStorage.remove(id);
               dumpMonitor.notifyAll();
             }
           } catch (JSONException e) {
-            GNS.getLogger().warning("JSON error during dump sentinel processing: " + e);
+            GNSConfig.getLogger().warning("JSON error during dump sentinel processing: " + e);
           }
           break;
       }
     } catch (JSONException e) {
-      GNS.getLogger().warning("JSON error while getting packet type: " + e);
+      GNSConfig.getLogger().warning("JSON error while getting packet type: " + e);
     }
   }
 
@@ -487,14 +498,14 @@ public class Admintercessor {
   private int sendDumpOutputHelper(String tagName, ClientRequestHandlerInterface handler) {
     // send the request out to the local name server
     int id = nextDumpRequestID();
-    GNS.getLogger().finer("Sending dump request id = " + id);
+    GNSConfig.getLogger().finer("Sending dump request id = " + id);
     try {
       sendAdminPacket(new DumpRequestPacket(id,
               new InetSocketAddress(handler.getNodeAddress().getAddress(), 
               handler.getGnsNodeConfig().getCcpAdminPort((String)handler.getActiveReplicaID())),
               tagName).toJSONObject(), handler);
     } catch (JSONException e) {
-      GNS.getLogger().warning("Ignoring error sending DUMP request for id " + id + " : " + e);
+      GNSConfig.getLogger().warning("Ignoring error sending DUMP request for id " + id + " : " + e);
       return -1;
     } catch (IOException e) {
       return -1;

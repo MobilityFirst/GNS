@@ -14,25 +14,29 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccessSupport;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +48,7 @@ public class RemoveGuid extends GnsCommand {
 
   /**
    * Creates a RemoveGuid instance.
-   * 
+   *
    * @param module
    */
   public RemoveGuid(CommandModule module) {
@@ -53,7 +57,7 @@ public class RemoveGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, ACCOUNT_GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{ACCOUNT_GUID, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -64,37 +68,37 @@ public class RemoveGuid extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String guidToRemove = json.getString(GUID);
-      String accountGuid = json.optString(ACCOUNT_GUID, null);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo accountGuidInfo = null;
-      GuidInfo guidInfoToRemove;
-      if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+    String guidToRemove = json.getString(GUID);
+    String accountGuid = json.optString(ACCOUNT_GUID, null);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    GuidInfo accountGuidInfo = null;
+    GuidInfo guidInfoToRemove;
+    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler, true)) == null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+    }
+    if (accountGuid != null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
-      if (accountGuid != null) {
-        if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
-        }
-      }
-      if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey() 
+    }
+    try {
+      if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey()
               : guidInfoToRemove.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = null;
         if (accountGuid != null) {
-          accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
+          accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
           if (accountInfo == null) {
-            return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+            return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
           }
         }
         return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
-    //}
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+    }
   }
 
   @Override

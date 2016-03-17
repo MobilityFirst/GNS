@@ -29,16 +29,19 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,6 +73,11 @@ public class CassandraRecords implements NoSQLRecords {
    */
   public CassandraRecords.CollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
+  }
+
+  @Override
+  public void createIndex(String collectionName, String field, String index) {
+    throw new UnsupportedOperationException("Not supported yet."); 
   }
 
   /**
@@ -123,7 +131,7 @@ public class CassandraRecords implements NoSQLRecords {
    */
   public CassandraRecords(int nodeID) {
     dbName = DBROOTNAME + nodeID;
-    GNS.getLogger().info("CASSANDRA: " + dbName + " INIT");
+    GNSConfig.getLogger().info("CASSANDRA: " + dbName + " INIT");
     this.connect("localhost");
     this.createKeyspace();
     this.createSchemas();
@@ -132,9 +140,9 @@ public class CassandraRecords implements NoSQLRecords {
   private void connect(String node) {
     cluster = Cluster.builder().addContactPoint(node).build();
     Metadata metadata = cluster.getMetadata();
-    GNS.getLogger().info("Connected to cluster: " + metadata.getClusterName());
+    GNSConfig.getLogger().info("Connected to cluster: " + metadata.getClusterName());
     for (Host host : metadata.getAllHosts()) {
-      GNS.getLogger().info("Datacenter: " + host.getDatacenter() + " Host: " + host.getAddress() + " Rack: " + host.getRack());
+      GNSConfig.getLogger().info("Datacenter: " + host.getDatacenter() + " Host: " + host.getAddress() + " Rack: " + host.getRack());
     }
     session = cluster.connect();
   }
@@ -187,7 +195,7 @@ public class CassandraRecords implements NoSQLRecords {
             + CSI(key) + " text"
             + ",PRIMARY KEY (" + CSI(key) + ")"
             + ");";
-    GNS.getLogger().finer("Executing query " + query);
+    GNSConfig.getLogger().finer("Executing query " + query);
     try {
       session.execute(query);
     } catch (AlreadyExistsException e) {
@@ -199,7 +207,7 @@ public class CassandraRecords implements NoSQLRecords {
     if (spec != null) {
       insertColumn(tableName, spec.getPrimaryKey(), guid, columnName, value);
     } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
     }
   }
 
@@ -207,7 +215,7 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "ALTER TABLE " + CSI(tableName) + " ADD " + CSI(columnName) + " text;";
-      GNS.getLogger().finer("Executing query " + query);
+      GNSConfig.getLogger().finer("Executing query " + query);
       try {
         session.execute(query);
       } catch (InvalidQueryException e) {
@@ -217,7 +225,7 @@ public class CassandraRecords implements NoSQLRecords {
               + "'" + guid + "'"
               + ",'" + value + "'"
               + ");";
-      GNS.getLogger().finer("Executing query " + query);
+      GNSConfig.getLogger().finer("Executing query " + query);
       session.execute(query);
 
     }
@@ -238,18 +246,18 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "SELECT * FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      GNS.getLogger().finer("Executing query " + query);
+      GNSConfig.getLogger().finer("Executing query " + query);
       ResultSet results = session.execute(query);
       Row row = results.one();
       if (row != null) {
         JSONObject json = retrieveJSONObjectFromRow(row);
-        GNS.getLogger().finest(json.toString());
+        GNSConfig.getLogger().finest(json.toString());
         return json;
       } else {
         return null;
       }
     } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
       return null;
     }
   }
@@ -264,7 +272,7 @@ public class CassandraRecords implements NoSQLRecords {
       String value = row.getString(name);
       if (value != null) {
         // Building the JSON string here
-        GNS.getLogger().finer("Name = " + name + " value = " + value);
+        GNSConfig.getLogger().finer("Name = " + name + " value = " + value);
         result.append(prefix);
         result.append("\"");
         result.append(name);
@@ -287,7 +295,7 @@ public class CassandraRecords implements NoSQLRecords {
     try {
       return new JSONObject(result.toString());
     } catch (JSONException e) {
-      GNS.getLogger().warning("Problem creating JSON object: " + e);
+      GNSConfig.getLogger().warning("Problem creating JSON object: " + e);
       return null;
     }
     //return json;
@@ -298,11 +306,11 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "TRUNCATE " + CSI(tableName) + ";";
-      GNS.getLogger().finer("Executing query " + query);
+      GNSConfig.getLogger().finer("Executing query " + query);
       session.execute(query);
-      GNS.getLogger().info("CASSANDRA DB RESET. DBNAME: " + dbName + " Table name: " + tableName);
+      GNSConfig.getLogger().info("CASSANDRA DB RESET. DBNAME: " + dbName + " Table name: " + tableName);
     } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
     }
   }
 
@@ -380,10 +388,10 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "DELETE FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      GNS.getLogger().finer("Executing query " + query);
+      GNSConfig.getLogger().finer("Executing query " + query);
       ResultSet results = session.execute(query);
     } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
     }
   }
 
@@ -393,11 +401,11 @@ public class CassandraRecords implements NoSQLRecords {
     if (spec != null) {
       String query = "SELECT " + CSI(spec.getPrimaryKey()) + " FROM " + CSI(tableName)
               + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      GNS.getLogger().finer("Executing query " + query);
+      GNSConfig.getLogger().finer("Executing query " + query);
       ResultSet results = session.execute(query);
       return !results.isExhausted();
     } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
       return false;
     }
   }
@@ -421,12 +429,12 @@ public class CassandraRecords implements NoSQLRecords {
             String value = json.getString(key);
             insertColumn(tableName, primaryKey, guid, key, value);
           } catch (JSONException e) {
-            GNS.getLogger().warning("Problem extracting field from JSON object: " + e);
+            GNSConfig.getLogger().warning("Problem extracting field from JSON object: " + e);
           }
         }
       }
     } else {
-      GNS.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
     }
   }
 
@@ -440,16 +448,6 @@ public class CassandraRecords implements NoSQLRecords {
     insert(tableName, guid, value);
   }
 
-  @Override
-  public void updateField(String tableName, String guid, String key, Object object) {
-    JSONObject json = new JSONObject();
-    try {
-      json.put(key, object);
-      insert(tableName, guid, json);
-    } catch (JSONException e) {
-      GNS.getLogger().warning("Problem creating JSON object: " + e);
-    }
-  }
 
 //  //
 //  // TEST CODE

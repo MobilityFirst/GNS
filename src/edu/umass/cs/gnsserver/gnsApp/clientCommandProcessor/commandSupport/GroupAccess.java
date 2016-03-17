@@ -17,13 +17,21 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnsserver.gnsApp.QueryResult;
-import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
 /**
@@ -45,16 +53,6 @@ public class GroupAccess {
    * Hidden field that stores what groups a GUID is a member of
    */
   public static final String GROUPS = InternalField.makeInternalFieldString("groups");
-  /**
-   * Hidden field that stores group member join requests
-   */
-  @Deprecated
-  public static final String JOINREQUESTS = InternalField.makeInternalFieldString("groupJoinRequests");
-  /**
-   * Hidden field that stores group member quit requests
-   */
-  @Deprecated
-  public static final String LEAVEREQUESTS = InternalField.makeInternalFieldString("groupLeaveRequests");
 
   /**
    * Sends a request to the NS to add a single GUID to a group.
@@ -68,21 +66,11 @@ public class GroupAccess {
    * @return a response code
    */
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler) throws IOException, JSONException, GnsClientException {
 
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
-    handler.setReallySendUpdateToReplica(false);
-    // We could roll back the above operation if the one below gets an error, but we don't
-    // We'll worry about that when we migrate this into the Name Server
-    if (!groupResponse.isAnError()) {
-      handler.setReallySendUpdateToReplica(true);
-      handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-              UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
-      handler.setReallySendUpdateToReplica(false);
-    }
-    return groupResponse;
+    handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
+    handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+    return NSResponseCode.NO_ERROR;
   }
 
   /**
@@ -97,22 +85,12 @@ public class GroupAccess {
    * @return a response code
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, true);
-    handler.setReallySendUpdateToReplica(false);
-    if (!groupResponse.isAnError()) {
-      // We could fix the above operation if any one below gets an error, but we don't
-      // We'll worry about that when we migrate this into the Name Server
-      for (String memberGuid : members.toStringSet()) {
-        handler.setReallySendUpdateToReplica(true);
-        handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
-        handler.setReallySendUpdateToReplica(false);
-      }
-    }
-    return groupResponse;
+          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
+    handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
+    for (String memberGuid : members.toStringSet()) {
+      handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
+    };
+    return NSResponseCode.NO_ERROR;
   }
 
   /**
@@ -125,22 +103,15 @@ public class GroupAccess {
    * @param message
    * @param handler
    * @return a response code
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
-    handler.setReallySendUpdateToReplica(false);
-    // We could roll back the above operation if the one below gets an error, but we don't
-    // We'll worry about that when we migrate this into the Name Server
-    if (!groupResponse.isAnError()) {
-      handler.setReallySendUpdateToReplica(true);
-      handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-              UpdateOperation.SINGLE_FIELD_REMOVE);
-      handler.setReallySendUpdateToReplica(false);
-    }
-    return groupResponse;
+          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
+    handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
+    handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
+    return NSResponseCode.NO_ERROR;
   }
 
   /**
@@ -153,24 +124,17 @@ public class GroupAccess {
    * @param message
    * @param handler
    * @return a response code
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    handler.setReallySendUpdateToReplica(true);
-    NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, true);
-    handler.setReallySendUpdateToReplica(false);
-    if (!groupResponse.isAnError()) {
-      // We could fix the above operation if any one below gets an error, but we don't
-      // We'll worry about that when we migrate this into the Name Server
-      for (String memberGuid : members.toStringSet()) {
-        handler.setReallySendUpdateToReplica(true);
-        handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
-                UpdateOperation.SINGLE_FIELD_REMOVE);
-        handler.setReallySendUpdateToReplica(false);
-      }
+          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
+    handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
+    for (String memberGuid : members.toStringSet()) {
+      handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     }
-    return groupResponse;
+    return NSResponseCode.NO_ERROR;
   }
 
   /**
@@ -185,12 +149,12 @@ public class GroupAccess {
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(GROUP));
-    } else {
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUP,
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
       return new ResultValue();
     }
+    return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUP, handler.getApp().getDB());
   }
 
   /**
@@ -203,14 +167,24 @@ public class GroupAccess {
    * @param handler
    * @return a response code
    */
-  public static ResultValue lookupGroups(String guid, String reader, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(GROUPS));
-    } else {
+  public static ResultValue lookupGroupsAnywhere(String guid, String reader, String signature, String message,
+          ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS,
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
       return new ResultValue();
     }
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler.getApp().getDB());
+  }
+
+  public static ResultValue lookupGroupsLocally(String guid, String reader, String signature, String message,
+          ClientRequestHandlerInterface handler) {
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS,
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
+      return new ResultValue();
+    }
+    return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUPS, handler.getApp().getDB());
   }
 
   /**
@@ -218,141 +192,26 @@ public class GroupAccess {
    *
    * @param guid
    * @param handler
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
-  public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler) {
+  public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler)
+          throws GnsClientException, IOException, JSONException {
     // just so you know all the nulls mean we're ignoring signatures and authentication
-    for (String groupGuid : GroupAccess.lookupGroups(guid, null, null, null, handler).toStringSet()) {
-      removeFromGroup(groupGuid, guid, null, null, null, handler);
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNSConfig.getLogger().info("DELETE CLEANUP: " + guid);
     }
-  }
-
-  /**
-   *
-   * @param guid
-   * @param memberGuid
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a response code
-   * @deprecated
-   */
-  @Deprecated
-  public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-
-    return handler.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
-  }
-
-  /**
-   *
-   * @param guid
-   * @param memberGuid
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a response code
-   * @deprecated
-   */
-  @Deprecated
-  public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-
-    return handler.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
-  }
-
-  /**
-   *
-   * @param guid
-   * @param reader
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a result value
-   * @deprecated
-   */
-  @Deprecated
-  public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(JOINREQUESTS));
-    } else {
-      return new ResultValue();
-    }
-  }
-
-  /**
-   *
-   * @param guid
-   * @param reader
-   * @param signature
-   * @param message
-   * @param handler
-   * @return a result value
-   * @deprecated
-   */
-  @Deprecated
-  public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(LEAVEREQUESTS));
-    } else {
-      return new ResultValue();
-    }
-  }
-
-  /**
-   *
-   * @param guid
-   * @param requests
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return boolean that indicates if the request was successful
-   * @deprecated
-   */
-  @Deprecated
-  public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-
-    if (!addToGroup(guid, requests, writer, signature, message, handler).isAnError()) {
-      //if (!handler.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message).isAnError()) {
-      if (!handler.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, requests, null, -1,
-              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
-        return true;
+    try {
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null, handler, true).toStringSet()) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNSConfig.getLogger().info("GROUP CLEANUP: " + groupGuid);
+        }
+        removeFromGroup(groupGuid, guid, null, null, null, handler);
       }
+    } catch (FailedDBOperationException e) {
+      GNSConfig.getLogger().severe("Unabled to remove guid from groups:" + e);
     }
-    return false;
   }
 
-  /**
-   *
-   * @param guid
-   * @param requests
-   * @param writer
-   * @param signature
-   * @param message
-   * @param handler
-   * @return boolean that indicates if the request was successful
-   * @deprecated
-   */
-  @Deprecated
-  public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
-
-    if (!removeFromGroup(guid, requests, writer, signature, message, handler).isAnError()) {
-      //if (!handler.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
-      if (!handler.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, -1,
-              UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
-        return true;
-      }
-    }
-    return false;
-  }
 }

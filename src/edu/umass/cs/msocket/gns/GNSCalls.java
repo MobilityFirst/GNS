@@ -12,7 +12,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.msocket.common.GnsConstants;
 
@@ -55,11 +55,11 @@ public class GNSCalls
 	 * , if reading from gns fails then request is sent to contextservice
 	 * @param query
 	 * @return guids of group members
-	 * @throws GnsException
+	 * @throws GnsClientException
 	 * @throws IOException
 	 * @throws UnsupportedEncodingException
 	 */
-	public static JSONArray readGroupMembers(String query, String groupGUID) throws UnsupportedEncodingException, IOException, GnsException
+	public static JSONArray readGroupMembers(String query, String groupGUID) throws UnsupportedEncodingException, IOException, GnsClientException
 	{
 		JSONArray grpMem = null;
 		//String queryHash = getSHA1(query);
@@ -69,7 +69,7 @@ public class GNSCalls
 		return grpMem;
 	}
 	
-	public static String getGroupGUID(String query) throws UnsupportedEncodingException, IOException, GnsException
+	public static String getGroupGUID(String query) throws UnsupportedEncodingException, IOException, GnsClientException
 	{
 		String queryHash = getSHA1(query);
 		String guidString = DefaultGNSClient.getGnsClient().lookupGuid(queryHash);

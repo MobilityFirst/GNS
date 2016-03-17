@@ -20,18 +20,24 @@
 package edu.umass.cs.gnsserver.localnameserver;
 
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.ActiveReplica;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.utils.Config;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -73,7 +79,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     reconfigurators = new ArrayList<InetSocketAddress>(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
     this.key = this.refreshKey();
     if (handler.isDebugMode()) {
-      GNS.getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
+      GNSConfig.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
     }
   }
 
@@ -81,15 +87,18 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
       try {
+        Set<InetSocketAddress> actives = handler.getActivesIfValid(lnsRequestInfo.getServiceName());
+        // HACK - the cache entry might not be correct for all operations so destroy it
+        // This code is going away soon anyway... don't sweat it.
+        handler.invalidateCacheEntry(lnsRequestInfo.getServiceName());
+        
         // got our actives and they're in the cache so now send out the command
         if (LNSPacketDemultiplexer.disableCommandRetransmitter) {
-          handler.sendToClosestReplica(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+          handler.sendToClosestReplica(actives,
                   lnsRequestInfo.getCommandPacket().toJSONObject());
         } else {
           handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
-                  lnsRequestInfo.getCommandPacket().toJSONObject(),
-                  handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-                  handler));
+                  lnsRequestInfo.getCommandPacket().toJSONObject(), actives, handler));
         }
       } catch (JSONException | IOException e) {
         log.severe(this.refreshKey() + " unable to send command packet " + e);
@@ -97,7 +106,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
       ProtocolExecutor.cancel(this);
     }
     if (handler.isDebugMode()) {
-      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " re-sending ");
+      log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " re-sending ");
     }
     return start();
   }
@@ -105,13 +114,19 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   private boolean amObviated() {
     if (handler.getActivesIfValid(lnsRequestInfo.getServiceName()) != null) {
       return true;
-    } else if (requestCount >= reconfigurators.size()) {
+    } else if (requestCount >= reconfigurators.size() ) {
+    	// arun
+    	log.warning(LocalNameServer.LNS_BAD_HACKY + "lnsRequestInfo = " + this.lnsRequestInfo);
+    	Set<InetSocketAddress> hackyActives = handler.getReplicatedActives(lnsRequestInfo.getServiceName());
       if (handler.isDebugMode()) {
-        log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " No answer, using defaults");
+        log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" 
+                + this.refreshKey() + " No answer, using defaults for " 
+                + lnsRequestInfo.getServiceName() + " :" 
+                + hackyActives);
       }
       // no answer so we stuff in the default choices and return
       handler.updateCacheEntry(lnsRequestInfo.getServiceName(),
-              handler.getReplicatedActives(lnsRequestInfo.getServiceName()));
+              hackyActives);
       return true;
     } else {
       return false;
@@ -121,12 +136,18 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
-            lnsRequestInfo.getServiceName(), 0);
+    		GnsProtocol.CREATE_DELETE_COMMANDS.contains(lnsRequestInfo.getCommandName()) ? 
+    				Config.getGlobalString(RC.SPECIAL_NAME)
+            : lnsRequestInfo.getServiceName()
+            , 0);
 
     int reconfigIndex = requestCount % reconfigurators.size();
     if (handler.isDebugMode()) {
     	/*
       log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
+=======
+      log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
+>>>>>>> upstream/master
               + " Sending to " + reconfigurators.get(reconfigIndex)
               + " " + packet);
               */
@@ -143,7 +164,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   }
 
   private String refreshKey() {
-    return lnsRequestInfo.getServiceName() + " | " + Integer.toString(lnsRequestInfo.getLNSReqID());
+    return lnsRequestInfo.getServiceName() + " | " + Long.toString(lnsRequestInfo.getLNSReqID());
   }
 
   @Override

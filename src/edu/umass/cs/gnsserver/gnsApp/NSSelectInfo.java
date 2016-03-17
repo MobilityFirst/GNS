@@ -17,10 +17,11 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket.SelectOperation;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket.GroupBehavior;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
+
 import org.json.JSONObject;
 
 import java.util.Collections;
@@ -40,7 +41,7 @@ public class NSSelectInfo<NodeIDType> {
   private final Set<NodeIDType> serversToBeProcessed; // the list of servers that have yet to be processed
   private final ConcurrentHashMap<String, JSONObject> responses;
   private final SelectOperation selectOperation;
-  private final GroupBehavior groupBehavior;
+  private final SelectGroupBehavior groupBehavior;
   private final String guid; // the group GUID we are maintaining or null for simple select
   private final String query; // The string used to set up the query if applicable
   private final int minRefreshInterval; // in seconds
@@ -54,7 +55,7 @@ public class NSSelectInfo<NodeIDType> {
    * @param minRefreshInterval 
    * @param guid 
    */
-  public NSSelectInfo(int id, Set<NodeIDType> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+  public NSSelectInfo(int id, Set<NodeIDType> serverIds, SelectOperation selectOperation, SelectGroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     this.id = id;
     this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
@@ -136,7 +137,7 @@ public class NSSelectInfo<NodeIDType> {
    * 
    * @return a {@link GroupBehavior}
    */
-  public GroupBehavior getGroupBehavior() {
+  public SelectGroupBehavior getGroupBehavior() {
     return groupBehavior;
   }
   

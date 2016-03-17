@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.noopTest;
+package edu.umass.cs.gnsserver.gnsapp.noopTest;
 
 
 import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;

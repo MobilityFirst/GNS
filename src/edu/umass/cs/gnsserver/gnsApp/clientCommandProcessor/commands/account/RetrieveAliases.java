@@ -14,26 +14,28 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccessSupport;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,7 +48,7 @@ public class RetrieveAliases extends GnsCommand {
 
   /**
    * Creates a RetriveAliases instance.
-   * 
+   *
    * @param module
    */
   public RetrieveAliases(CommandModule module) {
@@ -69,20 +71,25 @@ public class RetrieveAliases extends GnsCommand {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {
-      String guid = json.getString(GUID);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    String guid = json.getString(GUID);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+      if (accountInfo == null) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      } else if (!accountInfo.isVerified()) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       }
-      if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
-        ArrayList<String> aliases = accountInfo.getAliases();
-        return new CommandResponse<String>(new JSONArray(aliases).toString());
-      } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
-      }
+      ArrayList<String> aliases = accountInfo.getAliases();
+      return new CommandResponse<String>(new JSONArray(aliases).toString());
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+    }
     //}
   }
 

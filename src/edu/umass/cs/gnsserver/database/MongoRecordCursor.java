@@ -20,9 +20,9 @@
 package edu.umass.cs.gnsserver.database;
 
 import com.mongodb.*;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.GnsRuntimeException;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,7 +51,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * @param db
    * @param collectionName
    * @param nameField
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public MongoRecordCursor(DB db, String collectionName, ColumnField nameField) throws FailedDBOperationException {
     this.nameField = nameField;
@@ -75,7 +75,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * @param collectionName
    * @param nameField
    * @param fields
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException 
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException 
    */
   public MongoRecordCursor(DB db, String collectionName, ColumnField nameField, ArrayList<ColumnField> fields)
           throws FailedDBOperationException {
@@ -162,7 +162,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * Returns the next row as a JSONObject.
    *
    * @return the next row as a JSONObject
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   @Override
   public JSONObject nextJSONObject() throws FailedDBOperationException {
@@ -212,7 +212,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
    * Returns true if the iteration has more elements.
    * 
    * @return true or false
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   @Override
   public boolean hasNext() throws FailedDBOperationException {
@@ -230,7 +230,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
         try {
           json.put(entry.getKey().getName(), entry.getValue());
         } catch (JSONException e) {
-          GNS.getLogger().severe("Problem putting object in JSONObject: " + e);
+          GNSConfig.getLogger().severe("Problem putting object in JSONObject: " + e);
         }
       }
       return json;

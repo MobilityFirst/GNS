@@ -32,7 +32,7 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.msocket.common.GnsConstants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 

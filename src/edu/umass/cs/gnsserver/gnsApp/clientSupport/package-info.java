@@ -17,5 +17,5 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 

@@ -41,21 +41,30 @@ public class AdminTest {
   private static InetSocketAddress address = null;
 
   public AdminTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
     }
   }
 
   @Test
   public void test_01_AdminEnter() {
     try {
-      client.adminEnable(address.getHostName()+":8080");
+      client.adminEnable(address.getHostName() + ":8080");
     } catch (Exception e) {
       fail("Exception while enabling admin mode: " + e);
     }
   }
-  
+
   @Test
   public void test_02_ParameterGet() {
     try {
@@ -65,7 +74,7 @@ public class AdminTest {
       fail("Exception while enabling admin mode: " + e);
     }
   }
-  
+
   @Test
   public void test_03_ParameterSet() {
     try {

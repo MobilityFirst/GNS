@@ -33,7 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 
 /**
@@ -42,11 +42,7 @@ import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
  * @author mbadov
  *
  */
-public class ClientPool implements Runnable{
-	
-	
-	
-	
+public class ClientPool implements Runnable{	
 	private HashMap<Long, ActiveCodeClient> clients;
 	private ActiveDBInterface app;
 	private ConcurrentHashMap<Integer, Process> spareWorkers;
@@ -74,6 +70,7 @@ public class ClientPool implements Runnable{
 	static synchronized int getClientID(){
 		return ++clientID;
 	}
+
 	
 	/**
 	 * Initialize a ClientPool

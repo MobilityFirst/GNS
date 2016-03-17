@@ -14,25 +14,29 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccessSupport;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +48,7 @@ public class RemoveAccount extends GnsCommand {
 
   /**
    * Creates a RemoveAccount instance.
-   * 
+   *
    * @param module
    */
   public RemoveAccount(CommandModule module) {
@@ -64,19 +68,17 @@ public class RemoveAccount extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String name = json.getString(NAME);
-      String guid = json.getString(GUID);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
+    String name = json.getString(NAME);
+    String guid = json.getString(GUID);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    try {
       if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler);
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler, true);
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
         } else {
@@ -85,7 +87,9 @@ public class RemoveAccount extends GnsCommand {
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
-    //}
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+    }
   }
 
   @Override

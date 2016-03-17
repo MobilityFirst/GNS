@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -35,17 +36,17 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -53,11 +54,12 @@ import edu.umass.cs.utils.DelayProfiler;
 /**
  * This class is the entry of activecode, it provides
  * the interface for GNS to run active code. It's creates
- * a threadpool to connect the real isolated active worker 
+ * a threadpool to connect the real isolated active worker
  * to run active code. It also handles the misbehaviours.
- * 
- * @author Zhaoyu Gao
+ *
+ * @author Zhaoyu Gao, Westy
  */
+
 public class ActiveCodeHandler {	
 	private ActiveDBInterface gnsApp;
 	private static ClientPool clientPool;
@@ -81,7 +83,7 @@ public class ActiveCodeHandler {
 	 * @param gnsApp
 	 * @return an app
 	 */
-	public static ActiveDBInterface getActiveDB(GnsApplicationInterface<?> gnsApp) {
+	public static ActiveDBInterface getActiveDB(GNSApplicationInterface<?> gnsApp) {
 		return new ActiveDBInterface() {
 
 			// FIXME: do not use this hacky method!
@@ -165,7 +167,7 @@ public class ActiveCodeHandler {
 	 */
 	public static boolean hasCode(NameRecord nameRecord, String action) {
 		try {
-            return nameRecord.getValuesMap().has(ActiveCode.codeField(action));
+            return nameRecord.getValuesMap().has(ActiveCode.getCodeField(action));
 		} catch (FieldNotFoundException e) {
 			return false;
 		}

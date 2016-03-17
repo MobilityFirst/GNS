@@ -14,23 +14,25 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,7 +57,7 @@ public class Read extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return NEWREAD;
+    return READ;
   }
 
   @Override
@@ -70,13 +72,16 @@ public class Read extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    if (reader.equals(MAGIC_STRING)) {
+      reader = null;
+    }
 
     if (ALL_FIELDS.equals(field)) {
       return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
     } else if (field != null) {
-      return FieldAccess.lookup(guid, field, null, reader, signature, message, handler);
+      return FieldAccess.lookupSingleField(guid, field, reader, signature, message, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookup(guid, null, fields, reader, signature, message, handler);
+      return FieldAccess.lookupMultipleFields(guid, fields, reader, signature, message, handler);
     } 
   }
 

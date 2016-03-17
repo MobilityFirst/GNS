@@ -20,18 +20,20 @@
 package edu.umass.cs.gnsserver.database;
 
 import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.RecordExistsException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.MongoRecordMap;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,7 +76,7 @@ public class MongoRecordsThroughputTest {
 
     // make a fake record
     MongoRecords<String> instance = new MongoRecords<String>(node);
-    MongoRecordMap<String> recordMap = new MongoRecordMap<String>(instance, DBNAMERECORD);
+    GNSRecordMap<String> recordMap = new GNSRecordMap<String>(instance, DBNAMERECORD);
     JSONObject json = new JSONObject();
     try {
       json.put(field, "some value");

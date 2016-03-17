@@ -21,10 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
-import org.json.JSONArray;
-
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
-import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnsclient.console.GnsUtils;
 

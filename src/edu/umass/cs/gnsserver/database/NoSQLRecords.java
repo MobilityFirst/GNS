@@ -19,8 +19,7 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -46,24 +45,24 @@ public interface NoSQLRecords {
    * @param collection collection to be inserted into
    * @param name the name of the record record name to be inserted
    * @param value value to be inserted (a JSONObject)
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordExistsException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
   public void insert(String collection, String name, JSONObject value)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException, 
-          edu.umass.cs.gnsserver.exceptions.RecordExistsException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 
   /**
    * Do a bulk insert of a bunch of documents into the database.
    *
    * @param collection collection to be inserted into.
    * @param values the valueslist of records to be inserted
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordExistsException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
   public void bulkInsert(String collection, ArrayList<JSONObject> values)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException, 
-          edu.umass.cs.gnsserver.exceptions.RecordExistsException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 
   /**
    * For the record with given name, return the entire record as a JSONObject.
@@ -71,12 +70,12 @@ public interface NoSQLRecords {
    * @param collection the name of the collection
    * @param name the name of the record of the record
    * @return a JSONObject
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws RecordNotFoundException
    */
   public JSONObject lookupEntireRecord(String collection, String name)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException, 
-          edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 
   /**
    * For the record with given name, return the values of given fields in form of a HashMap.
@@ -86,13 +85,13 @@ public interface NoSQLRecords {
    * @param nameField
    * @param fields the fields
    * @return a hashmap of ColumnField to Objects
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
    */
   public abstract HashMap<ColumnField, Object> lookupMultipleSystemFields(String collection, String name,
           ColumnField nameField, ArrayList<ColumnField> fields)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException, 
-          edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 
   /**
    * For record with given name, return the values of given fields and from the values map field of the record,
@@ -105,14 +104,14 @@ public interface NoSQLRecords {
    * @param valuesMapField
    * @param valuesMapKeys
    * @return a hashmap of ColumnField to Objects
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
    */
   public abstract HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collection, String name, 
           ColumnField nameField, ArrayList<ColumnField> fields,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException, 
-          edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 
   /**
    * Returns true if a record with the given name exists, false otherwise.
@@ -120,20 +119,20 @@ public interface NoSQLRecords {
    * @param collection the name of the collection
    * @param name the name of the record
    * @return true if the record exists
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public boolean contains(String collection, String name) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Remove the record with the given name.
    *
    * @param collection the name of the collection
    * @param name the name of the record
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public void removeEntireRecord(String collection, String name) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Update the record (row) with the given name using the JSONObject.
@@ -141,22 +140,10 @@ public interface NoSQLRecords {
    * @param collection the name of the collection
    * @param name the name of the record
    * @param value
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public void update(String collection, String name, JSONObject value) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-
-  /**
-   * Update one field indexed by the key in the record (row) with the given name using the object.
-   *
-   * @param collection the name of the collection
-   * @param name the name of the record
-   * @param key
-   * @param object
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
-   */
-  public void updateField(String collection, String name, String key, Object object) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * For the record with given name, replace the values of given fields to the given values.
@@ -166,11 +153,11 @@ public interface NoSQLRecords {
    * @param nameField
    * @param fields the fields
    * @param values
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
           ArrayList<Object> values) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * For the record with given name, replace the values of given fields to the given values,
@@ -184,12 +171,12 @@ public interface NoSQLRecords {
    * @param valuesMapField
    * @param valuesMapKeys
    * @param valuesMapValues
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
           ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Updates the record indexed by name conditionally. The condition specified by
@@ -207,13 +194,13 @@ public interface NoSQLRecords {
    * @param valuesMapKeys
    * @param valuesMapValues
    * @return Returns true if the update happened, false otherwise.
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract boolean updateConditional(String collectionName, String guid, ColumnField nameField,
           ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws
-          edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * For record with name, removes (unset) keys in list <code>mapKeys</code> from the map <code>mapField</code>.
@@ -222,10 +209,10 @@ public interface NoSQLRecords {
    * @param name the name of the record
    * @param mapField the field that contains the keys to remove
    * @param mapKeys the keys to remove
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
@@ -235,20 +222,20 @@ public interface NoSQLRecords {
    * @param nameField the name of the field
    * @param fields the fields
    * @return an AbstractRecordCursor
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) 
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @param collection
    * @return an AbstractRecordCursor
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public AbstractRecordCursor getAllRowsIterator(String collection) 
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
@@ -258,10 +245,10 @@ public interface NoSQLRecords {
    * @param key
    * @param value
    * @return AbstractRecordCursor
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field returns all guids that are within value which is a bounding box specified as a nested JSONArray
@@ -272,10 +259,10 @@ public interface NoSQLRecords {
    * @param key
    * @param value
    * @return AbstractRecordCursor
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field returns all guids that are near value which is a point specified as a JSONArray string tuple:
@@ -287,10 +274,10 @@ public interface NoSQLRecords {
    * @param value
    * @param maxDistance
    * @return an AbstractRecordCursor
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance)
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Performs a query on the database and returns all guids that satisfy the query.
@@ -300,19 +287,28 @@ public interface NoSQLRecords {
    * @param valuesMapField the field that contains the ValuesMap
    * @param query the query to execute
    * @return an AbstractRecordCursor
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) 
-          throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
    * Sets the collection back to an initial empty state with indexes also initialized.
    *
    * @param collection the name of the collection
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public void reset(String collection) throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+  public void reset(String collection) throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
+  /**
+   * Creates an index for the given field.
+   * 
+   * @param collectionName
+   * @param field
+   * @param index 
+   */
+  public void createIndex(String collectionName, String field, String index);
+  
   /**
    * Return a string representation of the record set.
    *
@@ -326,8 +322,8 @@ public interface NoSQLRecords {
    * You've been warned!
    *
    * @param collection the name of the collection
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public void printAllEntries(String collection) throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
+  public void printAllEntries(String collection) throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
 }

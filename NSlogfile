@@ -1,0 +1,103 @@
+*********************************************************
+This mode of starting the GNS is not recommended. Start ReconfigurableNode instead with the node ID(s) being started listed at the end of command-line options, and APPLICATION=edu.umass.cs.gnsserver.GnsApp in gigapaxos.properties.*********************************************************
+
+Setting Logger console level to INFO and file level to INFO
+NS: SSL is enabled
+Set demand profile: class edu.umass.cs.gnsserver.gnsApp.NullDemandProfile
+Reconfigure in place is: false
+configFile => ./scripts/example/ns_hazard.properties
+consoleOutputLevel => INFO
+demandProfileClass => edu.umass.cs.gnsserver.gnsApp.NullDemandProfile
+fileLoggingLevel => INFO
+nsfile => conf/single-server-info.txt
+test => true
+Tue Feb 23 22:50:42 EST 2016 INFO GNSNodeConfig.<init>: For CPP Id: frank Host Name:/10.0.1.50 IP:/10.0.1.50 Start Port:24400
+Tue Feb 23 22:50:42 EST 2016 INFO GNSNodeConfig.startCheckingForUpdates: Checking for hosts updates every 60 seconds
+########### Multi-node test #############
+###################################
+############# Setting up active replica frank_Repl
+Feb 23, 2016 10:50:42 PM edu.umass.cs.reconfiguration.ReconfigurableNode <init>
+INFO: Nodefrank_Repl:frank_Repl listening on /10.0.1.50:24403
+Tue Feb 23 22:50:42 EST 2016 INFO GnsApp.<init>: Node frank_Repl started Ping server on port 24407
+Tue Feb 23 22:50:42 EST 2016 INFO GnsApp.<init>: App frank_Repl created MongoRecordMap{collectionName=NameRecord, mongoRecords=DB GNS-frank_Repl}
+BIND ADDRESS for frank_Repl is /10.0.1.50
+NODE ADDRESS for frank_Repl is /10.0.1.50
+Reconfigurators [/10.0.1.50:24404]
+Client port offset 100
+SSL Mode is SERVER_AUTH
+Tue Feb 23 22:50:43 EST 2016 INFO CommandModule.initCommands: 136 commands added.
+Tue Feb 23 22:50:43 EST 2016 INFO GnsHttpServer.tryPort: HTTP server is listening on port 8080
+Tue Feb 23 22:50:43 EST 2016 INFO CCPListenerAdmin.run: CPP Node /10.0.1.50:24405 starting Admin Server on port 24406
+Tue Feb 23 22:50:43 EST 2016 WARNING ClientCommandProcessor.<init>: Not running DNS Service because it needs root permission! If you want DNS run the CCP using sudo.
+Tue Feb 23 22:50:43 EST 2016 INFO GnsApp.<init>: frank_Repl Admin thread initialized
+Tue Feb 23 22:50:43 EST 2016 INFO AppAdmin.run: NS Node frank_Repl starting Admin Request Server on port 24401
+Starting ActiveCode Server at 0.0.0.0:63664
+log4j:WARN No appenders could be found for logger (com.mchange.v2.log.MLog).
+log4j:WARN Please initialize the log4j system properly.
+log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
+Feb 23, 2016 10:50:44 PM edu.umass.cs.gigapaxos.PaxosManager initiateRecovery
+WARNING: No checkpoint state found for node 787745308. This can only happen if
+(1) the node is newly joining the system, or
+(2) the node previously crashed before completing even a single checkpoint, or
+(3) the node's checkpoint was manually deleted.
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.ReconfigurableNode createApp
+WARNING: Using createAppCoordinator() is discouraged for applications simply using paxos as the coordiantion protocol. Implement Application.createApp(String[]) or Application.createApp() to construct the application instance instead.
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.ActiveReplica initClientMessenger
+INFO: ARfrank_Repl creating client messenger at /10.0.1.50:24,503
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$ Setting up reconfigurator frank_Recon
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.ReconfigurableNode <init>
+INFO: Nodefrank_Recon:frank_Recon listening on /10.0.1.50:24404
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB connectDB
+INFO: Attempting getDefaultConn() to DB jdbc:derby:reconfiguration_DB/reconfiguration_DBfrank_Recon
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB connectDB
+INFO: Connected to and created database reconfiguration_DBfrank_Recon
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB createTable
+INFO: Table nodeconfigfrank_Recon already exists
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB createTables
+INFO: Created tables checkpointfrank_Recon and messagesfrank_Recon
+Feb 23, 2016 10:50:44 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB initialize
+INFO: {0} proceeding with node config version {1}: frank_Repl:/10.0.1.50:24403 
+frank_Recon:/10.0.1.50:24404 
+Feb 23, 2016 10:50:45 PM edu.umass.cs.gigapaxos.PaxosManager initiateRecovery
+WARNING: No checkpoint state found for node 1349711518. This can only happen if
+(1) the node is newly joining the system, or
+(2) the node previously crashed before completing even a single checkpoint, or
+(3) the node's checkpoint was manually deleted.
+Feb 23, 2016 10:50:45 PM edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB createDefaultGroups
+INFO: RepliconfigurableReconfiguratorDBfrank_Recon creating reconfigurator group frank_Recon with members [frank_Recon]
+Feb 23, 2016 10:50:45 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB putReconfigurationRecordIndividually
+INFO: DerbyRCDBfrank_Recon individually committing names 1 names: [frank_Recon]
+Feb 23, 2016 10:50:45 PM edu.umass.cs.utils.Config register
+WARNING: Config unable to find file testing.properties; using default values for type class edu.umass.cs.gigapaxos.testing.TESTPaxosConfig$TC
+Feb 23, 2016 10:50:45 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB putReconfigurationRecordIndividually
+INFO: DerbyRCDBfrank_Recon individually committing names 1 names: [RC_NODE_CONFIG]
+Feb 23, 2016 10:50:45 PM edu.umass.cs.reconfiguration.SQLReconfiguratorDB putReconfigurationRecordIndividually
+INFO: DerbyRCDBfrank_Recon individually committing names 1 names: [ACTIVE_NODE_CONFIG]
+Feb 23, 2016 10:50:45 PM edu.umass.cs.reconfiguration.Reconfigurator initClientMessenger
+INFO: RCfrank_Recon creating client messenger at /10.0.1.50:24,504
+APPLICATION => null
+DEMAND_PROFILE_TYPE => edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile
+HOSTS_FILE => gigapaxos.properties
+RECONFIGURATION_DB_DIR => reconfiguration_DB
+RECONFIGURATION_DB_PREFIX => reconfiguration_DB
+SQL_TYPE => EMBEDDED_DERBY
+RECONFIGURE_IN_PLACE => true
+CLIENT_SSL_MODE => CLEAR
+SERVER_SSL_MODE => CLEAR
+CLIENT_PORT_OFFSET => 100
+AGGRESSIVE_DELETIONS => true
+AGGRESSIVE_RECONFIGURATIONS => true
+COMMIT_WORKER_RESTART_PERIOD => 2000
+STOP_TASK_RESTART_PERIOD => 2000
+MAX_DEMAND_PROFILE_SIZE => 4096
+COMBINE_DEMAND_STATS => false
+TWO_PAXOS_RC => true
+USE_DISK_MAP_RCDB => true
+DEFAULT_NUM_REPLICAS => 3
+REPLICATE_ALL => false
+MAX_BATCH_SIZE => 10000
+********* Nodes have started. Server is ready. *********
+Shutting down frank_Repl
+Shutting down frank_Recon
+********* All nodes have been shutdown. *********

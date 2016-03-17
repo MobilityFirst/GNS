@@ -14,18 +14,19 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +38,7 @@ public class LookupAccountRecord extends GnsCommand {
 
   /**
    * Creates a LookupAccountRecord instance.
-   * 
+   *
    * @param module
    */
   public LookupAccountRecord(CommandModule module) {
@@ -56,24 +57,22 @@ public class LookupAccountRecord extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String guid = json.getString(GUID);
-      AccountInfo acccountInfo;
-      if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    String guid = json.getString(GUID);
+    AccountInfo acccountInfo;
+    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    }
+    if (acccountInfo != null) {
+      try {
+        // the true below omits the list of guids which might be too big to send back to the client
+        return new CommandResponse<>(acccountInfo.toJSONObject(true).toString());
+        //return new CommandResponse<>(acccountInfo.toJSONObject().toString());
+      } catch (JSONException e) {
+        return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
       }
-      if (acccountInfo != null) {
-        try {
-          return new CommandResponse<>(acccountInfo.toJSONObject().toString());
-        } catch (JSONException e) {
-          return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
-        }
-      } else {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
-   // }
+    } else {
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
   }
 
   @Override

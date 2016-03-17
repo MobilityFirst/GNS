@@ -22,6 +22,8 @@ package edu.umass.cs.gnscommon;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+
 /**
  * This class defines a GnsProtocol. Which is to say that
  * it defines a bunch of constants that define the protocol
@@ -39,11 +41,13 @@ public class GnsProtocol {
   public final static String LOOKUP_PRIMARY_GUID = "lookupPrimaryGuid";
   public final static String LOOKUP_GUID_RECORD = "lookupGuidRecord";
   public final static String LOOKUP_ACCOUNT_RECORD = "lookupAccountRecord";
+  public final static String LOOKUP_RANDOM_GUIDS = "lookupAccountRecordGuids"; // mostly for testing
   public final static String RESET_KEY = "resetKey";
   public final static String ADD_ALIAS = "addAlias";
   public final static String REMOVE_ALIAS = "removeAlias";
   public final static String RETRIEVE_ALIASES = "retrieveAliases";
   public final static String ADD_GUID = "addGuid";
+  public final static String ADD_MULTIPLE_GUIDS = "addMultipleGuids";
   public final static String REMOVE_GUID = "removeGuid";
   public final static String SET_PASSWORD = "setPassword";
   //
@@ -69,7 +73,6 @@ public class GnsProtocol {
   public final static String SET_FIELD_NULL = "setFieldNull";
   public final static String CLEAR = "clear";
   public final static String READ = "newRead";
-  public final static String NEWREAD = "newRead";
   public final static String READ_ARRAY = "readArray";
   public final static String READ_ARRAY_ONE = "readArrayOne";
   public final static String SELECT = "select";
@@ -79,6 +82,7 @@ public class GnsProtocol {
   public final static String QUERY = "query";
   public final static String INTERVAL = "interval";
   public final static String REPLACE_USER_JSON = "replaceUserJSON";
+  public final static String CREATE_INDEX = "createIndex";
   public final static String MAX_DISTANCE = "maxDistance";
   //
   public final static String ACL_ADD = "aclAdd";
@@ -96,13 +100,6 @@ public class GnsProtocol {
   public final static String GET_GROUP_MEMBERS = "getGroupMembers";
   public final static String GET_GROUPS = "getGroups";
   //
-  public final static String REQUEST_JOIN_GROUP = "requestJoinGroup";
-  public final static String RETRIEVE_GROUP_JOIN_REQUESTS = "retrieveGroupJoinRequests";
-  public final static String GRANT_MEMBERSHIP = "grantMembership";
-  public final static String REQUEST_LEAVE_GROUP = "requestLeaveGroup";
-  public final static String RETRIEVE_GROUP_LEAVE_REQUESTS = "retrieveGroupLeaveRequests";
-  public final static String REVOKE_MEMBERSHIP = "revokeMembership";
-  //
   public final static String HELP = "help";
   // Admin commands (some not accesible in unless the server is in "admin mode")
   public final static String ADMIN = "admin";
@@ -112,6 +109,7 @@ public class GnsProtocol {
   public final static String DUMPCACHE = "dumpCache";
   public final static String DELETE_ALL_GUID_RECORDS = "deleteAllGuidRecords";
   public final static String DUMP = "dump";
+  //
   public final static String CONNECTION_CHECK = "connectionCheck";
   public final static String PING_TABLE = "pingTable";
   public final static String PING_VALUE = "pingValue";
@@ -160,6 +158,9 @@ public class GnsProtocol {
   public final static String ALL_FIELDS = "+ALL+";
   public final static String ALL_USERS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
+  
+  public final static String NO_ACTIVE_REPLICAS = ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR.toString();
+  
   //
   public static final String RSA_ALGORITHM = "RSA";
   public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
@@ -168,6 +169,7 @@ public class GnsProtocol {
   public final static String NAMES = "names";
   public final static String GUID = "guid";
   public final static String GUID_2 = "guid2";
+  // only used for for remove
   public final static String ACCOUNT_GUID = "accountGuid";
   public final static String READER = "reader";
   public final static String WRITER = "writer";
@@ -190,6 +192,7 @@ public class GnsProtocol {
   public final static String SIGNATURE = "signature";
   public final static String PASSKEY = "passkey";
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
+  public final static String MAGIC_STRING = "magic";
   // Special fields for ACL
   public final static String GUID_ACL = "+GUID_ACL+";
   public final static String GROUP_ACL = "+GROUP_ACL+";
@@ -219,13 +222,14 @@ public class GnsProtocol {
   // This one is special, used for the action part of the command
   public final static String COMMANDNAME = "COMMANDNAME"; // aka "action"
 
-   // Active code actions and fields
-  public final static String  AC_SET                        = "acSet";
-  public final static String  AC_GET                        = "acGet";
-  public final static String  AC_CLEAR                      = "acClear";
-  public final static String  AC_ACTION                     = "acAction";
-  public final static String  AC_CODE                       = "acCode";
- //
+  // Active code actions and fields
+  public final static String AC_SET = "acSet";
+  public final static String AC_GET = "acGet";
+  public final static String AC_CLEAR = "acClear";
+  public final static String AC_ACTION = "acAction";
+  public final static String AC_CODE = "acCode";
+  //
+
   /**
    * This class defines AccessType for ACLs
    *
@@ -283,32 +287,38 @@ public class GnsProtocol {
   public static boolean isInternalField(String key) {
     return key.startsWith(INTERNAL_PREFIX);
   }
-  
+
   /**
    * The list of command types that are updated commands.
    */
+  // FIXME: hang this off the individual commands
   public final static List<String> UPDATE_COMMANDS
           = Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
                   APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
                   APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
-                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON,
-                  //
-                  //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
-                  VERIFY_ACCOUNT, SET_PASSWORD,
+                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
+                  VERIFY_ACCOUNT, SET_PASSWORD, RESET_KEY,
                   //
                   ACL_ADD, ACL_REMOVE,
-                  //ADDTOGROUP, REMOVEFROMGROUP,
                   //
                   ADD_TAG, REMOVE_TAG
           );
-  // Currently unused
+
+  /**
+   * The list of command types that create and delete records.
+   */
+  public final static List<String> CREATE_DELETE_COMMANDS
+          = Arrays.asList(REGISTER_ACCOUNT, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
+                  REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS//,
+  //                ADD_TO_GROUP, REMOVE_FROM_GROUP
+          );
 
   /**
    * The list of command types that are read commands.
    */
   public final static List<String> READ_COMMANDS
-          = Arrays.asList(READ_ARRAY, NEWREAD, READ_ARRAY_ONE);
+          = Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE);
   //
-  
+
   public final static String NEWLINE = System.getProperty("line.separator");
 }

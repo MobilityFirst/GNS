@@ -19,25 +19,27 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import static org.hamcrest.Matchers.*;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -45,14 +47,16 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- *  Functionality test for core elements in the client using the UniversalGnsClientFull.
+ * THIS HAS BEEN REPLACED WITH ServerIntegrationTest class
+ * 
+ * Functionality test for core elements in the client using the UniversalGnsClientFull.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UniversalCoreTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static final String PASSWORD = "password";
+  private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static String password = "password";
   private static UniversalTcpClientExtended client = null;
   /**
    * The address of the GNS server we will contact
@@ -68,19 +72,36 @@ public class UniversalCoreTest {
 
   public UniversalCoreTest() {
     if (client == null) {
-      address = ServerSelectDialog.selectServer();
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
+      if (System.getProperty("alias") != null
+              && !System.getProperty("alias").isEmpty()) {
+        accountAlias = System.getProperty("alias");
+      }
+      if (System.getProperty("password") != null
+              && !System.getProperty("password").isEmpty()) {
+        password = System.getProperty("password");
+      }
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, password, true);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        fail("Exception while creating account guid: " + e);
       }
     }
   }
 
   @Test
-  public void test_01_CreateEntity() {
+  public void test_010_CreateEntity() {
     String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
@@ -93,7 +114,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_02_RemoveGuid() {
+  public void test_020_RemoveGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
@@ -109,7 +130,7 @@ public class UniversalCoreTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -117,7 +138,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_03_RemoveGuidSansAccountInfo() {
+  public void test_030_RemoveGuidSansAccountInfo() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
@@ -133,7 +154,7 @@ public class UniversalCoreTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -141,7 +162,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_04_LookupPrimaryGuid() {
+  public void test_040_LookupPrimaryGuid() {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
@@ -157,38 +178,38 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_05_CreateSubGuid() {
+  public void test_050_CreateSubGuid() {
     try {
       subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception creating subguid: " + e);
     }
   }
 
   @Test
-  public void test_06_FieldNotFoundException() {
+  public void test_060_FieldNotFoundException() {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
     } catch (GnsFieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
-      System.out.println("Exception when we were not expecting it: " + e);
+      System.out.println("Exception testing field not found: " + e);
     }
   }
 
   @Test
-  public void test_07_FieldExistsFalse() {
+  public void test_070_FieldExistsFalse() {
     try {
       assertFalse(client.fieldExists(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (Exception e) {
-      System.out.println("Exception when we were not expecting it: " + e);
+      System.out.println("Exception testing field exists false: " + e);
     }
   }
 
   @Test
-  public void test_08_CreateFieldForFieldExists() {
+  public void test_080_CreateFieldForFieldExists() {
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
     } catch (Exception e) {
@@ -198,23 +219,23 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_09_FieldExistsTrue() {
+  public void test_090_FieldExistsTrue() {
     try {
       assertTrue(client.fieldExists(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (Exception e) {
-      System.out.println("Exception when we were not expecting it: " + e);
+      System.out.println("Exception testing field exists true: " + e);
     }
   }
 
   @Test
-  public void test_10_CreateFields() {
+  public void test_100_CreateFields() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception registering guids for create fields: " + e);
     }
     try {
       // remove default read acces for this test
@@ -236,15 +257,15 @@ public class UniversalCoreTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it in create fields: " + e);
     }
   }
 
   @Test
-  public void test_11_ACLPartOne() {
+  public void test_110_ACLPartOne() {
     //testCreateField();
 
     try {
@@ -265,19 +286,19 @@ public class UniversalCoreTest {
         e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it testing ACL part one: " + e);
       e.printStackTrace();
     }
   }
 
   @Test
-  public void test_12_ACLPartTwo() {
+  public void test_120_ACLPartTwo() {
     try {
       String barneyName = "barney" + RandomString.randomString(6);
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
@@ -318,27 +339,27 @@ public class UniversalCoreTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
       }
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it testing ACL part two: " + e);
       e.printStackTrace();
     }
   }
 
   @Test
-  public void test_13_ACLALLFields() {
+  public void test_130_ACLALLFields() {
     //testACL();
     String superUserName = "superuser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);
@@ -352,12 +373,38 @@ public class UniversalCoreTest {
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
+      fail("Exception when we were not expecting it testing ACL all fields: " + e);
+    }
+  }
+
+  @Test
+  public void test_140_ACLCreateDeeperField() {
+    try {
+      try {
+        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
+      } catch (Exception e) {
+        fail("Problem updating field: " + e);
+      }
+      try {
+        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GnsProtocol.ALL_FIELDS);
+      } catch (Exception e) {
+        fail("Problem adding acl: " + e);
+      }
+      try {
+        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry,
+                "test.deeper.field", westyEntry.getGuid());
+        JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
+        JSONAssert.assertEquals(expected, actual, true);
+      } catch (Exception e) {
+        fail("Problem reading acl: " + e);
+      }
+    } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }
   }
 
   @Test
-  public void test_14_DB() {
+  public void test_170_DB() {
     //testCreateEntity();
     try {
 
@@ -390,14 +437,14 @@ public class UniversalCoreTest {
 //      try {
 //        client.fieldCreateOneElementList(westyEntry, "cats", "maya");
 //        fail("Should have got an exception when trying to create the field westy / cats.");
-//      } catch (GnsException e) {
+//      } catch (GnsClientException e) {
 //      }
       //this one always fails... check it out
 //      try {
 //        client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs", "freddybub",
 //                westyEntry);
 //        fail("Should have got an exception when trying to create the field westy / frogs.");
-//      } catch (GnsException e) {
+//      } catch (GnsClientException e) {
 //      }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
@@ -411,12 +458,12 @@ public class UniversalCoreTest {
               westyEntry.getGuid(), "cats", westyEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting testing DB: " + e);
     }
   }
 
   @Test
-  public void test_15_DBUpserts() {
+  public void test_180_DBUpserts() {
     HashSet<String> expected = null;
     HashSet<String> actual = null;
     try {
@@ -471,7 +518,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_16_Substitute() {
+  public void test_190_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -513,7 +560,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_17_SubstituteList() {
+  public void test_200_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID" + RandomString.randomString(6);
     String field = "people";
     GuidEntry testEntry = null;
@@ -558,21 +605,31 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_18_Group() {
+  public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+  }
 
+  @Test
+  public void test_211_GroupAdd() {
+    try {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
       client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);
-
+    } catch (Exception e) {
+      fail("Exception while adding to groups: " + e);
+    }
+    try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
       assertEquals(expected, actual);
@@ -582,9 +639,12 @@ public class UniversalCoreTest {
       assertEquals(expected, actual);
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-      System.exit(2);
+      fail("Exception while getting members and groups: " + e);
     }
+  }
+
+  @Test
+  public void test_212_GroupRemoveGuid() {
     // now remove a guid and check for group updates
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
@@ -594,38 +654,28 @@ public class UniversalCoreTest {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
     }
-
-    try {
-      HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid()));
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
-      assertEquals(expected, actual);
-
-    } catch (Exception e) {
-      fail("Exception during remove guid group update test: " + e);
-      System.exit(2);
-    }
-
   }
 
+  private static GuidEntry groupAccessUserEntry = null;
+
   @Test
-  public void test_19_GroupAndACL() {
+  public void test_220_GroupAndACLCreateGuids() {
     //testGroup();
     String groupAccessUserName = "groupAccessUser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
     }
-    GuidEntry groupAccessUserEntry = null;
 
     try {
       groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupAccessUserName);
@@ -633,7 +683,6 @@ public class UniversalCoreTest {
       client.aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
-      return;
     }
 
     try {
@@ -642,35 +691,44 @@ public class UniversalCoreTest {
       client.fieldCreateOneElementList(groupAccessUserEntry.getGuid(), "hometown", "whoville", groupAccessUserEntry);
     } catch (Exception e) {
       fail("Exception creating group user fields: " + e);
-      return;
     }
     try {
       client.aclAdd(AccessType.READ_WHITELIST, groupAccessUserEntry, "hometown", mygroupEntry.getGuid());
     } catch (Exception e) {
       fail("Exception adding mygroup to acl for group user hometown field: " + e);
-      return;
     }
+  }
+
+  @Test
+  public void test_221_GroupAndACLTestBadAccess() {
     try {
       try {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
     }
+  }
+
+  @Test
+  public void test_222_GroupAndACLTestGoodAccess() {
     try {
       assertEquals("whoville", client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "hometown", westyEntry));
     } catch (Exception e) {
       fail("Exception while attempting read of groupAccessUser's hometown by westy: " + e);
     }
+  }
+
+  @Test
+  public void test_223_GroupAndACLTestRemoveGuid() {
     try {
       try {
         client.groupRemoveGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       } catch (Exception e) {
         fail("Exception removing westy from mygroup: " + e);
-        return;
       }
 
       HashSet<String> expected = new HashSet<String>(Arrays.asList(samEntry.getGuid()));
@@ -682,40 +740,51 @@ public class UniversalCoreTest {
     }
   }
 
+  private static String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
+
   @Test
-  public void test_20_Alias() {
-    String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
+  public void test_230_AliasAdd() {
     try {
-      //
       // KEEP IN MIND THAT CURRENTLY ONLY ACCOUNT GUIDS HAVE ALIASES
-      //
       // add an alias to the masterGuid
       client.addAlias(masterGuid, alias);
       // lookup the guid using the alias
       assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
-
-      // grab all the alias from the guid
-      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.getAliases(masterGuid));
-      // make sure our new one is in there
-      assertThat(actual, hasItem(alias));
-
-      // now remove it 
-      client.removeAlias(masterGuid, alias);
-
-      // an make sure it is gone
-      try {
-        client.lookupGuid(alias);
-        fail(alias + " should not exist");
-      } catch (GnsException e) {
-      }
-
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while adding alias: " + e);
     }
   }
 
   @Test
-  public void test_24_WriteAccess() {
+  public void test_231_AliasRemove() {
+    try {
+      // grab all the alias from the guid
+      HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.getAliases(masterGuid));
+      // make sure our new one is in there
+      assertThat(actual, hasItem(alias));
+      // now remove it 
+      client.removeAlias(masterGuid, alias);
+    } catch (Exception e) {
+      fail("Exception removing alias: " + e);
+    }
+  }
+
+  @Test
+  public void test_232_AliasCheck() {
+    try {
+      // an make sure it is gone
+      try {
+        client.lookupGuid(alias);
+        fail(alias + " should not exist");
+      } catch (GnsClientException e) {
+      }
+    } catch (Exception e) {
+      fail("Exception while checking alias: " + e);
+    }
+  }
+
+  @Test
+  public void test_240_WriteAccess() {
     String fieldName = "whereAmI";
     try {
       try {
@@ -746,7 +815,7 @@ public class UniversalCoreTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName + " by sam: " + e);
@@ -758,7 +827,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_25_UnsignedRead() {
+  public void test_250_UnsignedRead() {
     String unsignedReadFieldName = "allreadaccess";
     String standardReadFieldName = "standardreadaccess";
     try {
@@ -773,7 +842,7 @@ public class UniversalCoreTest {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -781,7 +850,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_26_UnsignedWrite() {
+  public void test_260_UnsignedWrite() {
     String unsignedWriteFieldName = "allwriteaccess";
     String standardWriteFieldName = "standardwriteaccess";
     try {
@@ -795,7 +864,7 @@ public class UniversalCoreTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -803,7 +872,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_27_RemoveField() {
+  public void test_270_RemoveField() {
     String fieldToDelete = "fieldToDelete";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), fieldToDelete, "work", westyEntry);
@@ -824,9 +893,10 @@ public class UniversalCoreTest {
 
     try {
       String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), fieldToDelete, westyEntry);
+
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }
@@ -834,7 +904,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_28_ListOrderAndSetElement() {
+  public void test_280_ListOrderAndSetElement() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
     } catch (Exception e) {
@@ -867,7 +937,104 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_40_SetFieldNull() {
+  public void test_310_BasicSelect() {
+    try {
+      JSONArray result = client.select("cats", "fred");
+      // best we can do since there will be one, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  @Test
+  public void test_320_GeoSpatialSelect() {
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "geoTest-" + RandomString.randomString(6));
+        client.setLocation(testEntry, 0.0, 0.0);
+      }
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+
+    try {
+
+      JSONArray loc = new JSONArray();
+      loc.put(1.0);
+      loc.put(1.0);
+      JSONArray result = client.selectNear(GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectNear: " + e);
+    }
+
+    try {
+
+      JSONArray rect = new JSONArray();
+      JSONArray upperLeft = new JSONArray();
+      upperLeft.put(1.0);
+      upperLeft.put(1.0);
+      JSONArray lowerRight = new JSONArray();
+      lowerRight.put(-1.0);
+      lowerRight.put(-1.0);
+      rect.put(upperLeft);
+      rect.put(lowerRight);
+      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectWithin: " + e);
+    }
+  }
+
+  @Test
+  public void test_330_QuerySelect() {
+    String fieldName = "testQuery";
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
+        JSONArray array = new JSONArray(Arrays.asList(25));
+        client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
+      }
+    } catch (Exception e) {
+      fail("Exception while tryint to create the guids: " + e);
+    }
+
+    try {
+      String query = "~" + fieldName + " : ($gt: 0)";
+      JSONArray result = client.selectQuery(query);
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectNear: " + e);
+    }
+
+    try {
+
+      JSONArray rect = new JSONArray();
+      JSONArray upperLeft = new JSONArray();
+      upperLeft.put(1.0);
+      upperLeft.put(1.0);
+      JSONArray lowerRight = new JSONArray();
+      lowerRight.put(-1.0);
+      lowerRight.put(-1.0);
+      rect.put(upperLeft);
+      rect.put(lowerRight);
+      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      fail("Exception executing selectWithin: " + e);
+    }
+  }
+
+  @Test
+  public void test_400_SetFieldNull() {
     String field = "fieldToSetToNull";
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
@@ -900,7 +1067,7 @@ public class UniversalCoreTest {
   }
 
   @Test
-  public void test_41_JSONUpdate() {
+  public void test_410_JSONUpdate() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
@@ -933,7 +1100,7 @@ public class UniversalCoreTest {
       subJson.put("meiny", "bloop");
       expected.put("gibberish", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -958,7 +1125,7 @@ public class UniversalCoreTest {
       subJson.put("meiny", "bloop");
       expected.put("gibberish", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading change of \"occupation\" to \"rocket scientist\": " + e);
@@ -984,7 +1151,7 @@ public class UniversalCoreTest {
       subJson.put("meiny", "bloop");
       expected.put("gibberish", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -1004,15 +1171,15 @@ public class UniversalCoreTest {
       expected.put("ip address", "127.0.0.1");
       expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
     }
   }
-  
+
   @Test
-  public void test_42_NewRead() {
+  public void test_420_NewRead() {
     try {
       JSONObject json = new JSONObject();
       JSONObject subJson = new JSONObject();
@@ -1027,7 +1194,7 @@ public class UniversalCoreTest {
     } catch (Exception e) {
       fail("Exception while adding field \"flapjack\": " + e);
     }
-    
+
     try {
       JSONObject expected = new JSONObject();
       expected.put("name", "frank");
@@ -1043,7 +1210,7 @@ public class UniversalCoreTest {
       subJson.put("sally", subsubJson);
       expected.put("flapjack", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -1057,21 +1224,22 @@ public class UniversalCoreTest {
     try {
       String actual = client.fieldRead(westyEntry.getGuid(), "flapjack.sally", westyEntry);
       String expected = "{ \"left\" : \"eight\" , \"right\" : \"seven\"}";
-      assertEquals(expected, actual);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
     } catch (Exception e) {
       fail("Exception while reading \"flapjack.sally\": " + e);
     }
-//    try {
-//      String actual = client.fieldRead(westyEntry.getGuid(), "flapjack", westyEntry);
-//      String expected = "{ \"sammy\" : \"green\" , \"sally\" : { \"left\" : \"eight\" , \"right\" : \"seven\"}}";
-//      assertEquals(expected, actual);
-//    } catch (Exception e) {
-//      fail("Exception while reading \"flapjack\": " + e);
-//    }
+
+    try {
+      String actual = client.fieldRead(westyEntry.getGuid(), "flapjack", westyEntry);
+      String expected = "{ \"sammy\" : \"green\" , \"sally\" : { \"left\" : \"eight\" , \"right\" : \"seven\"}}";
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
+    } catch (Exception e) {
+      fail("Exception while reading \"flapjack\": " + e);
+    }
   }
 
   @Test
-  public void test_43_NewUpdate() {
+  public void test_430_NewUpdate() {
     try {
       client.fieldUpdate(westyEntry.getGuid(), "flapjack.sally.right", "crank", westyEntry);
     } catch (Exception e) {
@@ -1092,7 +1260,7 @@ public class UniversalCoreTest {
       subJson.put("sally", subsubJson);
       expected.put("flapjack", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -1117,7 +1285,7 @@ public class UniversalCoreTest {
       subJson.put("sally", subsubJson);
       expected.put("flapjack", subJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
@@ -1144,15 +1312,218 @@ public class UniversalCoreTest {
       moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
       expected.put("flapjack", moreJson);
       JSONObject actual = client.read(westyEntry);
-      JSONAssert.assertEquals(expected, actual, true);
+      JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
     }
   }
 
+  private static int numberTocreate = 100;
+ private static GuidEntry accountGuidForBatch = null;
+
   @Test
-  public void test_47_Stop() {
+  public void test_510_CreateBatchAccountGuid() {
+    // can change the number to create on the command line
+     if (System.getProperty("count") != null
+              && !System.getProperty("count").isEmpty()) {
+        numberTocreate = Integer.parseInt(System.getProperty("count"));
+      }
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  @Test
+  public void test_511_CreateBatch() {
+    Set<String> aliases = new HashSet<>();
+    for (int i = 0; i < numberTocreate; i++) {
+      aliases.add("testGUID" + RandomString.randomString(6));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(15 * 1000); // 30 seconds
+      result = client.guidBatchCreate(accountGuidForBatch, aliases, true);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+  }
+
+  @Test
+  public void test_512_CheckBatch() {
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(accountGuidForBatch.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsClientException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+
+  private static GuidEntry accountGuidForWithoutPublicKeys = null;
+
+  @Test
+  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      accountGuidForWithoutPublicKeys = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  @Test
+  public void test_521_CreateBatchWithoutPublicKeys() {
+    Set<String> aliases = new HashSet<>();
+    for (int i = 0; i < numberTocreate; i++) {
+      aliases.add("testGUID" + RandomString.randomString(6));
+    }
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(15 * 1000); // 30 seconds
+      result = client.guidBatchCreate(accountGuidForWithoutPublicKeys, aliases, false);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+  }
+
+  @Test
+  public void test_522_CheckBatchForWithoutPublicKeys() {
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(accountGuidForWithoutPublicKeys.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsClientException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+
+  private static GuidEntry accountGuidForFastest = null;
+
+  @Test
+  public void test_530_CreateBatchAccountGuidForForFastest() {
+    try {
+      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+
+  @Test
+  public void test_531_CreateBatchFastest() {
+    String result = null;
+    int oldTimeout = client.getReadTimeout();
+    try {
+      client.setReadTimeout(15 * 1000); // 30 seconds
+      result = client.guidBatchCreateFast(accountGuidForFastest, numberTocreate);
+      client.setReadTimeout(oldTimeout);
+    } catch (Exception e) {
+      fail("Exception while creating guids: " + e);
+    }
+    assertEquals(GnsProtocol.OK_RESPONSE, result);
+  }
+
+  @Test
+  public void test_532_CheckBatchForFastest() {
+    try {
+      JSONObject accountRecord = client.lookupAccountRecord(accountGuidForFastest.getGuid());
+      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+    } catch (JSONException | GnsClientException | IOException e) {
+      fail("Exception while fetching account record: " + e);
+    }
+  }
+
+  private static String createIndexTestField;
+
+  @Test
+  public void test_810_CreateField() {
+    createIndexTestField = "testField" + RandomString.randomString(6);
+    try {
+      client.fieldUpdate(masterGuid, createIndexTestField, createGeoJSONPolygon(AREA_EXTENT));
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception during create field: " + e);
+    }
+  }
+
+  @Test
+  public void test_820_CreateIndex() {
+    try {
+      client.fieldCreateIndex(masterGuid, createIndexTestField, "2dsphere");
+    } catch (Exception e) {
+      fail("Exception while creating index: " + e);
+    }
+  }
+
+  @Test
+  public void test_830_SelectPass() {
+    try {
+      JSONArray result = client.selectQuery(buildQuery(createIndexTestField, AREA_EXTENT));
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (Exception e) {
+      fail("Exception executing second selectNear: " + e);
+    }
+  }
+
+  // HELPER STUFF
+  private static final String POLYGON = "Polygon";
+  private static final String COORDINATES = "coordinates";
+  private static final String TYPE = "type";
+
+  private static JSONObject createGeoJSONPolygon(List<Point2D> coordinates) throws JSONException {
+    JSONArray ring = new JSONArray();
+    for (int i = 0; i < coordinates.size(); i++) {
+      ring.put(i, new JSONArray(
+              Arrays.asList(coordinates.get(i).getX(), coordinates.get(i).getY())));
+    }
+    JSONArray jsonCoordinates = new JSONArray();
+    jsonCoordinates.put(0, ring);
+    JSONObject json = new JSONObject();
+    json.put(TYPE, POLYGON);
+    json.put(COORDINATES, jsonCoordinates);
+    return json;
+  }
+
+  private static final double LEFT = -98.08;
+  private static final double RIGHT = -96.01;
+  private static final double TOP = 33.635;
+  private static final double BOTTOM = 31.854;
+
+  private static final Point2D UPPER_LEFT = new Point2D.Double(LEFT, TOP);
+  //private static final GlobalCoordinate UPPER_LEFT = new GlobalCoordinate(33.45, -98.08);
+  private static final Point2D UPPER_RIGHT = new Point2D.Double(RIGHT, TOP);
+  //private static final GlobalCoordinate UPPER_RIGHT = new GlobalCoordinate(33.45, -96.01);
+  private static final Point2D LOWER_RIGHT = new Point2D.Double(RIGHT, BOTTOM);
+  //private static final GlobalCoordinate LOWER_RIGHT = new GlobalCoordinate(32.23, -96.01);
+  private static final Point2D LOWER_LEFT = new Point2D.Double(LEFT, BOTTOM);
+  //private static final GlobalCoordinate LOWER_LEFT = new GlobalCoordinate(32.23, -98.08);
+
+  private static final List<Point2D> AREA_EXTENT = new ArrayList<>(
+          Arrays.asList(UPPER_LEFT, UPPER_RIGHT, LOWER_RIGHT, LOWER_LEFT, UPPER_LEFT));
+
+  private static String buildQuery(String locationField, List<Point2D> coordinates) throws JSONException {
+    return "~" + locationField + ":{"
+            + "$geoIntersects :{"
+            + "$geometry:"
+            + createGeoJSONPolygon(coordinates).toString()
+            + "}"
+            + "}";
+  }
+
+  @Test
+  public void test_999_Stop() {
     try {
       client.stop();
     } catch (Exception e) {

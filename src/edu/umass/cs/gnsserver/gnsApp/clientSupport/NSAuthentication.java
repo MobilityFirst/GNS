@@ -17,20 +17,23 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
+
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -49,7 +52,7 @@ public class NSAuthentication {
 
   /**
    * Does access and signature checking for a field in a guid.
-   * 
+   *
    * @param guid - the guid containing the field being accessed
    * @param field - the field being accessed
    * @param accessorGuid - the guid doing the access
@@ -57,7 +60,6 @@ public class NSAuthentication {
    * @param message
    * @param access - the type of access
    * @param gnsApp
-   * @param lnsAddress - used in case we need to do a query for more records
    * @return an {@link NSResponseCode}
    * @throws InvalidKeyException
    * @throws InvalidKeySpecException
@@ -66,9 +68,10 @@ public class NSAuthentication {
    * @throws FailedDBOperationException
    * @throws UnsupportedEncodingException
    */
-  public static NSResponseCode signatureAndACLCheck(String guid, String field, String accessorGuid, String signature,
-          String message, MetaDataTypeName access, 
-          GnsApplicationInterface<String> gnsApp, InetSocketAddress lnsAddress)
+  public static NSResponseCode signatureAndACLCheck(String guid, String field,
+          String accessorGuid, String signature,
+          String message, MetaDataTypeName access,
+          GNSApplicationInterface<String> gnsApp)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
     final long aclStartTime = System.currentTimeMillis();
@@ -88,17 +91,18 @@ public class NSAuthentication {
     } else {
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.
-      publicKey = lookupPublicKeyInAcl(guid, field, accessorGuid, access, gnsApp, lnsAddress);
+      publicKey = lookupPublicKeyInAcl(guid, field, accessorGuid, access, gnsApp);
       if (publicKey != null) {
         // If we found the public key in the lookupPublicKey call then our access control list
         // check is done.
         aclCheckPassed = true;
-        // otherwise handle the other cases (group guid in acl) with a last ditch lookup
+        // otherwise handle the case where the accessor is a group guid and we need to lookup the 
+        // public key from the guid record which might not be local
       } else {
         GuidInfo accessorGuidInfo;
-        if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp, lnsAddress)) != null) {
+        if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp)) != null) {
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            GNS.getLogger().info("================> Catchall lookup returned: " + accessorGuidInfo);
+            GNSConfig.getLogger().info("================> Catchall lookup returned: " + accessorGuidInfo);
           }
           publicKey = accessorGuidInfo.getPublicKey();
         }
@@ -108,11 +112,9 @@ public class NSAuthentication {
       // If we haven't found the publicKey of the accessorGuid yet it's not allowed access
       return NSResponseCode.BAD_ACCESSOR_ERROR;
     } else if (!aclCheckPassed) {
-      // Otherwise, in case we found the accessor public key by looking on another server
-      // but we still need to verify the ACL.
-      // Our last attempt to check the ACL - handles all the edge cases like group guid in acl
-      // FIXME: This ACL check Probably does more than it needs to.
-      aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp, lnsAddress);
+      // Otherwise, we need to find out if this accessorGuid is in a group guid that
+      // is in the acl of the field
+      aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp);
     }
     DelayProfiler.updateDelay("authACL", aclStartTime);
     long sigStartTime = System.currentTimeMillis();
@@ -120,20 +122,19 @@ public class NSAuthentication {
     if (signature == null) {
       if (!NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
+          GNSConfig.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         }
         return NSResponseCode.ACCESS_ERROR;
       }
     } else if (signature != null) {
       if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
+          GNSConfig.getLogger().info("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         }
         return NSResponseCode.SIGNATURE_ERROR;
-        //} else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, accessorGuid, gnsApp, lnsAddress)) {
       } else if (!aclCheckPassed) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
+          GNSConfig.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         }
         return NSResponseCode.ACCESS_ERROR;
       }
@@ -158,44 +159,45 @@ public class NSAuthentication {
    * @return the public key
    * @throws FailedDBOperationException
    */
-  public static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,
-          MetaDataTypeName access, GnsApplicationInterface<String> gnsApp, InetSocketAddress lnsAddress)
+
+  private static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,
+          MetaDataTypeName access, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     String publicKey;
-    Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp);
+    Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp.getDB());
     publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("================> " + access.toString() + " Lookup for " + field + " returned: " + publicKey + " public keys=" + publicKeys);
+      GNSConfig.getLogger().info("================> " + access.toString() + " Lookup for " + field + " returned: " + publicKey + " public keys=" + publicKeys);
     }
     if (publicKey == null) {
       // also catch all the keys that are stored in the +ALL+ record
-      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALL_FIELDS, gnsApp));
+      publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALL_FIELDS, gnsApp.getDB()));
       publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("================> " + access.toString() + " Lookup with +ALL+ returned: " + publicKey + " public keys=" + publicKeys);
+        GNSConfig.getLogger().info("================> " + access.toString() + " Lookup with +ALL+ returned: " + publicKey + " public keys=" + publicKeys);
       }
     }
     // See if public keys contains EVERYONE which means we need to go old school and lookup the guid 
     // because it's not going to have an entry in the ACL
     if (publicKey == null && publicKeys.contains(EVERYONE)) {
       GuidInfo accessorGuidInfo;
-      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp, lnsAddress)) != null) {
+      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp)) != null) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("================> " + access.toString() + " Lookup for EVERYONE returned: " + accessorGuidInfo);
+          GNSConfig.getLogger().info("================> " + access.toString() + " Lookup for EVERYONE returned: " + accessorGuidInfo);
         }
         publicKey = accessorGuidInfo.getPublicKey();
       }
     }
     if (publicKey == null) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("================> Public key not found: accessor=" + accessorGuid + " guid= " + guid
+        GNSConfig.getLogger().info("================> Public key not found: accessor=" + accessorGuid + " guid= " + guid
                 + " field= " + field + " public keys=" + publicKeys);
       }
     }
     return publicKey;
   }
 
-  private static String lookupPublicKeyFromGuid(String guid, GnsApplicationInterface<String> gnsApp)
+  private static String lookupPublicKeyFromGuid(String guid, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     String result;
     if ((result = publicKeyCache.getIfPresent(guid)) != null) {
@@ -204,7 +206,7 @@ public class NSAuthentication {
     GuidInfo guidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, gnsApp)) == null) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Name " + guid + " : BAD_GUID_ERROR");
+        GNSConfig.getLogger().info("Name " + guid + " : BAD_GUID_ERROR");
       }
       return null;
     } else {

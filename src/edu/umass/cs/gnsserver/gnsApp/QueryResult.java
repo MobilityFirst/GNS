@@ -17,12 +17,13 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
 
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.InternalField;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
+
 import java.io.Serializable;
 import java.util.Iterator;
 

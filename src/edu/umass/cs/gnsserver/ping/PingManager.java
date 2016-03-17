@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.ping;
 
 import edu.umass.cs.gnsserver.utils.SparseMatrix;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
@@ -125,11 +125,11 @@ public class PingManager<NodeIDType> implements Shutdownable {
       @Override
       public void run() {
         try {
-          GNS.getLogger().info("Waiting for a bit before we start pinging.");
+          GNSConfig.getLogger().info("Waiting for a bit before we start pinging.");
           Thread.sleep(INITIAL_DELAY);
           doPinging();
         } catch (InterruptedException e) {
-          GNS.getLogger().warning("Ping manager closing down.");
+          GNSConfig.getLogger().warning("Ping manager closing down.");
         }
       }
     };
@@ -153,27 +153,27 @@ public class PingManager<NodeIDType> implements Shutdownable {
         try {
           if (!id.equals(nodeId)) {
             if (debuggingEnabled) {
-              GNS.getLogger().info("Send from " + nodeId + " to " + id);
+              GNSConfig.getLogger().info("Send from " + nodeId + " to " + id);
             }
             long rtt = pingClient.sendPing(id);
             if (debuggingEnabled) {
-              GNS.getLogger().info("From " + nodeId + " to " + id + " RTT = " + rtt);
+              GNSConfig.getLogger().info("From " + nodeId + " to " + id + " RTT = " + rtt);
             }
             pingTable.put(id, windowSlot, rtt);
             // update the configuration file info with the current average... the reason we're here
             nodeConfig.updatePingLatency(id, nodeAverage(id));
           }
         } catch (PortUnreachableException e) {
-          GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
+          GNSConfig.getLogger().severe("Problem sending ping to node " + id + " : " + e);
         } catch (IOException e) {
-          GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
+          GNSConfig.getLogger().severe("Problem sending ping to node " + id + " : " + e);
         }
       }
 
       //long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
       //GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId + "\t");
       if (debuggingEnabled) {
-        GNS.getLogger().info("PINGER: \n" + tableToString(nodeId));
+        GNSConfig.getLogger().info("PINGER: \n" + tableToString(nodeId));
       }
       Thread.sleep(TIME_BETWEEN_PINGS);
     }
@@ -245,7 +245,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
 
   @Override
   public void shutdown() {
-    GNS.getLogger().warning("Ping shutting down .. ");
+    GNSConfig.getLogger().warning("Ping shutting down .. ");
     this.managerThread.interrupt();
     if (this.pingServer != null) {
       this.pingServer.shutdown();
@@ -253,7 +253,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
     if (this.pingClient != null) {
       this.pingClient.shutdown();
     }
-    GNS.getLogger().warning("Ping shutdown  complete.");
+    GNSConfig.getLogger().warning("Ping shutdown  complete.");
   }
 
   /**

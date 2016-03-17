@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**

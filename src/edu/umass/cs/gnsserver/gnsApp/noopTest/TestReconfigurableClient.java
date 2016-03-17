@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.noopTest;
+package edu.umass.cs.gnsserver.gnsapp.noopTest;
 
 import edu.umass.cs.reconfiguration.examples.*;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
@@ -328,7 +328,8 @@ public class TestReconfigurableClient {
                 new InetSocketAddress(InetAddress.getByName("localhost"),
                         3103)));
         while (client.exists
-                .containsKey(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+                .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODES
+                //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
                         .toString()))
 				;
         Thread.sleep(1000);
@@ -339,7 +340,8 @@ public class TestReconfigurableClient {
         client.sendRequest(new ReconfigureRCNodeConfig<Integer>(null, null,
                 deleted));
         while (client.exists
-                .containsKey(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+                .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODES
+                //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
                         .toString()));
         Thread.sleep(500);
       }

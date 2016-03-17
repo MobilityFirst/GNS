@@ -19,6 +19,15 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
+import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
+import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -33,12 +42,14 @@ import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 /**
  * In this example we create an account to write and read back some information in the GNS.
  *  <p>
+ * This client uses the UniversalTcpClientExtended class which contains more weird
+ * client methods than BasicUniversalTcpClient.
+ * 
  * Note: This example cheats during account guid creation in that it creates the account 
  * guid and then uses the known secret to verify the account instead of making the user 
  * verify the account manually deal with the private key.
@@ -47,19 +58,19 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
  */
 public class StandaloneTcpExample {
 
-  private static final String ACCOUNT_ALIAS = "gaozy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client;
   private static GuidEntry accountGuid;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
-    String addr = args[0];
-    InetSocketAddress address = new InetSocketAddress(addr, 24398);//ServerSelectDialog.selectServer();
-    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    
+    InetSocketAddress address = ServerSelectDialog.selectServer();
+    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
     try {
-      accountGuid = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
+      accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
     } catch (Exception e) {
       System.out.println("Exception during accountGuid creation: " + e);
       System.exit(1);
@@ -99,47 +110,5 @@ public class StandaloneTcpExample {
     
     System.exit(0);
   }
-
-  /**
-   * Creates and verifys an account GUID. Yes it cheats on verification.
-   *
-   * @param client
-   * @param name
-   * @return
-   * @throws Exception
-   */
-  private static GuidEntry lookupOrCreateAccountGuid(UniversalTcpClient client,
-          String name, String password) throws Exception {
-    GuidEntry guid;
-    guid = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), name);
-    if (guid == null || !guidExists(client, guid)) { // also handle case where it has been deleted from database
-      guid = client.accountGuidCreate(name, password);
-      client.accountGuidVerify(guid, createVerificationCode(name));
-      return guid;
-    } else {
-      return guid;
-    }
-  }
-
-  private static boolean guidExists(UniversalTcpClient client, GuidEntry guid)
-          throws IOException {
-    try {
-      client.lookupGuidRecord(guid.getGuid());
-    } catch (GnsException e) {
-      return false;
-    }
-    return true;
-  }
-
-  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
-  // this is so we can mimic the verification code the server is generting
-  // AKA we're cheating... if the SECRET changes on the server side 
-  // you'll need to change it here as well
-  private static final String SECRET = "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
-          + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
-
-  private static String createVerificationCode(String name) {
-    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
-  }
-
+  
 }

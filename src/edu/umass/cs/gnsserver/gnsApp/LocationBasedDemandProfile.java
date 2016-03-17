@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
 import com.google.common.net.InetAddresses;
 
@@ -170,7 +170,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   /**
    * Create an empty LocationBasedDemandProfile instance for a name. 
    * @param name
-   * @return 
+   * @return New demand profile for {@code name}.
    */
   public static LocationBasedDemandProfile createDemandProfile(String name) {
     return new LocationBasedDemandProfile(name);
@@ -224,20 +224,18 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return closest;
   }
 
+  // TODO: arun: should use better IP-to-geo techniques here.
   private int distanceBetween(InetAddress one, InetAddress two) {
-    int result;
-    try {
-      // Probably a stupid matcher but it gets close.
-      result = InetAddresses.coerceToInteger(one) ^ InetAddresses.coerceToInteger(two);
-    } catch (Exception e) {
-      result = Integer.MAX_VALUE;
-    }
-    //if (debuggingEnabled) {
-    //LOG.finest("distance " + one + " - " + two + " = " + result);
-    //}
-
-    return result;
-  }
+		int result;
+		try {
+			// Probably a stupid matcher but it gets close.
+			result = InetAddresses.coerceToInteger(one)
+					^ InetAddresses.coerceToInteger(two);
+		} catch (Exception e) {
+			result = Integer.MAX_VALUE;
+		}
+		return result;
+	}
 
   @Override
   public void reset() {
@@ -325,9 +323,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
             nodeConfig.getActiveIPs());
   }
 
-  //
   // Routines below for computing new actives list
-  //
   /**
    * Returns a list of new active replicas based on read / write load.
    * Returns InetSocketAddresses based on the number needed (which is calculated in computeNumberOfReplicas

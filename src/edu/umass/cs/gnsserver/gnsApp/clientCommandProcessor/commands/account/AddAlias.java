@@ -14,25 +14,26 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.BAD_RESPONSE;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,17 +72,17 @@ public class AddAlias extends GnsCommand {
       String name = json.getString(NAME);
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+//      GuidInfo guidInfo;
+//      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+//      }
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
         if (accountInfo == null) {
           return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
         }
         if (!accountInfo.isVerified()) {
           return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-        } else if (accountInfo.getAliases().size() > GNS.MAXALIASES) {
+        } else if (accountInfo.getAliases().size() > GNSConfig.MAXALIASES) {
           return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_ALIASES);
         } else {
           return AccountAccess.addAlias(accountInfo, name, guid, signature, message, handler);

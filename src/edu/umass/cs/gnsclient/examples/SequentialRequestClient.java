@@ -20,7 +20,6 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
@@ -137,7 +136,7 @@ public class SequentialRequestClient {
 	          throws IOException {
 	    try {
 	      client.lookupGuidRecord(guid.getGuid());
-	    } catch (GnsException e) {
+	    } catch (Exception e) {
 	      return false;
 	    }
 	    return true;

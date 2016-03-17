@@ -22,6 +22,8 @@ package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import edu.umass.cs.utils.Util;
+
 /**
  * The NodeInfo class is used to represent nodes in a LNSNodeConfig.
  *
@@ -142,7 +144,8 @@ public class LNSNodeInfo {
     // Lookup IP address on first access.
     if (ipAddress == null) {
       try {
-        ipAddress = InetAddress.getByName(ipAddressString);
+    	  // arun
+        ipAddress = Util.getInetAddressFromString(ipAddressString);//InetAddress.getByName(ipAddressString);
       } catch (UnknownHostException e) {
         e.printStackTrace();
       }

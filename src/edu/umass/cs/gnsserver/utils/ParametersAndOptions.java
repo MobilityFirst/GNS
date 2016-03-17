@@ -19,7 +19,10 @@
  */
 package edu.umass.cs.gnsserver.utils;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.utils.Config;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,6 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.Properties;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -71,9 +75,10 @@ public class ParametersAndOptions {
    * @return hash map with KEY = parameter names, VALUE = values of parameters in String form
    * @throws IOException
    */
-  public static HashMap<String, String> getParametersAsHashMap(String className, Options commandLineOptions, 
+  public static HashMap<String, String> getParametersAsHashMap(String className, Options commandLineOptions,
           String... args) throws IOException {
     CommandLine parser = null;
+
     try {
       parser = new GnuParser().parse(commandLineOptions, args);
     } catch (ParseException e) {
@@ -130,7 +135,7 @@ public class ParametersAndOptions {
   /**
    * Returns true if the option is true. Looks
    * for strings like true, and not false.
-   * 
+   *
    * @param key
    * @param options
    * @return true if the option is true
@@ -146,7 +151,7 @@ public class ParametersAndOptions {
 
   /**
    * Prints the usage string.
-   * 
+   *
    * @param className
    * @param commandLineOptions
    */
@@ -156,16 +161,16 @@ public class ParametersAndOptions {
     helpFormatter.printHelp("java -cp GNS.jar " + className, HELP_HEADER, commandLineOptions,
             HELP_FOOTER);
   }
-  
+
   /**
    * Shows all the options on the console.
-   * 
+   *
    * @param options
    */
   public static void printOptions(Map<String, String> options) {
     StringBuilder result = new StringBuilder();
     TreeMap<String, String> tree = new TreeMap<String, String>(options);
-    for (Entry<String,String> entry : tree.entrySet()) {
+    for (Entry<String, String> entry : tree.entrySet()) {
       result.append(entry.getKey());
       result.append(" => ");
       result.append(entry.getValue());
@@ -176,7 +181,7 @@ public class ParametersAndOptions {
 
   /**
    * Returns the complete set of options.
-   * 
+   *
    * @return the options
    */
   public static Options getAllOptions() {
@@ -193,12 +198,12 @@ public class ParametersAndOptions {
 
   /**
    * The main routine. For testing.
-   * 
+   *
    * @param args
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
-    args = new String[]{"-configFile", GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/ns.properties"};
+    args = new String[]{"-configFile", GNSConfig.WESTY_GNS_DIR_PATH + "/conf/ec2_small/ns.properties"};
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(ParametersAndOptions.class.getCanonicalName(),
                     getAllOptions(), args);

@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gnsserver.httpserver.Defs;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -79,7 +79,7 @@ public class GEOLocator {
         return new Point2D.Double(Double.parseDouble(json.getString("geoplugin_longitude")), Double.parseDouble(json.getString("geoplugin_latitude")));
       }
     } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to parse JSON: " + e.getMessage());
+      GNSConfig.getLogger().severe("Unable to parse JSON: " + e.getMessage());
     }
     return null;
   }
@@ -111,7 +111,7 @@ public class GEOLocator {
         return new Point2D.Double(location.getDouble("lng"), location.getDouble("lat"));
       }
     } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to parse JSON: " + e.getMessage());
+      GNSConfig.getLogger().severe("Unable to parse JSON: " + e.getMessage());
     }
     return null;
   }
@@ -142,9 +142,9 @@ public class GEOLocator {
           return new JSONObject(sb.toString());
 
         } catch (java.net.SocketTimeoutException e) {
-          GNS.getLogger().info("Get Response timed out. Trying " + cnt + " more times.");
+          GNSConfig.getLogger().info("Get Response timed out. Trying " + cnt + " more times.");
         } catch (JSONException e) {
-          GNS.getLogger().severe("Unable to parse JSON: " + e.getMessage());
+          GNSConfig.getLogger().severe("Unable to parse JSON: " + e.getMessage());
           return null;
         }
       } while (cnt-- > 0);

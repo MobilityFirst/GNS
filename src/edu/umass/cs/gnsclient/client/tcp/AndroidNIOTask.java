@@ -27,10 +27,11 @@ import org.json.JSONObject;
 
 
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+
+
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.nio.NIOTransport;
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.JSONMessenger;
 
@@ -50,14 +51,14 @@ import android.util.Log;
 public class AndroidNIOTask extends AsyncTask<Object, Void, String>
 {
   // Needed to pass back to caller.
-  private int id;
+  private long id;
 
-  public int getId() 
+  public long getId() 
   {
     return id;
   }
 
-  public void setId(int id) 
+  public void setId(long id) 
   {
     this.id = id;
   }
@@ -96,7 +97,7 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
     // now we wait until the correct packet comes back
     try
     {
-      GNSClient.getLogger().fine("Waiting for query id: " + id);
+      GNSClientConfig.getLogger().fine("Waiting for query id: " + id);
       synchronized (monitor)
       {
         long startTime = System.currentTimeMillis();
@@ -106,22 +107,22 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
         }
         if (System.currentTimeMillis() - startTime >= readTimeout)
         {
-          GNSClient.getLogger().fine("TIMEOUT (" + id + ") : " + command.toString());
+          GNSClientConfig.getLogger().fine("TIMEOUT (" + id + ") : " + command.toString());
           return GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.TIMEOUT;
         }
       }
-      GNSClient.getLogger().fine("Query id response received: " + id);
+      GNSClientConfig.getLogger().fine("Query id response received: " + id);
     }
     catch (InterruptedException x)
     {
-      GNSClient.getLogger().severe("Wait for return packet was interrupted " + x);
+      GNSClientConfig.getLogger().severe("Wait for return packet was interrupted " + x);
     }
     CommandResult result = resultMap.get(id);
     resultMap.remove(id);
     long sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
     long rtt = result.getReceivedTime() - sentTime;
-    GNSClient.getLogger().info(
+    GNSClientConfig.getLogger().info(
         "Command name: " + command.optString(GnsProtocol.COMMANDNAME, "Unknown") + " "
             + command.optString(GnsProtocol.GUID, "") + " " + command.optString(GnsProtocol.NAME, "") + " id: " + id
             + " RTT: " + rtt + "ms" + " LNS RTT: " + result.getCCPRoundTripTime() + "ms" + " NS: "

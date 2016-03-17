@@ -14,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 /**
  * @author gaozy
@@ -39,7 +38,7 @@ public class CapacityTestChainClient {
 	     * @throws Exception
 	     */
 	    public static void main(String[] args) throws IOException,
-	    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+	    InvalidKeySpecException, NoSuchAlgorithmException,
 	    InvalidKeyException, SignatureException, Exception {
 	    	String address = args[0];
 			int node = Integer.parseInt(args[1]); 			

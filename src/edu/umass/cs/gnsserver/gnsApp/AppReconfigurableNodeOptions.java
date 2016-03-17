@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
@@ -25,6 +25,16 @@ import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
+import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.Logging;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.Reconfigurator;
+import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
+import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
+import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
 
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
@@ -35,7 +45,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.Logging;
 import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
@@ -76,14 +86,14 @@ public class AppReconfigurableNodeOptions {
   /**
    * Fixed timeout after which a query is retransmitted.
    */
-  public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
+  public static int queryTimeout = GNSConfig.DEFAULT_QUERY_TIMEOUT;
 
   //  Abhigyan: parameters related to retransmissions.
   //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
   /**
    * Maximum time a local name server waits for a response from name server query is logged as failed after this.
    */
-  public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
+  public static int maxQueryWaitTime = GNSConfig.DEFAULT_MAX_QUERY_WAIT_TIME;
 
   /**
    * If this is true sending of email by the verification mechanism is disabled.
@@ -113,6 +123,8 @@ public class AppReconfigurableNodeOptions {
    * If this is true SSL will not be used for communications between servers.
    */
   public static boolean disableSSL = false;
+  
+  public static boolean enableActiveCode = false;
   /**
    * Number of active code worker.
    */
@@ -209,11 +221,11 @@ public class AppReconfigurableNodeOptions {
    * DISABLE_SSL
    */
   public static final String DISABLE_SSL = "disableSSL";
-   /**
+  /**
    * DISABLE_EMAIL_VERIFICATION
    */
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
-  
+
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
   
   private static final String ACTIVE_CODE_SPARE_WORKER = "activeCodeSpareWorker";
@@ -221,7 +233,9 @@ public class AppReconfigurableNodeOptions {
   private static final String ACTIVE_CODE_ENABLE_TIMEOUT = "activeCodeEnableTimeout";
   
   private static final String ACTIVE_CODE_ENABLE_DEBUGGING = "activeCodeEnableDebugging";
-  
+
+  private static final String ENABLE_ACTIVE_CODE = "enableActiveCode";
+
   /**
    * Returns all the options.
    *
@@ -298,27 +312,54 @@ public class AppReconfigurableNodeOptions {
     }
 
     // make sure this has been initialized
-    GNS.getLogger();
+    GNSConfig.getLogger();
+		if (!allValues.containsKey(DISABLE_SSL))
+			disableSSL = ReconfigurationConfig.getClientSSLMode()==SSL_MODES.CLEAR;
+		else
+			disableSSL = true;    
+    
 
-    if (!allValues.containsKey(DISABLE_SSL)) {
-      disableSSL = false;
-      ReconfigurationConfig.setClientPortOffset(100);
-      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
-      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
-      System.out.println("NS: SSL is enabled");
-    } else {
-      disableSSL = true;
-      ReconfigurationConfig.setClientPortOffset(0);
-      ReconfigurationConfig.setClientSSLMode(CLEAR);
-      ReconfigurationConfig.setServerSSLMode(CLEAR);
-      System.out.println("NS: SSL is disabled");
+//    if (!allValues.containsKey(DISABLE_SSL)) {
+//      disableSSL = false;
+////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
+////              100);
+//      // old
+//      ReconfigurationConfig.setClientPortOffset(100);
+//
+////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH);
+//      // old
+//      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
+//
+////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH);
+//      // old
+//      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
+//
+//      System.out.println("NS: SSL is enabled");
+//    } else {
+//      disableSSL = true;
+////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
+////              0);
+//      // old
+//      ReconfigurationConfig.setClientPortOffset(0);
+//
+////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
+//      // old
+//      ReconfigurationConfig.setClientSSLMode(CLEAR);
+//
+////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
+////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
+//      // old
+//      ReconfigurationConfig.setServerSSLMode(CLEAR);
+//      System.out.println("NS: SSL is disabled");
+//    }
+
+    if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
+      System.out.println("******** Email Verification is OFF *********");
+      GNSConfig.enableEmailAccountVerification = false;
     }
-    
-     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
-       System.out.println("******** Email Verification is OFF *********");
-       GNS.enableEmailAccountVerification = false;
-     }
-    
 
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       debuggingEnabled = true;
@@ -347,7 +388,11 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG_PAXOS, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN PAXOS *********");
       // For backwards compatibility until Config goes away
-      PaxosManager.getLogger().setLevel(Level.INFO);
+      ConsoleHandler handler = Logging.getConsoleHandler();
+      handler.setLevel(Level.FINEST);
+      Logger log = PaxosManager.getLogger();
+      log.addHandler(handler);
+      log.setLevel(Level.FINER);
     } else {
       PaxosManager.getLogger().setLevel(Level.WARNING);
     }
@@ -359,7 +404,8 @@ public class AppReconfigurableNodeOptions {
       handler.setLevel(Level.FINEST);
       Logger log = NIOTransport.getLogger();
       log.addHandler(handler);
-      log.setLevel(Level.INFO);
+      log.setLevel(Level.FINER);
+      log.setUseParentHandlers(false);
     } else {
       NIOTransport.getLogger().setLevel(Level.WARNING);
     }
@@ -377,36 +423,36 @@ public class AppReconfigurableNodeOptions {
     }
 
     if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
-      GNS.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
+      GNSConfig.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
 
     }
     if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
       String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
-      GNS.consoleOutputLevel = levelString;
+      GNSConfig.consoleOutputLevel = levelString;
     }
     if (allValues.containsKey(STANDALONE)) {
       standAloneApp = true;
     }
 
-    boolean demandProfileSet = false;
-    if (allValues.containsKey(DEMAND_PROFILE_CLASS)) {
-      String className = allValues.get(DEMAND_PROFILE_CLASS);
-      try {
-        Class klass = Class.forName(className);
-        ReconfigurationConfig.setDemandProfile(klass);
-        demandProfileSet = true;
-      } catch (ClassNotFoundException e) {
-        System.out.println("Demand profile class " + className + " not found");
-      }
-    }
-    if (!demandProfileSet) {
-      // FIXME: Make this the value of DEFAULT_DEMAND_PROFILE_TYPE?
-      ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
-    }
-    System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
-
-    ReconfigurationConfig.setReconfigureInPlace(false);
-    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
+//    boolean demandProfileSet = false;
+//    if (allValues.containsKey(DEMAND_PROFILE_CLASS)) {
+//      String className = allValues.get(DEMAND_PROFILE_CLASS);
+//      try {
+//        Class klass = Class.forName(className);
+//        ReconfigurationConfig.setDemandProfile(klass);
+//        demandProfileSet = true;
+//      } catch (ClassNotFoundException e) {
+//        System.out.println("Demand profile class " + className + " not found");
+//      }
+//    }
+//    if (!demandProfileSet) {
+//      // FIXME: Make this the value of DEFAULT_DEMAND_PROFILE_TYPE?
+//      ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
+//    }
+//    System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
+//
+//    ReconfigurationConfig.setReconfigureInPlace(false);
+//    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
 
     // CCP options
     if (allValues.containsKey(DNS_GNS_ONLY)) {
@@ -418,9 +464,9 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
     }
-    
+
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
-    	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
+      activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
     
     if (allValues.containsKey(ACTIVE_CODE_SPARE_WORKER)) {
@@ -434,6 +480,7 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(ACTIVE_CODE_ENABLE_DEBUGGING)) {
     	activeCodeEnableDebugging = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_DEBUGGING));
     }
+
   }
 
 }

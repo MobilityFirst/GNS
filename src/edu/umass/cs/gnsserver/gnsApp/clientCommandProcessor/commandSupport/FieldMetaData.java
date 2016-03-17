@@ -17,13 +17,17 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
-import edu.umass.cs.gnsserver.gnsApp.QueryResult;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess.GROUPS;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.QueryResult;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.utils.ResultValue;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,9 +64,13 @@ public class FieldMetaData {
    */
   public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
-            writer, signature, message);
+    return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
+    
+//    return handler.getIntercessor().sendUpdateRecord(guid, 
+//            makeFieldMetaDataKey(type, key), value, null, -1,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
+//            writer, signature, message);
   }
 
   /**
@@ -77,15 +85,25 @@ public class FieldMetaData {
    * @param handler
    * @return a set of strings
    */
-  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature,
+  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, 
+          String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
-            ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new HashSet<>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());
-    } else {
+    String field = makeFieldMetaDataKey(type, key);
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, 
+            reader, signature, message, handler.getApp());
+    if (errorCode.isAnError()) {
       return new HashSet<>();
     }
+    ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field,
+            handler.getApp().getDB());
+    return new HashSet<>(result.toStringSet());
+//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
+//            ColumnFieldType.LIST_STRING);
+//    if (!result.isError()) {
+//      return new HashSet<>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());
+//    } else {
+//      return new HashSet<>();
+//    }
   }
 
   /**
@@ -97,8 +115,12 @@ public class FieldMetaData {
    * @param handler
    */
   public static void add(MetaDataTypeName type, String guid, String key, String value, ClientRequestHandlerInterface handler) {
-    handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, makeFieldMetaDataKey(type, key), value, null,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+    FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, handler);
+
+//    handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid,
+//            makeFieldMetaDataKey(type, key), value, null,
+//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }
 
   /**
@@ -115,8 +137,11 @@ public class FieldMetaData {
    */
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
+     return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
+     
+//    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+//            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
 }

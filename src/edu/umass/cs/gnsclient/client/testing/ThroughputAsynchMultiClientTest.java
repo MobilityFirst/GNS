@@ -21,16 +21,25 @@ package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
-import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_ACCOUNT_RECORD;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.tcp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.Format;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
+import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_RANDOM_GUIDS;
+import static edu.umass.cs.gnscommon.GnsProtocol.READ;
+import static edu.umass.cs.gnscommon.GnsProtocol.READER;
+import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
+import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
+import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
+import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.utils.DelayProfiler;
+
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -41,6 +50,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -62,7 +72,7 @@ import org.json.JSONObject;
  *
  * It is run on the command line like this:
  *
- * <code>java -cp GNSClient.jar edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest</code>
+ * <code>./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest</code>
  *
  * Using the above incantation with an argument of -help will show the help text listing all the arguments.
  *
@@ -84,7 +94,7 @@ import org.json.JSONObject;
  *
  * Here's a full example command:
  *
- * java -cp dist/GNSClient.jar edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest -host 10.0.1.50 -port 24403 -rate 1000 -inc 500 -clients 10 -requests 20
+ * ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest -host 10.0.1.50 -port 24403 -rate 1000 -inc 500 -clients 10 -requests 20
  *
  * This means to start at 1000 requests per second and increment the rate by 500 every 5 seconds
  * You can also specific a fixed rate using just the -rate option
@@ -106,40 +116,86 @@ import org.json.JSONObject;
  */
 public class ThroughputAsynchMultiClientTest {
 
+  /**
+   * How long to collect samples for before reporting results.
+   */
   private static final int CYCLE_TIME = 10000;
-  private static String accountAlias = "boo@hoo.com";
+  private static final String DEFAULT_FIELD = "environment";
+  private static final String DEFAULT_VALUE = "8675309";
+  /**
+   * The default number of client instances to use.
+   */
   private static final int DEFAULT_NUMBER_OF_CLIENTS = 10;
+  /**
+   * The default number of requests each client sends each time.
+   */
   private static final int DEFAULT_NUMBER_REQUESTS_PER_CLIENT = 10;
+  /**
+   * The default alias to use. Overridden by the "alias" command line arg.
+   */
+  private static String accountAlias = "boo@hoo.com";
+  /**
+   * The number of clients. Set the "clients" command line arg.
+   */
   private static int numberOfClients;
+  /**
+   * The number of guids. Set the "guids" command line arg.
+   */
   private static int numberOfGuids;
+  /**
+   * Stores the clients we are using.
+   */
   private static BasicUniversalTcpClient clients[];
+  /**
+   * The account guid we are using.
+   */
   private static GuidEntry masterGuid;
+  /**
+   * Stores the guids we are updating fields in.
+   */
   private static String subGuids[];
-  private static boolean read = true;
+  /**
+   * If this is true we are doing reads, otherwise doing updates.
+   */
+  private static boolean doingReads = true;
+  /**
+   * The alias of the guid we will be updating. Null means to use the account guid.
+   */
   private static String updateAlias = null;
+  /**
+   * The field in the guid we will be updating. Defaults to "environment".;
+   */
   private static String updateField = null;
+  /**
+   * The value we will be using for updating. Defaults to "8675309".;
+   */
   private static String updateValue = null;
 
-  // expected max resolution of the millisecond clock
-  private static long minSleepInterval = 10;
+  /**
+   * Expected max resolution of the millisecond clock.
+   */
+  private static final long minSleepInterval = 10;
 
-  private static CommandPacket commmandPackets[];
+  /**
+   * Our command packet cache. We need a separate command packet for each client for each guid.
+   */
+  private static CommandPacket commmandPackets[][];
 
   private static ExecutorService execPool;
 
-  Set<Integer> chosen;
-
-  private static boolean disableSSL = true;
-
-  //private static final Logger log = Logger.getLogger(ThroughputAsynchMultiClientTest.class.getName());
   /**
-   * Creates a ThroughputStress with the given arguments.
+   * Keeps track of the set of guids chosen each cycle.
+   */
+  private Set<Integer> chosen;
+
+  /**
+   * Creates a ThroughputStress instance with the given arguments.
    *
-   * @param alias
+   * @param alias - the alias to use to create the account guid. null uses "boo@hoo.com".
    * @param host
    * @param port
    */
-  public ThroughputAsynchMultiClientTest(String alias, String host, String port) {
+  public ThroughputAsynchMultiClientTest(String alias, String host, String port, boolean disableSSL) {
     InetSocketAddress address;
     if (alias != null) {
       accountAlias = alias;
@@ -152,7 +208,7 @@ public class ThroughputAsynchMultiClientTest {
     }
     clients = new BasicUniversalTcpClient[numberOfClients];
     subGuids = new String[numberOfGuids];
-    commmandPackets = new CommandPacket[numberOfGuids];
+    commmandPackets = new CommandPacket[numberOfGuids][numberOfClients];
     execPool = Executors.newFixedThreadPool(numberOfClients);
     chosen = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
     for (int i = 0; i < numberOfClients; i++) {
@@ -165,10 +221,6 @@ public class ThroughputAsynchMultiClientTest {
       e.printStackTrace();
       System.exit(1);
     }
-    for (int i = 0; i < numberOfClients; i++) {
-      clients[i].setEnableInstrumentation(true); // important
-    }
-
   }
 
   /**
@@ -188,14 +240,15 @@ public class ThroughputAsynchMultiClientTest {
       String alias = parser.getOptionValue("alias");
       String host = parser.getOptionValue("host");
       String port = parser.getOptionValue("port");
+      boolean disableSSL = parser.hasOption("disableSSL");
 
       if (parser.hasOption("op")
               && ("update".equals(parser.getOptionValue("op"))
               || "write".equals(parser.getOptionValue("op")))) {
-        read = false;
+        doingReads = false;
         System.out.println("Testing updates");
       } else {
-        read = true;
+        doingReads = true;
         System.out.println("Testing reads");
       }
 
@@ -208,22 +261,24 @@ public class ThroughputAsynchMultiClientTest {
       numberOfGuids = (parser.hasOption("guids")) ? Integer.parseInt(parser.getOptionValue("guids")) : 1;
 
       updateAlias = parser.hasOption("updateAlias") ? parser.getOptionValue("updateAlias") : null;
-      updateField = parser.hasOption("updateField") ? parser.getOptionValue("updateField") : "environment";
-      updateValue = parser.hasOption("updateValue") ? parser.getOptionValue("updateValue") : "8675309";
+      updateField = parser.hasOption("updateField") ? parser.getOptionValue("updateField") : DEFAULT_FIELD;
+      updateValue = parser.hasOption("updateValue") ? parser.getOptionValue("updateValue") : DEFAULT_VALUE;
 
-      ThroughputAsynchMultiClientTest test = new ThroughputAsynchMultiClientTest(alias, host, port);
+      ThroughputAsynchMultiClientTest test = new ThroughputAsynchMultiClientTest(alias, host, port, disableSSL);
 
-      test.createSubGuidsAndWriteValue();
+      test.createSubGuidsAndWriteValue(parser.hasOption("useExistingGuids"));
 
       // prebuild a packet for each client
+      for (int clientIndex = 0; clientIndex < numberOfClients; clientIndex++) {
       for (int i = 0; i < numberOfGuids; i++) {
-        if (read) {
-          commmandPackets[i] = clients[0].createTestReadCommand(subGuids[i], updateField, masterGuid);
+        if (doingReads) {
+          commmandPackets[i][clientIndex] = createReadCommandPacket(clients[clientIndex], subGuids[i], updateField, masterGuid);
         } else {
           JSONObject json = new JSONObject();
           json.put(updateField, updateValue);
-          commmandPackets[i] = clients[0].createTestUpdateCommand(subGuids[i], json, masterGuid);
+          commmandPackets[i][clientIndex] = createUpdateCommandPacket(clients[clientIndex], subGuids[i], json, masterGuid);
         }
+      }
       }
       if (parser.hasOption("inc")) {
         test.ramp(rate, increment, requestsPerClient);
@@ -254,37 +309,48 @@ public class ThroughputAsynchMultiClientTest {
    * guid using that alias and use that for all clients. Otherwise we
    * make a bunch of random guids.
    */
-  public void createSubGuidsAndWriteValue() {
+  public void createSubGuidsAndWriteValue(boolean useExistingGuids) {
     try {
+      // If updateAlias is not null that means we want to create a single alias 
+      // to do all the operations from
       if (updateAlias != null) {
-        // if it was specified find or create the guid
+        // if it was specified find or create the guid for updateAlias
         subGuids[0] = GuidUtils.lookupOrCreateGuid(clients[0], masterGuid, updateAlias, true).getGuid();
-        //subGuidEntries[0] = clients[0].guidCreate(masterGuid, updateAlias);
-        //System.out.println("Created: " + subGuidEntries[0]);
       }
-      JSONArray randomGuids = null;
+      JSONArray existingGuids = null;
+      GuidEntry createdGuids[] = new GuidEntry[numberOfGuids];
+      // If updateAlias is null that means we want to use
+      // a bunch of aliases that are subalises to the masterGuid
       if (updateAlias == null) {
+        if (!useExistingGuids) {
+          // Create the the guids set up below.
+          for (int i = 0; i < numberOfGuids; i++) {
+            createdGuids[i] = clients[i].guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
+            System.out.println("Created: " + createdGuids[i].getEntityName());
+          }
+        }
         try {
-          JSONObject command = clients[0].createCommand(LOOKUP_ACCOUNT_RECORD, GUID,
+          JSONObject command = clients[0].createCommand(LOOKUP_RANDOM_GUIDS, GUID,
                   masterGuid.getGuid(), GUIDCNT, numberOfGuids);
-          String result = clients[0].checkResponse(command, clients[0].sendCommand(command));
+          String result = clients[0].checkResponse(command, clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
-            randomGuids = new JSONArray(result);
+            existingGuids = new JSONArray(result);
           } else {
             System.out.println("Problem reading random guids " + result);
             System.exit(-1);
           }
-        } catch (JSONException | IOException | GnsException e) {
+        } catch (JSONException | IOException | GnsClientException e) {
           System.out.println("Problem reading random guids " + e);
           System.exit(-1);
         }
       }
-      if (randomGuids.length() == 0) {
+      // Ensure that we have enough guids
+      if (existingGuids.length() == 0) {
         System.out.println("No guids found in account guid " + masterGuid.getEntityName() + "; exiting.");
         System.exit(-1);
       }
-      if (randomGuids.length() < numberOfGuids) {
-        System.out.println(randomGuids.length() + " guids found in account guid " + masterGuid.getEntityName()
+      if (existingGuids.length() < numberOfGuids) {
+        System.out.println(existingGuids.length() + " guids found in account guid " + masterGuid.getEntityName()
                 + " which is not enough"
                 + "; exiting.");
         System.exit(-1);
@@ -296,41 +362,30 @@ public class ThroughputAsynchMultiClientTest {
           // if it was specified copy the single one
           subGuids[i] = subGuids[0];
         } else {
-          // otherwise make a new random one
-          subGuids[i] = randomGuids.getString(i);
+          // otherwise use the ones we discovered or created above
+          subGuids[i] = existingGuids.getString(i);
           //subGuids[i] = clients[i].guidCreate(masterGuid, "subGuid" + Utils.randomString(6)).getGuid();
           //System.out.println("Using: " + subGuids[i]);
         }
       }
-//      for (int i = 0; i < numberOfClients; i++) {
-//        if (updateAlias != null) {
-//          // if it was specified copy the single one
-//          subGuidEntries[i] = subGuidEntries[0];
-//        } else {
-//          // otherwise make a new random one
-//          subGuidEntries[i] = clients[i].guidCreate(masterGuid, "subGuid" + Utils.randomString(6));
-//          System.out.println("Created: " + subGuidEntries[i]);
-//        }
-//      }
     } catch (Exception e) {
       System.out.println("Exception creating the subguid: " + e);
       e.printStackTrace();
       System.exit(1);
     }
 
-    if (read) {
+    if (doingReads) {
       try {
         // if the user specified one guid we just need to update that one
         if (updateAlias != null) {
           clients[0].fieldUpdate(subGuids[0], updateField, updateValue, masterGuid);
-//        } else {
-//          // otherwise write the value into all guids
-//          System.out.println("Initializing fields.");
-//          for (int i = 0; i < numberOfClients; i++) {
-//
-//            clients[i].fieldUpdate(subGuids[i], updateField, updateValue, masterGuid);
-//            System.out.print(".");
-//          }
+        } else {
+          // otherwise write the value into all guids
+          System.out.println("Initializing fields.");
+          for (int i = 0; i < numberOfGuids; i++) {
+            clients[i].fieldUpdate(subGuids[i], updateField, updateValue, masterGuid);
+            System.out.print(".");
+          }
         }
       } catch (Exception e) {
         System.out.println("Exception writing the initial value: " + e);
@@ -386,9 +441,7 @@ public class ThroughputAsynchMultiClientTest {
         try {
           // send a bunch
           for (int i = 0; i < numberOfClients; i++) {
-            //for (int j = 0; j < requestsPerClient; j++) {
             execPool.submit(new WorkerTask(i, requestsPerClient));
-            //clients[i].sendAsynchCommand(readPacket);
             numberSent += requestsPerClient;
             if (numberSent % 1000 == 0) {
               System.out.print(".");
@@ -414,23 +467,48 @@ public class ThroughputAsynchMultiClientTest {
       int totalErrors = 0;
       double latencySum = 0;
       for (int i = 0; i < numberOfClients; i++) {
-        outstandingPacketCount += clients[i].outstandingPacketCount();
-        totalErrors += clients[i].getTotalErrors();
+        outstandingPacketCount += clients[i].outstandingAsynchPacketCount();
+        totalErrors += clients[i].getTotalAsynchErrors();
         latencySum += clients[i].getMovingAvgLatency();
       }
-      System.out.println("\n" + Format.formatDateTimeOnly(new Date()) + " Actual rate/s: " + numberSent / (elapsedTimeInMilleSeconds / 1000.0)
-              + " Average latency: " + Format.formatTime(latencySum / numberOfClients)
+      System.out.println("\n" + Format.formatDateTimeOnly(new Date())
+              + " Actual rate/s: " + numberSent / (elapsedTimeInMilleSeconds / 1000.0)
+              + " Average latency: " + Format.formatFloat(latencySum / numberOfClients)
               + " Outstanding packets: " + outstandingPacketCount
               + " Errors: " + totalErrors
               + (sleepResolutionIssues > 0 ? " Sleep Issues: " + sleepResolutionIssues : "")
-      //+ "\n" + DelayProfiler.getStats()
+              + "\n" + DelayProfiler.getStats()
       );
       if (outstandingPacketCount > 200000) {
         System.out.println("Backing off before networking freezes.");
         break;
-        //ratePerSec = startRate;
       }
     }
+  }
+
+  //
+  // Stuff below here is mostly currently for testing only
+  //
+  private static CommandPacket createReadCommandPacket(BasicUniversalTcpClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
+    JSONObject command;
+    if (reader == null) {
+      command = client.createCommand(READ, GUID, targetGuid, FIELD, field);
+    } else {
+      command = client.createAndSignCommand(reader.getPrivateKey(), READ, 
+              GUID, targetGuid, FIELD, field,
+              READER, reader.getGuid());
+    }
+    //int id = client.generateNextRequestID();
+    return new CommandPacket(-1, command);
+  }
+
+  private static CommandPacket createUpdateCommandPacket(BasicUniversalTcpClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
+    JSONObject command;
+    command = client.createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
+            GUID, targetGuid, USER_JSON, json.toString(), 
+            WRITER, writer.getGuid());
+    //int id = client.generateNextRequestID();
+    return new CommandPacket(-1, command);
   }
 
   public class WorkerTask implements Runnable {
@@ -449,15 +527,17 @@ public class ThroughputAsynchMultiClientTest {
       try {
         for (int j = 0; j < requests; j++) {
           int index;
-          if (chosen.size() >= numberOfGuids) {
-            chosen.clear();
-            System.out.print(" +++ ");
-          }
           do {
             index = rand.nextInt(numberOfGuids);
           } while (chosen.contains(index));
           chosen.add(index);
-          clients[clientNumber].sendAsynchCommand(commmandPackets[index]);
+          // important to set the request id to something unique for the client
+          commmandPackets[index][clientNumber].setClientRequestId(clients[clientNumber].generateNextRequestID());
+          clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index][clientNumber]);
+          // clear this out if we have used all the guids
+          if (chosen.size() == numberOfGuids) {
+            chosen.clear();
+          }
         }
       } catch (Exception e) {
         System.out.println("Problem running field read: " + e);
@@ -471,59 +551,64 @@ public class ThroughputAsynchMultiClientTest {
   private static Options commandLineOptions;
 
   private static CommandLine initializeOptions(String[] args) throws ParseException {
-    Option help = new Option("help", "Prints Usage");
-    Option alias = OptionBuilder.withArgName("alias").hasArg()
+    Option helpOption = new Option("help", "Prints Usage");
+    Option aliasOption = OptionBuilder.withArgName("alias").hasArg()
             .withDescription("the alias (HRN) to use")
             .create("alias");
-    Option host = OptionBuilder.withArgName("host").hasArg()
+    Option hostOption = OptionBuilder.withArgName("host").hasArg()
             .withDescription("the host")
             .create("host");
-    Option port = OptionBuilder.withArgName("port").hasArg()
+    Option portOption = OptionBuilder.withArgName("port").hasArg()
             .withDescription("the port")
             .create("port");
-    Option operation = OptionBuilder.withArgName("op").hasArg()
-            .withDescription("the operation to perform (read or update)")
+    Option operationOption = OptionBuilder.withArgName("op").hasArg()
+            .withDescription("the operation to perform (read or update - default is read)")
             .create("op");
-    Option rate = OptionBuilder.withArgName("rate").hasArg()
+    Option rateOption = OptionBuilder.withArgName("rate").hasArg()
             .withDescription("the rate in ops per second")
             .create("rate");
-    Option inc = OptionBuilder.withArgName("inc").hasArg()
+    Option incOption = OptionBuilder.withArgName("inc").hasArg()
             .withDescription("the increment used with rate")
             .create("inc");
-    Option clients = OptionBuilder.withArgName("clients").hasArg()
+    Option clientsOption = OptionBuilder.withArgName("clients").hasArg()
             .withDescription("number of clients used to send (default 10)")
             .create("clients");
-    Option requestsPerClient = OptionBuilder.withArgName("requests").hasArg()
+    Option requestsPerClientOption = OptionBuilder.withArgName("requests").hasArg()
             .withDescription("number of requests sent by each client each time")
             .create("requests");
-    Option guidsPerRequest = OptionBuilder.withArgName("guids").hasArg()
+    Option guidsPerRequestOption = OptionBuilder.withArgName("guids").hasArg()
             .withDescription("number of guids for each request")
             .create("guids");
-    Option updateAlias = new Option("updateAlias", true, "Alias of guid to update/read");
-    Option updateField = new Option("updateField", true, "Field to read/update");
-    Option updateValue = new Option("updateValue", true, "Value to use in read/update");
+    Option useExistingGuidsOption = new Option("useExistingGuids", "use guids in account Guid instead of creating new ones");
+
+    Option disableSSLOption = new Option("disableSSL", "disables SSL");
+    Option updateAliasOption = new Option("updateAlias", true, "Alias of guid to update/read");
+    Option updateFieldOption = new Option("updateField", true, "Field to read/update");
+    Option updateValueOption = new Option("updateValue", true, "Value to use in read/update");
 
     commandLineOptions = new Options();
-    commandLineOptions.addOption(alias);
-    commandLineOptions.addOption(host);
-    commandLineOptions.addOption(port);
-    commandLineOptions.addOption(operation);
-    commandLineOptions.addOption(rate);
-    commandLineOptions.addOption(inc);
-    commandLineOptions.addOption(clients);
-    commandLineOptions.addOption(requestsPerClient);
-    commandLineOptions.addOption(guidsPerRequest);
-    commandLineOptions.addOption(help);
-    commandLineOptions.addOption(updateAlias);
-    commandLineOptions.addOption(updateField);
-    commandLineOptions.addOption(updateValue);
+    commandLineOptions.addOption(aliasOption);
+    commandLineOptions.addOption(hostOption);
+    commandLineOptions.addOption(portOption);
+    commandLineOptions.addOption(operationOption);
+    commandLineOptions.addOption(rateOption);
+    commandLineOptions.addOption(incOption);
+    commandLineOptions.addOption(clientsOption);
+    commandLineOptions.addOption(requestsPerClientOption);
+    commandLineOptions.addOption(guidsPerRequestOption);
+    commandLineOptions.addOption(helpOption);
+    commandLineOptions.addOption(updateAliasOption);
+    commandLineOptions.addOption(updateFieldOption);
+    commandLineOptions.addOption(updateValueOption);
+    commandLineOptions.addOption(disableSSLOption);
+    commandLineOptions.addOption(useExistingGuidsOption);
 
     CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args);
   }
 
   private static void printUsage() {
-    formatter.printHelp("java -cp GNSClient.jar edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest <options>", commandLineOptions);
+    formatter.printHelp("./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.ThroughputAsynchMultiClientTest <options>", commandLineOptions);
   }
 
 }

@@ -14,25 +14,29 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccessSupport;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnscommon.utils.Base64;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +48,7 @@ public class RegisterAccount extends GnsCommand {
 
   /**
    * Creates a RegisterAccount instance.
-   * 
+   *
    * @param module
    */
   public RegisterAccount(CommandModule module) {
@@ -53,7 +57,7 @@ public class RegisterAccount extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, PUBLIC_KEY, PASSWORD};
+    return new String[]{NAME, PUBLIC_KEY, PASSWORD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -72,21 +76,25 @@ public class RegisterAccount extends GnsCommand {
     byte[] publicKeyBytes = Base64.decode(publicKey);
     String guid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
 
-    if (signature != null && message != null) { //FIXME: this is for temporary backward compatability... remove it. 
+    // FIXME: this lacking signature check is for temporary backward compatability... remove it.
+    // See RegisterAccountUnsigned
+    if (signature != null && message != null) {
       if (!AccessSupport.verifySignature(publicKey, signature, message)) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
 //      } else {
 //        GNS.getLogger().info("########SIGNATURE VERIFIED FOR CREATE " + name);
       }
     }
-    CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
-            password, handler);
-    if (result.getReturnValue().equals(OK_RESPONSE)) {
-      // set up the default read access
-      //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALL_FIELDS, EVERYONE, handler);
-      return new CommandResponse<String>(guid);
-    } else {
-      return result;
+    try {
+      CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
+              password, handler);
+      if (result.getReturnValue().equals(OK_RESPONSE)) {
+        return new CommandResponse<String>(guid);
+      } else {
+        return result;
+      }
+    } catch (GnsClientException | IOException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
 

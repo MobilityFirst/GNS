@@ -14,18 +14,19 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +38,7 @@ public class LookupGuidRecord extends GnsCommand {
 
   /**
    * Creates a LookupGuidRecord instance.
-   * 
+   *
    * @param module
    */
   public LookupGuidRecord(CommandModule module) {
@@ -56,24 +57,20 @@ public class LookupGuidRecord extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String guid = json.getString(GUID);
-      GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    String guid = json.getString(GUID);
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    if (guidInfo != null) {
+      try {
+        return new CommandResponse<String>(guidInfo.toJSONObject().toString());
+      } catch (JSONException e) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
       }
-      if (guidInfo != null) {
-        try {
-          return new CommandResponse<String>(guidInfo.toJSONObject().toString());
-        } catch (JSONException e) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR);
-        }
-      } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-      }
-   // }
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
   }
 
   @Override

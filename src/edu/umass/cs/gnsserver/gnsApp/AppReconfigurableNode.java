@@ -17,18 +17,23 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import static edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions.*;
+import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.*;
+
 import java.io.IOException;
+
 import edu.umass.cs.gnsserver.utils.ParametersAndOptions;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
-
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.printOptions;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.utils.Config;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +46,7 @@ import java.util.Set;
  * @author Westy
  */
 public class AppReconfigurableNode extends ReconfigurableNode<String> {
-  
+
   private final static List<AppReconfigurableNode> allNodes = new ArrayList<>();
 
   //private MongoRecords<String> mongoRecords = null;
@@ -64,17 +69,17 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
    */
   @Override
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {
-    GnsApp app = null;
+    GNSApp app = null;
     try {
-      app = new GnsApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
+      app = new GNSApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
               this.messenger);
     } catch (IOException e) {
-      GNS.getLogger().info("Unable to create app: " + e);
+      GNSConfig.getLogger().info("Unable to create app: " + e);
       // not sure what to do here other than just return null
       return null;
     }
 
-    GnsAppCoordinator<String> appCoordinator = new GnsAppCoordinator<String>(app, this.nodeConfig, this.messenger);
+    GNSAppCoordinator<String> appCoordinator = new GNSAppCoordinator<String>(app, this.nodeConfig, this.messenger);
     return appCoordinator;
 
   }
@@ -85,13 +90,14 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     allNodes.add(new AppReconfigurableNode((String) nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig));
     System.out.println("********* Starting reconfigurator. *********");
     allNodes.add(new AppReconfigurableNode((String) nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig));
+    printRCConfig();
     System.out.println("********* Nodes have started. Server is ready. *********");
   }
 
   private static void startStandalone(String nodeConfigFilename) throws IOException {
     GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, true);
     String nodeID = (String) nodeConfig.getActiveReplicas().iterator().next();
-    GNS.getLogger().info("Starting standalone node " + nodeID);
+    GNSConfig.getLogger().info("Starting standalone node " + nodeID);
     allNodes.add(new AppReconfigurableNode(nodeID, nodeConfig));
   }
 
@@ -109,11 +115,35 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
         System.out.println("$$$$$$$$$$$$$$$$ Setting up reconfigurator " + rcID);
         allNodes.add(new AppReconfigurableNode(rcID, nodeConfig));
       }
+      printRCConfig();
       System.out.println("********* Nodes have started. Server is ready. *********");
+      
 
     } catch (IOException ioe) {
       ioe.printStackTrace();
     }
+  }
+
+  protected static Map<String, String> initOptions(String[] args)
+          throws IOException {
+    Map<String, String> options = ParametersAndOptions
+            .getParametersAsHashMap(
+                    AppReconfigurableNode.class.getCanonicalName(),
+                    AppReconfigurableNodeOptions.getAllOptions(), args);
+    AppReconfigurableNodeOptions.initializeFromOptions(options);
+    printOptions(options);
+    return options;
+  }
+  
+  public static void printRCConfig() {
+    StringBuilder result = new StringBuilder();
+    for (ReconfigurationConfig.RC rc : ReconfigurationConfig.RC.values()) {
+      result.append(rc.toString());
+      result.append(" => ");
+      result.append(Config.getGlobal(rc));
+      result.append("\n");
+    }
+    System.out.print(result.toString());
   }
 
   /**
@@ -124,6 +154,12 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
+    System.out
+            .println("*********************************************************\n"
+                    + "This mode of starting the GNS is not recommended. Start ReconfigurableNode"
+                    + " instead with the node ID(s) being started listed at the end of command-line options,"
+                    + " and APPLICATION=edu.umass.cs.gnsserver.GnsApp in gigapaxos.properties."
+                    + "*********************************************************\n");
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
@@ -134,11 +170,8 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
         System.out.println("********* All nodes have been shutdown. *********");
       }
     });
-    Map<String, String> options
-            = ParametersAndOptions.getParametersAsHashMap(AppReconfigurableNode.class.getCanonicalName(),
-                    AppReconfigurableNodeOptions.getAllOptions(), args);
-    printOptions(options);
-    AppReconfigurableNodeOptions.initializeFromOptions(options);
+    Map<String, String> options = initOptions(args);
+
     if (options.containsKey(STANDALONE) && options.get(NS_FILE) != null) {
       startStandalone(options.get(NS_FILE));
       // run multiple nodes on a single machine

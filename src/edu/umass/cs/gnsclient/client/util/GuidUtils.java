@@ -24,9 +24,10 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsInvalidGuidException;
-import edu.umass.cs.gnsclient.exceptions.GnsVerificationException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
+import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -49,7 +50,7 @@ public class GuidUtils {
   private static boolean guidExists(GNSClientInterface client, GuidEntry guid) throws IOException {
     try {
       client.lookupGuidRecord(guid.getGuid());
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
       return false;
     }
     return true;
@@ -184,15 +185,18 @@ public class GuidUtils {
    * whole thing in the local preferences.
    *
    * @param alias
-   * @param host
-   * @param port
+   * @param hostport
    * @return
    * @throws NoSuchAlgorithmException
    */
-  public static GuidEntry createAndSaveGuidEntry(String alias, String host, int port) throws NoSuchAlgorithmException {
+  public static GuidEntry createAndSaveGuidEntry(String alias, String hostport) throws NoSuchAlgorithmException {
+    long keyPairStart = System.currentTimeMillis();
     KeyPair keyPair = KeyPairGenerator.getInstance(GnsProtocol.RSA_ALGORITHM).generateKeyPair();
+    DelayProfiler.updateDelay("createKeyPair", keyPairStart);
     String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
-    KeyPairUtils.saveKeyPair(host + ":" + port, alias, guid, keyPair);
+    long saveStart = System.currentTimeMillis();
+    KeyPairUtils.saveKeyPair(hostport, alias, guid, keyPair);
+    DelayProfiler.updateDelay("saveKeyPair", saveStart);
     return new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
   }
 
@@ -210,7 +214,7 @@ public class GuidUtils {
     if ((entry = lookupGuidEntryFromPreferences(host, port, alias)) != null) {
       return entry;
     } else {
-      return createAndSaveGuidEntry(alias, host, port);
+      return createAndSaveGuidEntry(alias, host+":"+port);
     }
   }
 

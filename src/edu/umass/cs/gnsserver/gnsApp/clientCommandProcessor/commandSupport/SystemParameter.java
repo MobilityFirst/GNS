@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import java.lang.reflect.Field;
 

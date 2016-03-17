@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ResultValueString;
@@ -36,10 +36,10 @@ import java.util.Set;
 /**
  * Stores the Human Readable Name (HRN), GUID for an account plus
  * other stuff we need to keep like a password, aliases and additional guids.
- * 
- * This class handles the conversion to and from JSON objects as well as 
+ *
+ * This class handles the conversion to and from JSON objects as well as
  * conversion to the format which can be store in the database.
- * 
+ *
  * The account can have multiple aliases which are extra HRNs. The account can
  * also have additional associated GUIDs. For certain things we also keep an encrypted
  * password.
@@ -73,7 +73,7 @@ public class AccountInfo {
    * Stores the guid and associated human readable name and
    * other information for an Account guid.
    *
-   * This class handles the conversion to and from JSON objects as well as 
+   * This class handles the conversion to and from JSON objects as well as
    * conversion to the format which can be store in the database.
    *
    * @author westy
@@ -90,13 +90,15 @@ public class AccountInfo {
     this.created = new Date();
     this.updated = new Date();
     this.password = password;
+    // FIXME: TEST HACK
+    //this.verified = true;
     this.verified = false;
     this.verificationCode = null;
   }
 
   /**
    * Returns the primary name.
-   * 
+   *
    * @return a string
    */
   public String getPrimaryName() {
@@ -105,7 +107,7 @@ public class AccountInfo {
 
   /**
    * Returns the guid.
-   * 
+   *
    * @return a string
    */
   public String getPrimaryGuid() {
@@ -132,7 +134,7 @@ public class AccountInfo {
 
   /**
    * Gets the type. Currently unused.
-   * 
+   *
    * @return a string
    */
   public String getType() {
@@ -268,17 +270,6 @@ public class AccountInfo {
   }
 
   /**
-   * Convert UserInfo to and from the format which is used to store it in the DB. 
-   * Use a JSON Object which is put as the first
-   * element of an ArrayList
-   * @return 
-   * @throws org.json.JSONException 
-   */
-  public ResultValue toDBFormat() throws JSONException {
-    return new ResultValue(Arrays.asList(toJSONObject().toString()));
-  }
-
-  /**
    * Creates an AccountInfo instance from a ResultValueString which is the format
    * used to store the object in the database.
    *
@@ -323,16 +314,34 @@ public class AccountInfo {
 
   /**
    * Converts this instance into a JSONObject.
+   *
    * @return a JSONObject
    * @throws JSONException
    */
   public JSONObject toJSONObject() throws JSONException {
+    return toJSONObject(false);
+  }
+
+  /**
+   * Converts this instance into a JSONObject.
+   * If forClient is true, we don't include information that
+   * is to large to be sent to the client.
+   *
+   * @param forClient
+   * @return
+   * @throws JSONException
+   */
+  public JSONObject toJSONObject(boolean forClient) throws JSONException {
     JSONObject json = new JSONObject();
     json.put(USERNAME, primaryName);
     json.put(GUID, primaryGuid);
     json.put(TYPE, type);
     json.put(ALIASES, new JSONArray(aliases));
-    json.put(GUIDS, new JSONArray(guids));
+    if (forClient) {
+      json.put("guidCnt", guids.size());
+    } else {
+      json.put(GUIDS, new JSONArray(guids));
+    }
     json.put(CREATED, Format.formatDateUTC(created));
     json.put(UPDATED, Format.formatDateUTC(updated));
     if (password != null) {
@@ -347,6 +356,7 @@ public class AccountInfo {
 
   /**
    * Returns a informational string version of the instance.
+   *
    * @return a string
    */
   @Override

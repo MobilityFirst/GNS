@@ -17,10 +17,10 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.util.Collections;
@@ -46,6 +46,11 @@ public enum UpdateOperation {
    * Fields already in the record not in the JSON Object are not touched.
    */
   USER_JSON_REPLACE_OR_CREATE(false, true, true, USER_JSON_REPLACE), // doesn't require a read
+  /**
+   * Updates the value of field using the JSON Object. 
+   * Fields already in the record not in the JSON Object are not touched.
+   */
+  CREATE_INDEX(false, true, false), // doesn't require a read
   //
   // NOTE: The following all user the "older" JSONArray format. 
   //
@@ -243,7 +248,7 @@ public enum UpdateOperation {
         valuesList.addAll(singles);
         return true;
       case SINGLE_FIELD_REMOVE:
-        GNS.getLogger().fine("Remove " + newValues + "\tValues list = " + valuesList);
+        GNSConfig.getLogger().fine("Remove " + newValues + "\tValues list = " + valuesList);
         // check for a null list reset it to empty and return false if it is
         if (valuesListHasNullFirstElement(valuesList)) {
           valuesList.clear();

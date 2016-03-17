@@ -17,20 +17,21 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
-import edu.umass.cs.gnsserver.gnsApp.packet.admin.AdminRequestPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.admin.AdminResponsePacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,7 +53,7 @@ public class AppAdmin extends Thread implements Shutdownable{
    */
   private ServerSocket serverSocket;
 
-  private final GnsApplicationInterface<String> app;
+  private final GNSApplicationInterface<String> app;
 
   private final GNSNodeConfig<String> gnsNodeConfig;
 
@@ -63,14 +64,14 @@ public class AppAdmin extends Thread implements Shutdownable{
    * @param gnsNodeConfig
    */
   
-  public AppAdmin(GnsApplicationInterface<String> app, GNSNodeConfig gnsNodeConfig) {
+  public AppAdmin(GNSApplicationInterface<String> app, GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
     this.app = app;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
       this.serverSocket = new ServerSocket(gnsNodeConfig.getAdminPort(app.getNodeID()));
     } catch (IOException e) {
-      GNS.getLogger().severe("Unable to create NSListenerAdmin server: " + e);
+      GNSConfig.getLogger().severe("Unable to create NSListenerAdmin server: " + e);
     }
   }
 
@@ -80,7 +81,7 @@ public class AppAdmin extends Thread implements Shutdownable{
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("NS Node " + app.getNodeID().toString() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
+    GNSConfig.getLogger().info("NS Node " + app.getNodeID().toString() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();
@@ -105,19 +106,19 @@ public class AppAdmin extends Thread implements Shutdownable{
                 try {
                   nameRecord = new NameRecord(app.getDB(), json);
                 } catch (JSONException e) {
-                  GNS.getLogger().severe("Problem parsing json into NameRecord: " + e + " JSON is " + json.toString());
+                  GNSConfig.getLogger().severe("Problem parsing json into NameRecord: " + e + " JSON is " + json.toString());
                 }
                 if (nameRecord != null) {
                   try {
-                    if (nameRecord.containsKey(AccountAccess.GUID_INFO)) {
+                    if (nameRecord.containsUserKey(AccountAccess.GUID_INFO)) {
                       GuidInfo userInfo = new GuidInfo(nameRecord.getValuesMap().getJSONObject(AccountAccess.GUID_INFO));
-                      //GuidInfo userInfo = new GuidInfo(nameRecord.getKeyAsArray(AccountAccess.GUID_INFO).toResultValueString());
+                      //GuidInfo userInfo = new GuidInfo(nameRecord.getUserKeyAsArray(AccountAccess.GUID_INFO).toResultValueString());
                       if (userInfo.containsTag(tag)) {
                         jsonArray.put(nameRecord.toJSONObject());
                       }
                     }
                   } catch (FieldNotFoundException e) {
-                    GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
+                    GNSConfig.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                   }
                 }
@@ -132,27 +133,27 @@ public class AppAdmin extends Thread implements Shutdownable{
                 try {
                   nameRecord = new NameRecord(app.getDB(), json);
                 } catch (JSONException e) {
-                  GNS.getLogger().severe("Problem parsing record cursor into NameRecord: " + e + " JSON is " + json.toString());
+                  GNSConfig.getLogger().severe("Problem parsing record cursor into NameRecord: " + e + " JSON is " + json.toString());
                 }
                 if (nameRecord != null) {
                   jsonArray.put(nameRecord.toJSONObject());
                 }
               }
             }
-            if (GNS.getLogger().isLoggable(Level.FINER)) {
-              GNS.getLogger().finer("NSListenrAdmin for " + app.getNodeID() + " is " + jsonArray.toString());
+            if (GNSConfig.getLogger().isLoggable(Level.FINER)) {
+              GNSConfig.getLogger().finer("NSListenrAdmin for " + app.getNodeID() + " is " + jsonArray.toString());
             }
             dumpRequestPacket.setJsonArray(jsonArray);
             Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), 
-                    dumpRequestPacket.getCppAddress());
+                    dumpRequestPacket.getReturnAddress());
             
-            GNS.getLogger().fine("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
+            GNSConfig.getLogger().fine("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             break;
           case ADMIN_REQUEST:
             AdminRequestPacket adminRequestPacket = new AdminRequestPacket(incomingJSON);
             switch (adminRequestPacket.getOperation()) {
               case DELETEALLRECORDS:
-                GNS.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Handling DELETEALLRECORDS request");
+                GNSConfig.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Handling DELETEALLRECORDS request");
                 long startTime = System.currentTimeMillis();
                 int cnt = 0;
                 AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(app.getDB());
@@ -162,13 +163,13 @@ public class AppAdmin extends Thread implements Shutdownable{
                   try {
                     NameRecord.removeNameRecord(app.getDB(), nameRecord.getName());
                   } catch (FieldNotFoundException e) {
-                    GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
+                    GNSConfig.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                   }
                   //DBNameRecord.removeNameRecord(nameRecord.getName());
                   cnt++;
                 }
-                GNS.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Deleting " + cnt + " records took "
+                GNSConfig.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Deleting " + cnt + " records took "
                         + (System.currentTimeMillis() - startTime) + "ms");
                 break;
               // Clears the database and reinitializes all indices
@@ -187,9 +188,9 @@ public class AppAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", app.getPingManager().tableToString((String)app.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCppAddress());
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getReturnAddress());
                 } else {
-                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
+                  GNSConfig.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
                 break;
               case PINGVALUE:
@@ -199,19 +200,19 @@ public class AppAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", app.getPingManager().nodeAverage(node2));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCppAddress());
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getReturnAddress());
                 } else {
-                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
+                  GNSConfig.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
                 }
                 break;
               case CHANGELOGLEVEL:
                 Level level = Level.parse(adminRequestPacket.getArgument());
-                GNS.getLogger().info("Changing log level to " + level.getName());
-                GNS.getLogger().setLevel(level);
+                GNSConfig.getLogger().info("Changing log level to " + level.getName());
+                GNSConfig.getLogger().setLevel(level);
                 break;
               case CLEARCACHE:
                 // shouldn't ever toString this
-                GNS.getLogger().warning("NSListenerAdmin (" + app.getNodeID() + ") : Ignoring CLEARCACHE request");
+                GNSConfig.getLogger().warning("NSListenerAdmin (" + app.getNodeID() + ") : Ignoring CLEARCACHE request");
                 break;
 
             }
@@ -223,7 +224,7 @@ public class AppAdmin extends Thread implements Shutdownable{
         socket.close();
       } catch (Exception e) {
         if (serverSocket.isClosed())  {
-          GNS.getLogger().warning("NS Admin shutting down.");
+          GNSConfig.getLogger().warning("NS Admin shutting down.");
           return; // close this thread
         }
         e.printStackTrace();

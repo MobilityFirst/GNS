@@ -17,18 +17,22 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import java.net.InetSocketAddress;
+
 import org.json.JSONException;
 
 import java.text.ParseException;
+
 import org.json.JSONObject;
 
 /**
@@ -44,12 +48,12 @@ public class NSAccountAccess {
    * GUID = Globally Unique Identifier<br>
    *
    * @param guid
-   * @param activeReplica
-   * @return an {@link edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo} instance
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @return an {@link edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo} instance
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, null);
+  public static GuidInfo lookupGuidInfo(String guid,  GNSApplicationInterface<String> gnsApp) 
+          throws FailedDBOperationException {
+    return NSAccountAccess.lookupGuidInfo(guid, false, gnsApp);
   }
 
   /**
@@ -59,29 +63,20 @@ public class NSAccountAccess {
    *
    * @param guid
    * @param allowQueryToOtherNSs
-   * @param activeReplica
-   * @param lnsAddress
+   * @param gnsApp
    * @return a {@link GuidInfo} instance or null
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, 
-          GnsApplicationInterface<String> activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, AccountAccess.GUID_INFO, activeReplica, lnsAddress);
-//    ResultValue guidResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
-//            lnsAddress);
-    //GNS.getLogger().info("VALUESMAP=" + valuesMap.toString());
+           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+    ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, 
+            AccountAccess.GUID_INFO, gnsApp);
     if (valuesMap.has(AccountAccess.GUID_INFO)) {
-    //if (!guidResult.isEmpty()) {
       try {
-        //Object object = valuesMap.get(AccountAccess.GUID_INFO);
-        //GNS.getLogger().info("CLASS=" + object.getClass().getName());
-        // this is a hack
+        // Something simpler here?
         return new GuidInfo(new JSONObject(valuesMap.get(AccountAccess.GUID_INFO).toString()));
-        //return new GuidInfo(valuesMap.getJSONObject(AccountAccess.GUID_INFO));
-        //return new GuidInfo(guidResult.toResultValueString());
       } catch (JSONException | ParseException e) {
-        GNS.getLogger().severe("Problem parsing guidinfo: " + e);
+        GNSConfig.getLogger().severe("Problem parsing guidinfo: " + e);
       }
     }
     return null;

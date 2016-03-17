@@ -17,9 +17,12 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
+import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.Util;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,7 +36,7 @@ import org.json.JSONObject;
  * Created by abhigyan on 3/29/14.
  */
 // FIXME: This could probably go away if the NameRecord class was rewritten.
-public class NRState {
+public class NRState implements Summarizable {
   
   final static String SEPARATOR = ":::"; // Made this something that probably won't appear in JSON. - Westy
 
@@ -78,7 +81,17 @@ public class NRState {
 
   @Override
   public String toString() {
-    return ttl + ":::" + valuesMap; // need to convert to json as it will be reinserted into database.
+    return ttl + SEPARATOR + valuesMap; // need to convert to json as it will be reinserted into database.
   }
+
+	@Override
+	public Object getSummary() {
+		return new Object() {
+			public String toString() {
+				return Util.truncate(NRState.this.valuesMap.toString(), 16, 16)
+						.toString();
+			}
+		};
+	}
 
 }

@@ -17,25 +17,19 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.RequestInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.SelectInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.Intercessor;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.GnsApp;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gnsserver.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.utils.MovingAverage;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
 import org.json.JSONObject;
@@ -65,16 +59,14 @@ import org.json.JSONException;
  * @author westy
  */
 public class ClientRequestHandler implements ClientRequestHandlerInterface {
-
-  private final Intercessor intercessor;
+  
+  private final RemoteQuery remoteQuery;
   private final Admintercessor admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
    * Map of information about queries transmitted. Key: QueryId, Value: QueryInfo (id, name, time etc.)
    */
-  private final ConcurrentMap<Integer, RequestInfo> requestInfoMap;
-  private final ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
   // For backward compatibility between old Add and Remove record code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
   private final ConcurrentMap<String, Integer> createServiceNameMap;
@@ -93,23 +85,19 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
   private final Random random;
 
-  private final ProtocolExecutor<String, ReconfigurationPacket.PacketType, String> protocolExecutor;
-  private final CCPProtocolTask<String> protocolTask;
-
   /**
    * Host address of the local name server.
    */
   private final InetSocketAddress nodeAddress;
   //
   private final String activeReplicaID;
-  private final GnsApp app;
+  private final GNSApp app;
 
   private long receivedRequests = 0;
 
   /**
    * Creates an instance of the ClientRequestHandler.
    *
-   * @param intercessor
    * @param admintercessor
    * @param nodeAddress
    * @param activeReplicaID
@@ -118,30 +106,26 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
    * @param messenger
    * @param parameters
    */
-  public ClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
+  public ClientRequestHandler(Admintercessor admintercessor,
           InetSocketAddress nodeAddress,
           String activeReplicaID,
-          GnsApp app,
+          GNSApp app,
           GNSNodeConfig<String> gnsNodeConfig,
-          JSONMessenger<String> messenger, RequestHandlerParameters parameters) {
-    this.intercessor = intercessor;
+          JSONMessenger<String> messenger, RequestHandlerParameters parameters) throws IOException {
+	  assert(activeReplicaID!=null);
     this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     // a little hair to convert fred to fred-activeReplica if we just get fred
     this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID
             : gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
+    this.remoteQuery = new RemoteQuery(activeReplicaID, new InetSocketAddress(gnsNodeConfig.getNodeAddress(activeReplicaID), gnsNodeConfig.getNodePort(activeReplicaID)));
     this.app = app;
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig<String>(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
-    this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
-    this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
     this.messenger = messenger;
-    this.protocolExecutor = new ProtocolExecutor<>(messenger);
-    this.protocolTask = new CCPProtocolTask<>(this);
-    this.protocolExecutor.register(this.protocolTask.getEventTypes(), this.protocolTask);
     this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.createServiceIdToNamesMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.deleteServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -149,21 +133,10 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
-  public boolean handleEvent(JSONObject json) throws JSONException {
-    @SuppressWarnings("unchecked")
-    BasicReconfigurationPacket<String> rcEvent
-            = (BasicReconfigurationPacket<String>) ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
-    return this.protocolExecutor.handleEvent(rcEvent);
+  public RemoteQuery getRemoteQuery() {
+    return remoteQuery;
   }
-
-  /**
-   * @return the executorService
-   */
-  @Override
-  public ScheduledThreadPoolExecutor getExecutorService() {
-    return executorService;
-  }
-
+  
   @Override
   public GNSNodeConfig<String> getGnsNodeConfig() {
     return gnsNodeConfig;
@@ -185,11 +158,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
-  public Intercessor getIntercessor() {
-    return intercessor;
-  }
-
-  @Override
   public Admintercessor getAdmintercessor() {
     return admintercessor;
   }
@@ -199,7 +167,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     return parameters;
   }
 
-  public GnsApp getApp() {
+  public GNSApp getApp() {
     return app;
   }
 
@@ -210,11 +178,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   @Override
   public synchronized int getUniqueRequestID() {
     return currentRequestID++;
-  }
-
-  @Override
-  public void addRequestInfo(int id, RequestInfo requestInfo) {
-    requestInfoMap.put(id, requestInfo);
   }
 
   // These next four are for backward compatibility between old Add and Remove record 
@@ -314,76 +277,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     return activesServiceNameMap.remove(name);
   }
 
-  @Override
-  public int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket) {
-    int id;
-    do {
-      id = random.nextInt();
-    } while (selectTransmittedMap.containsKey(id));
-    //Add query info
-    SelectInfo query = new SelectInfo(id);
-    selectTransmittedMap.put(id, query);
-    return id;
-  }
-
-  @Override
-  public RequestInfo getRequestInfo(int id) {
-    return requestInfoMap.get(id);
-  }
-
-  /**
-   * Removes and returns QueryInfo entry from the map for a query Id.
-   *
-   * @param id Query Id
-   * @return the entry or null if it was not found
-   */
-  @Override
-  public RequestInfo removeRequestInfo(int id) {
-    return requestInfoMap.remove(id);
-  }
-
-  /**
-   * Removes and returns SelectInfo entry from the map for a query Id.
-   * @param id
-   * @return the entry or null if it was not found
-   */
-  @Override
-  public SelectInfo removeSelectInfo(int id) {
-    return selectTransmittedMap.remove(id);
-  }
-
-  /**
-   * Returns SelectInfo entry from the map for a query Id.
-   * @param id
-   * @return the entry or null if it was not found
-   */
-  @Override
-  public SelectInfo getSelectInfo(int id) {
-    return selectTransmittedMap.get(id);
-  }
-
-  private boolean reallySendtoReplica = false;
-
-  /**
-   * Returns the value of reallySendtoReplica.
-   * 
-   * @return true if we're sending to the Replica
-   */
-  @Override
-  public boolean reallySendUpdateToReplica() {
-    return reallySendtoReplica;
-  }
-
-  /**
-   * Sets the value of reallySendtoReplica.
-   * 
-   * @param reallySend 
-   */
-  @Override
-  public void setReallySendUpdateToReplica(boolean reallySend) {
-    reallySendtoReplica = reallySend;
-  }
-
   /**
    * Return a Set containing ids of primary replica for <i>name</i>
    *
@@ -407,12 +300,12 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     try {
       Set<String> primaries = getReplicaControllers(name);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
+        GNSConfig.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
       }
 
       String x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Closest Primary Name Server: " + x.toString() 
+        GNSConfig.getLogger().info("Closest Primary Name Server: " + x.toString() 
                 + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
       return x;
@@ -446,7 +339,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   @Override
   public void sendRequestToReconfigurator(BasicReconfigurationPacket req, String id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {
-      GNS.getLogger().info("Sending " + req.getSummary()
+      GNSConfig.getLogger().info("Sending " + req.getSummary()
               + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":"
               + this.nodeConfig.getNodePort(id)
       //+ ": " + req // to long
@@ -467,7 +360,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     try {
       if (parameters.isDebugMode()) {
         //GNS.getLogger().info("Send to: " + id + " json: " + json.toString());
-        GNS.getLogger().info("Send to: " + id + " json: " + json.toReasonableString());
+        GNSConfig.getLogger().info("Send to: " + id + " json: " + json.toReasonableString());
       }
       messenger.sendToID(id, json);
     } catch (IOException e) {

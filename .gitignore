@@ -52,3 +52,4 @@ build.number
 /jars/
 /paxos_logs/
 !/.travis.yml
+/bin/

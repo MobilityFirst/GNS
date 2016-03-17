@@ -19,9 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.BasicGuidEntry;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
@@ -43,7 +40,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SelectAutoGroupTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client;
   /**
@@ -56,12 +53,20 @@ public class SelectAutoGroupTest {
   private static GuidEntry groupTwoGuid;
   private String queryOne = "~" + groupTestFieldName + " : {$gt: 20}";
   private String queryTwo = "~" + groupTestFieldName + " : 0";
-  
 
   public SelectAutoGroupTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -266,6 +271,7 @@ public class SelectAutoGroupTest {
 //  }
 //  
 //  
+
   private void checkTheReturnValues(JSONArray result) throws Exception {
     // should be 5
     assertThat(result.length(), equalTo(5));

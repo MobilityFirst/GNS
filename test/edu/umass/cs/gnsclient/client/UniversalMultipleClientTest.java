@@ -25,8 +25,8 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
-import edu.umass.cs.gnsclient.exceptions.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -51,7 +51,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class UniversalMultipleClientTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static List<UniversalTcpClientExtended> clients = null;
   /**
@@ -59,11 +59,11 @@ public class UniversalMultipleClientTest {
    */
   private static Set<InetSocketAddress> addresses = new HashSet<>(
           // kittens.name
-          Arrays.asList(new InetSocketAddress("23.21.160.80", GNSClient.LNS_PORT),
-                  new InetSocketAddress("54.241.15.214", GNSClient.LNS_PORT),
-                  new InetSocketAddress("50.112.98.151", GNSClient.LNS_PORT),
-                  new InetSocketAddress("79.125.27.206", GNSClient.LNS_PORT),
-                  new InetSocketAddress("54.232.178.43", GNSClient.LNS_PORT)));
+          Arrays.asList(new InetSocketAddress("23.21.160.80", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("54.241.15.214", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("50.112.98.151", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("79.125.27.206", GNSClientConfig.LNS_PORT),
+                  new InetSocketAddress("54.232.178.43", GNSClientConfig.LNS_PORT)));
   
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
@@ -83,7 +83,7 @@ public class UniversalMultipleClientTest {
     if (clients == null) {
       clients = new ArrayList<>();
       for (InetSocketAddress address : addresses) {
-        clients.add(new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true));
+        clients.add(new UniversalTcpClientExtended(address.getHostName(), address.getPort()));
         System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       }
       try {
@@ -136,12 +136,12 @@ public class UniversalMultipleClientTest {
         ThreadUtils.sleep(10);
       } while (true);
       // the lookup should fail and throw to here
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
     }
 //    try {
 //      getRandomClient().lookupGuidRecord(testGuid.getGuid());
 //      fail("Lookup testGuid should have throw an exception.");
-//    } catch (GnsException e) {
+//    } catch (GnsClientException e) {
 //
 //    } catch (IOException e) {
 //      fail("Exception while doing Lookup testGuid: " + e);
@@ -165,7 +165,7 @@ public class UniversalMultipleClientTest {
     try {
       getRandomClient().lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -268,7 +268,7 @@ public class UniversalMultipleClientTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -309,7 +309,7 @@ public class UniversalMultipleClientTest {
       try {
         getRandomClient().lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
@@ -350,7 +350,7 @@ public class UniversalMultipleClientTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -370,7 +370,7 @@ public class UniversalMultipleClientTest {
       try {
         getRandomClient().lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, superUserName);
@@ -421,14 +421,14 @@ public class UniversalMultipleClientTest {
 //      try {
 //        getRandomClient().fieldCreateOneElementList(westyEntry, "cats", "maya");
 //        fail("Should have got an exception when trying to create the field westy / cats.");
-//      } catch (GnsException e) {
+//      } catch (GnsClientException e) {
 //      }
       //this one always fails... check it out
 //      try {
 //        getRandomClient().fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs", "freddybub",
 //                westyEntry);
 //        fail("Should have got an exception when trying to create the field westy / frogs.");
-//      } catch (GnsException e) {
+//      } catch (GnsClientException e) {
 //      }
       getRandomClient().fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
@@ -594,7 +594,7 @@ public class UniversalMultipleClientTest {
       try {
         getRandomClient().lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, mygroupName);
@@ -624,7 +624,7 @@ public class UniversalMultipleClientTest {
     try {
       getRandomClient().lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -650,7 +650,7 @@ public class UniversalMultipleClientTest {
       try {
         getRandomClient().lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -685,7 +685,7 @@ public class UniversalMultipleClientTest {
         String result = getRandomClient().fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
@@ -746,7 +746,7 @@ public class UniversalMultipleClientTest {
     try {
       getRandomClient().lookupGuid(alias);
       System.out.println(alias + " should not exist");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
     } catch (IOException e) {
       fail("Exception while looking up alias: " + e);
     }
@@ -768,7 +768,7 @@ public class UniversalMultipleClientTest {
 //        ThreadUtils.sleep(10);
 //      } while (true);
 //      // the lookup should fail and throw to here
-//    } catch (GnsException e) {
+//    } catch (GnsClientException e) {
 //    }
   }
 
@@ -901,7 +901,7 @@ public class UniversalMultipleClientTest {
       try {
         getRandomClient().fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName + " by sam: " + e);
@@ -928,7 +928,7 @@ public class UniversalMultipleClientTest {
         String result = getRandomClient().fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -950,7 +950,7 @@ public class UniversalMultipleClientTest {
       try {
         getRandomClient().fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsException e) {
+      } catch (GnsClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -981,7 +981,7 @@ public class UniversalMultipleClientTest {
       String result = getRandomClient().fieldReadArrayFirstElement(westyEntry.getGuid(), fieldToDelete, westyEntry);
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsException e) {
+    } catch (GnsClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }

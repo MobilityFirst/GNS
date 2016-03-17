@@ -17,7 +17,7 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.recordmap;
+package edu.umass.cs.gnsserver.gnsapp.recordmap;
 
 /**
  *

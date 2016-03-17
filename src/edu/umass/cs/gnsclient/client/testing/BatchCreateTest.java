@@ -25,7 +25,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -43,9 +43,13 @@ import org.json.JSONObject;
 
 /**
  * Simple guid creation test.
+ * 
+ * Note that TWO methods for batch creating guids exist. This one uses the "fast" method which
+ * uses bogus aliases and public keys and generates random guids that have to be accessed through the
+ * account guid.
  *
  * Usage:
- * java -cp dist/gns-1.16-2015-7-27.jar edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
+ * ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
  */
 public class BatchCreateTest {
 
@@ -68,7 +72,7 @@ public class BatchCreateTest {
    * @param host
    * @param portString
    */
-  public BatchCreateTest(String alias, String host, String portString, int guidCnt, int writeTo) {
+  public BatchCreateTest(String alias, String host, String portString, int numberToCreate, int writeTo) {
     if (address == null) {
       if (host != null && portString != null) {
         address = new InetSocketAddress(host, Integer.parseInt(portString));
@@ -87,52 +91,57 @@ public class BatchCreateTest {
     }
     JSONObject command = null;
     String result = null;
-    try {
-      command = client.createCommand(GnsProtocol.ADMIN,
-              GnsProtocol.PASSKEY, "shabiz");
-      result = client.checkResponse(command, client.sendCommand(command));
-      if (!result.equals(GnsProtocol.OK_RESPONSE)) {
-        System.out.println("Admin command saw bad reponse " + result);
-        return;
-      }
-    } catch (GnsException | IOException e) {
-      System.out.println("Problem sending admin command " + command + e);
-    }
+    long startTime = System.currentTimeMillis();
+    int guidCnt = numberToCreate;
     int oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(2 * 60 * 1000); // set the timeout to 2 minutes
 
       while (guidCnt > 0) {
         System.out.print("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
-        command = client.createCommand(GnsProtocol.BATCH_TEST,
-                GnsProtocol.NAME, alias,
+        command = client.createAndSignCommand(masterGuid.getPrivateKey(),
+                GnsProtocol.ADD_MULTIPLE_GUIDS,
+                GnsProtocol.GUID, masterGuid.getGuid(),
                 GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
-        result = client.checkResponse(command, client.sendCommand(command));
+        result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.equals(GnsProtocol.OK_RESPONSE)) {
           System.out.println();
           System.out.println("Batch test command saw bad reponse " + result);
           return;
         }
         guidCnt = guidCnt - MAX_BATCH_SIZE;
-        System.out.println("... " + guidCnt + " left to create");
+        if (numberToCreate > MAX_BATCH_SIZE && guidCnt > 0) {
+          System.out.println("... " + guidCnt + " left to create");
+        } else {
+          System.out.println();
+        }
       }
-    } catch (GnsException | IOException e) {
+    } catch (GnsClientException | IOException e) {
       System.out.println("Problem sending command " + command + e);
     } finally {
       client.setReadTimeout(oldTimeout);
     }
+    System.out.println("Creating " + numberToCreate + " guids took "
+            + ((System.currentTimeMillis() - startTime) / 1000) + " seconds");
+
+    try {
+      System.out.println("Account record: " + client.lookupAccountRecord(masterGuid.getGuid()));
+    } catch (GnsClientException | IOException e) {
+      System.out.println("Problem looking up account record: " + e);
+    }
+
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
-        command = client.createCommand(LOOKUP_ACCOUNT_RECORD, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
-        result = client.checkResponse(command, client.sendCommand(command));
+        command = client.createCommand(LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
+        result = client.checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);
         } else {
           System.out.println("Problem reading random guids " + result);
         }
-      } catch (JSONException | IOException | GnsException e) {
+      } catch (JSONException | IOException | GnsClientException e) {
         System.out.println("Problem reading random guids " + command + e);
       }
       try {

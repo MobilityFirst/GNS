@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.installer;
 
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.GEOLocator;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -222,10 +222,10 @@ public class HostConfigParser {
 
   private static String getConfPath() {
     try {
-      File jarLoc = new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+      File jarLoc = new File(GNSConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI());
       return jarLoc.getParentFile() + "/conf/";
     } catch (URISyntaxException e) {
-      GNS.getLogger().info("Unable to get conf location: " + e);
+      GNSConfig.getLogger().info("Unable to get conf location: " + e);
       return null;
     }
   }

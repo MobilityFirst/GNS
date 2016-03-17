@@ -17,10 +17,12 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp;
+package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientCommandProcessor;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.BasicRecordMap;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
@@ -36,7 +38,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public interface GnsApplicationInterface<NodeIDType> {
+public interface GNSApplicationInterface<NodeIDType> {
   
   /**
    * Returns the node id.
@@ -66,7 +68,7 @@ public interface GnsApplicationInterface<NodeIDType> {
    * @param msg
    * @throws IOException
    */
-  void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException;
+  void sendToClient(InetSocketAddress isa, Request response, JSONObject msg) throws IOException;
   
   /**
    * Sends a JSON packet to a node.
@@ -85,12 +87,8 @@ public interface GnsApplicationInterface<NodeIDType> {
    */
   PingManager<NodeIDType> getPingManager();
   
-  /**
-   * Returns the client command processor.
-   * @see ClientCommandProcessor
-   * 
-   * @return the client command processor
-   */
-  ClientCommandProcessor getClientCommandProcessor();
+  ClientRequestHandlerInterface getRequestHandler();
+  
+  ActiveCodeHandler getActiveCodeHandler();
   
 }

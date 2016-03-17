@@ -17,8 +17,9 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import java.util.HashSet;
@@ -47,8 +48,8 @@ public class ClientUtils {
 
   /**
    * Creates a hexidecimal guid string by hashing a public key.
-   * The input string is assumed to base64 encoded. 
-   * 
+   * The input string is assumed to base64 encoded.
+   *
    * @param publicKey
    * @return a guid string
    * @throws IllegalArgumentException
@@ -65,7 +66,7 @@ public class ClientUtils {
   /**
    * Converts a JSONArray of publicKeys to a JSONArray of guids using
    * {@link createGuidStringFromPublicKey}.
-   * 
+   *
    * @param publicKeys
    * @return JSONArray of guids
    * @throws JSONException
@@ -73,19 +74,24 @@ public class ClientUtils {
   public static JSONArray convertPublicKeysToGuids(JSONArray publicKeys) throws JSONException {
     JSONArray guids = new JSONArray();
     for (int i = 0; i < publicKeys.length(); i++) {
+      // Special case
       try {
-        guids.put(createGuidStringFromPublicKey(publicKeys.getString(i)));
+        if (publicKeys.getString(i).equals(GnsProtocol.ALL_USERS)) {
+          guids.put(GnsProtocol.ALL_USERS);
+        } else {
+          guids.put(createGuidStringFromPublicKey(publicKeys.getString(i)));
+        }
       } catch (IllegalArgumentException e) {
         // ignore any bogus publicKeys
       }
     }
     return guids;
   }
-  
+
   /**
    * Converts a set of publicKeys to a set of guids using
    * {@link createGuidStringFromPublicKey}.
-   * 
+   *
    * @param publicKeys
    * @return set of guids
    */
@@ -125,7 +131,7 @@ public class ClientUtils {
 
   /**
    * Returns true if a public key that corresponds to a guid is in a set of public keys.
-   * 
+   *
    * @param guid
    * @param publicKeys
    * @return true or false

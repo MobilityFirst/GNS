@@ -1,4 +1,9 @@
 #!/bin/bash
 #echo $PWD
-IDE_CLASSPATH=./build/classes/
-java -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp $IDE_CLASS_PATH:jars/GNSClient.jar $*
+# should use matching gigapaxos properties with servers
+java -DgigapaxosConfig=conf/gigapaxos.gnsApp.properties \
+-Djavax.net.ssl.trustStorePassword=qwerty \
+-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
+-Djavax.net.ssl.keyStorePassword=qwerty \
+-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp \
+jars/GNSClient.jar $*

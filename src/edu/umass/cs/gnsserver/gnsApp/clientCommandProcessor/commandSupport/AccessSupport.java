@@ -17,10 +17,10 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import java.io.UnsupportedEncodingException;
@@ -48,7 +48,7 @@ public class AccessSupport {
       keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
       sig = Signature.getInstance(SIGNATURE_ALGORITHM);
     } catch (NoSuchAlgorithmException e) {
-      GNS.getLogger().severe("Unable to initialize for authentication:" + e);
+      GNSConfig.getLogger().severe("Unable to initialize for authentication:" + e);
     }
   }
   
@@ -66,7 +66,7 @@ public class AccessSupport {
    */
   public static boolean verifySignature(String publicKey, String signature, String message) throws InvalidKeySpecException, 
           InvalidKeyException, SignatureException, UnsupportedEncodingException {
-    if (!GNS.enableSignatureAuthentication) {
+    if (!GNSConfig.enableSignatureAuthentication) {
       return true;
     }
     //GNS.getLogger().info("LocalNS: User " + guidInfo.getName() + " signature:" + signature + " message: " + message);
@@ -98,9 +98,9 @@ public class AccessSupport {
    * @return 
    */
   public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
-    GNS.getLogger().finer("fullstring = " + messageStringWithSignatureParts + " fullSignatureField = " + signatureParts);
+    GNSConfig.getLogger().finer("fullstring = " + messageStringWithSignatureParts + " fullSignatureField = " + signatureParts);
     String result = messageStringWithSignatureParts.substring(0, messageStringWithSignatureParts.lastIndexOf(signatureParts));
-    GNS.getLogger().finer("result = " + result);
+    GNSConfig.getLogger().finer("result = " + result);
     return result;
   }
   

@@ -64,62 +64,14 @@
                        excludes="android.jar, hamcrest*.jar, junit*.jar"/>
     </jar>
   </target>
-    
-<!--  <target name="nio_jarbuild" depends="compile" description="generate jar files">
-    <mkdir dir="${build.jar.dir}"/>
-    <jar destfile="${build.jar.dir}/nio-1.2.jar" filesetmanifest="mergewithoutmain">
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Vendor"
-                   value="University of Massachusetts" />
-        <attribute name="Implementation-Title" value="GNS Nio Library" />
-        <attribute name="Implementation-Version"
-                   value="${VERSION}-${RELEASE}" />
-        <attribute name="Build-Version" value="${version.code}" />
-      </manifest>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/nioutils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/utils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="org/json/*.class"/>
-       interesting special cases here added because of one use of ReconfigurableClient in NIOInstrumenter 
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/protocoltask/**/*.class"/>
-      
-      <fileset dir="${conf.dir}" includes="trustStore/**, keystore/**" />
-    </jar>
-  </target>
-  
-  <target name="gigapaxos_jarbuild" depends="compile" description="generate jar files">
-    <mkdir dir="${build.jar.dir}"/>
-    <jar destfile="${build.jar.dir}/gigapaxos-1.0.jar" filesetmanifest="mergewithoutmain">
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Implementation-Vendor"
-                   value="University of Massachusetts" />
-        <attribute name="Implementation-Title" value="GNS Gigapaxos Library" />
-        <attribute name="Implementation-Version"
-                   value="${VERSION}-${RELEASE}" />
-        <attribute name="Build-Version" value="${version.code}" />
-      </manifest>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/nio/nioutils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/utils/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="org/json/*.class"/>
-       interesting special cases here added because of one use of ReconfigurableClient in NIOInstrumenter 
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/protocoltask/**/*.class"/>
-      
-      <fileset dir="${conf.dir}" includes="trustStore/**, keystore/**" />
-    </jar>
-  </target>-->
   
   <fileset id="client.includes" dir="${build.classes.dir}"
-           includes="edu/umass/cs/gnsclient/**/*.class,
-                     edu/umass/cs/gnscommon/**/*.class, 
-                     org/**/*.class"
-  />
+               includes="**/*.class"/>
+<!--           includes="edu/umass/cs/gnsclient/**/*.class,
+                     edu/umass/cs/gnscommon/**/*.class,
+                     edu/umass/cs/gnsserver/**/*.class, 
+                     org/**/*.class"-->
+  
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
   
@@ -141,6 +93,7 @@
         <attribute name="Implementation-Title" value="GNS" />
         <attribute name="Implementation-Version"
                    value="${VERSION}-${RELEASE}" />
+        <attribute name="Class-Path" value="."/>
         <!--        <attribute name="Class-Path" value="${jar.classpath}"/>-->
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
@@ -277,9 +230,22 @@
   
   <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
+    <!-- Allows use to pass in some standard args from command line using things like -Dhost=127.0.0.1/>-->
+    <property name="host" value=""/>
+    <property name="port" value=""/>
+    <property name="alias" value=""/>
+    <property name="password" value=""/>
+    <property name="count" value=""/>
+    <property name="disableSSL" value=""/>
     <junit printsummary="withOutAndErr" fork="yes"> 
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Dhost=${host}"/>
+      <jvmarg value="-Dport=${port}"/>
+      <jvmarg value="-Dalias=${alias}"/>
+      <jvmarg value="-Dpassword=${password}"/>
+      <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DdisableSSL=${disableSSL}"/>
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -297,11 +263,15 @@
   
   <target name="test" description="Runs the default integration test" 
           depends="jar, compiletest">
-    <junit printsummary="yes" fork="yes" haltonfailure="yes">
+    <junit printsummary="yes" fork="yes" haltonfailure="on"
+showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=true"/>
+      <jvmarg
+value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
@@ -352,8 +322,8 @@
   description="Build both mSocket and proxy jars" />-->
 
   <target name="msocket-jar"
-                depends="clean,compile,msocketdoc"
-                description="Builds the mSocket Jar">
+          depends="clean,compile,msocketdoc"
+          description="Builds the mSocket Jar">
     <mkdir dir="${build.jar.dir}"/>
     <jar jarfile="${build.jar.dir}/msocket-${VERSION}-${RELEASE}.jar">
 		
@@ -388,18 +358,18 @@
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor"
-                                   value="University of Massachusetts" />
+                   value="University of Massachusetts" />
         <attribute name="Implementation-Title" value="MSocket Library" />
         <attribute name="Implementation-Version"
-                                   value="${VERSION}-${RELEASE}" />
+                   value="${VERSION}-${RELEASE}" />
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
     </jar>
   </target>
 	
   <target name="msocket-proxy-console-jar"
-                depends="clean,compile,msocketdoc"
-                description="Builds the mSocket proxy console Jar">
+          depends="clean,compile,msocketdoc"
+          description="Builds the mSocket proxy console Jar">
     <mkdir dir="${build.jar.dir}"/>
     <jar jarfile="${build.jar.dir}/msocket-proxy-console-${VERSION}-${RELEASE}.jar">
 			
@@ -435,10 +405,10 @@
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor"
-                                           value="University of Massachusetts" />
+                   value="University of Massachusetts" />
         <attribute name="Implementation-Title" value="MSocket Library" />
         <attribute name="Implementation-Version"
-                                           value="${VERSION}-${RELEASE}" />
+                   value="${VERSION}-${RELEASE}" />
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
     </jar>

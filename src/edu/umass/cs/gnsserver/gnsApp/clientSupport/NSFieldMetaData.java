@@ -17,17 +17,20 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldMetaData;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.exceptions.FailedDBOperationException;
-import edu.umass.cs.gnsserver.exceptions.FieldNotFoundException;
-import edu.umass.cs.gnsserver.exceptions.RecordNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldMetaData;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -46,15 +49,15 @@ public class NSFieldMetaData {
    * @param type
    * @param guidInfo
    * @param key
-   * @param activeReplica
+   * @param database
    * @return a set of objects
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
-          GnsApplicationInterface<String> activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
-    return lookupOnThisNameServer(type, guidInfo.getGuid(), key, activeReplica);
+          BasicRecordMap database) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
+    return lookupOnThisNameServer(type, guidInfo.getGuid(), key, database);
   }
 
   /**
@@ -63,53 +66,19 @@ public class NSFieldMetaData {
    * @param type
    * @param guid
    * @param key
-   * @param activeReplica
+   * @param database
    * @return a set of objects
-   * @throws edu.umass.cs.gnsserver.exceptions.RecordNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FieldNotFoundException
-   * @throws edu.umass.cs.gnsserver.exceptions.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
-          GnsApplicationInterface<String> activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
-    ResultValue result = NSFieldAccess.lookupListFieldOnThisServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
+          BasicRecordMap database) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
+    ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, FieldMetaData.makeFieldMetaDataKey(type, key), database);
     if (result != null) {
       return new HashSet<Object>(result);
     } else {
       return new HashSet<Object>();
     }
-  }
-
-  /**
-   * Add a value to a metadata field.
-   * 
-   * @param type
-   * @param guid
-   * @param key
-   * @param value
-   * @param activeReplica
-   * @param lnsAddress
-   */
-  public static void add(MetaDataTypeName type, String guid, String key, String value, 
-          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
-
-    LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica, lnsAddress);
-  }
-
-  /**
-   * Remove a value from a metadata field.
-   * 
-   * @param type
-   * @param guid
-   * @param key
-   * @param value
-   * @param activeReplica
-   * @param lnsAddress
-   */
-  public static void remove(MetaDataTypeName type, String guid, String key, String value, 
-          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
-
-    LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
-            UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
   }
 }

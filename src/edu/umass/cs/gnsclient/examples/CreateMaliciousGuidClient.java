@@ -13,7 +13,6 @@ import java.security.spec.InvalidKeySpecException;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.Base64;
 
 /**
@@ -31,13 +30,12 @@ public class CreateMaliciousGuidClient {
 	     * @throws IOException
 	     * @throws InvalidKeySpecException
 	     * @throws NoSuchAlgorithmException
-	     * @throws GnsException
 	     * @throws InvalidKeyException
 	     * @throws SignatureException
 	     * @throws Exception
 	     */
 	    public static void main(String[] args) throws IOException,
-	    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+	    InvalidKeySpecException, NoSuchAlgorithmException, 
 	    InvalidKeyException, SignatureException, Exception {
 	    	String address = args[0];
 			int node = Integer.parseInt(args[1]); 			

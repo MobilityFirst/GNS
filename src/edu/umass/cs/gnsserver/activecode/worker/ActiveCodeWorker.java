@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -57,8 +57,8 @@ public class ActiveCodeWorker {
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 	
 	
-	private com.sun.management.OperatingSystemMXBean mxbean =
-			  (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+	private java.lang.management.OperatingSystemMXBean mxbean =
+			  (java.lang.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
 	
 	private long last = 0;
 	private long elapsed = 0;
@@ -114,8 +114,8 @@ public class ActiveCodeWorker {
 	}
 	
 	private void updateTime(){		
-		elapsed = elapsed + mxbean.getProcessCpuTime() - last;
-		last = mxbean.getProcessCpuTime();
+		//elapsed = elapsed + mxbean.getProcessCpuTime() - last;
+		//last = mxbean.getProcessCpuTime();
 	}
 	
 	private boolean handleRequest(){

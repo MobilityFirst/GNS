@@ -19,9 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnamed;
 
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -34,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+
 import org.xbill.DNS.Flags;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.Rcode;
@@ -117,7 +119,7 @@ public class LookupWorker implements Runnable {
       maxLength = 512;
     }
     if (NameResolution.debuggingEnabled) {
-      GNS.getLogger().info("Q/R: " + NameResolution.queryAndResponseToString(query, response));
+      GNSConfig.getLogger().info("Q/R: " + NameResolution.queryAndResponseToString(query, response));
     }
     // Send out the response.
     DelayProfiler.updateDelay("LookupWorker.postGenerate", postStart);
@@ -136,7 +138,7 @@ public class LookupWorker implements Runnable {
   private Message generateReply(Message query) {
     long startTime = System.currentTimeMillis();
     if (NameResolution.debuggingEnabled) {
-      GNS.getLogger().fine("Incoming request: " + query.toString());
+      GNSConfig.getLogger().fine("Incoming request: " + query.toString());
     }
 
     // If it's not a query we just ignore it.
@@ -164,7 +166,7 @@ public class LookupWorker implements Runnable {
       Message tempQuery = (Message) query.clone();
       Message result = NameResolution.lookupDnsCache(tempQuery, dnsCache);
       if (result.getHeader().getRcode() == Rcode.NOERROR) {
-        GNS.getLogger().info("Responding the request from cache " + NameResolution.queryAndResponseToString(query, result));
+        GNSConfig.getLogger().info("Responding the request from cache " + NameResolution.queryAndResponseToString(query, result));
         return result;
       }
     }
@@ -210,11 +212,11 @@ public class LookupWorker implements Runnable {
         }
       } catch (ExecutionException e) {
         if (NameResolution.debuggingEnabled) {
-          GNS.getLogger().warning("Problem handling lookup task: " + e);
+          GNSConfig.getLogger().warning("Problem handling lookup task: " + e);
         }
       } catch (InterruptedException e) {
         if (NameResolution.debuggingEnabled) {
-          GNS.getLogger().warning("Lookup task interrupted: " + e);
+          GNSConfig.getLogger().warning("Lookup task interrupted: " + e);
         }
       }
     }
@@ -234,11 +236,11 @@ public class LookupWorker implements Runnable {
             }
             int cred = getCred(Section.ANSWER, isAuth);
             dnsCache.addRRset(answers[i], cred);
-            GNS.getLogger().info("Records added to cache " + answers[i].toString());
+            GNSConfig.getLogger().info("Records added to cache " + answers[i].toString());
           }
         }
       } catch (NullPointerException e) {
-        GNS.getLogger().warning("Failed to add a dns response to cache" + e);
+        GNSConfig.getLogger().warning("Failed to add a dns response to cache" + e);
       }
       return successResponse;
     } else if (errorResponse != null) {
@@ -258,9 +260,9 @@ public class LookupWorker implements Runnable {
     DatagramPacket outgoingPacket = new DatagramPacket(responseBytes, responseBytes.length, incomingPacket.getAddress(), incomingPacket.getPort());
     try {
       socket.send(outgoingPacket);
-      GNS.getLogger().fine("Response sent to " + incomingPacket.getAddress().toString() + " " + incomingPacket.getPort());
+      GNSConfig.getLogger().fine("Response sent to " + incomingPacket.getAddress().toString() + " " + incomingPacket.getPort());
     } catch (IOException e) {
-      GNS.getLogger().severe("Failed to send response" + e);
+      GNSConfig.getLogger().severe("Failed to send response" + e);
     }
   }
 

@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 /**
  * @author gaozy
@@ -98,9 +97,8 @@ public class CapacityTestClient {
     		try{
     			client.fieldRead(guid, "nextGuid", entry);
     			//System.out.println("The response is "+result);
-    		}catch(GnsException e){
-    			failed++;
     		}catch(Exception e){
+    			failed++;
     			e.printStackTrace();
     		}
     		
@@ -130,7 +128,7 @@ public class CapacityTestClient {
      * @throws Exception
      */
 	public static void main(String[] args) throws IOException,
-    InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+    InvalidKeySpecException, NoSuchAlgorithmException,
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]); 

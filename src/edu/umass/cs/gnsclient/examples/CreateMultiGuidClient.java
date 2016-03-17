@@ -1,4 +1,4 @@
-		package edu.umass.cs.gnsclient.examples;
+package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,7 +16,6 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
@@ -92,7 +91,7 @@ public class CreateMultiGuidClient {
 		    		client.activeCodeSet(guid, "read", code64, guidAccount);
 		    		try{
 				    	field = client.fieldRead(guidAccount, "nextGuid");
-				    }catch(GnsException e){
+				    }catch(Exception e){
 				    	e.printStackTrace();
 				    }
 		    		System.out.println("Retrieved JSON from guid: " + field);
@@ -132,7 +131,7 @@ public class CreateMultiGuidClient {
 	          throws IOException {
 	    try {
 	      client.lookupGuidRecord(guid.getGuid());
-	    } catch (GnsException e) {
+	    } catch (Exception e) {
 	      return false;
 	    }
 	    return true;

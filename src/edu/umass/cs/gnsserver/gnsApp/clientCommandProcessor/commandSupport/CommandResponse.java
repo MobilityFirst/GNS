@@ -17,9 +17,9 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 
 /**
  * Encapsulates the response values and instrumentation that we pass back to the client.
@@ -74,6 +74,16 @@ public class CommandResponse<NodeIDType> {
    */
   public CommandResponse(String returnValue) {
     this(returnValue, NSResponseCode.NO_ERROR, -1, null);
+  }
+  
+  /**
+   * Create a command response object from a return value with no error.
+   * 
+   * @param returnValue
+   * @param responder
+   */
+  public CommandResponse(String returnValue, NodeIDType responder) {
+    this(returnValue, NSResponseCode.NO_ERROR, -1, responder);
   }
 
   /**

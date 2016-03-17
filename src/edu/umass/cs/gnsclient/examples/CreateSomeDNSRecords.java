@@ -19,6 +19,12 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
+
+import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -30,7 +36,6 @@ import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnsclient.exceptions.GnsException;
 
 /**
  * Creates some DNS records for testing the GNS DNS service.
@@ -38,17 +43,14 @@ import edu.umass.cs.gnsclient.exceptions.GnsException;
  * @author westy
  */
 public class CreateSomeDNSRecords {
-  
-  
-
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static BasicUniversalTcpClient client;
   private static GuidEntry accountGuid;
   
   private static boolean disableSSL = true;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsException,
+          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
 
     InetSocketAddress address;

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -42,9 +42,16 @@ public class DerbyControl {
   private boolean debuggingEnabled = false;
 
   public Connection start() {
+    try {
+      Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
+    } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+      GNSClientConfig.getLogger().severe("Could not find Derby driver class!");
+      e.printStackTrace();
+      return null;
+    }
     Connection conn = null;
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Derby starting in " + framework + " mode");
+      GNSClientConfig.getLogger().info("Derby starting in " + framework + " mode");
     }
     Properties props = new Properties(); // connection properties
     // providing a user name and password is optional in the embedded
@@ -78,7 +85,7 @@ public class DerbyControl {
     try {
       conn = DriverManager.getConnection(url, props);
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Connected to and created database " + dbName);
+        GNSClientConfig.getLogger().info("Connected to and created database " + dbName);
       }
       // If you want to control transactions manually uncomment this line.
       //conn.setAutoCommit(false);
@@ -122,13 +129,13 @@ public class DerbyControl {
         if (((se.getErrorCode() == 50000)
                 && ("XJ015".equals(se.getSQLState())))) {
           // we got the expected exception
-          GNSClient.getLogger().info("Derby shut down normally");
+          GNSClientConfig.getLogger().info("Derby shut down normally");
           // Note that for single database shutdown, the expected
           // SQL state is "08006", and the error code is 45000.
         } else {
           // if the error code or SQLState is different, we have
           // an unexpected exception (shutdown failed)
-          GNSClient.getLogger().info("Derby did not shut down normally");
+          GNSClientConfig.getLogger().info("Derby did not shut down normally");
           printSQLException(se);
         }
       }
@@ -141,8 +148,8 @@ public class DerbyControl {
    * @param message A message describing what failed.
    */
   private void reportFailure(String message) {
-    GNSClient.getLogger().warning("\nData verification failed:");
-    GNSClient.getLogger().warning('\t' + message);
+    GNSClientConfig.getLogger().warning("\nData verification failed:");
+    GNSClientConfig.getLogger().warning('\t' + message);
   }
 
   /**
@@ -155,10 +162,10 @@ public class DerbyControl {
     // Unwraps the entire exception chain to unveil the real cause of the
     // Exception.
     while (e != null) {
-      GNSClient.getLogger().severe("\n----- SQLException -----");
-      GNSClient.getLogger().severe("  SQL State:  " + e.getSQLState());
-      GNSClient.getLogger().severe("  Error Code: " + e.getErrorCode());
-      GNSClient.getLogger().severe("  Message:    " + e.getMessage());
+      GNSClientConfig.getLogger().severe("\n----- SQLException -----");
+      GNSClientConfig.getLogger().severe("  SQL State:  " + e.getSQLState());
+      GNSClientConfig.getLogger().severe("  Error Code: " + e.getErrorCode());
+      GNSClientConfig.getLogger().severe("  Message:    " + e.getMessage());
       // for stack traces, refer to derby.log or uncomment this:
       //e.printStackTrace(System.err);
       e = e.getNextException();

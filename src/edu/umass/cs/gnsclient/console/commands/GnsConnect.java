@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
@@ -82,7 +82,7 @@ public class GnsConnect extends ConsoleCommand {
       if (st.countTokens() == 1 || st.countTokens() == 2) {
         gnsPort = Integer.valueOf(st.nextToken());
       } else {
-        gnsPort = GNSClient.LNS_PORT;
+        gnsPort = GNSClientConfig.LNS_PORT;
       }
       boolean disableSSL = false;
       if (st.countTokens() == 1) {

@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -72,11 +72,11 @@ public class SimpleKeyStore {
    */
   public SimpleKeyStore() {
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Attempting to connect and create table " + tableName);
+      GNSClientConfig.getLogger().info("Attempting to connect and create table " + tableName);
     }
     conn = derbyControl.start();
     if (conn == null) {
-      GNSClient.getLogger().info("Problem starting derby!");
+      GNSClientConfig.getLogger().info("Problem starting derby!");
       return;
     }
     // We create a table...
@@ -280,7 +280,7 @@ public class SimpleKeyStore {
       if (!tableExists(tableName)) {
         String statement = "CREATE TABLE " + tableName + " " + creationString;
         if (debuggingEnabled) {
-          GNSClient.getLogger().info("Created table " + tableName);
+          GNSClientConfig.getLogger().info("Created table " + tableName);
         }
         s.executeUpdate(statement);
         // Add the trigger
@@ -288,7 +288,7 @@ public class SimpleKeyStore {
         t.executeUpdate(triggerStatement);
       } else {
         if (debuggingEnabled) {
-          GNSClient.getLogger().info("Found table " + tableName);
+          GNSClientConfig.getLogger().info("Found table " + tableName);
         }
       }
     } catch (SQLException e) {
@@ -302,7 +302,7 @@ public class SimpleKeyStore {
       if (tableExists(tableName)) {
         String statement = "DROP TABLE " + tableName;
         if (debuggingEnabled) {
-          GNSClient.getLogger().info("Statement:" + statement);
+          GNSClientConfig.getLogger().info("Statement:" + statement);
         }
         s.executeUpdate(statement);
       }
@@ -318,7 +318,7 @@ public class SimpleKeyStore {
       while (resultSet.next()) {
         if (!resultSet.getString("TABLE_NAME").startsWith("SYS")) {
           if (debuggingEnabled) {
-            GNSClient.getLogger().info("TABLE: " + resultSet.getString("TABLE_NAME"));
+            GNSClientConfig.getLogger().info("TABLE: " + resultSet.getString("TABLE_NAME"));
           }
         }
       }
@@ -333,13 +333,13 @@ public class SimpleKeyStore {
     SimpleKeyStore keyStore = new SimpleKeyStore();
     if (args.length == 1 && args[0].startsWith("-drop")) {
       keyStore.dropTable(tableName);
-      GNSClient.getLogger().info("Dropped table " + tableName);
+      GNSClientConfig.getLogger().info("Dropped table " + tableName);
       keyStore.showAllTables();
     } else {
       try {
         keyStore.suppressUpdateRead = true;
         for (String key : keyStore.keys()) {
-          GNSClient.getLogger().info(key + " -> "
+          GNSClientConfig.getLogger().info(key + " -> "
                   + keyStore.get(key, null)
                   + " {U:"
                   + Format.formatPrettyDateUTC(keyStore.updateTime(key))
@@ -352,9 +352,9 @@ public class SimpleKeyStore {
         keyStore.suppressUpdateRead = false;
       }
       String value = "value-" + RandomString.randomString(6);
-      GNSClient.getLogger().info("Putting " + value);
+      GNSClientConfig.getLogger().info("Putting " + value);
       keyStore.put("frank", value);
-      GNSClient.getLogger().info("New value is " + keyStore.get("frank", null));
+      GNSClientConfig.getLogger().info("New value is " + keyStore.get("frank", null));
       keyStore.shutdown();
     }
   }

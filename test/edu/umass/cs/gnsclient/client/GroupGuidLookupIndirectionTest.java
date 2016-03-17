@@ -19,8 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -40,7 +38,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GroupGuidLookupIndirectionTest {
 
-  private static final String ACCOUNT_ALIAS = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static UniversalTcpClientExtended client;
   /**
@@ -48,19 +46,28 @@ public class GroupGuidLookupIndirectionTest {
    */
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
-  
+
   private static final String indirectionGroupTestFieldName = "_IndirectionTestQueryField_";
   private static GuidEntry indirectionGroupGuid;
   private JSONArray IndirectionGroupMembers = new JSONArray();
 
   public GroupGuidLookupIndirectionTest() {
-    if (address == null) {
-      address = ServerSelectDialog.selectServer();
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), true);
+    if (client == null) {
+      if (System.getProperty("host") != null
+              && !System.getProperty("host").isEmpty()
+              && System.getProperty("port") != null
+              && !System.getProperty("port").isEmpty()) {
+        address = new InetSocketAddress(System.getProperty("host"),
+                Integer.parseInt(System.getProperty("port")));
+      } else {
+        address = ServerSelectDialog.selectServer();
+      }
+      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
+              System.getProperty("disableSSL").equals("true"));
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        fail("Exception while creating account guid: " + e);
       }
     }
   }
@@ -77,12 +84,20 @@ public class GroupGuidLookupIndirectionTest {
     } catch (Exception e) {
       fail("Exception while trying to create the guids: " + e);
     }
+  }
+
+  @Test
+  public void test_02_RegisterGroup() {
     try {
       indirectionGroupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTestGroup-" + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);
     }
+  }
+
+  @Test
+  public void test_03_AddGroupMembers() {
     try {
       client.groupAddGuids(indirectionGroupGuid.getGuid(), IndirectionGroupMembers, masterGuid);
     } catch (Exception e) {
@@ -92,7 +107,7 @@ public class GroupGuidLookupIndirectionTest {
   }
 
   @Test
-  public void test_02_TestRead() {
+  public void test_99_TestRead() {
     try {
       String actual = client.fieldRead(indirectionGroupGuid, indirectionGroupTestFieldName);
       System.out.println("Indirection Test Result = " + actual);

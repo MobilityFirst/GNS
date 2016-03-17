@@ -22,8 +22,9 @@ package edu.umass.cs.gnsserver.utils;
 import com.google.common.collect.ImmutableSet;
 
 import edu.umass.cs.gnsserver.database.ColumnField;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,7 +48,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static ArrayList<Object> JSONArrayToArrayList(JSONArray jsonArray) throws JSONException {
-    ArrayList<Object> list = new ArrayList<Object>();
+    ArrayList<Object> list = new ArrayList<>();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.get(i));
     }
@@ -62,7 +63,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static ArrayList<String> JSONArrayToArrayListString(JSONArray jsonArray) throws JSONException {
-    ArrayList<String> list = new ArrayList<String>();
+    ArrayList<String> list = new ArrayList<>();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.getString(i));
     }
@@ -93,7 +94,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static HashSet<String> JSONArrayToHashSet(JSONArray jsonArray) throws JSONException {
-    HashSet<String> set = new HashSet<String>();
+    HashSet<String> set = new HashSet<>();
     for (int i = 0; i < jsonArray.length(); i++) {
       set.add(jsonArray.getString(i));
     }
@@ -108,7 +109,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static ArrayList<Integer> JSONArrayToArrayListInteger(JSONArray jsonArray) throws JSONException {
-    ArrayList<Integer> list = new ArrayList<Integer>();
+    ArrayList<Integer> list = new ArrayList<>();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.getInt(i));
     }
@@ -123,7 +124,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static ImmutableSet<Integer> JSONArrayToImmutableSetInteger(JSONArray json) throws JSONException {
-    Set<Integer> set = new HashSet<Integer>();
+    Set<Integer> set = new HashSet<>();
 
     if (json == null) {
       return ImmutableSet.copyOf(set);
@@ -145,7 +146,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static Set<Integer> JSONArrayToSetInteger(JSONArray json) throws JSONException {
-    Set<Integer> set = new HashSet<Integer>();
+    Set<Integer> set = new HashSet<>();
 
     if (json == null) {
       return set;
@@ -166,7 +167,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static Set<String> JSONArrayToSetString(JSONArray json) throws JSONException {
-    Set<String> set = new HashSet<String>();
+    Set<String> set = new HashSet<>();
 
     if (json == null) {
       return set;
@@ -187,7 +188,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static Set<Object> JSONArrayToSetNodeIdString(JSONArray json) throws JSONException {
-    Set<Object> set = new HashSet<Object>();
+    Set<Object> set = new HashSet<>();
     if (json == null) {
       return set;
     }
@@ -206,7 +207,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
-    Map<String, ResultValue> result = new HashMap<String, ResultValue>();
+    Map<String, ResultValue> result = new HashMap<>();
     Iterator<?> keyIter = json.keys();
     while (keyIter.hasNext()) {
       String key = (String) keyIter.next();
@@ -215,7 +216,8 @@ public class JSONUtils {
     return result;
   }
 
-  // This code is an abomination...
+  // FIXME: This code is an abomination...
+  // Isn't this basically what the JSON lib does for us?
   /**
    * Extracts the column field from the JSONObject.
    *
@@ -227,26 +229,26 @@ public class JSONUtils {
   public static Object getObject(ColumnField field, JSONObject jsonObject) throws JSONException {
     if (jsonObject.has(field.getName())) {
       switch (field.type()) {
-        case BOOLEAN:
-          return jsonObject.getBoolean(field.getName());
+//        case BOOLEAN:
+//          return jsonObject.getBoolean(field.getName());
         case INTEGER:
           return jsonObject.getInt(field.getName());
         case STRING:
           return jsonObject.getString(field.getName());
-        case SET_INTEGER:
-          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getName()));
-        case SET_STRING:
-          return JSONUtils.JSONArrayToSetString(jsonObject.getJSONArray(field.getName()));
+//        case SET_INTEGER:
+//          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getName()));
+//        case SET_STRING:
+//          return JSONUtils.JSONArrayToSetString(jsonObject.getJSONArray(field.getName()));
         case SET_NODE_ID_STRING:
           return JSONUtils.JSONArrayToSetNodeIdString(jsonObject.getJSONArray(field.getName()));
-        case LIST_INTEGER:
-          return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
+//        case LIST_INTEGER:
+//          return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_STRING:
           return JSONUtils.JSONArrayToArrayListString(jsonObject.getJSONArray(field.getName()));
         case VALUES_MAP:
           return new ValuesMap(jsonObject.getJSONObject(field.getName()));
         default:
-          GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
+          GNSConfig.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
 
       }
@@ -262,47 +264,47 @@ public class JSONUtils {
    * @param jsonObject
    * @throws JSONException
    */
-  @SuppressWarnings("unchecked") // because we assume the field types get it right
   public static void putFieldInJsonObject(ColumnField field, Object value, JSONObject jsonObject) throws JSONException {
     try {
       if (value == null) {
         return;
       }
       switch (field.type()) {
-        case BOOLEAN:
-          jsonObject.put(field.getName(), value);
-          break;
+//        case BOOLEAN:
+//          jsonObject.put(field.getName(), value);
+//          break;
         case INTEGER:
           jsonObject.put(field.getName(), value);
           break;
         case STRING:
           jsonObject.put(field.getName(), value);
           break;
-        case SET_INTEGER:
-          jsonObject.put(field.getName(), (Set<Integer>) value);
-          break;
-        case SET_STRING:
-          jsonObject.put(field.getName(), (Set<String>) value);
-          break;
+//        case SET_INTEGER:
+//          jsonObject.put(field.getName(), (Set<Integer>) value);
+//          break;
+//        case SET_STRING:
+//          jsonObject.put(field.getName(), (Set<String>) value);
+//          break;
         case SET_NODE_ID_STRING:
-          Set set = (Set) value;
+          @SuppressWarnings("unchecked") 
+          Set<String> set = (Set<String>) value;
           jsonObject.put(field.getName(), nodeIdSetToStringSet(set));
           break;
-        case LIST_INTEGER:
-          jsonObject.put(field.getName(), (ArrayList<Integer>) value);
-          break;
+//        case LIST_INTEGER:
+//          jsonObject.put(field.getName(), (ArrayList<Integer>) value);
+//          break;
         case LIST_STRING:
-          jsonObject.put(field.getName(), (ArrayList<String>) value);
+          jsonObject.put(field.getName(), (Collection) value);
           break;
         case VALUES_MAP:
-          jsonObject.put(field.getName(), ((ValuesMap) value));
+          jsonObject.put(field.getName(), value);
           break;
         default:
-          GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
+          GNSConfig.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
       }
     } catch (JSONException e) {
-      GNS.getLogger().warning("Problem putting field in JSON Object: Value = " + value + " Field = " + field);
+      GNSConfig.getLogger().warning("Problem putting field in JSON Object: Value = " + value + " Field = " + field);
       e.printStackTrace();
     }
   }
@@ -312,8 +314,8 @@ public class JSONUtils {
    * @param set
    * @return a set of strings
    */
-  public static Set<String> nodeIdSetToStringSet(Set set) {
-    Set<String> result = new HashSet<String>();
+  public static Set<String> nodeIdSetToStringSet(Set<String> set) {
+    Set<String> result = new HashSet<>();
     for (Object id : set) {
       result.add(id.toString());
     }

@@ -14,17 +14,18 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.account;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,7 +37,7 @@ public class LookupGuid extends GnsCommand {
 
   /**
    * Creates a LookupGuid instance.
-   * 
+   *
    * @param module
    */
   public LookupGuid(CommandModule module) {
@@ -55,18 +56,14 @@ public class LookupGuid extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String name = json.getString(NAME);
-      // look for an account guid
-      String result = AccountAccess.lookupGuid(name, handler);
-      if (result != null) {
-        return new CommandResponse<String>(result);
-      } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
-      }
-    //}
+    String name = json.getString(NAME);
+    // look for an account guid
+    String result = AccountAccess.lookupGuid(name, handler);
+    if (result != null) {
+      return new CommandResponse<String>(result);
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
+    }
   }
 
   @Override

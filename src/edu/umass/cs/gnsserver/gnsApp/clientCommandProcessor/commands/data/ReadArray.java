@@ -14,21 +14,23 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,7 +38,7 @@ import org.json.JSONObject;
  * This is the main class for a whole set of commands that support reading of the old style data formatted as
  * JSONArrays. These are here for backward compatibility. The new format also supports JSONArrays as part of the
  * whole "guid data is a JSONObject" format.
- * 
+ *
  * @author westy
  */
 public class ReadArray extends GnsCommand {
@@ -70,6 +72,9 @@ public class ReadArray extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    if (reader.equals(MAGIC_STRING)) {
+      reader = null;
+    }
 
     if (getCommandName().equals(READ_ARRAY_ONE)) {
       if (ALL_FIELDS.equals(field)) {
@@ -77,12 +82,10 @@ public class ReadArray extends GnsCommand {
       } else {
         return FieldAccess.lookupOne(guid, field, reader, signature, message, handler);
       }
+    } else if (ALL_FIELDS.equals(field)) {
+      return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
     } else {
-      if (ALL_FIELDS.equals(field)) {
-        return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
-      } else {
-        return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, handler);
-      }
+      return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, handler);
     }
   }
 
