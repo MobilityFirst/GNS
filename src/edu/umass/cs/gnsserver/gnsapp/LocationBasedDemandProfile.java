@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Abhigyan Sharma, Westy, arun
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -27,11 +27,16 @@ import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Test;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
+import edu.umass.cs.utils.DefaultTest;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -46,7 +51,7 @@ import java.util.logging.Logger;
  * include checks for unreachable active servers or highly loaded servers.
  *
  *
- * @author Westy
+ * @author Westy, arun
  */
 public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
@@ -175,12 +180,35 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   public static LocationBasedDemandProfile createDemandProfile(String name) {
     return new LocationBasedDemandProfile(name);
   }
+  
+	/**
+	 * arun: ignore create, delete, and select commands. We only want to
+	 * consider typical read/write commands. Note that select commands are not
+	 * expected to have any locality, so they are unlikely to benefit from any
+	 * locality based placement.
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private static boolean shouldIgnore(Request request) {
+		if (!(request instanceof CommandPacket))
+			return true;
+		// else
+		CommandPacket command = (CommandPacket) request;
+		if (GnsProtocol.CREATE_DELETE_COMMANDS.contains(command
+				.getCommandName())
+				|| GnsProtocol.SELECT.equals(command.getCommandName()))
+			return true;
+		return false;
+	}
 
   @Override
   public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
-    if (!request.getServiceName().equals(this.name)) {
+    if (!request.getServiceName().equals(this.name)) 
       return;
-    }
+    
+    if(shouldIgnore(request)) return;
+    
     // This happens when called from a reconfigurator
     if (nodeConfig == null) {
       return;
@@ -408,9 +436,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * {@link edu.umass.cs.utils.Config.Config#maxReplica}.
    */
   private int computeNumberOfReplicas(int lookupCount, int updateCount, int actualReplicasCount) {
-//    if (Config.singleNS) {
-//      return 1; // this seems straightforward
-//    } else 
+
     if (updateCount == 0) {
       // no updates, replicate everywhere.
       return Math.min(actualReplicasCount, AppReconfigurableNodeOptions.maxReplica);
@@ -490,8 +516,16 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
     LOG.info(dp.toString());
     LOG.info(dp.clone().toString());
-    //testThings(dp);
+    testThings(dp);
   }
+  
+	static class LocationBasedDemandProfileTest extends DefaultTest{
+		@Test
+		public void testShouldReconfigure() {
+		    LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
+		    
+		}
+	}
 
   private static void testThings(LocationBasedDemandProfile dp) throws UnknownHostException {
     LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
