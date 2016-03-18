@@ -121,19 +121,28 @@ public class ServerIntegrationTest {
 			// NetworkUtils.getLocalHostLANAddress().getHostAddress(),
 					GNSClientConfig.LNS_PORT);
 		}
+		boolean ssl = (System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null
+				|| !System.getProperty(
+						AppReconfigurableNodeOptions.DISABLE_SSL)
+						.equals("true") ? ReconfigurationConfig
+				.getClientSSLMode() != SSL_MODES.CLEAR : false);
 		System.out.println("Connecting to " + address.getHostName() + ":"
-				+ address.getPort());
+				+ address.getPort() + (ssl ? " [ssl]":""));
 		client = new GNSClient(
 				(InetSocketAddress)null,
 				address,
-				System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null ? ReconfigurationConfig
-						.getClientSSLMode() != SSL_MODES.CLEAR : false);
+				// arun: FIXME: System property not shared with server script above 
+				ssl = (System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null
+						|| !System.getProperty(
+								AppReconfigurableNodeOptions.DISABLE_SSL)
+								.equals("true") ? ReconfigurationConfig
+						.getClientSSLMode() != SSL_MODES.CLEAR : false));
 				//new UniversalTcpClientExtended(address.getHostName(),
 				//address.getPort(), System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL)!=null);
 		
 		// arun: connectivity check embedded in GNSClient constructor
 		boolean connected = client instanceof GNSClient;
-		if(connected) System.out.println("successful");
+		if(connected) System.out.println("successful" + (ssl ? " [ssl]":""));
 
 		// Now we try to actualy connect to the server we created further above
 		// using the client.
@@ -187,7 +196,7 @@ public class ServerIntegrationTest {
 				System.out.println("SHUTDOWN SERVER COMMAND FAILED!");
 			}
 		}
-		client.close();
+		if(client!=null) client.close();
 	}
 
 	public ServerIntegrationTest() {

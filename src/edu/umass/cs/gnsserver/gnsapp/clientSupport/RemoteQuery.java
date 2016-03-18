@@ -331,7 +331,7 @@ public class RemoteQuery extends ClientAsynchBase {
         if (debuggingEnabled) {
 					GNSConfig.getLogger().log(
 							Level.INFO,
-							"{0} {1} {2} got from {3} this: {4}",
+							"{0} {1} got from {2} this: {3}",
 							new Object[] { this, packet.getServiceName(),
 									packet.getResponder(), Util.truncate(returnValue,16,16) });
         }

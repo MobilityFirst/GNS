@@ -152,7 +152,7 @@ public GNSApp(String[] args) throws IOException {
             messenger, parameters);
 
     // start the NSListenerAdmin thread
-    new AppAdmin(this, gnsNodeConfig).start();
+    //new AppAdmin(this, gnsNodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
@@ -235,9 +235,9 @@ public GNSApp(String[] args) throws IOException {
 			if (AppReconfigurableNodeOptions.debuggingEnabled)
 				GNSConfig.getLogger().log(
 						Level.INFO,
-						"{0} &&&&&&& handling \n{1}\n  =\n{2} ",
+						"{0} &&&&&&& handling {1} ",
 						new Object[] { this,
-								request, new JSONObject(request.toString())});
+								request.getSummary() });
 			switch (packetType) {
 			case SELECT_REQUEST:
 				Select.handleSelectRequest(
@@ -391,7 +391,7 @@ public GNSApp(String[] args) throws IOException {
           }
         }
       }
-      DelayProfiler.updateDelay("restore", startTime);
+      //DelayProfiler.updateDelay("restore", startTime);
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().severe("Failed update exception: " + e.getMessage());
@@ -461,8 +461,22 @@ public GNSApp(String[] args) throws IOException {
 	 * socket the request came in.
 	 */
   @Override
-  public void sendToClient(InetSocketAddress isa, Request response, JSONObject responseJSON) throws IOException {;
-    if (!disableSSL) {
+  public void sendToClient(InetSocketAddress isa, Request response, JSONObject responseJSON, InetSocketAddress myListeningAddress) throws IOException {;
+  
+		/* arun: FIXME: use myListeningAddress and invoke just
+		 * getClientMessenger().sendToAddress(isa,
+		 * responseJSON,myListeningAddress), otherwise messenger does not know
+		 * which socket the request came in and is forced to either always use
+		 * SSL or always not use SSL. SSL should be a per-request option like
+		 * HTTPS, i.e., if SSL is enabled, a client should be able to send
+		 * requests to either the SSL port or the CLEAR port; the latter is
+		 * always available by default.
+		 * 
+		 * Alternatively, delegate client messaging to gigapaxos and you don't
+		 * have to worry about keeping track of sender or listening addresses.
+		 * For that we need the corresponding request here so that we can
+		 * invoke request.setResponse(response) here. */
+  if (!disableSSL) {
 			GNSConfig.getLogger().log(Level.INFO,
 					"{0} sending back response to client {1} -> {2}",
 					new Object[] { this, response.getSummary(), isa });
@@ -495,5 +509,4 @@ public GNSApp(String[] args) throws IOException {
   public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }
-
 }

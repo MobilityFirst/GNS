@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnsserver.httpserver.Defs.*;
@@ -38,9 +39,9 @@ import org.json.JSONObject;
  * and core GNS commands that are sent to the server. Specifically the GnsCommand is the superclass for all other commands.
  * It supports command sorting to facilitate command lookup. It also supports command documentation. 
  * 
- * @author westy
+ * @author westy, arun
  */
-public abstract class GnsCommand implements Comparable<GnsCommand> {
+public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable {
 
   /**
    *
@@ -226,8 +227,18 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
     return result.toString();
   }
 
-  @Override
-  public String toString() {
-    return this.getClass().getName() + " " + getCommandName() + " " + getCommandParametersString();
-  }
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + ":" + getCommandName() + " ["
+				+ getCommandParametersString() + "]";
+	}
+	
+	@Override
+	public Object getSummary() {
+		return new Object() {
+			public String toString() {
+				return GnsCommand.this.toString();
+			}
+		};
+	}
 }

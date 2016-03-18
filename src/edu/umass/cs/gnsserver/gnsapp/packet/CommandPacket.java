@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
+import java.net.InetSocketAddress;
+
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
@@ -67,6 +69,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * The TCP port of the sender as an int
    */
   private final int senderPort;
+  
+  // arun: Need this for correct receiver messaging 
+  private final InetSocketAddress myListeningAddress;
   /**
    * The JSON form of the command. Always includes a COMMANDNAME field.
    * Almost always has a GUID field or NAME (for HRN records) field.
@@ -85,6 +90,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * @param senderAddress
    * @param command
    * @param senderPort
+ * @param myListeningAddress 
    */
   public CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
@@ -93,6 +99,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
     this.command = command;
+    
+    this.myListeningAddress= null;
   }
 
   /**
@@ -108,6 +116,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderAddress = null;
     this.senderPort = -1;
     this.command = command;
+    
+    this.myListeningAddress = null;
   }
 
   /**
@@ -127,26 +137,15 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderAddress = json.optString(SENDERADDRESS, null);
     this.senderPort = json.optInt(SENDERPORT, -1);
     this.command = json.getJSONObject(COMMAND);
+    
+    this.myListeningAddress = MessageNIOTransport.getReceiverAddress(command);
+
   }
 
-//  /**
-//   * Create a CommandPacket instance.
-//   *
-//   * @param json
-//   * @throws JSONException
-//   */
-//  public CommandPacket(JSONObject json) throws JSONException {
-//    this.type = Packet.getPacketType(json);
-//    this.clientRequestId = json.getInt(CLIENTREQUESTID);
-//    if (json.has(LNSREQUESTID)) {
-//      this.LNSRequestId = json.getInt(LNSREQUESTID);
-//    } else {
-//      this.LNSRequestId = -1;
-//    }
-//    this.senderAddress = json.getString(SENDERADDRESS);
-//    this.senderPort = json.getInt(SENDERPORT);
-//    this.command = json.getJSONObject(COMMAND);
-//  }
+  public InetSocketAddress getMyListeningAddress() {
+	  return this.myListeningAddress;
+  }
+
   /**
    * Converts the command object into a JSONObject.
    *
@@ -168,6 +167,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     if (senderPort != -1) {
       json.put(SENDERPORT, this.senderPort);
     }
+    if(this.myListeningAddress!=null)
+    	// do nothing
+    	;
     return json;
   }
 

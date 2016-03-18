@@ -41,6 +41,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Clien
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
 import java.io.UnsupportedEncodingException;
@@ -93,7 +94,7 @@ public class NSAccessSupport {
     byte[] publickeyBytes = Base64.decode(accessorPublicKey);
     if (publickeyBytes == null) { // bogus public key
       if (debuggingEnabled) {
-        GNSConfig.getLogger().info("&&&&Base 64 decoding is bogus!!!");
+        GNSConfig.getLogger().log(Level.INFO, "&&&&Base 64 decoding is bogus!!!");
       }
       return false;
     }
@@ -105,7 +106,9 @@ public class NSAccessSupport {
 							Util.truncate(signature, 16, 16),
 							Util.truncate(message, 16, 16) });
     }
+    //long t= System.currentTimeMillis();
     boolean result = verifySignatureInternal(publickeyBytes, signature, message);
+    //DelayProfiler.updateDelay("verifySignatureInternal", t);
     if (debuggingEnabled) {
 			GNSConfig.getLogger()
 					.log(Level.INFO,
@@ -147,7 +150,9 @@ public class NSAccessSupport {
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     //String accessorGuid = ClientUtils.createGuidStringFromPublicKey(accessorPublicKey);
     if (debuggingEnabled) {
-      GNSConfig.getLogger().info("User: " + guid + " Reader: " + accessorGuid + " Field: " + field);
+			GNSConfig.getLogger().log(Level.INFO,
+					"User: {0} Reader: {1} Field: {2}",
+					new Object[] { guid, accessorGuid, field });
     }
     if (guid.equals(accessorGuid)) {
       return true; // can always read your own stuff
@@ -157,7 +162,9 @@ public class NSAccessSupport {
       return true; // accessor can see all fields
     } else {
       if (debuggingEnabled) {
-        GNSConfig.getLogger().info("User " + accessorGuid + " NOT allowed to access user " + guid + "'s " + field + " field");
+				GNSConfig.getLogger().log(Level.INFO,
+						"User {0} NOT allowed to access user {1}'s field {2}",
+						new Object[] { accessorGuid, guid, field });
       }
       return false;
     }
@@ -278,7 +285,8 @@ public class NSAccessSupport {
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
     if (debuggingEnabled) {
-      GNSConfig.getLogger().info("###field=" + field);
+			GNSConfig.getLogger().log(Level.INFO, "###field={0}",
+					new Object[] { field });
     }
     try {
       //FIXME: Clean this mess up.

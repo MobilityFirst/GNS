@@ -65,10 +65,12 @@ public interface GNSApplicationInterface<NodeIDType> {
    * Sends a JSON packet to a client.
    * 
    * @param isa
+ * @param response 
    * @param msg
+ * @param myListeningAddress 
    * @throws IOException
    */
-  void sendToClient(InetSocketAddress isa, Request response, JSONObject msg) throws IOException;
+  void sendToClient(InetSocketAddress isa, Request response, JSONObject msg, InetSocketAddress myListeningAddress) throws IOException;
   
   /**
    * Sends a JSON packet to a node.

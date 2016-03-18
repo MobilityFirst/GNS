@@ -143,7 +143,8 @@ public class Select {
             GNSConfig.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app.getDB());
-          sendReponsePacketToCaller(packet.getId(), packet.getCcpQueryId(), packet.getClientAddress(), result.toStringSet(), app);
+          InetSocketAddress iDontKnowMyListeningAddress = null;
+          sendReponsePacketToCaller(packet.getId(), packet.getCcpQueryId(), packet.getClientAddress(), result.toStringSet(), app,iDontKnowMyListeningAddress);
           return;
         }
       } else {
@@ -273,7 +274,7 @@ public class Select {
 
   private static void sendReponsePacketToCaller(int id, int lnsQueryId,
           InetSocketAddress address, Set<String> guids,
-          GNSApplicationInterface<String> app) throws JSONException {
+          GNSApplicationInterface<String> app, InetSocketAddress myListeningAddress) throws JSONException {
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> response
             = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
@@ -288,7 +289,7 @@ public class Select {
     }
     try {
       //app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
-      app.sendToClient(address, response, response.toJSONObject());
+      app.sendToClient(address, response, response.toJSONObject(),myListeningAddress);
     } catch (IOException f) {
       GNSConfig.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
     }
@@ -298,8 +299,9 @@ public class Select {
           GNSApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
+    InetSocketAddress iDontKnowMyListeningAddress = null;
     // Pull the records out of the info structure and send a response back to the caller
-    sendReponsePacketToCaller(packet.getId(), packet.getLnsQueryId(), packet.getReturnAddress(), guids, replica);
+    sendReponsePacketToCaller(packet.getId(), packet.getLnsQueryId(), packet.getReturnAddress(), guids, replica,iDontKnowMyListeningAddress);
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff

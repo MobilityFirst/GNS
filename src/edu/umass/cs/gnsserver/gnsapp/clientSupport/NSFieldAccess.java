@@ -34,9 +34,11 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.json.JSONException;
 
@@ -45,7 +47,7 @@ import org.json.JSONException;
  *
  * Similar code for getting values from the database exists in GnsReconLookup.
  *
- * @author westy
+ * @author westy, arun 
  */
 public class NSFieldAccess {
 
@@ -168,23 +170,29 @@ public class NSFieldAccess {
           BasicRecordMap database) {
     ResultValue result = null;
     try {
+    	// arun: cleaned up logging
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null,
               ColumnFieldType.LIST_STRING, field);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
+				GNSConfig.getLogger().log(Level.FINE,
+						"LOOKUPFIELDONTHISSERVER: {0} : {1} -> {2}",
+						new Object[] { guid, field, nameRecord });
       }
       result = nameRecord.getUserKeyAsArray(field);
     } catch (FieldNotFoundException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("Field not found " + guid + " : " + field);
+        GNSConfig.getLogger().log(Level.INFO, "Field not found {0} : {1}", new Object[]{guid,field});
       }
     } catch (RecordNotFoundException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("Record not found " + guid + " : " + field);
+				GNSConfig.getLogger().log(Level.INFO,
+						"Record not found {0} : {1}",
+						new Object[] { guid, field });
       }
     } catch (FailedDBOperationException e) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("Failed DB operation " + guid + " : " + field);
+				GNSConfig.getLogger().log(Level.INFO, "Failed DB operation {0} : {1}",
+						new Object[] { guid, field });
       }
     }
     if (result != null) {
@@ -269,7 +277,6 @@ public class NSFieldAccess {
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
-    	  GNSConfig.getLogger().info("RQ: ");
         String stringResult = new RemoteQuery().fieldRead(guid, field);
         if (stringResult != null) {
           result = new ValuesMap();

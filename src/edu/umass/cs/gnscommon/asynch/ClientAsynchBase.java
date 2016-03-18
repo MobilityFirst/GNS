@@ -634,7 +634,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
    */
   public JSONObject createCommand(String action, Object... keysAndValues) throws GnsClientException {
-    long startTime = System.currentTimeMillis();
+   // long startTime = System.currentTimeMillis();
     try {
       JSONObject result = new JSONObject();
       String key;
@@ -645,7 +645,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
         value = keysAndValues[i + 1];
         result.put(key, value);
       }
-      DelayProfiler.updateDelay("createCommand", startTime);
+      // negligible
+      //DelayProfiler.updateDelay("createCommand", startTime);
       return result;
     } catch (JSONException e) {
       throw new GnsClientException("Error encoding message", e);

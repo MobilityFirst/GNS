@@ -79,14 +79,14 @@ public class NSUpdateSupport {
 					"Processing local update {0} / {1} {2} {3}",
 					new Object[] { guid, field, operation, updateValue });
 		}
-    Long authStartTime = System.currentTimeMillis();
+    //Long authStartTime = System.currentTimeMillis();
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     // FIXME : handle ACL checks for full JSON user updates
     if (writer != null && field != null) {
       // writer will be null for internal system reads
       errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
     }
-    DelayProfiler.updateDelay("totalUpdateAuth", authStartTime);
+    //DelayProfiler.updateDelay("totalUpdateAuth", authStartTime);
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       return errorCode;
