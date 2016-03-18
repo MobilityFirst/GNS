@@ -249,9 +249,9 @@ public GNSApp(String[] args) throws IOException {
 			if (AppReconfigurableNodeOptions.debuggingEnabled)
 				GNSConfig.getLogger().log(
 						Level.INFO,
-						"{0} &&&&&&& handling {1} ",
+						"{0} &&&&&&& handling \n{1}\n  =\n{2} ",
 						new Object[] { this,
-								request.getSummary() });
+								request, new JSONObject(request.toString())});
 			switch (packetType) {
 			case SELECT_REQUEST:
 				Select.handleSelectRequest(
