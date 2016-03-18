@@ -20,11 +20,6 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
-import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
-import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.Logging;
@@ -43,14 +38,6 @@ import java.util.logging.Logger;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-
-import edu.umass.cs.gigapaxos.PaxosManager;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.utils.Logging;
-import edu.umass.cs.nio.NIOTransport;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.reconfiguration.Reconfigurator;
 
 /**
  * The command line options for AppReconfigurableNode.
@@ -125,27 +112,28 @@ public class AppReconfigurableNodeOptions {
   public static boolean disableSSL = false;
   
   public static boolean enableActiveCode = false;
+  
   /**
    * Number of active code worker.
    */
-  public static int activeCodeWorkerCount = 2;
+  public static int activeCodeWorkerCount = 5;
   /**
    * Number of spare workers.
    */
-  public static int activeCodeSpareWorker = 1;
+  public static int activeCodeSpareWorker = 5;
   /**
    * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
    */
   public static boolean activeCodeEnableTimeout = true;
   /**
-   * The timeout for each active code task
+   * How long (in seconds) to blacklist active code.
    */
-  public static long activeCodeTimeOut = 200000000;
+  public static long activeCodeTimeOut = 1000;
   /**
    * Enable debug message in active code package
    */
-  public static boolean activeCodeEnableDebugging = true;
-  
+  public static boolean activeCodeEnableDebugging = false;
+
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
   /**
@@ -225,7 +213,7 @@ public class AppReconfigurableNodeOptions {
    * DISABLE_EMAIL_VERIFICATION
    */
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
-
+  
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
   
   private static final String ACTIVE_CODE_SPARE_WORKER = "activeCodeSpareWorker";
@@ -464,9 +452,9 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
     }
-
+    
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
-      activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
+    	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
     
     if (allValues.containsKey(ACTIVE_CODE_SPARE_WORKER)) {
@@ -480,7 +468,10 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(ACTIVE_CODE_ENABLE_DEBUGGING)) {
     	activeCodeEnableDebugging = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_DEBUGGING));
     }
-
+    
+    if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {
+        enableActiveCode = true;
+      }
   }
 
 }

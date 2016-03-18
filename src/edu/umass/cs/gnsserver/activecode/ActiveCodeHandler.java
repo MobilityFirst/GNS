@@ -291,6 +291,10 @@ public class ActiveCodeHandler {
 	    return result;
 	}
 	
+	protected ClientPool getClientPool(){
+		return clientPool;
+	}
+	
 	protected ActiveCodeExecutor getExecutor(){
 		return executorPool;
 	}

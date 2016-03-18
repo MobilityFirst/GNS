@@ -28,22 +28,15 @@ import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
-import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 /**
  * In this example we create an account to write and read back JSON Objects to the GNS.
@@ -64,11 +57,11 @@ public class StandaloneBasicTcpClientExample {
   public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
-	String addr = args[0];
+
     // Bring up the server selection dialog
-    InetSocketAddress address = new InetSocketAddress(addr, 24398); //ServerSelectDialog.selectServer();
+    InetSocketAddress address = ServerSelectDialog.selectServer();
     // Start the client
-    client = new BasicUniversalTcpClient(address.getHostName(), address.getPort(), true);
+    client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
     try {
       // Create a guid (which is also an account guid)
       guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
@@ -85,16 +78,12 @@ public class StandaloneBasicTcpClientExample {
             + "\"location\":\"work\",\"name\":\"frank\"}");
 
     // Write out the JSON Object
-    long t1 = System.currentTimeMillis();
     client.update(guid, json);
-    long elapsed = System.currentTimeMillis() - t1;
-    System.out.println("Wrote JSONObject :" + json + ", it takes "+elapsed+"ms.");
+    System.out.println("Wrote JSONObject :" + json);
 
     // and read the entire object back in
-    t1 = System.currentTimeMillis();
     JSONObject result = client.read(guid);
-    elapsed = System.currentTimeMillis() - t1;
-    System.out.println("Read JSON: " + result.toString()+", it takes "+elapsed+"ms.");
+    System.out.println("Read JSON: " + result.toString());
 
     // Change a field
     client.update(guid, new JSONObject("{\"occupation\":\"rocket scientist\"}"));

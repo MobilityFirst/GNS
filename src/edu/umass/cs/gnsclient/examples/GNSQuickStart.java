@@ -34,11 +34,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
-
 /**
  * OUT OF DATE: THIS WILL BE UPDATED SHORTLY TO REFLECT THE LATEST CLIENT CHANGES.
  * 
@@ -62,7 +57,7 @@ public class GNSQuickStart {
   
   // *** REPLACE THIS WITH THE VALUE YOU USED TO CREATE YOUR ACCOUNT ***
   // The email you used to create your GNS account guid
-  private static final String accountId = "test0@cs.umass.edu";
+  private static final String accountId = "support@gns.name";
   //
   // *** REPLACE THIS WITH THE LOCATION OF YOUR PRIVATE KEY FILE ***
   // The location of your private key file. 
@@ -74,14 +69,14 @@ public class GNSQuickStart {
   // It is a PEM file that needs to be converted to a PKCS#8 format file.
   // Use this command to convert it to a standard PKCS#8 format file:
   // > openssl pkcs8 -topk8 -inform PEM -outform DER -in <input file>  -nocrypt > <output file>
-  private static final String privateKeyFile = "/Users/zhaoyugao/gns_key/test0";
+  private static final String privateKeyFile = "/Users/Westy/test_key";
 
   public static void main(String[] args) throws IOException, 
           InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
           InvalidKeyException, SignatureException, Exception {
     
     // A convenience function that pops up a GUI for picking which GNS server you want to use.
-    InetSocketAddress address = new InetSocketAddress("0.0.0.0", 24398);//ServerSelectDialog.selectServer();
+    InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create a new client object
     UniversalTcpClientExtended client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
     System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());

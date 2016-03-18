@@ -143,14 +143,9 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
 
     int reconfigIndex = requestCount % reconfigurators.size();
     if (handler.isDebugMode()) {
-    	/*
-      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
-=======
       log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
->>>>>>> upstream/master
               + " Sending to " + reconfigurators.get(reconfigIndex)
               + " " + packet);
-              */
     }
     InetSocketAddress reconfiguratorAddress = reconfigurators.get(reconfigIndex);
     if (!LocalNameServerOptions.disableSSL) {

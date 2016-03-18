@@ -19,23 +19,17 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
-import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
+import java.net.InetSocketAddress;
 
 /**
  * Creates some DNS records for testing the GNS DNS service.

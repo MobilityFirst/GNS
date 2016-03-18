@@ -29,20 +29,13 @@ import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
-
-import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 /**
  * In this example we create an account to write and read back some information in the GNS.
@@ -84,20 +77,13 @@ public class StandaloneTcpExample {
     // Get the public key from the GNS
     PublicKey publicKey = client.publicKeyLookupFromGuid(guid);
     System.out.println("Retrieved public key: " + publicKey.toString());
-    long t1 = System.currentTimeMillis();
+
     // Use the GuidEntry create an new record in the GNS
     client.fieldCreateOneElementList(accountGuid, "homestate", "Florida");
-    long elapsed = System.currentTimeMillis() - t1;
-    System.out.println("Write takes "+elapsed+"ms");
     System.out.println("Added location -> Florida record to the GNS for GUID " + accountGuid.getGuid());
-    
-    
-    t1 = System.currentTimeMillis();
+
     // Retrive that record from the GNS
     String result = client.fieldReadArrayFirstElement(accountGuid.getGuid(), "homestate", accountGuid);
-    elapsed = System.currentTimeMillis() - t1;
-    System.out.println("Read takes "+elapsed+"ms");
-    
     System.out.println("Result of read location: " + result);
     
      // Retrive that record from the GNS
