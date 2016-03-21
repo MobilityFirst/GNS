@@ -22,6 +22,7 @@ package edu.umass.cs.gnscommon;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
 /**
@@ -29,11 +30,24 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
  * it defines a bunch of constants that define the protocol
  * support for communicating between the client and the local name server.
  *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>, arun
  * @version 1.0
  */
 public class GnsProtocol {
 
+	/* FIXME: arun: These strings are just a bad idea. There is no reason for
+	 * the strings to be different from the command name. Properties like
+	 * error/success, prefix/suffix symbols, an integer code, etc. are better
+	 * organized neatly in an enum, which can also be refactored easily, for
+	 * example, to add more unanticipated attributes.
+	 * 
+	 * You should have an integer code for each packet type so that it is
+	 * consistent with the rest of the NIO based design and so that packets can
+	 * carry compact identifiers even if you stick with the
+	 * everything-inside-COMMAND design. For example, paxos packets only have a
+	 * single IntegerPacketType 90, but internally use several IntegerPacketType
+	 * packets. */
+	
   public final static String REGISTER_ACCOUNT = "registerAccount";
   public final static String VERIFY_ACCOUNT = "verifyAccount";
   public final static String REMOVE_ACCOUNT = "removeAccount";
@@ -145,6 +159,10 @@ public class GnsProtocol {
   public final static String DUPLICATE_GROUP = "+DUPLICATEGROUP+";
   public final static String DUPLICATE_FIELD = "+DUPLICATEFIELD+";
   public final static String DUPLICATE_NAME = "+DUPLICATENAME+";
+	// arun: corresponds to gigapaxos duplicate name creation error
+	public final static String DUPLICATE_ERROR = "+"
+			+ ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
+					.toString() + "+";
   public final static String JSON_PARSE_ERROR = "+JSONPARSEERROR+";
   public final static String TOO_MANY_ALIASES = "+TOMANYALIASES+";
   public final static String TOO_MANY_GUIDS = "+TOMANYGUIDS+";

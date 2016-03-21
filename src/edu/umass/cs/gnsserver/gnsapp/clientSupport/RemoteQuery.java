@@ -242,7 +242,13 @@ public class RemoteQuery extends ClientAsynchBase {
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));//reconCallback);
     ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName(), monitor);
     // FIXME: return better error codes.
-    return response.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR;
+		return response.isFailed() ?
+				// arun: return duplicate error if name already exists
+				(response instanceof CreateServiceName
+				&& response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR ? 
+						NSResponseCode.DUPLICATE_ERROR : 
+							// else generic error
+							NSResponseCode.ERROR) : NSResponseCode.NO_ERROR;
   }
 
   public NSResponseCode createRecord(String name, JSONObject value) {
@@ -276,14 +282,6 @@ public class RemoteQuery extends ClientAsynchBase {
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
-//    try {
-//      CreateServiceName packet = new CreateServiceName(name, value.toString());
-//      return sendReconRequest(packet);
-//    } catch (GnsClientException | IOException e) {
-//      GNS.getLogger().info("Problem creating " + name + " :" + e);
-//      // FIXME: return better error codes.
-//      return  NSResponseCode.ERROR;
-//    }
   }
 
   // based on edu.umass.cs.reconfiguration.testing.ReconfigurableClientCreateTester but this one

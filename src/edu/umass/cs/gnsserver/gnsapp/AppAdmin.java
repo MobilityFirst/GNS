@@ -71,7 +71,10 @@ public class AppAdmin extends Thread implements Shutdownable{
     try {
       this.serverSocket = new ServerSocket(gnsNodeConfig.getAdminPort(app.getNodeID()));
     } catch (IOException e) {
-      GNSConfig.getLogger().severe("Unable to create NSListenerAdmin server: " + e);
+			GNSConfig.getLogger().severe(
+					"Unable to create NSListenerAdmin server on port "
+							+ gnsNodeConfig.getAdminPort(app.getNodeID())
+							+ ": " + e);
     }
   }
 
@@ -81,7 +84,8 @@ public class AppAdmin extends Thread implements Shutdownable{
   @Override
   public void run() {
     int numRequest = 0;
-    GNSConfig.getLogger().info("NS Node " + app.getNodeID().toString() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
+    GNSConfig.getLogger().info("NS Node " + app.getNodeID().toString() + " starting Admin Request Server on port " + 
+    serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();

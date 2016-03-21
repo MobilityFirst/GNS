@@ -1627,7 +1627,7 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     // now we wait until the correct packet comes back
     try {
       if (debuggingEnabled) {
-				GNSClientConfig.getLogger().log(Level.INFO,
+				GNSClientConfig.getLogger().log(Level.FINE,
 						"{0} waiting for query {1}",
 						new Object[] { this, id + "" });
       }
@@ -1638,30 +1638,35 @@ public BasicUniversalTcpClient(boolean disableSSL) {
         }
         if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
           if (debuggingEnabled) {
-            GNSClientConfig.getLogger().info("Timeout after  (" + id + ") : " + command.toString());
+						GNSClientConfig.getLogger().log(
+								Level.INFO,
+								"{0} timed out after {1}ms on {2}: {3}",
+								new Object[] { this, readTimeout, id + "",
+										command });
           }
+          /* FIXME: arun: returning string errors like this is poor. You should
+           * have error codes and systematic methods to automatically generate
+           * error responses and be able to refactor them as needed easily.
+           */
           return BAD_RESPONSE + " " + TIMEOUT;
         }
       }
       if (debuggingEnabled) {
-        GNSClientConfig.getLogger().info("Query id response received: " + id);
+        GNSClientConfig.getLogger().log(Level.FINE, "Response received for query {0}", new Object[]{ id+""});
       }
     } catch (InterruptedException x) {
       GNSClientConfig.getLogger().severe("Wait for return packet was interrupted " + x);
     }
     CommandResult result = resultMap.remove(id);
-    if (debuggingEnabled) {
-      GNSClientConfig.getLogger().info(
-              String.format(
-                      "Command name: %19s %40s %16s id: %12s "
-                      + "NS: %16s ",
-                      command.optString(COMMANDNAME, "Unknown"),
-                      command.optString(GUID, ""),
-                      command.optString(NAME, ""),
-                      id,
-                      result.getResponder()
-              ));
-    }
+		if (debuggingEnabled) {
+			GNSClientConfig.getLogger().log(Level.FINE,
+					// String.format(
+					"Command name: {0} {1} {2} id: {3} " + "NS: {4} ",
+					new Object[] { command.optString(COMMANDNAME, "Unknown"),
+							command.optString(GUID, ""),
+							command.optString(NAME, ""), id,
+							result.getResponder() });
+		}
     DelayProfiler.updateDelay("desktopSendCommmand", startTime);
     if (debuggingEnabled) {
      // GNSClient.getLogger().info(DelayProfiler.getStats());
@@ -1673,8 +1678,8 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     long startTime = System.currentTimeMillis();
     long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, null, -1, command);
-	GNSConfig.getLogger().log(Level.INFO, "{0} inserting {1}:{2}",
-			new Object[] { this, id+"", packet });
+	GNSConfig.getLogger().log(Level.INFO, "{0} sending {1}:{2}",
+			new Object[] { this, id+"", packet.getSummary() });
     queryTimeStamp.put(id, startTime);
     sendCommandPacket(packet);
     DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
@@ -1714,14 +1719,15 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     CommandValueReturnPacket packet = new CommandValueReturnPacket(json);
     long id = packet.getClientRequestId();
     // *INSTRUMENTATION*
-	GNSConfig.getLogger().log(Level.INFO, "{0} received response {1}:{2}",
-			new Object[] { this, id+"",packet.getSummary() });
+	GNSConfig.getLogger().log(Level.INFO, "{0} received response {1}",
+			new Object[] { this, packet.getSummary() });
     long queryStartTime = queryTimeStamp.remove(id);
     long latency = receivedTime - queryStartTime;
     movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
     // *END OF INSTRUMENTATION*
     if (debuggingEnabled) {
-      GNSClientConfig.getLogger().info("Handling return packet: " + json.toString());
+			GNSClientConfig.getLogger().log(Level.FINE,
+					"Handling return packet: {0}", new Object[] { json });
     }
     // store the response away
     resultMap.put(id, new CommandResult(packet, receivedTime, latency));
@@ -1734,7 +1740,7 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     } else {
       // Handle the asynchronus packets
       // note that we have recieved the reponse
-        GNSClientConfig.getLogger().info("Removing async return packet: " + json.toString());
+        GNSClientConfig.getLogger().log(Level.INFO, "Removing async return packet: {0}", new Object[]{json});
 
       pendingAsynchPackets.remove(id);
       // * INSTRUMENTATION *
@@ -1766,14 +1772,17 @@ public BasicUniversalTcpClient(boolean disableSSL) {
 
 		long id = packet != null ? packet.getClientRequestId() : error
 				.getRequestID();
-		GNSConfig.getLogger().log(Level.INFO, "{0} received response {1}:{2}",
-				new Object[] { this, id + "", response.getSummary() });
+		GNSConfig.getLogger().log(
+				Level.INFO,
+				"{0} received response {1}:{2} from {3}",
+				new Object[] { this, id + "", response.getSummary(),
+						packet!=null ? packet.getResponder() : error.getSender() });
 		long queryStartTime = queryTimeStamp.remove(id);
 		long latency = receivedTime - queryStartTime;
 		movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
 		if (debuggingEnabled) {
-			GNSClientConfig.getLogger().log(Level.INFO,
-					"Handling return packet: {0}", new Object[] { response });
+			GNSClientConfig.getLogger().log(Level.FINE,
+					"Handling return packet: {0}", new Object[] { response.getSummary() });
 		}
 		// store the response away
 		if (packet != null)

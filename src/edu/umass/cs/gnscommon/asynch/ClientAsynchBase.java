@@ -145,6 +145,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
       GNSConfig.getLogger().info("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
     }
     keyPairHostIndex = addresses.iterator().next();
+    this.enableJSONPackets();
   }
 
   private static Stringifiable<String> unstringer = new StringifiableDefault<String>("");
@@ -154,7 +155,17 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public Request getRequest(String stringified) throws RequestParseException {
     Request request = null;
     try {
-      JSONObject json = new JSONObject(stringified);
+      return getRequestFromJSON(new JSONObject(stringified));
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return request;
+  }
+  @Override
+  // This needs to return null for packet types that we don't want to handle.
+  public Request getRequestFromJSON(JSONObject json) throws RequestParseException {
+    Request request = null;
+    try {
       if (clientPacketTypes.contains(Packet.getPacketType(json))) {
         request = (Request) Packet.createInstance(json, unstringer);
       }

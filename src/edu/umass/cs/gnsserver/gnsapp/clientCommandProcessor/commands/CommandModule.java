@@ -62,6 +62,10 @@ public class CommandModule {
   }
 
   /**
+   * FIXME: arun: Just define and use classes directly in CommandDefs. What 
+   * is the point of having Strings there only to convert them back to 
+   * classes here??
+   * 
    * Add commands to this module. Commands instances are created by reflection
    * based on the command class names passed in parameter
    *

@@ -268,6 +268,7 @@ public class GNSClient extends UniversalTcpClientExtended {
 		public AsyncClient(Set<InetSocketAddress> reconfigurators,
 				SSL_MODES sslMode, int clientPortOffset) throws IOException {
 			super(reconfigurators, sslMode, clientPortOffset);
+			this.enableJSONPackets();
 		}
 
 		@Override
@@ -275,10 +276,19 @@ public class GNSClient extends UniversalTcpClientExtended {
 			Request response = null;
 			JSONObject json = null;
 			try {
-				json = new JSONObject(msg);
+				return this.getRequestFromJSON(new JSONObject(msg));
+			} catch (JSONException e) {
+				log.warning("Problem parsing packet from " + json + ": " + e);
+			}
+			return response;
+		}
+		@Override
+		public Request getRequestFromJSON(JSONObject json) throws RequestParseException {
+			Request response = null;
+			try {
 				Packet.PacketType type = Packet.getPacketType(json);
 				if (type != null) {
-					log.log(Level.INFO,
+					log.log(Level.FINER,
 							"{0} retrieving packet from received json {1}",
 							new Object[] { this, json });
 					if (clientPacketTypes.contains(Packet.getPacketType(json)))

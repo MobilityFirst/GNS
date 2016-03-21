@@ -152,7 +152,7 @@ public GNSApp(String[] args) throws IOException {
             messenger, parameters);
 
     // start the NSListenerAdmin thread
-    //new AppAdmin(this, gnsNodeConfig).start();
+    new AppAdmin(this, gnsNodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
@@ -247,17 +247,20 @@ public GNSApp(String[] args) throws IOException {
 				Select.handleSelectResponse(
 						(SelectResponsePacket<String>) request, this);
 				break;
+				/* TODO: arun: I assume the GNS doesn't need STOP and NOOP
+				 * anymore; if so, remove them. 
+				 */
 			case STOP:
 				break;
 			case NOOP:
 				break;
 			case COMMAND:
 				CommandHandler.handleCommandPacketForApp(
-						(CommandPacket) request, this);
+						(CommandPacket) request, doNotReplyToClient, this);
 				break;
 			case COMMAND_RETURN_VALUE:
 				CommandHandler.handleCommandReturnValuePacketForApp(
-						(CommandValueReturnPacket) request, this);
+						(CommandValueReturnPacket) request, doNotReplyToClient, this);
 				break;
 			default:
 				GNSConfig.getLogger().severe(
@@ -463,7 +466,16 @@ public GNSApp(String[] args) throws IOException {
   @Override
   public void sendToClient(InetSocketAddress isa, Request response, JSONObject responseJSON, InetSocketAddress myListeningAddress) throws IOException {;
   
-		/* arun: FIXME: use myListeningAddress and invoke just
+		/* arun: FIXED: You have just ignored the doNotReplyToClient flag
+		 * here, which is against the spec of the implementation of the
+		 * Replicable.execute(.) method. Alternatively, you could just delegate 
+		 * client messaging to gigapaxos, but you are not doing that either.
+		 * The current implementation will unnecessarily incur 3x client
+		 * messaging overhead and can potentially cause bugs if clients rapidly 
+		 * open and close connections.
+		 * 
+		 * 
+		 * arun: FIXME: use myListeningAddress and invoke just
 		 * getClientMessenger().sendToAddress(isa,
 		 * responseJSON,myListeningAddress), otherwise messenger does not know
 		 * which socket the request came in and is forced to either always use
@@ -474,8 +486,8 @@ public GNSApp(String[] args) throws IOException {
 		 * 
 		 * Alternatively, delegate client messaging to gigapaxos and you don't
 		 * have to worry about keeping track of sender or listening addresses.
-		 * For that we need the corresponding request here so that we can
-		 * invoke request.setResponse(response) here. */
+		 * For that we need the corresponding request here so that we can invoke
+		 * request.setResponse(response) here. */
   if (!disableSSL) {
 			GNSConfig.getLogger().log(Level.INFO,
 					"{0} sending back response to client {1} -> {2}",

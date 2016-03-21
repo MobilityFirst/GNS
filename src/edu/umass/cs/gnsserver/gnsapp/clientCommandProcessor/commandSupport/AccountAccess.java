@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -143,7 +144,7 @@ public class AccountAccess {
 						.log(Level.INFO,
 								"AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
 								new Object[] { guid, ACCOUNT_INFO,
-										result.getSummary() });
+										result!=null ? result.getSummary() : result });
       }
       if (result != null) {
         return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
@@ -501,7 +502,9 @@ public class AccountAccess {
       return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Account already verified");
+			return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " "
+					+ GnsProtocol.VERIFICATION_ERROR + " "
+					+ GuidUtils.ACCOUNT_ALREADY_VERIFIED);
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
       return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Bad verification code");

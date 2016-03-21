@@ -24,6 +24,7 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
+import edu.umass.cs.nio.MessageNIOTransport;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -147,7 +148,8 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     //
     this.CPPRoundTripTime = json.optLong(CPPROUNDTRIPTIME, -1);
     this.CPPProcessingTime = json.optLong(CPPPROCESSINGTIME, -1);
-    this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : null;
+		this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : json.has(MessageNIOTransport.SNDR_IP_FIELD) ?
+				 MessageNIOTransport.getSenderAddress(json).toString() : null;
   }
 
   /**
@@ -281,4 +283,20 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     return clientRequestId;
   }
 
+	public Object getSummary() {
+		return new Object() {
+			public String toString() {
+				return (CommandValueReturnPacket.this.responder != null ? CommandValueReturnPacket.this.responder
+						+ "->"
+						: "")
+						+ CommandValueReturnPacket.this.getRequestType()
+						+ ":"
+						+ CommandValueReturnPacket.this.getServiceName()
+						+ ":"
+						+ CommandValueReturnPacket.this.getRequestID()
+						+ ":"
+						+ CommandValueReturnPacket.this.getReturnValue();
+			}
+		};
+	}
 }
