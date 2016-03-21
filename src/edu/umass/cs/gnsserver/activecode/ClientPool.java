@@ -107,17 +107,20 @@ public class ClientPool implements Runnable{
 		boolean keepGoing = true;
 		
 		while(keepGoing){
-			byte[] buffer = new byte[1024];
+			byte[] buffer = new byte[2048];
     		DatagramPacket pkt = new DatagramPacket(buffer, buffer.length);
     		try{
     			socket.receive(pkt);
     			int workerPort = pkt.getPort();
     			
     			/*
-    			 * Invariant: the worker port must already exist, and its value should be false
+    			 * Invariant: the worker port must already exist, and its value should be false.
+    			 * Don't put it into an assert
     			 */
-    			assert(portStatus.put(workerPort, true) == false);
+    			boolean existed = setPortStatus(workerPort, true);
+    			assert(existed == false);
     			ActiveCodeClient client = workerPortToClient.get(workerPort);
+    			// if client is null, it means that it's a spare worker
     			if(client != null){
     				// If client is not null, then it's not a spare client, it's an ActiveCodeClient
     				client.setReady(true);
@@ -142,8 +145,9 @@ public class ClientPool implements Runnable{
 		
 		System.out.println("Add a client for thread "+t);
 		int workerPort = getOpenUDPPort();
+		
 		// This port is not ready
-		portStatus.put(workerPort, false);
+		setPortStatus(workerPort, false);
 		
 		Process proc = startNewWorker(workerPort, 64);
 		ActiveCodeClient client = new ActiveCodeClient(app, workerPort, proc);
@@ -263,15 +267,12 @@ public class ClientPool implements Runnable{
 		return spareWorkers.remove(port);
 	}
 	
-	protected boolean getPortStatus(int port){
+	protected synchronized boolean getPortStatus(int port){
 		return portStatus.get(port);
 	}
 	
-	protected boolean hasPortStatus(int port){
-		boolean hasPort = false;
-		if(portStatus.contains(port))
-			hasPort = true;
-		return hasPort;
+	protected synchronized Boolean setPortStatus(int port, boolean status){
+		return portStatus.put(port, status);
 	}
 	
 	protected Process startNewWorker(int workerPort, int initMemory){
@@ -309,7 +310,7 @@ public class ClientPool implements Runnable{
 	 */
 	public synchronized void addSpareWorker(){
 		int workerPort = getOpenUDPPort();	
-		portStatus.put(workerPort, false);
+		setPortStatus(workerPort, false);
 		if(ActiveCodeHandler.enableDebugging)
 			ActiveCodeHandler.getLogger().log(Level.INFO, "ActiveCodeClient:"+workerPort+" is being started.");
 		
@@ -321,8 +322,7 @@ public class ClientPool implements Runnable{
 		}
 	}
 	
-	protected void generateNewWorker(){
-		
+	protected void generateNewWorker(){		
 		executorPool.execute(new WorkerGeneratorRunanble());
 	}
 

@@ -8,7 +8,7 @@ IDE_PATH=.:build/classes:build/test/classes:lib/*
 
 # new good way to start
 java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
--DgigapaxosConfig=conf/gigapaxos.gnsapp.properties \
+-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties \
 -Djava.util.logging.config.file=logging.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
@@ -21,7 +21,7 @@ START_ALL &
 # explicitly specify nodes as trailing command-line args
 
 # comment to also start a local name server
-exit
+# exit
 
 # LNS is optional. An LNS in general is not associated with any
 # specific active replica, so there isn't a good reason to start the

@@ -244,11 +244,13 @@ public class ActiveCodeClient {
 		return ready;
 	}
 
-	protected synchronized void setReady(boolean ready) {
-		if (ActiveCodeHandler.enableDebugging)
-			ActiveCodeHandler.getLogger().log(Level.INFO, this + " is awaken by notification.");
+	protected synchronized void setReady(boolean ready) {		
 		this.ready = ready;
-		this.notify();
+		if(ready){
+			if (ActiveCodeHandler.enableDebugging)
+				ActiveCodeHandler.getLogger().log(Level.INFO, this + " is awaken by notification.");
+			this.notify();
+		}
 	}
 
 	static class Instrumenter {

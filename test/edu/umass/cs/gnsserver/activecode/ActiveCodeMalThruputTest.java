@@ -10,25 +10,34 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.activecode.ActiveCodeThruputTest.RequestThread;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * @author gaozy
  *
  */
-public class ActiveCodeMalThruputTest {	
+public class ActiveCodeMalThruputTest {
+	static int completed = 0;
+	
+	static synchronized void incr(){
+		completed++;
+	}
+	
 	/**
 	 * @throws JSONException
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void thruputWithMaliciousTest() throws JSONException{
+	public void thruputWithMaliciousTest() throws JSONException, InterruptedException{
 		int numThread = 5;
 		int numReq_benign = 1000;
 		int numReq_mal = 10;
 		
 		ActiveCodeHandler handler = new ActiveCodeHandler(null);
 		ExecutorService executor = Executors.newFixedThreadPool(numThread);
+		
+		Thread.sleep(2000);
 		
 		JSONObject obj = new JSONObject();
 		obj.put("testGuid", "success");	
@@ -47,13 +56,13 @@ public class ActiveCodeMalThruputTest {
 				final String field = "testGuid";
 				executor.execute(new RequestThread(numReq_benign, noop_code64, guid, field, valuesMap));
 			}
-			executor.execute(new RequestThread(numReq_mal, mal_code64, "guid2", "nextGuid", valuesMap));
+			executor.execute(new RequestThread(numReq_mal, mal_code64, "GUID", "nextGuid", valuesMap));
 			
 			long last = 0;
 			long total = 0;
-			long TOTAL_MAL = numReq_mal +  numReq_benign*(numThread-1);
+			long TOTAL_MAL = numReq_mal + numReq_benign*(numThread - 1);
 			while(total < TOTAL_MAL){
-				total = handler.getExecutor().getCompletedTaskCount();
+				total = completed;
 				System.out.println("The thruput is "+(total-last)+" reqs/sec, totally finished: "+total+" reqs /"+handler.getExecutor().getActiveCount());
 				last = total;
 				Thread.sleep(1000);
@@ -68,5 +77,31 @@ public class ActiveCodeMalThruputTest {
 		} finally {
 			handler.getClientPool().shutdown();
 		}
+	}
+	
+	static class RequestThread implements Runnable {
+		int numReq = 0;
+		String code64;
+		String guid;
+		String field;
+		String action = ActiveCode.READ_ACTION;
+		ValuesMap valuesMap;
+		
+		
+		RequestThread(int numReq, String code64, String guid, String field, ValuesMap valuesMap){
+			this.numReq = numReq;
+			this.code64 = code64;
+			this.guid = guid;
+			this.field = field;
+			this.valuesMap = valuesMap;
+		}
+		@Override
+		public void run() {
+			for (int i=0; i<numReq; i++){
+				ActiveCodeHandler.runCode(code64, guid, field, action, valuesMap, 100);
+				ActiveCodeMalThruputTest.incr();
+			}			
+		}
+		
 	}
 }

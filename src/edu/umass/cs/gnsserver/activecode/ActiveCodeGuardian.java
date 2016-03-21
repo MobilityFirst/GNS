@@ -19,13 +19,15 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao
  */
 public class ActiveCodeGuardian {
+	
+	// transfer it to millisecond
+	private final static long timeout = AppReconfigurableNodeOptions.activeCodeTimeOut/1000000;
+	private final static long guard_interval = 100;
+		
 	private static ClientPool clientPool;
 	private static ConcurrentHashMap<ActiveCodeFutureTask, Long> tasks = new ConcurrentHashMap<ActiveCodeFutureTask, Long>();
 	private final static ScheduledExecutorService scheduler =
 		     Executors.newScheduledThreadPool(1);
-	
-	// transfer it to millisecond
-	private final static long timeout = AppReconfigurableNodeOptions.activeCodeTimeOut/1000000;
 	
 	// All these data structures are for instrument only
 	private static ConcurrentHashMap<String, Integer> stats = new ConcurrentHashMap<String, Integer>();
@@ -52,7 +54,7 @@ public class ActiveCodeGuardian {
 		
 		ActiveCodeGuardian.clientPool = clientPool;
 		if (AppReconfigurableNodeOptions.activeCodeEnableTimeout){
-			scheduler.scheduleAtFixedRate(new CheckAndCancelTask(), 0, 100, TimeUnit.MILLISECONDS);
+			scheduler.scheduleAtFixedRate(new CheckAndCancelTask(), 0, guard_interval, TimeUnit.MILLISECONDS);
 		}		 
 	}
 	
@@ -72,6 +74,10 @@ public class ActiveCodeGuardian {
 						Long start = tasks.get(task);
 						if ( start != null && now - start > timeout){
 							instrument = true;
+							// This is for instrument only, prevent from false canceling a benign request
+							if (!task.isMalicious()){
+								return;
+							}
 							//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);
 							//checkAndCancelTask(task, true);
 							cancelTask(task);
@@ -115,15 +121,14 @@ public class ActiveCodeGuardian {
 	}
 	
 	protected static void cancelTask(ActiveCodeFutureTask task){
-		// This is for instrument only, prevent from false canceling a benign request
-		if (!task.isMalicious()){
-			return;
-		}
 		
 		synchronized(task){
-			// shutdown the previous worker process 
 			ActiveCodeClient client = task.getWrappedTask().getClient();
 			if(client != null){
+				// generate a spare worker in another thread
+				long t1 = System.nanoTime();
+				clientPool.generateNewWorker();
+				DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
 				
 				/**
 				 * This sequence is very important, otherwise it will incur bugs.
@@ -143,15 +148,12 @@ public class ActiveCodeGuardian {
 				client.setNewWorker(newPort, proc);
 				
 				client.setReady(clientPool.getPortStatus(newPort));
+				
 				if(ActiveCodeHandler.enableDebugging)
 					ActiveCodeHandler.getLogger().log(Level.INFO, client+" is shutdown on port "+clientPort
-							+" and starts on new port "+ client.getClientSocket()+"."+
+							+" and starts on new port "+ client.getClientSocket().getLocalPort()+"."+
 					"its origianl worker is on port "+oldPort+" and starts on its worker port "+newPort);
 				
-				// generate a spare worker in another thread
-				long t1 = System.nanoTime();
-				clientPool.generateNewWorker();
-				DelayProfiler.updateDelayNano("ActiveCodeStartWorkerProcess", t1);
 			}
 			// cancel the task
 			task.cancel(true);	

@@ -128,7 +128,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * How long (in seconds) to blacklist active code.
    */
-  public static long activeCodeTimeOut = 1000;
+  public static long activeCodeTimeOut = 1000000000;
   /**
    * Enable debug message in active code package
    */
