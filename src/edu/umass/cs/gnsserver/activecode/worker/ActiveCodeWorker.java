@@ -28,6 +28,7 @@ import java.net.DatagramSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeGuardian;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
@@ -134,7 +135,7 @@ public class ActiveCodeWorker {
 			/*
 			 * UDP does not guarantee the sequence of the packets, this is the only way for handler to
 			 */
-			if (clientPort == -1){
+			if (clientPort != pkt.getPort() && pkt.getPort() != ActiveCodeGuardian.guardPort){
 				clientPort = pkt.getPort();
 				// set the client port in runner and querier
 				runner.setClientPort(clientPort);
@@ -148,16 +149,13 @@ public class ActiveCodeWorker {
 		    	 * send back acknowledgement to notify the guard that this worker has dealt with
 		    	 * the timedout task by itself. 
 		    	 */
-		    	/*
-		    	 * no need to send back a response, the guardian could check whether the worker is still running
-		    	ActiveCodeMessage acmResp = new ActiveCodeMessage();
-		    	ActiveCodeUtils.sendMessage(serverSocket, acmResp, pkt.getPort());
-		    	*/
 		    	
 		    	checkedTime++;
 		    	
 		    	assert(acm.error != null && acm.error.equals("TimedOut"));
 		    	updateTime();
+		    	
+		    	acm.setCrashed(null);
 		    	
 		    	System.out.println(">>>>>>>>>> Check timeout task...");
 		    	if (elapsed > timeout || checkedTime >= 2){
@@ -168,8 +166,11 @@ public class ActiveCodeWorker {
 		    		// time out shutdown the executor and restart a new one
 		    		executor.shutdownNow();
 		    		executor = Executors.newSingleThreadExecutor();
+		    		acm.setCrashed("Timeout");
 		    	}
-		    			    	
+		    	ActiveCodeUtils.sendMessage(serverSocket, acm, ActiveCodeGuardian.guardPort);
+		    	
+		    	
 		    } else {
 		    	// Run the active code
 			    ActiveCodeParams params = acm.getAcp();

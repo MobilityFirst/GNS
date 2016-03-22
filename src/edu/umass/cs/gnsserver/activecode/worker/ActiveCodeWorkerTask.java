@@ -30,22 +30,22 @@ public class ActiveCodeWorkerTask implements Runnable{
 		try {
 			result = runner.submitRequest(params, querier);
 		} catch (NoSuchMethodException | ParseException | ScriptException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			thr = e;
 		} finally{
 			// Send the response back no matter what
 			ActiveCodeMessage acmResp = null;
 			if(thr == null){			  
-			  acmResp = new ActiveCodeMessage();
-			  acmResp.setFinished(true);
-			  acmResp.setCrashed(querier.getError());
-			  acmResp.setValuesMapString(result == null ? null : result.toString());			  
+				acmResp = new ActiveCodeMessage();
+				acmResp.setFinished(true);
+				acmResp.setCrashed(querier.getError());
+				acmResp.setValuesMapString(result == null ? null : result.toString());	
+				runner.sendResponse(acmResp);
 			} else{
-			System.out.println("Worker construct a ");
-			  acmResp = crashedMessage(thr.getMessage());
+				// No need to send back a response, as client already 
+				thr.printStackTrace();
 			}
-			runner.sendResponse(acmResp);
+			
 		}
 	}
 	

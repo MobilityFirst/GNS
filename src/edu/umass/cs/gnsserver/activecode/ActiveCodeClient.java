@@ -104,6 +104,9 @@ public class ActiveCodeClient {
 		return false;
 	}
 	
+	protected boolean isWorkerAlive() {
+		return process.isAlive();
+	}
 	
 	public String toString() {
 		return "  " + this.getClass().getSimpleName() + myID + ":"+this.clientSocket.getLocalPort();
@@ -260,23 +263,32 @@ public class ActiveCodeClient {
 	}
 
 
-	protected void forceShutdownServer() {
-		process.destroyForcibly();
+	protected void forceShutdownSocket() {
+		/*
+		 * In previous implementation, we need to forcefully terminate the worker process.
+		 * But in the new model, we just need to close the socket to let the client get out
+		 * of the while loop.
+		 */
+		//if(process.isAlive()) process.destroyForcibly();
+		
 		clientSocket.close();
 		assert (clientSocket.isClosed());
-		//assert (isRunning() == false);
-
+		
 		try {
 			clientSocket = new DatagramSocket();
 			
 			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(this + " DESTROYED worker and opened new socket on " + clientSocket.getLocalPort());
+				System.out.println(this + " REOPENED a new socket on " + clientSocket.getLocalPort());
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 * substitute with new worker
+	 * @param port
+	 * @param proc
+	 */
 	protected void setNewWorker(int port, Process proc) {
 		this.process = proc;
 		this.workerPort = port;

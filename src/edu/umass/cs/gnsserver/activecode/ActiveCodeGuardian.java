@@ -23,6 +23,11 @@ public class ActiveCodeGuardian {
 	// transfer it to millisecond
 	private final static long timeout = AppReconfigurableNodeOptions.activeCodeTimeOut/1000000;
 	private final static long guard_interval = 100;
+
+	/**
+	 * fixed port for guardian to query timeout event
+	 */
+	public final static int guardPort = 60001;
 		
 	private static ClientPool clientPool;
 	private static ConcurrentHashMap<ActiveCodeFutureTask, Long> tasks = new ConcurrentHashMap<ActiveCodeFutureTask, Long>();
@@ -39,15 +44,14 @@ public class ActiveCodeGuardian {
 	 * This socket is used for checking whether a worker is timed out.
 	 */
 	private static DatagramSocket guardSocket;
+	private static byte[] buffer = new byte[2048];
 	
 	/**
 	 * @param clientPool
 	 */
 	public ActiveCodeGuardian(ClientPool clientPool){
 		try {
-			guardSocket = new DatagramSocket();
-			// timeout to wait for the response from a worker
-			guardSocket.setSoTimeout(100);
+			guardSocket = new DatagramSocket(guardPort);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
@@ -101,22 +105,24 @@ public class ActiveCodeGuardian {
 		
 	}	
 	
-	/**
-	 * TODO: not tested yet, and will trigger a bug when involving depth
-	 * @param task
-	 * @param removed
-	 */
-	protected static void checkAndCancelTask(ActiveCodeFutureTask task, boolean removed){
-		ActiveCodeClient client = task.getWrappedTask().getClient();
-		assert(client != null);
-		
-		boolean cancelledByWorker = checkNecessity(client);
-		
-		if(cancelledByWorker) {
-			// if the task is already cancelled by the worker, then return immediately.
-			return;
-		} else{		
-			cancelTask(task);
+	
+	protected static void gentlyCancelTask(ActiveCodeFutureTask task){
+		synchronized(task){
+			ActiveCodeClient client = task.getWrappedTask().getClient();
+			if(client != null){
+				
+				boolean timeout = checkNecessity(client);
+				if(timeout){
+					/**
+					 * If it is really timed out, shutdown the socket without substituting the worker.
+					 */
+					client.forceShutdownSocket();
+					task.cancel(true);	
+					tasks.remove(task);
+					if(ActiveCodeHandler.enableDebugging)
+						ActiveCodeHandler.getLogger().log(Level.INFO, "REOPENED "+client+" socket and cancel the task "+task);
+				}
+			}
 		}
 	}
 	
@@ -138,7 +144,7 @@ public class ActiveCodeGuardian {
 				 */
 				client.setReady(false);
 				int oldPort = client.getWorkerPort();
-				client.forceShutdownServer();
+				client.forceShutdownSocket();
 				int clientPort = client.getClientSocket().getLocalPort();
 						
 				// get the spare worker and set the client port to the new worker
@@ -170,23 +176,28 @@ public class ActiveCodeGuardian {
 		}
 		
 	}
+	
 	/**
 	 * @param clientPort
 	 * @return true if the task has been cancelled by worker, otherwise return false to have guardian forcefully
 	 * shutdown the worker.
 	 */
-	private static boolean checkNecessity(ActiveCodeClient client){
+	protected static boolean checkNecessity(ActiveCodeClient client){
 		// The worker is timed out, let the worker help to check whether it's really timed out.
 		ActiveCodeMessage acm = new ActiveCodeMessage();
 		String error = "TimedOut";
 		acm.setCrashed(error);
 		ActiveCodeUtils.sendMessage(guardSocket, acm, client.getWorkerPort());
 		
-		if (!client.isRunning()){
-			return false;
+		boolean timeout = false;
+		ActiveCodeMessage acmResp = ActiveCodeUtils.receiveMessage(guardSocket, buffer);
+		if(acmResp.isCrashed()){
+			// It's really timed out on the worker
+			timeout = true;
+		} else{
+			// otherwise, do nothing, let's wait until the next time slot
 		}
-		
-		return true;
+		return timeout;
 	}
 	
 	public String toString() {
