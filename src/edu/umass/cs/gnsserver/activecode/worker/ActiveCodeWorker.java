@@ -32,7 +32,6 @@ import edu.umass.cs.gnsserver.activecode.ActiveCodeGuardian;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -63,8 +62,7 @@ public class ActiveCodeWorker {
 	
 	private long last = 0;
 	private long elapsed = 0;
-	private int checkedTime = 0;
-	private final static long timeout = AppReconfigurableNodeOptions.activeCodeTimeOut;
+	private final static long timeout = -1;// AppReconfigurableNodeOptions.activeCodeTimeOut;
 	
 	/**
 	 * variables for instrument only
@@ -104,7 +102,6 @@ public class ActiveCodeWorker {
 		
         while (keepGoing) {
         	updateTime();
-        	checkedTime = 0;
         	keepGoing = handleRequest();       	
         	numReqs++;
         	if(numReqs%1000 == 0){
@@ -132,16 +129,17 @@ public class ActiveCodeWorker {
 			DatagramPacket pkt = ActiveCodeUtils.receivePacket(serverSocket, buffer);
 			acm = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
 			
+			int incommingPort = pkt.getPort();
 			/*
 			 * UDP does not guarantee the sequence of the packets, this is the only way for handler to
 			 */
-			if (clientPort != pkt.getPort() && pkt.getPort() != ActiveCodeGuardian.guardPort){
-				clientPort = pkt.getPort();
+			if (clientPort != pkt.getPort() && incommingPort != ActiveCodeGuardian.guardPort){
+				clientPort = incommingPort;
 				// set the client port in runner and querier
-				runner.setClientPort(clientPort);
-				querier.setClientPort(clientPort);
+				runner.setClientPort(incommingPort);
+				querier.setClientPort(incommingPort);
 			}
-			
+						
 			if( acm.isShutdown() ) {
 		    	ret = false;
 		    } else if (acm.isCrashed() ){
@@ -150,26 +148,23 @@ public class ActiveCodeWorker {
 		    	 * the timedout task by itself. 
 		    	 */
 		    	
-		    	checkedTime++;
 		    	
-		    	assert(acm.error != null && acm.error.equals("TimedOut"));
+		    	assert(acm.error != null && acm.error.equals(ActiveCodeUtils.TIMEOUT_ERROR));
 		    	updateTime();
 		    	
 		    	acm.setCrashed(null);
 		    	
-		    	System.out.println(">>>>>>>>>> Check timeout task...");
-		    	if (elapsed > timeout || checkedTime >= 2){
-		    		System.out.println(">>>>>>>>>> Task is timedout!");
-		    		
+		    	if (elapsed > timeout ){		    		
 		    		// querier's socket needs to be shutdown no matter what
 		    		querier.shutdownAndRestartSocket();
+		    		
 		    		// time out shutdown the executor and restart a new one
 		    		executor.shutdownNow();
 		    		executor = Executors.newSingleThreadExecutor();
-		    		acm.setCrashed("Timeout");
+		    		acm.setCrashed(ActiveCodeUtils.TIMEOUT_ERROR);
+		    		
 		    	}
-		    	ActiveCodeUtils.sendMessage(serverSocket, acm, ActiveCodeGuardian.guardPort);
-		    	
+		    	ActiveCodeUtils.sendMessage(serverSocket, acm, ActiveCodeGuardian.guardPort);		    	
 		    	
 		    } else {
 		    	// Run the active code

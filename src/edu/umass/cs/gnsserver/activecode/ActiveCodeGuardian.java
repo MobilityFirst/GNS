@@ -84,7 +84,8 @@ public class ActiveCodeGuardian {
 							}
 							//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);
 							//checkAndCancelTask(task, true);
-							cancelTask(task);
+							//cancelTask(task);
+							gentlyCancelTask(task);
 							//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " cancelled timed out task "+task);
 						}
 					}		

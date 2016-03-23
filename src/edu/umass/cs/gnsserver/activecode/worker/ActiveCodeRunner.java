@@ -184,6 +184,7 @@ public class ActiveCodeRunner {
 	  
 	  JSONObject vm = null;
 	  vm = (JSONObject) parser.parse(params.getValuesMapString());
+	  //System.out.println("Ready to run the request "+vm + " with the code\n"+params.getCode());
 	  
 	  /*
 	   * Invariant: it's meaningless to have a null json object

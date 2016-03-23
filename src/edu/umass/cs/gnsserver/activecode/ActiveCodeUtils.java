@@ -39,6 +39,12 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author mbadov
  */
 public class ActiveCodeUtils {
+	
+	/**
+	 * Timeout error
+	 */
+	public static final String TIMEOUT_ERROR = "TimeOut";
+	
 	/**
 	 * Serialize an object, ready to send
 	 * 
@@ -124,7 +130,7 @@ public class ActiveCodeUtils {
 			acm = (ActiveCodeMessage) (new ObjectInputStream(new ByteArrayInputStream(pkt.getData()))).readObject();
 		} catch (IOException e) {
 			// Swallow this exception
-			//e.printStackTrace();
+			// e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} finally {

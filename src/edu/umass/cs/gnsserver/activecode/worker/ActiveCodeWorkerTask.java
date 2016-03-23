@@ -29,30 +29,33 @@ public class ActiveCodeWorkerTask implements Runnable{
 		Throwable thr = null;
 		try {
 			result = runner.submitRequest(params, querier);
-		} catch (NoSuchMethodException | ParseException | ScriptException e) {
-			e.printStackTrace();
-			thr = e;
-		} finally{
-			// Send the response back no matter what
-			ActiveCodeMessage acmResp = null;
-			if(thr == null){			  
-				acmResp = new ActiveCodeMessage();
+			//System.out.println("The executed result is "+result+" with param "+params);
+			
+			if(result != null){
+				ActiveCodeMessage acmResp = new ActiveCodeMessage();
 				acmResp.setFinished(true);
-				acmResp.setCrashed(querier.getError());
 				acmResp.setValuesMapString(result == null ? null : result.toString());	
 				runner.sendResponse(acmResp);
-			} else{
-				// No need to send back a response, as client already 
-				thr.printStackTrace();
 			}
 			
+			
+		} catch ( NoSuchMethodException | ParseException | ScriptException e) {
+			e.printStackTrace();
+			thr = e;
+		} finally{			
+			if(thr != null){
+				// No need to send back a response, as client already 
+				thr.printStackTrace();
+				ActiveCodeMessage acmResp = crashedMessage(thr.getMessage());
+				runner.sendResponse(acmResp);
+			}			
 		}
 	}
 	
-	private ActiveCodeMessage crashedMessage(String errMsg){
-		ActiveCodeMessage acmResp = new ActiveCodeMessage();
-		acmResp.setFinished(true);
-	    acmResp.setCrashed(errMsg);
-	    return acmResp;
+	private ActiveCodeMessage crashedMessage(String err){
+		ActiveCodeMessage acm = new ActiveCodeMessage();
+		acm.setCrashed(err);
+		acm.setFinished(true);
+		return acm;
 	}
 }

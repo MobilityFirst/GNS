@@ -64,7 +64,7 @@ public class ClientPool implements Runnable{
 	
 	private static DatagramSocket tempSocket;
 	
-	private final static int CALLBACK_PORT = 60000;
+	public final static int CALLBACK_PORT = 60000;
 	
 	private static int clientID = 0;
 	static synchronized int getClientID(){

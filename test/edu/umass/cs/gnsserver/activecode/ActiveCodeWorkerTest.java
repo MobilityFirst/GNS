@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -13,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.junit.Test;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeUtils;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
@@ -32,16 +32,16 @@ public class ActiveCodeWorkerTest {
 	private final static int fakeClientPort = 50000;
 	
 	/**
-	 * @param args
 	 * @throws JSONException
 	 * @throws IOException
 	 * @throws ParseException
 	 * @throws ClassNotFoundException 
-	 */
-	public static void main(String[] args) throws JSONException, IOException, ParseException, ClassNotFoundException{
+	 */		
+	@Test
+	public void testActiveWorker() throws JSONException, IOException, ParseException, ClassNotFoundException{
 		// Start a worker
 		(new Thread(new WorkerGeneratorRunanble())).start();		
-		DatagramSocket socket = new DatagramSocket();
+		DatagramSocket socket = new DatagramSocket(fakeClientPort);
 		byte[] buffer = new byte[1024];
 				
 		
@@ -108,7 +108,13 @@ public class ActiveCodeWorkerTest {
 		assert(obj.get(field1).equals("success"));
 		System.out.println("Normal chain active code for ActiveCodeWorker passed!");
 		
-		System.exit(0);
+		
+		
+		//Shutdown the worker
+		ActiveCodeMessage acmShutdown = new ActiveCodeMessage();
+		acmShutdown.setShutdown(true);
+		ActiveCodeUtils.sendMessage(socket, acmShutdown, workerPort);
+
 	}
 	
 	static private class WorkerGeneratorRunanble implements Runnable{		
@@ -119,16 +125,7 @@ public class ActiveCodeWorkerTest {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} finally{
-				ActiveCodeMessage acm = new ActiveCodeMessage();
-				acm.setShutdown(true);
-				try {
-					ActiveCodeUtils.sendMessage(new DatagramSocket(fakeClientPort), acm, workerPort);
-				} catch (SocketException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			} 
 		}
 	}
 }
