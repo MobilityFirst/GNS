@@ -12,11 +12,11 @@ java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
 -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks \
-edu.umass.cs.reconfiguration.ReconfigurableNode -test -configFile \
+edu.umass.cs.reconfiguration.ReconfigurableNode -test -enableActiveCode -configFile \
 $SCRIPTS/ns.properties \
 START_ALL &
 # START_ALL starts all nodes for a single node test; else should
 # explicitly specify nodes as trailing command-line args
 
 
-java -ea -DgigapaxosConfig=conf/gigapaxos.gnsApp.singlenode.properties -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp jars/GNS.jar edu.umass.cs.gnsserver.localnameserver.LocalNameServer -configFile $SCRIPTS/lns.properties  &
+java -ea -DgigapaxosConfig=conf/gigapaxos.gnsApp.properties -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp jars/GNS.jar edu.umass.cs.gnsserver.localnameserver.LocalNameServer -configFile $SCRIPTS/lns.properties  &

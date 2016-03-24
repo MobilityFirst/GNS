@@ -252,6 +252,7 @@ public class AppReconfigurableNodeOptions {
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
+    Option enableActiveCode = new Option(ENABLE_ACTIVE_CODE, "enables active code");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -276,6 +277,9 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
     commandLineOptions.addOption(disableEmailVerification);
+
+    // active code
+    commandLineOptions.addOption(enableActiveCode);
 
     return commandLineOptions;
 

@@ -21,12 +21,13 @@ import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.activecode.worker.ActiveCodeWorker;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DefaultTest;
 
 /**
  * @author gaozy
  *
  */
-public class ActiveCodeWorkerTest {
+public class ActiveCodeWorkerTest extends DefaultTest {
 	
 	private final static int workerPort = 40000;
 	private final static int fakeClientPort = 50000;
