@@ -221,8 +221,8 @@ public class AppAdmin extends Thread implements Shutdownable{
 
             }
             break;
-          case STATUS_INIT:
-            break;
+//          case STATUS_INIT:
+//            break;
         }
 
         socket.close();
