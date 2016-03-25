@@ -69,43 +69,5 @@
     properties which you can use, check the target you are overriding in the
     nbproject/build-impl.xml file. 
 
-  -->
-  
-  <property file="build.properties" />
-  
-  <target name="-pre-jar"> 
-    <!-- make some versiony stuff -->
-    <buildnumber file="build.number" />
-    <property name="version.code" value="${VERSION}_${RELEASE}_build${build.number}" />
-    <echo>Version: ${version.code}</echo>
-  </target>
-  
-  <!--
-  overrides the default jar creation in netbeans because we
-  want to add libs and stuff
-  -->
-  <target name="-do-jar">
-    <jar destfile="${dist.jar}" filesetmanifest="mergewithoutmain">
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Main-Class" value="edu.umass.cs.gns.httpserver.GnsHttpServer"/>
-        <attribute name="Class-Path" value="."/>
-        <attribute name="Build-Version" value="${version.code}" />
-      </manifest>
-      <fileset dir="${build.dir}/classes" includes="**/*.class" excludes="**/*Test.class"/>
-      <fileset dir="conf" includes="**/*.xml, **/*.conf" />
-      <zipgroupfileset dir="lib" includes="**/*.jar" 
-                       excludes="android.jar, hamcrest*.jar, junit*.jar"/>
-    </jar>
-  </target>
-    
-  <target name="-post-jar"> 
-    <mkdir dir="${dist.dir}/conf"/>
-    <copy todir="${dist.dir}/conf">
-      <fileset dir="conf"/>  
-    </copy>
-    <copy file="${dist.jar}" tofile="${dist.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>
-    <delete file="${dist.dir}/README.TXT"/> 
-  </target>
-    
+    -->
 </project>

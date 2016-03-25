@@ -23,8 +23,6 @@ import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -40,6 +38,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -74,18 +73,18 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param members
-   * @param activeReplica
+   * @param handler
    * @param lnsAddress
    * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static void updateMembers(String guid, Set<String> members,
-          GNSApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress)
+          ClientRequestHandlerInterface handler, InetSocketAddress lnsAddress)
           throws GnsClientException, IOException, JSONException {
-	  GNSConfig.getLogger().info("RQ: ");
+    //ClientSupportConfig.getLogger().info("RQ: ");
 
-    String response = new RemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP, 
+    String response = handler.getRemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP,
             new ResultValue(members));
 //    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(guid, GroupAccess.GROUP, new ResultValue(members),
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
@@ -95,7 +94,7 @@ public class NSGroupAccess {
       //if (!groupResponse.isAnError()) {
       // This is probably a bad idea to update every member
       for (String member : members) {
-        new RemoteQuery().fieldReplaceOrCreateArray(member, GroupAccess.GROUPS, 
+        handler.getRemoteQuery().fieldReplaceOrCreateArray(member, GroupAccess.GROUPS,
                 new ResultValue(Arrays.asList(guid)));
 //        LNSUpdateHandler.sendUpdate(member, GroupAccess.GROUPS, new ResultValue(Arrays.asList(guid)),
 //                UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica, lnsAddress);
@@ -108,13 +107,13 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param allowQueryToOtherNSs
-   * @param database
+   * @param handler
    * @return the members as a {@link ResultValue}
    * @throws FailedDBOperationException
    */
   public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs,
-          BasicRecordMap database) throws FailedDBOperationException {
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUP, allowQueryToOtherNSs, database);
+          ClientRequestHandlerInterface handler) throws FailedDBOperationException {
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUP, allowQueryToOtherNSs, handler);
   }
 
   /**
@@ -133,13 +132,13 @@ public class NSGroupAccess {
    * Returns the groups that a GUID is a member of.
    *
    * @param guid
-   * @param database
+   * @param handler
    * @return a set of strings
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static Set<String> lookupGroups(String guid, BasicRecordMap database) throws FailedDBOperationException {
+  public static Set<String> lookupGroups(String guid, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
     // this guid could be on another NS hence the true below
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, true, database).toStringSet();
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, true, handler).toStringSet();
   }
 
   /**
@@ -147,13 +146,13 @@ public class NSGroupAccess {
    * Doesn't attempt to access another server to find it.
    *
    * @param guid
-   * @param database
+   * @param handler
    * @return a set of strings
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static Set<String> lookupGroupsOnThisServer(String guid, BasicRecordMap database) throws FailedDBOperationException {
+  public static Set<String> lookupGroupsOnThisServer(String guid, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
     // this guid could be on another NS hence the true below
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, false, database).toStringSet();
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, false, handler).toStringSet();
   }
 
   /**
@@ -193,7 +192,7 @@ public class NSGroupAccess {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler) throws FailedDBOperationException {
-    for (String groupGuid : lookupGroups(guid, handler.getApp().getDB())) {
+    for (String groupGuid : lookupGroups(guid, handler)) {
       removeFromGroup(groupGuid, guid, handler);
     }
   }
@@ -210,11 +209,11 @@ public class NSGroupAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static void updateLastUpdate(String guid, Date lastUpdate)
+  public static void updateLastUpdate(String guid, Date lastUpdate, ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
-	  GNSConfig.getLogger().info("RQ: ");
+    //ClientSupportConfig.getLogger().info("RQ: ");
 
-    new RemoteQuery().fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime());
+    handler.getRemoteQuery().fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime());
 
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_LAST_UPDATE, new ResultValue(Arrays.asList(Long.toString(lastUpdate.getTime()))),
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
@@ -229,11 +228,11 @@ public class NSGroupAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static void updateMinRefresh(String guid, int minRefresh)
+  public static void updateMinRefresh(String guid, int minRefresh, ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
-	  GNSConfig.getLogger().info("RQ: ");
+    //ClientSupportConfig.getLogger().info("RQ: ");
 
-    new RemoteQuery().fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh);
+    handler.getRemoteQuery().fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh);
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, new ResultValue(Arrays.asList(Integer.toString(minRefresh))),
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
   }
@@ -243,15 +242,16 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param queryString
+   * @param handler
    * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static void updateQueryString(String guid, String queryString)
+  public static void updateQueryString(String guid, String queryString, ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
-	  GNSConfig.getLogger().info("RQ: ");
+    //ClientSupportConfig.getLogger().info("RQ: ");
 
-    new RemoteQuery().fieldUpdate(guid, GROUP_QUERY_STRING, queryString);
+    handler.getRemoteQuery().fieldUpdate(guid, GROUP_QUERY_STRING, queryString);
 //    LNSUpdateHandler.sendUpdate(guid, GROUP_QUERY_STRING, new ResultValue(Arrays.asList(queryString)),
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
   }
@@ -260,17 +260,15 @@ public class NSGroupAccess {
    * Returns the last update time for this group guid.
    *
    * @param guid
-   * @param database
+   * @param handler
    * @return the last update time
    * @throws FailedDBOperationException
    */
-  public static Date getLastUpdate(String guid, BasicRecordMap database)
+  public static Date getLastUpdate(String guid, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_LAST_UPDATE,
-            true, database);
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().fine("++++ResultValue = " + resultValue);
-    }
+            true, handler);
+    ClientSupportConfig.getLogger().log(Level.FINE, "++++ResultValue = {0}", resultValue);
     if (!resultValue.isEmpty()) {
       return new Date(Long.parseLong((String) resultValue.get(0)));
     } else {
@@ -282,17 +280,15 @@ public class NSGroupAccess {
    * Returns the min refresh interval for this group guid.
    *
    * @param guid
-   * @param database
+   * @param handler
    * @return the min refresh interval
    * @throws FailedDBOperationException
    */
-  public static int getMinRefresh(String guid, BasicRecordMap database)
+  public static int getMinRefresh(String guid, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_MIN_REFRESH_INTERVAL,
-            true, database);
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().fine("++++ResultValue = " + resultValue);
-    }
+            true, handler);
+    ClientSupportConfig.getLogger().log(Level.FINE, "++++ResultValue = {0}", resultValue);
     if (!resultValue.isEmpty()) {
       return Integer.parseInt((String) resultValue.get(0));
     } else {
@@ -305,17 +301,15 @@ public class NSGroupAccess {
    * Returns the query string for this group guid.
    *
    * @param guid
-   * @param database
+   * @param handler
    * @return the query string
    * @throws FailedDBOperationException
    */
-  public static String getQueryString(String guid, BasicRecordMap database)
+  public static String getQueryString(String guid, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_QUERY_STRING,
-            true, database);
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().fine("++++ResultValue = " + resultValue);
-    }
+            true, handler);
+    ClientSupportConfig.getLogger().log(Level.FINE, "++++ResultValue = {0}", resultValue);
     if (!resultValue.isEmpty()) {
       return (String) resultValue.get(0);
     } else {
@@ -337,16 +331,16 @@ public class NSGroupAccess {
   public static ValuesMap lookupFieldInGroupGuid(String groupGuid, String field,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException, JSONException {
     JSONArray resultArray = new JSONArray();
-    for (Object guidObject : lookupMembers(groupGuid, false, gnsApp.getDB())) {
+    for (Object guidObject : lookupMembers(groupGuid, false, gnsApp.getRequestHandler())) {
       String guid = (String) guidObject;
       ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, field, gnsApp);
       if (valuesMap != null && valuesMap.has(field)) {
         resultArray.put(valuesMap.get(field));
       }
     }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("Group result for " + groupGuid + "/" + field + " = " + resultArray.toString());
-    }
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "Group result for {0}/{1} = {2}",
+            new Object[]{groupGuid, field, resultArray.toString()});
     ValuesMap result = new ValuesMap();
     result.put(field, resultArray);
     return result;

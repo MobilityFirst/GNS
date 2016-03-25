@@ -79,9 +79,6 @@ public class RemoteQuery extends ClientAsynchBase {
   private final String myID;
   private final InetSocketAddress myAddr;
 
-  public RemoteQuery() throws IOException {
-	  this(null,null);
-  }
   public RemoteQuery(String myID, InetSocketAddress isa) throws IOException {
 	  super();
 	  this.myID=myID;
@@ -90,6 +87,7 @@ public class RemoteQuery extends ClientAsynchBase {
 	  assert(this.myID!=null);
   }
   
+  @Override
 	public String toString() {
 		return super.toString()
 				+ (this.myID != null ? ":" + this.myID : "");

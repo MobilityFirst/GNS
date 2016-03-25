@@ -174,7 +174,7 @@ public class GroupAccess {
     if (errorCode.isAnError()) {
       return new ResultValue();
     }
-    return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler.getApp().getDB());
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler);
   }
 
   public static ResultValue lookupGroupsLocally(String guid, String reader, String signature, String message,

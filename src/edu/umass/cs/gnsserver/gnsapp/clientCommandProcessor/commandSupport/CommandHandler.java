@@ -101,36 +101,41 @@ public class CommandHandler {
   }
 
   private static final long LONG_DELAY_THRESHOLD = 1;
+
   private static void runCommand(JSONObject jsonFormattedCommand, GnsCommand command,
           ClientRequestHandlerInterface handler, CommandPacket packet, boolean doNotReplyToClient, GNSApp app, long receiptTime) {
     try {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
       CommandResponse<String> returnValue = executeCommand(command, jsonFormattedCommand, handler);
       DelayProfiler.updateDelay("executeCommand", executeCommandStart);
-			if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD)
-				DelayProfiler.updateDelay(packet.getRequestType() + "."
-						+ command.getCommandName(), executeCommandStart);
-			if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD)
-				GNSConfig
-						.getLogger()
-						.log(Level.INFO,
-								"Command {0} took {1}ms of execution delay (delay logging threshold={2}ms)",
-								new Object[] {
-										command.getSummary(),
-										(System.currentTimeMillis() - executeCommandStart),
-										LONG_DELAY_THRESHOLD });
-			// the last arguments here in the call below are instrumentation that the client can use to determine LNS load
+      if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
+        DelayProfiler.updateDelay(packet.getRequestType() + "."
+                + command.getCommandName(), executeCommandStart);
+      }
+      if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
+        GNSConfig
+                .getLogger()
+                .log(Level.INFO,
+                        "Command {0} took {1}ms of execution delay (delay logging threshold={2}ms)",
+                        new Object[]{
+                          command.getSummary(),
+                          (System.currentTimeMillis() - executeCommandStart),
+                          LONG_DELAY_THRESHOLD});
+      }
+      // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
       CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
               packet.getLNSRequestId(),
               packet.getServiceName(), returnValue,
-              handler.getReceivedRequests(), handler.getRequestsPerSecond(),
+              // FIXME: for info purposes add something to record stuff this back in
+              0, 0,
+              //handler.getReceivedRequests(), handler.getRequestsPerSecond(),
               System.currentTimeMillis() - receiptTime);
 
       try {
         if (handler.getParameters().isDebugMode()) {
-					GNSConfig.getLogger().log(Level.INFO,
-							"Handling command reply: {0}",
-							new Object[] { returnPacket });
+          GNSConfig.getLogger().log(Level.INFO,
+                  "Handling command reply: {0}",
+                  new Object[]{returnPacket});
         }
         handleCommandReturnValuePacketForApp(returnPacket, doNotReplyToClient, app);
       } catch (IOException e) {
@@ -152,7 +157,7 @@ public class CommandHandler {
     private final CommandPacket packet;
     private final GNSApp app;
     private final long receiptTime;
-	private final boolean doNotReplyToClient;
+    private final boolean doNotReplyToClient;
 
     public WorkerTask(JSONObject jsonFormattedCommand, GnsCommand command, ClientRequestHandlerInterface handler, CommandPacket packet, boolean doNotReplyToClient, GNSApp app, long receiptTime) {
       this.jsonFormattedCommand = jsonFormattedCommand;
@@ -179,10 +184,10 @@ public class CommandHandler {
       command.remove(SIGNATURE);
       String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
       //String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
-			if (handler.getParameters().isDebugMode()) {
-				GNSConfig.getLogger().log(Level.FINE,
-						"########CANONICAL JSON: {0}",
-						new Object[] { commandSansSignature });
+      if (handler.getParameters().isDebugMode()) {
+        GNSConfig.getLogger().log(Level.FINE,
+                "########CANONICAL JSON: {0}",
+                new Object[]{commandSansSignature});
       }
       command.put(SIGNATURE, signature);
       command.put(SIGNATUREFULLMESSAGE, commandSansSignature);
@@ -200,9 +205,9 @@ public class CommandHandler {
   public static CommandResponse<String> executeCommand(GnsCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       if (command != null) {
-				GNSConfig.getLogger().log(Level.FINE,
-						"Executing command: {0} in packet {1}",
-						new Object[] { command, json });
+        GNSConfig.getLogger().log(Level.FINE,
+                "Executing command: {0} in packet {1}",
+                new Object[]{command, json});
         return command.execute(json, handler);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " - Don't understand " + json.toString());
@@ -237,7 +242,7 @@ public class CommandHandler {
     // For debugging
     private final String command;
     private final String guid;
-    
+
     // arun: Need this for correct receiver messaging
     private final InetSocketAddress myListeningAddress;
 
@@ -258,7 +263,7 @@ public class CommandHandler {
 
     /**
      * Returns the host.
-     * 
+     *
      * @return a string
      */
     public String getHost() {
@@ -267,7 +272,7 @@ public class CommandHandler {
 
     /**
      * Returns the port.
-     * 
+     *
      * @return an int
      */
     public int getPort() {
@@ -276,7 +281,7 @@ public class CommandHandler {
 
     /**
      * Returns the command.
-     * 
+     *
      * @return a string
      */
     public String getCommand() {
@@ -285,7 +290,7 @@ public class CommandHandler {
 
     /**
      * Returns the guid.
-     * 
+     *
      * @return a string
      */
     public String getGuid() {
@@ -295,8 +300,8 @@ public class CommandHandler {
   }
 
   /**
-   * Called when a command packet is received by the app. 
-   * 
+   * Called when a command packet is received by the app.
+   *
    * @param json
    * @param app
    * @throws JSONException
@@ -321,15 +326,15 @@ public class CommandHandler {
 
   private static long lastStatsTime = 0;
 
-  	/**
-	 * Called when a command return value packet is received by the app.
-	 * 
-	 * @param returnPacket
-	 * 
-	 * @param app
-	 * @throws JSONException
-	 * @throws IOException
-	 */
+  /**
+   * Called when a command return value packet is received by the app.
+   *
+   * @param returnPacket
+   *
+   * @param app
+   * @throws JSONException
+   * @throws IOException
+   */
   public static void handleCommandReturnValuePacketForApp(CommandValueReturnPacket returnPacket, boolean doNotReplyToClient, GNSApp app) throws JSONException, IOException {
     //CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     long id = returnPacket.getClientRequestId();
@@ -337,26 +342,27 @@ public class CommandHandler {
     if ((sentInfo = app.outStandingQueries.get(id)) != null) {
       app.outStandingQueries.remove(id);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-				GNSConfig.getLogger()
-						.log(Level.INFO,
-								"{0}:{1} => {2} -> {3}",
-								new Object[] {
-										sentInfo.getCommand(),
-										sentInfo.getGuid(),
-										returnPacket.getSummary(),
-										sentInfo.getHost() + "/"
-												+ sentInfo.getPort() });
+        GNSConfig.getLogger()
+                .log(Level.INFO,
+                        "{0}:{1} => {2} -> {3}",
+                        new Object[]{
+                          sentInfo.getCommand(),
+                          sentInfo.getGuid(),
+                          returnPacket.getSummary(),
+                          sentInfo.getHost() + "/"
+                          + sentInfo.getPort()});
       }
-      if(!doNotReplyToClient)
-    	  app.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), returnPacket, returnPacket.toJSONObject(), sentInfo.myListeningAddress);
+      if (!doNotReplyToClient) {
+        app.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), returnPacket, returnPacket.toJSONObject(), sentInfo.myListeningAddress);
+      }
 
       // shows us stats every 100 commands, but not more than once every 5 seconds
       if (commandCount++ % 100 == 0) {
-				if (System.currentTimeMillis() - lastStatsTime > 5000) {
-					GNSConfig.getLogger().log(Level.INFO, "{0}",
-							new Object[] { DelayProfiler.getStats() });
-					lastStatsTime = System.currentTimeMillis();
-				}
+        if (System.currentTimeMillis() - lastStatsTime > 5000) {
+          GNSConfig.getLogger().log(Level.INFO, "{0}",
+                  new Object[]{DelayProfiler.getStats()});
+          lastStatsTime = System.currentTimeMillis();
+        }
       }
     } else {
       GNSConfig.getLogger().severe("Command packet info not found for " + id + ": " + returnPacket.getSummary());

@@ -236,8 +236,8 @@ public class GnsHttpServer {
         String serverLocalNameServerID = "Local CCP address: " + GnsHttpServer.requestHandler.getNodeAddress();
         String numberOfNameServers = "Server count: " + GnsHttpServer.requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
-        String requestsReceivedString = "Client requests received: " + GnsHttpServer.requestHandler.getReceivedRequests();
-        String requestsRateString = "Client requests rate: " + GnsHttpServer.requestHandler.getRequestsPerSecond();
+        //String requestsReceivedString = "Client requests received: " + GnsHttpServer.requestHandler.getReceivedRequests();
+        //String requestsRateString = "Client requests rate: " + GnsHttpServer.requestHandler.getRequestsPerSecond();
         StringBuilder resultString = new StringBuilder();
         resultString.append("Servers:");
         for (String topLevelNode : GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeIDs()) {
@@ -302,10 +302,10 @@ public class GnsHttpServer {
         responseBody.write(reconfiguratorsString.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(activeReplicasString.getBytes());
-        responseBody.write("<br>".getBytes());
-        responseBody.write(requestsReceivedString.getBytes());
-        responseBody.write("<br>".getBytes());
-        responseBody.write(requestsRateString.getBytes());
+//        responseBody.write("<br>".getBytes());
+//        responseBody.write(requestsReceivedString.getBytes());
+//        responseBody.write("<br>".getBytes());
+//        responseBody.write(requestsRateString.getBytes());
         responseBody.write("<br>".getBytes());
 
         responseBody.write("Gigapaxos is enabled<br>".getBytes());
