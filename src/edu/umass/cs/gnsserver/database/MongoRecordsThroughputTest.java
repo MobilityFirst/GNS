@@ -33,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +50,8 @@ import org.json.JSONObject;
  */
 public class MongoRecordsThroughputTest {
 
+	private static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
+	private static long initTime = System.currentTimeMillis();
   /**
    * Run the test.
    * 
@@ -57,12 +61,18 @@ public class MongoRecordsThroughputTest {
    */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length == 3) {
-      testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);
+    	for(int i=0; i<executor.getCorePoolSize(); i++)
+			executor.submit(new Runnable() {
+				public void run() {
+					testlookupMultipleSystemAndUserFields(args[0], args[1],
+							args[2]);
+				}
+			});
     } else {
       System.out.println("Usage: edu.umass.cs.gnsserver.test.MongoRecordsThroughputTest <node> <guid> <field>");
     }
     // important to include this!!
-    System.exit(0);
+    //System.exit(0);
   }
 
   private static final ArrayList<ColumnField> dnsSystemFields = new ArrayList<ColumnField>();
@@ -70,6 +80,18 @@ public class MongoRecordsThroughputTest {
   static {
     dnsSystemFields.add(NameRecord.ACTIVE_VERSION);
     dnsSystemFields.add(NameRecord.TIME_TO_LIVE);
+  }
+  
+  private static int count = 0;
+  private static synchronized int incrCount() {
+	  return ++count;
+  }
+  private static synchronized int getCount() {
+	  return count;
+  }
+  private static synchronized void reset(){
+	  count=0;
+	  initTime=System.currentTimeMillis();
   }
 
   private static void testlookupMultipleSystemAndUserFields(String node, String guid, String field) {
@@ -100,6 +122,7 @@ public class MongoRecordsThroughputTest {
       ArrayList<ColumnField> userFields
               = new ArrayList<ColumnField>(Arrays.asList(new ColumnField(field,
                                       ColumnFieldType.USER_JSON)));
+      int frequency=10000;
       int cnt = 0;
       long startTime = System.currentTimeMillis();
       do {
@@ -111,11 +134,15 @@ public class MongoRecordsThroughputTest {
                         dnsSystemFields,
                         NameRecord.VALUES_MAP,
                         userFields);
-        if (cnt++ % 10000 == 0) {
+        if (incrCount() % frequency == 0) {
           System.out.println(map);
           System.out.println(DelayProfiler.getStats());
-          System.out.println("op/s = " + Format.formatTime(10000000.0 / (System.currentTimeMillis() - startTime)));
+          System.out.println("op/s = " + Format.formatTime(getCount()*1000.0 / (System.currentTimeMillis() - initTime)));
           startTime = System.currentTimeMillis();
+      	if(getCount()>frequency*20) {
+      		System.out.println("**********************resetting************************");
+      		reset();
+      	}
         }
       } while (true);
     } catch (FailedDBOperationException | RecordNotFoundException e) {

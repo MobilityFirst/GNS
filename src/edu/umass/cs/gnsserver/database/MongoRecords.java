@@ -269,7 +269,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName, String guid, ColumnField nameField,
           ArrayList<ColumnField> systemFields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
-    long startTime = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis(), t = System.nanoTime();
     if (guid == null) {
       GNSConfig.getLogger().log(Level.FINE, "GUID is null: {0}", new Object[]{ guid});
       throw new RecordNotFoundException(guid);
@@ -299,7 +299,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       //DelayProfiler.updateDelay("lookupMSAUFPreFind", startTime);
       //long findStartTime = System.currentTimeMillis();
       DBObject dbObject = collection.findOne(query, projection);
-     // DelayProfiler.updateDelay("lookupMSAUFJustFind", findStartTime);
+      //DelayProfiler.updateDelay("lookupMSAUFJustFind", findStartTime);
       //long postFindStartTime = System.currentTimeMillis();
       if (dbObject == null) {
         throw new RecordNotFoundException(guid);

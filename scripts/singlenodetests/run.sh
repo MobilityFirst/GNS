@@ -21,7 +21,7 @@ START_ALL &
 # comment to start optional LNS
 #exit
 
-java -ea -DgigapaxosConfig=conf/gigapaxos.gnsApp.properties \
+java -ea -DgigapaxosConfig=conf/gigapaxos.gnsApp.singleNode.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
