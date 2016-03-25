@@ -423,7 +423,7 @@ public class AccountAccess {
   /**
    * Adds an account guid.
    *
-   * @param host
+   * @param hostPortString
    * @param name
    * @param guid
    * @param publicKey
@@ -434,7 +434,7 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse<String> addAccountWithVerification(final String host, final String name, final String guid,
+  public static CommandResponse<String> addAccountWithVerification(final String hostPortString, final String name, final String guid,
           String publicKey, String password,
           ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
@@ -446,14 +446,14 @@ public class AccountAccess {
       if (GNSConfig.enableEmailAccountVerification) {
         // if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
         boolean emailOK = Email.email("GNS Account Verification", name,
-                String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
+                String.format(EMAIL_BODY, name, verifyCode, hostPortString, guid, verifyCode, name, verifyCode));
         // do the admin email in another thread so it's faster and because we don't care if it completes
         (new Thread() {
           @Override
           public void run() {
             boolean adminEmailOK = Email.email("GNS Account Notification",
                     Email.ACCOUNT_CONTACT_EMAIL,
-                    String.format(ADMIN_NOTICE, name, host, guid));
+                    String.format(ADMIN_NOTICE, name, hostPortString, guid));
           }
         }).start();
 

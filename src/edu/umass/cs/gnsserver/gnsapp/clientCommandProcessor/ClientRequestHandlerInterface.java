@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 
 /**
  **
@@ -287,4 +288,15 @@ public interface ClientRequestHandlerInterface {
    * @return a GnsApp instance
    */
   public GNSApp getApp();
+  
+  public int getHttpServerPort();
+  
+  public void setHttpServerPort(int port);
+  
+  /***
+   * Returns a string of the form inetaddress:port for the http server.
+   * @return 
+   * @throws java.net.UnknownHostException 
+   */
+  public String getHTTPServerHostPortString() throws UnknownHostException;
 }

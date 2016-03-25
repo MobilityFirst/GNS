@@ -45,7 +45,6 @@ import java.util.List;
 public class CommandModule {
 
   private TreeSet<GnsCommand> commands;
-  private String httpHost;
   private boolean adminMode = false;
 
   /**
@@ -201,23 +200,6 @@ public class CommandModule {
       }
     }
     return true;
-  }
-
-  /**
-   * Return the HTTPHost.
-   * 
-   * @return a string
-   */
-  public String getHTTPHost() {
-    return httpHost;
-  }
-
-  /**
-   * Set the HTTPHost.
-   * @param host
-   */
-  public void setHTTPHost(String host) {
-    this.httpHost = host;
   }
 
   /**

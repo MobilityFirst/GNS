@@ -25,6 +25,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -38,7 +40,7 @@ import org.json.JSONObject;
  * @author westy
  */
 public class Admin extends GnsCommand {
-  
+
   /**
    *
    * @param module
@@ -46,31 +48,36 @@ public class Admin extends GnsCommand {
   public Admin(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public String[] getCommandParameters() {
     return new String[]{PASSKEY};
   }
-  
+
   @Override
   public String getCommandName() {
     return ADMIN;
   }
-  
+
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
-    if (module.getHTTPHost().equals(passkey) || "shabiz".equals(passkey)) {
-      module.setAdminMode(true);
-      return new CommandResponse<String>(OK_RESPONSE);
-    } else if ("off".equals(passkey)) {
-      module.setAdminMode(false);
-      return new CommandResponse<String>(OK_RESPONSE);
+    try {
+      GNSConfig.getLogger().info("Http host:port = " + handler.getHTTPServerHostPortString());
+      if (handler.getHTTPServerHostPortString().equals(passkey) || "shabiz".equals(passkey)) {
+        module.setAdminMode(true);
+        return new CommandResponse<String>(OK_RESPONSE);
+      } else if ("off".equals(passkey)) {
+        module.setAdminMode(false);
+        return new CommandResponse<String>(OK_RESPONSE);
+      }
+      return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName() + " " + passkey);
+    } catch (UnknownHostException e) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " Unable to determine host address");
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName() + " " + passkey);
   }
-  
+
   @Override
   public String getCommandDescription() {
     return "Turns on admin mode.";

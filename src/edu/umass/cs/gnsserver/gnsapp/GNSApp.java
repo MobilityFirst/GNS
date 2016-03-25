@@ -55,6 +55,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -138,6 +139,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.messenger = messenger;
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(AppReconfigurableNodeOptions.debuggingEnabled);
+   
     this.requestHandler = new ClientRequestHandler(
             new Admintercessor(),
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
@@ -145,7 +147,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             gnsNodeConfig,
             //messenger, 
             parameters);
-
+    // Should add this to the shutdown method - do we have a shutdown method?
+    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     // start the NSListenerAdmin thread
     new AppAdmin(this, gnsNodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
@@ -184,6 +187,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             ((GNSNodeConfig<String>) messenger.getNodeConfig()),
             //messenger, 
             parameters);
+     // Should add this to the shutdown method - do we have a shutdown method?
+    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");

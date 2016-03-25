@@ -19,21 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
+import static edu.umass.cs.gnscommon.utils.NetworkUtils.getLocalHostLANAddress;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
-import org.json.JSONObject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.net.UnknownHostException;
 
 /**
  * Implements basic functionality needed by servers to handle client type requests.
@@ -81,6 +75,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   //
   private final String activeReplicaID;
   private final GNSApp app;
+  private int httpServerPort;
 
   //private long receivedRequests = 0;
 
@@ -161,6 +156,24 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   public GNSApp getApp() {
     return app;
   }
+  
+  @Override
+  public int getHttpServerPort() {
+    return httpServerPort;
+  }
+
+  @Override
+  public void setHttpServerPort(int httpServerPort) {
+    this.httpServerPort = httpServerPort;
+  }
+  
+  @Override
+  public String getHTTPServerHostPortString() throws UnknownHostException {
+    // this isn't going to work behind NATs but for public servers it should get the
+    // job done
+    return getLocalHostLANAddress().getHostAddress() + ":" + httpServerPort;
+  }
+  
 
 //  // REQUEST INFO METHODS 
 //  // What happens when this overflows?
@@ -415,4 +428,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 //  public int getRequestsPerSecond() {
 //    return (int) Math.round(averageRequestsPerSecond.getAverage());
 //  }
+
+  
 }

@@ -81,23 +81,15 @@ public class CommandHandler {
     if (handler.getParameters().isDebugMode()) {
       GNSConfig.getLogger().log(Level.INFO, "Command packet received: {0}", new Object[]{packet.getSummary()});
     }
-    //final CommandPacket packet = new CommandPacket(incomingJSON);
-    // FIXME: Don't do this every time. 
-    // Set the host field. Used by the help command and email module. 
-    commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":" + GnsHttpServer.getPort());
     final JSONObject jsonFormattedCommand = packet.getCommand();
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
     final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    // negligible
-    //DelayProfiler.updateDelay("commandPreProc", receiptTime);
-    //final Long runCommandStart = System.currentTimeMillis(); // instrumentation
     if (USE_EXEC_POOL_TO_RUN_COMMANDS) {
       execPool.submit(new WorkerTask(jsonFormattedCommand, command, handler, packet, doNotReplyToClient, app, receiptTime));
     } else {
       runCommand(jsonFormattedCommand, command, handler, packet, doNotReplyToClient, app, receiptTime);
     }
-    //DelayProfiler.updateDelay("runCommand", runCommandStart);
   }
 
   private static final long LONG_DELAY_THRESHOLD = 1;
