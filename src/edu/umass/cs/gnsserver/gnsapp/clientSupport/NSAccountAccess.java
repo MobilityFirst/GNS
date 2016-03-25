@@ -45,8 +45,9 @@ public class NSAccountAccess {
    * @return an {@link edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo} instance
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static GuidInfo lookupGuidInfo(String guid,  GNSApplicationInterface<String> gnsApp) 
+  public static GuidInfo lookupGuidInfoLocally(String guid,  GNSApplicationInterface<String> gnsApp) 
           throws FailedDBOperationException {
+    // Only look locally
     return NSAccountAccess.lookupGuidInfo(guid, false, gnsApp);
   }
 

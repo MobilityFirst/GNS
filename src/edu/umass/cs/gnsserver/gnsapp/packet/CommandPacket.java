@@ -266,34 +266,18 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return command;
   }
 
-  /* FIXME: arun: this really needs to go. It is making the poorly written
-	 * (i.e., distributed-system unaware) tests fail despite the best efforts of
-	 * the async client to do the right thing. Almost all of your tests use
-	 * create/delete commands, so almost all of them are likely to fail
-	 * occasionally because a request might go to a replica that has not caught
-	 * up yet. The async client can not even try to send the request to a replica
-	 * that will likely work because of this app-induced name ambiguity. 
-	 * 
-	 * The service name should be the name of the GUID that is being written to
-	 * or read, not the account GUID. To address the HRN/GUID ambiguity, you should
-	 * either (1) issue each as separate requests from the client; or (2) retransmit
-	 * a request until the replica it happens to go to has caught up; or (3) accept
-	 * that it is normal behavior for a read immediately following a write to not
-	 * see the result of the seemingly "committed" write.
-	 * */
+  /**
+   * The service name should be the name of the GUID that is being written to
+   * or read, not the account GUID. To address the HRN/GUID ambiguity, you should
+   * either (1) issue each as separate requests from the client; or (2) retransmit
+   * a request until the replica it happens to go to has caught up; or (3) accept
+   * that it is normal behavior for a read immediately following a write to not
+   * see the result of the seemingly "committed" write.
+   */
   @Override
   public String getServiceName() {
     try {
       if (command != null) {
-//        if (GnsProtocol.CREATE_DELETE_COMMANDS.contains(getCommandName())) {
-//          // FIXME: arun: if a random active is needed, ask explicitly
-//          if (command.has(GnsProtocol.GUID)) {
-//            return getCommandName() + "_" + command.getString(GnsProtocol.GUID);
-//          }
-//          if (command.has(GnsProtocol.NAME)) {
-//            return getCommandName() + "_" + command.getString(GnsProtocol.NAME);
-//          }
-//        }
         if (command.has(GnsProtocol.GUID)) {
           return command.getString(GnsProtocol.GUID);
         }
