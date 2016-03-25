@@ -1,0 +1,9 @@
+#!/bin/bash
+#echo $PWD
+# should use matching gigapaxos properties with servers
+java -DgigapaxosConfig=conf/gigapaxos.gnsApp.singleNode.properties \
+-Djavax.net.ssl.trustStorePassword=qwerty \
+-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
+-Djavax.net.ssl.keyStorePassword=qwerty \
+-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp \
+jars/GNSClient.jar $*

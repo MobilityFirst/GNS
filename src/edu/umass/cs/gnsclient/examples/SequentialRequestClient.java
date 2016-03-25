@@ -16,6 +16,7 @@ import java.util.Collections;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -46,9 +47,9 @@ public class SequentialRequestClient {
 	public static void main(String[] args) throws IOException,
     InvalidKeySpecException, NoSuchAlgorithmException, 
     InvalidKeyException, SignatureException, Exception {
-		String address = args[0];
-		
+		String address = args[0];		
 		boolean flag = Boolean.parseBoolean(args[1]);
+		
 		int size = 10;
 		if(args.length > 2){
 			numReqs = Integer.parseInt(args[2]);
@@ -61,6 +62,7 @@ public class SequentialRequestClient {
 		String code64 = Base64.encodeToString(code.getBytes("utf-8"), true);
 		
 		client = new UniversalTcpClient(address, 24398, false);
+		//client = new GNSClient(true);
 		GuidEntry guidAccount = null;
 		try{
 			guidAccount = lookupOrCreateAccountGuid(client, "test"+ACCOUNT_ALIAS, "password");
