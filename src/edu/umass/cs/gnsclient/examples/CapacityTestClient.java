@@ -2,6 +2,7 @@ package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -12,6 +13,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -29,9 +32,10 @@ public class CapacityTestClient {
         
     private static int NUM_THREAD = 100;
     private static int NUM_CLIENT = 0;
+    private static int BENIGN_CLIENT = 0;
     private static int INTERVAL = 1;
     private static final int DURATION = 10;
-    private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
+
     private static int failed = 0;
     
     protected String guid;
@@ -61,13 +65,13 @@ public class CapacityTestClient {
     }
 
     
-    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, int fraction, UniversalTcpClient client){
+    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, UniversalTcpClient client){
     	int reqPerClient = numRequest / NUM_CLIENT;
     	RateLimiter r = new RateLimiter(rate);
     	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" guid...");
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
-    			if(j%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
+    			if(j < BENIGN_CLIENT ){
     				//send benign request
     				clients[j].sendSingleRequest(client, false);
     			}else{
@@ -96,7 +100,6 @@ public class CapacityTestClient {
     		long begin = System.nanoTime();
     		try{
     			client.fieldRead(guid, "nextGuid", entry);
-    			//System.out.println("The response is "+result);
     		}catch(Exception e){
     			failed++;
     			e.printStackTrace();
@@ -104,10 +107,8 @@ public class CapacityTestClient {
     		
     		long elapsed = System.nanoTime() - begin;
     		if(!this.mal){
-    			
     			CapacityTestClient.updateLatency(elapsed);
     		}else{
-    			//System.out.println(elapsed);
     			mal_request.add(req_id);
             	req_id++;
     		}
@@ -134,15 +135,12 @@ public class CapacityTestClient {
 		NUM_CLIENT =  Integer.parseInt(args[2]);
 		INTERVAL = Integer.parseInt(args[3]);
 		int rate = INTERVAL*NUM_CLIENT;		
-		int fraction = Integer.parseInt(args[4]);
-		if(fraction > MALICIOUS_EVERY_FEW_CLIENTS ){
-			System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
-			System.exit(0);
-		}
-		fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
+		BENIGN_CLIENT = Integer.parseInt(args[4]);
 		
 		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
-		UniversalTcpClient client = new UniversalTcpClient(address, 24398, false);
+		GNSClient client = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+		
+		//UniversalTcpClient client = new UniversalTcpClient(address, 24398, false);
 		
     	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
@@ -152,7 +150,7 @@ public class CapacityTestClient {
 			String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 			
-			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
+			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(SequentialRequestClient.getDefaultGNSInstance(), account);
 			String guid = accountGuid.getGuid();
 		
 			System.out.println("The GUID is "+guid);
@@ -164,17 +162,16 @@ public class CapacityTestClient {
 		
 		System.out.println("1st run");
     	long t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, clients, fraction, client);
+    	sendRequests(TOTAL, rate, clients, client);
     	long t2 = System.currentTimeMillis();
     	long elapsed = t2 - t1;
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	int TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;    	
+    	int TOTAL_NORMAL = TOTAL * (NUM_CLIENT - BENIGN_CLIENT) / NUM_CLIENT;	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
-    	
-    	int cnt = 0;
-    	while((latency.size()+failed) < TOTAL_NORMAL && cnt<20){
+
+    	while((latency.size()+failed) < TOTAL_NORMAL ){
     		
     		System.out.println("Received "+(latency.size()+failed)+" messages totally");
     		try{
@@ -182,12 +179,11 @@ public class CapacityTestClient {
     		}catch(Exception e){
     			e.printStackTrace();
     		}
-    		cnt++;
     	}
     	
     	System.out.println("The percentage of the responsed requests is "+latency.size()/(new Double(TOTAL_NORMAL)));
     	
-    	while(mal_request.size() != (TOTAL - TOTAL_NORMAL) || (latency.size()+failed) < TOTAL_NORMAL ){
+    	while(mal_request.size() < (TOTAL - TOTAL_NORMAL)  ){
     		System.out.println("Finished malicious requests "+mal_request.size());
     		try{
     			Thread.sleep(1000);
@@ -207,17 +203,16 @@ public class CapacityTestClient {
     	
     	System.out.println("2nd run");
     	t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, clients, fraction, client);
+    	sendRequests(TOTAL, rate, clients, client);
     	t2 = System.currentTimeMillis();
     	elapsed = t2 - t1;
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	TOTAL_NORMAL = TOTAL * fraction / MALICIOUS_EVERY_FEW_CLIENTS;    	
+    	TOTAL_NORMAL = TOTAL * (NUM_CLIENT - BENIGN_CLIENT) / NUM_CLIENT;    	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	
-    	cnt = 0;
-    	while((latency.size()+failed) < TOTAL_NORMAL && cnt<20){
+    	while((latency.size()+failed) < TOTAL_NORMAL ){
     		
     		System.out.println("Received "+(latency.size()+failed)+" messages totally");
     		try{
@@ -225,12 +220,11 @@ public class CapacityTestClient {
     		}catch(Exception e){
     			e.printStackTrace();
     		}
-    		cnt++;
     	}
     	
     	System.out.println("The percentage of the responsed requests is "+latency.size()/(new Double(TOTAL_NORMAL)));
     	
-    	while(mal_request.size() != (TOTAL - TOTAL_NORMAL) || (latency.size()+failed) < TOTAL_NORMAL ){
+    	while(mal_request.size() < (TOTAL - TOTAL_NORMAL) ){
     		System.out.println("Finished malicious requests "+mal_request.size());
     		try{
     			Thread.sleep(1000);
@@ -247,13 +241,13 @@ public class CapacityTestClient {
     	System.out.println("The average latency is "+(total/latency.size()));
     	
     	
-    	
+    	/*
     	// connect to none server and inform it's done
     	Socket socket = new Socket("128.119.245.5", 60001);
     	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
     	out.println(node+"\n");
     	socket.close();
-    	
+    	*/
     	System.exit(0);		
 	}
 }

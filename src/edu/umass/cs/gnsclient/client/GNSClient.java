@@ -278,9 +278,9 @@ public class GNSClient extends UniversalTcpClientExtended {
 				json = new JSONObject(msg);
 				Packet.PacketType type = Packet.getPacketType(json);
 				if (type != null) {
-					log.log(Level.INFO,
-							"{0} retrieving packet from received json {1}",
-							new Object[] { this, json });
+//					log.log(Level.INFO,
+//							"{0} retrieving packet from received json {1}",
+//							new Object[] { this, json });
 					if (clientPacketTypes.contains(Packet.getPacketType(json)))
 						response = (Request) Packet.createInstance(json,
 								unstringer);

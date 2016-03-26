@@ -1,21 +1,22 @@
 package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 
@@ -25,32 +26,28 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
  */
 public class CreateMultiGuidClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
-	private static UniversalTcpClient client;
+	private static GNSClient client;
 	private static int NUM_CLIENT = 100;
+	private static int BENIGN_CLIENT = 100;
+	
+	private final static int numThread = 10;
 	private final static String filename = "./scripts/activeCode/noop.js"; //"/Users/gaozy/WebStorm/test.js"; //
 	private final static String mal_file = "./scripts/activeCode/mal.js"; // "/Users/gaozy/WebStorm/mal.js"; //
-	private final static int MALICIOUS_EVERY_FEW_CLIENTS = 5;
+	
+	private static int createdGuid = 0;
+	
+	static synchronized void incr(){
+		createdGuid = createdGuid + 1;
+	}
 	
 	/**
 	 * @param args
-	 * @throws IOException
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
-	 * @throws SignatureException
 	 * @throws Exception
 	 */
-	public static void main(String[] args) throws IOException,
-    InvalidKeySpecException, NoSuchAlgorithmException, 
-    InvalidKeyException, SignatureException, Exception {
+	public static void main(String[] args) throws Exception {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]);
-		int fraction = Integer.parseInt(args[2]); // deploy a malicious code for every 5 clients 
-		if(fraction > MALICIOUS_EVERY_FEW_CLIENTS){
-			System.out.println("The fraction of malicious users must lie between 0 to 5 (0%~100%).");
-			System.exit(0);
-		}
-		fraction = MALICIOUS_EVERY_FEW_CLIENTS - fraction;
+		BENIGN_CLIENT = Integer.parseInt(args[2]);
 		NUM_CLIENT = Integer.parseInt(args[3]);
 		boolean flag = Boolean.parseBoolean(args[4]);
 		
@@ -60,7 +57,9 @@ public class CreateMultiGuidClient {
 		String mal_code = new String(Files.readAllBytes(Paths.get(mal_file)));		
 		String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 				
-		client = new UniversalTcpClient(address, 24398, false);
+		client = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+		ExecutorService executor = Executors.newFixedThreadPool(numThread);
+		
 		
 		for (int i=0; i<NUM_CLIENT; i++){
 			GuidEntry guidAccount = null;
@@ -84,24 +83,51 @@ public class CreateMultiGuidClient {
 			String field = client.fieldRead(guidAccount, "nextGuid");
 		    System.out.println("Retrieved JSON from guid: " + result.toString()+", the field is "+field);
 		    if(flag){
-		    	if (i%MALICIOUS_EVERY_FEW_CLIENTS < fraction){
-		    		client.activeCodeSet(guid, "read", code64, guidAccount);
-		    		try{
-				    	field = client.fieldRead(guidAccount, "nextGuid");
-				    }catch(Exception e){
-				    	e.printStackTrace();
-				    }
-		    		System.out.println("Retrieved JSON from guid: " + field);
+		    	if (i < BENIGN_CLIENT){
+		    		executor.execute(new createGuidThread(client, code64, guid, guidAccount));
 		    	}else{
-		    		client.activeCodeSet(guid, "read", mal_code64, guidAccount);
-		    	}
-		    	
-		    }		    
-	    	
+		    		executor.execute(new createGuidThread(client, mal_code64, guid, guidAccount));
+		    	}		    	
+		    }
 		}
+		
+		while(createdGuid < NUM_CLIENT){
+			System.out.println(createdGuid+"/"+NUM_CLIENT+" guids have been created ...");
+			Thread.sleep(1000);
+		}
+		
+		System.out.println("Created all "+NUM_CLIENT+" guids.");
 		System.exit(0);
 	}
 	
+	
+	static class createGuidThread implements Runnable {
+		
+		GNSClient client;
+		String code;
+		String guid;
+		GuidEntry guidAccount;
+		
+		createGuidThread(GNSClient client, String code, String guid, GuidEntry guidAccount){
+			this.client = client;
+			this.code = code;
+			this.guid = guid;
+			this.guidAccount = guidAccount;
+		}
+		
+		@Override
+		public void run() {
+				try {
+					client.activeCodeSet(guid, "read", code, guidAccount);
+				} catch (GnsClientException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				CreateMultiGuidClient.incr();
+		}
+		
+	}
 		
 	/**
 	 * Creates and verifies an account GUID. Yes it cheats on verification

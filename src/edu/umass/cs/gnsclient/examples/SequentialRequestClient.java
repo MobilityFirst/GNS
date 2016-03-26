@@ -2,6 +2,7 @@ package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
@@ -17,6 +18,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -26,14 +28,24 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 
 /**
  * @author gaozy
- *
  */
 public class SequentialRequestClient {
 	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
-	private static UniversalTcpClient client;
+	private static GNSClient client;
 	private static String filename =  "./scripts/activeCode/noop.js"; //"/Users/gaozy/WebStorm/test.js"; //
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	private static int numReqs = 1;
+	
+	
+	
+	// FIXME: remove hard coding here
+	private static final String GNS_INSTANCE = "server.gns.name";
+	protected static String getDefaultGNSInstance() {
+		return 
+				// TODO: Need to change BasicUniversalTcpClient
+				//BasicUniversalTcpClient.DEFAULT_INSTANCE;
+				GNS_INSTANCE;
+	}
 	
 	/**
 	 * @param args
@@ -60,18 +72,18 @@ public class SequentialRequestClient {
 		String code = new String(Files.readAllBytes(Paths.get(filename)));		
 		//Read in the code and serialize
 		String code64 = Base64.encodeToString(code.getBytes("utf-8"), true);
+		client = new GNSClient( (InetSocketAddress) null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true); //new UniversalTcpClient(address, 24398, false);
 		
-		client = new UniversalTcpClient(address, 24398, false);
-		//client = new GNSClient(true);
+		
 		GuidEntry guidAccount = null;
 		try{
 			guidAccount = lookupOrCreateAccountGuid(client, "test"+ACCOUNT_ALIAS, "password");
 		}catch (Exception e) {
-		      System.out.println("Exception during accountGuid creation: " + e);
-		      System.exit(1);
+			System.out.println("Exception during accountGuid creation: " + e);
+			System.exit(1);
 		}
 		
-		
+				
 		JSONObject json = new JSONObject("{\"nextGuid\":\"a\", \"hehe\":\"hello\"}");
 		client.update(guidAccount, json);
 		
@@ -112,6 +124,7 @@ public class SequentialRequestClient {
 	    System.exit(0);
 	    
 	}
+
 	
 	/**
 	 * Creates and verifies an account GUID. Yes it cheats on verification
@@ -124,7 +137,7 @@ public class SequentialRequestClient {
 	 */
 	private static GuidEntry lookupOrCreateAccountGuid(BasicUniversalTcpClient client,
 	        String name, String password) throws Exception {
-	  GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), name);
+	  GuidEntry guidEntry = KeyPairUtils.getGuidEntry(getDefaultGNSInstance(), name);
 	  if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
 	    guidEntry = client.accountGuidCreate(name, password);
 	    client.accountGuidVerify(guidEntry, createVerificationCode(name));

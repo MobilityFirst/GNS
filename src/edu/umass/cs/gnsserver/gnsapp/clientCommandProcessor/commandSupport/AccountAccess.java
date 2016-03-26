@@ -444,7 +444,9 @@ public class AccountAccess {
             GNSConfig.enableEmailAccountVerification, verifyCode, handler)).getReturnValue().equals(OK_RESPONSE)) {
       if (GNSConfig.enableEmailAccountVerification) {
         // if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
-        boolean emailOK = Email.email("GNS Account Verification", name,
+        boolean emailOK = true; 
+        /*
+        Email.email("GNS Account Verification", name,
                 String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
         // do the admin email in another thread so it's faster and because we don't care if it completes
         (new Thread() {
@@ -455,7 +457,7 @@ public class AccountAccess {
                     String.format(ADMIN_NOTICE, name, host, guid));
           }
         }).start();
-
+        */
         if (emailOK) {
           return new CommandResponse<String>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {

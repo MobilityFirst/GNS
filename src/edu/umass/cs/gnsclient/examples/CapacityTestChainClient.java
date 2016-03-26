@@ -2,6 +2,7 @@ package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -11,6 +12,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -47,7 +50,8 @@ public class CapacityTestChainClient {
 			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is "+MessageStats.DEPTH);
 			
 			clients = new SingleClient[NUM_CLIENT];
-			UniversalTcpClient client = new UniversalTcpClient(address, 24398, false);
+			GNSClient client = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+			
 			executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 		    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
 	    	executorPool.prestartAllCoreThreads();

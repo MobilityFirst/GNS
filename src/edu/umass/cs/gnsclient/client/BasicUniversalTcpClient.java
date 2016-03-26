@@ -137,7 +137,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   private final Object monitor = new Object();
 
   // Enables all the debug logging statements in the client.
-  protected boolean debuggingEnabled = true;//false;
+  protected boolean debuggingEnabled = false;
 
   // When this is ture we don't use SSL.
   private final boolean disableSSL;
@@ -476,7 +476,7 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     long t = System.currentTimeMillis();
     String response = sendCommandAndWait(command);
     DelayProfiler.updateDelay("fieldRead", t);
-    GNSConfig.getLogger().info(DelayProfiler.getStats());
+    //GNSConfig.getLogger().info(DelayProfiler.getStats());
 
     return checkResponse(command, response);
   }
@@ -1673,8 +1673,8 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     long startTime = System.currentTimeMillis();
     long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, null, -1, command);
-	GNSConfig.getLogger().log(Level.INFO, "{0} inserting {1}:{2}",
-			new Object[] { this, id+"", packet });
+//	GNSConfig.getLogger().log(Level.INFO, "{0} inserting {1}:{2}",
+//			new Object[] { this, id+"", packet });
     queryTimeStamp.put(id, startTime);
     sendCommandPacket(packet);
     DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
@@ -1714,8 +1714,8 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     CommandValueReturnPacket packet = new CommandValueReturnPacket(json);
     long id = packet.getClientRequestId();
     // *INSTRUMENTATION*
-	GNSConfig.getLogger().log(Level.INFO, "{0} received response {1}:{2}",
-			new Object[] { this, id+"",packet.getSummary() });
+	//GNSConfig.getLogger().log(Level.INFO, "{0} received response {1}:{2}",
+	//		new Object[] { this, id+"",packet.getSummary() });
     long queryStartTime = queryTimeStamp.remove(id);
     long latency = receivedTime - queryStartTime;
     movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
@@ -1734,7 +1734,7 @@ public BasicUniversalTcpClient(boolean disableSSL) {
     } else {
       // Handle the asynchronus packets
       // note that we have recieved the reponse
-        GNSClientConfig.getLogger().info("Removing async return packet: " + json.toString());
+      // GNSClientConfig.getLogger().info("Removing async return packet: " + json.toString());
 
       pendingAsynchPackets.remove(id);
       // * INSTRUMENTATION *

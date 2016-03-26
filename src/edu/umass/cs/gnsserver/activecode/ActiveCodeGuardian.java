@@ -83,9 +83,13 @@ public class ActiveCodeGuardian {
 								return;
 							}
 							//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " takes "+ (now - start) + "ms and about to cancel timed out task "+task);
-							//checkAndCancelTask(task, true);
-							//cancelTask(task);
-							gentlyCancelTask(task);
+							if(task.getWrappedTask().getClient().isWorkerAlive()){
+								// If the worker process is still alive, then send a cancel request to the worker
+								gentlyCancelTask(task);
+							} else{
+								// Otherwise, substitute a worker process with a new one
+								cancelTask(task);
+							}
 							//ActiveCodeHandler.getLogger().log(Level.WARNING, this + " cancelled timed out task "+task);
 						}
 					}		

@@ -2,6 +2,7 @@ package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -11,6 +12,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -20,8 +23,10 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
  *
  */
 public class CapacityTestSequentialClient {
+	
 		private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
-	    
+	    private final static int GNS_CLIENT_NUM = 10;
+		
 		private static int NUM_THREAD = 100;
 	    private static int NUM_CLIENT = 0;
 	    private static SingleClient[] clients;
@@ -46,15 +51,24 @@ public class CapacityTestSequentialClient {
 			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients.");
 			
 			clients = new SingleClient[NUM_CLIENT];
-			UniversalTcpClient client = new UniversalTcpClient(address, 24398, false);
+			//UniversalTcpClient client = new UniversalTcpClient(address, 24398, false);
+			GNSClient[] gnsClients = new GNSClient[GNS_CLIENT_NUM];
+			for (int i=0; i<GNS_CLIENT_NUM; i++){
+				gnsClients[i] = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+			}
+			
 			executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 		    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
 	    	executorPool.prestartAllCoreThreads();
 	    	
+	    	// round-robin gnsClient
+	    	int k = 0;
 			for (int index=0; index<NUM_CLIENT; index++){			
 				String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
 				
-				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(address + ":" + client.getGnsRemotePort(), account);
+				GuidEntry accountGuid = KeyPairUtils.getGuidEntry(SequentialRequestClient.getDefaultGNSInstance(), account);
+				GNSClient client = gnsClients[k];
+				k = (k+1)%GNS_CLIENT_NUM;
 				
 				if (index < BENIGN){
 					clients[index] = new SingleClient(client, accountGuid, false);
@@ -93,12 +107,12 @@ public class CapacityTestSequentialClient {
 			double eclapsed = System.currentTimeMillis()-start;
 			System.out.println("It takes "+eclapsed+"ms to send all the requests");
 			System.out.println("The maximum throuput is "+max+" reqs/sec, and the average throughput is "+(1000*(MessageStats.latency.size()+MessageStats.mal_request.size())/eclapsed)+" req/sec.");
-			
+			/*
 			Socket socket = new Socket("128.119.245.5", 60001);
 	    	PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 	    	out.println(node+"\n");
 	    	socket.close();
-			
+			*/
 			System.exit(0);
 	    }
 	    
