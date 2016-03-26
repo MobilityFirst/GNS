@@ -62,18 +62,21 @@ public class CreateMultiGuidClient {
 		
 		
 		for (int i=0; i<NUM_CLIENT; i++){
+			String name = "test"+(node*1000+i)+ACCOUNT_ALIAS;
+			
 			GuidEntry guidAccount = null;
+			
 			try{
-				guidAccount = lookupOrCreateAccountGuid(client, "test"+(node*1000+i)+ACCOUNT_ALIAS, "password");
-				System.out.println("test"+(node*1000+i)+ACCOUNT_ALIAS+":"+guidAccount.getGuid());
-				
+				guidAccount = lookupOrCreateAccountGuid(client, name, "password");				
 				//KeyPairUtils.writePrivateKeyToPKCS8File(guidAccount.getPrivateKey(), key_folder+"test"+(node*1000+i) );
 			}catch (Exception e) {
 			      System.out.println("Exception during accountGuid creation: " + e);
 			      System.exit(1);
 			}
 			
-			String guid = client.lookupGuid("test"+(node*1000+i)+ACCOUNT_ALIAS);
+			System.out.println(name+":"+guidAccount.getGuid());
+			
+			String guid = guidAccount.getGuid();
 			
 			JSONObject json = new JSONObject("{\"nextGuid\":\"hello\",\"cnt\":1}");
 			client.update(guidAccount, json);
@@ -140,7 +143,7 @@ public class CreateMultiGuidClient {
 	 */
 	private static GuidEntry lookupOrCreateAccountGuid(BasicUniversalTcpClient client,
 	        String name, String password) throws Exception {
-	  GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), name);
+	  GuidEntry guidEntry = KeyPairUtils.getGuidEntry(SequentialRequestClient.getDefaultGNSInstance(), name);
 	  if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
 	    guidEntry = client.accountGuidCreate(name, password);
 	    client.accountGuidVerify(guidEntry, createVerificationCode(name));
