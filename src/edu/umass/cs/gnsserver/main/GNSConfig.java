@@ -71,7 +71,6 @@ public class GNSConfig {
    * Master port types.
    */
   public enum PortType {
-
     /**
      * Port used to send requests to an active replica.
      */
@@ -81,7 +80,7 @@ public class GNSConfig {
      */
     RECONFIGURATOR_PORT(1),
     
-    
+    // Reordered these so they work with the new GNSApp
     /**
      * Port used to send requests to a name server.
      */

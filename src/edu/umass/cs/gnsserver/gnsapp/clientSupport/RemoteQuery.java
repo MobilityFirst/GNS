@@ -40,7 +40,6 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.utils.Util;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -51,7 +50,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -68,30 +66,26 @@ public class RemoteQuery extends ClientAsynchBase {
   private static final long defaultReplicaUpdateTimeout = 8000;
   private final ConcurrentMap<Long, Request> replicaResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
-  //private final Object replicaCommandMonitor = new Object();
-  private boolean debuggingEnabled = true;
-
   // For synchronus recon messages
   private static final long defaultReconTimeout = 4000;
   private final ConcurrentMap<String, ClientReconfigurationPacket> reconResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);
-  //private final Object reconMonitor = new Object();
   private final String myID;
   private final InetSocketAddress myAddr;
 
   public RemoteQuery(String myID, InetSocketAddress isa) throws IOException {
-	  super();
-	  this.myID=myID;
-	  this.myAddr = isa;
-	  GNSConfig.getLogger().info("Starting RemoteQuery " + this);
-	  assert(this.myID!=null);
+    super();
+    this.myID = myID;
+    this.myAddr = isa;
+    ClientSupportConfig.getLogger().log(Level.FINE, "Starting RemoteQuery {0}", this);
+    assert (this.myID != null);
   }
-  
+
   @Override
-	public String toString() {
-		return super.toString()
-				+ (this.myID != null ? ":" + this.myID : "");
-	}
+  public String toString() {
+    return super.toString()
+            + (this.myID != null ? ":" + this.myID : "");
+  }
 
   /**
    * A callback that notifys any waits and records the response from a replica.
@@ -104,27 +98,26 @@ public class RemoteQuery extends ClientAsynchBase {
     } else if (response instanceof ClientRequest) {
       requestId = ((ClientRequest) response).getRequestID();
     } else {
-      GNSConfig.getLogger().severe("Bad response type: " + response.getClass());
+      ClientSupportConfig.getLogger().log(Level.SEVERE, "Bad response type: {0}", response.getClass());
       return;
     }
 
     replicaResultMap.put(requestId, response);
     //synchronized (replicaCommandMonitor) {
-      //replicaCommandMonitor.notifyAll();
+    //replicaCommandMonitor.notifyAll();
     //}
   };
-  
-  private RequestCallback getRequestCallback(Object monitor) {
-	  return new RequestCallback() {
 
-		@Override
-		public void handleResponse(Request response) {
-			replicaCommandCallback.handleResponse(response);
-			synchronized(monitor) {
-				monitor.notifyAll();
-			}
-		}
-	  };
+  private RequestCallback getRequestCallback(Object monitor) {
+    return new RequestCallback() {
+      @Override
+      public void handleResponse(Request response) {
+        replicaCommandCallback.handleResponse(response);
+        synchronized (monitor) {
+          monitor.notifyAll();
+        }
+      }
+    };
   }
 
   /**
@@ -133,22 +126,22 @@ public class RemoteQuery extends ClientAsynchBase {
   private RequestCallback reconCallback = (Request response) -> {
     reconResultMap.put(response.getServiceName(), (ClientReconfigurationPacket) response);
     //synchronized (reconMonitor) {
-      //reconMonitor.notifyAll();
+    //reconMonitor.notifyAll();
     //}
   };
-  
-  private RequestCallback getReconfiguratoRequestCallback(Object monitor) {
-	  return new RequestCallback() {
 
-		@Override
-		public void handleResponse(Request arg0) {
-			reconCallback.handleResponse(arg0);
-			synchronized(monitor) {
-				monitor.notifyAll();
-			}
-		}
-		  
-	  };
+  private RequestCallback getReconfiguratoRequestCallback(Object monitor) {
+    return new RequestCallback() {
+
+      @Override
+      public void handleResponse(Request arg0) {
+        reconCallback.handleResponse(arg0);
+        synchronized (monitor) {
+          monitor.notifyAll();
+        }
+      }
+
+    };
   }
 
   private ClientRequest waitForReplicaResponse(long id, Object monitor)
@@ -159,36 +152,37 @@ public class RemoteQuery extends ClientAsynchBase {
   private ClientRequest waitForReplicaResponse(long id, Object monitor, long timeout)
           throws GnsClientException, GnsActiveReplicaException {
     try {
-			synchronized (monitor) {
-				long monitorStartTime = System.currentTimeMillis();
-				while (!replicaResultMap.containsKey(id)
-						&& (timeout == 0 || System.currentTimeMillis()
-								- monitorStartTime < timeout)) {
-					GNSConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
-							new Object[] { this, id+"", timeout+"ms" });
-					monitor.wait(1000);
-				}
-				if (timeout != 0
-						&& System.currentTimeMillis() - monitorStartTime >= timeout) {
-					// TODO: arun
-					GnsClientException e = new GnsClientException(
-							this +": Timed out on active replica response after waiting for " + timeout + "ms for response packet for " + id);
-					GNSConfig.getLogger().warning("\n\n\n\n"  + e.getMessage());
-					e.printStackTrace();
-					throw e;
-				} else
-					GNSConfig
-							.getLogger()
-							.log(Level.INFO,
-									"{0} successfully completed remote query {1}",
-									new Object[] { this, id + "" });
-			}
+      synchronized (monitor) {
+        long monitorStartTime = System.currentTimeMillis();
+        while (!replicaResultMap.containsKey(id)
+                && (timeout == 0 || System.currentTimeMillis()
+                - monitorStartTime < timeout)) {
+          ClientSupportConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
+                  new Object[]{this, id + "", timeout + "ms"});
+          monitor.wait(1000);
+        }
+        if (timeout != 0
+                && System.currentTimeMillis() - monitorStartTime >= timeout) {
+          // TODO: arun
+          GnsClientException e = new GnsClientException(
+                  this + ": Timed out on active replica response after waiting for "
+                  + timeout + "ms for response packet for " + id);
+          ClientSupportConfig.getLogger().warning("\n\n\n\n" + e.getMessage());
+          e.printStackTrace();
+          throw e;
+        } else {
+          ClientSupportConfig.getLogger().log(Level.FINE,
+                  "{0} successfully completed remote query {1}",
+                  new Object[]{this, id + ""});
+        }
+      }
     } catch (InterruptedException x) {
       throw new GnsClientException("Wait for return packet was interrupted " + x);
     }
     Request response = replicaResultMap.remove(id);
     if (response instanceof ActiveReplicaError) {
-      throw new GnsActiveReplicaException("No replicas found for " + ((ActiveReplicaError) response).getServiceName());
+      throw new GnsActiveReplicaException("No replicas found for "
+              + response.getServiceName());
     } else if (response instanceof ClientRequest) {
       return (ClientRequest) response;
     } else { // shouldn't ever get here because callback can't find a request id
@@ -210,14 +204,14 @@ public class RemoteQuery extends ClientAsynchBase {
           monitor.wait(timeout);
         }
         if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
-					GnsClientException e = new GnsClientException(
-							this
-									+ ": Timed out on reconfigurator response after waiting for "
-									+ timeout + "ms response packet for "
-									+ serviceName);
-        	GNSConfig.getLogger().warning("\n\n\n\n" + e.getMessage());
-        	e.printStackTrace();
-        	throw e;
+          GnsClientException e = new GnsClientException(
+                  this
+                  + ": Timed out on reconfigurator response after waiting for "
+                  + timeout + "ms response packet for "
+                  + serviceName);
+          ClientSupportConfig.getLogger().warning("\n\n\n\n" + e.getMessage());
+          e.printStackTrace();
+          throw e;
         }
       }
     } catch (InterruptedException x) {
@@ -236,17 +230,17 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws GnsClientException
    */
   private NSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, GnsClientException {
-	  Object monitor = new Object();
+    Object monitor = new Object();
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));//reconCallback);
     ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName(), monitor);
     // FIXME: return better error codes.
-		return response.isFailed() ?
-				// arun: return duplicate error if name already exists
-				(response instanceof CreateServiceName
-				&& response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR ? 
-						NSResponseCode.DUPLICATE_ERROR : 
-							// else generic error
-							NSResponseCode.ERROR) : NSResponseCode.NO_ERROR;
+    return response.isFailed()
+            ? // arun: return duplicate error if name already exists
+            (response instanceof CreateServiceName
+            && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
+                    ? NSResponseCode.DUPLICATE_ERROR
+                    : // else generic error
+                    NSResponseCode.ERROR) : NSResponseCode.NO_ERROR;
   }
 
   public NSResponseCode createRecord(String name, JSONObject value) {
@@ -254,7 +248,8 @@ public class RemoteQuery extends ClientAsynchBase {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
       return sendReconRequest(packet);
     } catch (GnsClientException | IOException e) {
-      GNSConfig.getLogger().severe("Problem creating " + name + " :" + e);
+      ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
+              new Object[]{name, e});
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
@@ -265,18 +260,17 @@ public class RemoteQuery extends ClientAsynchBase {
     try {
       CreateServiceName[] creates = makeBatchedCreateNameRequest(names, values, handler);
       for (CreateServiceName create : creates) {
-        if (handler.getParameters().isDebugMode()) {
-					GNSConfig
-							.getLogger()
-							.log(Level.INFO,
-									"{0} sending create for NAME = ",
-									new Object[] {this, create.getServiceName() });
+        if (handler.isDebugMode()) {
+          ClientSupportConfig.getLogger().log(Level.FINE,
+                  "{0} sending create for NAME = ",
+                  new Object[]{this, create.getServiceName()});
         }
         sendReconRequest(create);
       }
       return NSResponseCode.NO_ERROR;
     } catch (JSONException | IOException | GnsClientException e) {
-      GNSConfig.getLogger().info("Problem creating " + names + " :" + e);
+      ClientSupportConfig.getLogger().log(Level.FINE, "Problem creating {0} :{1}",
+              new Object[]{names, e});
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
@@ -289,10 +283,10 @@ public class RemoteQuery extends ClientAsynchBase {
     Collection<Set<String>> batches = ConsistentReconfigurableNodeConfig
             .splitIntoRCGroups(names, handler.getGnsNodeConfig().getReconfigurators());
 
-    Set<CreateServiceName> creates = new HashSet<CreateServiceName>();
+    Set<CreateServiceName> creates = new HashSet<>();
     // each batched create corresponds to a different RC group
     for (Set<String> batch : batches) {
-      Map<String, String> nameStates = new HashMap<String, String>();
+      Map<String, String> nameStates = new HashMap<>();
       for (String name : batch) {
         nameStates.put(name, states.get(name).toString());
       }
@@ -307,7 +301,8 @@ public class RemoteQuery extends ClientAsynchBase {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
     } catch (GnsClientException | IOException e) {
-      GNSConfig.getLogger().severe("Problem creating " + name + " :" + e);
+      ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
+              new Object[]{name, e});
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
@@ -317,20 +312,18 @@ public class RemoteQuery extends ClientAsynchBase {
     return handleQueryResponse(requestId, monitor, defaultReplicaReadTimeout, notFoundReponse);
   }
 
-  private String handleQueryResponse(long requestId, Object monitor, long timeout, String notFoundReponse) throws GnsClientException {
+  private String handleQueryResponse(long requestId, Object monitor, long timeout, 
+          String notFoundReponse) throws GnsClientException {
     try {
       CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, timeout);
       if (packet == null) {
         throw new GnsClientException("Packet not found in table " + requestId);
       } else {
         String returnValue = packet.getReturnValue();
-        if (debuggingEnabled) {
-					GNSConfig.getLogger().log(
-							Level.INFO,
-							"{0} {1} got from {2} this: {3}",
-							new Object[] { this, packet.getServiceName(),
-									packet.getResponder(), Util.truncate(returnValue,16,16) });
-        }
+        ClientSupportConfig.getLogger().log(Level.FINE,
+                "{0} {1} got from {2} this: {3}",
+                new Object[]{this, packet.getServiceName(),
+                  packet.getResponder(), Util.truncate(returnValue, 16, 16)});
         // FIX ME: Tidy up all these error reponses for updates
         return checkResponse(returnValue);
       }
@@ -352,11 +345,9 @@ public class RemoteQuery extends ClientAsynchBase {
    */
   public String fieldRead(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    if (debuggingEnabled) {
-			GNSConfig.getLogger().log(Level.INFO,
-					"{0} Field read of {1} / {2}",
-					new Object[] { this, guid, Util.truncate(field, 16, 16) });
-    }
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "{0} Field read of {1} / {2}",
+            new Object[]{this, guid, Util.truncate(field, 16, 16)});
     Object monitor = new Object();
     long requestId = fieldRead(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
     return handleQueryResponse(requestId, monitor, null);
@@ -376,11 +367,9 @@ public class RemoteQuery extends ClientAsynchBase {
    */
   public String fieldReadArray(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    if (debuggingEnabled) {
-			GNSConfig.getLogger().log(Level.INFO,
-					"{0} Field read array of {1} / {2}",
-					new Object[] {this, guid, field });
-    }
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "{0} Field read array of {1} / {2}",
+            new Object[]{this, guid, field});
     Object monitor = new Object();
     long requestId = fieldReadArray(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
     return handleQueryResponse(requestId, monitor, emptyJSONArrayString);
@@ -389,57 +378,52 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldUpdate(String guid, String field, Object value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    if (debuggingEnabled) {
-			GNSConfig.getLogger().log(Level.FINE,
-					"{0} Field update {1} / {2} = {3}",
-					new Object[] { this, guid, field, value });
-    }
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "{0} Field update {1} / {2} = {3}",
+            new Object[]{this, guid, field, value});
+
     Object monitor = new Object();
     long requestId = fieldUpdate(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
-    if (debuggingEnabled) {
-			GNSConfig.getLogger().log(Level.INFO,
-					"{0} Field update {1} / {2} {3} = {4}",
-					new Object[] {this, guid, field, requestId, Util.truncate(value,16,16) });
-      }
+
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "{0} Field update {1} / {2} {3} = {4}",
+            new Object[]{this, guid, field, requestId, Util.truncate(value, 16, 16)});
     return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldReplaceOrCreateArray(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    if (debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO, "{0} Field fieldReplaceOrCreateArray {1} / {2} = {3}",
-    		  new Object[]{this, guid,field,value});
-    }
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "{0} Field fieldReplaceOrCreateArray {1} / {2} = {3}",
+            new Object[]{this, guid, field, value});
     Object monitor = new Object();
     long requestId = fieldReplaceOrCreateArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
-    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout,
+            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldAppendToArray(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    if (debuggingEnabled) {
-			GNSConfig
-					.getLogger()
-					.log(Level.INFO,
-							"{0} Field fieldAppendToArray {1} / {2} = {3}",
-							new Object[] {this, guid, field, Util.truncate(value, 64, 64) });
-    }
+    GNSConfig
+            .getLogger()
+            .log(Level.FINE,
+                    "{0} Field fieldAppendToArray {1} / {2} = {3}",
+                    new Object[]{this, guid, field, Util.truncate(value, 64, 64)});
     Object monitor = new Object();
     long requestId = fieldAppendToArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
-    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout,
+            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   public String fieldRemove(String guid, String field, Object value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     assert value instanceof String || value instanceof Number;
-    if (debuggingEnabled) {
-			GNSConfig.getLogger().log(Level.INFO,
-					"{0} Field update {1} / {2} = {3}",
-					new Object[] {this, guid, field, Util.truncate(value, 16, 16) });
-    }
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "{0} Field update {1} / {2} = {3}",
+            new Object[]{this, guid, field, Util.truncate(value, 16, 16)});
     Object monitor = new Object();
     long requestId = fieldRemove(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
     return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
@@ -448,16 +432,15 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldRemoveMultiple(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    if (debuggingEnabled) {
-			GNSConfig
-					.getLogger()
-					.log(Level.INFO,
-							"{0} Field fieldRemoveMultiple {1} / {2} = {3}",
-							new Object[] {this, guid, field, value });
-    }
+    GNSConfig
+            .getLogger()
+            .log(Level.FINE,
+                    "{0} Field fieldRemoveMultiple {1} / {2} = {3}",
+                    new Object[]{this, guid, field, value});
     Object monitor = new Object();
     long requestId = fieldRemoveMultiple(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
-    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, monitor, defaultReplicaUpdateTimeout, 
+            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   // Select commands
@@ -535,7 +518,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @return the result of the command
    * @throws GnsClientException
    */
-  //FIXME: With somae changes we could probably some existing version of this in the client.
+  //FIXME: With some changes we could probably some existing version of this in the client.
   private String checkResponse(String response) throws GnsClientException {
     // System.out.println("response:" + response);
     if (response.startsWith(BAD_RESPONSE)) {

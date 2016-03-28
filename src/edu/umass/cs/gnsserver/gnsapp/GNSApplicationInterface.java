@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -23,7 +23,6 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 
 import java.io.IOException;
@@ -80,14 +79,6 @@ public interface GNSApplicationInterface<NodeIDType> {
    * @throws IOException
    */
   void sendToID(NodeIDType id, JSONObject msg) throws IOException;
-  
-  /**
-   * Returns the ping manager.
-   * @see PingManager
-   * 
-   * @return the ping manager
-   */
-  PingManager<NodeIDType> getPingManager();
   
   ClientRequestHandlerInterface getRequestHandler();
   

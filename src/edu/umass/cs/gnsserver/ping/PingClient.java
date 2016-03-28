@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author westy
  * @param <NodeIDType>
  */
+@Deprecated
 public class PingClient<NodeIDType> {
 
   private DatagramSocket clientSocket;

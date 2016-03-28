@@ -342,8 +342,6 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         }
         // Update the cache so that request actives task will now complete
         handler.updateCacheEntry(requestActives.getServiceName(), requestActives.getActives());
-        // also update the set of the nodes the ping manager is using
-        handler.getPingManager().addActiveReplicas(requestActives.getActives());
       }
     } catch (JSONException e) {
       GNSConfig.getLogger().severe("Problem parsing RequestActiveReplicas packet info from " + json + ": " + e);

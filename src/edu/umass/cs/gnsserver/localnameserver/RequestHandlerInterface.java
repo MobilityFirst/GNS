@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.localnameserver;
 
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
@@ -191,13 +190,6 @@ public interface RequestHandlerInterface {
    * @throws IOException
    */
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException;
-  
-  /**
-   * Returns the ping manager.
-   * 
-   * @return the ping manager
-   */
-  public PingManager<InetSocketAddress> getPingManager();
   
   /**
    * Returns the active replicas.
