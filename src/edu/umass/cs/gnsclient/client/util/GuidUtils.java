@@ -72,7 +72,10 @@ public class GuidUtils {
           String password) throws Exception {
     return lookupOrCreateAccountGuid(client, name, password, false);
   }
+  
+  public static final String ACCOUNT_ALREADY_VERIFIED="Account already verified";
 
+  private static final int NUM_VERIFICATION_ATTEMPTS = 3;
   public static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client, String name, String password,
           boolean verbose) throws Exception {
     GuidEntry guid = lookupGuidEntryFromPreferences(client, name);
@@ -85,18 +88,30 @@ public class GuidUtils {
         }
       }
       guid = client.accountGuidCreate(name, password);
+      int attempts = 0;
       // Since we're cheating here we're going to catch already verified errors which means
       // someone on the server probably turned off verification for testing purposes
       // but we'll rethrow everything else
-      try {
-        client.accountGuidVerify(guid, createVerificationCode(name));
-      } catch (GnsVerificationException e) {
-        // a bit of a hack here that depends on someone not changing that error message
-        if (!e.getMessage().endsWith("Account already verified")) {
-          throw e;
-        } else {
-          System.out.println("Caught and ignored \"Account already verified\" error for " + name);
-        }
+      while(true) {
+				try {
+					client.accountGuidVerify(guid, createVerificationCode(name));
+				} catch (GnsClientException e) {
+					// a bit of a hack here that depends on someone not changing
+					// that error message
+					if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
+						if(attempts++ < NUM_VERIFICATION_ATTEMPTS)
+							continue;
+						else  {
+						e.printStackTrace();
+							throw e;
+						}
+					} else {
+						System.out
+								.println("Caught and ignored \"Account already verified\" error for "
+										+ name);
+						break;
+					}
+				}
       }
       if (verbose) {
         System.out.println("Created and verified account guid for " + guid.getEntityName() + " (" + guid.getGuid() + ")");

@@ -1,193 +1,326 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy
- *
- */
+/* Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
+ * Initial developer(s): Westy */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 /**
  * All the command classes supported by the GNS server are listed here.
  *
- * @author westy
+ * @author arun, westy
  */
 public class CommandDefs {
 
-	// FIXME: arun: Don't use strings, use class.getCanonicalName  
-  private static String[] commands = new String[]{
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreate",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmpty",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmptySelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateListSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Read",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiField",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArray",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArraySelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Remove",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Replace",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreate",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSON",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNull",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNullSelf",
-    // Select
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery",
-    // Account
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddAlias",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuids",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFast",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids", //for testing 
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountUnsigned",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccount",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuid",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.VerifyAccount",
-    // ACL
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAdd",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf",
-    // Group
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GrantMembership",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GrantMemberships",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RequestJoinGroup",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RequestLeaveGroup",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RetrieveGroupJoinRequests",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RetrieveGroupLeaveRequests",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RevokeMembership",
-    //    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RevokeMemberships",
-    //Admin
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin",
-    //"edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.BatchCreateGuid",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DeleteAllRecords",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ResetDatabase",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ChangeLogLevel",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.AddTag",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RemoveTag",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearTagged",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetTagged",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.PingTable",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.PingValue",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck",
-    // Active code
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Set",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Clear",
-    "edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Get"
+	/* FIXME: arun: Don't use strings, use class.getCanonicalName. It's an
+	 * unnecessary pain to refactor otherwise. */
+	private static String[] commands = new String[] {
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreate.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmpty.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmptySelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateListSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Read.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiField.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArray.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArraySelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Remove.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Replace.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreate.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSON.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNull.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNullSelf.class
+					.getCanonicalName(),
+			// Select
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery.class
+					.getCanonicalName(),
+			// Account
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddAlias.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuids.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFast.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class
+					.getCanonicalName(), // for testing
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountUnsigned.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccount.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuid.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.VerifyAccount.class
+					.getCanonicalName(),
+			// ACL
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAdd.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf.class
+					.getCanonicalName(),
+			// Group
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class
+					.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GrantMembership.class.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GrantMemberships.class.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RequestJoinGroup.class.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RequestLeaveGroup.class.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RetrieveGroupJoinRequests.class.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RetrieveGroupLeaveRequests.class.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RevokeMembership.class.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RevokeMemberships.class.getCanonicalName(),
+			// Admin
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class
+					.getCanonicalName(),
+			// edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.BatchCreateGuid.class.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DeleteAllRecords.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ResetDatabase.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ChangeLogLevel.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.AddTag.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RemoveTag.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearTagged.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetTagged.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.PingTable.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.PingValue.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class
+					.getCanonicalName(),
+			// Active code
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Set.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Clear.class
+					.getCanonicalName(),
+			edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Get.class
+					.getCanonicalName()
 
-  };
+	};
 
-  /**
-   * Return all the command definitions.
-   * 
-   * @return an array of strings
-   */
-  public static String[] getCommandDefs() {
-    return commands;
-  }
+	/**
+	 * Return all the command definitions.
+	 * 
+	 * @return an array of strings
+	 */
+	public static String[] getCommandDefs() {
+		return commands;
+	}
 }

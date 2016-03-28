@@ -84,7 +84,9 @@ public class RegisterAccount extends GnsCommand {
       }
     }
     try {
-      CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
+      CommandResponse<String> result = 
+              AccountAccess.addAccountWithVerification(handler.getHTTPServerHostPortString(), 
+                      name, guid, publicKey,
               password, handler);
       if (result.getReturnValue().equals(OK_RESPONSE)) {
         return new CommandResponse<String>(guid);

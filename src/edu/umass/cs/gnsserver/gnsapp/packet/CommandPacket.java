@@ -19,22 +19,21 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
+import java.net.InetSocketAddress;
+
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
-import edu.umass.cs.utils.Config;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * @author westy, arun
- * 
+ *
  * Packet format sent from a client and handled by a local name server.
  *
  */
@@ -67,6 +66,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * The TCP port of the sender as an int
    */
   private final int senderPort;
+
+  // arun: Need this for correct receiver messaging 
+  private final InetSocketAddress myListeningAddress;
   /**
    * The JSON form of the command. Always includes a COMMANDNAME field.
    * Almost always has a GUID field or NAME (for HRN records) field.
@@ -78,6 +80,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   private boolean needsCoordination = true;
   private boolean needsCoordinationExplicitlySet = false;
 
+  private int retransmissions = 0;
+
   /**
    * Create a CommandPacket instance.
    *
@@ -85,6 +89,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * @param senderAddress
    * @param command
    * @param senderPort
+   * @param myListeningAddress
    */
   public CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
@@ -93,6 +98,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
     this.command = command;
+
+    this.myListeningAddress = null;
   }
 
   /**
@@ -108,6 +115,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderAddress = null;
     this.senderPort = -1;
     this.command = command;
+
+    this.myListeningAddress = null;
   }
 
   /**
@@ -127,26 +136,15 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderAddress = json.optString(SENDERADDRESS, null);
     this.senderPort = json.optInt(SENDERPORT, -1);
     this.command = json.getJSONObject(COMMAND);
+
+    this.myListeningAddress = MessageNIOTransport.getReceiverAddress(command);
+
   }
 
-//  /**
-//   * Create a CommandPacket instance.
-//   *
-//   * @param json
-//   * @throws JSONException
-//   */
-//  public CommandPacket(JSONObject json) throws JSONException {
-//    this.type = Packet.getPacketType(json);
-//    this.clientRequestId = json.getInt(CLIENTREQUESTID);
-//    if (json.has(LNSREQUESTID)) {
-//      this.LNSRequestId = json.getInt(LNSREQUESTID);
-//    } else {
-//      this.LNSRequestId = -1;
-//    }
-//    this.senderAddress = json.getString(SENDERADDRESS);
-//    this.senderPort = json.getInt(SENDERPORT);
-//    this.command = json.getJSONObject(COMMAND);
-//  }
+  public InetSocketAddress getMyListeningAddress() {
+    return this.myListeningAddress;
+  }
+
   /**
    * Converts the command object into a JSONObject.
    *
@@ -168,6 +166,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     if (senderPort != -1) {
       json.put(SENDERPORT, this.senderPort);
     }
+    if (this.myListeningAddress != null)
+    	// do nothing
+    	;
     return json;
   }
 
@@ -224,6 +225,21 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   }
 
   /**
+   * @return {@code this}
+   */
+  public CommandPacket incrRetransmissions() {
+    this.retransmissions++;
+    return this;
+  }
+
+  /**
+   * @return Number of retransmissions.
+   */
+  public int getRetransmissions() {
+    return this.retransmissions;
+  }
+
+  /**
    * Return the sender address.
    *
    * @return a string
@@ -250,19 +266,18 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return command;
   }
 
+  /**
+   * The service name should be the name of the GUID that is being written to
+   * or read, not the account GUID. To address the HRN/GUID ambiguity, you should
+   * either (1) issue each as separate requests from the client; or (2) retransmit
+   * a request until the replica it happens to go to has caught up; or (3) accept
+   * that it is normal behavior for a read immediately following a write to not
+   * see the result of the seemingly "committed" write.
+   */
   @Override
   public String getServiceName() {
     try {
       if (command != null) {
-        if (GnsProtocol.CREATE_DELETE_COMMANDS.contains(getCommandName())) {
-        	// FIXME: arun: if a random active is needed, ask explicitly
-          if (command.has(GnsProtocol.GUID)) {
-            return getCommandName() + "_" + command.getString(GnsProtocol.GUID);
-          }
-          if (command.has(GnsProtocol.NAME)) {
-            return getCommandName() + "_" + command.getString(GnsProtocol.NAME);
-          }
-        }
         if (command.has(GnsProtocol.GUID)) {
           return command.getString(GnsProtocol.GUID);
         }
@@ -311,16 +326,17 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     needsCoordinationExplicitlySet = true;
     this.needsCoordination = needsCoordination;
   }
-  
+
   // arun: bad hack because of poor legacy code 
-  public CommandPacket removeSenderInfo() throws JSONException{ 
-	  JSONObject json = this.toJSONObject();
-	    json.remove(MessageNIOTransport.SNDR_IP_FIELD);
-	    json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
-	    return new CommandPacket(json);
+  public CommandPacket removeSenderInfo() throws JSONException {
+    JSONObject json = this.toJSONObject();
+    json.remove(MessageNIOTransport.SNDR_IP_FIELD);
+    json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
+    return new CommandPacket(json);
   }
 
+  @Override
   public String getSummary() {
-	  return this.getRequestType() +":" + this.getCommandName() + ":"+this.getServiceName() + ":"+this.getRequestID();
+    return this.getRequestType() + ":" + this.getCommandName() + ":" + this.getServiceName() + ":" + this.getRequestID();
   }
 }

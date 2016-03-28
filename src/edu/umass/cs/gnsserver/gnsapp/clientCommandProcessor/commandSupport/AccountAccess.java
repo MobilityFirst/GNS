@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -143,7 +144,7 @@ public class AccountAccess {
 						.log(Level.INFO,
 								"AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
 								new Object[] { guid, ACCOUNT_INFO,
-										result.getSummary() });
+										result!=null ? result.getSummary() : result });
       }
       if (result != null) {
         return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
@@ -422,7 +423,7 @@ public class AccountAccess {
   /**
    * Adds an account guid.
    *
-   * @param host
+   * @param hostPortString
    * @param name
    * @param guid
    * @param publicKey
@@ -433,7 +434,7 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse<String> addAccountWithVerification(final String host, final String name, final String guid,
+  public static CommandResponse<String> addAccountWithVerification(final String hostPortString, final String name, final String guid,
           String publicKey, String password,
           ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
@@ -444,6 +445,7 @@ public class AccountAccess {
             GNSConfig.enableEmailAccountVerification, verifyCode, handler)).getReturnValue().equals(OK_RESPONSE)) {
       if (GNSConfig.enableEmailAccountVerification) {
         // if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
+
         boolean emailOK = true; 
         /*
         Email.email("GNS Account Verification", name,
@@ -454,7 +456,7 @@ public class AccountAccess {
           public void run() {
             boolean adminEmailOK = Email.email("GNS Account Notification",
                     Email.ACCOUNT_CONTACT_EMAIL,
-                    String.format(ADMIN_NOTICE, name, host, guid));
+                    String.format(ADMIN_NOTICE, name, hostPortString, guid));
           }
         }).start();
         */
@@ -503,7 +505,9 @@ public class AccountAccess {
       return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Account already verified");
+			return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " "
+					+ GnsProtocol.VERIFICATION_ERROR + " "
+					+ GuidUtils.ACCOUNT_ALREADY_VERIFIED);
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
       return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Bad verification code");

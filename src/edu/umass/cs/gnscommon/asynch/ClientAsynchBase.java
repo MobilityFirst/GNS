@@ -145,6 +145,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
       GNSConfig.getLogger().info("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
     }
     keyPairHostIndex = addresses.iterator().next();
+    this.enableJSONPackets();
   }
 
   private static Stringifiable<String> unstringer = new StringifiableDefault<String>("");
@@ -154,7 +155,17 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public Request getRequest(String stringified) throws RequestParseException {
     Request request = null;
     try {
-      JSONObject json = new JSONObject(stringified);
+      return getRequestFromJSON(new JSONObject(stringified));
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return request;
+  }
+  @Override
+  // This needs to return null for packet types that we don't want to handle.
+  public Request getRequestFromJSON(JSONObject json) throws RequestParseException {
+    Request request = null;
+    try {
       if (clientPacketTypes.contains(Packet.getPacketType(json))) {
         request = (Request) Packet.createInstance(json, unstringer);
       }
@@ -634,7 +645,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
    */
   public JSONObject createCommand(String action, Object... keysAndValues) throws GnsClientException {
-    long startTime = System.currentTimeMillis();
+   // long startTime = System.currentTimeMillis();
     try {
       JSONObject result = new JSONObject();
       String key;
@@ -645,7 +656,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
         value = keysAndValues[i + 1];
         result.put(key, value);
       }
-      DelayProfiler.updateDelay("createCommand", startTime);
+      // negligible
+      //DelayProfiler.updateDelay("createCommand", startTime);
       return result;
     } catch (JSONException e) {
       throw new GnsClientException("Error encoding message", e);

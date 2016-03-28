@@ -32,17 +32,13 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-//import edu.umass.cs.gnsserver.gnsApp.clientSupport.LNSQueryHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.RequestHandlerParameters;
@@ -59,6 +55,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
@@ -68,9 +65,7 @@ import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -115,11 +110,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
   /**
    * Constructor invoked via reflection by gigapaxos.
-   * 
- * @param args
- * @throws IOException
- */
-public GNSApp(String[] args) throws IOException {
+   *
+   * @param args
+   * @throws IOException
+   */
+  public GNSApp(String[] args) throws IOException {
     AppReconfigurableNode.initOptions(args);
   }
 
@@ -144,13 +139,16 @@ public GNSApp(String[] args) throws IOException {
     this.messenger = messenger;
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(AppReconfigurableNodeOptions.debuggingEnabled);
+   
     this.requestHandler = new ClientRequestHandler(
             new Admintercessor(),
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
             gnsNodeConfig,
-            messenger, parameters);
-
+            //messenger, 
+            parameters);
+    // Should add this to the shutdown method - do we have a shutdown method?
+    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     // start the NSListenerAdmin thread
     new AppAdmin(this, gnsNodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
@@ -185,7 +183,10 @@ public GNSApp(String[] args) throws IOException {
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
             ((GNSNodeConfig<String>) messenger.getNodeConfig()),
-            messenger, parameters);
+            //messenger, 
+            parameters);
+     // Should add this to the shutdown method - do we have a shutdown method?
+    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
@@ -216,68 +217,72 @@ public GNSApp(String[] args) throws IOException {
     PacketType.NOOP,
     PacketType.COMMAND,
     PacketType.COMMAND_RETURN_VALUE};
-  
-	@SuppressWarnings("unchecked")
-	// we explicitly check type
-	@Override
-	public boolean execute(Request request, boolean doNotReplyToClient) {
-		boolean executed = false;
-		try {
-			// FIXME: arun: this is terrible. Why go back to json when you have
-			// the packet you want already????
-			// JSONObject json = new JSONObject(request.toString());
-			Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
-					.getRequestType() : null; // Packet.getPacketType(json);
-			if (AppReconfigurableNodeOptions.debuggingEnabled)
-				GNSConfig.getLogger().log(
-						Level.INFO,
-						"{0} &&&&&&& handling \n{1}\n  =\n{2} ",
-						new Object[] { this,
-								request, new JSONObject(request.toString())});
-			switch (packetType) {
-			case SELECT_REQUEST:
-				Select.handleSelectRequest(
-						(SelectRequestPacket<String>) request, this);
-				break;
-			case SELECT_RESPONSE:
-				Select.handleSelectResponse(
-						(SelectResponsePacket<String>) request, this);
-				break;
-			case STOP:
-				break;
-			case NOOP:
-				break;
-			case COMMAND:
-				CommandHandler.handleCommandPacketForApp(
-						(CommandPacket) request, this);
-				break;
-			case COMMAND_RETURN_VALUE:
-				CommandHandler.handleCommandReturnValuePacketForApp(
-						(CommandValueReturnPacket) request, this);
-				break;
-			default:
-				GNSConfig.getLogger().severe(
-						" Packet type not found: " + request.getSummary());
-				return false;
-			}
-			executed = true;
-		} catch (JSONException | IOException | GnsClientException e) {
-			e.printStackTrace();
-		} catch (FailedDBOperationException e) {
-			// all database operations throw this exception, therefore we keep
-			// throwing this exception upwards and catch this
-			// here.
-			// A database operation error would imply that the application
-			// hasn't been able to successfully execute
-			// the request. therefore, this method returns 'false', hoping that
-			// whoever calls handleDecision would retry
-			// the request.
-			GNSConfig.getLogger().severe(
-					"Error handling request: " + request.toString());
-			e.printStackTrace();
-		}
-		return executed;
-	}
+
+  @SuppressWarnings("unchecked")
+  // we explicitly check type
+  @Override
+  public boolean execute(Request request, boolean doNotReplyToClient) {
+    boolean executed = false;
+    try {
+      // FIXME: arun: this is terrible. Why go back to json when you have
+      // the packet you want already????
+      // JSONObject json = new JSONObject(request.toString());
+      Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
+              .getRequestType() : null; // Packet.getPacketType(json);
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNSConfig.getLogger().log(
+                Level.INFO,
+                "{0} &&&&&&& handling {1} ",
+                new Object[]{this,
+                  request.getSummary()});
+      }
+      switch (packetType) {
+        case SELECT_REQUEST:
+          Select.handleSelectRequest(
+                  (SelectRequestPacket<String>) request, this);
+          break;
+        case SELECT_RESPONSE:
+          Select.handleSelectResponse(
+                  (SelectResponsePacket<String>) request, this);
+          break;
+        /* TODO: arun: I assume the GNS doesn't need STOP and NOOP
+				 * anymore; if so, remove them. 
+         */
+        case STOP:
+          break;
+        case NOOP:
+          break;
+        case COMMAND:
+          CommandHandler.handleCommandPacketForApp(
+                  (CommandPacket) request, doNotReplyToClient, this);
+          break;
+        case COMMAND_RETURN_VALUE:
+          CommandHandler.handleCommandReturnValuePacketForApp(
+                  (CommandValueReturnPacket) request, doNotReplyToClient, this);
+          break;
+        default:
+          GNSConfig.getLogger().severe(
+                  " Packet type not found: " + request.getSummary());
+          return false;
+      }
+      executed = true;
+    } catch (JSONException | IOException | GnsClientException e) {
+      e.printStackTrace();
+    } catch (FailedDBOperationException e) {
+      // all database operations throw this exception, therefore we keep
+      // throwing this exception upwards and catch this
+      // here.
+      // A database operation error would imply that the application
+      // hasn't been able to successfully execute
+      // the request. therefore, this method returns 'false', hoping that
+      // whoever calls handleDecision would retry
+      // the request.
+      GNSConfig.getLogger().severe(
+              "Error handling request: " + request.toString());
+      e.printStackTrace();
+    }
+    return executed;
+  }
 
   // For InterfaceApplication
   @Override
@@ -322,9 +327,9 @@ public GNSApp(String[] args) throws IOException {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
       NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-				GNSConfig.getLogger().log(Level.INFO,
-						"&&&&&&& {0} getting state {1} ",
-						new Object[] { this, state.getSummary() });
+        GNSConfig.getLogger().log(Level.INFO,
+                "&&&&&&& {0} getting state {1} ",
+                new Object[]{this, state.getSummary()});
       }
       return state.toString();
     } catch (RecordNotFoundException e) {
@@ -349,11 +354,11 @@ public GNSApp(String[] args) throws IOException {
   @Override
   public boolean restore(String name, String state) {
     long startTime = System.currentTimeMillis();
-		if (AppReconfigurableNodeOptions.debuggingEnabled) {
-			GNSConfig.getLogger().log(Level.INFO,
-					"&&&&&&& {0} updating {1} with state [{2}]",
-					new Object[] { this, name, Util.truncate(state, 32, 32) });
-		}
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNSConfig.getLogger().log(Level.INFO,
+              "&&&&&&& {0} updating {1} with state [{2}]",
+              new Object[]{this, name, Util.truncate(state, 32, 32)});
+    }
     try {
       if (state == null) {
         // If state is null the only thing it means is that we need to delete 
@@ -387,7 +392,7 @@ public GNSApp(String[] args) throws IOException {
           }
         }
       }
-      DelayProfiler.updateDelay("restore", startTime);
+      //DelayProfiler.updateDelay("restore", startTime);
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().severe("Failed update exception: " + e.getMessage());
@@ -446,33 +451,57 @@ public GNSApp(String[] args) throws IOException {
     return nodeConfig;
   }
 
-	/**
-	 * arun: FIXME: This mode of calling getClientMessenger is outdated and
-	 * poor. The better way is to either delegate client messaging to gigapaxos
-	 * or to determine the right messenger to use in the app based on the
-	 * listening socket address (clear or ssl) on which the request was received
-	 * by invoking {@link SSLMessenger#getClientMessenger(InetSocketAddress)}.
-	 * Doing it like below works but requires all client requests to use the
-	 * same mode (ssl or clear), otherwise JSONMessenger has no through which
-	 * socket the request came in.
-	 */
+  /**
+   * arun: FIXME: This mode of calling getClientMessenger is outdated and
+   * poor. The better way is to either delegate client messaging to gigapaxos
+   * or to determine the right messenger to use in the app based on the
+   * listening socket address (clear or ssl) on which the request was received
+   * by invoking {@link SSLMessenger#getClientMessenger(InetSocketAddress)}.
+   * Doing it like below works but requires all client requests to use the
+   * same mode (ssl or clear), otherwise JSONMessenger has no through which
+   * socket the request came in.
+   */
   @Override
-  public void sendToClient(InetSocketAddress isa, Request response, JSONObject responseJSON) throws IOException {;
+  public void sendToClient(InetSocketAddress isa, Request response, JSONObject responseJSON, InetSocketAddress myListeningAddress) throws IOException {;
+
+    /* arun: FIXED: You have just ignored the doNotReplyToClient flag
+		 * here, which is against the spec of the implementation of the
+		 * Replicable.execute(.) method. Alternatively, you could just delegate 
+		 * client messaging to gigapaxos, but you are not doing that either.
+		 * The current implementation will unnecessarily incur 3x client
+		 * messaging overhead and can potentially cause bugs if clients rapidly 
+		 * open and close connections.
+		 * 
+		 * 
+		 * arun: FIXME: use myListeningAddress and invoke just
+		 * getClientMessenger().sendToAddress(isa,
+		 * responseJSON,myListeningAddress), otherwise messenger does not know
+		 * which socket the request came in and is forced to either always use
+		 * SSL or always not use SSL. SSL should be a per-request option like
+		 * HTTPS, i.e., if SSL is enabled, a client should be able to send
+		 * requests to either the SSL port or the CLEAR port; the latter is
+		 * always available by default.
+		 * 
+		 * Alternatively, delegate client messaging to gigapaxos and you don't
+		 * have to worry about keeping track of sender or listening addresses.
+		 * For that we need the corresponding request here so that we can invoke
+		 * request.setResponse(response) here. */
     if (!disableSSL) {
-			GNSConfig.getLogger().log(Level.INFO,
-					"{0} sending back response to client {1} -> {2}",
-					new Object[] { this, response.getSummary(), isa });
+      GNSConfig.getLogger().log(Level.INFO,
+              "{0} sending back response to client {1} -> {2}",
+              new Object[]{this, response.getSummary(), isa});
       messenger.getSSLClientMessenger().sendToAddress(isa, responseJSON);
     } else {
-      messenger.getClientMessenger().sendToAddress(isa,responseJSON);
+      messenger.getClientMessenger().sendToAddress(isa, responseJSON);
     }
   }
-  
+
   public String toString() {
-	  return this.getClass().getSimpleName() + ":"+this.nodeID;
+    return this.getClass().getSimpleName() + ":" + this.nodeID;
   }
 
   @Override
+  // Currently only used by Select
   public void sendToID(String id, JSONObject msg) throws IOException {
     messenger.sendToID(id, msg);
   }
@@ -491,5 +520,4 @@ public GNSApp(String[] args) throws IOException {
   public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }
-
 }

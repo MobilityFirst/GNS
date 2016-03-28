@@ -79,9 +79,6 @@ public class RemoteQuery extends ClientAsynchBase {
   private final String myID;
   private final InetSocketAddress myAddr;
 
-  public RemoteQuery() throws IOException {
-	  this(null,null);
-  }
   public RemoteQuery(String myID, InetSocketAddress isa) throws IOException {
 	  super();
 	  this.myID=myID;
@@ -90,6 +87,7 @@ public class RemoteQuery extends ClientAsynchBase {
 	  assert(this.myID!=null);
   }
   
+  @Override
 	public String toString() {
 		return super.toString()
 				+ (this.myID != null ? ":" + this.myID : "");
@@ -242,7 +240,13 @@ public class RemoteQuery extends ClientAsynchBase {
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));//reconCallback);
     ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName(), monitor);
     // FIXME: return better error codes.
-    return response.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR;
+		return response.isFailed() ?
+				// arun: return duplicate error if name already exists
+				(response instanceof CreateServiceName
+				&& response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR ? 
+						NSResponseCode.DUPLICATE_ERROR : 
+							// else generic error
+							NSResponseCode.ERROR) : NSResponseCode.NO_ERROR;
   }
 
   public NSResponseCode createRecord(String name, JSONObject value) {
@@ -276,14 +280,6 @@ public class RemoteQuery extends ClientAsynchBase {
       // FIXME: return better error codes.
       return NSResponseCode.ERROR;
     }
-//    try {
-//      CreateServiceName packet = new CreateServiceName(name, value.toString());
-//      return sendReconRequest(packet);
-//    } catch (GnsClientException | IOException e) {
-//      GNS.getLogger().info("Problem creating " + name + " :" + e);
-//      // FIXME: return better error codes.
-//      return  NSResponseCode.ERROR;
-//    }
   }
 
   // based on edu.umass.cs.reconfiguration.testing.ReconfigurableClientCreateTester but this one
@@ -331,7 +327,7 @@ public class RemoteQuery extends ClientAsynchBase {
         if (debuggingEnabled) {
 					GNSConfig.getLogger().log(
 							Level.INFO,
-							"{0} {1} {2} got from {3} this: {4}",
+							"{0} {1} got from {2} this: {3}",
 							new Object[] { this, packet.getServiceName(),
 									packet.getResponder(), Util.truncate(returnValue,16,16) });
         }

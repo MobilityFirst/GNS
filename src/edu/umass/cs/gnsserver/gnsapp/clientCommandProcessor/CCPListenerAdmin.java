@@ -252,8 +252,8 @@ public class CCPListenerAdmin extends Thread implements Shutdownable {
           AdminResponsePacket responsePacket = new AdminResponsePacket(incomingJSON);
           handler.getAdmintercessor().handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
           break;
-        case STATUS_INIT:
-          break;
+//        case STATUS_INIT:
+//          break;
         default:
           GNSConfig.getLogger().severe("Unknown packet type in packet: " + incomingJSON);
           break;

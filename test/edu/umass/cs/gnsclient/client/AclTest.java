@@ -52,7 +52,11 @@ public class AclTest {
   private static GuidEntry barneyEntry;
 
   public AclTest() {
-    if (address == null) {
+
+		/* arun: Fixed a bug here that checked if address==null && was calling
+		 * masterGuid creation again in every test causing the second test
+		 * onwards to fail. */
+    if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
               && System.getProperty("port") != null
@@ -62,13 +66,15 @@ public class AclTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
+
       client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
               System.getProperty("disableSSL").equals("true"));
-    }
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
+    }
     }
   }
 

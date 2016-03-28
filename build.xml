@@ -238,7 +238,7 @@
     <property name="password" value=""/>
     <property name="count" value=""/>
     <property name="disableSSL" value=""/>
-    <junit printsummary="withOutAndErr" fork="yes"> 
+    <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-Dhost=${host}"/>
@@ -247,6 +247,8 @@
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
       <jvmarg value="-DdisableSSL=${disableSSL}"/>
+
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -264,15 +266,13 @@
   
   <target name="test" description="Runs the default integration test" 
           depends="jar, compiletest">
-    <junit printsummary="yes" fork="yes" haltonfailure="on"
-showoutput="yes">
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
-      <jvmarg
-value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
