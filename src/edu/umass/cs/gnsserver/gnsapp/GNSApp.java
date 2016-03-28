@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -139,7 +140,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.messenger = messenger;
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(AppReconfigurableNodeOptions.debuggingEnabled);
-   
+    // Start up some admin processes
+    Admintercessor admintercessor = new Admintercessor();
+    // Create the request handler
     this.requestHandler = new ClientRequestHandler(
             new Admintercessor(),
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
@@ -147,11 +150,14 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             gnsNodeConfig,
             //messenger, 
             parameters);
-    // Should add this to the shutdown method - do we have a shutdown method?
-    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
-    // start the NSListenerAdmin thread
+    // Finish admin setup
+    CCPListenerAdmin ccpListenerAdmin = new CCPListenerAdmin(requestHandler, pingManager);
+    ccpListenerAdmin.start();
+    admintercessor.setListenerAdmin(ccpListenerAdmin);
     new AppAdmin(this, gnsNodeConfig).start();
     GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
+    // Should add this to the shutdown method - do we have a shutdown method?
+    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
@@ -187,7 +193,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             ((GNSNodeConfig<String>) messenger.getNodeConfig()),
             //messenger, 
             parameters);
-     // Should add this to the shutdown method - do we have a shutdown method?
+    // Should add this to the shutdown method - do we have a shutdown method?
     GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();

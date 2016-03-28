@@ -38,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.utils.Util;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
@@ -48,8 +48,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import java.util.logging.Logger;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -57,6 +56,8 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
  * @author westy
  */
 public class Admintercessor {
+  
+  private static final Logger LOG = Logger.getLogger(Admintercessor.class.getName());
 
   private final String LINE_SEPARATOR = System.getProperty("line.separator");
   private Random randomID;
