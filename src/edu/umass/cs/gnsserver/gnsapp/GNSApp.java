@@ -144,8 +144,9 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     Admintercessor admintercessor = new Admintercessor();
     // Create the request handler
     this.requestHandler = new ClientRequestHandler(
-            new Admintercessor(),
-            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
+            admintercessor,
+            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), 
+                    this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
             gnsNodeConfig,
             //messenger, 

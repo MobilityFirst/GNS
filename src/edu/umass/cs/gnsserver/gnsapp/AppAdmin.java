@@ -46,7 +46,7 @@ import java.util.logging.Level;
  * type operations. All of the things in here are for server administration and debugging.
  */
 @SuppressWarnings("unchecked")
-public class AppAdmin extends Thread implements Shutdownable{
+public class AppAdmin extends Thread implements Shutdownable {
 
   /**
    * Socket over which active name server request arrive *
@@ -63,18 +63,19 @@ public class AppAdmin extends Thread implements Shutdownable{
    * @param app
    * @param gnsNodeConfig
    */
-  
   public AppAdmin(GNSApplicationInterface<String> app, GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
     this.app = app;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
+      GNSConfig.getLogger().info("NS Node " + app.getNodeID().toString()
+              + " admin port is " + gnsNodeConfig.getAdminPort(app.getNodeID()));
       this.serverSocket = new ServerSocket(gnsNodeConfig.getAdminPort(app.getNodeID()));
     } catch (IOException e) {
-			GNSConfig.getLogger().severe(
-					"Unable to create NSListenerAdmin server on port "
-							+ gnsNodeConfig.getAdminPort(app.getNodeID())
-							+ ": " + e);
+      GNSConfig.getLogger().severe(
+              "Unable to create NSListenerAdmin server on port "
+              + gnsNodeConfig.getAdminPort(app.getNodeID())
+              + ": " + e);
     }
   }
 
@@ -84,8 +85,9 @@ public class AppAdmin extends Thread implements Shutdownable{
   @Override
   public void run() {
     int numRequest = 0;
-    GNSConfig.getLogger().info("NS Node " + app.getNodeID().toString() + " starting Admin Request Server on port " + 
-    serverSocket.getLocalPort());
+    GNSConfig.getLogger().info("NS Node " + app.getNodeID().toString()
+            + " starting Admin Request Server on port "
+            + serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();
@@ -148,9 +150,9 @@ public class AppAdmin extends Thread implements Shutdownable{
               GNSConfig.getLogger().finer("NSListenrAdmin for " + app.getNodeID() + " is " + jsonArray.toString());
             }
             dumpRequestPacket.setJsonArray(jsonArray);
-            Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), 
+            Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(),
                     dumpRequestPacket.getReturnAddress());
-            
+
             GNSConfig.getLogger().fine("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             break;
           case ADMIN_REQUEST:
@@ -178,7 +180,7 @@ public class AppAdmin extends Thread implements Shutdownable{
                 break;
               // Clears the database and reinitializes all indices
               case RESETDB:
-                  // don't like this anyway
+                // don't like this anyway
 //                GNS.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Handling RESETDB request");
 //                replicaController.reset();
 //                rcCoordinator.reset();
@@ -190,7 +192,7 @@ public class AppAdmin extends Thread implements Shutdownable{
                 String node = adminRequestPacket.getArgument();
                 if (node.equals(app.getNodeID())) {
                   JSONObject jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", app.getPingManager().tableToString((String)app.getNodeID()));
+                  jsonResponse.put("PINGTABLE", app.getPingManager().tableToString((String) app.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
                   Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getReturnAddress());
                 } else {
@@ -227,7 +229,7 @@ public class AppAdmin extends Thread implements Shutdownable{
 
         socket.close();
       } catch (Exception e) {
-        if (serverSocket.isClosed())  {
+        if (serverSocket.isClosed()) {
           GNSConfig.getLogger().warning("NS Admin shutting down.");
           return; // close this thread
         }

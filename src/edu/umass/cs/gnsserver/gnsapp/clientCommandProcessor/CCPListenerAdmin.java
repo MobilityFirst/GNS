@@ -122,29 +122,29 @@ public class CCPListenerAdmin extends Thread implements Shutdownable {
     try {
       switch (Packet.getPacketType(incomingJSON)) {
         case DUMP_REQUEST:
-          DumpRequestPacket dumpRequestPacket = new DumpRequestPacket<String>(incomingJSON, handler.getGnsNodeConfig());
+          DumpRequestPacket<String> dumpRequestPacket = new DumpRequestPacket<>(incomingJSON, handler.getGnsNodeConfig());
           if (dumpRequestPacket.getPrimaryNameServer() == null) {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
-            GNSConfig.getLogger().fine("ListenerAdmin: Request from local HTTP server");
+            GNSConfig.getLogger().info("ListenerAdmin: Request from local HTTP server");
             JSONObject json = dumpRequestPacket.toJSONObject();
             Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
             //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
             Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, GNSConfig.PortType.NS_ADMIN_PORT, null);
-            GNSConfig.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
+            GNSConfig.getLogger().log(Level.INFO, "ListenerAdmin: Multicast out to {0} hosts for {1} --> {2}", new Object[]{serverIds.size(), id, dumpRequestPacket.toString()});
           } else {
             // INCOMING - send it out to original requester
-            DumpRequestPacket incomingPacket = new DumpRequestPacket<String>(incomingJSON, handler.getGnsNodeConfig());
+            DumpRequestPacket<String> incomingPacket = new DumpRequestPacket<>(incomingJSON, handler.getGnsNodeConfig());
             int incomingId = incomingPacket.getId();
             handler.getAdmintercessor().handleIncomingDumpResponsePackets(incomingJSON, handler);
-            GNSConfig.getLogger().fine("ListenerAdmin: Relayed response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());
+            GNSConfig.getLogger().log(Level.INFO, "ListenerAdmin: Relayed response for {0} --> {1}", new Object[]{incomingId, dumpRequestPacket.toJSONObject()});
             int remaining = replicationMap.get(incomingId);
-            remaining = remaining - 1;
+            remaining -= 1;
             if (remaining > 0) {
               replicationMap.put(incomingId, remaining);
             } else {
-              GNSConfig.getLogger().fine("ListenerAdmin: Saw last response for " + incomingId);
+              GNSConfig.getLogger().log(Level.INFO, "ListenerAdmin: Saw last response for {0}", incomingId);
               replicationMap.remove(incomingId);
               SentinalPacket sentinelPacket = new SentinalPacket(incomingId);
               handler.getAdmintercessor().handleIncomingDumpResponsePackets(sentinelPacket.toJSONObject(), handler);
@@ -158,8 +158,7 @@ public class CCPListenerAdmin extends Thread implements Shutdownable {
             case DELETEALLRECORDS:
             // Clears the database and reinitializes all indices.
             case RESETDB:
-              GNSConfig.getLogger().fine("LNSListenerAdmin (" + handler.getNodeAddress() + ") "
-                      + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
+              GNSConfig.getLogger().log(Level.FINE,"LNSListenerAdmin ({0}" + ") " + ": Forwarding {1} request", new Object[]{handler.getNodeAddress(), incomingPacket.getOperation().toString()});
               Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
               //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNSConfig.PortType.NS_ADMIN_PORT, null);
@@ -176,61 +175,61 @@ public class CCPListenerAdmin extends Thread implements Shutdownable {
 //              AdminResponsePacket responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
 //              handler.getAdmintercessor().handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
 //              break;
-            case PINGTABLE:
-              JSONObject jsonResponse;
-              AdminResponsePacket responsePacket;
-              String node = new String(incomingPacket.getArgument());
-              // null means return the LNS data
-              if (node == null || node.equals("LNS") || handler.getNodeConfig().getActiveReplicas().contains(node)) //handler.getGnsNodeConfig().getNodeIDs().contains(node)) 
-              {
-                if (node == null || node.equals("LNS")) {
-                  // Get results from this LNS
-                  jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", pingManager.tableToString(null));
-                  // send a response back to where the request came from
-                  responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                  returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
-                } else {
-                  // forward the packet on to the appropriate host
-                  incomingPacket.setReturnAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(),
-                          handler.getGnsNodeConfig().getCcpAdminPort((String) handler.getActiveReplicaID())));
-                  Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNSConfig.PortType.NS_ADMIN_PORT);
-                }
-              } else { // the incoming packet contained an invalid host number
-                jsonResponse = new JSONObject();
-                jsonResponse.put("ERROR", "Bad host number " + node);
-                responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
-              }
-              break;
-            case PINGVALUE:
-              String node1 = new String(incomingPacket.getArgument());
-              String node2 = new String(incomingPacket.getArgument2());
-              // null or LNS means return the LNS data
-              if (node1 == null || node1.equals("LNS") || handler.getGnsNodeConfig().nodeExists((String) node1)
-                      && handler.getGnsNodeConfig().nodeExists((String) node2)) {
-                if (node1 == null || node1.equals("LNS")) {
-                  // handle it here
-                  jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGVALUE", pingManager.nodeAverage((String) node2));
-                  // send a response back to where the request came from
-                  responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                  returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
-                } else {
-                  // send it to the server that can handle it
-                  incomingPacket.setReturnAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(),
-                          handler.getGnsNodeConfig().getCcpAdminPort((String) handler.getActiveReplicaID())));
-                  //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
-                  Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNSConfig.PortType.NS_ADMIN_PORT);
-                }
-              } else { // the incoming packet contained an invalid host number
-                jsonResponse = new JSONObject();
-                jsonResponse.put("ERROR", "Bad host number " + node1);
-                responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
-                //returnResponsePacketToSender(incomingPacket.gethandlerId(), responsePacket);
-              }
-              break;
+//            case PINGTABLE:
+//              JSONObject jsonResponse;
+//              AdminResponsePacket responsePacket;
+//              String node = new String(incomingPacket.getArgument());
+//              // null means return the LNS data
+//              if (node == null || node.equals("LNS") || handler.getNodeConfig().getActiveReplicas().contains(node)) //handler.getGnsNodeConfig().getNodeIDs().contains(node)) 
+//              {
+//                if (node == null || node.equals("LNS")) {
+//                  // Get results from this LNS
+//                  jsonResponse = new JSONObject();
+//                  jsonResponse.put("PINGTABLE", pingManager.tableToString(null));
+//                  // send a response back to where the request came from
+//                  responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
+//                  returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
+//                } else {
+//                  // forward the packet on to the appropriate host
+//                  incomingPacket.setReturnAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(),
+//                          handler.getGnsNodeConfig().getCcpAdminPort((String) handler.getActiveReplicaID())));
+//                  Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNSConfig.PortType.NS_ADMIN_PORT);
+//                }
+//              } else { // the incoming packet contained an invalid host number
+//                jsonResponse = new JSONObject();
+//                jsonResponse.put("ERROR", "Bad host number " + node);
+//                responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
+//                returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
+//              }
+//              break;
+//            case PINGVALUE:
+//              String node1 = new String(incomingPacket.getArgument());
+//              String node2 = new String(incomingPacket.getArgument2());
+//              // null or LNS means return the LNS data
+//              if (node1 == null || node1.equals("LNS") || handler.getGnsNodeConfig().nodeExists((String) node1)
+//                      && handler.getGnsNodeConfig().nodeExists((String) node2)) {
+//                if (node1 == null || node1.equals("LNS")) {
+//                  // handle it here
+//                  jsonResponse = new JSONObject();
+//                  jsonResponse.put("PINGVALUE", pingManager.nodeAverage((String) node2));
+//                  // send a response back to where the request came from
+//                  responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
+//                  returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
+//                } else {
+//                  // send it to the server that can handle it
+//                  incomingPacket.setReturnAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(),
+//                          handler.getGnsNodeConfig().getCcpAdminPort((String) handler.getActiveReplicaID())));
+//                  //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
+//                  Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNSConfig.PortType.NS_ADMIN_PORT);
+//                }
+//              } else { // the incoming packet contained an invalid host number
+//                jsonResponse = new JSONObject();
+//                jsonResponse.put("ERROR", "Bad host number " + node1);
+//                responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
+//                returnResponsePacketToSender(incomingPacket.getReturnAddress(), responsePacket, handler);
+//                //returnResponsePacketToSender(incomingPacket.gethandlerId(), responsePacket);
+//              }
+//              break;
             case CHANGELOGLEVEL:
               Level level = Level.parse(incomingPacket.getArgument());
               GNSConfig.getLogger().info("Changing log level to " + level.getName());
