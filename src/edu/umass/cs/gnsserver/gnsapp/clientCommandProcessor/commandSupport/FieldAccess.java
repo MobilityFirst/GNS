@@ -53,6 +53,7 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -677,7 +678,7 @@ public class FieldAccess {
         return new CommandResponse<>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
-        String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
+        String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query), false);
         CommandResponse<String> groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo,
                 name, guid, publicKey, handler);
         if (!groupGuidCreateresult.getReturnValue().equals(OK_RESPONSE)) {

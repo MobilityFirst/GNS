@@ -1324,7 +1324,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws SignatureException
    */
   private String signDigestOfMessage(GuidEntry guid, String message) throws NoSuchAlgorithmException,
-          InvalidKeyException, SignatureException {
+          InvalidKeyException, SignatureException, UnsupportedEncodingException {
 
     KeyPair keypair;
     keypair = new KeyPair(guid.getPublicKey(), guid.getPrivateKey());
@@ -1334,7 +1334,7 @@ public class UniversalHttpClient implements GNSClientInterface {
 
     instance.initSign(privateKey);
     // instance.update(messageDigest);
-    instance.update(message.getBytes());
+    instance.update(message.getBytes("UTF-8"));
     byte[] signature = instance.sign();
 
     return ByteUtils.toHex(signature);

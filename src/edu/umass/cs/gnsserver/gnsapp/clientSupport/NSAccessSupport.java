@@ -136,7 +136,7 @@ public class NSAccessSupport {
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    //String accessorGuid = ClientUtils.createGuidStringFromPublicKey(accessorPublicKey);
+    //String accessorGuid = ClientUtils.createGuidStringFromBase64PublicKey(accessorPublicKey);
     LOG.log(Level.FINE,
             "User: {0} Reader: {1} Field: {2}",
             new Object[]{guid, accessorGuid, field});

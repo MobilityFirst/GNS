@@ -1527,7 +1527,8 @@ public BasicUniversalTcpClient(boolean disableSSL) {
       result.put(SIGNATURE, signature);
       DelayProfiler.updateDelay("createAndSignCommand", startTime);
       return result;
-    } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | JSONException e) {
+    } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException 
+            | SignatureException | JSONException | UnsupportedEncodingException e) {
       throw new GnsClientException("Error encoding message", e);
     }
   }
@@ -1543,13 +1544,12 @@ public BasicUniversalTcpClient(boolean disableSSL) {
    * @throws SignatureException
    */
   private String signDigestOfMessage(PrivateKey privateKey, String message) throws NoSuchAlgorithmException,
-          InvalidKeyException, SignatureException {
+          InvalidKeyException, SignatureException, UnsupportedEncodingException {
     long startTime = System.currentTimeMillis();
     Signature instance = Signature.getInstance(SIGNATURE_ALGORITHM);
 
     instance.initSign(privateKey);
-    // instance.update(messageDigest);
-    instance.update(message.getBytes());
+    instance.update(message.getBytes("UTF-8"));
     byte[] signature = instance.sign();
     String result = ByteUtils.toHex(signature);
     DelayProfiler.updateDelay("signDigestOfMessage", startTime);

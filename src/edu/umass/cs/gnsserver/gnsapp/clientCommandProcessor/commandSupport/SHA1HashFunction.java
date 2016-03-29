@@ -20,8 +20,10 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
 /**
  *
  * @author westy
@@ -41,20 +43,24 @@ public class SHA1HashFunction extends AbstractHashFunction {
 
   /**
    * Hash the string.
-   * 
+   *
    * @param key
    * @return a byte array
    */
   @Override
   public synchronized byte[] hash(String key) {
-    messageDigest.update(key.getBytes());
-    return messageDigest.digest();
+    try {
+      messageDigest.update(key.getBytes("UTF-8"));
+      return messageDigest.digest();
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
 
   }
-  
+
   /**
    * Hash the byte array.
-   * 
+   *
    * @param bytes
    * @return a byte array
    */
@@ -65,7 +71,7 @@ public class SHA1HashFunction extends AbstractHashFunction {
 
   /**
    * Returns the single instance of the SHA1HashFunction.
-   * 
+   *
    * @return a SHA1HashFunction instance
    */
   public static SHA1HashFunction getInstance() {
