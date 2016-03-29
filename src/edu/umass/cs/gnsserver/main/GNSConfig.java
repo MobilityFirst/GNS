@@ -171,11 +171,13 @@ public class GNSConfig {
   /**
    * Logging level for main logger
    */
-  public static String fileLoggingLevel = "INFO"; // should be INFO for production use
+  //public static String fileLoggingLevel = "INFO"; // should be INFO for production use
+  public static String fileLoggingLevel = "SEVERE";
   /**
    * Console output level for main logger
    */
-  public static String consoleOutputLevel = "INFO"; //should be INFO for production use
+  //public static String consoleOutputLevel = "INFO"; //should be INFO for production use
+  public static String consoleOutputLevel = "SEVERE"; 
 
   private final static Logger LOGGER = Logger.getLogger(GNSConfig.class.getName());
 

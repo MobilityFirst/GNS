@@ -25,26 +25,21 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
  */
 public class CapacityTestClient {
 	private final static String ACCOUNT_ALIAS = "@gigapaxos.net";
+	private final static int NUM_CLIENT = 5;
+	
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	private static ArrayList<Integer> mal_request = new ArrayList<Integer>();
 	private static int req_id = 0;
     private static ThreadPoolExecutor executorPool;
         
-    private static int NUM_THREAD = 100;
-    private static int NUM_CLIENT = 0;
-    private static int BENIGN_CLIENT = 0;
+    private static int NUM_THREAD = 100;    
+    private static int NUM_GUID = 1;
+    private static int BENIGN_GUID = 0;
     private static int INTERVAL = 1;
     private static final int DURATION = 10;
 
     private static int failed = 0;
     
-    protected String guid;
-    protected GuidEntry entry;
-            
-    protected CapacityTestClient(String guid, GuidEntry entry){
-    	this.guid = guid;
-    	this.entry = entry;
-    }
     
     protected synchronized static void updateLatency(long time){
     	CapacityTestClient.latency.add(time);
@@ -60,52 +55,54 @@ public class CapacityTestClient {
     	return latency.size();
     }    
     
-    private void sendSingleRequest(UniversalTcpClient client, boolean malicious){
-    	executorPool.execute(new ClientThread(client, this.guid, this.entry, malicious));
+    private static void sendSingleRequest(GNSClient client, GuidEntry entry, boolean malicious){
+    	executorPool.execute(new ClientThread(client, entry, malicious));
     }
 
     
-    private static void sendRequests(int numRequest, int rate, CapacityTestClient[] clients, UniversalTcpClient client){
+    private static void sendRequests(int numRequest, int rate, GuidEntry[] guidEntries, GNSClient[] clients){
     	int reqPerClient = numRequest / NUM_CLIENT;
     	RateLimiter r = new RateLimiter(rate);
-    	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" guid...");
+    	System.out.println("Start sending rate at "+rate+" req/sec with "+ NUM_CLIENT +" clients...");
+    	int k = 0;
+    	int g = 0;
     	for (int i=0; i<reqPerClient; i++){
     		for(int j=0; j<NUM_CLIENT; j++){
-    			if(j < BENIGN_CLIENT ){
+    			if(j < BENIGN_GUID ){
     				//send benign request
-    				clients[j].sendSingleRequest(client, false);
+    				sendSingleRequest(clients[k], guidEntries[g], false);
     			}else{
     				//send malicious request
-    				clients[j].sendSingleRequest(client, true);
+    				sendSingleRequest(clients[k], guidEntries[g], true);
     			}
     			r.record();
+    			k = (k+1)%NUM_CLIENT;
+    			g = (g+1)%NUM_GUID;
     		}
     	}
     }
 	
-    private class ClientThread implements Runnable{
-    	private UniversalTcpClient client;
-        private String guid;
+    private static class ClientThread implements Runnable{
+    	private GNSClient client;
         private GuidEntry entry;
         private boolean mal;
         
-    	public ClientThread(UniversalTcpClient client, String guid, GuidEntry entry, boolean mal){
+    	public ClientThread(GNSClient client, GuidEntry entry, boolean mal){
     		this.client = client;
-    		this.guid = guid;
     		this.entry = entry;
     		this.mal = mal;
     	}
     	
     	public synchronized void run(){
-    		long begin = System.nanoTime();
+    		long begin = System.currentTimeMillis();
     		try{
-    			client.fieldRead(guid, "nextGuid", entry);
+    			client.fieldRead(entry.getGuid(), "nextGuid", entry);
     		}catch(Exception e){
     			failed++;
     			e.printStackTrace();
     		}
     		
-    		long elapsed = System.nanoTime() - begin;
+    		long elapsed = System.currentTimeMillis() - begin;
     		if(!this.mal){
     			CapacityTestClient.updateLatency(elapsed);
     		}else{
@@ -132,43 +129,48 @@ public class CapacityTestClient {
     InvalidKeyException, SignatureException, Exception {
 		String address = args[0];
 		int node = Integer.parseInt(args[1]); 
-		NUM_CLIENT =  Integer.parseInt(args[2]);
+		NUM_GUID =  Integer.parseInt(args[2]);
 		INTERVAL = Integer.parseInt(args[3]);
-		int rate = INTERVAL*NUM_CLIENT;		
-		BENIGN_CLIENT = Integer.parseInt(args[4]);
+		int rate = INTERVAL*NUM_GUID;
+		if(args.length == 5){
+			BENIGN_GUID = Integer.parseInt(args[4]);
+		} else{
+			BENIGN_GUID = NUM_GUID;
+		}
 		
-		CapacityTestClient[] clients = new CapacityTestClient[NUM_CLIENT];
-		GNSClient client = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+		GNSClient[] clients = new GNSClient[NUM_CLIENT];
+		GuidEntry[] guidEntries = new GuidEntry[NUM_GUID];
 		
-		//UniversalTcpClient client = new UniversalTcpClient(address, 24398, false);
+		for (int i=0; i<NUM_CLIENT; i++){
+			clients[i] = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+		}
+		//UniversalTcpClient cl = new UniversalTcpClient(address, 24398, false);
+		//cl.guidBatchCreate(accountGuid, aliases, createPublicKeys)
+		
 		
     	executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 	    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
     	executorPool.prestartAllCoreThreads();
     	    	
-		for (int index=0; index<NUM_CLIENT; index++){			
-			String account = "test"+(node*1000+index)+ACCOUNT_ALIAS;
+		for (int i=0; i<NUM_GUID; i++){			
+			String account = "test"+(node*1000+i)+ACCOUNT_ALIAS;
 			System.out.println("The account is "+account);
 			
-			GuidEntry accountGuid = KeyPairUtils.getGuidEntry(SequentialRequestClient.getDefaultGNSInstance(), account);
-			String guid = accountGuid.getGuid();
-		
-			System.out.println("The GUID is "+guid);
-			
-			clients[index] = new CapacityTestClient(guid, accountGuid);
+			guidEntries[i] = KeyPairUtils.getGuidEntry(SequentialRequestClient.getDefaultGNSInstance(), account);
+			//String guid = accountGuid.getGuid();			
 		}
 		
 		int TOTAL = rate * DURATION;
 		
 		System.out.println("1st run");
     	long t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, clients, client);
+    	sendRequests(TOTAL, rate, guidEntries, clients);
     	long t2 = System.currentTimeMillis();
     	long elapsed = t2 - t1;
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	int TOTAL_NORMAL = TOTAL * (NUM_CLIENT - BENIGN_CLIENT) / NUM_CLIENT;	
+    	int TOTAL_NORMAL = TOTAL *  BENIGN_GUID / NUM_GUID;	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
 
     	while((latency.size()+failed) < TOTAL_NORMAL ){
@@ -197,19 +199,19 @@ public class CapacityTestClient {
     		total += lat;
     	}
     	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The average latency is "+(total/latency.size()));
+    	System.out.println("The average latency is "+(total/latency.size())+" ms");
     	
     	clearLatency();    	
     	
     	System.out.println("2nd run");
     	t1 = System.currentTimeMillis();
-    	sendRequests(TOTAL, rate, clients, client);
+    	sendRequests(TOTAL, rate, guidEntries, clients);
     	t2 = System.currentTimeMillis();
     	elapsed = t2 - t1;
     	
     	System.out.println("It takes "+elapsed+"ms.");
     	
-    	TOTAL_NORMAL = TOTAL * (NUM_CLIENT - BENIGN_CLIENT) / NUM_CLIENT;    	
+    	TOTAL_NORMAL = TOTAL * BENIGN_GUID / NUM_GUID;    	
     	System.out.println("There are "+TOTAL+" requests, and "+TOTAL_NORMAL+" normal requests.");
     	
     	while((latency.size()+failed) < TOTAL_NORMAL ){
@@ -238,7 +240,7 @@ public class CapacityTestClient {
     		total += lat;
     	}
     	System.out.println("There are "+failed+" requests failed.");
-    	System.out.println("The average latency is "+(total/latency.size()));
+    	System.out.println("The average latency is "+(total/latency.size())+" ms");
     	
     	
     	/*

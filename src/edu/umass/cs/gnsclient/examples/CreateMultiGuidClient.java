@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
@@ -76,20 +77,11 @@ public class CreateMultiGuidClient {
 			
 			System.out.println(name+":"+guidAccount.getGuid());
 			
-			String guid = guidAccount.getGuid();
-			
-			JSONObject json = new JSONObject("{\"nextGuid\":\"hello\",\"cnt\":1}");
-			client.update(guidAccount, json);
-			
-			client.activeCodeClear(guid, "read", guidAccount);
-			JSONObject result = client.read(guidAccount);
-			String field = client.fieldRead(guidAccount, "nextGuid");
-		    System.out.println("Retrieved JSON from guid: " + result.toString()+", the field is "+field);
 		    if(flag){
 		    	if (i < BENIGN_CLIENT){
-		    		executor.execute(new createGuidThread(client, code64, guid, guidAccount));
+		    		executor.execute(new createGuidThread(client, code64, guidAccount.getGuid(), guidAccount));
 		    	}else{
-		    		executor.execute(new createGuidThread(client, mal_code64, guid, guidAccount));
+		    		executor.execute(new createGuidThread(client, mal_code64, guidAccount.getGuid(), guidAccount));
 		    	}		    	
 		    }
 		}
@@ -120,14 +112,30 @@ public class CreateMultiGuidClient {
 		
 		@Override
 		public void run() {
-				try {
-					client.activeCodeSet(guid, "read", code, guidAccount);
-				} catch (GnsClientException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				CreateMultiGuidClient.incr();
+			String guid = guidAccount.getGuid();
+			
+			JSONObject json;
+			try {
+				json = new JSONObject("{\"nextGuid\":\"hello\",\"cnt\":1}");
+				client.update(guidAccount, json);
+				client.activeCodeClear(guid, "read", guidAccount);
+				client.activeCodeSet(guid, "read", code, guidAccount);
+				//JSONObject result = client.read(guidAccount);
+			} catch (JSONException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (GnsClientException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
+			//String field = client.fieldRead(guidAccount, "nextGuid");
+			CreateMultiGuidClient.incr();
 		}
 		
 	}
