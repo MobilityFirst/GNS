@@ -2,9 +2,6 @@
 SCRIPTS="`dirname \"$0\"`"
 IDE_PATH=build/classes:build/test/classes:lib/*:
 
-# deprecated bad way
-#java -ea -DgigapaxosConfig=conf/gigapaxos.gnsApp.properties -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp jars/GNS.jar edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNode -test -configFile $SCRIPTS/ns.properties &
-# new good way to start
 java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djava.util.logging.config.file=logging.properties \
 -DgigapaxosConfig=conf/gigapaxos.gnsApp.singleNode.properties \
