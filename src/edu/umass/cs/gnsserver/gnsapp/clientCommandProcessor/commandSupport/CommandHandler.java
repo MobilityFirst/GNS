@@ -78,7 +78,7 @@ public class CommandHandler {
           throws JSONException, UnknownHostException {
     final Long receiptTime = System.currentTimeMillis(); // instrumentation
     ClientRequestHandlerInterface handler = app.getRequestHandler();
-    if (handler.getParameters().isDebugMode()) {
+    if (handler.isDebugMode()) {
       GNSConfig.getLogger().log(Level.INFO, "Command packet received: {0}", new Object[]{packet.getSummary()});
     }
     final JSONObject jsonFormattedCommand = packet.getCommand();
@@ -124,7 +124,7 @@ public class CommandHandler {
               System.currentTimeMillis() - receiptTime);
 
       try {
-        if (handler.getParameters().isDebugMode()) {
+        if (handler.isDebugMode()) {
           GNSConfig.getLogger().log(Level.INFO,
                   "Handling command reply: {0}",
                   new Object[]{returnPacket});
@@ -176,7 +176,7 @@ public class CommandHandler {
       command.remove(SIGNATURE);
       String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
       //String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
-      if (handler.getParameters().isDebugMode()) {
+      if (handler.isDebugMode()) {
         GNSConfig.getLogger().log(Level.FINE,
                 "########CANONICAL JSON: {0}",
                 new Object[]{commandSansSignature});

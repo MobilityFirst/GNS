@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -68,6 +68,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
    * @return a coordinator or null if one can't be created
    */
   @Override
+  @Deprecated
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {
     GNSApp app = null;
     try {

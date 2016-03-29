@@ -125,7 +125,9 @@ public class GnsProtocol {
   public final static String DUMP = "dump";
   //
   public final static String CONNECTION_CHECK = "connectionCheck";
+  @Deprecated
   public final static String PING_TABLE = "pingTable";
+  @Deprecated
   public final static String PING_VALUE = "pingValue";
   public final static String CHANGE_LOG_LEVEL = "changeLogLevel";
   public final static String SET_PARAMETER = "setParameter";

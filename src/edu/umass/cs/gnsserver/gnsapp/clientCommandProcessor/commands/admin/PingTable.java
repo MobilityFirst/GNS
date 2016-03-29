@@ -32,6 +32,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class PingTable extends GnsCommand {
 
   /**

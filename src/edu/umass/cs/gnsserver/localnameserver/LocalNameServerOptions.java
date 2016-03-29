@@ -23,7 +23,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
-import edu.umass.cs.gnsserver.ping.PingManager;
 import static edu.umass.cs.gnsserver.utils.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
@@ -149,11 +148,6 @@ public class LocalNameServerOptions {
     if (isOptionTrue(DEBUG, allValues)) {
       LocalNameServer.debuggingEnabled = true;
       System.out.println("******** DEBUGGING IS ENABLED IN LocalNameServer *********");
-    }
-
-    if (isOptionTrue(DEBUG_PING, allValues)) {
-      PingManager.debuggingEnabled = true;
-      System.out.println("******** DEBUGGING IS ENABLED IN PingManager *********");
     }
 
     if (isOptionTrue(DEBUG_MISC, allValues)) {

@@ -37,6 +37,7 @@ import java.net.InetAddress;
  * @author westy
  * @param <NodeIDType>
  */
+@Deprecated
 public class PingServer<NodeIDType> extends Thread{
 
   private final NodeIDType nodeID;

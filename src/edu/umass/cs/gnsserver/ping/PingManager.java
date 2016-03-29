@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author westy
  * @param <NodeIDType>
  */
+@Deprecated
 public class PingManager<NodeIDType> implements Shutdownable {
 
   private final static int TIME_BETWEEN_PINGS = 30000;
@@ -266,9 +267,9 @@ public class PingManager<NodeIDType> implements Shutdownable {
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     String nodeID = "0";
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
-    GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
-    new PingManager(nodeID, nodeConfig).startPinging();
+    GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>(configFile, nodeID);
+    GNSConsistentNodeConfig<String> nodeConfig = new GNSConsistentNodeConfig<>(gnsNodeConfig);
+    new PingManager<>(nodeID, nodeConfig).startPinging();
   }
 
   /**

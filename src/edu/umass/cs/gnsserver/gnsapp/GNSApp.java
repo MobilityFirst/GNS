@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,7 +42,6 @@ import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.RequestHandlerParameters;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
@@ -56,7 +56,6 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
-import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
@@ -83,7 +82,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   private final static int INITIAL_RECORD_VERSION = 0;
   private String nodeID;
   private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
-  private PingManager<String> pingManager;
   private boolean constructed = false;
   /**
    * Object provides interface to the database table storing name records
@@ -94,7 +92,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    */
   private SSLMessenger<String, JSONObject> messenger;
   private ClientRequestHandlerInterface requestHandler;
-  //private ClientCommandProcessor clientCommandProcessor;
 
   // Keep track of commands that are coming in
   /**
@@ -129,29 +126,28 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.nodeID = messenger.getMyID();
     GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<String>();
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
-    // Start a ping server, but not a client.
-    this.pingManager = new PingManager<String>(nodeID, this.nodeConfig, true);
-    GNSConfig.getLogger().info("Node " + nodeID + " started Ping server on port "
-            + nodeConfig.getCcpPingPort(nodeID));
     MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
     this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNSConfig.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.messenger = messenger;
-    RequestHandlerParameters parameters = new RequestHandlerParameters();
-    parameters.setDebugMode(AppReconfigurableNodeOptions.debuggingEnabled);
-   
+    // Create the admin object
+    Admintercessor admintercessor = new Admintercessor();
+    // Create the request handler
     this.requestHandler = new ClientRequestHandler(
-            new Admintercessor(),
-            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
+            admintercessor,
+            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID),
+                    this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
             gnsNodeConfig,
-            //messenger, 
-            parameters);
+            AppReconfigurableNodeOptions.debuggingEnabled);
+    // Finish admin setup
+    CCPListenerAdmin ccpListenerAdmin = new CCPListenerAdmin(requestHandler);
+    ccpListenerAdmin.start();
+    admintercessor.setListenerAdmin(ccpListenerAdmin);
+    new AppAdmin(this, gnsNodeConfig).start();
+    GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
     // Should add this to the shutdown method - do we have a shutdown method?
     GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
-    // start the NSListenerAdmin thread
-    new AppAdmin(this, gnsNodeConfig).start();
-    //GNSConfig.getLogger().info(nodeID.toString() + " Admin thread initialized");
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(ActiveCodeHandler.getActiveDB(this)) : null;
     constructed = true;
   }
@@ -168,24 +164,17 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-    // Start a ping server, but not a client.
-    this.pingManager = new PingManager<String>(nodeID, this.nodeConfig, true);
-    GNSConfig.getLogger().info("Node " + nodeID + " started Ping server on port "
-            + nodeConfig.getCcpPingPort(nodeID));
     MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
     this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNSConfig.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.messenger = messenger;
-    RequestHandlerParameters parameters = new RequestHandlerParameters();
-    parameters.setDebugMode(AppReconfigurableNodeOptions.debuggingEnabled);
     this.requestHandler = new ClientRequestHandler(
             new Admintercessor(),
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
             ((GNSNodeConfig<String>) messenger.getNodeConfig()),
-            //messenger, 
-            parameters);
-     // Should add this to the shutdown method - do we have a shutdown method?
+            AppReconfigurableNodeOptions.debuggingEnabled);
+    // Should add this to the shutdown method - do we have a shutdown method?
     GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
@@ -224,17 +213,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public boolean execute(Request request, boolean doNotReplyToClient) {
     boolean executed = false;
     try {
-      // FIXME: arun: this is terrible. Why go back to json when you have
-      // the packet you want already????
-      // JSONObject json = new JSONObject(request.toString());
       Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
               .getRequestType() : null; // Packet.getPacketType(json);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(
-                Level.INFO,
-                "{0} &&&&&&& handling {1} ",
-                new Object[]{this,
-                  request.getSummary()});
+        GNSConfig.getLogger().log(Level.INFO, "{0} &&&&&&& handling {1} ",
+                new Object[]{this, request.getSummary()});
       }
       switch (packetType) {
         case SELECT_REQUEST:
@@ -504,11 +487,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   // Currently only used by Select
   public void sendToID(String id, JSONObject msg) throws IOException {
     messenger.sendToID(id, msg);
-  }
-
-  @Override
-  public PingManager<String> getPingManager() {
-    return pingManager;
   }
 
   @Override

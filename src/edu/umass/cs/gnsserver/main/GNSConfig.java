@@ -64,47 +64,48 @@ public class GNSConfig {
    * https://docs.mongodb.org/manual/reference/limits/#bson-documents
    */
   public static int MAXGUIDS = 300000;
+  
+  
   // This is designed so we can run multiple NSs on the same host if needed
   /**
    * Master port types.
    */
   public enum PortType {
-
-    /**
-     * Port used to send requests to a name server.
-     */
-    NS_TCP_PORT(0), // TCP port at name servers
-
-    /**
-     * Port used to send admin requests to a name server.
-     */
-    NS_ADMIN_PORT(1),
-    /**
-     * Port used to send pings requests to a name server.
-     */
-    NS_PING_PORT(2),
-    // sub ports
-
     /**
      * Port used to send requests to an active replica.
      */
-    ACTIVE_REPLICA_PORT(3),
+    ACTIVE_REPLICA_PORT(0),
     /**
      * Port used to requests to a reconfigurator replica.
      */
-    RECONFIGURATOR_PORT(4),
+    RECONFIGURATOR_PORT(1),
+    
+    // Reordered these so they work with the new GNSApp
+    /**
+     * Port used to send requests to a name server.
+     */
+    NS_TCP_PORT(3), // TCP port at name servers
+    /**
+     * Port used to send admin requests to a name server.
+     */
+    NS_ADMIN_PORT(4),
+    /**
+     * Port used to send pings requests to a name server.
+     */
+    NS_PING_PORT(5),
+    // sub ports
     /**
      * Port used to send requests to a command pre processor.
      */
-    CCP_PORT(5),
+    CCP_PORT(6),
     /**
      * Port used to send admin requests to a command pre processor.
      */
-    CCP_ADMIN_PORT(6),
+    CCP_ADMIN_PORT(7),
     /**
      * Port used to send pings to a command pre processor.
      */
-    CCP_PING_PORT(7);
+    CCP_PING_PORT(8);
 
     //
     int offset;

@@ -229,7 +229,7 @@ public class GnsHttpServer {
         String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationWords(new Date().getTime() - serverStartDate.getTime(), true, true);
         String serverSSLMode = "Server SSL mode: " + ReconfigurationConfig.getServerSSLMode().toString();
         String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
-        String serverLocalNameServerID = "Local CCP address: " + requestHandler.getNodeAddress();
+        String serverLocalNameServerID = "Local node address: " + requestHandler.getNodeAddress();
         String numberOfNameServers = "Server count: " + requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
         //String requestsReceivedString = "Client requests received: " + requestHandler.getReceivedRequests();
@@ -311,7 +311,7 @@ public class GnsHttpServer {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           responseBody.write("Server debug is true<br>".getBytes());
         }
-        if (requestHandler.getParameters().isDebugMode()) {
+        if (requestHandler.isDebugMode()) {
           responseBody.write("CCP debug is true<br>".getBytes());
         }
         responseBody.write(consoleLogLevelString.getBytes());

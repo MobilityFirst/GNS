@@ -93,27 +93,28 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    *
    */
   private ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
-  
+
   // arun: to correct legacy hack
   private boolean addSuffix = false;
-  
-	/**
-	 * arun: For use with gigapaxos createApp.
-	 * 
-	 * @throws IOException
-	 */
-	public GNSNodeConfig() throws IOException {
-		Map<String, InetSocketAddress> activeMap = PaxosConfig.getActives();
-		hostInfoMapping = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>();
-		for (String active : activeMap.keySet()) 
-			addHostInfo(hostInfoMapping, valueOf(active),
-					activeMap.get(active).getAddress().toString(), activeMap
-							.get(active).getAddress().toString(), activeMap
-							.get(active).getPort() > 0 ? activeMap.get(active)
-							.getPort() : GNSConfig.DEFAULT_STARTING_PORT);
-		hostsFile = null;
-	}
-  
+
+  /**
+   * arun: For use with gigapaxos createApp.
+   *
+   * @throws IOException
+   */
+  public GNSNodeConfig() throws IOException {
+    Map<String, InetSocketAddress> activeMap = PaxosConfig.getActives();
+    hostInfoMapping = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>();
+    for (String active : activeMap.keySet()) {
+      addHostInfo(hostInfoMapping, valueOf(active),
+              activeMap.get(active).getAddress().toString(), activeMap
+              .get(active).getAddress().toString(), activeMap
+              .get(active).getPort() > 0 ? activeMap.get(active)
+              .getPort() : GNSConfig.DEFAULT_STARTING_PORT);
+    }
+    hostsFile = null;
+  }
+
   /**
    * Creates a GNSNodeConfig for the given nameServerID and initializes it from a name server host file.
    * This supports the new hosts.txt style format.
@@ -165,7 +166,6 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 //    this.nodeID = null;
 //    hostsFile = null;
 //  }
-
   /**
    * Returns the complete set of "top-level" IDs for all name servers (not local name servers).
    * *** ONLY FOR USE IN INSTRUMENTATION ***
@@ -206,7 +206,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   /**
    *
    * Returns true if this node is an active replica, otherwise false.
-   * 
+   *
    * @param id
    * @return true if this node is an active replica
    */
@@ -265,7 +265,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   /**
    * Returns the active replica associated with this node id.
-   * 
+   *
    * @param id
    * @return a node id
    */
@@ -279,7 +279,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   /**
    * Returns the reconfigurator associated with this node id.
-   * 
+   *
    * @param id
    * @return a node id
    */
@@ -337,9 +337,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
+  @Override
   public int getAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
-    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_ADMIN_PORT.getOffset();
+    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber()
+            + GNSConfig.PortType.NS_ADMIN_PORT.getOffset();
   }
 
   /**
@@ -666,7 +668,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> newHostInfoMapping
             = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>(16, 0.75f, 8);
     for (HostSpec spec : hosts) {
-    	addSuffix = true;
+      addSuffix = true;
       addHostInfo(newHostInfoMapping, (NodeIDType) spec.getId(), spec.getName(), spec.getExternalIP(),
               spec.getStartPort() != null ? spec.getStartPort() : GNSConfig.DEFAULT_STARTING_PORT);
     }
@@ -696,8 +698,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
     String idString = id.toString();
-    NodeIDType activeReplicaID = valueOf(idString + (addSuffix ? "_Repl":""));
-    NodeIDType ReconfiguratorID = valueOf(idString + (addSuffix?"_Recon":""));
+    NodeIDType activeReplicaID = valueOf(idString + (addSuffix ? "_Repl" : ""));
+    NodeIDType ReconfiguratorID = valueOf(idString + (addSuffix ? "_Recon" : ""));
     NodeInfo<NodeIDType> nodeInfo = new NodeInfo<NodeIDType>(id, activeReplicaID, ReconfiguratorID,
             ipAddress, externalIP, startingPort, pingLatency, latitude, longitude);
     GNSConfig.getLogger().fine(nodeInfo.toString());
@@ -723,11 +725,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     Timer t = new Timer();
     t.scheduleAtFixedRate(
             timerTask = new TimerTask() {
-              @Override
-              public void run() {
-                checkForUpdates();
-              }
-            },
+      @Override
+      public void run() {
+        checkForUpdates();
+      }
+    },
             updateCheckPeriod, // run first occurrence later
             updateCheckPeriod);
     GNSConfig.getLogger().info("Checking for hosts updates every " + updateCheckPeriod / 1000 + " seconds");
