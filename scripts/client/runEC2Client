@@ -1,7 +1,8 @@
 #!/bin/bash
 #echo $PWD
 # should use matching gigapaxos properties with servers
-java -DgigapaxosConfig=conf/activeCode/gigapaxos.gnsApp.ec2.properties \
+java -Dlog4j.configuration=logging.properties \
+-DgigapaxosConfig=conf/activeCode/gigapaxos.gnsApp.ec2.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
