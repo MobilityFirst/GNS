@@ -66,9 +66,6 @@ public class RetrieveAliases extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
@@ -88,7 +85,6 @@ public class RetrieveAliases extends GnsCommand {
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
     }
-    //}
   }
 
   @Override

@@ -39,7 +39,7 @@ import java.util.List;
  * and core GNS commands that are sent to the server. Specifically the CommandModule class maintains the list
  * of commands, mechanisms for looking up commands from the contents of JSONObject encoded command packets
  * as well as supporting generation of command documentation.
- * 
+ *
  * @author westy
  */
 public class CommandModule {
@@ -61,10 +61,7 @@ public class CommandModule {
   }
 
   /**
-   * FIXME: arun: Just define and use classes directly in CommandDefs. What 
-   * is the point of having Strings there only to convert them back to 
-   * classes here??
-   * 
+   *
    * Add commands to this module. Commands instances are created by reflection
    * based on the command class names passed in parameter
    *
@@ -72,12 +69,12 @@ public class CommandModule {
    * to instantiate
    * @param commands Set where the commands are added
    */
-  protected void addCommands(String[] commandClasses, Set<GnsCommand> commands) {
+  protected void addCommands(Class[] commandClasses, Set<GnsCommand> commands) {
     for (int i = 0; i < commandClasses.length; i++) {
-      String commandClassName = commandClasses[i].trim();
-      Class<?> clazz;
+      Class<?> clazz = commandClasses[i];
+      //String commandClassName = commandClasses[i].trim();
       try {
-        clazz = Class.forName(commandClassName);
+        //clazz = Class.forName(commandClassName);
         Constructor<?> constructor;
         try {
           constructor = clazz.getConstructor(new Class[]{this.getClass()});
@@ -85,19 +82,19 @@ public class CommandModule {
           constructor = clazz.getConstructor(new Class[]{CommandModule.class});
         }
         GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
-        GNSConfig.getLogger().fine("Adding command " + (i + 1) + ": " + commandClassName + " with " + command.getCommandName() + ": " + command.getCommandParametersString());
+        GNSConfig.getLogger().fine("Adding command " + (i + 1) + ": " + clazz.getCanonicalName() + " with " + command.getCommandName() + ": " + command.getCommandParametersString());
         commands.add(command);
       } catch (Exception e) {
-        GNSConfig.getLogger().severe("Unable to add command for class " + commandClassName + ": " + e);
+        GNSConfig.getLogger().severe("Unable to add command for class " + clazz.getCanonicalName() + ": " + e);
       }
     }
   }
 
   /**
    * Finds the command that corresponds to the JSONObject which was received command packet.
-   * 
+   *
    * @param json
-   * @return 
+   * @return
    */
   public GnsCommand lookupCommand(JSONObject json) {
     String action;
@@ -122,7 +119,7 @@ public class CommandModule {
     GNSConfig.getLogger().warning("***COMMAND SEARCH***: Unable to find " + json);
     return null;
   }
-  
+
   /**
    * The types of command description formats we support.
    */
@@ -132,35 +129,33 @@ public class CommandModule {
      *
      */
     HTML,
-
     /**
      *
      */
     TCP,
-
     /**
      *
      */
     TCP_Wiki
   }
-  
+
   /**
    *
    */
   public static final String standardPreamble = "COMMAND PACKAGE: %s";
-  
+
   /**
    *
    */
-  public static final String wikiPreamble = "{| class=\"wikitable\"\n" +
-"|+ Commands in %s\n" +
-"! scope=\"col\" | Command Name\n" +
-"! scope=\"col\" | Parameters\n" +
-"! scope=\"col\" | Description";
+  public static final String wikiPreamble = "{| class=\"wikitable\"\n"
+          + "|+ Commands in %s\n"
+          + "! scope=\"col\" | Command Name\n"
+          + "! scope=\"col\" | Parameters\n"
+          + "! scope=\"col\" | Description";
 
   /**
    * Return all the command descriptions.
-   * 
+   *
    * @param format
    * @return a string
    */
@@ -171,11 +166,11 @@ public class CommandModule {
     Collections.sort(commandList, CommandNameComparator);
     // The sort them by package
     Collections.sort(commandList, CommandPackageComparator);
-    String lastPackageName = null; 
+    String lastPackageName = null;
     for (GnsCommand command : commandList) {
       String packageName = command.getClass().getPackage().getName();
       if (!packageName.equals(lastPackageName)) {
-         if (format.equals(CommandDescriptionFormat.TCP_Wiki) && lastPackageName != null) {
+        if (format.equals(CommandDescriptionFormat.TCP_Wiki) && lastPackageName != null) {
           // finish last table
           result.append("|}");
         }
@@ -204,7 +199,7 @@ public class CommandModule {
 
   /**
    * Return true if we are in admin mode.
-   * 
+   *
    * @return true if we are in admin mode
    */
   public boolean isAdminMode() {
@@ -213,7 +208,7 @@ public class CommandModule {
 
   /**
    * Set admin mode.
-   * 
+   *
    * @param adminMode
    */
   public void setAdminMode(boolean adminMode) {
@@ -223,20 +218,20 @@ public class CommandModule {
   private static Comparator<GnsCommand> CommandPackageComparator
           = new Comparator<GnsCommand>() {
 
-            @Override
-            public int compare(GnsCommand command1, GnsCommand command2) {
+    @Override
+    public int compare(GnsCommand command1, GnsCommand command2) {
 
-              String packageName1 = command1.getClass().getPackage().getName();
-              String packageName2 = command2.getClass().getPackage().getName();
+      String packageName1 = command1.getClass().getPackage().getName();
+      String packageName2 = command2.getClass().getPackage().getName();
 
-              //ascending order
-              return packageName1.compareTo(packageName2);
+      //ascending order
+      return packageName1.compareTo(packageName2);
 
-              //descending order
-              //return fruitName2.compareTo(fruitName1);
-            }
+      //descending order
+      //return fruitName2.compareTo(fruitName1);
+    }
 
-          };
+  };
 
   /**
    *
@@ -244,18 +239,18 @@ public class CommandModule {
   public static Comparator<GnsCommand> CommandNameComparator
           = new Comparator<GnsCommand>() {
 
-            @Override
-            public int compare(GnsCommand command1, GnsCommand command2) {
+    @Override
+    public int compare(GnsCommand command1, GnsCommand command2) {
 
-              String commandName1 = command1.getCommandName();
-              String commandName2 = command2.getCommandName();
+      String commandName1 = command1.getCommandName();
+      String commandName2 = command2.getCommandName();
 
-              //ascending order
-              return commandName1.compareTo(commandName2);
+      //ascending order
+      return commandName1.compareTo(commandName2);
 
-              //descending order
-              //return fruitName2.compareTo(fruitName1);
-            }
+      //descending order
+      //return fruitName2.compareTo(fruitName1);
+    }
 
-          };
+  };
 }

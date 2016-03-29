@@ -60,13 +60,9 @@ public class VerifyAccount extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
       String guid = json.getString(GUID);
       String code = json.getString(CODE);
       return AccountAccess.verifyAccount(guid, code, handler);
-    //}
   }
 
   @Override

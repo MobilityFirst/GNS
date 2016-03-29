@@ -24,7 +24,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -45,7 +44,7 @@ public class AddAlias extends GnsCommand {
 
   /**
    * Creates an AddAlias instance.
-   * 
+   *
    * @param module
    */
   public AddAlias(CommandModule module) {
@@ -65,49 +64,21 @@ public class AddAlias extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String guid = json.getString(GUID);
-      String name = json.getString(NAME);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-//      GuidInfo guidInfo;
-//      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-//      }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
-        if (accountInfo == null) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
-        }
-        if (!accountInfo.isVerified()) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-        } else if (accountInfo.getAliases().size() > GNSConfig.MAXALIASES) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_ALIASES);
-        } else {
-          return AccountAccess.addAlias(accountInfo, name, guid, signature, message, handler);
-        }
-    
-//      GuidInfo guidInfo;
-//      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-//      }
-//      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-//        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
-//        if (accountInfo == null) {
-//          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
-//        }
-//        if (!accountInfo.isVerified()) {
-//          return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-//        } else if (accountInfo.getAliases().size() > GnsProtocolDefs.MAXALIASES) {
-//          return new CommandResponse<String>(BAD_RESPONSE + " " + TOMANYALIASES);
-//        } else {
-//          return AccountAccess.addAlias(accountInfo, name);
-//        }
-//      } else {
-//        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
-//      }
-   // }
+    String guid = json.getString(GUID);
+    String name = json.getString(NAME);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
+    if (accountInfo == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+    }
+    if (!accountInfo.isVerified()) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+    } else if (accountInfo.getAliases().size() > GNSConfig.MAXALIASES) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_ALIASES);
+    } else {
+      return AccountAccess.addAlias(accountInfo, name, guid, signature, message, handler);
+    }
   }
 
   @Override
