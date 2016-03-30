@@ -87,7 +87,7 @@ public class PrivateKeyExport extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking up alias " + aliasName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
       if (myGuid == null)
       {

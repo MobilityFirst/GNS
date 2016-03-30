@@ -136,17 +136,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    *
    * @return Returns the host.
    */
-  public String getGnsRemoteHost() {
-    return host;
-  }
-
-  /**
-   * Returns the port value.
-   *
-   * @return Returns the port.
-   */
-  public int getGnsRemotePort() {
-    return port;
+  @Override
+  public String getGNSInstance() {
+    return host + ":" + port;
   }
 
   /**

@@ -101,8 +101,7 @@ public class GnsConnect extends ConsoleCommand
         console.printString("Connected to GNS at " + gnsHost + ":" + gnsPort + "\n");
 
       module.setGnsClient(gnsClient);
-      GuidEntry accountGuidEntry = KeyPairUtils.getGuidEntry(module.getGnsClient().getGnsRemoteHost() + ":"
-          + module.getGnsClient().getGnsRemotePort(), accountGuid);
+      GuidEntry accountGuidEntry = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), accountGuid);
       if (accountGuidEntry == null)
       {
         console.printString("No information found for GUID " + accountGuidEntry);

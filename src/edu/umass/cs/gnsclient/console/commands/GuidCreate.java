@@ -101,7 +101,7 @@ public class GuidCreate extends ConsoleCommand
       {
         printString("Looking for alias " + aliasName + " GUID and certificates...\n");
       }
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
       if (myGuid != null)
       {
@@ -117,12 +117,12 @@ public class GuidCreate extends ConsoleCommand
           else
           {
             printString("Old certificates found locally and not matching key in GNS, deleting local keys\n");
-            KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+            KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
           }
         }
         catch (GnsInvalidGuidException e)
         {
-          KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+          KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
         }
       }
 
@@ -139,7 +139,7 @@ public class GuidCreate extends ConsoleCommand
       if (module.getCurrentGuid() == null)
       {
         module.setCurrentGuidAndCheckForVerified(myGuid);
-        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsHostPort() + "|" + aliasName + ">");
+        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
       }
     }
     catch (Exception e)

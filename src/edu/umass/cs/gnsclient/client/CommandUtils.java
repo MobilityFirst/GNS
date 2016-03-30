@@ -45,18 +45,16 @@ public class CommandUtils {
 
   private static Signature signatureInstance;
   private static Random random;
- 
+
   static {
     try {
       signatureInstance = Signature.getInstance(SIGNATURE_ALGORITHM);
       random = new Random();
     } catch (NoSuchAlgorithmException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, 
+      GNSConfig.getLogger().log(Level.SEVERE,
               "Unable to initialize for authentication:{0}", e);
     }
   }
-  
-  
 
   /**
    * Creates a command object from the given action string and a variable
@@ -162,7 +160,10 @@ public class CommandUtils {
         if (error.startsWith(GnsProtocol.BAD_SIGNATURE)) {
           throw new EncryptionException();
         }
-        if (error.startsWith(GnsProtocol.BAD_GUID) || error.startsWith(GnsProtocol.BAD_ACCESSOR_GUID) || error.startsWith(GnsProtocol.DUPLICATE_GUID) || error.startsWith(GnsProtocol.BAD_ACCOUNT)) {
+        if (error.startsWith(GnsProtocol.BAD_GUID)
+                || error.startsWith(GnsProtocol.BAD_ACCESSOR_GUID)
+                || error.startsWith(GnsProtocol.DUPLICATE_GUID)
+                || error.startsWith(GnsProtocol.BAD_ACCOUNT)) {
           throw new GnsInvalidGuidException(error + rest);
         }
         if (error.startsWith(GnsProtocol.DUPLICATE_FIELD)) {
@@ -192,7 +193,7 @@ public class CommandUtils {
     if (response.startsWith(GnsProtocol.NULL_RESPONSE)) {
       return null;
     } else if (response.startsWith(GnsProtocol.NO_ACTIVE_REPLICAS)) {
-      throw new GnsClientException(response);
+      throw new GnsInvalidGuidException(response);
     } else {
       return response;
     }

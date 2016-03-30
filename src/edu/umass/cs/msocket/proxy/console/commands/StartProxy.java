@@ -99,8 +99,7 @@ public class StartProxy extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for proxy  " + proxyName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGnsRemoteHost() + ":"
-          + module.getGnsClient().getGnsRemotePort(), proxyName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), proxyName);
       final UniversalTcpClient gnsClient = module.getGnsClient();
 
       if (myGuid == null)

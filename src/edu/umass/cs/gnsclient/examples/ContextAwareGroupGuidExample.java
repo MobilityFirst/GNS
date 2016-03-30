@@ -213,7 +213,7 @@ public class ContextAwareGroupGuidExample {
    */
   private static GuidEntry lookupOrCreateAccountGuid(BasicUniversalTcpClient client,
           String name, String password) throws Exception {
-    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), name);
+    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSInstance(), name);
     if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
       guidEntry = client.accountGuidCreate(name, password);
       client.accountGuidVerify(guidEntry, createVerificationCode(name));

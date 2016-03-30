@@ -381,7 +381,7 @@ public class ConsoleModule {
     } catch (Exception e) {
       printString("Couldn't connect to default GNS " + gns);
     }
-    GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsHostPort());
+    GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsInstance());
     printString("Default GUID: " + guid + "\n");
     if (guid == null) {
       return;
@@ -666,7 +666,7 @@ public class ConsoleModule {
    * @param guid the GUID to set as default GUID
    */
   public void setDefaultGuidAndCheckForVerified(GuidEntry guid) {
-    KeyPairUtils.setDefaultGuidEntry(getGnsHostPort(), guid.getEntityName());
+    KeyPairUtils.setDefaultGuidEntry(getGnsInstance(), guid.getEntityName());
     if (currentGuid == null) {
       currentGuid = guid;
     }
@@ -683,11 +683,11 @@ public class ConsoleModule {
    *
    * @return GNS host and port
    */
-  public String getGnsHostPort() {
+  public String getGnsInstance() {
     if (gnsClient == null) {
       return null;
     } else {
-      return gnsClient.getGnsRemoteHost() + ":" + gnsClient.getGnsRemotePort();
+      return gnsClient.getGNSInstance();
     }
   }
 

@@ -94,7 +94,7 @@ public class AccountCreate extends ConsoleCommand
       {
         // The alias does not exists, that's good, let's create it
       }
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
       if (myGuid != null)
       {
         try
@@ -109,30 +109,31 @@ public class AccountCreate extends ConsoleCommand
           else
           {
             printString("Old certificates found locally and not matching key in GNS, deleting local keys\n");
-            KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+            KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
           }
         }
         catch (GnsInvalidGuidException e)
         {
-          KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+          KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
         }
       }
       myGuid = gnsClient.accountGuidCreate(aliasName, password);
 
       if (!module.isSilent())
       {
-        printString("Created an account with GUID " + myGuid.getGuid() + ". An email has been sent to "
+        printString("Created an account with GUID " + myGuid.getGuid() + ". "
+                + "An email might have been sent to "
             + myGuid.getEntityName() + " with instructions on how to verify the new account.\n");
       }
       if (module.getCurrentGuid() == null)
       {
         module.setCurrentGuidAndCheckForVerified(myGuid);
-        if (KeyPairUtils.getDefaultGuidEntry(module.getGnsHostPort()) == null)
+        if (KeyPairUtils.getDefaultGuidEntry(module.getGnsInstance()) == null)
         {
-          KeyPairUtils.setDefaultGuidEntry(module.getGnsHostPort(), aliasName);
-          module.printString(aliasName + " saved as default GUID for GNS " + module.getGnsHostPort() + "\n");
+          KeyPairUtils.setDefaultGuidEntry(module.getGnsInstance(), aliasName);
+          module.printString(aliasName + " saved as default GUID for GNS " + module.getGnsInstance() + "\n");
         }
-        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsHostPort() + "|" + aliasName + ">");
+        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
       }
     }
     catch (Exception e)

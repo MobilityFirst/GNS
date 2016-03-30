@@ -88,7 +88,7 @@ public class GuidDelete extends ConsoleCommand
       {
         console.printString("Looking up alias " + aliasName + " certificates...\n");
       }
-      GuidEntry guidToDelete = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry guidToDelete = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
       if (guidToDelete == null)
       {
@@ -99,7 +99,7 @@ public class GuidDelete extends ConsoleCommand
 
       module.getGnsClient().guidRemove(guidToDelete);
       console.printString("Alias " + aliasName + " removed from GNS.\n");
-      KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+      KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
       console.printString("Keys for " + aliasName + " removed from local repository.");
       console.printNewline();
     }

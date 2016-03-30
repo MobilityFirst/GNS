@@ -188,11 +188,11 @@ public class GuidUtils {
    * @return
    */
   public static GuidEntry lookupGuidEntryFromPreferences(GNSClientInterface client, String name) {
-    return lookupGuidEntryFromPreferences(client.getGnsRemoteHost(), client.getGnsRemotePort(), name);
+    return lookupGuidEntryFromPreferences(client.getGNSInstance(), name);
   }
 
-  public static GuidEntry lookupGuidEntryFromPreferences(String host, int port, String name) {
-    return KeyPairUtils.getGuidEntry(host + ":" + port, name);
+  public static GuidEntry lookupGuidEntryFromPreferences(String gnsInstance, String name) {
+    return KeyPairUtils.getGuidEntry(gnsInstance, name);
   }
 
   /**
@@ -219,17 +219,16 @@ public class GuidUtils {
    * Finds a GuidEntry which associated with an alias or creates and stores it in the local preferences.
    *
    * @param alias
-   * @param host
-   * @param port
+   * @param gnsInstance
    * @return
    * @throws NoSuchAlgorithmException
    */
-  public static GuidEntry lookupOrCreateGuidEntry(String alias, String host, int port) throws NoSuchAlgorithmException {
+  public static GuidEntry lookupOrCreateGuidEntry(String alias, String gnsInstance) throws NoSuchAlgorithmException {
     GuidEntry entry;
-    if ((entry = lookupGuidEntryFromPreferences(host, port, alias)) != null) {
+    if ((entry = lookupGuidEntryFromPreferences(gnsInstance, alias)) != null) {
       return entry;
     } else {
-      return createAndSaveGuidEntry(alias, host+":"+port);
+      return createAndSaveGuidEntry(alias, gnsInstance);
     }
   }
 
