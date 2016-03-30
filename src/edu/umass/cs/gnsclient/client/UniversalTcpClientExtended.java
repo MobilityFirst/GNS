@@ -20,19 +20,15 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
-
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-
 import org.json.JSONArray;
-
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
-
 import org.json.JSONObject;
 
 /**

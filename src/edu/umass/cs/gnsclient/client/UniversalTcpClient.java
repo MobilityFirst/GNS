@@ -27,7 +27,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
-
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

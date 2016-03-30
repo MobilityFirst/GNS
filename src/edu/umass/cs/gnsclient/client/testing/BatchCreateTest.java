@@ -40,6 +40,7 @@ import org.apache.commons.cli.ParseException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 
 /**
  * Simple guid creation test.
@@ -99,11 +100,11 @@ public class BatchCreateTest {
 
       while (guidCnt > 0) {
         System.out.print("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
-        command = client.createAndSignCommand(masterGuid.getPrivateKey(),
+        command = createAndSignCommand(masterGuid.getPrivateKey(),
                 GnsProtocol.ADD_MULTIPLE_GUIDS,
                 GnsProtocol.GUID, masterGuid.getGuid(),
                 GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
-        result = client.checkResponse(command, client.sendCommandAndWait(command));
+        result = checkResponse(command, client.sendCommandAndWait(command));
         if (!result.equals(GnsProtocol.OK_RESPONSE)) {
           System.out.println();
           System.out.println("Batch test command saw bad reponse " + result);
@@ -133,8 +134,8 @@ public class BatchCreateTest {
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
-        command = client.createCommand(LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
-        result = client.checkResponse(command, client.sendCommandAndWait(command));
+        command = createCommand(LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
+        result = checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);

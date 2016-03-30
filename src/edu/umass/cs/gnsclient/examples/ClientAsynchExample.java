@@ -35,7 +35,7 @@ import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
 import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -45,6 +45,7 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 
 import org.json.JSONObject;
 
@@ -94,10 +95,10 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
+      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
               GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), WRITER, accountGuidEntry.getGuid());
     } else {
-      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
+      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }

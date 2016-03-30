@@ -36,7 +36,6 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -46,7 +45,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
@@ -59,6 +57,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 
 /**
  * This class defines a UniversalHttpClient to communicate with a GNS instance
@@ -359,8 +358,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void accountGuidRemove(GuidEntry guid) throws Exception {
-    String command = createAndSignQuery(guid, 
-            GnsProtocol.REMOVE_ACCOUNT, 
+    String command = createAndSignQuery(guid,
+            GnsProtocol.REMOVE_ACCOUNT,
             GnsProtocol.GUID, guid.getGuid(),
             GnsProtocol.NAME, guid.getEntityName());
     String response = sendGetCommand(command);
@@ -394,8 +393,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void guidRemove(GuidEntry guid) throws Exception {
-    String command = createAndSignQuery(guid, 
-            GnsProtocol.REMOVE_GUID, 
+    String command = createAndSignQuery(guid,
+            GnsProtocol.REMOVE_GUID,
             GnsProtocol.GUID, guid.getGuid());
     String response = sendGetCommand(command);
 
@@ -410,7 +409,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void guidRemove(GuidEntry accountGuid, String guidToRemove) throws Exception {
-    String command = createAndSignQuery(accountGuid, 
+    String command = createAndSignQuery(accountGuid,
             GnsProtocol.REMOVE_GUID,
             GnsProtocol.ACCOUNT_GUID, accountGuid.getGuid(),
             GnsProtocol.GUID, guidToRemove);
@@ -1304,8 +1303,12 @@ public class UniversalHttpClient implements GNSClientInterface {
         unencodedString.append(key + VALSEP + value + (i + 2 < keysAndValues.length ? KEYSEP : ""));
       }
 
+      KeyPair keypair;
+      keypair = new KeyPair(guid.getPublicKey(), guid.getPrivateKey());
+
+      PrivateKey privateKey = keypair.getPrivate();
       // generate the signature from the unencoded query
-      String signature = signDigestOfMessage(guid, unencodedString.toString());
+      String signature = signDigestOfMessage(privateKey, unencodedString.toString());
       // return the encoded query with the signature appended
       return encodedString.toString() + KEYSEP + GnsProtocol.SIGNATURE + VALSEP + signature;
     } catch (Exception e) {
@@ -1313,33 +1316,31 @@ public class UniversalHttpClient implements GNSClientInterface {
     }
   }
 
-  /**
-   * Signs a digest of a message using private key of the given guid.
-   *
-   * @param guid
-   * @param message
-   * @return a signed digest of the message string
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   */
-  private String signDigestOfMessage(GuidEntry guid, String message) throws NoSuchAlgorithmException,
-          InvalidKeyException, SignatureException, UnsupportedEncodingException {
-
-    KeyPair keypair;
-    keypair = new KeyPair(guid.getPublicKey(), guid.getPrivateKey());
-
-    PrivateKey privateKey = keypair.getPrivate();
-    Signature instance = Signature.getInstance(GnsProtocol.SIGNATURE_ALGORITHM);
-
-    instance.initSign(privateKey);
-    // instance.update(messageDigest);
-    instance.update(message.getBytes("UTF-8"));
-    byte[] signature = instance.sign();
-
-    return ByteUtils.toHex(signature);
-  }
-
+//  /**
+//   * Signs a digest of a message using private key of the given guid.
+//   *
+//   * @param guid
+//   * @param message
+//   * @return a signed digest of the message string
+//   * @throws InvalidKeyException
+//   * @throws NoSuchAlgorithmException
+//   * @throws SignatureException
+//   */
+//  private String signDigestOfMessage(GuidEntry guid, String message) throws NoSuchAlgorithmException,
+//          InvalidKeyException, SignatureException, UnsupportedEncodingException {
+//
+//    KeyPair keypair;
+//    keypair = new KeyPair(guid.getPublicKey(), guid.getPrivateKey());
+//
+//    PrivateKey privateKey = keypair.getPrivate();
+//    Signature instance = Signature.getInstance(GnsProtocol.SIGNATURE_ALGORITHM);
+//
+//    instance.initSign(privateKey);
+//    instance.update(message.getBytes("UTF-8"));
+//    byte[] signature = instance.sign();
+//
+//    return ByteUtils.toHex(signature);
+//  }
   // /////////////////////////////////////////
   // // PLATFORM DEPENDENT METHODS BELOW /////
   // /////////////////////////////////////////
