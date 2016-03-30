@@ -12,12 +12,14 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 /**
  * @author gaozy
@@ -137,6 +139,7 @@ public class CapacityTestClient {
 		} else{
 			BENIGN_GUID = NUM_GUID;
 		}
+		ReconfigurationConfig.setConsoleHandler(Level.WARNING);
 		
 		GNSClient[] clients = new GNSClient[NUM_CLIENT];
 		GuidEntry[] guidEntries = new GuidEntry[NUM_GUID];
