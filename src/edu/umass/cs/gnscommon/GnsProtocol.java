@@ -210,6 +210,8 @@ public class GnsProtocol {
   public final static String PASSWORD = "password";
   public final static String CODE = "code";
   public final static String SIGNATURE = "signature";
+  public final static String TIMESTAMP = "timestamp";
+  public final static String SEQUENCE_NUMBER = "seqnum";
   public final static String PASSKEY = "passkey";
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
   public final static String MAGIC_STRING = "magic";

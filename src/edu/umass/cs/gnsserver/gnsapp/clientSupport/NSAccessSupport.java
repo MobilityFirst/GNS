@@ -26,7 +26,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashSet;
@@ -53,8 +52,6 @@ import java.util.logging.Logger;
  * @author westy
  */
 public class NSAccessSupport {
-
-  private static boolean debuggingEnabled = true;
 
   private static final Logger LOG = Logger.getLogger(NSAccessSupport.class.getName());
 
@@ -97,9 +94,7 @@ public class NSAccessSupport {
             new Object[]{Util.truncate(accessorPublicKey, 16, 16),
               Util.truncate(signature, 16, 16),
               Util.truncate(message, 16, 16)});
-    //long t= System.currentTimeMillis();
     boolean result = verifySignatureInternal(publickeyBytes, signature, message);
-    //DelayProfiler.updateDelay("verifySignatureInternal", t);
     LOG.log(Level.FINE,
             "public_key:{0} {1} as author of message:{2}",
             new Object[]{Util.truncate(accessorPublicKey, 16, 16),
@@ -118,7 +113,7 @@ public class NSAccessSupport {
     //Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
     sig.initVerify(publicKey);
     sig.update(message.getBytes("UTF-8"));
-    return sig.verify(ByteUtils.hexStringToByteArray(signature));
+    return sig.verify(Base64.decode(signature));
   }
 
   /**
@@ -285,6 +280,20 @@ public class NSAccessSupport {
     } else {
       return new HashSet<>();
     }
+  }
+
+  /**
+   * Extracts out the message string without the signature part.
+   *
+   * @param messageStringWithSignatureParts
+   * @param signatureParts
+   * @return
+   */
+  public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
+    LOG.log(Level.FINER, "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});
+    String result = messageStringWithSignatureParts.substring(0, messageStringWithSignatureParts.lastIndexOf(signatureParts));
+    LOG.log(Level.FINER, "result = {0}", result);
+    return result;
   }
 
 }
