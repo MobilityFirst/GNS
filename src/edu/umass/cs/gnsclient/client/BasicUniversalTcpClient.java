@@ -105,6 +105,10 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
 
   /**
    * A string representing the GNS Server that we are connecting to.
+   * NOTE THAT THIS STRING SHOULD BE DIFFERENT FOR DIFFERENT SERVERS (say
+   * a local test server vs the one on EC2 otherwise the key pair storage
+   * code overwrite keys with the same name that are being used for
+   * different servers.
    */
   private final String GNSInstance;
 
