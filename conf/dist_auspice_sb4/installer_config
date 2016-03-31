@@ -1,0 +1,7 @@
+userName=root
+keyFile=id_dist_auspice.pem
+hostType=linux
+dataStoreName=MONGO
+installPath=gns
+javaCommand=java -ea
+
