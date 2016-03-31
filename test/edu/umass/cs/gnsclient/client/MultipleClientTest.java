@@ -49,7 +49,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class UniversalMultipleClientTest {
+public class MultipleClientTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -79,7 +79,7 @@ public class UniversalMultipleClientTest {
     return clients.get(random.nextInt(clients.size()));
   }
 
-  public UniversalMultipleClientTest() {
+  public MultipleClientTest() {
     if (clients == null) {
       clients = new ArrayList<>();
       for (InetSocketAddress address : addresses) {

@@ -35,7 +35,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP.
- * This class adds single field list based commands to the {@link BasicUniversalTcpClient}'s JSONObject based commands.
+ * This class adds single field list based commands to the {@link BasicTcpClientV1}'s JSONObject based commands.
  *
  * This class contains a concise subset of all available server operations.
  * For a more complete set see {@link UniversalTcpClientExtended}.
@@ -43,7 +43,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
  * @version 1.0
  */
-public class UniversalTcpClient extends BasicUniversalTcpClient implements GNSClientInterface {
+public class UniversalTcpClient extends BasicTcpClientV1 implements GNSClientInterface {
 
 	UniversalTcpClient() {
 		

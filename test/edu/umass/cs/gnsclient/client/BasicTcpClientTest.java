@@ -40,11 +40,11 @@ import org.json.JSONArray;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class BasicUniversalTcpClientTest {
+public class BasicTcpClientTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static BasicUniversalTcpClient client;
+  private static BasicTcpClientV1 client;
   /**
    * The address of the GNS server we will contact
    */
@@ -53,7 +53,7 @@ public class BasicUniversalTcpClientTest {
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
-  public BasicUniversalTcpClientTest() {
+  public BasicTcpClientTest() {
     if (address == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
@@ -64,7 +64,7 @@ public class BasicUniversalTcpClientTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
+      client = new BasicTcpClientV1(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
       } catch (Exception e) {

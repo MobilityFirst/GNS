@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
+import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
@@ -77,7 +77,7 @@ public class ClientAsynchExample {
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
-    BasicUniversalTcpClient client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
+    BasicTcpClientV1 client = new BasicTcpClientV1(address.getHostName(), address.getPort());
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
@@ -124,7 +124,7 @@ public class ClientAsynchExample {
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(BasicUniversalTcpClient client, Set<Long> pendingIds) {
+  private static void lookForResponses(BasicTcpClientV1 client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent

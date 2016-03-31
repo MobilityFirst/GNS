@@ -19,38 +19,34 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import org.json.JSONObject;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
- * JSON User update test for the GNS.
+ * Basic test for the GNS using the UniversalTcpClient.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MultiFieldLookupTest {
+public class NewClientTest {
 
-  private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static BasicTcpClientV1 client;
+  private static BasicTcpClient client;
   /**
    * The address of the GNS server we will contact
    */
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
-  private static GuidEntry westyEntry;
-  private static GuidEntry samEntry;
 
-  public MultiFieldLookupTest() {
+  public NewClientTest() {
     if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
@@ -59,48 +55,49 @@ public class MultiFieldLookupTest {
         address = new InetSocketAddress(System.getProperty("host"),
                 Integer.parseInt(System.getProperty("port")));
       } else {
-        address = ServerSelectDialog.selectServer();
+        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
-      client = new BasicTcpClientV1(address.getHostName(), address.getPort());
       try {
-        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
-      } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        client = new BasicTcpClient(null,
+                address, System.getProperty("disableSSL").equals("true"));
+      } catch (IOException e) {
+        fail("Unable to create client: " + e);
       }
+
     }
   }
 
   @Test
-  public void test_01_JSONUpdate() {
+  public void test_01_CreateAccount() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
-      System.out.println("Created: " + westyEntry);
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }
-    try {
-      JSONObject json = new JSONObject();
-      json.put("name", "frank");
-      json.put("occupation", "busboy");
-      json.put("location", "work");
-      json.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
-      JSONObject subJson = new JSONObject();
-      subJson.put("einy", "floop");
-      subJson.put("meiny", "bloop");
-      json.put("gibberish", subJson);
-      client.update(westyEntry, json);
-    } catch (Exception e) {
-      fail("Exception while updating JSON: " + e);
-    }
   }
 
   @Test
-  public void test_02_MultiFieldLookup() {
+  public void test_02_CheckAccount() {
+    String guidString = null;
     try {
-      String actual = client.fieldRead(westyEntry, new ArrayList(Arrays.asList("name", "occupation")));
-      JSONAssert.assertEquals("{\"name\":\"frank\",\"occupation\":\"busboy\"}", actual, true);
+      guidString = client.lookupGuid(ACCOUNT_ALIAS);
     } catch (Exception e) {
-      fail("Exception while reading \"name\" and \"occupation\": " + e);
+      fail("Exception while looking up guid: " + e);
+    }
+    JSONObject json = null;
+    if (guidString != null) {
+      try {
+        json = client.lookupAccountRecord(guidString);
+      } catch (Exception e) {
+        fail("Exception while looking up account record: " + e);
+      }
+    }
+    if (json == null) {
+      try {
+        assertFalse(json.getBoolean(GnsProtocol.ACCOUNT_RECORD_VERIFIED));
+      } catch (Exception e) {
+        fail("Exception while getting field from account record: " + e);
+      }
     }
   }
 

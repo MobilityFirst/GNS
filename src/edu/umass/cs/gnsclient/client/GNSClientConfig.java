@@ -36,27 +36,18 @@ public class GNSClientConfig {
   public static final int LNS_PORT = 24398;
   public static final int ACTIVE_REPLICA_PORT = 24403;
   
-  /**
-   * Logging level for main logger
-   */
-  private static String fileLoggingLevel = "INFO";
+  private final static Logger LOG = Logger.getLogger(GNSClientConfig.class.getName());
   
   /**
-   * Console output level for main logger
+   * @return Logger used by most of the client package.
    */
-  private static String consoleOutputLevel = "INFO";
-  
-  private final static Logger LOGGER = Logger.getLogger(GNSClientConfig.class.getName());
-  private static boolean initRun = false;
-  
-  public static Logger getLogger() {
-    if (!initRun) {
-      Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
-      initRun = true;
-    }
-    return LOGGER;
+  public static final Logger getLogger() {
+    return LOG;
   }
   
+  /**
+   * @return Try to figure out the build version.
+   */
   public static String readBuildVersion() {
     String result = null;
     try {
