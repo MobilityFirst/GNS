@@ -92,7 +92,7 @@ public class GuidImport extends ConsoleCommand
       ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f));
       GuidEntry guidEntry = new GuidEntry(ois);
       ois.close();
-      KeyPairUtils.saveKeyPair(module.getGnsHostPort(), guidEntry.getEntityName(), guidEntry.getGuid(),
+      KeyPairUtils.saveKeyPair(module.getGnsInstance(), guidEntry.getEntityName(), guidEntry.getGuid(),
           new KeyPair(guidEntry.getPublicKey(), guidEntry.getPrivateKey()));
       console.printString("Keys for " + guidEntry.getEntityName() + " read from " + filename
           + " and saved in local preferences.");

@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.database;
 import com.mongodb.*;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -230,7 +230,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
         try {
           json.put(entry.getKey().getName(), entry.getValue());
         } catch (JSONException e) {
-          GNS.getLogger().severe("Problem putting object in JSONObject: " + e);
+          GNSConfig.getLogger().severe("Problem putting object in JSONObject: " + e);
         }
       }
       return json;

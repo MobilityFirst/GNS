@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
 import edu.umass.cs.aws.networktools.ExecuteBash;
 import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
 import edu.umass.cs.gnscommon.utils.Format;
 import java.io.File;
@@ -645,9 +645,9 @@ public class GNSInstaller {
    */
   private static File getLocalJarPath() {
     try {
-      return new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+      return new File(GNSConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     } catch (URISyntaxException e) {
-      GNS.getLogger().info("Unable to get jar location: " + e);
+      GNSConfig.getLogger().info("Unable to get jar location: " + e);
       return null;
     }
   }
@@ -837,7 +837,7 @@ public class GNSInstaller {
         GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase,
                 lnsHostsFile, nsHostsFile, scriptFile, runAsRoot, noopTest);
       } catch (UnknownHostException e) {
-        GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
+        GNSConfig.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }
     }
   }

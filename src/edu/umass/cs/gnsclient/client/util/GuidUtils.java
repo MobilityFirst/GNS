@@ -72,7 +72,10 @@ public class GuidUtils {
           String password) throws Exception {
     return lookupOrCreateAccountGuid(client, name, password, false);
   }
+  
+  public static final String ACCOUNT_ALREADY_VERIFIED="Account already verified";
 
+  private static final int NUM_VERIFICATION_ATTEMPTS = 3;
   public static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client, String name, String password,
           boolean verbose) throws Exception {
     GuidEntry guid = lookupGuidEntryFromPreferences(client, name);
@@ -85,18 +88,30 @@ public class GuidUtils {
         }
       }
       guid = client.accountGuidCreate(name, password);
+      int attempts = 0;
       // Since we're cheating here we're going to catch already verified errors which means
       // someone on the server probably turned off verification for testing purposes
       // but we'll rethrow everything else
-      try {
-        client.accountGuidVerify(guid, createVerificationCode(name));
-      } catch (GnsVerificationException e) {
-        // a bit of a hack here that depends on someone not changing that error message
-        if (!e.getMessage().endsWith("Account already verified")) {
-          throw e;
-        } else {
-          System.out.println("Caught and ignored \"Account already verified\" error for " + name);
-        }
+      while(true) {
+				try {
+					client.accountGuidVerify(guid, createVerificationCode(name));
+				} catch (GnsClientException e) {
+					// a bit of a hack here that depends on someone not changing
+					// that error message
+					if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
+						if(attempts++ < NUM_VERIFICATION_ATTEMPTS)
+							continue;
+						else  {
+						e.printStackTrace();
+							throw e;
+						}
+					} else {
+						System.out
+								.println("Caught and ignored \"Account already verified\" error for "
+										+ name);
+						break;
+					}
+				}
       }
       if (verbose) {
         System.out.println("Created and verified account guid for " + guid.getEntityName() + " (" + guid.getGuid() + ")");
@@ -173,11 +188,11 @@ public class GuidUtils {
    * @return
    */
   public static GuidEntry lookupGuidEntryFromPreferences(GNSClientInterface client, String name) {
-    return lookupGuidEntryFromPreferences(client.getGnsRemoteHost(), client.getGnsRemotePort(), name);
+    return lookupGuidEntryFromPreferences(client.getGNSInstance(), name);
   }
 
-  public static GuidEntry lookupGuidEntryFromPreferences(String host, int port, String name) {
-    return KeyPairUtils.getGuidEntry(host + ":" + port, name);
+  public static GuidEntry lookupGuidEntryFromPreferences(String gnsInstance, String name) {
+    return KeyPairUtils.getGuidEntry(gnsInstance, name);
   }
 
   /**
@@ -185,18 +200,17 @@ public class GuidUtils {
    * whole thing in the local preferences.
    *
    * @param alias
-   * @param host
-   * @param port
+   * @param hostport
    * @return
    * @throws NoSuchAlgorithmException
    */
-  public static GuidEntry createAndSaveGuidEntry(String alias, String host, int port) throws NoSuchAlgorithmException {
+  public static GuidEntry createAndSaveGuidEntry(String alias, String hostport) throws NoSuchAlgorithmException {
     long keyPairStart = System.currentTimeMillis();
     KeyPair keyPair = KeyPairGenerator.getInstance(GnsProtocol.RSA_ALGORITHM).generateKeyPair();
     DelayProfiler.updateDelay("createKeyPair", keyPairStart);
     String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
     long saveStart = System.currentTimeMillis();
-    KeyPairUtils.saveKeyPair(host + ":" + port, alias, guid, keyPair);
+    KeyPairUtils.saveKeyPair(hostport, alias, guid, keyPair);
     DelayProfiler.updateDelay("saveKeyPair", saveStart);
     return new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
   }
@@ -205,17 +219,16 @@ public class GuidUtils {
    * Finds a GuidEntry which associated with an alias or creates and stores it in the local preferences.
    *
    * @param alias
-   * @param host
-   * @param port
+   * @param gnsInstance
    * @return
    * @throws NoSuchAlgorithmException
    */
-  public static GuidEntry lookupOrCreateGuidEntry(String alias, String host, int port) throws NoSuchAlgorithmException {
+  public static GuidEntry lookupOrCreateGuidEntry(String alias, String gnsInstance) throws NoSuchAlgorithmException {
     GuidEntry entry;
-    if ((entry = lookupGuidEntryFromPreferences(host, port, alias)) != null) {
+    if ((entry = lookupGuidEntryFromPreferences(gnsInstance, alias)) != null) {
       return entry;
     } else {
-      return createAndSaveGuidEntry(alias, host, port);
+      return createAndSaveGuidEntry(alias, gnsInstance);
     }
   }
 

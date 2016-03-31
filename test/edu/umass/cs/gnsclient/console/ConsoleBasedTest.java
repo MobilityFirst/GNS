@@ -20,20 +20,27 @@
 package edu.umass.cs.gnsclient.console;
 
 import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.StringBufferInputStream;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
+
 import jline.ConsoleReader;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+
 import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
+
 import java.util.Arrays;
+import static org.junit.Assert.fail;
 
 /**
  * This class defines a ConsoleBasedTest
@@ -323,7 +330,7 @@ public class ConsoleBasedTest
     {
       ConsoleReader consoleReader = new ConsoleReader(new StringBufferInputStream(inCommands), output);
       ConsoleModule module = new ConsoleModule(consoleReader);
-      module.printString("GNS Client Version: " + GNSClient.readBuildVersion() + "\n");
+      module.printString("GNS Client Version: " + GNSClientConfig.readBuildVersion() + "\n");
 
       // Run the commands
       module.handlePrompt();

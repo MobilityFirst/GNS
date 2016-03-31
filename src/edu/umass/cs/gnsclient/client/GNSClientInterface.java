@@ -34,20 +34,12 @@ public interface GNSClientInterface {
    * Shuts down the client.
    */
   public void stop();
-
+  
   /**
-   * Returns the host as a string.
-   *
-   * @return the host
+   * Return a string representing the GNS server that we are connecting to.
+   * @return 
    */
-  public String getGnsRemoteHost();
-
-  /**
-   * Returns the port as an integer.
-   *
-   * @return the port.
-   */
-  public int getGnsRemotePort();
+  public String getGNSInstance();
 
   /**
    * Returns a JSON object containing all of the guid information

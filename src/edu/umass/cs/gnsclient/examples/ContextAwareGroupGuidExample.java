@@ -213,7 +213,7 @@ public class ContextAwareGroupGuidExample {
    */
   private static GuidEntry lookupOrCreateAccountGuid(BasicUniversalTcpClient client,
           String name, String password) throws Exception {
-    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), name);
+    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSInstance(), name);
     if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
       guidEntry = client.accountGuidCreate(name, password);
       client.accountGuidVerify(guidEntry, createVerificationCode(name));
@@ -233,7 +233,7 @@ public class ContextAwareGroupGuidExample {
     return true;
   }
 
-  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
+  private static final int VERIFICATION_CODE_LENGTH = 3; // Three hex characters
   // this is so we can mimic the verification code the server is generting
   // AKA we're cheating... if the SECRET changes on the server side 
   // you'll need to change it here as well

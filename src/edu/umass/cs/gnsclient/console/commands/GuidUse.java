@@ -92,7 +92,7 @@ public class GuidUse extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking up alias " + aliasName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
       if (myGuid == null)
       {
@@ -105,7 +105,7 @@ public class GuidUse extends ConsoleCommand
       module.setCurrentGuidAndCheckForVerified(myGuid);
       console.printString("Current GUID set to " + myGuid);
       console.printNewline();
-      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsHostPort() + "|" + aliasName + ">");
+      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
     }
     catch (Exception e)
     {

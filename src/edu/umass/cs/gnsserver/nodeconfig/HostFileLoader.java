@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.nodeconfig;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -79,7 +79,7 @@ public class HostFileLoader {
         } else if (!readFirstLine && isLineTheFileVersion(line)) {
           fileVersion = getTheVersionFromLine(line);
           if (debuggingEnabled) {
-            GNS.getLogger().info("Read version line: " + fileVersion);
+            GNSConfig.getLogger().info("Read version line: " + fileVersion);
           }
         } else {
           result.add(parseHostline(line));
@@ -144,7 +144,7 @@ public class HostFileLoader {
           String nodeID = idString;
         //}
         if (debuggingEnabled) {
-          GNS.getLogger().info("Read ID: " + nodeID);
+          GNSConfig.getLogger().info("Read ID: " + nodeID);
         }
 //        if (tokens[1].contains(".") && !tokens[1].equals("127.0.0.1")) {
 //          throw new IOException("Bad hostname " + tokens[1] + ". Should not be an ip address.");
@@ -188,7 +188,7 @@ public class HostFileLoader {
   public static boolean isChangedFileVersion(String hostsFile) throws IOException {
     Long newVersion = readVersionLine(hostsFile);
     if (debuggingEnabled) {
-      GNS.getLogger().info("Old version: " + fileVersion + " new version: " + newVersion);
+      GNSConfig.getLogger().info("Old version: " + fileVersion + " new version: " + newVersion);
     }
     return newVersion != null && newVersion != INVALID_FILE_VERSION && newVersion != fileVersion;
   }

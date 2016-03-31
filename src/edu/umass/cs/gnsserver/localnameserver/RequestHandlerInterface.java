@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.localnameserver;
 
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gnsserver.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
@@ -64,7 +63,7 @@ public interface RequestHandlerInterface {
    * @param id
    * @param requestInfo
    */
-  public void addRequestInfo(int id, LNSRequestInfo requestInfo);
+  public void addRequestInfo(long id, LNSRequestInfo requestInfo);
 
   /**
    * Removes request info.
@@ -72,7 +71,7 @@ public interface RequestHandlerInterface {
    * @param id
    * @return the removed request info
    */
-  public LNSRequestInfo removeRequestInfo(int id);
+  public LNSRequestInfo removeRequestInfo(long id);
 
   /**
    * Retrieves the request info.
@@ -80,7 +79,7 @@ public interface RequestHandlerInterface {
    * @param id
    * @return the request info
    */
-  public LNSRequestInfo getRequestInfo(int id);
+  public LNSRequestInfo getRequestInfo(long id);
   
   /**
    * Is debug mode on?
@@ -191,13 +190,6 @@ public interface RequestHandlerInterface {
    * @throws IOException
    */
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException;
-  
-  /**
-   * Returns the ping manager.
-   * 
-   * @return the ping manager
-   */
-  public PingManager<InetSocketAddress> getPingManager();
   
   /**
    * Returns the active replicas.

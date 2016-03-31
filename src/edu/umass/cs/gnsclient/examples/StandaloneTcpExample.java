@@ -20,12 +20,8 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.io.IOException;
@@ -35,7 +31,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 
 /**
  * In this example we create an account to write and read back some information in the GNS.

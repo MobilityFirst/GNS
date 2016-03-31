@@ -19,9 +19,17 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import java.util.logging.Level;
+
 import org.json.JSONObject;
-import edu.umass.cs.gnsserver.gnsApp.packet.Packet;
+
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.interfaces.IntegerPacketType;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+
 import org.json.JSONException;
 
 /**
@@ -36,25 +44,40 @@ public class PacketDemultiplexer extends AbstractJSONPacketDemultiplexer{
     this.client = client;
     this.register(Packet.PacketType.COMMAND);
     this.register(Packet.PacketType.COMMAND_RETURN_VALUE);
+    this.register(ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR);
   }
   
-@Override
-  public boolean handleMessage(JSONObject jsonObject) {
-    long receivedTime = System.currentTimeMillis();
-    try {
-      switch (Packet.getPacketType(jsonObject)) {
-        case COMMAND:
-          break;
-        case COMMAND_RETURN_VALUE:
-          client.handleCommandValueReturnPacket(jsonObject, receivedTime);
-          break;
-        default:
-          return false;
-      }
-    } catch (JSONException e) {
-      return false;
-    }
-    return true;
+  public String toString() {
+	  return this.getClass().getSimpleName();
   }
+  
+	@Override
+	public boolean handleMessage(JSONObject jsonObject) {
+		GNSConfig.getLogger().log(Level.FINE, "{0} received {1}", new Object[]{this, jsonObject});
+		long receivedTime = System.currentTimeMillis();
+		try {
+			Packet.PacketType type = Packet.getPacketType(jsonObject);
+			if (type != null) {
+				switch (type) {
+				case COMMAND:
+					break;
+				case COMMAND_RETURN_VALUE:
+					client.handleCommandValueReturnPacket(jsonObject,
+							receivedTime);
+					break;
+				default:
+					return false;
+				}
+			}
+			else if(ReconfigurationPacket.getReconfigurationPacketType(jsonObject)==ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR) {
+				client.handleCommandValueReturnPacket(new ActiveReplicaError(jsonObject), receivedTime);
+			}
+			else assert(false);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
   
 }

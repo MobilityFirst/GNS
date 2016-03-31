@@ -20,19 +20,25 @@
 package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gnscommon.utils.Format;
+
 import com.sun.mail.smtp.SMTPTransport;
 import com.sun.mail.util.MailSSLSocketFactory;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
+
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+
 import java.security.GeneralSecurityException;
 import java.util.Date;
+
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+
 import java.util.Properties;
+
 import javax.mail.MessagingException;
 
 /**
@@ -69,7 +75,7 @@ public class Email {
     } else if (emailTLS(subject, recipient, text, false)) {
       return true;
     } else {
-      GNS.getLogger().warning("Unable to send email to " + recipient);
+      GNSConfig.getLogger().warning("Unable to send email to " + recipient);
       return false;
     }
   }
@@ -119,18 +125,18 @@ public class Email {
         t.connect(smtpHost, ACCOUNT_CONTACT_EMAIL, password);
         t.sendMessage(message, message.getAllRecipients());
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("Email response: " + t.getLastServerResponse());
+          GNSConfig.getLogger().info("Email response: " + t.getLastServerResponse());
         }
       } finally {
         t.close();
       }
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+        GNSConfig.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       }
       return true;
     } catch (GeneralSecurityException | MessagingException e) {
       if (!suppressWarning) {
-        GNS.getLogger().warning("Unable to send email: " + e);
+        GNSConfig.getLogger().warning("Unable to send email: " + e);
       }
       return false;
     }
@@ -188,13 +194,13 @@ public class Email {
 
       Transport.send(message);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+        GNSConfig.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       }
       return true;
 
     } catch (Exception e) {
       if (!suppressWarning) {
-        GNS.getLogger().warning("Unable to send email: " + e);
+        GNSConfig.getLogger().warning("Unable to send email: " + e);
       }
       return false;
     }
@@ -251,13 +257,13 @@ public class Email {
 
       Transport.send(message);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+        GNSConfig.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       }
       return true;
 
     } catch (Exception e) {
       if (!suppressWarning) {
-        GNS.getLogger().warning("Unable to send email: " + e);
+        GNSConfig.getLogger().warning("Unable to send email: " + e);
       }
       return false;
     }
@@ -316,12 +322,12 @@ public class Email {
       // Send message
       Transport.send(message);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+        GNSConfig.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       }
       return true;
     } catch (Exception e) {
       if (!suppressWarning) {
-        GNS.getLogger().warning("Unable to send email: " + e);
+        GNSConfig.getLogger().warning("Unable to send email: " + e);
       }
       return false;
     }

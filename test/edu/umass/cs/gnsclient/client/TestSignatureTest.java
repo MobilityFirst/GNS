@@ -30,6 +30,7 @@ import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 
 /**
  * Signature functionality test for the GNS Tcp client.
@@ -99,7 +100,7 @@ public class TestSignatureTest {
   @Test
   public void test_01() {
     try {
-      JSONObject command = client.createAndSignCommand(guid.getPrivateKey(), GnsProtocol.READ_ARRAY,
+      JSONObject command = createAndSignCommand(guid.getPrivateKey(), GnsProtocol.READ_ARRAY,
               GnsProtocol.GUID, guid.getGuid(), GnsProtocol.FIELD, "joe");
       System.out.println(command);
     } catch (Exception e) {

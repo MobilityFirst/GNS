@@ -77,7 +77,7 @@ public class AccountDelete extends ConsoleCommand
         printString("Alias " + aliasName + " doesn't exist.\n");
         return;
       }
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
       if (myGuid == null)
       {
         printString("Unable to retrieve GUID for alias " + aliasName + "\n");
@@ -85,7 +85,7 @@ public class AccountDelete extends ConsoleCommand
       }
 
       gnsClient.accountGuidRemove(myGuid);
-      KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+      KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
       module.setCurrentGuidAndCheckForVerified(null);
       module.setPromptString(ConsoleModule.CONSOLE_PROMPT + ">");
       if (!module.isSilent())

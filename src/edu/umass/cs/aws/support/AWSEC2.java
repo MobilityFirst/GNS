@@ -57,7 +57,7 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import static edu.umass.cs.aws.support.AWSEC2.DEFAULTSECONDMOUNTPOINT;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.aws.networktools.ExecuteBash;
 import java.io.BufferedReader;
@@ -609,7 +609,7 @@ public class AWSEC2 {
       output.append("The private IP is: " + instance.getPrivateIpAddress());
       output.append(NEWLINE);
       output.append("The public IP is: " + instance.getPublicIpAddress());
-      GNS.getLogger().info(output.toString());
+      GNSConfig.getLogger().info(output.toString());
     }
   }
 

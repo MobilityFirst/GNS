@@ -27,12 +27,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.codec.binary.Base64;
+
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -59,7 +61,7 @@ public class ActiveCodeHandler {
    * @param numProcesses
    * @param blacklistSeconds
    */
-  public ActiveCodeHandler(GnsApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
+  public ActiveCodeHandler(GNSApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
     clientPool = new ClientPool(app);
     // Get the ThreadFactory implementation to use
     ThreadFactory threadFactory = new ActiveCodeThreadFactory(clientPool);

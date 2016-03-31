@@ -31,9 +31,9 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -44,13 +44,13 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveCodeQueryHelper {
 	private static final ArrayList<ColumnField> empty = new ArrayList<>();
-	private final GnsApplicationInterface<?> app;
+	private final GNSApplicationInterface<?> app;
 	
 	/**
 	 * Initialize an ActiveCodeQueryHelper
 	 * @param app
 	 */
-	public ActiveCodeQueryHelper(GnsApplicationInterface<?> app) {
+	public ActiveCodeQueryHelper(GNSApplicationInterface<?> app) {
 		this.app = app;
 	}
 

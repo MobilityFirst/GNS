@@ -22,8 +22,8 @@ package edu.umass.cs.gnsclient.examples;
 import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsApp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
@@ -35,6 +35,7 @@ import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
 import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,6 +45,8 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+
 import org.json.JSONObject;
 
 /**
@@ -92,24 +95,24 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
+      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
               GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), WRITER, accountGuidEntry.getGuid());
     } else {
-      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
+      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }
     // Create the command packet with a bogus id
     CommandPacket commandPacket = new CommandPacket(-1, null, -1, command);
     // Keep track of what we've sent for the other thread to look at.
-    Set<Integer> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+    Set<Long> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     // Create and run another thread to pick up the responses
     Runnable companion = () -> {
       lookForResponses(client, pendingIds);
     };
     new Thread(companion).start();
     while (true) {
-      int id = client.generateNextRequestID();
+      long id = client.generateNextRequestID();
       // Important to set the new request id each time
       commandPacket.setClientRequestId(id);
       // Record what we're sending
@@ -121,11 +124,11 @@ public class ClientAsynchExample {
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(BasicUniversalTcpClient client, Set<Integer> pendingIds) {
+  private static void lookForResponses(BasicUniversalTcpClient client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent
-      for (Integer id : pendingIds) {
+      for (Long id : pendingIds) {
         if (client.isAsynchResponseReceived(id)) {
           pendingIds.remove(id);
           CommandResult commandResult = client.removeAsynchResponse(id);

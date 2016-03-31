@@ -79,7 +79,7 @@ public class AccountVerify extends ConsoleCommand {
         return;
       }
       String alias = st.nextToken();
-      GuidEntry guid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), alias);
+      GuidEntry guid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), alias);
       if (guid == null) {
         printString("Unable to retrieve GUID for alias " + alias + "\n");
         return;

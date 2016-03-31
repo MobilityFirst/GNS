@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.ping;
 
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author westy
  * @param <NodeIDType>
  */
+@Deprecated
 public class PingClient<NodeIDType> {
 
   private DatagramSocket clientSocket;
@@ -64,7 +65,7 @@ public class PingClient<NodeIDType> {
       clientSocket = new DatagramSocket();
       startReceiveThread();
     } catch (SocketException e) {
-      GNS.getLogger().severe("Error creating Datagram socket " + e);
+      GNSConfig.getLogger().severe("Error creating Datagram socket " + e);
     }
   }
 
@@ -112,7 +113,7 @@ public class PingClient<NodeIDType> {
 
   // handles ping responses
   private void receiveResponses() throws InterruptedException {
-    GNS.getLogger().fine("Starting receive response loop");
+    GNSConfig.getLogger().fine("Starting receive response loop");
     while (true) {
       try {
         byte[] receiveData = new byte[1024];
@@ -127,13 +128,13 @@ public class PingClient<NodeIDType> {
         processPingResponse(id, receivedTime);
       } catch (IOException e) {
         if (isShutdown()) {
-          GNS.getLogger().warning("Ping client closing down.");
+          GNSConfig.getLogger().warning("Ping client closing down.");
           return;
         }
-        GNS.getLogger().severe("Error waiting for response " + e);
+        GNSConfig.getLogger().severe("Error waiting for response " + e);
         Thread.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
       } catch (NumberFormatException e) {
-        GNS.getLogger().severe("Error parsing response " + e);
+        GNSConfig.getLogger().severe("Error parsing response " + e);
       }
     }
   }
@@ -181,7 +182,7 @@ public class PingClient<NodeIDType> {
         try {
           receiveResponses();
         } catch (InterruptedException e) {
-          GNS.getLogger().warning("Ping client closing down.");
+          GNSConfig.getLogger().warning("Ping client closing down.");
         }
       }
     });
@@ -220,7 +221,7 @@ public class PingClient<NodeIDType> {
     GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
     PingClient pingClient = new PingClient(nodeConfig);
     while (true) {
-      GNS.getLogger().info("RTT = " + pingClient.sendPing("0"));
+      GNSConfig.getLogger().info("RTT = " + pingClient.sendPing("0"));
       Thread.sleep(1000);
     }
   }

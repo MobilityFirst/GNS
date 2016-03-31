@@ -23,7 +23,7 @@ import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.Format;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -39,6 +39,7 @@ import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -328,9 +329,9 @@ public class ThroughputAsynchMultiClientTest {
           }
         }
         try {
-          JSONObject command = clients[0].createCommand(LOOKUP_RANDOM_GUIDS, GUID,
+          JSONObject command = createCommand(LOOKUP_RANDOM_GUIDS, GUID,
                   masterGuid.getGuid(), GUIDCNT, numberOfGuids);
-          String result = clients[0].checkResponse(command, clients[0].sendCommandAndWait(command));
+          String result = checkResponse(command, clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
             existingGuids = new JSONArray(result);
           } else {
@@ -490,9 +491,9 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createReadCommandPacket(BasicUniversalTcpClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = client.createCommand(READ, GUID, targetGuid, FIELD, field);
+      command = createCommand(READ, GUID, targetGuid, FIELD, field);
     } else {
-      command = client.createAndSignCommand(reader.getPrivateKey(), READ, 
+      command = createAndSignCommand(reader.getPrivateKey(), READ, 
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
@@ -502,7 +503,7 @@ public class ThroughputAsynchMultiClientTest {
 
   private static CommandPacket createUpdateCommandPacket(BasicUniversalTcpClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
-    command = client.createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
+    command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
             GUID, targetGuid, USER_JSON, json.toString(), 
             WRITER, writer.getGuid());
     //int id = client.generateNextRequestID();

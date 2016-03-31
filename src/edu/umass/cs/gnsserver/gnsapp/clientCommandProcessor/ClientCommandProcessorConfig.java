@@ -1,0 +1,27 @@
+/*
+ * Copyright (C) 2016
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
+
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author westy
+ */
+public class ClientCommandProcessorConfig {
+
+  private static final Logger LOG = Logger.getLogger(ClientCommandProcessorConfig.class.getName());
+
+  /**
+   * @return Logger used by most of the client support package.
+   */
+  public static final Logger getLogger() {
+    return LOG;
+  }
+
+}

@@ -100,7 +100,7 @@ public class PrivateKeyImport extends ConsoleCommand
       PublicKey publicKey = gnsClient.publicKeyLookupFromGuid(guid);
       GuidEntry guidEntry = new GuidEntry(aliasName, guid, publicKey, privateKey);
 
-      KeyPairUtils.saveKeyPair(module.getGnsHostPort(), guidEntry.getEntityName(), guidEntry.getGuid(),
+      KeyPairUtils.saveKeyPair(module.getGnsInstance(), guidEntry.getEntityName(), guidEntry.getGuid(),
           new KeyPair(guidEntry.getPublicKey(), guidEntry.getPrivateKey()));
       console.printString("Private key for " + guidEntry.getEntityName() + " read from " + filename
           + " and saved in local preferences.");

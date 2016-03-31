@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy, arun, Emmanuel Cecchet
  *
  */
 package edu.umass.cs.gnsclient.client;
@@ -29,24 +29,27 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import org.json.JSONArray;
+
 import java.util.ArrayList;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsApp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.utils.CanonicalJSON;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -54,27 +57,22 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnsclient.client.util.Util;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsDuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidFieldException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 /**
  * This class defines a basic client to communicate with a GNS instance over TCP. This
@@ -85,7 +83,7 @@ import java.util.concurrent.ExecutionException;
  * For a more complete set of commands see also {@link UniversalTcpClient} and {@link UniversalTcpClientExtended}.
  *
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>, arun
- * 
+ *
  */
 public class BasicUniversalTcpClient implements GNSClientInterface {
 
@@ -102,7 +100,13 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   /**
    * * The address used when attempting to connect to the TCP service.
    */
-  private InetSocketAddress remoteAddress;
+  protected InetSocketAddress localNameServerAddress;
+  //private final InetSocketAddress anyReconfigurator;
+
+  /**
+   * A string representing the GNS Server that we are connecting to.
+   */
+  private final String GNSInstance;
 
   /**
    * The length of time we will wait for a command response from the server
@@ -114,10 +118,10 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   private int readTimeout = 20000; // 20 seconds... was 40 seconds
 
   /* Keeps track of requests that are sent out and the reponses to them */
-  private final ConcurrentMap<Integer, CommandResult> resultMap = new ConcurrentHashMap<Integer, CommandResult>(
+  private final ConcurrentMap<Long, CommandResult> resultMap = new ConcurrentHashMap<Long, CommandResult>(
           10, 0.75f, 3);
   /* Instrumentation: Keeps track of transmission start times */
-  private final ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10,
+  private final ConcurrentMap<Long, Long> queryTimeStamp = new ConcurrentHashMap<Long, Long>(10,
           0.75f, 3);
   /* Used to generate unique ids */
   private final Random randomID = new Random();
@@ -146,56 +150,79 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   }
 
   /**
-   * Creates a new <code>BasicUniversalTcpClient</code> object
-   * Optionally disables SSL if disableSSL is true.
-   *
+   * @param disableSSL
+   */
+  public BasicUniversalTcpClient(boolean disableSSL) {
+    this(null, -1, disableSSL);
+  }
+
+  /**
+   * @param anyReconfigurator
+   * @param localNameServer
+   * @param disableSSL
+   */
+  public BasicUniversalTcpClient(InetSocketAddress anyReconfigurator,
+          InetSocketAddress localNameServer, boolean disableSSL) {
+    this(localNameServer != null ? localNameServer.getAddress().toString()
+            : null, localNameServer != null ? localNameServer.getPort()
+                    : -1, disableSSL);
+  }
+
+  /**
    * @param remoteHost
    * @param remotePort
    * @param disableSSL
    */
-  public BasicUniversalTcpClient(String remoteHost, int remotePort, boolean disableSSL) {
+  @Deprecated
+  public BasicUniversalTcpClient(String remoteHost, int remotePort,
+          boolean disableSSL) {
+    this(null, remoteHost, remotePort, disableSSL);
+    GNSConfig.getLogger().warning("Initializing a GNS client without a reconfigurator address is deprecated");
+  }
+
+  private static final String DEFAULT_INSTANCE = "server.gns.name";
+
+  BasicUniversalTcpClient() {
+    this.disableSSL = false;
+    this.GNSInstance = DEFAULT_INSTANCE;
+  }
+
+  /**
+   * Creates a new <code>BasicUniversalTcpClient</code> object
+   * Optionally disables SSL if disableSSL is true.
+   *
+   * @param anyReconfigurator
+   * @param remoteHost
+   * @param remotePort
+   * @param disableSSL
+   */
+  public BasicUniversalTcpClient(InetSocketAddress anyReconfigurator, String remoteHost, int remotePort, boolean disableSSL) {
     this.disableSSL = disableSSL;
+    this.GNSInstance = DEFAULT_INSTANCE;
+    //this.anyReconfigurator = anyReconfigurator;
     try {
-      this.remoteAddress = new InetSocketAddress(remoteHost, remotePort);
-      SSLDataProcessingWorker.SSL_MODES sslMode = ReconfigurationConfig.getClientSSLMode();
-    		  //disableSSL ? CLEAR : SERVER_AUTH;
+      this.localNameServerAddress = remoteHost != null && remotePort > 0
+              ? new InetSocketAddress(edu.umass.cs.utils.Util.getInetAddressFromString(remoteHost), remotePort) : null;
+      SSLDataProcessingWorker.SSL_MODES sslMode = disableSSL ? CLEAR : ReconfigurationConfig.getClientSSLMode();
+      //disableSSL ? CLEAR : SERVER_AUTH;
       if (!disableSSL) {
-    	  // arun: ssl parameters should only be set through gigapaxos properties
+        // arun: ssl parameters should only be set through gigapaxos properties
         //ReconfigurationConfig.setClientPortOffset(100);
       }
-      this.messenger = new JSONMessenger<>(
+      // no messenger needed if GNSClient
+      this.messenger = (this instanceof GNSClient ? null : new JSONMessenger<>(
               (new JSONNIOTransport<>(null, new SampleNodeConfig<InetSocketAddress>(),
                       new PacketDemultiplexer(this),
-                      sslMode)));
+                      sslMode))));
       if (debuggingEnabled) {
         System.out.println("SSL Mode is " + sslMode.name());
       }
 
       resetInstrumentation();
     } catch (IOException e) {
-      GNSClient.getLogger().severe("Problem starting Client listener: " + e);
+      GNSClientConfig.getLogger().severe("Problem starting Client listener: " + e);
       e.printStackTrace();
     }
-  }
-
-  /**
-   * Returns the remote host.
-   *
-   * @return
-   */
-  @Override
-  public String getGnsRemoteHost() {
-    return remoteAddress.getHostString();
-  }
-
-  /**
-   * Returns the port.
-   *
-   * @return
-   */
-  @Override
-  public int getGnsRemotePort() {
-    return remoteAddress.getPort();
   }
 
   /**
@@ -265,31 +292,31 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws GnsClientException
    * @throws JSONException
    */
-  public void fieldUpdate(String targetGuid, String field, Object value, GuidEntry writer) 
+  public void fieldUpdate(String targetGuid, String field, Object value, GuidEntry writer)
           throws IOException, GnsClientException, JSONException {
     JSONObject json = new JSONObject();
     json.put(field, value);
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
+    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON,
             GUID, targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
-  
+
   /**
    * Creates an index for a field. The guid is only used for
    * authentication purposes.
-   * 
+   *
    * @param guid
    * @param field
    * @param index
    * @throws IOException
    * @throws GnsClientException
-   * @throws JSONException 
+   * @throws JSONException
    */
-  public void fieldCreateIndex(GuidEntry guid, String field, String index) 
+  public void fieldCreateIndex(GuidEntry guid, String field, String index)
           throws IOException, GnsClientException, JSONException {
-    JSONObject command = createAndSignCommand(guid.getPrivateKey(), CREATE_INDEX, 
+    JSONObject command = createAndSignCommand(guid.getPrivateKey(), CREATE_INDEX,
             GUID, guid.getGuid(), FIELD, field, VALUE, index, WRITER, guid.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -307,7 +334,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws GnsClientException
    * @throws JSONException
    */
-  public void fieldUpdate(GuidEntry targetGuid, String field, Object value) 
+  public void fieldUpdate(GuidEntry targetGuid, String field, Object value)
           throws IOException, GnsClientException, JSONException {
     fieldUpdate(targetGuid.getGuid(), field, value, targetGuid);
   }
@@ -420,7 +447,10 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
               READER, reader.getGuid());
     }
 
+    long t = System.currentTimeMillis();
     String response = sendCommandAndWait(command);
+    DelayProfiler.updateDelay("fieldRead", t);
+    GNSConfig.getLogger().fine(DelayProfiler.getStats());
 
     return checkResponse(command, response);
   }
@@ -711,12 +741,12 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
     String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
-    KeyPairUtils.saveKeyPair(remoteAddress.getHostString() + ":" + remoteAddress.getPort(), alias, guid, keyPair);
+    KeyPairUtils.saveKeyPair(this.GNSInstance, alias, guid, keyPair);
     String returnedGuid = accountGuidCreateHelper(alias, keyPair.getPublic(), keyPair.getPrivate(), password);
     assert returnedGuid.equals(guid);
     // Anything else we want to do here?
     if (!returnedGuid.equals(guid)) {
-      GNSClient.getLogger().warning("Returned guid " + returnedGuid + "doesn't match locally created guid" + guid);
+      GNSClientConfig.getLogger().warning("Returned guid " + returnedGuid + "doesn't match locally created guid" + guid);
     }
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
 
@@ -746,8 +776,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void accountGuidRemove(GuidEntry guid) throws Exception {
-    JSONObject command = createAndSignCommand(guid.getPrivateKey(), 
-            REMOVE_ACCOUNT, 
+    JSONObject command = createAndSignCommand(guid.getPrivateKey(),
+            REMOVE_ACCOUNT,
             GUID, guid.getGuid(),
             NAME, guid.getEntityName());
     String response = sendCommandAndWait(command);
@@ -767,13 +797,13 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
 
     long startTime = System.currentTimeMillis();
     GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-            remoteAddress.getHostString(), remoteAddress.getPort());
+            this.GNSInstance);
     DelayProfiler.updateDelay("updatePreferences", startTime);
     String returnedGuid = guidCreateHelper(accountGuid, alias, entry.getPublicKey());
     assert returnedGuid.equals(entry.getGuid());
     // Anything else we want to do here?
     if (!returnedGuid.equals(entry.getGuid())) {
-      GNSClient.getLogger().warning("Returned guid " + returnedGuid + "doesn't match locally created guid" + entry.getGuid());
+      GNSClientConfig.getLogger().warning("Returned guid " + returnedGuid + "doesn't match locally created guid" + entry.getGuid());
     }
     DelayProfiler.updateDelay("guidCreateFromAlias", startTime);
     return entry;
@@ -781,14 +811,14 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
 
   /**
    * Batch create guids with the given aliases. If
-   * createPublicKeys is true, key pairs will be created and saved 
+   * createPublicKeys is true, key pairs will be created and saved
    * by the client for the guids.
-   * 
+   *
    * @param accountGuid
    * @param aliases
    * @param createPublicKeys
    * @return
-   * @throws Exception 
+   * @throws Exception
    */
   public String guidBatchCreate(GuidEntry accountGuid, Set<String> aliases,
           boolean createPublicKeys) throws Exception {
@@ -801,7 +831,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
       for (String alias : aliasList) {
         long singleEntrystartTime = System.currentTimeMillis();
         GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-                remoteAddress.getHostString(), remoteAddress.getPort());
+                this.GNSInstance);
         DelayProfiler.updateDelay("updateOnePreference", singleEntrystartTime);
         byte[] publicKeyBytes = entry.getPublicKey().getEncoded();
         String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
@@ -828,13 +858,13 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   }
 
   /**
-   * Batch create a number guids. These guids will have 
+   * Batch create a number guids. These guids will have
    * random aliases and can be accessed using the account guid.
-   * 
+   *
    * @param accountGuid
    * @param guidCnt
    * @return
-   * @throws Exception 
+   * @throws Exception
    */
   public String guidBatchCreateFast(GuidEntry accountGuid, int guidCnt) throws Exception {
     JSONObject command;
@@ -853,7 +883,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void guidRemove(GuidEntry guid) throws Exception {
-    JSONObject command = createAndSignCommand(guid.getPrivateKey(), 
+    JSONObject command = createAndSignCommand(guid.getPrivateKey(),
             REMOVE_GUID, GUID, guid.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -868,8 +898,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void guidRemove(GuidEntry accountGuid, String guidToRemove) throws Exception {
-    JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(), 
-            REMOVE_GUID, 
+    JSONObject command = createAndSignCommand(accountGuid.getPrivateKey(),
+            REMOVE_GUID,
             ACCOUNT_GUID, accountGuid.getGuid(),
             GUID, guidToRemove);
     String response = sendCommandAndWait(command);
@@ -1349,154 +1379,6 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   }
 
   /**
-   * Checks the response from a command request for proper syntax as well as
-   * converting error responses into the appropriate thrown GNS exceptions.
-   *
-   * @param command
-   * @param response
-   * @return
-   * @throws GnsClientException
-   */
-  public String checkResponse(JSONObject command, String response) throws GnsClientException {
-    // System.out.println("response:" + response);
-    if (response.startsWith(BAD_RESPONSE)) {
-      String results[] = response.split(" ");
-      // System.out.println("results length:" + results.length);
-      if (results.length < 2) {
-        throw new GnsClientException("Invalid bad response indicator: " + response + " Command: " + command.toString());
-      } else if (results.length >= 2) {
-        // System.out.println("results[0]:" + results[0]);
-        // System.out.println("results[1]:" + results[1]);
-        String error = results[1];
-        // deal with the rest
-        StringBuilder parts = new StringBuilder();
-        for (int i = 2; i < results.length; i++) {
-          parts.append(" ");
-          parts.append(results[i]);
-        }
-        String rest = parts.toString();
-
-        if (error.startsWith(BAD_SIGNATURE)) {
-          throw new EncryptionException();
-        }
-        if (error.startsWith(BAD_GUID) || error.startsWith(BAD_ACCESSOR_GUID)
-                || error.startsWith(DUPLICATE_GUID) || error.startsWith(BAD_ACCOUNT)) {
-          throw new GnsInvalidGuidException(error + rest);
-        }
-        if (error.startsWith(DUPLICATE_FIELD)) {
-          throw new GnsInvalidFieldException(error + rest);
-        }
-        if (error.startsWith(BAD_FIELD) || error.startsWith(FIELD_NOT_FOUND)) {
-          throw new GnsFieldNotFoundException(error + rest);
-        }
-        if (error.startsWith(BAD_USER) || error.startsWith(DUPLICATE_USER)) {
-          throw new GnsInvalidUserException(error + rest);
-        }
-        if (error.startsWith(BAD_GROUP) || error.startsWith(DUPLICATE_GROUP)) {
-          throw new GnsInvalidGroupException(error + rest);
-        }
-
-        if (error.startsWith(ACCESS_DENIED)) {
-          throw new GnsACLException(error + rest);
-        }
-
-        if (error.startsWith(DUPLICATE_NAME)) {
-          throw new GnsDuplicateNameException(error + rest);
-        }
-
-        if (error.startsWith(VERIFICATION_ERROR)) {
-          throw new GnsVerificationException(error + rest);
-        }
-        throw new GnsClientException("General command failure: " + error + rest);
-      }
-    }
-    if (response.startsWith(NULL_RESPONSE)) {
-      return null;
-    } else {
-      return response;
-    }
-  }
-
-  /**
-   * Creates a command object from the given action string and a variable
-   * number of key and value pairs.
-   *
-   * @param action
-   * @param keysAndValues
-   * @return the query string
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
-   */
-  public JSONObject createCommand(String action, Object... keysAndValues) throws GnsClientException {
-    long startTime = System.currentTimeMillis();
-    try {
-      JSONObject result = new JSONObject();
-      String key;
-      Object value;
-      result.put(COMMANDNAME, action);
-      for (int i = 0; i < keysAndValues.length; i = i + 2) {
-        key = (String) keysAndValues[i];
-        value = keysAndValues[i + 1];
-        result.put(key, value);
-      }
-      DelayProfiler.updateDelay("createCommand", startTime);
-      return result;
-    } catch (JSONException e) {
-      throw new GnsClientException("Error encoding message", e);
-    }
-  }
-
-  /**
-   * Creates a command object from the given action string and a variable
-   * number of key and value pairs with a signature parameter. The signature is
-   * generated from the query signed by the given guid.
-   *
-   * @param privateKey
-   * @param action
-   * @param keysAndValues
-   * @return the query string
-   * @throws GnsClientException
-   */
-  public JSONObject createAndSignCommand(PrivateKey privateKey, String action, Object... keysAndValues) throws GnsClientException {
-    long startTime = System.currentTimeMillis();
-    try {
-      JSONObject result = createCommand(action, keysAndValues);
-      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-      //String canonicalJSON = JSONUtils.getCanonicalJSONString(result);
-      String signature = signDigestOfMessage(privateKey, canonicalJSON);
-      //System.out.println("SIGNING THIS: " + canonicalJSON);
-      result.put(SIGNATURE, signature);
-      DelayProfiler.updateDelay("createAndSignCommand", startTime);
-      return result;
-    } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | JSONException e) {
-      throw new GnsClientException("Error encoding message", e);
-    }
-  }
-
-  /**
-   * Signs a digest of a message using private key of the given guid.
-   *
-   * @param guid
-   * @param message
-   * @return a signed digest of the message string
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   */
-  private String signDigestOfMessage(PrivateKey privateKey, String message) throws NoSuchAlgorithmException,
-          InvalidKeyException, SignatureException {
-    long startTime = System.currentTimeMillis();
-    Signature instance = Signature.getInstance(SIGNATURE_ALGORITHM);
-
-    instance.initSign(privateKey);
-    // instance.update(messageDigest);
-    instance.update(message.getBytes());
-    byte[] signature = instance.sign();
-    String result = ByteUtils.toHex(signature);
-    DelayProfiler.updateDelay("signDigestOfMessage", startTime);
-    return result;
-  }
-
-  /**
    * Check that the connectivity with the host:port can be established
    *
    * @throws IOException throws exception if a communication error occurs
@@ -1509,7 +1391,8 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     try {
       command = createCommand(CONNECTION_CHECK);
       String commandResult = sendCommandAndWait(command);
-      if (!commandResult.startsWith(OK_RESPONSE)) {
+      if (!commandResult.startsWith(OK_RESPONSE) && !commandResult.startsWith(NO_ACTIVE_REPLICAS)) {
+        GNSConfig.getLogger().fine(this + " received connectionCheck response " + commandResult);
         String[] results = commandResult.split(" ");
         throw new IOException(results.length == 2 ? results[1] : commandResult);
       }
@@ -1518,6 +1401,13 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     } finally {
       setReadTimeout(originalReadTimeout);
     }
+  }
+
+  /**
+   * Closes the underlying messenger.
+   */
+  public void close() {
+    this.messenger.stop();
   }
 
   /**
@@ -1536,7 +1426,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     }
   }
 
-  public int sendCommandNoWait(JSONObject command) throws IOException {
+  public long sendCommandNoWait(JSONObject command) throws IOException {
     if (isAndroid) {
       return androidSendCommandNoWait(command).getId();
     } else {
@@ -1553,55 +1443,51 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @throws IOException if an error occurs
    */
   private String desktopSendCommmandAndWait(JSONObject command) throws IOException {
-    long startTime = System.currentTimeMillis();
-    int id = desktopSendCommmandNoWait(command);
+    long id = desktopSendCommmandNoWait(command);
     // now we wait until the correct packet comes back
     try {
-      if (debuggingEnabled) {
-        GNSClient.getLogger().info("Waiting for query id: " + id);
-      }
+      GNSClientConfig.getLogger().log(Level.FINE,
+              "{0} waiting for query {1}",
+              new Object[]{this, id + ""});
       synchronized (monitor) {
         long monitorStartTime = System.currentTimeMillis();
         while (!resultMap.containsKey(id) && (readTimeout == 0 || System.currentTimeMillis() - monitorStartTime < readTimeout)) {
           monitor.wait(readTimeout);
         }
         if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
-          if (debuggingEnabled) {
-            GNSClient.getLogger().info("Timeout after  (" + id + ") : " + command.toString());
-          }
+          GNSClientConfig.getLogger().log(
+                  Level.FINE,
+                  "{0} timed out after {1}ms on {2}: {3}",
+                  new Object[]{this, readTimeout, id + "",
+                    command});
+          /* FIXME: arun: returning string errors like this is poor. You should
+           * have error codes and systematic methods to automatically generate
+           * error responses and be able to refactor them as needed easily.
+           */
           return BAD_RESPONSE + " " + TIMEOUT;
         }
       }
-      if (debuggingEnabled) {
-        GNSClient.getLogger().info("Query id response received: " + id);
-      }
+      GNSClientConfig.getLogger().log(Level.FINE, "Response received for query {0}", new Object[]{id + ""});
     } catch (InterruptedException x) {
-      GNSClient.getLogger().severe("Wait for return packet was interrupted " + x);
+      GNSClientConfig.getLogger().severe("Wait for return packet was interrupted " + x);
     }
     CommandResult result = resultMap.remove(id);
-    if (debuggingEnabled) {
-      GNSClient.getLogger().info(
-              String.format(
-                      "Command name: %19s %40s %16s id: %12s "
-                      + "NS: %16s ",
-                      command.optString(COMMANDNAME, "Unknown"),
-                      command.optString(GUID, ""),
-                      command.optString(NAME, ""),
-                      id,
-                      result.getResponder()
-              ));
-    }
-    DelayProfiler.updateDelay("desktopSendCommmand", startTime);
-    if (debuggingEnabled) {
-      GNSClient.getLogger().info(DelayProfiler.getStats());
-    }
+    GNSClientConfig.getLogger().log(Level.FINE,
+            // String.format(
+            "Command name: {0} {1} {2} id: {3} " + "NS: {4} ",
+            new Object[]{command.optString(COMMANDNAME, "Unknown"),
+              command.optString(GUID, ""),
+              command.optString(NAME, ""), id,
+              result.getResponder()});
     return result.getResult();
   }
 
-  private int desktopSendCommmandNoWait(JSONObject command) throws IOException {
+  private long desktopSendCommmandNoWait(JSONObject command) throws IOException {
     long startTime = System.currentTimeMillis();
-    int id = generateNextRequestID();
+    long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, null, -1, command);
+    GNSConfig.getLogger().log(Level.FINE, "{0} sending {1}:{2}",
+            new Object[]{this, id + "", packet.getSummary()});
     queryTimeStamp.put(id, startTime);
     sendCommandPacket(packet);
     DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
@@ -1620,9 +1506,13 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   private AndroidNIOTask androidSendCommandNoWait(JSONObject command) throws IOException {
     final AndroidNIOTask sendTask = new AndroidNIOTask();
     sendTask.setId(generateNextRequestID()); // so we can get it back from the task later
-    sendTask.execute(messenger, command, sendTask.getId(), remoteAddress, monitor,
+    sendTask.execute(messenger, command, sendTask.getId(), localNameServerAddress, monitor,
             queryTimeStamp, resultMap, readTimeout);
     return sendTask;
+  }
+
+  public String toString() {
+    return this.getClass().getSimpleName();
   }
 
   /**
@@ -1635,15 +1525,16 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
   public void handleCommandValueReturnPacket(JSONObject json, long receivedTime) throws JSONException {
     long methodStartTime = System.currentTimeMillis();
     CommandValueReturnPacket packet = new CommandValueReturnPacket(json);
-    int id = packet.getClientRequestId();
+    long id = packet.getClientRequestId();
     // *INSTRUMENTATION*
+    GNSConfig.getLogger().log(Level.FINE, "{0} received response {1}",
+            new Object[]{this, packet.getSummary()});
     long queryStartTime = queryTimeStamp.remove(id);
     long latency = receivedTime - queryStartTime;
     movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
     // *END OF INSTRUMENTATION*
-    if (debuggingEnabled) {
-      GNSClient.getLogger().info("Handling return packet: " + json.toString());
-    }
+    GNSClientConfig.getLogger().log(Level.FINE,
+            "Handling return packet: {0}", new Object[]{json});
     // store the response away
     resultMap.put(id, new CommandResult(packet, receivedTime, latency));
     // This differentiates between packets sent synchronusly and asynchronusly
@@ -1655,6 +1546,9 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     } else {
       // Handle the asynchronus packets
       // note that we have recieved the reponse
+      GNSClientConfig.getLogger().log(Level.FINE, "Removing async return packet: {0}",
+              new Object[]{json});
+
       pendingAsynchPackets.remove(id);
       // * INSTRUMENTATION *
       // Record errors 
@@ -1666,10 +1560,65 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     DelayProfiler.updateDelay("handleCommandValueReturnPacket", methodStartTime);
   }
 
-  public synchronized int generateNextRequestID() {
-    int id;
+  /**
+   * arun: Handles both command return values and active replica error
+   * messages.
+   *
+   * @param response
+   * @param receivedTime
+   * @throws JSONException
+   */
+  protected void handleCommandValueReturnPacket(Request response,
+          long receivedTime) throws JSONException {
+    long methodStartTime = System.currentTimeMillis();
+    CommandValueReturnPacket packet = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
+            : null;
+    ActiveReplicaError error = response instanceof ActiveReplicaError ? (ActiveReplicaError) response
+            : null;
+    assert (packet != null || error != null);
+
+    long id = packet != null ? packet.getClientRequestId() : error
+            .getRequestID();
+    GNSConfig.getLogger().log(
+            Level.FINE,
+            "{0} received response {1}:{2} from {3}",
+            new Object[]{this, id + "", response.getSummary(),
+              packet != null ? packet.getResponder() : error.getSender()});
+    long queryStartTime = queryTimeStamp.remove(id);
+    long latency = receivedTime - queryStartTime;
+    movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
+    GNSClientConfig.getLogger().log(Level.FINE,
+            "Handling return packet: {0}", new Object[]{response.getSummary()});
+    // store the response away
+    if (packet != null) {
+      resultMap.put(id, new CommandResult(packet, receivedTime, latency));
+    } else {
+      resultMap.put(id, new CommandResult(error, receivedTime, latency));
+    }
+
+    // differentiates between synchronusly and asynchronusly sent
+    if (!pendingAsynchPackets.containsKey(id)) {
+      // for synchronus sends we notify waiting threads
+      synchronized (monitor) {
+        monitor.notifyAll();
+      }
+    } else {
+      // Handle the asynchronus packets
+      // note that we have recieved the reponse
+      pendingAsynchPackets.remove(id);
+      // Record errors
+      if (packet.getErrorCode().isAnError()) {
+        totalAsynchErrors++;
+      }
+    }
+    DelayProfiler.updateDelay("handleCommandValueReturnPacket",
+            methodStartTime);
+  }
+
+  public synchronized long generateNextRequestID() {
+    long id;
     do {
-      id = randomID.nextInt();
+      id = randomID.nextLong();
       // this is actually wrong because we can still generate duplicate keys
       // because the resultMap doesn't contain pending requests until they come back
     } while (resultMap.containsKey(id));
@@ -1682,7 +1631,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @param id
    * @return
    */
-  public boolean isAsynchResponseReceived(int id) {
+  public boolean isAsynchResponseReceived(long id) {
     return resultMap.containsKey(id);
   }
 
@@ -1692,7 +1641,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * @param id
    * @return
    */
-  public CommandResult removeAsynchResponse(int id) {
+  public CommandResult removeAsynchResponse(long id) {
     return resultMap.remove(id);
   }
 
@@ -1711,7 +1660,7 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    * This contains all the command packets sent out asynchronously that have
    * not been acknowledged yet.
    */
-  private final ConcurrentHashMap<Integer, CommandPacket> pendingAsynchPackets
+  private final ConcurrentHashMap<Long, CommandPacket> pendingAsynchPackets
           = new ConcurrentHashMap<>();
 
   public int outstandingAsynchPacketCount() {
@@ -1727,8 +1676,10 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    */
   public void sendCommandPacketAsynch(CommandPacket packet) throws IOException {
     long startTime = System.currentTimeMillis();
-    int id = packet.getClientRequestId();
+    long id = packet.getClientRequestId();
     pendingAsynchPackets.put(id, packet);
+    GNSConfig.getLogger().log(Level.FINE, "{0} sending request {1}:{2}",
+            new Object[]{this, id + "", packet.getSummary()});
     queryTimeStamp.put(id, System.currentTimeMillis());
     sendCommandPacket(packet);
     DelayProfiler.updateDelay("sendAsynchTestCommand", startTime);
@@ -1771,35 +1722,26 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
     fieldUpdateAsynch(targetGuid.getGuid(), field, value, targetGuid);
   }
 
-  private void sendCommandPacket(CommandPacket packet) throws IOException {
+  protected void sendCommandPacket(CommandPacket packet) throws IOException {
     long startTime = System.currentTimeMillis();
+    InetSocketAddress clientFacingAddress = new InetSocketAddress(localNameServerAddress.getAddress(),
+            disableSSL ? ReconfigurationConfig.getClientFacingClearPort(localNameServerAddress.getPort())
+                    : ReconfigurationConfig.getClientFacingSSLPort(localNameServerAddress.getPort()));
     try {
-      //if (disableSSL) {
-        //this.messenger.send(new GenericMessagingTask<>(remoteAddress, packet.toJSONObject()));
-      //} else 
-      {
-        InetSocketAddress clientFacingAddress = new InetSocketAddress(remoteAddress.getAddress(),
-                ActiveReplica.getClientFacingPort(remoteAddress.getPort()));
-        this.messenger.sendToAddress(clientFacingAddress, packet.toJSONObject());
-        System.out.println("Sent packet to " + clientFacingAddress.toString()
+      this.messenger.send(new GenericMessagingTask<>(clientFacingAddress, packet.toJSONObject()));
+      if (disableSSL) {
+      } else {
+        GNSClientConfig.getLogger().fine("Sent packet to " + clientFacingAddress.toString()
                 + " :" + packet.toString());
-        if (debuggingEnabled) {
-          GNSClient.getLogger().info("Sent packet to " + clientFacingAddress.toString()
-                  + " :" + packet.toString());
-        }
       }
       DelayProfiler.updateDelay("sendCommandPacket", startTime);
     } catch (JSONException e) {
-      GNSClient.getLogger().severe("Problem sending JSON packet: " + e);
+      GNSClientConfig.getLogger().severe("Problem sending JSON packet: " + e);
     }
   }
 
   public void resetInstrumentation() {
     movingAvgLatency = 0;
-  }
-
-  public boolean isDebuggingEnabled() {
-    return this.debuggingEnabled;
   }
 
   public void setDebuggingEnabled(boolean debuggingEnabled) {
@@ -1823,6 +1765,15 @@ public class BasicUniversalTcpClient implements GNSClientInterface {
    */
   public int getTotalAsynchErrors() {
     return totalAsynchErrors;
+  }
+
+  /**
+   * Return a string representing the GNS server that we are connecting to.
+   *
+   * @return
+   */
+  public String getGNSInstance() {
+    return GNSInstance;
   }
 
 }

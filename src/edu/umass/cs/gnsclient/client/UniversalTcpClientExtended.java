@@ -20,9 +20,12 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -38,6 +41,20 @@ import org.json.JSONObject;
  */
 public class UniversalTcpClientExtended extends UniversalTcpClient {
 
+	UniversalTcpClientExtended() {
+	}
+	/**
+	 * @param anyReconfigurator
+	 * @param remoteHost
+	 * @param remotePort
+	 * @param disableSSL
+	 */
+	// arun: added this for GNSClient
+	public UniversalTcpClientExtended(InetSocketAddress anyReconfigurator,
+			String remoteHost, int remotePort, boolean disableSSL) {
+		super(anyReconfigurator, remoteHost, remotePort, disableSSL);
+	}
+	  
   /**
    * Creates a new <code>UniversalTcpClientExtended</code> object
    *
@@ -57,7 +74,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
    * @param disableSSL
    */
   public UniversalTcpClientExtended(String remoteHost, int remotePort, boolean disableSSL) {
-    super(remoteHost, remotePort, disableSSL);
+    this(null, remoteHost, remotePort, disableSSL);
   }
   
   /**
@@ -90,9 +107,16 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
           GnsClientException {
     JSONObject command = createAndSignCommand(writer.getPrivateKey(), GnsProtocol.CREATE, GnsProtocol.GUID, targetGuid,
             GnsProtocol.FIELD, field, GnsProtocol.VALUE, value, GnsProtocol.WRITER, writer.getGuid());
-    String response = sendCommandAndWait(command);
+    try {
 
+    String response = sendCommandAndWait(command);
+	  
     checkResponse(command, response);
+	  } catch(NullPointerException ne) {
+		  GNSConfig.getLogger().severe("NPE in field create");
+		  ne.printStackTrace();
+		  System.exit(1);
+	  }
   }
 
   /**
@@ -540,7 +564,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
   
   // arun
   public static void main(String[] main) throws IOException {
-	  BasicUniversalTcpClient client = new UniversalTcpClientExtended("127.0.0.1", GNSClient.LNS_PORT);
+	  BasicUniversalTcpClient client = new UniversalTcpClientExtended("127.0.0.1", GNSClientConfig.LNS_PORT);
 	  client.checkConnectivity();
   }
 

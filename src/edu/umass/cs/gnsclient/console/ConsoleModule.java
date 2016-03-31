@@ -41,7 +41,7 @@ import jline.FileNameCompletor;
 import jline.History;
 import jline.SimpleCompletor;
 import org.json.JSONObject;
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.UniversalTcpClient;
@@ -104,12 +104,12 @@ public class ConsoleModule {
       @Override
       public void run() {
         if (debuggingEnabled) {
-          GNSClient.getLogger().info("Saving history.");
+          GNSClientConfig.getLogger().info("Saving history.");
         }
         long startTime = System.currentTimeMillis();
         //storeHistory();
         if (debuggingEnabled) {
-          GNSClient.getLogger().info("Save history took " + (System.currentTimeMillis() - startTime) + "ms");
+          GNSClientConfig.getLogger().info("Save history took " + (System.currentTimeMillis() - startTime) + "ms");
         }
       }
     });
@@ -122,7 +122,7 @@ public class ConsoleModule {
       String[] historyKeys = prefs.keys();
       Arrays.sort(historyKeys, 0, historyKeys.length);
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Loading history. Size is " + historyKeys.length);
+        GNSClientConfig.getLogger().info("Loading history. Size is " + historyKeys.length);
       }
       for (int i = 0; i < historyKeys.length; i++) {
         String key = historyKeys[i];
@@ -362,7 +362,7 @@ public class ConsoleModule {
       }
     }
     if (debuggingEnabled) {
-      GNSClient.getLogger().info("Quitting");
+      GNSClientConfig.getLogger().info("Quitting");
     }
   }
 
@@ -381,7 +381,7 @@ public class ConsoleModule {
     } catch (Exception e) {
       printString("Couldn't connect to default GNS " + gns);
     }
-    GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsHostPort());
+    GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsInstance());
     printString("Default GUID: " + guid + "\n");
     if (guid == null) {
       return;
@@ -490,7 +490,7 @@ public class ConsoleModule {
     if (st.hasMoreTokens()) {
       ConsoleCommand command = findConsoleCommand(commandLine, hashCommands);
       if (debuggingEnabled) {
-        GNSClient.getLogger().info("Command:" + command);
+        GNSClientConfig.getLogger().info("Command:" + command);
       }
       if (command != null) {
         command.execute(commandLine.substring(command.getCommandName().length()));
@@ -666,7 +666,7 @@ public class ConsoleModule {
    * @param guid the GUID to set as default GUID
    */
   public void setDefaultGuidAndCheckForVerified(GuidEntry guid) {
-    KeyPairUtils.setDefaultGuidEntry(getGnsHostPort(), guid.getEntityName());
+    KeyPairUtils.setDefaultGuidEntry(getGnsInstance(), guid.getEntityName());
     if (currentGuid == null) {
       currentGuid = guid;
     }
@@ -683,11 +683,11 @@ public class ConsoleModule {
    *
    * @return GNS host and port
    */
-  public String getGnsHostPort() {
+  public String getGnsInstance() {
     if (gnsClient == null) {
       return null;
     } else {
-      return gnsClient.getGnsRemoteHost() + ":" + gnsClient.getGnsRemotePort();
+      return gnsClient.getGNSInstance();
     }
   }
 
@@ -724,7 +724,7 @@ public class ConsoleModule {
     try {
       console.printString(string);
     } catch (IOException e) {
-      GNSClient.getLogger().warning("Problem printing string to console: " + e);
+      GNSClientConfig.getLogger().warning("Problem printing string to console: " + e);
     }
   }
 

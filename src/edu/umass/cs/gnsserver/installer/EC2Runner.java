@@ -30,7 +30,7 @@ import edu.umass.cs.aws.support.AMIRecordType;
 import edu.umass.cs.aws.support.AWSEC2;
 import edu.umass.cs.aws.support.InstanceStateRecord;
 import edu.umass.cs.aws.support.RegionRecord;
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.GEOLocator;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.awt.geom.Point2D;
@@ -618,9 +618,9 @@ public class EC2Runner {
 
   private static File getJarPath() {
     try {
-      return new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+      return new File(GNSConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     } catch (URISyntaxException e) {
-      GNS.getLogger().info("Unable to get jar location: " + e);
+      GNSConfig.getLogger().info("Unable to get jar location: " + e);
       return null;
     }
   }

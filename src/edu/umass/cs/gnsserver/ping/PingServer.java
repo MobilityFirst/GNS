@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.ping;
 
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
@@ -37,6 +37,7 @@ import java.net.InetAddress;
  * @author westy
  * @param <NodeIDType>
  */
+@Deprecated
 public class PingServer<NodeIDType> extends Thread{
 
   private final NodeIDType nodeID;
@@ -78,16 +79,16 @@ public class PingServer<NodeIDType> extends Thread{
           serverSocket.send(sendPacket);
         } catch (IOException e) {
           if (isShutdown()) {
-            GNS.getLogger().warning("Ping server closing down.");
+            GNSConfig.getLogger().warning("Ping server closing down.");
             return;
           }
-          GNS.getLogger().severe("Error receiving ping packet " + e);
+          GNSConfig.getLogger().severe("Error receiving ping packet " + e);
           Thread.sleep(2000);
         }
       }
     } catch (Exception e) {
       e.printStackTrace();
-      GNS.getLogger().severe("Error creating DatagramSocket " + e);
+      GNSConfig.getLogger().severe("Error creating DatagramSocket " + e);
     }
   }
 

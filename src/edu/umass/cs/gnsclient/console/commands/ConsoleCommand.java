@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.io.IOException;
 
 import jline.ConsoleReader;
-import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
@@ -66,7 +66,7 @@ public abstract class ConsoleCommand implements Comparable<ConsoleCommand>
     }
     catch (IOException e)
     {
-      GNSClient.getLogger().warning("Problem printing string to console: " + e);
+      GNSClientConfig.getLogger().warning("Problem printing string to console: " + e);
     }
   }
 

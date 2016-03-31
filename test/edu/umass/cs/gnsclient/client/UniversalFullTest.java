@@ -1062,8 +1062,8 @@ public class UniversalFullTest {
     }
     try {
       // the HRN is a hash of the query
-      String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne.getBytes()), false);
-      groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, client.getGnsRemoteHost(), client.getGnsRemotePort());
+      String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
+      groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName,client.getGNSInstance());
       //groupGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
@@ -1071,8 +1071,8 @@ public class UniversalFullTest {
     }
     try {
       // the HRN is a hash of the query
-      String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo.getBytes()), false);
-      groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, client.getGnsRemoteHost(), client.getGnsRemotePort());
+      String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
+      groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, client.getGNSInstance());
       //groupTwoGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupTwoGuidName + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();

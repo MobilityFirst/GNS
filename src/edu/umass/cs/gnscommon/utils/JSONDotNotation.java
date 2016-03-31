@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gnscommon.utils;
 
-import edu.umass.cs.gnsserver.main.GNS;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONException;
@@ -45,18 +45,18 @@ public class JSONDotNotation {
 
   public static Object getWithDotNotation(String key, Object json) throws JSONException {
     if (debuggingEnabled) {
-      GNS.getLogger().info("###fullkey=" + key + " json=" + json);
+      GNSConfig.getLogger().info("###fullkey=" + key + " json=" + json);
     }
     if (key.contains(".")) {
       int indexOfDot = key.indexOf(".");
       String subKey = key.substring(0, indexOfDot);
       if (debuggingEnabled) {
-        GNS.getLogger().info("###subkey=" + subKey);
+        GNSConfig.getLogger().info("###subkey=" + subKey);
       }
       Object subBson = ((JSONObject) json).get(subKey);
       if (subBson == null) {
         if (debuggingEnabled) {
-          GNS.getLogger().info("### " + subKey + " is null");
+          GNSConfig.getLogger().info("### " + subKey + " is null");
         }
         throw new JSONException(subKey + " is null");
       }
@@ -68,7 +68,7 @@ public class JSONDotNotation {
     } else {
       Object result = ((JSONObject) json).get(key);
       if (debuggingEnabled) {
-        GNS.getLogger().info("###result=" + result);
+        GNSConfig.getLogger().info("###result=" + result);
       }
       return result;
     }

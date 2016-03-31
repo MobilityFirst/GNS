@@ -54,7 +54,7 @@ public class PingClient {
       clientSocket = new DatagramSocket();
       startReceiveThread();
     } catch (SocketException e) {
-      GNSClient.getLogger().severe("Error creating Datagram socket " + e);
+      GNSClientConfig.getLogger().severe("Error creating Datagram socket " + e);
     }
   }
 
@@ -76,11 +76,11 @@ public class PingClient {
     // record the send time
     queryTimeStamp.put(id, System.currentTimeMillis());
     clientSocket.send(sendPacket);
-    GNSClient.getLogger().fine("SENT to " + host + ":" + port + " " + sendData.length + " bytes : |" + sendString + "|");
+    GNSClientConfig.getLogger().fine("SENT to " + host + ":" + port + " " + sendData.length + " bytes : |" + sendString + "|");
     waitForResponsePacket(id);
     long result = queryResultMap.get(id);
     if (result == -1L) {
-      GNSClient.getLogger().fine("TIMEOUT for send to " + host + ":" + port);
+      GNSClientConfig.getLogger().fine("TIMEOUT for send to " + host + ":" + port);
     }
     queryResultMap.remove(id);
     return result;
@@ -88,24 +88,24 @@ public class PingClient {
 
   // handles ping responses
   private void receiveResponses() {
-    GNSClient.getLogger().fine("Starting receive response loop");
+    GNSClientConfig.getLogger().fine("Starting receive response loop");
     while (true) {
       try {
         byte[] receiveData = new byte[1024];
         DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-        GNSClient.getLogger().fine("Looking for response");
+        GNSClientConfig.getLogger().fine("Looking for response");
         clientSocket.receive(receivePacket);
         Long receivedTime = System.currentTimeMillis();
         String receivedString = new String(receivePacket.getData(), receivePacket.getOffset(), receivePacket.getLength());
-        GNSClient.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + receivedString + "|");
+        GNSClientConfig.getLogger().fine("RECEIVED " + receivePacket.getLength() + " bytes : |" + receivedString + "|");
         // grab the requested id from the received packet
         int id = Integer.parseInt(receivedString);
         processPingResponse(id, receivedTime);
       } catch (IOException e) {
-        GNSClient.getLogger().severe("Error waiting for response " + e);
+        GNSClientConfig.getLogger().severe("Error waiting for response " + e);
         ThreadUtils.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
       } catch (NumberFormatException e) {
-        GNSClient.getLogger().severe("Error parsing response " + e);
+        GNSClientConfig.getLogger().severe("Error parsing response " + e);
       }
     }
   }
@@ -113,7 +113,7 @@ public class PingClient {
   private static final int TIMEOUT = 10000;
 
   private void waitForResponsePacket(int id) {
-    GNSClient.getLogger().fine("Sent packet for " + id + ", waiting for response");
+    GNSClientConfig.getLogger().fine("Sent packet for " + id + ", waiting for response");
     try {
 //      synchronized (monitor) {
 //        while (!queryResultMap.containsKey(id)) {
@@ -132,13 +132,13 @@ public class PingClient {
         }
       }
     } catch (InterruptedException x) {
-      GNSClient.getLogger().severe("Wait for packet was interrupted " + x);
+      GNSClientConfig.getLogger().severe("Wait for packet was interrupted " + x);
     }
   }
 
   // updates the result map with the rtound trip time of the packet
   private void processPingResponse(int id, long receivedTime) {
-    GNSClient.getLogger().fine("Processing response for " + id);
+    GNSClientConfig.getLogger().fine("Processing response for " + id);
     synchronized (monitor) {
       Long timeDif = receivedTime - queryTimeStamp.get(id);
       queryResultMap.put(id, timeDif);
@@ -167,7 +167,7 @@ public class PingClient {
     InetSocketAddress address = ServerSelectDialog.selectServer();
     PingClient pingClient = new PingClient();
     while (true) {
-      GNSClient.getLogger().info("RTT = " + pingClient.sendPing(address.getHostName()));
+      GNSClientConfig.getLogger().info("RTT = " + pingClient.sendPing(address.getHostName()));
       ThreadUtils.sleep(1000);
     }
   }

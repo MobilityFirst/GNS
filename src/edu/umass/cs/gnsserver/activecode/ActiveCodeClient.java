@@ -37,8 +37,8 @@ import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
-import edu.umass.cs.gnsserver.main.GNS;
-import edu.umass.cs.gnsserver.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -54,14 +54,14 @@ public class ActiveCodeClient {
 	private int port;
 	private boolean restartOnCrash;
 	private Process process;
-	private final GnsApplicationInterface<?> app;
+	private final GNSApplicationInterface<?> app;
 	private boolean killed;
 	
 	/**
 	 * @param app the gns app
          * @param launchWorker
 	 */
-	public ActiveCodeClient(GnsApplicationInterface<?> app, boolean launchWorker) {
+	public ActiveCodeClient(GNSApplicationInterface<?> app, boolean launchWorker) {
 		if(launchWorker)
 			startServer();
 		
@@ -144,7 +144,7 @@ public class ActiveCodeClient {
 			vm = submitRequest(acm, timeout);
 		}
 		catch(ActiveCodeException e) {
-			GNS.getLogger().warning("Code failed to return in allotted time!");
+			GNSConfig.getLogger().warning("Code failed to return in allotted time!");
 			process.destroyForcibly();
 			throw new ActiveCodeException();
 		}

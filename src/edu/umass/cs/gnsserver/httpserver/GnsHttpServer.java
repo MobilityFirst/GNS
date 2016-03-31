@@ -23,12 +23,13 @@ package edu.umass.cs.gnsserver.httpserver;
  *
  * @author westy
  */
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import edu.umass.cs.gnsserver.main.GNS;
+
+import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -39,19 +40,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
-import edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsApp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.util.Date;
 import java.util.Map;
+
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONObject;
 
@@ -62,29 +65,27 @@ import org.json.JSONObject;
  */
 public class GnsHttpServer {
 
-  private static final String GNSPATH = GNS.GNS_URL_PATH;
+  private static final String GNSPATH = GNSConfig.GNS_URL_PATH;
   private static final int startingPort = 8080;
-  private static int port;
+  private int port;
   // handles command processing
-  private static final CommandModule commandModule = new CommandModule();
-  private static ClientRequestHandlerInterface requestHandler;
-  private static Date serverStartDate = new Date();
+  private final CommandModule commandModule;
+  private ClientRequestHandlerInterface requestHandler;
+  private Date serverStartDate = new Date();
 
   private static boolean debuggingEnabled = false;
 
-  /**
-   *
-   * @param requestHandler
-   */
-  public static void runHttp(ClientRequestHandlerInterface requestHandler) {
-    GnsHttpServer.requestHandler = requestHandler;
+  public GnsHttpServer(ClientRequestHandlerInterface requestHandler) {
+    this.commandModule = new CommandModule();
+    this.requestHandler = requestHandler;
     runServer();
+    requestHandler.setHttpServerPort(port);
   }
 
   /**
    * Start the server.
    */
-  public static void runServer() {
+  public final void runServer() {
     int cnt = 0;
     do {
       // Find the first port after starting port that actually works.
@@ -102,7 +103,7 @@ public class GnsHttpServer {
    * @param port
    * @return true if it was started
    */
-  public static boolean tryPort(int port) {
+  public boolean tryPort(int port) {
     try {
       InetSocketAddress addr = new InetSocketAddress(port);
       HttpServer server = HttpServer.create(addr, 0);
@@ -111,15 +112,15 @@ public class GnsHttpServer {
       server.createContext("/" + GNSPATH, new DefaultHandler());
       server.setExecutor(Executors.newCachedThreadPool());
       server.start();
-      GNS.getLogger().info("HTTP server is listening on port " + port);
+      GNSConfig.getLogger().info("HTTP server is listening on port " + port);
       return true;
     } catch (IOException e) {
-      GNS.getLogger().fine("HTTP server failed to start on port " + port + " due to " + e);
+      GNSConfig.getLogger().fine("HTTP server failed to start on port " + port + " due to " + e);
       return false;
     }
   }
 
-  private static class DefaultHandler implements HttpHandler {
+  private class DefaultHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) {
@@ -136,7 +137,7 @@ public class GnsHttpServer {
 
           URI uri = exchange.getRequestURI();
           if (debuggingEnabled) {
-            GNS.getLogger().info("HTTP SERVER REQUEST FROM " + exchange.getRemoteAddress().getHostName() + ": " + uri.toString());
+            GNSConfig.getLogger().info("HTTP SERVER REQUEST FROM " + exchange.getRemoteAddress().getHostName() + ": " + uri.toString());
           }
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
@@ -146,20 +147,20 @@ public class GnsHttpServer {
           String response;
           if (!action.isEmpty()) {
             if (debuggingEnabled) {
-              GNS.getLogger().fine("Action: " + action + " Query:" + query);
+              GNSConfig.getLogger().fine("Action: " + action + " Query:" + query);
             }
             response = processQuery(host, action, query);
           } else {
             response = BAD_RESPONSE + " " + NO_ACTION_FOUND;
           }
           if (debuggingEnabled) {
-            GNS.getLogger().finer("Response: " + response);
+            GNSConfig.getLogger().finer("Response: " + response);
           }
           responseBody.write(response.getBytes());
           responseBody.close();
         }
       } catch (Exception e) {
-        GNS.getLogger().severe("Error: " + e);
+        GNSConfig.getLogger().severe("Error: " + e);
         e.printStackTrace();
         try {
           String response = BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e;
@@ -178,9 +179,9 @@ public class GnsHttpServer {
    * the JSON Object format that is used by the CommandModeule class, then finds
    * executes the matching command.
    */
-  private static String processQuery(String host, String action, String queryString) {
+  private String processQuery(String host, String action, String queryString) {
     // Set the host field. Used by the help command. Find a better way to to do this?
-    commandModule.setHTTPHost(host);
+    //commandModule.setHTTPHost(host);
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     String fullString = action + QUERYPREFIX + queryString; // for signature check
@@ -189,20 +190,20 @@ public class GnsHttpServer {
     queryMap.put(COMMANDNAME, action);
     if (queryMap.keySet().contains(SIGNATURE)) {
       String signature = queryMap.get(SIGNATURE);
-      String message = AccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
+      String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
       queryMap.put(SIGNATUREFULLMESSAGE, message);
     }
     JSONObject jsonFormattedCommand = new JSONObject(queryMap);
 
     // Now we execute the command
     GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    return CommandHandler.executeCommand(command, jsonFormattedCommand, GnsHttpServer.requestHandler).getReturnValue();
+    return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler).getReturnValue();
   }
 
   /**
    * Returns info about the server.
    */
-  private static class EchoHandler implements HttpHandler {
+  private class EchoHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -217,8 +218,8 @@ public class GnsHttpServer {
         Set<String> keySet = requestHeaders.keySet();
         Iterator<String> iter = keySet.iterator();
 
-        String buildVersion = GNS.readBuildVersion();
-        String buildVersionInfo = "Unknown";
+        String buildVersion = GNSConfig.readBuildVersion();
+        String buildVersionInfo = "Build Version: Unable to lookup!";
         if (buildVersion != null) {
           buildVersionInfo = "Build Version: " + buildVersion;
         }
@@ -228,54 +229,54 @@ public class GnsHttpServer {
         String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationWords(new Date().getTime() - serverStartDate.getTime(), true, true);
         String serverSSLMode = "Server SSL mode: " + ReconfigurationConfig.getServerSSLMode().toString();
         String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
-        String serverLocalNameServerID = "Local CCP address: " + GnsHttpServer.requestHandler.getNodeAddress();
-        String numberOfNameServers = "Server count: " + GnsHttpServer.requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
+        String serverLocalNameServerID = "Local node address: " + requestHandler.getNodeAddress();
+        String numberOfNameServers = "Server count: " + requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
-        String requestsReceivedString = "Client requests received: " + GnsHttpServer.requestHandler.getReceivedRequests();
-        String requestsRateString = "Client requests rate: " + GnsHttpServer.requestHandler.getRequestsPerSecond();
+        //String requestsReceivedString = "Client requests received: " + requestHandler.getReceivedRequests();
+        //String requestsRateString = "Client requests rate: " + requestHandler.getRequestsPerSecond();
         StringBuilder resultString = new StringBuilder();
         resultString.append("Servers:");
-        for (String topLevelNode : GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeIDs()) {
+        for (String topLevelNode : requestHandler.getGnsNodeConfig().getNodeIDs()) {
           resultString.append("<br>&nbsp;&nbsp;");
-          resultString.append((String) topLevelNode);
+          resultString.append(topLevelNode);
           resultString.append("&nbsp;=&gt;&nbsp;");
-          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getBindAddress(topLevelNode));
+          resultString.append(requestHandler.getGnsNodeConfig().getBindAddress(topLevelNode));
           resultString.append("&nbsp;&nbspPublic IP:&nbsp;");
-          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeAddress(topLevelNode));
+          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(topLevelNode));
         }
         String nodeAddressesString = resultString.toString();
         resultString = new StringBuilder();
         String prefix = "";
-        for (String recon : GnsHttpServer.requestHandler.getGnsNodeConfig().getReconfigurators()) {
+        for (String recon : requestHandler.getGnsNodeConfig().getReconfigurators()) {
           resultString.append("<br>&nbsp;&nbsp;");
           //resultString.append(prefix);
           resultString.append(recon);
           resultString.append("&nbsp;=&gt;&nbsp;");
           //resultString.append("(");
-          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeAddress(recon).getHostName());
+          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(recon).getHostName());
           resultString.append(":");
-          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodePort(recon));
+          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(recon));
           //resultString.append(")");
           //prefix = ", ";
         }
         String reconfiguratorsString = "Reconfigurators: " + resultString.toString();
         resultString = new StringBuilder();
         prefix = "";
-        for (String activeReplica : GnsHttpServer.requestHandler.getGnsNodeConfig().getActiveReplicas()) {
+        for (String activeReplica : requestHandler.getGnsNodeConfig().getActiveReplicas()) {
           resultString.append("<br>&nbsp;&nbsp;");
           //resultString.append(prefix);
           resultString.append(activeReplica);
           resultString.append("&nbsp;=&gt;&nbsp;");
           //resultString.append("(");
-          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeAddress(activeReplica).getHostName());
+          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(activeReplica).getHostName());
           resultString.append(":");
-          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodePort(activeReplica));
+          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(activeReplica));
           //resultString.append(")");
           //prefix = ", ";
         }
         String activeReplicasString = "Active replicas: " + resultString.toString();
-        String consoleLogLevelString = "Console log level is " + GNS.getLogger().getLevel().getLocalizedName();
-        String fileLogLevelString = "File log level is " + GNS.getLogger().getLevel().getLocalizedName();
+        String consoleLogLevelString = "Console log level is " + GNSConfig.getLogger().getLevel().getLocalizedName();
+        String fileLogLevelString = "File log level is " + GNSConfig.getLogger().getLevel().getLocalizedName();
 
         responseBody.write(responsePreamble.getBytes());
         responseBody.write(buildVersionInfo.getBytes());
@@ -297,10 +298,10 @@ public class GnsHttpServer {
         responseBody.write(reconfiguratorsString.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(activeReplicasString.getBytes());
-        responseBody.write("<br>".getBytes());
-        responseBody.write(requestsReceivedString.getBytes());
-        responseBody.write("<br>".getBytes());
-        responseBody.write(requestsRateString.getBytes());
+//        responseBody.write("<br>".getBytes());
+//        responseBody.write(requestsReceivedString.getBytes());
+//        responseBody.write("<br>".getBytes());
+//        responseBody.write(requestsRateString.getBytes());
         responseBody.write("<br>".getBytes());
 
         responseBody.write("Gigapaxos is enabled<br>".getBytes());
@@ -310,7 +311,7 @@ public class GnsHttpServer {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           responseBody.write("Server debug is true<br>".getBytes());
         }
-        if (GnsHttpServer.requestHandler.getParameters().isDebugMode()) {
+        if (requestHandler.isDebugMode()) {
           responseBody.write("CCP debug is true<br>".getBytes());
         }
         responseBody.write(consoleLogLevelString.getBytes());
@@ -337,7 +338,7 @@ public class GnsHttpServer {
    *
    * @return an int
    */
-  public static int getPort() {
+  public int getPort() {
     return port;
   }
 
