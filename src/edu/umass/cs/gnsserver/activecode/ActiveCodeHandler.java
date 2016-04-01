@@ -45,6 +45,7 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
@@ -107,7 +108,17 @@ public class ActiveCodeHandler {
 
 			@Override
 			public boolean write(String querierGuid, String queriedGuid, String field, ValuesMap valuesMap) {
-				// This is not used for a single server experiment
+				try {
+					NameRecord nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), queriedGuid, null, ColumnFieldType.USER_JSON, field);
+					nameRecord.updateNameRecord(field, null, null, 0, valuesMap,
+					          UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
+				} catch (FieldNotFoundException | FailedDBOperationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (RecordNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				return false;
 			}
 		};
