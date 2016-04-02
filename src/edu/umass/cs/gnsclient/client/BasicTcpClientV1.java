@@ -211,8 +211,8 @@ public class BasicTcpClientV1 implements GNSClientInterface {
       SSLDataProcessingWorker.SSL_MODES sslMode
               = disableSSL ? CLEAR
                       : ReconfigurationConfig.getClientSSLMode();
-      // no messenger needed if GNSClientV1
-      this.messenger = (this instanceof GNSClientV1 ? null : new JSONMessenger<>(
+      // no messenger needed if GNSClient
+      this.messenger = (this instanceof GNSClient ? null : new JSONMessenger<>(
               (new JSONNIOTransport<>(null, new SampleNodeConfig<InetSocketAddress>(),
                       new PacketDemultiplexer(this),
                       sslMode))));

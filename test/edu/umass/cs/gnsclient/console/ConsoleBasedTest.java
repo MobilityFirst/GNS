@@ -34,12 +34,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import edu.umass.cs.gnsclient.client.GNSClientV1;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 
 import java.util.Arrays;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.fail;

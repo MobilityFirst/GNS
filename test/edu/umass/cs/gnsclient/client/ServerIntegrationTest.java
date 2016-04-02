@@ -124,7 +124,7 @@ public class ServerIntegrationTest {
             .getClientSSLMode() != SSL_MODES.CLEAR : false);
     System.out.print("Connecting to " + address.getHostName() + ":"
             + address.getPort() + (ssl ? " [ssl]" : ""));
-    client = new GNSClientV1(
+    client = new GNSClient(
             (InetSocketAddress) null,
             address,
             // arun: FIXME: System property not shared with server script above 
@@ -136,8 +136,8 @@ public class ServerIntegrationTest {
     //new UniversalTcpClientExtended(address.getHostName(),
     //address.getPort(), System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL)!=null);
 
-    // arun: connectivity check embedded in GNSClientV1 constructor
-    boolean connected = client instanceof GNSClientV1;
+    // arun: connectivity check embedded in GNSClient constructor
+    boolean connected = client instanceof GNSClient;
     if (connected) {
       System.out.println("successful" + (ssl ? " [ssl]" : ""));
     }

@@ -32,7 +32,7 @@ import edu.umass.cs.utils.Config;
  *
  * Cleaner implementation of a GNS client using gigapaxos' async client.
  */
-public class GNSClientV1 extends UniversalTcpClientExtended {
+public class GNSClient extends UniversalTcpClientExtended {
 
   // initialized from properties file
   private static final Set<InetSocketAddress> staticReconfigurators = ReconfigurationConfig
@@ -48,7 +48,7 @@ public class GNSClientV1 extends UniversalTcpClientExtended {
    * @throws IOException
    *
    */
-  public GNSClientV1() throws IOException {
+  public GNSClient() throws IOException {
     this(false);
   }
 
@@ -56,7 +56,7 @@ public class GNSClientV1 extends UniversalTcpClientExtended {
    * @param useSSL
    * @throws IOException
    */
-  public GNSClientV1(boolean useSSL) throws IOException {
+  public GNSClient(boolean useSSL) throws IOException {
     this(staticReconfigurators != null
             && !staticReconfigurators.isEmpty() ? staticReconfigurators
                     .iterator().next() : null, !useSSL);
@@ -73,7 +73,7 @@ public class GNSClientV1 extends UniversalTcpClientExtended {
    * @param useSSL
    * @throws IOException
    */
-  public GNSClientV1(InetSocketAddress anyReconfigurator,
+  public GNSClient(InetSocketAddress anyReconfigurator,
           InetSocketAddress localNameServer, boolean useSSL)
           throws IOException {
     super(anyReconfigurator, localNameServer != null ? localNameServer
@@ -104,7 +104,7 @@ public class GNSClientV1 extends UniversalTcpClientExtended {
    * @param useSSL
    * @throws IOException
    */
-  public GNSClientV1(InetSocketAddress anyReconfigurator, boolean useSSL)
+  public GNSClient(InetSocketAddress anyReconfigurator, boolean useSSL)
           throws IOException {
     this(anyReconfigurator, null, !useSSL);
   }
@@ -138,7 +138,7 @@ public class GNSClientV1 extends UniversalTcpClientExtended {
       @Override
       public void handleResponse(Request response) {
         try {
-          GNSClientV1.this.handleCommandValueReturnPacket(response,
+          GNSClient.this.handleCommandValueReturnPacket(response,
                   System.currentTimeMillis());
         } catch (JSONException e) {
           e.printStackTrace();
@@ -310,7 +310,7 @@ public class GNSClientV1 extends UniversalTcpClientExtended {
   }
 
   public static void main(String[] args) throws IOException {
-    GNSClientV1 client = new GNSClientV1((InetSocketAddress) null, null,
+    GNSClient client = new GNSClient((InetSocketAddress) null, null,
             ReconfigurationConfig.getClientSSLMode() != SSL_MODES.CLEAR);
     client.close();
     System.out
