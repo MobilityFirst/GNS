@@ -1,19 +1,19 @@
 package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
+import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
@@ -115,6 +115,13 @@ public class CapacityTestClient {
     	}
     }
     
+    static class MyThreadFactory implements ThreadFactory {
+    	
+    	public Thread newThread(Runnable r) {
+    		Thread t = new Thread(r);
+    	    return t;
+    	}
+    }
     
     /**
      * Test with a single {@link UniversalTcpClient}

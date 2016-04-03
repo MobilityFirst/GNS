@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 
 /**
@@ -53,7 +52,7 @@ public class CapacityTestChainClient {
 			GNSClient client = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
 			
 			executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
-		    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
+		    		new LinkedBlockingQueue<Runnable>(), new CapacityTestClient.MyThreadFactory() );
 	    	executorPool.prestartAllCoreThreads();
 	    	
 			for (int index=0; index<NUM_CLIENT; index++){

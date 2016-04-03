@@ -1,9 +1,7 @@
 package edu.umass.cs.gnsclient.examples;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -15,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 
 /**
@@ -58,7 +55,7 @@ public class CapacityTestSequentialClient {
 			}
 			
 			executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
-		    		new LinkedBlockingQueue<Runnable>(), new MyThreadFactory() );
+		    		new LinkedBlockingQueue<Runnable>(), new CapacityTestClient.MyThreadFactory() );
 	    	executorPool.prestartAllCoreThreads();
 	    	
 	    	// round-robin gnsClient

@@ -13,6 +13,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.logging.Level;
 
 import org.json.JSONObject;
 
@@ -25,6 +26,7 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 /**
  * @author gaozy
@@ -68,6 +70,8 @@ public class SequentialRequestClient {
 			filename = args[3];
 		}
 		size = size*8;
+		
+		ReconfigurationConfig.setConsoleHandler(Level.WARNING);
 		
 		String code = new String(Files.readAllBytes(Paths.get(filename)));		
 		//Read in the code and serialize
