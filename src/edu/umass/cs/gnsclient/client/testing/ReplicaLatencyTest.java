@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
+import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -73,7 +73,7 @@ import org.apache.commons.cli.ParseException;
 public class ReplicaLatencyTest {
 
   private static String accountAlias = "boo@hoo.com";
-  private static BasicUniversalTcpClient client = null;
+  private static BasicTcpClientV1 client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
 
@@ -96,7 +96,7 @@ public class ReplicaLatencyTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
+      client = new BasicTcpClientV1(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, "password", true);
       } catch (Exception e) {
@@ -129,8 +129,8 @@ public class ReplicaLatencyTest {
       // Need this on to read the which replica is responding
       //client.setEnableInstrumentation(true);
       test.findSlowGuid(closeActiveReplica);
-      // Now maybe turn on output
-      client.setDebuggingEnabled(debug);
+//      // Now maybe turn on output
+//      client.setDebuggingEnabled(debug);
       // send the reads and writes
       test.readsAndWrites(closeActiveReplica);
       //test.removeSubGuid();

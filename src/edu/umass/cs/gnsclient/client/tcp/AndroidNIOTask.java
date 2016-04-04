@@ -67,67 +67,60 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
   @Override
   protected String doInBackground(Object... args)
   {
-    JSONMessenger<InetSocketAddress> tcpTransport = (JSONMessenger<InetSocketAddress>) args[0];
-    JSONObject command = (JSONObject) args[1];
-    int id = (Integer) args[2];
-    InetSocketAddress destAddr = (InetSocketAddress) args[3];
-    Object monitor = args[4];
-    ConcurrentMap<Integer, Long> queryTimeStamp = (ConcurrentMap<Integer, Long>) args[5];
-    ConcurrentMap<Integer, CommandResult> resultMap = (ConcurrentMap<Integer, CommandResult>) args[6];
-    int readTimeout = (Integer) args[7];
-
-    CommandPacket packet = new CommandPacket(id, null, -1, command);
-    //String headeredMsg = JSONMessageExtractor.prependHeader(packet.toString());
-    queryTimeStamp.put(id, System.currentTimeMillis());
-    
-    try {
-      JSONObject json = packet.toJSONObject();
-      tcpTransport.send(new GenericMessagingTask<>(destAddr, json));
-    } catch (IOException | JSONException e) {
-     Log.e("GNS", "Failed to send message " + e);
-    }
+    throw new UnsupportedOperationException("Not yet implemented");
+//    JSONMessenger<InetSocketAddress> tcpTransport = (JSONMessenger<InetSocketAddress>) args[0];
+//    JSONObject command = (JSONObject) args[1];
+//    int id = (Integer) args[2];
+//    InetSocketAddress destAddr = (InetSocketAddress) args[3];
+//    Object monitor = args[4];
+//    ConcurrentMap<Integer, Long> queryTimeStamp = (ConcurrentMap<Integer, Long>) args[5];
+//    ConcurrentMap<Integer, CommandResult> resultMap = (ConcurrentMap<Integer, CommandResult>) args[6];
+//    int readTimeout = (Integer) args[7];
+//
+//    CommandPacket packet = new CommandPacket(id, null, -1, command);
+//    queryTimeStamp.put(id, System.currentTimeMillis());
+//    
+//    try {
+//      JSONObject json = packet.toJSONObject();
+//      tcpTransport.send(new GenericMessagingTask<>(destAddr, json));
+//    } catch (//IOException | 
+//            JSONException e) {
+//     Log.e("GNS", "Failed to send message " + e);
+//    }
+//    // now we wait until the correct packet comes back
 //    try
 //    {
-//      tcpTransport.send(destAddr, headeredMsg.getBytes());
+//      GNSClientConfig.getLogger().fine("Waiting for query id: " + id);
+//      synchronized (monitor)
+//      {
+//        long startTime = System.currentTimeMillis();
+//        while (!resultMap.containsKey(id) && System.currentTimeMillis() - startTime < readTimeout)
+//        {
+//          monitor.wait(readTimeout);
+//        }
+//        if (System.currentTimeMillis() - startTime >= readTimeout)
+//        {
+//          GNSClientConfig.getLogger().fine("TIMEOUT (" + id + ") : " + command.toString());
+//          return GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.TIMEOUT;
+//        }
+//      }
+//      GNSClientConfig.getLogger().fine("Query id response received: " + id);
 //    }
-//    catch (IOException e)
+//    catch (InterruptedException x)
 //    {
-//      
+//      GNSClientConfig.getLogger().severe("Wait for return packet was interrupted " + x);
 //    }
-    // now we wait until the correct packet comes back
-    try
-    {
-      GNSClientConfig.getLogger().fine("Waiting for query id: " + id);
-      synchronized (monitor)
-      {
-        long startTime = System.currentTimeMillis();
-        while (!resultMap.containsKey(id) && System.currentTimeMillis() - startTime < readTimeout)
-        {
-          monitor.wait(readTimeout);
-        }
-        if (System.currentTimeMillis() - startTime >= readTimeout)
-        {
-          GNSClientConfig.getLogger().fine("TIMEOUT (" + id + ") : " + command.toString());
-          return GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.TIMEOUT;
-        }
-      }
-      GNSClientConfig.getLogger().fine("Query id response received: " + id);
-    }
-    catch (InterruptedException x)
-    {
-      GNSClientConfig.getLogger().severe("Wait for return packet was interrupted " + x);
-    }
-    CommandResult result = resultMap.get(id);
-    resultMap.remove(id);
-    long sentTime = queryTimeStamp.get(id); // instrumentation
-    queryTimeStamp.remove(id); // instrumentation
-    long rtt = result.getReceivedTime() - sentTime;
-    GNSClientConfig.getLogger().info(
-        "Command name: " + command.optString(GnsProtocol.COMMANDNAME, "Unknown") + " "
-            + command.optString(GnsProtocol.GUID, "") + " " + command.optString(GnsProtocol.NAME, "") + " id: " + id
-            + " RTT: " + rtt + "ms" + " LNS RTT: " + result.getCCPRoundTripTime() + "ms" + " NS: "
-            + result.getResponder() + " LNS Counter:" + result.getRequestCnt());
-    return result.getResult();
+//    CommandResult result = resultMap.get(id);
+//    resultMap.remove(id);
+//    long sentTime = queryTimeStamp.get(id); // instrumentation
+//    queryTimeStamp.remove(id); // instrumentation
+//    long rtt = result.getReceivedTime() - sentTime;
+//    GNSClientConfig.getLogger().info(
+//        "Command name: " + command.optString(GnsProtocol.COMMANDNAME, "Unknown") + " "
+//            + command.optString(GnsProtocol.GUID, "") + " " + command.optString(GnsProtocol.NAME, "") + " id: " + id
+//            + " RTT: " + rtt + "ms" + " LNS RTT: " + result.getCCPRoundTripTime() + "ms" + " NS: "
+//            + result.getResponder() + " LNS Counter:" + result.getRequestCnt());
+//    return result.getResult();
   }
 
 }

@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDescriptionFormat;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
@@ -57,17 +58,17 @@ public class Help extends GnsCommand {
       return new CommandResponse<String>("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandModule.CommandDescriptionFormat.TCP));
+              + module.allCommandDescriptions(CommandDescriptionFormat.TCP));
     } else if (json.has("tcpwiki")) {
       return new CommandResponse<String>("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandModule.CommandDescriptionFormat.TCP_Wiki));
+              + module.allCommandDescriptions(CommandDescriptionFormat.TCP_Wiki));
     } else {
       return new CommandResponse<String>("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandModule.CommandDescriptionFormat.HTML));
+              + module.allCommandDescriptions(CommandDescriptionFormat.HTML));
     }
   }
 

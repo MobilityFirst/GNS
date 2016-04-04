@@ -38,9 +38,9 @@ import org.json.JSONException;
  */
 public class PacketDemultiplexer extends AbstractJSONPacketDemultiplexer{
   
-  BasicUniversalTcpClient client;
+  BasicTcpClientV1 client;
 
-  public PacketDemultiplexer(BasicUniversalTcpClient client) {
+  public PacketDemultiplexer(BasicTcpClientV1 client) {
     this.client = client;
     this.register(Packet.PacketType.COMMAND);
     this.register(Packet.PacketType.COMMAND_RETURN_VALUE);

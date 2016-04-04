@@ -37,7 +37,12 @@ public interface GNSClientInterface {
   
   /**
    * Return a string representing the GNS server that we are connecting to.
-   * @return 
+   * NOTE THAT THIS STRING SHOULD BE DIFFERENT FOR DIFFERENT SERVERS (say
+   * a local test server vs the one on EC2 otherwise the key pair storage
+   * code overwrite keys with the same name that are being used for
+   * different servers.
+   * 
+   * @return a string representing the GNS server
    */
   public String getGNSInstance();
 
