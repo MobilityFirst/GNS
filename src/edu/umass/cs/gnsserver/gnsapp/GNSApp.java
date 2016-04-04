@@ -44,6 +44,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandRequestInfo;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket;
@@ -97,7 +98,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   /**
    *
    */
-  public final ConcurrentMap<Long, CommandHandler.CommandRequestInfo> outStandingQueries
+  public final ConcurrentMap<Long, CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   /**
