@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
@@ -130,7 +129,7 @@ public class ActiveCode {
           String signature, String message,
           ClientRequestHandlerInterface handler) {
     String field = getCodeField(action);
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field,
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
       return GnsProtocol.NULL_RESPONSE;

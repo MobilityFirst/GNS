@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
@@ -44,7 +44,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
-import java.util.logging.Logger;
 
 /**
  * Provides signing and ACL checks for commands.
@@ -52,8 +51,6 @@ import java.util.logging.Logger;
  * @author westy
  */
 public class NSAccessSupport {
-
-  private static final Logger LOG = Logger.getLogger(NSAccessSupport.class.getName());
 
   private static KeyFactory keyFactory;
   private static Signature sig;
@@ -63,7 +60,7 @@ public class NSAccessSupport {
       keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
       sig = Signature.getInstance(SIGNATURE_ALGORITHM);
     } catch (NoSuchAlgorithmException e) {
-      LOG.severe("Unable to initialize for authentication:" + e);
+      ClientSupportConfig.getLogger().severe("Unable to initialize for authentication:" + e);
     }
   }
 
@@ -86,16 +83,16 @@ public class NSAccessSupport {
     }
     byte[] publickeyBytes = Base64.decode(accessorPublicKey);
     if (publickeyBytes == null) { // bogus public key
-      LOG.log(Level.FINE, "&&&&Base 64 decoding is bogus!!!");
+      ClientSupportConfig.getLogger().log(Level.FINE, "&&&&Base 64 decoding is bogus!!!");
       return false;
     }
-    LOG.log(Level.FINE,
+    ClientSupportConfig.getLogger().log(Level.FINE,
             "public_key:{0}, signature:{1}, message:{2}",
             new Object[]{Util.truncate(accessorPublicKey, 16, 16),
               Util.truncate(signature, 16, 16),
               Util.truncate(message, 16, 16)});
     boolean result = verifySignatureInternal(publickeyBytes, signature, message);
-    LOG.log(Level.FINE,
+    ClientSupportConfig.getLogger().log(Level.FINE,
             "public_key:{0} {1} as author of message:{2}",
             new Object[]{Util.truncate(accessorPublicKey, 16, 16),
               (result ? " verified " : " NOT verified "),
@@ -132,7 +129,7 @@ public class NSAccessSupport {
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     //String accessorGuid = ClientUtils.createGuidStringFromBase64PublicKey(accessorPublicKey);
-    LOG.log(Level.FINE,
+    ClientSupportConfig.getLogger().log(Level.FINE,
             "User: {0} Reader: {1} Field: {2}",
             new Object[]{guid, accessorGuid, field});
     if (guid.equals(accessorGuid)) {
@@ -142,7 +139,7 @@ public class NSAccessSupport {
     } else if (checkForAccess(access, guid, ALL_FIELDS, accessorGuid, activeReplica)) {
       return true; // accessor can see all fields
     } else {
-      LOG.log(Level.FINE,
+      ClientSupportConfig.getLogger().log(Level.FINE,
               "User {0} NOT allowed to access user {1}'s field {2}",
               new Object[]{accessorGuid, guid, field});
       return false;
@@ -164,7 +161,7 @@ public class NSAccessSupport {
   private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid,
           String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    LOG.log(Level.FINE, "###field={0}", field);
+    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", field);
     if (checkForAccess(access, guid, field, accessorGuid, activeReplica)) {
       return true;
     }
@@ -184,9 +181,9 @@ public class NSAccessSupport {
       @SuppressWarnings("unchecked")
       Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access,
               guid, field, activeReplica.getDB());
-      LOG.log(Level.FINE, "{0} allowed users of {1} : {2}", new Object[]{guid, field, allowedusers});
+      ClientSupportConfig.getLogger().log(Level.FINE, "{0} allowed users of {1} : {2}", new Object[]{guid, field, allowedusers});
       if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica)) {
-        LOG.log(Level.FINE, "User {0} allowed to access {1}",
+        ClientSupportConfig.getLogger().log(Level.FINE, "User {0} allowed to access {1}",
                 new Object[]{accessorGuid,
                   field != ALL_FIELDS ? ("user " + guid + "'s " + field + " field")
                           : ("all of user " + guid + "'s fields")});
@@ -197,7 +194,7 @@ public class NSAccessSupport {
       // This is actually a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
-      LOG.log(Level.WARNING,
+      ClientSupportConfig.getLogger().log(Level.WARNING,
               "User {0} access problem for {1}'s {2} field: {3}",
               new Object[]{accessorGuid, guid, field, e});
       return false;
@@ -215,7 +212,7 @@ public class NSAccessSupport {
       // see if allowed users (the public keys for the guids and group guids that is in the ACL) 
       // intersects with the groups that this
       // guid is a member of (which is stored with this guid)
-      LOG.log(Level.FINE,
+      ClientSupportConfig.getLogger().log(Level.FINE,
               "Looking up groups for {0} and check against {1}",
               new Object[]{accessorGuid, ClientUtils.convertPublicKeysToGuids(allowedUsers)});
       return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers),
@@ -242,7 +239,7 @@ public class NSAccessSupport {
       // This is actually a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
-      LOG.log(Level.WARNING,
+      ClientSupportConfig.getLogger().log(Level.WARNING,
               "User {0} access problem for {1}'s {2} field: {3}",
               new Object[]{guid, field, access.toString(), e});
       return false;
@@ -251,6 +248,7 @@ public class NSAccessSupport {
 
   /**
    * Looks up the public key for a guid using the acl of a field.
+   * Handles field that uses dot notation.
    *
    * @param access
    * @param guid
@@ -262,7 +260,7 @@ public class NSAccessSupport {
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           BasicRecordMap database) throws FailedDBOperationException {
-    LOG.log(Level.FINE, "###field={0}",
+    ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}",
             new Object[]{field});
     try {
       //FIXME: Clean this mess up.
@@ -270,7 +268,7 @@ public class NSAccessSupport {
     } catch (FieldNotFoundException e) {
       // do nothing
     } catch (RecordNotFoundException e) {
-      LOG.log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
+      ClientSupportConfig.getLogger().log(Level.WARNING, "User {0} access problem for {1}'s {2} field: {3}",
               new Object[]{guid, field, access.toString(), e});
       return new HashSet<>();
     }
@@ -290,9 +288,9 @@ public class NSAccessSupport {
    * @return
    */
   public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
-    LOG.log(Level.FINER, "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});
+    ClientSupportConfig.getLogger().log(Level.FINER, "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});
     String result = messageStringWithSignatureParts.substring(0, messageStringWithSignatureParts.lastIndexOf(signatureParts));
-    LOG.log(Level.FINER, "result = {0}", result);
+    ClientSupportConfig.getLogger().log(Level.FINER, "result = {0}", result);
     return result;
   }
 

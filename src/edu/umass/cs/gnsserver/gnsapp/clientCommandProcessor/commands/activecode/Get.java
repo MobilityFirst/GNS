@@ -23,10 +23,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
@@ -70,8 +68,8 @@ public class Get extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     
+    
     return new CommandResponse<>(ActiveCode.getCode(accountGuid, action, reader, signature, message, handler));
-    //return new CommandResponse<>(new JSONArray(ActiveCode.getCode(accountGuid, action, reader, signature, message, handler)).toString());
   }
 
   @Override

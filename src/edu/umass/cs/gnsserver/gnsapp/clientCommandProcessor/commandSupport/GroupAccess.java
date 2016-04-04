@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
@@ -149,7 +149,8 @@ public class GroupAccess {
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUP,
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, 
+            GROUP, null,
             reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();
@@ -169,7 +170,7 @@ public class GroupAccess {
    */
   public static ResultValue lookupGroupsAnywhere(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS,
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
             reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();
@@ -179,7 +180,7 @@ public class GroupAccess {
 
   public static ResultValue lookupGroupsLocally(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS,
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
             reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();

@@ -14,20 +14,15 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-//import edu.umass.cs.gnsserver.packet.QueryResultValue;
-import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess.GROUPS;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.QueryResult;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -89,7 +84,7 @@ public class FieldMetaData {
           String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, 
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null, 
             reader, signature, message, handler.getApp());
     if (errorCode.isAnError()) {
       return new HashSet<>();

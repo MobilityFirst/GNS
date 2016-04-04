@@ -24,11 +24,13 @@ import edu.umass.cs.gnscommon.utils.JSONDotNotation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
+import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
 
+import java.util.List;
 import org.json.JSONArray;
 
 /**
@@ -103,6 +105,15 @@ public class ValuesMap extends JSONObject implements Summarizable {
       String key = (String) keyIter.next();
       json.put(key, super.getJSONArray(key).get(0));
     }
+  }
+  
+  public List<String> getKeys() throws JSONException {
+    List<String> result = new ArrayList<>();
+    Iterator<?> keyIter = keys();
+    while (keyIter.hasNext()) {
+      result.add((String) keyIter.next());
+    }
+    return result;
   }
 
   @Override

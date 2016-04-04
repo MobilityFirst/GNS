@@ -79,9 +79,6 @@ public abstract class AbstractUpdate extends GnsCommand {
     NSResponseCode responseCode;
     if (field == null) {
       responseCode = FieldAccess.updateUserJSON(guid, userJSON, writer, signature, message, handler);
-//      responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON),
-//              getUpdateOperation(), writer, signature, message, false);
-      // full JSON object update
       if (!responseCode.isAnError()) {
         return new CommandResponse<String>(OK_RESPONSE);
       } else {
