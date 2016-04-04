@@ -1,6 +1,8 @@
 package edu.umass.cs.gnsclient.examples;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
@@ -21,23 +23,27 @@ import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
+import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeGuidEntry;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 /**
  * @author gaozy
  */
 public class SequentialRequestClient {
-	private static String ACCOUNT_ALIAS = "@gigapaxos.net";
+	private static String ACCOUNT_ALIAS = "test@gigapaxos.net";
 	private static GNSClient client;
 	private static String filename =  "./scripts/activeCode/noop.js"; //"/Users/gaozy/WebStorm/test.js"; //
 	private static ArrayList<Long> latency = new ArrayList<Long>();
 	private static int numReqs = 1;
 	
+	private final static String guidFilename = "planetlab_key";
+	protected static String getGuidFilename(){
+		return guidFilename;
+	}
 	
 	
 	// FIXME: remove hard coding here
@@ -81,13 +87,18 @@ public class SequentialRequestClient {
 		
 		GuidEntry guidAccount = null;
 		try{
-			guidAccount = lookupOrCreateAccountGuid(client, "test"+ACCOUNT_ALIAS, "password");
+			guidAccount = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password");
 		}catch (Exception e) {
 			System.out.println("Exception during accountGuid creation: " + e);
 			System.exit(1);
 		}
 		
-				
+		// write the key to a file 
+		FileOutputStream fos = new FileOutputStream(getGuidFilename());
+		ObjectOutputStream os = new ObjectOutputStream(fos);
+	    os.writeObject(new ActiveCodeGuidEntry(guidAccount));
+	    
+						
 		JSONObject json = new JSONObject("{\"nextGuid\":\"a\", \"hehe\":\"hello\"}");
 		client.update(guidAccount, json);
 		

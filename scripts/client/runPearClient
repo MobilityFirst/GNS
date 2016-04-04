@@ -1,0 +1,10 @@
+#!/bin/bash
+#echo $PWD
+# should use matching gigapaxos properties with servers
+java -Dlog4j.configuration=logging.properties \
+-DgigapaxosConfig=conf/activeCode/gigapaxos.gnsApp.pear.properties \
+-Djavax.net.ssl.trustStorePassword=qwerty \
+-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
+-Djavax.net.ssl.keyStorePassword=qwerty \
+-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp \
+jars/GNSClient.jar $*
