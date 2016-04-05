@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="MacRoman"?>
+<!--
+Copyright (C) 2013
+University of Massachusetts
+All Rights Reserved 
+-->
+<root>
+  <ec2username name = "ec2-user"/>
+  <ami name="Amazon_Linux_AMI_2013_09_2"/>
+  <datastore name = "MONGO"/>
+  <region name="US_EAST_1"/>
+  <region name="US_WEST_1"/>
+  <region name="US_WEST_2"/>
+  <region name="EU_WEST_1"/>
+  <region name="AP_NORTHEAST_1"/>
+</root>

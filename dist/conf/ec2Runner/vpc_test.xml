@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="MacRoman"?>
+<!--
+Copyright (C) 2015
+University of Massachusetts
+All Rights Reserved 
+-->
+<root>
+  <ec2username name = "ec2-user"/>
+  <ami name="Mongo_2015_6_25_vpc"/>
+  <datastore name = "MONGO"/>
+  <region name="US_EAST_1"      cnt="1" ip="52.0.29.143"/>
+  <!-- 
+  <region name="US_WEST_1"      cnt="1" ip="52.8.67.73"/>
+  <region name="US_WEST_2"      cnt="1" ip="52.26.182.232"/>
+  -->
+  <region name="EU_WEST_1"      cnt="1" ip="54.77.64.221"/>
+  <region name="EU_CENTRAL_1"   cnt="1" ip="52.28.48.176"/>
+  <!-- <region name="SA_EAST_1"      cnt="1" ip="54.232.208.235"/> -->
+  
+  <region name="AP_SOUTHEAST_1"      cnt="1" ip="52.74.248.107"/> <!-- Singapore -->
+  <region name="AP_SOUTHEAST_2"      cnt="1" ip="52.64.6.35"/> <!-- Sidney -->
+  <region name="AP_NORTHEAST_1"      cnt="1" ip="52.68.83.65"/> <!-- Tokyo -->
+  
+  <!-- OLD NON VCP -->
+  <!-- 
+  <region name="US_EAST_1"      cnt="1" ip="107.20.245.102"/>
+  <region name="US_WEST_1"      cnt="1" ip="54.215.16.99"/>
+  <region name="US_WEST_2"      cnt="1" ip="50.112.116.12"/>
+  <region name="EU_WEST_1"      cnt="1" ip="54.217.221.135"/>
+  -->
+  
+</root>

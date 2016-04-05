@@ -1,0 +1,92 @@
+GNS Installer
+=============
+The Gns Installer, allows user to install the following 
+
+1. Java 
+2. MongoDB 
+3. GNS.jar
+
+in any of the hosts, which is specified in the hosts.txt file. 
+The Python Program  contains the following files 
+
+1. fabfile.py 
+2. config
+3. install.sh 
+
+As a user of gns installer, you only need to modify the config file with the
+following parameters 
+
+user (username)
+key_filename (key private filename)
+mongo_download (link 'http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz')
+java_download (link  'http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz')
+install_path (where to install in the remote machines /desired/install/path)
+gns_path  (GNS.jar localtion in the local host)
+
+A sample config file is in the repo.
+
+Pre-requisites
+==============
+1. hosts.txt file with list of hostnames (sample file in the repository)
+
+2. config file 
+
+3. Fabric Package Module in Python
+http://www.fabfile.org/installing.html
+
+
+Usage
+=====
+
+Step 1: Check the available list of commands 
+----------------------------------------------
+
+$ fab  -l
+
+Available commands:
+
+    install_gns
+    install_java
+    install_mongo
+    phost
+
+
+The above is the sample output for which displays a list of commands to be run with fabric. 
+
+Step 2: To Install mongodb/java/gns
+------------------------------------
+
+$ fab --config=config phost install_{mongo,java,gns}:/path/to/install
+
+
+The phost parameter populates the host mentioned in the hosts.txt file (sample file in repo). 
+(install_mongo / install_java / install_gns ) will perform the necessary operations on
+the hosts present in the host.txt file.
+
+Sample Command
+---------------
+
+$ fab --config=config phost install_mongo
+
+The above command will install mongo in default home directory of user which is mentioned 
+in the config file. For example, if the user is set to umass_nameservice, then  the above 
+command will install mongodb in /home/umass_nameservice .
+
+
+$ fab --config=config phost install_mongo:/home/umass_nameservice/test/
+
+The above command will 	install mongo in /home/umass_nameservice/test directory instead of home directory of user.
+
+Mongodb / Java will not installed if its is already present in those hosts.
+
+
+Note
+=====
+
+1. Fabric by default uses default username and pvt keyfiles of the local machine unless
+   specifically mentioned in the config file.
+
+2. The program assumes all the remote machines have bash shell installed in them. 
+
+3. Currently the java download links are from oracle website, which needs Cookie parameter 
+to be setup while remotely downloading it. The <cookie> parameter is setup in install.sh script	. Please contact the author if the java download is from a non-oracle site.

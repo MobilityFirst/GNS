@@ -1,0 +1,6 @@
+#Auto generated installer config file for vpc_test
+#Fri Jun 26 17:18:14 EDT 2015
+hostType=linux
+keyFile=aws.pem
+userName=ec2-user
+datastore=MONGO

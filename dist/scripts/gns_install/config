@@ -1,0 +1,10 @@
+#The following is the configuration for gns_installation.
+#The configuration file allows user to enter all the 
+
+user=umass_bittorrent
+key_filename=/Users/abhigyan/.ssh/id_rsa_pl
+#/home/rahul/.ssh/id_rsa_pl
+mongo_download='http://downloads.mongodb.org/linux/mongodb-linux-i686-2.6.1.tgz'
+#java_download='http://download.oracle.com/otn-pub/java/jdk/7u55-b13/jdk-7u55-linux-i586.tar.gz'
+#gns_path='/rahul_extra/GNS/trunk/dist/GNS.jar'
+#install_path=/some/random/install/path

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="MacRoman"?>
+<!--
+Copyright (C) 2013
+University of Massachusetts
+All Rights Reserved 
+-->
+
+<root>
+  <ec2username name = "ec2-user"/>
+  <ami name="MongoDB_2_4_8_with_1000_IOPS"/>
+  <datastore name = "MONGO"/>
+  <region name="US_EAST_1"      cnt="1"/>
+  <region name="US_EAST_1"      cnt="1"/>
+  <region name="US_EAST_1"      cnt="1"/>
+</root>
