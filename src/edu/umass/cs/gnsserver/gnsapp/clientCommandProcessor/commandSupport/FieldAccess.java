@@ -53,7 +53,9 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import java.util.Date;
 import java.util.List;
+import org.apache.commons.lang3.time.DateUtils;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -99,14 +101,15 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return the value of a single field
    */
   public static CommandResponse<String> lookupSingleField(String guid, String field,
-          String reader, String signature, String message,
+          String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     NSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
     }
@@ -142,14 +145,15 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return the value of a single field
    */
   public static CommandResponse<String> lookupMultipleFields(String guid, ArrayList<String> fields,
-          String reader, String signature, String message,
+          String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     NSResponseCode errorCode = signatureAndACLCheckForRead(guid, null, fields,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
     }
@@ -181,16 +185,17 @@ public class FieldAccess {
    * @param field
    * @param reader
    * @param signature
+   * @param timestamp
    * @param message
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> lookupJSONArray(String guid, String field, String reader, String signature,
-          String message,
+  public static CommandResponse<String> lookupJSONArray(String guid,
+          String field, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     NSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
     }
@@ -215,12 +220,14 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> lookupMultipleValues(String guid, String reader, String signature, String message,
+  public static CommandResponse<String> lookupMultipleValues(String guid,
+          String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, 
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
             GnsProtocol.ALL_FIELDS, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp,
+            handler.getApp());
     if (errorCode.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0,
               handler.getApp().getNodeID());
@@ -255,11 +262,11 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse<String> lookupOne(String guid, String field,
-          String reader, String signature, String message,
+          String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     NSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
     }
@@ -286,16 +293,17 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> lookupOneMultipleValues(String guid, String reader, 
-          String signature, String message,
+  public static CommandResponse<String> lookupOneMultipleValues(String guid, String reader,
+          String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, 
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
             GnsProtocol.ALL_FIELDS, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
     }
@@ -336,18 +344,21 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param timestamp
    * @param handler
    * @return an NSResponseCode
    */
   public static NSResponseCode update(String guid, String key, String value, String oldValue,
           int argument, UpdateOperation operation,
-          String writer, String signature, String message, ClientRequestHandlerInterface handler) {
+          String writer, String signature, String message, 
+          Date timestamp,
+          ClientRequestHandlerInterface handler) {
     return update(guid, key,
             new ResultValue(Arrays.asList(value)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             argument,
             operation,
-            writer, signature, message, handler);
+            writer, signature, message, timestamp, handler);
   }
 
   /**
@@ -365,15 +376,20 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param timestamp
    * @param handler
    * @return an NSResponseCode
    */
   public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue,
           int argument, UpdateOperation operation,
-          String writer, String signature, String message, ClientRequestHandlerInterface handler) {
+          String writer, String signature, String message, 
+          Date timestamp,
+          ClientRequestHandlerInterface handler) {
 
     try {
-      return NSUpdateSupport.executeUpdateLocal(guid, key, writer, signature, message, operation,
+      return NSUpdateSupport.executeUpdateLocal(guid, key, writer, signature, message, 
+              timestamp,
+              operation,
               value, oldValue, argument, null, handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | JSONException | IOException |
@@ -398,10 +414,11 @@ public class FieldAccess {
    * @return an NSResponseCode
    */
   private static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
-          String writer, String signature, String message, ClientRequestHandlerInterface handler) {
+          String writer, String signature, String message, 
+          Date timestamp, ClientRequestHandlerInterface handler) {
     try {
       return NSUpdateSupport.executeUpdateLocal(guid, null,
-              writer, signature, message, operation,
+              writer, signature, message, timestamp, operation,
               null, null, -1, new ValuesMap(json), handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | JSONException | IOException |
@@ -421,14 +438,16 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param timestamp
    * @param handler
    * @return an NSResponseCode
    */
   public static NSResponseCode updateUserJSON(String guid, JSONObject json,
-          String writer, String signature, String message, ClientRequestHandlerInterface handler) {
+          String writer, String signature, String message, 
+          Date timestamp, ClientRequestHandlerInterface handler) {
     return FieldAccess.update(guid, new ValuesMap(json),
             UpdateOperation.USER_JSON_REPLACE,
-            writer, signature, message, handler);
+            writer, signature, message, timestamp, handler);
   }
 
   /**
@@ -444,14 +463,16 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param timestamp
    * @param handler
    * @return a {@link NSResponseCode}
    */
   public static NSResponseCode create(String guid, String key, ResultValue value,
           String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+          Date timestamp, ClientRequestHandlerInterface handler) {
     return update(guid, key, value, null, -1,
-            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message, handler);
+            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message, 
+            timestamp, handler);
   }
 
   /**
@@ -573,7 +594,7 @@ public class FieldAccess {
         }
       }
     }
-        // We either found or created the guid above so now we set up the actual query structure.
+    // We either found or created the guid above so now we set up the actual query structure.
     try {
       JSONArray result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
       if (result != null) {
@@ -602,15 +623,24 @@ public class FieldAccess {
     return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
   }
 
-  public static NSResponseCode signatureAndACLCheckForRead(String guid, 
+  private static final int OLD_COMMAND_TIME = -30; // how far back is old?
+
+  public static NSResponseCode signatureAndACLCheckForRead(String guid,
           String field, List<String> fields,
           String reader, String signature, String message,
+          Date timestamp,
           GNSApplicationInterface<String> app) {
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     try {
-      if (reader != null && field != null) {
+      if (reader != null && (field != null || fields != null)) {
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, fields, reader,
                 signature, message, MetaDataTypeName.READ_WHITELIST, app);
+      }
+      // Check for stale commands.
+      if (timestamp != null) {
+        if (timestamp.before(DateUtils.addMinutes(new Date(), OLD_COMMAND_TIME))) {
+          errorCode = NSResponseCode.STALE_COMMAND_VALUE;
+        }
       }
     } catch (InvalidKeyException | InvalidKeySpecException | SignatureException | NoSuchAlgorithmException | FailedDBOperationException | UnsupportedEncodingException e) {
       errorCode = NSResponseCode.SIGNATURE_ERROR;

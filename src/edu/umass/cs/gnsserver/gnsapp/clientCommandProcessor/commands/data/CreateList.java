@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
@@ -33,6 +34,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
+import java.text.ParseException;
+import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,7 +65,7 @@ public class CreateList extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
     String value = json.getString(VALUE);
@@ -71,8 +74,15 @@ public class CreateList extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
+    Date timestamp;
+    if (json.has(TIMESTAMP)) {
+      timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    } else {
+      timestamp = null;
+    }
     NSResponseCode responseCode;
-    if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message, handler)).isAnError()) {
+    if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), 
+            writer, signature, message, timestamp, handler)).isAnError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

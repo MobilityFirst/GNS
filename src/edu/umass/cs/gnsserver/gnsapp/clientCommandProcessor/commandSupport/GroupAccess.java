@@ -31,6 +31,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.IOException;
 import java.util.Arrays;
 
+import java.util.Date;
 import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
@@ -147,11 +148,13 @@ public class GroupAccess {
    * @param handler
    * @return a response code
    */
-  public static ResultValue lookup(String guid, String reader, String signature, String message,
+  public static ResultValue lookup(String guid, 
+          String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, 
             GROUP, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp,
+            handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();
     }
@@ -168,20 +171,22 @@ public class GroupAccess {
    * @param handler
    * @return a response code
    */
-  public static ResultValue lookupGroupsAnywhere(String guid, String reader, String signature, String message,
+  public static ResultValue lookupGroupsAnywhere(String guid, 
+          String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();
     }
     return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler);
   }
 
-  public static ResultValue lookupGroupsLocally(String guid, String reader, String signature, String message,
+  public static ResultValue lookupGroupsLocally(String guid, 
+          String reader, String signature, String message, Date timestamp, 
           ClientRequestHandlerInterface handler) {
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new ResultValue();
     }
@@ -204,7 +209,8 @@ public class GroupAccess {
       GNSConfig.getLogger().info("DELETE CLEANUP: " + guid);
     }
     try {
-      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null, handler, true).toStringSet()) {
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null, 
+              null, handler, true).toStringSet()) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNSConfig.getLogger().info("GROUP CLEANUP: " + groupGuid);
         }

@@ -29,6 +29,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.ParseException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -107,9 +108,11 @@ public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable
    * @throws NoSuchAlgorithmException
    * @throws SignatureException 
    * @throws java.io.UnsupportedEncodingException 
+   * @throws java.text.ParseException 
    */
   public abstract CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException;
+          JSONException, NoSuchAlgorithmException, SignatureException, 
+          UnsupportedEncodingException, ParseException;
 
   /**
    * Get the description of the command

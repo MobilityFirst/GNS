@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 
+import edu.umass.cs.gnscommon.utils.Format;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -35,6 +36,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Activ
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import java.text.ParseException;
+import java.util.Date;
 
 /**
  * The command to clear the active code for the specified GUID and action.
@@ -65,14 +68,15 @@ public class Clear extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException {
+          SignatureException, ParseException {
     String accountGuid = json.getString(GUID);
     String writer = json.getString(WRITER);
     String action = json.getString(AC_ACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-
-    NSResponseCode response = ActiveCode.clearCode(accountGuid, action, writer, signature, message, handler);
+    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    NSResponseCode response = ActiveCode.clearCode(accountGuid, action, 
+            writer, signature, message, timestamp, handler);
 
     if (response.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());

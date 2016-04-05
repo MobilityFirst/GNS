@@ -29,8 +29,10 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Date;
 import java.util.logging.Level;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.json.JSONException;
 
 /**
@@ -38,6 +40,8 @@ import org.json.JSONException;
  * @author Westy
  */
 public class NSUpdateSupport {
+
+  private static final int OLD_COMMAND_TIME = -30; // how far back is old?
 
   /**
    * Executes a local update operation.
@@ -47,6 +51,7 @@ public class NSUpdateSupport {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param operation
    * @param updateValue
    * @param oldValue
@@ -66,7 +71,7 @@ public class NSUpdateSupport {
    * @throws FieldNotFoundException
    */
   public static NSResponseCode executeUpdateLocal(String guid, String field,
-          String writer, String signature, String message,
+          String writer, String signature, String message, Date timestamp,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, GNSApplicationInterface<String> app, boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
@@ -95,6 +100,12 @@ public class NSUpdateSupport {
         return NSResponseCode.ACCESS_ERROR;
       }
     }
+    // Check for stale commands.
+    if (timestamp != null) {
+      if (timestamp.before(DateUtils.addMinutes(new Date(), OLD_COMMAND_TIME))) {
+        errorCode = NSResponseCode.STALE_COMMAND_VALUE;
+      }
+    }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       return errorCode;
@@ -106,7 +117,8 @@ public class NSUpdateSupport {
               app.getDB(), app.getActiveCodeHandler());
       return NSResponseCode.NO_ERROR;
     } else // Handle special case of a create index
-     if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
+    {
+      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNSConfig.getLogger().info("Creating index for " + field + " " + updateValue);
         }
@@ -119,6 +131,7 @@ public class NSUpdateSupport {
         }
         return NSResponseCode.ERROR;
       }
+    }
   }
 
   private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation, BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
@@ -126,11 +139,13 @@ public class NSUpdateSupport {
       // some operations don't require a read first
       return new NameRecord(db, guid);
     } else //try {
-     if (field == null) {
+    {
+      if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
         return NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.LIST_STRING, field);
       }
+    }
   }
 
   private static void updateNameRecord(NameRecord nameRecord, String guid, String field,

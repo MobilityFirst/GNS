@@ -956,7 +956,7 @@ public class AccountAccess {
    * @return status result
    */
   public static CommandResponse<String> addAlias(AccountInfo accountInfo, String alias, String writer,
-          String signature, String message, ClientRequestHandlerInterface handler) {
+          String signature, String message, Date timestamp, ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
     try {
       NSResponseCode returnCode;
@@ -973,11 +973,9 @@ public class AccountAccess {
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-              writer, signature, message, handler, true).isAnError()) {
+              writer, signature, message, timestamp, handler, true).isAnError()) {
         // back out if we got an error
         handler.getRemoteQuery().deleteRecord(alias);
-        //handler.getIntercessor().sendRemoveRecord(alias);
-        //accountInfo.removeAlias(alias);
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ALIAS);
       } else {
         return new CommandResponse<>(OK_RESPONSE);
@@ -998,8 +996,9 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> removeAlias(AccountInfo accountInfo,
+          String alias, String writer, String signature, String message,
+          Date timestamp, ClientRequestHandlerInterface handler) {
 
     GNSConfig.getLogger().log(Level.INFO, 
             "ALIAS: {0} ALIASES:{1}", new Object[]{alias, accountInfo.getAliases()});
@@ -1016,7 +1015,7 @@ public class AccountAccess {
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
     if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            writer, signature, message, handler, true)).isAnError()) {
+            writer, signature, message, timestamp, handler, true)).isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1034,10 +1033,11 @@ public class AccountAccess {
    * @return status result
    */
   public static CommandResponse<String> setPassword(AccountInfo accountInfo, String password, String writer, String signature,
-          String message, ClientRequestHandlerInterface handler) {
+          String message, Date timestamp, ClientRequestHandlerInterface handler) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, writer, signature, message, handler, false).isAnError()) {
+    if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+            writer, signature, message, timestamp, handler, false).isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1051,14 +1051,16 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> addTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> addTag(GuidInfo guidInfo, 
+          String tag, String writer, String signature, String message,
+          Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, handler).isAnError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1072,21 +1074,23 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> removeTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> removeTag(GuidInfo guidInfo, 
+          String tag, String writer, String signature, String message,
+          Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, handler).isAnError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
   }
 
   private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
-          String writer, String signature, String message,
+          String writer, String signature, String message, Date timestamp, 
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
       NSResponseCode response;
@@ -1101,10 +1105,8 @@ public class AccountAccess {
       } else {
         JSONObject json = new JSONObject();
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-        response = FieldAccess.updateUserJSON(guid, json, writer, signature, message, handler);
-//        response = handler.getIntercessor().sendUpdateUserJSON(guid,
-//                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//                writer, signature, message, sendToReplica);
+        response = FieldAccess.updateUserJSON(guid, json, 
+                writer, signature, message, timestamp, handler);
       }
       return response;
     } catch (JSONException e) {
@@ -1116,19 +1118,17 @@ public class AccountAccess {
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            null, null, null, handler, sendToReplica).isAnError();
+            null, null, null, null, handler, sendToReplica).isAnError();
   }
 
-  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message,
+  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, 
+          String writer, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     try {
       JSONObject json = new JSONObject();
       json.put(GUID_INFO, guidInfo.toJSONObject());
       NSResponseCode response = FieldAccess.updateUserJSON(guidInfo.getGuid(), json,
-              writer, signature, message, handler);
-//      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
-//              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//              writer, signature, message);
+              writer, signature, message, timestamp, handler);
       return response;
     } catch (JSONException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing guid info:{0}", e);
@@ -1139,7 +1139,7 @@ public class AccountAccess {
   private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo,
           ClientRequestHandlerInterface handler) {
 
-    return !updateGuidInfo(guidInfo, null, null, null, handler).isAnError();
+    return !updateGuidInfo(guidInfo, null, null, null, null, handler).isAnError();
   }
 
   /**

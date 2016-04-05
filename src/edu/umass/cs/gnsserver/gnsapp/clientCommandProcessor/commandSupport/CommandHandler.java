@@ -39,6 +39,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.ParseException;
 import java.util.logging.Level;
 
 /**
@@ -168,7 +169,7 @@ public class CommandHandler {
       //e.printStackTrace();
       return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
               + " while executing command.");
-    } catch (NoSuchAlgorithmException | InvalidKeySpecException |
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException |
             SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     }

@@ -23,6 +23,7 @@ import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,13 +55,16 @@ public class FieldMetaData {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a {@link NSResponseCode}
    */
-  public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
-          String message, ClientRequestHandlerInterface handler) {
+  public static NSResponseCode add(MetaDataTypeName type, String guid, 
+          String key, String value, String writer, String signature,
+          String message, Date timestamp, ClientRequestHandlerInterface handler) {
     return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, handler);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, 
+            timestamp, handler);
     
 //    return handler.getIntercessor().sendUpdateRecord(guid, 
 //            makeFieldMetaDataKey(type, key), value, null, -1,
@@ -77,15 +81,17 @@ public class FieldMetaData {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a set of strings
    */
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key, 
-          String reader, String signature,
-          String message, ClientRequestHandlerInterface handler) {
+          String reader, String signature, 
+          String message, Date timestamp,
+          ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null, 
-            reader, signature, message, handler.getApp());
+            reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new HashSet<>();
     }
@@ -107,11 +113,13 @@ public class FieldMetaData {
    * @param guid
    * @param key
    * @param value
+   * @param timestamp
    * @param handler
    */
-  public static void add(MetaDataTypeName type, String guid, String key, String value, ClientRequestHandlerInterface handler) {
+  public static void add(MetaDataTypeName type, String guid, 
+          String key, String value, Date timestamp, ClientRequestHandlerInterface handler) {
     FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, handler);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, timestamp, handler);
 
 //    handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid,
 //            makeFieldMetaDataKey(type, key), value, null,
@@ -127,13 +135,14 @@ public class FieldMetaData {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a {@link NSResponseCode}
    */
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
-          String message, ClientRequestHandlerInterface handler) {
+          String message, Date timestamp, ClientRequestHandlerInterface handler) {
      return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, handler);
+            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
      
 //    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
 //            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
