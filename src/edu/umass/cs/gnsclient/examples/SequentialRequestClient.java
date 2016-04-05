@@ -95,6 +95,7 @@ public class SequentialRequestClient {
 		
 		// write the key to a file 
 		FileOutputStream fos = new FileOutputStream(getGuidFilename());
+		@SuppressWarnings("resource")
 		ObjectOutputStream os = new ObjectOutputStream(fos);
 	    os.writeObject(new ActiveCodeGuidEntry(guidAccount));
 	    

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 import org.json.JSONArray;
 
@@ -13,6 +14,7 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeGuidEntry;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 /**
  * Used to update the latency on Active GNS server
@@ -24,8 +26,9 @@ public class UpdateGNSForPlanetlab {
 	private static GuidEntry guidEntry;
 	
 	private final static String pearAddress = "128.119.245.20";
+	private final static String LATENCY_FOLDER = "lat-result";
 	
-	private final static int num_server = 6;
+	private final static int NUM_EC2_SERVER = 1;
 	
 	private static void Client() throws IOException{
 		client = new GNSClient((InetSocketAddress) null, new InetSocketAddress(pearAddress, GNSClientConfig.LNS_PORT), true);
@@ -69,11 +72,11 @@ public class UpdateGNSForPlanetlab {
 	}
 	
 	private static void updateForHost(String host, int server_num) throws Exception{
-		String field = "host"+server_num;
+		String field = host;
 		
 		client.fieldCreateList(guidEntry.getGuid(), field, new JSONArray("[]"), guidEntry);
 		
-		File file = new File("/Users/zhaoyugao/Documents/planetlab/loc/"+host);
+		File file = new File(LATENCY_FOLDER+"/"+host);
 		FileInputStream fis = null;
 		StringBuilder builder = new StringBuilder();
 		try{
@@ -90,7 +93,7 @@ public class UpdateGNSForPlanetlab {
 		}
 		
 		ArrayList<ArrayList<Double>> lat = new ArrayList<ArrayList<Double>>();
-		for (int i=0; i<num_server; i++){
+		for (int i=0; i<NUM_EC2_SERVER; i++){
 			lat.add(new ArrayList<Double>());
 		}
 		
@@ -99,10 +102,10 @@ public class UpdateGNSForPlanetlab {
 		for(String latency:list){
 			lat.get(count).add(Double.parseDouble(latency));
 			++count;
-			count = count%num_server;
+			count = count%NUM_EC2_SERVER;
 		}
 		
-		for (int i=0; i<num_server; i++){
+		for (int i=0; i<NUM_EC2_SERVER; i++){
 			double total = 0;
 			int cnt = 0; 
 			for(double latency:lat.get(i)){
@@ -143,18 +146,21 @@ public class UpdateGNSForPlanetlab {
 	public static void main(String[] args) throws IOException{
 		Client();
 		
+		ReconfigurationConfig.setConsoleHandler(Level.WARNING);
+		
 		ArrayList<String> hosts = loadDic();
 				
-		for(int i=0; i<70; i++){
+		for(int i=0; i<hosts.size(); i++){
 			try{
-				client.fieldClear(guidEntry.getGuid(), "host"+i, guidEntry);
+				client.fieldClear(guidEntry.getGuid(), hosts.get(i), guidEntry);
 			}catch(Exception e){
 				e.printStackTrace();
 			}
 		}
+		
 		try{
 			client.fieldCreateList(guidEntry.getGuid(), "load", new JSONArray("[0]"), guidEntry);
-			for(int i=0; i<5; i++){
+			for(int i=0; i<6; i++){
 				client.fieldAppend(guidEntry.getGuid(), "load", new JSONArray("[0]"), guidEntry);
 			}
 		}catch(Exception e){

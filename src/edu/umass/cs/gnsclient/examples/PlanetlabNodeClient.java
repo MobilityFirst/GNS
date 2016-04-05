@@ -18,12 +18,14 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeGuidEntry;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 /**
  * @author gaozy
@@ -241,7 +243,7 @@ public class PlanetlabNodeClient {
 		PLANETLAB_NODE_NAME = args[0];
 		
 		FOLDER = args[1];
-		if(! FOLDER.contains("/")){
+		if(! FOLDER.substring(FOLDER.length() - 1).equals("/")){
 			FOLDER = FOLDER+"/";
 		}		
 		POLICY = args[2];
@@ -250,11 +252,15 @@ public class PlanetlabNodeClient {
 			QUERY_EVERY_FEW_REQUEST = Integer.parseInt(args[3]);
 		}
 		
+		ReconfigurationConfig.setConsoleHandler(Level.WARNING);
+		
 		FileInputStream fis = new FileInputStream(FOLDER+SequentialRequestClient.getGuidFilename());
 		@SuppressWarnings("resource")
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		ActiveCodeGuidEntry activeEntry = (ActiveCodeGuidEntry) ois.readObject();
 		guidEntry = new GuidEntry(activeEntry.entityName, activeEntry.guid, activeEntry.publicKey, activeEntry.privateKey);
+		
+		System.out.println(guidEntry.toString());
 		
 		client = new GNSClient((InetSocketAddress) null, new InetSocketAddress(pearAddress, GNSClientConfig.LNS_PORT), true);
 		
