@@ -293,7 +293,7 @@ public class NSGroupAccess {
       return Integer.parseInt((String) resultValue.get(0));
     } else {
       // if we can't get it just return the default. No harm, no foul.
-      return ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL;
+      return ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT;
     }
   }
 

@@ -595,7 +595,6 @@ public class AccountAccess {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isAnError()) {
-        //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -616,18 +615,13 @@ public class AccountAccess {
         JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE), null, null);
         // prefix is the same for all acls so just pick one to use here
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
-        // For active code
-        //json.put(ActiveCode.ON_READ, new JSONArray());
-        //json.put(ActiveCode.ON_WRITE, new JSONArray());
         // set up the default read access
         if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isAnError()) {
-          //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
           return new CommandResponse<>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           handler.getRemoteQuery().deleteRecord(name);
-          //handler.getIntercessor().sendRemoveRecord(name);
           return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
         }
       } else {

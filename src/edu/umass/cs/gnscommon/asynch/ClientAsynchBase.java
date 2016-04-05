@@ -27,35 +27,18 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.SignatureException;
 import java.util.Random;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsDuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidFieldException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.ACCOUNT_INFO;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.GUID_INFO;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
@@ -93,7 +76,7 @@ import java.util.logging.Level;
  */
 public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
-  public static final Set<IntegerPacketType> clientPacketTypes
+  public static final Set<IntegerPacketType> CLIENT_PACKET_TYPES
           = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND,
                   Packet.PacketType.COMMAND_RETURN_VALUE,
                   Packet.PacketType.SELECT_REQUEST,
@@ -104,7 +87,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * if you wait this interval you will get the latest from the database, otherwise you will get the
    * cached value.
    */
-  public static final int DEFAULT_MIN_REFRESH_INTERVAL = 60; //seconds
+  public static final int DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT = 60; //seconds
   /**
    * Used to generate unique ids
    */
@@ -132,23 +115,18 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public ClientAsynchBase(Set<InetSocketAddress> addresses) throws IOException {
     //super(addresses);
     // will use above code once we get rid of  ReconfigurationConfig accessors
-    super(addresses,
-            ReconfigurationConfig.getClientSSLMode(),
+    super(addresses, ReconfigurationConfig.getClientSSLMode(),
             ReconfigurationConfig.getClientPortOffset());
-    if (isDebuggingEnabled()) 
-    {
-      GNSConfig.getLogger().info("Reconfigurators " + addresses);
-      //System.out.println("Reconfigurators " + addresses);
-      //System.out.println("Client port offset " + ReconfigurationConfig.getClientPortOffset());
-      GNSConfig.getLogger().info("Client port offset " + ReconfigurationConfig.getClientPortOffset());
-      //System.out.println("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
-      GNSConfig.getLogger().info("SSL Mode is " + ReconfigurationConfig.getClientSSLMode());
-    }
+
+    GNSConfig.getLogger().log(Level.FINE, "Reconfigurators {0}", addresses);
+    GNSConfig.getLogger().log(Level.FINE, "Client port offset {0}", ReconfigurationConfig.getClientPortOffset());
+    GNSConfig.getLogger().log(Level.FINE, "SSL Mode is {0}", ReconfigurationConfig.getClientSSLMode());
+
     keyPairHostIndex = addresses.iterator().next();
     this.enableJSONPackets();
   }
 
-  private static Stringifiable<String> unstringer = new StringifiableDefault<String>("");
+  private static Stringifiable<String> unstringer = new StringifiableDefault<>("");
 
   @Override
   // This needs to return null for packet types that we don't want to handle.
@@ -157,27 +135,28 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     try {
       return getRequestFromJSON(new JSONObject(stringified));
     } catch (JSONException e) {
-      e.printStackTrace();
+      GNSConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
     }
     return request;
   }
+
   @Override
   // This needs to return null for packet types that we don't want to handle.
   public Request getRequestFromJSON(JSONObject json) throws RequestParseException {
     Request request = null;
     try {
-      if (clientPacketTypes.contains(Packet.getPacketType(json))) {
+      if (CLIENT_PACKET_TYPES.contains(Packet.getPacketType(json))) {
         request = (Request) Packet.createInstance(json, unstringer);
       }
     } catch (JSONException e) {
-      e.printStackTrace();
+      GNSConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
     }
     return request;
   }
 
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
-    return Collections.unmodifiableSet(clientPacketTypes);
+    return Collections.unmodifiableSet(CLIENT_PACKET_TYPES);
   }
 
   /**
@@ -185,7 +164,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @param command
    * @param callback
-   * @return the command id
+   * @return the request id
    * @throws IOException
    * @throws JSONException
    */
@@ -230,9 +209,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     state.put(alias, jsonHRN.toString());
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
-    if (isDebuggingEnabled()) {
-      GNSClientConfig.getLogger().info("##### Sending: " + createPacket.toString());
-    }
+    GNSClientConfig.getLogger().log(Level.FINE, "##### Sending: {0}", createPacket.toString());
     sendRequest(createPacket, callback);
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
     return entry;
@@ -244,7 +221,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @param guid the account GUID to verify
    * @param code the verification code
    * @param callback
-   * @return
+   * @return a request id
    * @throws Exception
    */
   public long accountGuidVerify(GuidEntry guid, String code, RequestCallback callback) throws Exception {
@@ -253,11 +230,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   }
 
   /**
-   * Deletes the account given by name
+   * Deletes the account given by name.
    *
    * @param guid GuidEntry
    * @param callback
-   * @return the command id
+   * @return the request id
    * @throws Exception
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
@@ -272,6 +249,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @param accountGuid
    * @param alias the alias
+   * @param callback
    * @return the newly created GUID entry
    * @throws Exception
    */
@@ -301,9 +279,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     state.put(alias, jsonHRN.toString());
     state.put(guid, jsonGuid.toString());
     CreateServiceName createPacket = new CreateServiceName(null, state);
-    if (isDebuggingEnabled()) {
-      GNSClientConfig.getLogger().info("##### Sending: " + createPacket.toString());
-    }
+    GNSClientConfig.getLogger().log(Level.FINE, "##### Sending: {0}", createPacket.toString());
     sendRequest(createPacket, callback);
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(), keyPair.getPrivate());
     return entry;
@@ -323,13 +299,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
           throws Exception {
 
     Map<String, String> state = new HashMap<>();
-    long publicKeyStartTime = System.currentTimeMillis();
     for (String alias : aliases) {
-      long singleEntrystartTime = System.currentTimeMillis();
       // Probably should reuse code from account and guid create
       GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-              keyPairHostIndex.getHostString()+":"+keyPairHostIndex.getPort());
-      DelayProfiler.updateDelay("updateOnePreference", singleEntrystartTime);
+              keyPairHostIndex.getHostString() + ":" + keyPairHostIndex.getPort());
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, entry.getGuid());
       JSONObject jsonGuid = new JSONObject();
@@ -348,13 +321,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
       state.put(alias, jsonHRN.toString());
       state.put(entry.getGuid(), jsonGuid.toString());
     }
-    DelayProfiler.updateDelay("batchCreatePublicKeys", publicKeyStartTime);
 
-    System.out.println(DelayProfiler.getStats());
     CreateServiceName createPacket = new CreateServiceName(null, state);
-    if (isDebuggingEnabled()) {
-      GNSClientConfig.getLogger().info("##### Sending: " + createPacket.toString());
-    }
+    GNSClientConfig.getLogger().log(Level.FINE, "##### Sending: {0}", createPacket.toString());
     sendRequest(createPacket, callback);
   }
 
@@ -390,7 +359,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   }
 
   /**
-   * Obtains the guid of the alias from the GNS server.
+   * Obtains the guid of the alias from the remote replica.
    *
    * @param alias
    * @param callback
@@ -405,13 +374,15 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   }
 
   /**
-   * If this is a sub guid returns the account guid it was created under.
+   * If this is a sub guid returns the account guid it was created under from a remote replica.
    *
    * @param guid
-   * @return the command id
+   * @param callback
+   * @return the request id
    * @throws UnsupportedEncodingException
    * @throws IOException
    * @throws GnsClientException
+   * @throws org.json.JSONException
    */
   public long lookupPrimaryGuid(String guid, RequestCallback callback)
           throws UnsupportedEncodingException, IOException, GnsClientException, JSONException {
@@ -419,15 +390,17 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   }
 
   /**
-   * Returns a JSON object containing all of the guid meta information.
+   * Returns a JSON object containing all of the guid meta information from a remote replica.
    * This method returns meta data about the guid.
    * If you want any particular field or fields of the guid
    * you'll need to use one of the read methods.
    *
    * @param guid
-   * @return the command id
+   * @param callback
+   * @return the request id
    * @throws IOException
    * @throws GnsClientException
+   * @throws org.json.JSONException
    */
   public long lookupGuidRecord(String guid, RequestCallback callback)
           throws IOException, GnsClientException, JSONException {
@@ -436,16 +409,19 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
   /**
    * Returns a JSON object containing all of the account meta information for an
-   * account guid.
+   * account guid from a remote replica.
+   *
    * This method returns meta data about the account associated with this guid
    * if and only if the guid is an account guid.
    * If you want any particular field or fields of the guid
    * you'll need to use one of the read methods.
    *
    * @param accountGuid
-   * @return the command id
+   * @param callback
+   * @return the request id
    * @throws IOException
    * @throws GnsClientException
+   * @throws org.json.JSONException
    */
   public long lookupAccountRecord(String accountGuid, RequestCallback callback)
           throws IOException, GnsClientException, JSONException {
@@ -453,7 +429,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   }
 
   /**
-   * Read a field from a GNS server.
+   * Read a field from a remote replica.
    *
    * @param guid
    * @param field
@@ -464,46 +440,107 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws UnsupportedEncodingException
    * @throws GnsClientException
    */
-  public long fieldRead(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long fieldRead(String guid, String field, RequestCallback callback) 
+          throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
     return sendCommandAsynch(createCommand(READ, GUID, guid, FIELD, field), callback);
   }
 
-  public long fieldReadArray(String guid, String field, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  /**
+   * Read a field that is an array from a remote replica.
+   * 
+   * @param guid
+   * @param field
+   * @param callback
+   * @return a request id
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException 
+   */
+  public long fieldReadArray(String guid, String field, RequestCallback callback) 
+          throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
     return sendCommandAsynch(createCommand(READ_ARRAY, GUID, guid, FIELD, field), callback);
   }
 
+  /**
+   * Updates a field at a remote replica.
+   *
+   * @param guid
+   * @param field
+   * @param value
+   * @param callback
+   * @return the request id
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException
+   */
   public long fieldUpdate(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, 
+    return sendCommandAsynch(createCommand(REPLACE_USER_JSON,
             GUID, guid,
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 
+  /**
+   * Updates or replaces a field that is an array at a remote replica.
+   * 
+   * @param guid
+   * @param field
+   * @param value
+   * @param callback
+   * @return the request id
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException 
+   */
   public long fieldReplaceOrCreateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
-    return sendCommandAsynch(createCommand(REPLACE_OR_CREATE_LIST, 
-            GUID, guid,
-            FIELD, field,
-            VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
-  }
-  
-  public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
-    // Send a read command that doesn't need authentication.
-    return sendCommandAsynch(createCommand(APPEND_LIST, 
+    return sendCommandAsynch(createCommand(REPLACE_OR_CREATE_LIST,
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 
+  /**
+   * Appends a value to a field that is an array at a remote replica.
+   * 
+   * @param guid
+   * @param field
+   * @param value
+   * @param callback
+   * @return the request id
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException 
+   */
+  public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+    // Send a read command that doesn't need authentication.
+    return sendCommandAsynch(createCommand(APPEND_LIST,
+            GUID, guid,
+            FIELD, field,
+            VALUE, value.toString(),
+            WRITER, MAGIC_STRING), callback);
+  }
+
+  /**
+   * Removes a value from field at a remote replica.
+   * 
+   * @param guid
+   * @param field
+   * @param value
+   * @param callback
+   * @return the request id
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException 
+   */
   public long fieldRemove(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
@@ -513,6 +550,18 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             WRITER, MAGIC_STRING), callback);
   }
 
+  /**
+   * Removes all the values from from field that is an array at a remote replica.
+   * 
+   * @param guid
+   * @param field
+   * @param value
+   * @param callback
+   * @return the request id
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException 
+   */
   public long fieldRemoveMultiple(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
@@ -522,6 +571,17 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             WRITER, MAGIC_STRING), callback);
   }
 
+  /**
+   * Updates all the fields in the given JSON in a field at a remote replica.
+   * @param guid
+   * @param field
+   * @param json
+   * @param callback
+   * @return the request id
+   * @throws IOException
+   * @throws JSONException
+   * @throws GnsClientException 
+   */
   public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid,
@@ -529,192 +589,21 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             WRITER, MAGIC_STRING), callback);
   }
 
-  // Select commands
+  /**
+   * Sends a select packet to a remote replica.
+   * 
+   * @param packet
+   * @param callback
+   * @return the request id
+   * @throws IOException 
+   */
   public long sendSelectPacket(SelectRequestPacket<String> packet, RequestCallback callback) throws IOException {
     int id = generateNextRequestID();
     packet.setRequestId(id);
-		GNSConfig.getLogger().log(Level.INFO, "{0} sending select packet {1}",
-				new Object[] { this, packet.getSummary() });
+    GNSConfig.getLogger().log(Level.INFO, "{0} sending select packet {1}",
+            new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
   }
-
-  // NEED TO CREATE A DUMMY GUID FOR THIS TO WORK
-  /**
-   * Check that the connectivity with the host:port can be established
-   *
-   * @throws IOException throws exception if a communication error occurs
-   */
-//  public void checkConnectivity() throws IOException {
-//    
-//    int originalReadTimeout = getReadTimeout();
-//    setReadTimeout(7000);
-//    JSONObject command;
-//    try {
-//      command = createCommand(CONNECTION_CHECK);
-//      String commandResult = sendCommandAndWait(command);
-//      if (!commandResult.startsWith(OK_RESPONSE)) {
-//        String[] results = commandResult.split(" ");
-//        throw new IOException(results.length == 2 ? results[1] : commandResult);
-//      }
-//    } catch (GnsClientException e) {
-//      throw new IOException("Unable to create connectivity command.");
-//    } finally {
-//      setReadTimeout(originalReadTimeout);
-//    }
-//  }
-//  // ///////////////////////////////
-//  // // PRIVATE METHODS BELOW /////
-//  // /////////////////////////////
-//  /**
-//   * Checks the response from a command request for proper syntax as well as
-//   * converting error responses into the appropriate thrown GNS exceptions.
-//   *
-//   * @param command
-//   * @param response
-//   * @return the result of the command
-//   * @throws GnsClientException
-//   */
-//  // Saving this for later use.
-//  private String checkResponse(JSONObject command, String response) throws GnsClientException {
-//    // System.out.println("response:" + response);
-//    if (response.startsWith(BAD_RESPONSE)) {
-//      String results[] = response.split(" ");
-//      // System.out.println("results length:" + results.length);
-//      if (results.length < 2) {
-//        throw new GnsClientException("Invalid bad response indicator: " + response + " Command: " + command.toString());
-//      } else if (results.length >= 2) {
-//        // System.out.println("results[0]:" + results[0]);
-//        // System.out.println("results[1]:" + results[1]);
-//        String error = results[1];
-//        // deal with the rest
-//        StringBuilder parts = new StringBuilder();
-//        for (int i = 2; i < results.length; i++) {
-//          parts.append(" ");
-//          parts.append(results[i]);
-//        }
-//        String rest = parts.toString();
-//
-//        if (error.startsWith(BAD_SIGNATURE)) {
-//          throw new EncryptionException();
-//        }
-//        if (error.startsWith(BAD_GUID) || error.startsWith(BAD_ACCESSOR_GUID)
-//                || error.startsWith(DUPLICATE_GUID) || error.startsWith(BAD_ACCOUNT)) {
-//          throw new GnsInvalidGuidException(error + rest);
-//        }
-//        if (error.startsWith(DUPLICATE_FIELD)) {
-//          throw new GnsInvalidFieldException(error + rest);
-//        }
-//        if (error.startsWith(BAD_FIELD) || error.startsWith(FIELD_NOT_FOUND)) {
-//          throw new GnsFieldNotFoundException(error + rest);
-//        }
-//        if (error.startsWith(BAD_USER) || error.startsWith(DUPLICATE_USER)) {
-//          throw new GnsInvalidUserException(error + rest);
-//        }
-//        if (error.startsWith(BAD_GROUP) || error.startsWith(DUPLICATE_GROUP)) {
-//          throw new GnsInvalidGroupException(error + rest);
-//        }
-//
-//        if (error.startsWith(ACCESS_DENIED)) {
-//          throw new GnsACLException(error + rest);
-//        }
-//
-//        if (error.startsWith(DUPLICATE_NAME)) {
-//          throw new GnsDuplicateNameException(error + rest);
-//        }
-//
-//        if (error.startsWith(VERIFICATION_ERROR)) {
-//          throw new GnsVerificationException(error + rest);
-//        }
-//        throw new GnsClientException("General command failure: " + error + rest);
-//      }
-//    }
-//    if (response.startsWith(NULL_RESPONSE)) {
-//      return null;
-//    } else {
-//      return response;
-//    }
-//  }
-//
-//  /**
-//   * Creates a command object from the given action string and a variable
-//   * number of key and value pairs.
-//   *
-//   * @param action
-//   * @param keysAndValues
-//   * @return the query string
-//   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
-//   */
-//  public JSONObject createCommand(String action, Object... keysAndValues) throws GnsClientException {
-//   // long startTime = System.currentTimeMillis();
-//    try {
-//      JSONObject result = new JSONObject();
-//      String key;
-//      Object value;
-//      result.put(COMMANDNAME, action);
-//      for (int i = 0; i < keysAndValues.length; i = i + 2) {
-//        key = (String) keysAndValues[i];
-//        value = keysAndValues[i + 1];
-//        result.put(key, value);
-//      }
-//      // negligible
-//      //DelayProfiler.updateDelay("createCommand", startTime);
-//      return result;
-//    } catch (JSONException e) {
-//      throw new GnsClientException("Error encoding message", e);
-//    }
-//  }
-//
-//  /**
-//   * Creates a command object from the given action string and a variable
-//   * number of key and value pairs with a signature parameter. The signature is
-//   * generated from the query signed by the given guid.
-//   *
-//   * @param privateKey
-//   * @param action
-//   * @param keysAndValues
-//   * @return the query string
-//   * @throws GnsClientException
-//   */
-//  public JSONObject createAndSignCommand(PrivateKey privateKey, String action, Object... keysAndValues) throws GnsClientException {
-//    long startTime = System.currentTimeMillis();
-//    try {
-//      JSONObject result = createCommand(action, keysAndValues);
-//      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-//      //String canonicalJSON = JSONUtils.getCanonicalJSONString(result);
-//      String signature = signDigestOfMessage(privateKey, canonicalJSON);
-//      //System.out.println("SIGNING THIS: " + canonicalJSON);
-//      result.put(SIGNATURE, signature);
-//      DelayProfiler.updateDelay("createAndSignCommand", startTime);
-//      return result;
-//    } catch (GnsClientException | NoSuchAlgorithmException | 
-//            InvalidKeyException | SignatureException | JSONException | UnsupportedEncodingException e) {
-//      throw new GnsClientException("Error encoding message", e);
-//    }
-//  }
-//
-//  /**
-//   * Signs a digest of a message using private key of the given guid.
-//   *
-//   * @param guid
-//   * @param message
-//   * @return a signed digest of the message string
-//   * @throws InvalidKeyException
-//   * @throws NoSuchAlgorithmException
-//   * @throws SignatureException
-//   */
-//  private String signDigestOfMessage(PrivateKey privateKey, String message) throws NoSuchAlgorithmException,
-//          InvalidKeyException, SignatureException, UnsupportedEncodingException {
-//    long startTime = System.currentTimeMillis();
-//    Signature instance = Signature.getInstance(SIGNATURE_ALGORITHM);
-//
-//    instance.initSign(privateKey);
-//    // instance.update(messageDigest);
-//    instance.update(message.getBytes("UTF-8"));
-//    byte[] signature = instance.sign();
-//    String result = ByteUtils.toHex(signature);
-//    DelayProfiler.updateDelay("signDigestOfMessage", startTime);
-//    return result;
-//  }
 
   /**
    * Return a new request id. Probably should use longs here.
@@ -723,22 +612,5 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public synchronized int generateNextRequestID() {
     return randomID.nextInt();
-  }
-
-  // Enables all the debug logging statements in the client.
-  private boolean debuggingEnabled = true;
-
-  /**
-   * @return the debuggingEnabled
-   */
-  public boolean isDebuggingEnabled() {
-    return debuggingEnabled;
-  }
-
-  /**
-   * @param debuggingEnabled the debuggingEnabled to set
-   */
-  public void setDebuggingEnabled(boolean debuggingEnabled) {
-    this.debuggingEnabled = debuggingEnabled;
   }
 }
