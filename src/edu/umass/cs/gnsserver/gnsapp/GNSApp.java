@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
+import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
+import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
@@ -106,6 +108,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   private ActiveCodeHandler activeCodeHandler;
 
   /**
+   * context service interface
+   */
+  private ContextServiceGNSInterface contextServiceGNSClient;
+  
+  /**
    * Constructor invoked via reflection by gigapaxos.
    *
    * @param args
@@ -151,6 +158,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
+    
+    // context service init
+    if(AppReconfigurableNodeOptions.enableContextService)
+    {
+    	String[] parsed = AppReconfigurableNodeOptions.contextServiceIpPort.split(":");
+    	String host = parsed[0];
+    	int port = Integer.parseInt(parsed[1]);
+    	GNSConfig.getLogger().fine("ContextServiceGNSClient initialization started");
+    	contextServiceGNSClient = new ContextServiceGNSClient(host, port);
+    	GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
+    }
+    
     constructed = true;
   }
 
@@ -501,5 +520,22 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   @Override
   public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
+  }
+  
+  public ContextServiceGNSInterface getContextServiceGNSClient()
+  {
+	  if( contextServiceGNSClient != null )
+	  {
+		  GNSConfig.getLogger().fine("getContextServiceClient non null ");
+	  }
+	  else
+	  {
+		  if( AppReconfigurableNodeOptions.enableContextService )
+		  {
+			  GNSConfig.getLogger().fine("getContextServiceClient NULL ");
+			  assert(false);
+		  }
+  	  }
+  	  return contextServiceGNSClient;
   }
 }

@@ -169,7 +169,4 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
       throw new EncryptionException("Failed to generate keypair", e);
     }
   }
-  
-  
-
 }

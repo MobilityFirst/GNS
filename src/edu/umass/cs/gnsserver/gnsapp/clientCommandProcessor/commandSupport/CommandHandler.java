@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -137,6 +138,24 @@ public class CommandHandler {
     } catch (JSONException e) {
       GNSConfig.getLogger().severe("Problem  executing command: " + e);
       e.printStackTrace();
+    }
+    
+    // reply to client is true, this means this is the active replica
+    // that recvd the request from the gnsClient. So, let's check for sending trigger
+    // to Context service here.
+    if( AppReconfigurableNodeOptions.enableContextService )
+    {
+	    if( !doNotReplyToClient )
+	    {
+	    
+	    	if(command.getClass().getSuperclass() == AbstractUpdate.class)
+	    	{
+	    		GNSConfig.getLogger().fine("Sending trigger to CS jsonFormattedCommand "
+	    				+jsonFormattedCommand+" command "+command);
+	    		
+	    		app.getContextServiceGNSClient().sendTiggerOnGnsCommand(jsonFormattedCommand, command, false);
+	    	}
+	    }
     }
     //DelayProfiler.updateDelay("handlePacketCommandRequest", receiptTime);
   }

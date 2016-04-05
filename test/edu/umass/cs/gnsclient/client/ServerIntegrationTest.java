@@ -110,6 +110,9 @@ public class ServerIntegrationTest {
 				fail("Server command failure: ; aborting all tests.");
 			}
 		}
+		// aditya: FIXME: just added a bit of delay, as client was trying to connect before the GNS was getting started.
+		// need a better way for GNS to start and then start tests
+		Thread.sleep(50000);
 		if (System.getProperty("host") != null
 				&& !System.getProperty("host").isEmpty()
 				&& System.getProperty("port") != null
@@ -1866,6 +1869,26 @@ public class ServerIntegrationTest {
 			assertThat(result.length(), greaterThanOrEqualTo(1));
 		} catch (Exception e) {
 			fail("Exception executing second selectNear: " + e);
+		}
+	}
+	
+	// test to check context service triggers.
+	// these two attributes right now are supported by CS
+	@Test
+	public void test_811_CreateCSFields() {
+		// run it only when CS is enabled
+		if( AppReconfigurableNodeOptions.enableContextService )
+		{
+			try {
+				JSONObject attrValJSON = new JSONObject();
+				attrValJSON.put("geoLocationCurrentLat", 42.466);
+				attrValJSON.put("geoLocationCurrentLong", -72.58);
+				
+				client.update(masterGuid, attrValJSON);
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail("Exception during create field: " + e);
+			}
 		}
 	}
 
