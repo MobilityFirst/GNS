@@ -31,9 +31,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This class defines a BasicGuidEntry. This objects encapsulates just the information associated with a guid that 
- * can be read and written from a GNS server. See also <code>GuidEntry</code> which also contains the private key 
- * and cannot be read or written to the GNS.
+ * This class defines a BasicGuidEntry. 
+ * This object encapsulates just the information associated with a guid that 
+ * can be read and written from a GNS server. See also <code>GuidEntry</code>
+ * which also contains the private key and cannot be read or written to the GNS.
  *
  * @author Westy
  */
@@ -165,9 +166,7 @@ public class BasicGuidEntry {
               encodedPublicKey);
       return keyFactory.generatePublic(publicKeySpec);
 
-    } catch (NoSuchAlgorithmException e) {
-      throw new EncryptionException("Failed to generate keypair", e);
-    } catch (InvalidKeySpecException e) {
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new EncryptionException("Failed to generate keypair", e);
     }
   }
