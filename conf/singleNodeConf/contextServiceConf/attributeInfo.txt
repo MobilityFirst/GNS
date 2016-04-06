@@ -1,5 +1,3 @@
-# currently this script is specifically designed for a geolocation weather exp.
-# with lat long range set to texas area, where we have weather data.
-# attrName, minValue, maxValue, defaultValue, datatype[Integer, Long, Double, String]
+# attrName, minValue, maxValue, datatype[Integer, Long, Double, String]
 geoLocationCurrentLat, -90, 90, Double
 geoLocationCurrentLong, -180, 180, Double
