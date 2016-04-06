@@ -38,7 +38,10 @@ data close to the place it is used.
 Above from from https://gns.name/wiki/index.php?title=GNS_Overview
 
 ### Starting local context service
+
+
 1. MySQL Installation needed:
+
 a) Install and start mysql on the local node.
 
 b) Set some root or other username password.
@@ -46,25 +49,42 @@ b) Set some root or other username password.
 c) Update that username and password in conf/singleNodeConf/contextServiceConf/dbNodeSetup.txt , 4-5th coloumn
 
 2. Start context service.
+
 From the GNS top level diectory ./scripts/contextServiceScripts/runCSLocal.sh to start context service.
 
 3. Start GNS 
+
+
 a) set enableContextService flag in scripts/3nodeslocal/ns.properties
    add these two lines in ns.properties
    
+
    enableContextService = true
+
+
    contextServiceHostPort = 127.0.0.1:8000
+
+
 b) Buld GNS, ant jar
+
+
 c) Start GNS ./scripts/3nodeslocal/reset_and_restart.sh
 
 
 4. Run ant test to check if context service is working correctly.
+
    test_811_contextServiceTest checks for context service.
 
-
 5. Details about context service config files.
+
    a)  Context service config files are in conf/singleNodeConf/contextServiceConf directory
+
    b) attributeInfo.txt denotes the attributes that are supported for search and udpates.
+
    c) contextServiceNodeSetup.txt specifies the node setup and ip port information.
+
+
    d) dbNodeSetup.txt describes the db access information.
+
+
    e) csConfigFile.txt is used internally by context service.
