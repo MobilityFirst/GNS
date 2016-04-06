@@ -57,20 +57,20 @@ public class Email {
    * @return true if successful
    */
   public static boolean email(String subject, String recipient, String text) {
-    if (simpleMail(subject, recipient, text, true)) {
+    if (emailLocal(subject, recipient, text, true)) {
+      return true;
+    } else if (simpleMail(subject, recipient, text, true)) {
       return true;
     } else if (emailSSL(subject, recipient, text, true)) {
-      return true;
-    } else if (emailLocal(subject, recipient, text, true)) {
       return true;
     } else if (emailTLS(subject, recipient, text, true)) {
       return true;
       // now run it again with error messages turned on
+    } else if (emailLocal(subject, recipient, text, false)) {
+      return true;
     } else if (simpleMail(subject, recipient, text, false)) {
       return true;
     } else if (emailSSL(subject, recipient, text, false)) {
-      return true;
-    } else if (emailLocal(subject, recipient, text, false)) {
       return true;
     } else if (emailTLS(subject, recipient, text, false)) {
       return true;
@@ -84,7 +84,7 @@ public class Email {
    Address[] addresses)
    throws MessagingException
    */
-  /* authentication 
+ /* authentication 
 
    props.setProperty("mail.user", "myuser");
    props.setProperty("mail.password", "mypwd");
@@ -95,7 +95,7 @@ public class Email {
    *
    */
   public static final String ACCOUNT_CONTACT_EMAIL = "admin@gns.name";
-  private static final String password = "deadDOG8";
+  private static final String contact = "deadDOG8";
   private static final String smtpHost = "smtp.gmail.com";
 
   public static boolean simpleMail(String subject, String recipient, String text) {
@@ -122,7 +122,7 @@ public class Email {
       message.setText(text);
       SMTPTransport t = (SMTPTransport) session.getTransport("smtp");
       try {
-        t.connect(smtpHost, ACCOUNT_CONTACT_EMAIL, password);
+        t.connect(smtpHost, ACCOUNT_CONTACT_EMAIL, contact);
         t.sendMessage(message, message.getAllRecipients());
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNSConfig.getLogger().info("Email response: " + t.getLastServerResponse());
@@ -179,11 +179,11 @@ public class Email {
 
       Session session = Session.getInstance(props,
               new javax.mail.Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                  return new PasswordAuthentication(ACCOUNT_CONTACT_EMAIL, password);
-                }
-              });
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+          return new PasswordAuthentication(ACCOUNT_CONTACT_EMAIL, contact);
+        }
+      });
 
       Message message = new MimeMessage(session);
       message.setFrom(new InternetAddress(ACCOUNT_CONTACT_EMAIL));
@@ -231,7 +231,7 @@ public class Email {
   // TLS doesn't work with Dreamhost
   public static boolean emailTLS(String subject, String recipient, String text, boolean suppressWarning) {
     final String username = "admin@gns.name";
-    final String password = "deadDOG8";
+    final String contact = "deadDOG8";
 
     try {
       Properties props = new Properties();
@@ -242,11 +242,11 @@ public class Email {
 
       Session session = Session.getInstance(props,
               new javax.mail.Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                  return new PasswordAuthentication(username, password);
-                }
-              });
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+          return new PasswordAuthentication(username, contact);
+        }
+      });
 
       Message message = new MimeMessage(session);
       message.setFrom(new InternetAddress(ACCOUNT_CONTACT_EMAIL));

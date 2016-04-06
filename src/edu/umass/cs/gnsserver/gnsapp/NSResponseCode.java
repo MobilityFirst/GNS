@@ -54,18 +54,20 @@ public enum NSResponseCode implements Serializable{
   // These next four following are access or signature errors
   /** SIGNATURE_ERROR. */
   SIGNATURE_ERROR(5, GnsProtocol.BAD_SIGNATURE, true),
+  /** SIGNATURE_ERROR. */
+  STALE_COMMAND_VALUE(6, GnsProtocol.STALE_COMMMAND, true),
   /** ACCESS_ERROR. */
-  ACCESS_ERROR(6, GnsProtocol.ACCESS_DENIED, true),
+  ACCESS_ERROR(7, GnsProtocol.ACCESS_DENIED, true),
   /** BAD_GUID_ERROR. */
-  BAD_GUID_ERROR(7, GnsProtocol.BAD_GUID, true),
+  BAD_GUID_ERROR(8, GnsProtocol.BAD_GUID, true),
   /** BAD_ACCESSOR_ERROR. */
-  BAD_ACCESSOR_ERROR(8, GnsProtocol.BAD_ACCESSOR_GUID, true),
+  BAD_ACCESSOR_ERROR(9, GnsProtocol.BAD_ACCESSOR_GUID, true),
   /** VERIFICATION_ERROR. An error during account guid verification. */
-  VERIFICATION_ERROR(9, GnsProtocol.VERIFICATION_ERROR, true),
+  VERIFICATION_ERROR(10, GnsProtocol.VERIFICATION_ERROR, true),
   /** UPDATE_TIMEOUT. */
-  UPDATE_TIMEOUT(10, GnsProtocol.UPDATE_TIMEOUT, true),
+  UPDATE_TIMEOUT(11, GnsProtocol.UPDATE_TIMEOUT, true),
   /** DUPLICATE_ERROR. */
-  DUPLICATE_ERROR(11, GnsProtocol.DUPLICATE_NAME, true)
+  DUPLICATE_ERROR(12, GnsProtocol.DUPLICATE_NAME, true)
   ;
   
   //

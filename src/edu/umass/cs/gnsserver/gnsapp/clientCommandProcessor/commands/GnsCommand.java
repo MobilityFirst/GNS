@@ -24,13 +24,12 @@ import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnsserver.httpserver.Defs.*;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
+import java.text.ParseException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -109,9 +108,11 @@ public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable
    * @throws NoSuchAlgorithmException
    * @throws SignatureException 
    * @throws java.io.UnsupportedEncodingException 
+   * @throws java.text.ParseException 
    */
   public abstract CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException;
+          JSONException, NoSuchAlgorithmException, SignatureException, 
+          UnsupportedEncodingException, ParseException;
 
   /**
    * Get the description of the command
@@ -126,7 +127,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable
    * @param format
    * @return <code>String</code> of the command usage ()
    */
-  public String getUsage(CommandModule.CommandDescriptionFormat format) {
+  public String getUsage(CommandDescriptionFormat format) {
     switch (format) {
       case HTML:
         return "HTML Form: " + getHTMLForm() + NEWLINE

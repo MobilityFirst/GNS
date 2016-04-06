@@ -28,12 +28,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import java.text.ParseException;
+import java.util.Date;
 
 /**
  * The command to retrieve the active code for the specified GUID and action.
@@ -65,15 +68,16 @@ public class Set extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException {
+          SignatureException, ParseException {
     String accountGuid = json.getString(GUID);
     String writer = json.getString(WRITER);
     String action = json.getString(AC_ACTION);
     String code = json.getString(AC_CODE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-
-    NSResponseCode response = ActiveCode.setCode(accountGuid, action, code, writer, signature, message, handler);
+    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    NSResponseCode response = ActiveCode.setCode(accountGuid, action, 
+            code, writer, signature, message, timestamp, handler);
 
     if (response.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());

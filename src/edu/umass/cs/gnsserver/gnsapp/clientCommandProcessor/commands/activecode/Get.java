@@ -23,16 +23,17 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import java.text.ParseException;
+import java.util.Date;
 
 /**
  * The command to retrieve the active code for the specified GUID and action.
@@ -63,15 +64,16 @@ public class Get extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-          SignatureException {
+          SignatureException, ParseException {
     String accountGuid = json.getString(GUID);
     String reader = json.getString(READER);
     String action = json.getString(AC_ACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
+    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
     
-    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action, reader, signature, message, handler));
-    //return new CommandResponse<>(new JSONArray(ActiveCode.getCode(accountGuid, action, reader, signature, message, handler)).toString());
+    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action, 
+            reader, signature, message, timestamp, handler));
   }
 
   @Override

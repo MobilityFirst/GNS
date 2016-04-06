@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
@@ -32,6 +33,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
+import java.text.ParseException;
+import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -61,17 +64,18 @@ public class AddTag extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String tag = json.getString(NAME);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
-    return AccountAccess.addTag(guidInfo, tag, guid, signature, message, handler);
+    return AccountAccess.addTag(guidInfo, tag, guid, signature, message, timestamp, handler);
   }
 
   @Override

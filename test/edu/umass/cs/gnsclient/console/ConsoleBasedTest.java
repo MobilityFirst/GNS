@@ -41,6 +41,12 @@ import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 
 import java.util.Arrays;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.fail;
 
 /**
  * This class defines a ConsoleBasedTest

@@ -143,6 +143,7 @@ public class GnsProtocol {
   public final static String BAD_RESPONSE = "+NO+";
   public final static String BAD_SIGNATURE = "+BAD_SIGNATURE+";
   public final static String ACCESS_DENIED = "+ACCESS_DENIED+";
+  public final static String STALE_COMMMAND = "+STALE_COMMMAND+";
   public final static String OPERATION_NOT_SUPPORTED = "+OPERATIONNOTSUPPORTED+";
   public final static String QUERY_PROCESSING_ERROR = "+QUERYPROCESSINGERROR+";
   public final static String VERIFICATION_ERROR = "+VERIFICATIONERROR+";

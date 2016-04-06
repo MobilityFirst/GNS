@@ -564,7 +564,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
   
   // arun
   public static void main(String[] main) throws IOException {
-	  BasicUniversalTcpClient client = new UniversalTcpClientExtended("127.0.0.1", GNSClientConfig.LNS_PORT);
+	  BasicTcpClientV1 client = new UniversalTcpClientExtended("127.0.0.1", GNSClientConfig.LNS_PORT);
 	  client.checkConnectivity();
   }
 
