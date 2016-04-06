@@ -218,8 +218,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public boolean execute(Request request, boolean doNotReplyToClient) {
     boolean executed = false;
     try {
-      Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
-              .getRequestType() : null; // Packet.getPacketType(json);
+      Packet.PacketType packetType = request.getRequestType() 
+              instanceof Packet.PacketType 
+              ? (Packet.PacketType) request.getRequestType() 
+              : null;
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNSConfig.getLogger().log(Level.INFO, "{0} &&&&&&& handling {1} ",
                 new Object[]{this, request.getSummary()});
@@ -277,7 +279,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public Request getRequest(String string)
           throws RequestParseException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
+      GNSConfig.getLogger().info(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     }
     // Special case handling of NoopPacket packets
     if (Request.NO_OP.toString().equals(string)) {

@@ -192,7 +192,7 @@ public class GNSConfig {
    */
   public static Logger getLogger() {
     if (!loggerInitRun) {
-      System.out.println("Setting Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
+      System.out.println("Setting GNSConfig Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
       Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
       loggerInitRun = true;
     }

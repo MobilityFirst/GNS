@@ -34,18 +34,18 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NewClientTest {
+public class NewGnsClientTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static BasicTcpClient client;
+  private static GNSClient client;
   /**
    * The address of the GNS server we will contact
    */
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
-  public NewClientTest() {
+  public NewGnsClientTest() {
     if (client == null) {
       if (System.getProperty("host") != null
               && !System.getProperty("host").isEmpty()
@@ -57,8 +57,8 @@ public class NewClientTest {
         address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
       try {
-        client = new BasicTcpClient(null,
-                address, System.getProperty("disableSSL").equals("true"));
+        client = new GNSClient(null,
+                address, !System.getProperty("disableSSL").equals("true"));
       } catch (IOException e) {
         fail("Unable to create client: " + e);
       }

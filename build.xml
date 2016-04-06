@@ -248,6 +248,8 @@
       <jvmarg value="-DdisableSSL=${disableSSL}"/>
 
       <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
+      <!-- Setting this didn't work... in fact it made things worse by totally turning of all logs -->
+      <!-- <jvmarg value="-Djava.util.logging.config.file=logging.properties"/> -->
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -272,6 +274,8 @@
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
+       <!-- Setting this didn't work... in fact it made things worse by totally turning of all logs -->
+      <!-- <jvmarg value="-Djava.util.logging.config.file=logging.properties"/> -->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
