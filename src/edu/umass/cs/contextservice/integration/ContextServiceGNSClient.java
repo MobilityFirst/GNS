@@ -101,9 +101,9 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface
 				attrValJSON.put(field, value);
 				
 				GNSConfig.getLogger().fine("Trigger to CS guid "+guid
-	    				+" userJSON " +userJSON);
+	    				+" attrValJSON " +attrValJSON);
 				
-				csClient.sendUpdate(guid, userJSON, -1, blocking);
+				csClient.sendUpdate(guid, attrValJSON, -1, blocking);
 			  }
 		}
 		catch(Exception ex)
