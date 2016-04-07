@@ -1,3 +1,0 @@
-node1-3.sb4.orbit-lab.org
-node1-6.sb4.orbit-lab.org
-node1-8.sb4.orbit-lab.org
