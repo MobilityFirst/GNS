@@ -198,7 +198,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    */
   @Override
   public ClientRequest getResponse() {
-    return null;
+    return this.response;
   }
 
   // only for testing

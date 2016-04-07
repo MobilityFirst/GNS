@@ -272,7 +272,7 @@ public class Select {
     }
   }
 
-  private static void sendReponsePacketToCaller(int id, int lnsQueryId,
+  private static void sendReponsePacketToCaller(long id, long lnsQueryId,
           InetSocketAddress address, Set<String> guids,
           GNSApplicationInterface<String> app, InetSocketAddress myListeningAddress) throws JSONException {
     @SuppressWarnings("unchecked")

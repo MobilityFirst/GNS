@@ -169,7 +169,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws JSONException
    */
   private long sendCommandAsynch(JSONObject command, RequestCallback callback) throws IOException, JSONException {
-    int id = generateNextRequestID();
+    long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, null, -1, command);
     GNSConfig.getLogger().log(Level.INFO, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
@@ -598,7 +598,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws IOException 
    */
   public long sendSelectPacket(SelectRequestPacket<String> packet, RequestCallback callback) throws IOException {
-    int id = generateNextRequestID();
+    long id = generateNextRequestID();
     packet.setRequestId(id);
     GNSConfig.getLogger().log(Level.INFO, "{0} sending select packet {1}",
             new Object[]{this, packet.getSummary()});
@@ -610,7 +610,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @return
    */
-  public synchronized int generateNextRequestID() {
-    return randomID.nextInt();
+  public synchronized long generateNextRequestID() {
+    return randomID.nextLong();
   }
 }
