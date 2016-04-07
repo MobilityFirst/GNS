@@ -40,4 +40,9 @@ public class ContextSocketConfig
 	
 	// per 1 sec
 	public static final int	GROUP_UPDATE_DELAY			= 1000;
+	
+	//FIXME: need some good to determine this info. or some global address like GNS
+	public static final String contextNodeIP			= "127.0.0.1";
+	public static final int contextNodePort				= 5000;
+	
 }

@@ -21,11 +21,15 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -126,6 +130,51 @@ public class CommandHandler {
       ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
               "Problem  executing command: {0}", e);
       e.printStackTrace();
+    }
+    
+    // reply to client is true, this means this is the active replica
+    // that recvd the request from the gnsClient. So, let's check for sending trigger
+    // to Context service here.
+    if( AppReconfigurableNodeOptions.enableContextService )
+    {
+	    if( !doNotReplyToClient )
+	    {
+	    
+	    	if(command.getClass().getSuperclass() == AbstractUpdate.class)
+	    	{
+	    		GNSConfig.getLogger().fine("Sending trigger to CS jsonFormattedCommand "
+	    				+jsonFormattedCommand+" command "+command);
+	    		
+	    		app.getContextServiceGNSClient().sendTiggerOnGnsCommand(jsonFormattedCommand, command, false);
+	    	}
+	    }
+    }
+    //DelayProfiler.updateDelay("handlePacketCommandRequest", receiptTime);
+  }
+
+  private static class WorkerTask implements Runnable {
+
+    private final JSONObject jsonFormattedCommand;
+    private final GnsCommand command;
+    private final ClientRequestHandlerInterface handler;
+    private final CommandPacket packet;
+    private final GNSApp app;
+    private final long receiptTime;
+    private final boolean doNotReplyToClient;
+
+    public WorkerTask(JSONObject jsonFormattedCommand, GnsCommand command, ClientRequestHandlerInterface handler, CommandPacket packet, boolean doNotReplyToClient, GNSApp app, long receiptTime) {
+      this.jsonFormattedCommand = jsonFormattedCommand;
+      this.command = command;
+      this.handler = handler;
+      this.packet = packet;
+      this.app = app;
+      this.receiptTime = receiptTime;
+      this.doNotReplyToClient = doNotReplyToClient;
+    }
+
+    @Override
+    public void run() {
+      runCommand(jsonFormattedCommand, command, handler, packet, doNotReplyToClient, app, receiptTime);
     }
   }
 

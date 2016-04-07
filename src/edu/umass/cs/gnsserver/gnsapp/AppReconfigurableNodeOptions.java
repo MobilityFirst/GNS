@@ -120,6 +120,12 @@ public class AppReconfigurableNodeOptions {
    * How long (in seconds) to blacklist active code.
    */
   public static long activeCodeBlacklistSeconds = 10;
+  
+  // context service options
+  public static boolean enableContextService = false;
+  
+  // ip port of one node read from config files.
+  public static String contextServiceIpPort = "";
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -204,6 +210,12 @@ public class AppReconfigurableNodeOptions {
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
   private static final String ENABLE_ACTIVE_CODE = "enableActiveCode";
+  
+  public static final String ENABLE_CONTEXT_SERVICE  = "enableContextService";
+  
+  public static final String CONTEXT_SERVICE_IP_PORT = "contextServiceHostPort";
+  
+  
 
   /**
    * Returns all the options.
@@ -234,6 +246,11 @@ public class AppReconfigurableNodeOptions {
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
 
+    // for CS
+    Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
+    Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
+    									+ "information of GNS");
+    
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(help);
@@ -257,6 +274,10 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
     commandLineOptions.addOption(disableEmailVerification);
+    
+    //context service options
+    commandLineOptions.addOption(enableContextService);
+    commandLineOptions.addOption(contextServiceHostPort);
 
     return commandLineOptions;
 
@@ -280,14 +301,12 @@ public class AppReconfigurableNodeOptions {
       return;
     }
 
-    // make sure this has been initialized
-    GNSConfig.getLogger();
-    if (!allValues.containsKey(DISABLE_SSL)) {
-      disableSSL = ReconfigurationConfig.getClientSSLMode() == SSL_MODES.CLEAR;
-    } else {
-      disableSSL = true;
-    }
-
+    
+		if (!allValues.containsKey(DISABLE_SSL))
+			disableSSL = ReconfigurationConfig.getClientSSLMode()==SSL_MODES.CLEAR;
+		else
+			disableSSL = true;    
+    
     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
       System.out.println("******** Email Verification is OFF *********");
       GNSConfig.enableEmailAccountVerification = false;
@@ -346,7 +365,17 @@ public class AppReconfigurableNodeOptions {
     }
 
     if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {
-      enableActiveCode = true;
+        enableActiveCode = true;
+      }
+    
+    
+    if(	isOptionTrue(ENABLE_CONTEXT_SERVICE, allValues)	)
+    {
+    	enableContextService = true;
+    }
+    
+    if (allValues.containsKey(CONTEXT_SERVICE_IP_PORT)) {
+    	contextServiceIpPort = allValues.get(CONTEXT_SERVICE_IP_PORT);
     }
   }
 

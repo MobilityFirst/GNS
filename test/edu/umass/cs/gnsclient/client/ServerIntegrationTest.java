@@ -17,6 +17,7 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -27,10 +28,13 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -73,6 +77,16 @@ import org.json.JSONException;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTest {
 
+	private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE
+																	// THIS WITH
+																	// YOUR
+																	// ACCOUNT
+																	// ALIAS
+	private static final String PASSWORD = "password";
+	private static UniversalTcpClientExtended client = null;
+
+	/* arun: Coordinated operations generally need some settling time before
+=======
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE
   // THIS WITH
   // YOUR
@@ -108,6 +122,10 @@ public class ServerIntegrationTest {
         fail("Server command failure: ; aborting all tests.");
       }
     }
+    
+ // aditya: FIXME: just added a bit of delay, as client was trying to connect before the GNS was getting started.
+ 		// need a better way for GNS to start and then start tests
+ 		Thread.sleep(50000);
     if (System.getProperty("host") != null
             && !System.getProperty("host").isEmpty()
             && System.getProperty("port") != null
@@ -208,6 +226,7 @@ public class ServerIntegrationTest {
   private static final int COORDINATION_WAIT = 100;
 
   /* arun: Coordinated operations generally need some settling time before
+>>>>>>> a2b94a7fd7b3ec3fc2860320d84297a00ebbe8a4
 	 * they can be tested at "any" replica. That is, read-your-writes
 	 * consistency is not ensured if a read following a write happens to go to a
 	 * different replica. Thus, we either need to wait for a long enough
@@ -220,7 +239,8 @@ public class ServerIntegrationTest {
 	 * active replicas, i.e., it will forget crashed ones for some time; clear
 	 * its cache, re-query, and pick randomly upon an active replica error; and
 	 * pick the replica closest by distance and load otherwise. */
-  private static void waitSettle() {
+
+	private static void waitSettle() {
     try {
       Thread.sleep(COORDINATION_WAIT);
     } catch (InterruptedException e) {
@@ -1868,6 +1888,95 @@ public class ServerIntegrationTest {
       fail("Exception executing second selectNear: " + e);
     }
   }
+  
+	// test to check context service triggers.
+	// these two attributes right now are supported by CS
+	@Test
+	public void test_811_contextServiceTest() {
+		// run it only when CS is enabled
+		//FIXME: right now options are not shared, so just reading the ns.properties file
+		// to check if context service is enabled.
+		HashMap<String, String> propMap = readingOptionsFromNSProperties();
+		boolean enableContextService = false;
+		String csIPPort = "";
+		if( propMap.containsKey(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE) )
+		{
+			enableContextService = 
+			Boolean.parseBoolean(propMap.get(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE));
+			
+			csIPPort = propMap.get(AppReconfigurableNodeOptions.CONTEXT_SERVICE_IP_PORT);
+		}
+				
+		if( enableContextService )
+		{
+			try {
+				JSONObject attrValJSON = new JSONObject();
+				attrValJSON.put("geoLocationCurrentLat", 42.466);
+				attrValJSON.put("geoLocationCurrentLong", -72.58);
+				
+				client.update(masterGuid, attrValJSON);
+				// just wait for 2 sec before sending search
+				Thread.sleep(2000);
+				
+				String[] parsed = csIPPort.split(":");
+				String csIP = parsed[0];
+				int csPort = Integer.parseInt(parsed[1]);
+				
+				ContextServiceClient<Integer> csClient 
+					= new ContextServiceClient<Integer>(csIP, csPort);
+				
+				// context service query format
+				String query = 
+						"SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE geoLocationCurrentLat >= 40 "
+						+ "AND geoLocationCurrentLat <= 50 AND "
+						+ "geoLocationCurrentLong >= -80 AND "
+						+ "geoLocationCurrentLong <= -70";
+				JSONArray resultArray = new JSONArray();
+				// third argument is arbitrary expiry time, not used now
+				int resultSize = csClient.sendSearchQuery(query, resultArray, 300000);
+				assertThat(resultSize, greaterThanOrEqualTo(1));
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail("Exception during contextServiceTest: " + e);
+			}
+		}
+	}
+	
+	private HashMap<String, String> readingOptionsFromNSProperties()
+	{
+		HashMap<String, String> propMap = new HashMap<String, String>();
+		
+		BufferedReader br = null;
+		try 
+		{
+			String sCurrentLine;
+			
+			br = new BufferedReader(new FileReader("scripts/3nodeslocal/ns.properties"));
+			
+			
+			while ((sCurrentLine = br.readLine()) != null) 
+			{
+				String[] parsed = sCurrentLine.split("=");
+				
+				if(parsed.length ==2 )
+				{
+					propMap.put(parsed[0].trim(), parsed[1].trim());
+				}
+			}
+		} catch (IOException e) 
+		{
+			e.printStackTrace();
+		} finally 
+		{
+			try {
+				if (br != null)br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		return propMap;
+	}
 
   // HELPER STUFF
   private static final String POLYGON = "Polygon";
