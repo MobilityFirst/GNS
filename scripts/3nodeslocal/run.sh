@@ -4,11 +4,11 @@ SCRIPTS="`dirname \"$0\"`"
 IDE_PATH=.:build/classes:build/test/classes:lib/* 
 
 # deprecated bad way to start
-#java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar -Dlog4j.configuration=log4j.properties -DgigapaxosConfig=conf/gigapaxos.gnsapp.properties -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNode  -test -configFile $SCRIPTS/ns.properties &
+#java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar -Dlog4j.configuration=log4j.properties -DgigapaxosConfig=conf/gigapaxos.server.properties -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNode  -test -configFile $SCRIPTS/ns.properties &
 
 # new good way to start
 java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
--DgigapaxosConfig=conf/gigapaxos.gnsApp.properties \
+-DgigapaxosConfig=conf/gigapaxos.server.properties \
 -Djava.util.logging.config.file=logging.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
@@ -29,7 +29,7 @@ START_ALL &
 # two together except perhaps for very specific test settings. LNSes
 # are more like clients and hardly like servers.
 java -ea -cp $IDE_PATH:jars/GNS.jar \
--DgigapaxosConfig=conf/gigapaxos.gnsApp.properties \
+-DgigapaxosConfig=conf/gigapaxos.server.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
