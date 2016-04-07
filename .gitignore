@@ -1,5 +1,4 @@
 .DS_Store
-build.number
 /nbproject/private/
 /scripts/3nodeslocal/log/
 /scripts/3nodeslocal/paxoslog/
@@ -47,7 +46,6 @@ build.number
 /scripts/singlenodetests/derby.log
 /scripts/singlenodetests/log/
 /derbyDB/
-/jars/
 /paxos_logs/
 !/.travis.yml
 /target/
