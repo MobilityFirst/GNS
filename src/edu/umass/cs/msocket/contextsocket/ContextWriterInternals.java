@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.msocket.MSocket;
 import edu.umass.cs.msocket.gns.GNSCalls;
 
@@ -66,23 +67,22 @@ public class ContextWriterInternals
 	private int GROUP_UPDATE_DELAY 										= 5000;
 	
 	private ConcurrentMap<String, ContextSocket> memberConnectionMap 	= null;
-	//private Thread listeningThread = null;
-	//private JSONArray groupMembers = null;
 	
-	//private ContextServiceCallsSingleton<Integer> contextServCallsSingleton;
-	
-	// waits on this lock to recv reply of the query.
-	public final Object contextServiceQueryWaitLock						= new Object();
 	
 	public boolean csQueryLockFlag										= false;
 	
 	private final ExecutorService     connectionSetupPool;
+	
+	private final ContextServiceClient<Integer> csClient;
 	// for exp measurements
 	//private long startTime 											= 0;
 	private static Logger log = Logger.getLogger(ContextWriterInternals.class.getName());
 	
 	public ContextWriterInternals(String writerName, String groupQuery) throws Exception
 	{
+		csClient 
+			= new ContextServiceClient<Integer>(ContextSocketConfig.contextNodeIP, ContextSocketConfig.contextNodePort);
+		
 		// register writerName in GNS or get GUID locally.
 		this.writerName = writerName;
 		this.writerGUID = writerName;
@@ -104,7 +104,8 @@ public class ContextWriterInternals
 		
 		//createGroup();
 		//startGroupMaintainThread();
-		ContextServiceCallsSingleton.registerForTrigger(this.groupQuery, this);
+		//FIXME: triggers with csCLient
+		//ContextServiceCallsSingleton.registerForTrigger(this.groupQuery, this);
 		
 		//long noStart = System.currentTimeMillis();
 		//GNSCalls.updateNotificationSetOfAGroup
@@ -279,21 +280,10 @@ public class ContextWriterInternals
 			grpMembers = new JSONArray();
 			this.csQueryLockFlag = false;
 			long qcsStart = System.currentTimeMillis();
-			ContextServiceCallsSingleton.sendQueryToContextService(groupQuery, grpMembers, this);
+			// 300 sec. 
+			long expiryTime = 300000;
 			
-			synchronized(this.contextServiceQueryWaitLock)
-			{
-				while( !this.csQueryLockFlag )
-				{
-					try
-					{
-						this.contextServiceQueryWaitLock.wait();
-					} catch (InterruptedException e)
-					{
-						e.printStackTrace();
-					}
-				}
-			}
+			csClient.sendSearchQuery(groupQuery, grpMembers, expiryTime);
 			
 			/*try
 			{
