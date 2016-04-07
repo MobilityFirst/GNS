@@ -22,8 +22,10 @@ package edu.umass.cs.gnsserver.gnsapp;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -35,11 +37,14 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
@@ -47,6 +52,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandRequestInfo;
+import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket;
@@ -67,7 +73,10 @@ import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.GCConcurrentHashMap;
+import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -103,6 +112,13 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public final ConcurrentMap<Long, CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
+	private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
+	private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<Long, Request>(
+			new GCConcurrentHashMapCallback() {
+				@Override
+				public void callbackGC(Object key, Object value) {
+				}
+			}, DEFAULT_REQUEST_TIMEOUT);
   /**
    * Active code handler
    */
@@ -249,6 +265,13 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         GNSConfig.getLogger().log(Level.INFO, "{0} &&&&&&& handling {1} ",
                 new Object[]{this, request.getSummary()});
       }
+      
+      // arun: enqueue request, dequeue before returning
+      if(request instanceof RequestIdentifier)
+        this.outstanding.putIfAbsent(((RequestIdentifier)request).getRequestID(),
+            request);
+      else assert(false);
+      
       switch (packetType) {
         case SELECT_REQUEST:
           Select.handleSelectRequest(
@@ -294,6 +317,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               "Error handling request: {0}", request.toString());
       e.printStackTrace();
     }
+    
+		if (request instanceof RequestIdentifier)
+			// this.outstanding.remove(((RequestIdentifier) request))
+			;
+    
     return executed;
   }
 
@@ -468,6 +496,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     return nodeConfig;
   }
 
+  private static final boolean DELEGATE_CLIENT_MESSAGING = false;
+
   /**
    * arun: FIXME: This mode of calling getClientMessenger is outdated and
    * poor. The better way is to either delegate client messaging to gigapaxos
@@ -485,6 +515,27 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
           JSONObject responseJSON, InetSocketAddress myListeningAddress) 
           throws IOException {
 
+		if (DELEGATE_CLIENT_MESSAGING) {
+			assert (response instanceof ClientRequest);
+			Request originalRequest = this.outstanding
+					.remove(((ClientRequest) response).getRequestID());
+			assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response)
+					.getSummary();
+			if(originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) 
+				((BasicPacketWithClientAddress) originalRequest)
+						.setResponse((ClientRequest) response);
+				GNSConfig
+						.getLogger()
+						.log(Level.INFO,
+								"{0} sending response {1} back to requesting client {2}",
+								new Object[] {
+										this,
+										response.getSummary(),
+										((BasicPacketWithClientAddress) originalRequest)
+						.getClientAddress() });
+			return;
+		} // else
+	     
     /* arun: FIXED: You have just ignored the doNotReplyToClient flag
 		 * here, which is against the spec of the implementation of the
 		 * Replicable.execute(.) method. Alternatively, you could just delegate 

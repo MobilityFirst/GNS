@@ -274,7 +274,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 
   @Override
   public ClientRequest getResponse() {
-    return null;
+    return this.response;
   }
 
   @Override

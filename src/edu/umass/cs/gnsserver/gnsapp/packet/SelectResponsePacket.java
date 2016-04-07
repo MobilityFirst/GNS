@@ -46,8 +46,8 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
 
-  private int requestId;
-  private int lnsQueryId;
+  private long requestId;
+  private long lnsQueryId;
   private int nsQueryId;
   private JSONArray records;
   private JSONArray guids;
@@ -60,7 +60,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * @param id
    * @param jsonObject
    */
-  private SelectResponsePacket(int id, InetSocketAddress lnsAddress, int lnsQueryId, int nsQueryId,
+  private SelectResponsePacket(long id, InetSocketAddress lnsAddress, long lnsQueryId, int nsQueryId,
           NodeIDType nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
           String errorMessage) {
     super(nameServerID, lnsAddress);
@@ -86,7 +86,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId,
+  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress, long lnsQueryId,
           int nsQueryId, Object nameServerID, JSONArray records) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, records, null, ResponseCode.NOERROR, null);
   }
@@ -103,7 +103,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId,
+  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(long id, InetSocketAddress lnsAddress, long lnsQueryId,
           int nsQueryId, Object nameServerID, JSONArray guids) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, null, guids, ResponseCode.NOERROR, null);
   }
@@ -120,8 +120,8 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeFailPacket(int id, InetSocketAddress lnsAddress,
-          int lnsQueryId, int nsQueryId, Object nameServer, String errorMessage) {
+  public static SelectResponsePacket makeFailPacket(long id, InetSocketAddress lnsAddress,
+          long lnsQueryId, int nsQueryId, Object nameServer, String errorMessage) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServer, null, null, ResponseCode.ERROR, errorMessage);
   }
 
@@ -140,9 +140,9 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
-    this.requestId = json.getInt(ID);
+    this.requestId = json.getLong(ID);
     //this.lnsID = json.getInt(LNSID);
-    this.lnsQueryId = json.getInt(LNSQUERYID);
+    this.lnsQueryId = json.getLong(LNSQUERYID);
     this.nsQueryId = json.getInt(NSQUERYID);
     //this.nameServer = new NodeIDType(json.getString(NAMESERVER));
     this.responseCode = ResponseCode.valueOf(json.getString(RESPONSECODE));
@@ -187,7 +187,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * 
    * @return the requestId
    */
-  public int getId() {
+  public long getId() {
     return requestId;
   }
 
@@ -214,7 +214,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * 
    * @return the LNS query requestId
    */
-  public int getLnsQueryId() {
+  public long getLnsQueryId() {
     return lnsQueryId;
   }
 
@@ -253,7 +253,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
 
    @Override
   public ClientRequest getResponse() {
-   return null;
+   return this.response;
   }
 
   @Override
