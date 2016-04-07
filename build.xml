@@ -238,6 +238,7 @@
     <property name="password" value=""/>
     <property name="count" value=""/>
     <property name="disableSSL" value=""/>
+    <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
     <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
@@ -247,8 +248,7 @@
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
       <jvmarg value="-DdisableSSL=${disableSSL}"/>
-
-      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
       <!-- Setting this didn't work... in fact it made things worse by totally turning of all logs -->
       <!-- <jvmarg value="-Djava.util.logging.config.file=logging.properties"/> -->
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
