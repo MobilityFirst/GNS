@@ -274,7 +274,7 @@
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
-      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.gnsApp.properties"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.properties"/>
        <!-- Setting this didn't work... in fact it made things worse by totally turning of all logs -->
       <!-- <jvmarg value="-Djava.util.logging.config.file=logging.properties"/> -->
       <classpath>
