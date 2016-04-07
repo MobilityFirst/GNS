@@ -6,4 +6,3 @@ n1-5 node1-5.sb4.orbit-lab.org 10.14.1.5
 n1-6 node1-6.sb4.orbit-lab.org 10.14.1.6
 n1-7 node1-7.sb4.orbit-lab.org 10.14.1.7
 n1-8 node1-8.sb4.orbit-lab.org 10.14.1.8
-n1-9 node1-9.sb4.orbit-lab.org 10.14.1.9
