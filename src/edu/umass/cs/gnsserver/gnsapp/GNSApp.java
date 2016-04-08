@@ -266,14 +266,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
                 new Object[]{this, request.getSummary()});
       }
       
+      Request prev = null;
       // arun: enqueue request, dequeue before returning
       if(request instanceof RequestIdentifier)
-        this.outstanding.putIfAbsent(((RequestIdentifier)request).getRequestID(),
+        prev = this.outstanding.putIfAbsent(((RequestIdentifier)request).getRequestID(),
             request);
       else assert(false);
       
       switch (packetType) {
         case SELECT_REQUEST:
+        	/* FIXED: arun: this needs to be a blocking call, otherwise you are violating
+        	 * execute(.)'s semantics.
+        	 */
           Select.handleSelectRequest(
                   (SelectRequestPacket<String>) request, this);
           break;
@@ -302,6 +306,15 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
           return false;
       }
       executed = true;
+
+      // arun: always clean up all created state upon exiting
+			if (request instanceof RequestIdentifier && prev == null) {
+				GNSConfig.getLogger().log(Level.INFO,
+						"{0} dequeueing request {1}",
+						new Object[] { this, request.getSummary() });
+				this.outstanding.remove(((RequestIdentifier) request));
+			}
+
     } catch (JSONException | IOException | GnsClientException e) {
       e.printStackTrace();
     } catch (FailedDBOperationException e) {
@@ -318,9 +331,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       e.printStackTrace();
     }
     
-		if (request instanceof RequestIdentifier)
-			// this.outstanding.remove(((RequestIdentifier) request))
-			;
     
     return executed;
   }
@@ -496,7 +506,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     return nodeConfig;
   }
 
-  private static final boolean DELEGATE_CLIENT_MESSAGING = false;
+  protected static final boolean DELEGATE_CLIENT_MESSAGING = true;
 
   /**
    * arun: FIXME: This mode of calling getClientMessenger is outdated and
@@ -527,12 +537,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 				GNSConfig
 						.getLogger()
 						.log(Level.INFO,
-								"{0} sending response {1} back to requesting client {2}",
+								"{0} set response {1} for requesting client {2} for request {3}",
 								new Object[] {
 										this,
 										response.getSummary(),
 										((BasicPacketWithClientAddress) originalRequest)
-						.getClientAddress() });
+						.getClientAddress() , originalRequest.getSummary()});
 			return;
 		} // else
 	     

@@ -387,7 +387,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
 			public String toString() {
 				return SelectRequestPacket.this.getType() + ":"
 						+ SelectRequestPacket.this.requestId + ":"
-						+ SelectRequestPacket.this.getQuery();
+						+ SelectRequestPacket.this.getQuery() + "[" + SelectRequestPacket.this.getClientAddress()+"]";
 			}
 		};
 	}
