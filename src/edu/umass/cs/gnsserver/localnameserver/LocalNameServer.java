@@ -179,7 +179,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 //    if (!LocalNameServerOptions.disableSSL) {
 //      messenger.setClientMessenger(initClientMessenger());
 //    }
-    LOG.info("LNS running at " + originalNodeAddress.getHostString() + " started Ping manager.");
+    //LOG.info("LNS running at " + originalNodeAddress.getHostString() + " started Ping manager.");
   }
 
   /**

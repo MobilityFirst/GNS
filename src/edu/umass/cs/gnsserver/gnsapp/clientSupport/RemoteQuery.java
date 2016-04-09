@@ -63,7 +63,7 @@ import org.json.JSONObject;
 public class RemoteQuery extends ClientAsynchBase {
 
   // For synchronus replica messages
-  private static final long DEFAULT_REPLICA_READ_TIMEOUT = 5000;
+  public static final long DEFAULT_REPLICA_READ_TIMEOUT = 5000;
   private static final long DEFAULT_REPLICA_UPDATE_TIMEOUT = 8000;
   private final ConcurrentMap<Long, Request> replicaResultMap
           = new ConcurrentHashMap<>(10, 0.75f, 3);

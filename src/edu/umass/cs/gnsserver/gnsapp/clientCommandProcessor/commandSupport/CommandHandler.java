@@ -32,6 +32,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -233,8 +234,8 @@ public class CommandHandler {
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleCommandPacketForApp(CommandPacket packet, boolean doNotReplyToClient, GNSApp app) throws JSONException, IOException {
-    //CommandPacket packet = new CommandPacket(json);
+  public static void handleCommandPacketForApp(CommandPacket packet, boolean doNotReplyToClient, GNSApp app) 
+          throws JSONException, IOException {
     // Squirrel away the host and port so we know where to send the command return value
     // A little unnecessary hair for debugging... also peek inside the command.
     JSONObject command;
@@ -244,6 +245,7 @@ public class CommandHandler {
       commandString = command.optString(COMMANDNAME, null);
       guid = command.optString(GUID, command.optString(NAME, null));
     }
+    //GNSConfig.getLogger().info("FROM: " + packet.getSenderAddress());
     app.outStandingQueries.put(packet.getClientRequestId(),
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
                     commandString, guid, packet.getMyListeningAddress()));

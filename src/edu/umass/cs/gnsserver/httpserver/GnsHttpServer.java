@@ -55,6 +55,7 @@ import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.util.Date;
 import java.util.Map;
 
+import java.util.logging.Level;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONObject;
 
@@ -66,14 +67,12 @@ import org.json.JSONObject;
 public class GnsHttpServer {
 
   private static final String GNSPATH = GNSConfig.GNS_URL_PATH;
-  private static final int startingPort = 8080;
+  private static final int STARTING_PORT = 8080;
   private int port;
   // handles command processing
   private final CommandModule commandModule;
-  private ClientRequestHandlerInterface requestHandler;
-  private Date serverStartDate = new Date();
-
-  private static boolean debuggingEnabled = false;
+  private final ClientRequestHandlerInterface requestHandler;
+  private final Date serverStartDate = new Date();
 
   public GnsHttpServer(ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
@@ -90,8 +89,8 @@ public class GnsHttpServer {
     do {
       // Find the first port after starting port that actually works.
       // Usually if 8080 is busy we can get 8081.
-      if (tryPort(startingPort + cnt)) {
-        port = startingPort + cnt;
+      if (tryPort(STARTING_PORT + cnt)) {
+        port = STARTING_PORT + cnt;
         break;
       }
     } while (cnt++ < 100);
@@ -112,10 +111,13 @@ public class GnsHttpServer {
       server.createContext("/" + GNSPATH, new DefaultHandler());
       server.setExecutor(Executors.newCachedThreadPool());
       server.start();
-      GNSConfig.getLogger().info("HTTP server is listening on port " + port);
+      GNSConfig.getLogger().log(Level.INFO, 
+              "HTTP server is listening on port {0}", port);
       return true;
     } catch (IOException e) {
-      GNSConfig.getLogger().fine("HTTP server failed to start on port " + port + " due to " + e);
+      GNSConfig.getLogger().log(Level.FINE,
+              "HTTP server failed to start on port {0} due to {1}", 
+              new Object[]{port, e});
       return false;
     }
   }
@@ -136,9 +138,8 @@ public class GnsHttpServer {
           OutputStream responseBody = exchange.getResponseBody();
 
           URI uri = exchange.getRequestURI();
-          if (debuggingEnabled) {
-            GNSConfig.getLogger().info("HTTP SERVER REQUEST FROM " + exchange.getRemoteAddress().getHostName() + ": " + uri.toString());
-          }
+          GNSConfig.getLogger().log(Level.FINE, 
+                  "HTTP SERVER REQUEST FROM {0}: {1}", new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
 
@@ -146,21 +147,18 @@ public class GnsHttpServer {
 
           String response;
           if (!action.isEmpty()) {
-            if (debuggingEnabled) {
-              GNSConfig.getLogger().fine("Action: " + action + " Query:" + query);
-            }
+            GNSConfig.getLogger().log(Level.FINE, 
+                    "Action: {0} Query:{1}", new Object[]{action, query});
             response = processQuery(host, action, query);
           } else {
             response = BAD_RESPONSE + " " + NO_ACTION_FOUND;
           }
-          if (debuggingEnabled) {
-            GNSConfig.getLogger().finer("Response: " + response);
-          }
+          GNSConfig.getLogger().log(Level.FINER, "Response: {0}", response);
           responseBody.write(response.getBytes());
           responseBody.close();
         }
       } catch (Exception e) {
-        GNSConfig.getLogger().severe("Error: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Error: {0}", e);
         e.printStackTrace();
         try {
           String response = BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e;
@@ -322,7 +320,7 @@ public class GnsHttpServer {
         //responseBody.write(backingStoreClass.getBytes());
         while (iter.hasNext()) {
           String key = iter.next();
-          List values = requestHeaders.get(key);
+          List<String> values = requestHeaders.get(key);
           String s = key + " = " + values.toString() + "\n";
           responseBody.write(s.getBytes());
           responseBody.write("<br>".getBytes());

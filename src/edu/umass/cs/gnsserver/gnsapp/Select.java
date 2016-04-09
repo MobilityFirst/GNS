@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSGroupAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
@@ -113,6 +114,10 @@ public class Select {
       handleSelectRequestFromClient(packet, replica);
     }
   }
+  
+  /* FIXME: arun: need to determine this timeout systematically, not an ad hoc constant.
+   */
+  private static final long SELECT_REQUEST_TIMEOUT = RemoteQuery.DEFAULT_REPLICA_READ_TIMEOUT;
 
   /**
    * Handle a select request from a client.
@@ -180,12 +185,55 @@ public class Select {
     }
     try {
       for (String serverId : serverIds) {
-        app.sendToID(serverId, outgoingJSON); // send to myself too
+    	  if(!serverId.equals(app.getNodeID())) 
+    		// all but self
+    		  app.sendToID(serverId, outgoingJSON); 
       }
-    } catch (IOException e) {
+      // arun: locally get self-select records
+      handleSelectResponse(getMySelectedRecords(packet, app), app);
+      /* FIXED: arun: need to synchronously wait for responses. Otherwise
+       * you are violating Replicable.execute(.)'s semantics.
+       */
+      synchronized(queriesInProgress) {
+    	  while(queriesInProgress.containsKey(queryId))
+			try {
+				queriesInProgress.wait(SELECT_REQUEST_TIMEOUT);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+      }
+      
+    } catch (IOException | GnsClientException e) {
       GNSConfig.getLogger().severe("Exception while sending select request: " + e);
     }
   }
+
+	@SuppressWarnings("unchecked")
+	private static SelectResponsePacket getMySelectedRecords(
+			SelectRequestPacket<String> request,
+			GNSApplicationInterface<String> app) {
+		SelectResponsePacket<String> response = null;
+		try {
+			// grab the records
+			JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
+			response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(
+					request.getId(), request.getClientAddress(),
+					request.getCcpQueryId(), request.getNsQueryId(),
+					app.getNodeID(), jsonRecords);
+			if (AppReconfigurableNodeOptions.debuggingEnabled) {
+				GNSConfig.getLogger().log(
+						Level.INFO,
+						"NS {0} sending back {1} record(s) in response to self-select request {2}",
+						new Object[] { app.getNodeID(), jsonRecords.length(),
+								request.getSummary() });
+			}
+		} catch (Exception e) {
+			GNSConfig.getLogger().severe(
+					"Exception while handling self-select request: " + e);
+			e.printStackTrace();
+		}
+		return response;
+	}
 
   /**
    * Handle a select request from the collecting NS. This is what other NSs do when they
@@ -272,7 +320,7 @@ public class Select {
     }
   }
 
-  private static void sendReponsePacketToCaller(int id, int lnsQueryId,
+  private static void sendReponsePacketToCaller(long id, long lnsQueryId,
           InetSocketAddress address, Set<String> guids,
           GNSApplicationInterface<String> app, InetSocketAddress myListeningAddress) throws JSONException {
     @SuppressWarnings("unchecked")
@@ -289,7 +337,13 @@ public class Select {
     }
     try {
       //app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
-      app.sendToClient(address, response, response.toJSONObject(),myListeningAddress);
+		app.sendToClient(address, response, response.toJSONObject(),myListeningAddress);
+    	// arun: synchronous select handling
+			if (GNSApp.DELEGATE_CLIENT_MESSAGING) {
+				synchronized (queriesInProgress) {
+					queriesInProgress.notify();
+				}
+			} 
     } catch (IOException f) {
       GNSConfig.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
     }

@@ -106,6 +106,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * THIS IS A NEW CLIENT CLASS SIMILAR TO GNSCLIENT.
+ * BOTH ARE BASED ON AsyncClient.
  * This class contains a concise set of read and write commands 
  * which read and write JSON Objects.
  * It uses AbstractTcpClient to provide the essential connectivity to the server.

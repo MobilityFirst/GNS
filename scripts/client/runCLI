@@ -1,6 +1,6 @@
 #!/bin/bash
 #echo $PWD
-java -DgigapaxosConfig=conf/gigapaxos.gnsApp.properties \
+java -DgigapaxosConfig=conf/gigapaxos.client.local.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty  \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks  \
 -Djavax.net.ssl.keyStorePassword=qwerty  \

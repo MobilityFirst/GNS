@@ -110,7 +110,7 @@ public class AppReconfigurableNodeOptions {
    * If this is true SSL will not be used for communications between servers.
    */
   public static boolean disableSSL = false;
-  
+
   public static boolean enableActiveCode = false;
   /**
    * Number of active code worker.
@@ -301,53 +301,12 @@ public class AppReconfigurableNodeOptions {
       return;
     }
 
-    // make sure this has been initialized
-    // initializing it here doesn't allow the logging levels set in the file
-    //GNSConfig.getLogger();
     
 		if (!allValues.containsKey(DISABLE_SSL))
 			disableSSL = ReconfigurationConfig.getClientSSLMode()==SSL_MODES.CLEAR;
 		else
 			disableSSL = true;    
     
-
-//    if (!allValues.containsKey(DISABLE_SSL)) {
-//      disableSSL = false;
-////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
-////              100);
-//      // old
-//      ReconfigurationConfig.setClientPortOffset(100);
-//
-////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH);
-//      // old
-//      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
-//
-////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH);
-//      // old
-//      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
-//
-//      System.out.println("NS: SSL is enabled");
-//    } else {
-//      disableSSL = true;
-////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
-////              0);
-//      // old
-//      ReconfigurationConfig.setClientPortOffset(0);
-//
-////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
-//      // old
-//      ReconfigurationConfig.setClientSSLMode(CLEAR);
-//
-////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
-//      // old
-//      ReconfigurationConfig.setServerSSLMode(CLEAR);
-//      System.out.println("NS: SSL is disabled");
-//    }
-
     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
       System.out.println("******** Email Verification is OFF *********");
       GNSConfig.enableEmailAccountVerification = false;
@@ -359,59 +318,23 @@ public class AppReconfigurableNodeOptions {
     }
 
     if (isOptionTrue(DEBUG_AR, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE ACTIVE REPLICA *********");
-      // For backwards compatibility until Config goes away
-    } else {
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
     }
 
     if (isOptionTrue(DEBUG_RECON, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********");
-      // For backwards compatibility until Config goes away
-
-      ConsoleHandler handler = Logging.getConsoleHandler();
-      handler.setLevel(Level.FINEST);
-      Logger log = Reconfigurator.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.FINER);
-    } else {
-      Reconfigurator.getLogger().setLevel(Level.INFO);
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
     }
 
     if (isOptionTrue(DEBUG_PAXOS, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN PAXOS *********");
-      // For backwards compatibility until Config goes away
-      ConsoleHandler handler = Logging.getConsoleHandler();
-      handler.setLevel(Level.FINEST);
-      Logger log = PaxosManager.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.FINER);
-    } else {
-      PaxosManager.getLogger().setLevel(Level.WARNING);
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
     }
 
     if (isOptionTrue(DEBUG_NIO, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
-      //For backwards compatibility until Config goes away
-      ConsoleHandler handler = Logging.getConsoleHandler();
-      handler.setLevel(Level.FINEST);
-      Logger log = NIOTransport.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.FINER);
-      log.setUseParentHandlers(false);
-    } else {
-      NIOTransport.getLogger().setLevel(Level.WARNING);
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
     }
 
     if (isOptionTrue(DEBUG_MISC, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE ProtocolExecutor *********");
-      // For backwards compatibility until Config goes away
-//      ConsoleHandler handler = new ConsoleHandler();
-//      handler.setLevel(Level.FINEST);
-//      Logger log = ProtocolExecutor.getLogger();
-//      log.addHandler(handler);
-      ProtocolExecutor.getLogger().setLevel(Level.INFO);
-    } else {
-      ProtocolExecutor.getLogger().setLevel(Level.WARNING);
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
     }
 
     if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
@@ -426,27 +349,7 @@ public class AppReconfigurableNodeOptions {
       standAloneApp = true;
     }
 
-//    boolean demandProfileSet = false;
-//    if (allValues.containsKey(DEMAND_PROFILE_CLASS)) {
-//      String className = allValues.get(DEMAND_PROFILE_CLASS);
-//      try {
-//        Class klass = Class.forName(className);
-//        ReconfigurationConfig.setDemandProfile(klass);
-//        demandProfileSet = true;
-//      } catch (ClassNotFoundException e) {
-//        System.out.println("Demand profile class " + className + " not found");
-//      }
-//    }
-//    if (!demandProfileSet) {
-//      // FIXME: Make this the value of DEFAULT_DEMAND_PROFILE_TYPE?
-//      ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
-//    }
-//    System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
-//
-//    ReconfigurationConfig.setReconfigureInPlace(false);
-//    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
-
-    // CCP options
+    // APP options
     if (allValues.containsKey(DNS_GNS_ONLY)) {
       dnsGnsOnly = true;
     }
@@ -460,7 +363,7 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
       activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
-    
+
     if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {
         enableActiveCode = true;
       }

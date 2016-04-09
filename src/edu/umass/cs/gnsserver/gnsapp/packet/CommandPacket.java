@@ -198,7 +198,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    */
   @Override
   public ClientRequest getResponse() {
-    return null;
+    return this.response;
   }
 
   // only for testing
@@ -335,8 +335,16 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return new CommandPacket(json);
   }
 
-  @Override
-  public String getSummary() {
-    return this.getRequestType() + ":" + this.getCommandName() + ":" + this.getServiceName() + ":" + this.getRequestID();
-  }
+	@Override
+	public Object getSummary() {
+		return new Object() {
+			public String toString() {
+				return CommandPacket.this.getRequestType() + ":"
+						+ CommandPacket.this.getCommandName() + ":"
+						+ CommandPacket.this.getServiceName() + ":"
+						+ CommandPacket.this.getRequestID() + "["
+						+ CommandPacket.this.getClientAddress() + "]";
+			}
+		};
+	}
 }

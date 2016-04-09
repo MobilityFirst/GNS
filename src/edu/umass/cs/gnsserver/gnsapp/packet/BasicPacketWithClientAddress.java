@@ -19,9 +19,13 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.utils.Util;
+
 import java.net.InetSocketAddress;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -56,6 +60,16 @@ public abstract class BasicPacketWithClientAddress extends BasicPacket {
     this.clientAddress = json.has(CLIENT_ADDRESS)
             ? Util.getInetSocketAddressFromString(json.getString(CLIENT_ADDRESS))
             : MessageNIOTransport.getSenderAddress(json);
+  }
+  
+  protected ClientRequest response  =null;
+  /**
+ * @param response
+ * @return {@code this}
+ */
+public BasicPacketWithClientAddress setResponse(ClientRequest response) {
+	  this.response = response;
+	  return this;
   }
 
   @Override

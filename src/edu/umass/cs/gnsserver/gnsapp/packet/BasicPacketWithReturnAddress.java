@@ -100,13 +100,13 @@ public abstract class BasicPacketWithReturnAddress extends BasicPacketWithClient
     return returnAddress;
   }
 
-  /**
-   * Set the address to which LNS to send the packet back to.
-   *
-   * @param returnAddress
-   */
-  public void setReturnAddress(InetSocketAddress returnAddress) {
-    this.returnAddress = returnAddress;
-  }
+//  /**
+//   * Set the address to which LNS to send the packet back to.
+//   *
+//   * @param returnAddress
+//   */
+//  public void setReturnAddress(InetSocketAddress returnAddress) {
+//    this.returnAddress = returnAddress;
+//  }
 
 }

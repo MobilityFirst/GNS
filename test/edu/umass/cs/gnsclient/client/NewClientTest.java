@@ -21,7 +21,6 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import org.json.JSONObject;

@@ -49,7 +49,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
   private final static String GUID = "guid";
   private final static String REFRESH = "refresh";
   //
-  private int requestId;
+  private long requestId;
   private String key;
   private Object value;
   private Object otherValue;
@@ -73,7 +73,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param otherValue
    */
   @SuppressWarnings("unchecked")
-  public SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
+  public SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupBehavior,
           String key, Object value, Object otherValue) {
     super(null);
     this.type = Packet.PacketType.SELECT_REQUEST;
@@ -99,7 +99,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param minRefreshInterval
    */
   @SuppressWarnings("unchecked")
-  private SelectRequestPacket(int id, SelectOperation selectOperation, SelectGroupBehavior groupOperation, 
+  private SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupOperation, 
           String query, String guid, int minRefreshInterval) {
     super(null);
     this.type = Packet.PacketType.SELECT_REQUEST;
@@ -121,7 +121,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param query
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeQueryRequest(int id, String query) {
+  public static SelectRequestPacket<String> MakeQueryRequest(long id, String query) {
     return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
   }
 
@@ -135,7 +135,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param refreshInterval
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupSetupRequest(int id, String query, String guid,
+  public static SelectRequestPacket<String> MakeGroupSetupRequest(long id, String query, String guid,
           int refreshInterval) {
     return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
   }
@@ -148,7 +148,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param guid
    * @return a SelectRequestPacket
    */
-  public static SelectRequestPacket<String> MakeGroupLookupRequest(int id, String guid) {
+  public static SelectRequestPacket<String> MakeGroupLookupRequest(long id, String guid) {
     return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
@@ -166,7 +166,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
-    this.requestId = json.getInt(ID);
+    this.requestId = json.getLong(ID);
     this.key = json.has(KEY) ? json.getString(KEY) : null;
     this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
@@ -246,7 +246,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    *
    * @return the ID
    */
-  public int getId() {
+  public long getId() {
     return requestId;
   }
 
@@ -255,7 +255,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * 
    * @param requestId 
    */
-  public void setRequestId(int requestId) {
+  public void setRequestId(long requestId) {
     this.requestId = requestId;
   }
   
@@ -373,7 +373,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
 
   @Override
   public ClientRequest getResponse() {
-   return null;
+   return this.response;
   }
 
   @Override
@@ -387,7 +387,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
 			public String toString() {
 				return SelectRequestPacket.this.getType() + ":"
 						+ SelectRequestPacket.this.requestId + ":"
-						+ SelectRequestPacket.this.getQuery();
+						+ SelectRequestPacket.this.getQuery() + "[" + SelectRequestPacket.this.getClientAddress()+"]";
 			}
 		};
 	}
