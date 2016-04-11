@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.util.Logging;
 import java.io.IOException;
 import java.net.URL;
 import java.util.jar.Attributes;

@@ -19,11 +19,11 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.newclient.NewGnsClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
@@ -33,6 +33,9 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -50,7 +53,7 @@ import org.junit.runners.MethodSorters;
 
 /**
  * THIS HAS BEEN REPLACED WITH ServerIntegrationTest class
- * 
+ *
  * Functionality test for core elements in the client using the UniversalGnsClientFull.
  *
  */
@@ -59,7 +62,7 @@ public class ClientCoreTest {
 
   private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
-  private static UniversalTcpClientExtended client = null;
+  private static NewGnsClient client = null;
   /**
    * The address of the GNS server we will contact
    */
@@ -84,8 +87,11 @@ public class ClientCoreTest {
         address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
+      try {
+        client = new NewGnsClient(address, System.getProperty("disableSSL").equals("true"));
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
+      }
       if (System.getProperty("alias") != null
               && !System.getProperty("alias").isEmpty()) {
         accountAlias = System.getProperty("alias");
@@ -395,7 +401,7 @@ public class ClientCoreTest {
       try {
         JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
+        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GnsProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
@@ -878,7 +884,7 @@ public class ClientCoreTest {
     String fieldToDelete = "fieldToDelete";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), fieldToDelete, "work", westyEntry);
-    } catch (Exception e) {
+    } catch (IOException | GnsClientException e) {
       fail("Exception while creating the field: " + e);
     }
     try {
@@ -889,7 +895,7 @@ public class ClientCoreTest {
     }
     try {
       client.fieldRemove(westyEntry.getGuid(), fieldToDelete, westyEntry);
-    } catch (Exception e) {
+    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | SignatureException | GnsClientException e) {
       fail("Exception while removing field: " + e);
     }
 
@@ -923,13 +929,13 @@ public class ClientCoreTest {
       client.fieldAppend(westyEntry.getGuid(), "numbers", "four", westyEntry);
       client.fieldAppend(westyEntry.getGuid(), "numbers", "five", westyEntry);
 
-      List<String> expected = new ArrayList<String>(Arrays.asList("one", "two", "three", "four", "five"));
+      List<String> expected = new ArrayList<>(Arrays.asList("one", "two", "three", "four", "five"));
       ArrayList<String> actual = JSONUtils.JSONArrayToArrayList(client.fieldReadArray(westyEntry.getGuid(), "numbers", westyEntry));
       assertEquals(expected, actual);
 
       client.fieldSetElement(westyEntry.getGuid(), "numbers", "frank", 2, westyEntry);
 
-      expected = new ArrayList<String>(Arrays.asList("one", "two", "frank", "four", "five"));
+      expected = new ArrayList<>(Arrays.asList("one", "two", "frank", "four", "five"));
       actual = JSONUtils.JSONArrayToArrayList(client.fieldReadArray(westyEntry.getGuid(), "numbers", westyEntry));
       assertEquals(expected, actual);
 
@@ -1081,7 +1087,7 @@ public class ClientCoreTest {
       json.put("name", "frank");
       json.put("occupation", "busboy");
       json.put("location", "work");
-      json.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      json.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1096,7 +1102,7 @@ public class ClientCoreTest {
       expected.put("name", "frank");
       expected.put("occupation", "busboy");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1121,7 +1127,7 @@ public class ClientCoreTest {
       expected.put("name", "frank");
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1147,7 +1153,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1171,7 +1177,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject actual = client.read(westyEntry);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
@@ -1203,7 +1209,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1253,7 +1259,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1268,7 +1274,7 @@ public class ClientCoreTest {
       fail("Exception while reading JSON: " + e);
     }
     try {
-      client.fieldUpdate(westyEntry.getGuid(), "flapjack.sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")), westyEntry);
+      client.fieldUpdate(westyEntry.getGuid(), "flapjack.sammy", new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")), westyEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack.sammy\": " + e);
     }
@@ -1278,9 +1284,9 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
-      subJson.put("sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")));
+      subJson.put("sammy", new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")));
       JSONObject subsubJson = new JSONObject();
       subsubJson.put("right", "crank");
       subsubJson.put("left", "eight");
@@ -1296,7 +1302,7 @@ public class ClientCoreTest {
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       client.fieldUpdate(westyEntry.getGuid(), "flapjack", moreJson, westyEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack\": " + e);
@@ -1307,11 +1313,11 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       expected.put("flapjack", moreJson);
       JSONObject actual = client.read(westyEntry);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
@@ -1320,7 +1326,7 @@ public class ClientCoreTest {
       fail("Exception while reading JSON: " + e);
     }
   }
-  
+
   private static final String BYTE_TEST_FIELD = "testBytes";
   private static byte[] byteTestValue;
 
@@ -1347,16 +1353,16 @@ public class ClientCoreTest {
     }
   }
 
- private static int numberTocreate = 100;
- private static GuidEntry accountGuidForBatch = null;
+  private static int numberTocreate = 100;
+  private static GuidEntry accountGuidForBatch = null;
 
   @Test
   public void test_510_CreateBatchAccountGuid() {
     // can change the number to create on the command line
-     if (System.getProperty("count") != null
-              && !System.getProperty("count").isEmpty()) {
-        numberTocreate = Integer.parseInt(System.getProperty("count"));
-      }
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
     try {
       String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
       accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);

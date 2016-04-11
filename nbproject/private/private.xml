@@ -14,15 +14,21 @@
         <group>
             <file>jar:file:/Users/westy/Documents/GNS/lib/gigapaxos-nio-src.jar!/edu/umass/cs/reconfiguration/interfaces/ReplicableRequest.java</file>
             <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/lns_hazard.properties</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/console/commands/ActiveCodeSet.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/packet/CommandValueReturnPacket.java</file>
             <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/run.sh</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/select/SelectQuery.java</file>
             <file>file:/Users/westy/Documents/GNS/conf/gigapaxos.server.local.properties</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/FieldAccess.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/UniversalTcpClientExtended.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/packet/CommandPacket.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/AsyncClient.java</file>
             <file>file:/Users/westy/Documents/GNS/conf/gigapaxos.server.noRepAll.properties</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/AbstractTcpClient.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/ping/PingManager.java</file>
             <file>jar:file:/Users/westy/Documents/GNS/lib/gigapaxos-nio-src.jar!/edu/umass/cs/gigapaxos/interfaces/Replicable.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/packet/BasicPacket.java</file>
+            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/SingleReadTest.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnscommon/asynch/ClientAsynchBase.java</file>
             <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/ns_hazard.properties</file>
             <file>file:/Users/westy/Documents/GNS/conf/gigapaxos.server.hazard.properties</file>
@@ -37,11 +43,16 @@
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/PacketDemultiplexer.java</file>
             <file>jar:file:/Users/westy/Documents/GNS/lib/gigapaxos-nio-src.jar!/edu/umass/cs/reconfiguration/examples/AbstractReconfigurablePaxosApp.java</file>
             <file>file:/Users/westy/Documents/GNS/scripts/client/runClient</file>
+            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/ClientCoreTest.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/console/ConsoleModule.java</file>
             <file>file:/Users/westy/Documents/GNS/conf/gigapaxos.server.noRepAll.2Reps.properties</file>
             <file>file:/Users/westy/Documents/GNS/scripts/3nodeslocal/lns.properties</file>
+            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/SingleRemoveGuidTest.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/GNSApp.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/database/MongoRecordsThroughputTest.java</file>
             <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/reset_and_restart.sh</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/console/commands/ActiveCodeGet.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/aws/support/examples/Sudo.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/RemoteQuery.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/CommandHandler.java</file>
             <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/NewClientTest.java</file>
@@ -52,15 +63,24 @@
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/BasicTcpClient.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/localnameserver/LNSPacketDemultiplexer.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/UniversalTcpClient.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/ClientRequestHandler.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/main/GNSConfig.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/aws/support/AWSEC2.java</file>
             <file>file:/Users/westy/Documents/GNS/build.properties</file>
+            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/WriteReadBytesTest.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/contextservice/integration/ContextServiceGNSClient.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/util/Password.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/GNSClient.java</file>
             <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/hazard_reset_and_restart.sh</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/aws/networktools/SSHClient.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/Select.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandModule.java</file>
             <file>file:/Users/westy/Documents/GNS/logging.properties</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/AppReconfigurableNodeOptions.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/msocket/contextsocket/ContextMember.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/ping/PingServer.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/PingClient.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/CommandUtils.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/database/MongoRecords.java</file>
             <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/NewGnsClientTest.java</file>
             <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/ServerIntegrationTest.java</file>

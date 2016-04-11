@@ -95,16 +95,16 @@ public class Select {
   private static Random randomID = new Random();
   private static ConcurrentMap<Integer, NSSelectInfo<String>> queriesInProgress = new ConcurrentHashMap<Integer, NSSelectInfo<String>>(10, 0.75f, 3);
 
-	/**
-	 * Handles a select request that was received from a client.
-	 * 
-	 * @param packet
-	 *
-	 * @param replica
-	 * @throws JSONException
-	 * @throws UnknownHostException
-	 * @throws FailedDBOperationException
-	 */
+  /**
+   * Handles a select request that was received from a client.
+   *
+   * @param packet
+   *
+   * @param replica
+   * @throws JSONException
+   * @throws UnknownHostException
+   * @throws FailedDBOperationException
+   */
   public static void handleSelectRequest(SelectRequestPacket<String> packet,
           GNSApplicationInterface<String> replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     //SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, replica.getGNSNodeConfig());
@@ -114,7 +114,7 @@ public class Select {
       handleSelectRequestFromClient(packet, replica);
     }
   }
-  
+
   /* FIXME: arun: need to determine this timeout systematically, not an ad hoc constant.
    */
   private static final long SELECT_REQUEST_TIMEOUT = RemoteQuery.DEFAULT_REPLICA_READ_TIMEOUT;
@@ -149,7 +149,7 @@ public class Select {
           }
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app.getRequestHandler());
           InetSocketAddress iDontKnowMyListeningAddress = null;
-          sendReponsePacketToCaller(packet.getId(), packet.getCcpQueryId(), packet.getClientAddress(), result.toStringSet(), app,iDontKnowMyListeningAddress);
+          sendReponsePacketToCaller(packet.getId(), packet.getCcpQueryId(), packet.getClientAddress(), result.toStringSet(), app, iDontKnowMyListeningAddress);
           return;
         }
       } else {
@@ -177,63 +177,65 @@ public class Select {
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-			GNSConfig.getLogger().log(
-					Level.INFO,
-					"NS {0} sending select {1} to {2}",
-					new Object[] { app.getNodeID(), packet.getSummary(),
-							Util.setOfNodeIdToString(serverIds) });
+      GNSConfig.getLogger().log(
+              Level.INFO,
+              "NS {0} sending select {1} to {2}",
+              new Object[]{app.getNodeID(), packet.getSummary(),
+                Util.setOfNodeIdToString(serverIds)});
     }
     try {
       for (String serverId : serverIds) {
-    	  if(!serverId.equals(app.getNodeID())) 
-    		// all but self
-    		  app.sendToID(serverId, outgoingJSON); 
+        if (!serverId.equals(app.getNodeID())) // all but self
+        {
+          app.sendToID(serverId, outgoingJSON);
+        }
       }
       // arun: locally get self-select records
       handleSelectResponse(getMySelectedRecords(packet, app), app);
       /* FIXED: arun: need to synchronously wait for responses. Otherwise
        * you are violating Replicable.execute(.)'s semantics.
        */
-      synchronized(queriesInProgress) {
-    	  while(queriesInProgress.containsKey(queryId))
-			try {
-				queriesInProgress.wait(SELECT_REQUEST_TIMEOUT);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+      synchronized (queriesInProgress) {
+        while (queriesInProgress.containsKey(queryId)) {
+          try {
+            queriesInProgress.wait(SELECT_REQUEST_TIMEOUT);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
       }
-      
+
     } catch (IOException | GnsClientException e) {
       GNSConfig.getLogger().severe("Exception while sending select request: " + e);
     }
   }
 
-	@SuppressWarnings("unchecked")
-	private static SelectResponsePacket getMySelectedRecords(
-			SelectRequestPacket<String> request,
-			GNSApplicationInterface<String> app) {
-		SelectResponsePacket<String> response = null;
-		try {
-			// grab the records
-			JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
-			response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(
-					request.getId(), request.getClientAddress(),
-					request.getCcpQueryId(), request.getNsQueryId(),
-					app.getNodeID(), jsonRecords);
-			if (AppReconfigurableNodeOptions.debuggingEnabled) {
-				GNSConfig.getLogger().log(
-						Level.INFO,
-						"NS {0} sending back {1} record(s) in response to self-select request {2}",
-						new Object[] { app.getNodeID(), jsonRecords.length(),
-								request.getSummary() });
-			}
-		} catch (Exception e) {
-			GNSConfig.getLogger().severe(
-					"Exception while handling self-select request: " + e);
-			e.printStackTrace();
-		}
-		return response;
-	}
+  @SuppressWarnings("unchecked")
+  private static SelectResponsePacket<String> getMySelectedRecords(
+          SelectRequestPacket<String> request,
+          GNSApplicationInterface<String> app) {
+    SelectResponsePacket<String> response = null;
+    try {
+      // grab the records
+      JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
+      response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(
+              request.getId(), request.getClientAddress(),
+              request.getCcpQueryId(), request.getNsQueryId(),
+              app.getNodeID(), jsonRecords);
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNSConfig.getLogger().log(
+                Level.INFO,
+                "NS {0} sending back {1} record(s) in response to self-select request {2}",
+                new Object[]{app.getNodeID(), jsonRecords.length(),
+                  request.getSummary()});
+      }
+    } catch (Exception e) {
+      GNSConfig.getLogger().severe(
+              "Exception while handling self-select request: " + e);
+      e.printStackTrace();
+    }
+    return response;
+  }
 
   /**
    * Handle a select request from the collecting NS. This is what other NSs do when they
@@ -247,14 +249,14 @@ public class Select {
    */
   private static void handleSelectRequestFromNS(SelectRequestPacket<String> request,
           GNSApplicationInterface<String> app) throws JSONException {
-		if (AppReconfigurableNodeOptions.debuggingEnabled) {
-			GNSConfig.getLogger().log(
-					Level.INFO,
-					"NS {0} {1} received query {2}",
-					new Object[] { Select.class.getSimpleName(),
-							app.getNodeID(), request.getSummary() });
-		}
-   // SelectRequestPacket<String> request = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNSConfig.getLogger().log(
+              Level.INFO,
+              "NS {0} {1} received query {2}",
+              new Object[]{Select.class.getSimpleName(),
+                app.getNodeID(), request.getSummary()});
+    }
+    // SelectRequestPacket<String> request = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, app);
@@ -263,8 +265,7 @@ public class Select {
               request.getClientAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeID(), jsonRecords);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, "NS {0} sending back {1} record(s) in response to {2}"
-                , new Object[]{app.getNodeID(), jsonRecords.length(), request.getSummary()});
+        GNSConfig.getLogger().log(Level.INFO, "NS {0} sending back {1} record(s) in response to {2}", new Object[]{app.getNodeID(), jsonRecords.length(), request.getSummary()});
       }
       // and send them back to the originating NS
       app.sendToID(request.getNameServerID(), response.toJSONObject());
@@ -307,9 +308,11 @@ public class Select {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getRecords(), info, replica);
     } else // error response
-     if (AppReconfigurableNodeOptions.debuggingEnabled) {
+    {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNSConfig.getLogger().fine("NS " + replica.getNodeID().toString() + " processing error response: " + packet.getErrorMessage());
       }
+    }
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServerID());
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -327,23 +330,23 @@ public class Select {
     SelectResponsePacket<String> response
             = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
                     -1, null, new JSONArray(guids));
-		if (AppReconfigurableNodeOptions.debuggingEnabled) {
-			GNSConfig
-					.getLogger()
-					.log(Level.INFO,
-							"NS {0} 888888888 sending response to client address {1}: {2}",
-							new Object[] { app.getNodeID(), address,
-									response.getSummary() });
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNSConfig
+              .getLogger()
+              .log(Level.INFO,
+                      "NS {0} 888888888 sending response to client address {1}: {2}",
+                      new Object[]{app.getNodeID(), address,
+                        response.getSummary()});
     }
     try {
       //app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
-		app.sendToClient(address, response, response.toJSONObject(),myListeningAddress);
-    	// arun: synchronous select handling
-			if (GNSApp.DELEGATE_CLIENT_MESSAGING) {
-				synchronized (queriesInProgress) {
-					queriesInProgress.notify();
-				}
-			} 
+      app.sendToClient(address, response, response.toJSONObject(), myListeningAddress);
+      // arun: synchronous select handling
+      if (GNSApp.DELEGATE_CLIENT_MESSAGING) {
+        synchronized (queriesInProgress) {
+          queriesInProgress.notify();
+        }
+      }
     } catch (IOException f) {
       GNSConfig.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
     }
@@ -355,7 +358,7 @@ public class Select {
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     InetSocketAddress iDontKnowMyListeningAddress = null;
     // Pull the records out of the info structure and send a response back to the caller
-    sendReponsePacketToCaller(packet.getId(), packet.getLnsQueryId(), packet.getReturnAddress(), guids, replica,iDontKnowMyListeningAddress);
+    sendReponsePacketToCaller(packet.getId(), packet.getLnsQueryId(), packet.getReturnAddress(), guids, replica, iDontKnowMyListeningAddress);
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff
