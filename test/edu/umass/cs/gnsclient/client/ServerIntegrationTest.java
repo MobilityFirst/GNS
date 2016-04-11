@@ -28,6 +28,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 
+import edu.umass.cs.gnscommon.utils.Base64;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -67,6 +68,7 @@ import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.awt.geom.Point2D;
 import java.util.Set;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONException;
 
 /**
@@ -1711,6 +1713,32 @@ public class ServerIntegrationTest {
       System.out.println(actual);
     } catch (Exception e) {
       fail("Exception while reading JSON: " + e);
+    }
+  }
+  
+  private static final String BYTE_TEST_FIELD = "testBytes";
+  private static byte[] byteTestValue;
+
+  @Test
+  public void test_440_CreateBytesField() {
+    try {
+      byteTestValue = RandomUtils.nextBytes(16000);
+      String encodedValue = Base64.encodeToString(byteTestValue, true);
+      //System.out.println("Encoded string: " + encodedValue);
+      client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
+    } catch (IOException | GnsClientException | JSONException e) {
+      fail("Exception during create field: " + e);
+    }
+  }
+
+  @Test
+  public void test_441_ReadBytesField() {
+    try {
+      String string = client.fieldRead(masterGuid, BYTE_TEST_FIELD);
+      //System.out.println("Read string: " + string);
+      assertArrayEquals(byteTestValue, Base64.decode(string));
+    } catch (Exception e) {
+      fail("Exception while reading field: " + e);
     }
   }
 

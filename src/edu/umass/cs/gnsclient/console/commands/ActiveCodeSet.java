@@ -107,10 +107,9 @@ public class ActiveCodeSet extends ConsoleCommand
       
       String action = st.nextToken();
       String filename = st.nextToken();
-      String code = new String(Files.readAllBytes(Paths.get(filename)));
-      
-      String code64 = Base64.encodeToString(code.getBytes("utf-8"), true);
-      gnsClient.activeCodeSet(guid, action, code64, module.getCurrentGuid());
+      byte[] code = Files.readAllBytes(Paths.get(filename));
+     
+      gnsClient.activeCodeSet(guid, action, code, module.getCurrentGuid());
       
       console.printString("Code in '" + filename + "' installed for GUID " + guid + "for action '" + action + "'");
       console.printNewline();

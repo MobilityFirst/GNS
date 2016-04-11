@@ -32,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.utils.Base64;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP.
@@ -389,6 +390,8 @@ public class UniversalTcpClient extends BasicTcpClientV1 implements GNSClientInt
   public JSONArray getLocation(GuidEntry guid) throws Exception {
     return fieldReadArray(guid.getGuid(), GnsProtocol.LOCATION_FIELD_NAME, guid);
   }
+  
+  // Active Code
 
   public void activeCodeClear(String guid, String action, GuidEntry writerGuid) throws GnsClientException, IOException {
     JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), GnsProtocol.AC_CLEAR,
@@ -399,7 +402,9 @@ public class UniversalTcpClient extends BasicTcpClientV1 implements GNSClientInt
     checkResponse(command, response);
   }
 
-  public void activeCodeSet(String guid, String action, String code64, GuidEntry writerGuid) throws GnsClientException, IOException {
+  public void activeCodeSet(String guid, String action, byte[] code, GuidEntry writerGuid)
+          throws GnsClientException, IOException {
+    String code64 = Base64.encodeToString(code, true);
     JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), GnsProtocol.AC_SET,
             GnsProtocol.GUID, guid, GnsProtocol.AC_ACTION, action,
             GnsProtocol.AC_CODE, code64, GnsProtocol.WRITER, writerGuid.getGuid());
@@ -408,12 +413,17 @@ public class UniversalTcpClient extends BasicTcpClientV1 implements GNSClientInt
     checkResponse(command, response);
   }
 
-  public String activeCodeGet(String guid, String action, GuidEntry readerGuid) throws Exception {
+  public byte[] activeCodeGet(String guid, String action, GuidEntry readerGuid) throws Exception {
     JSONObject command = createAndSignCommand(readerGuid.getPrivateKey(), GnsProtocol.AC_GET, 
             GnsProtocol.GUID, guid, GnsProtocol.AC_ACTION, action,
             GnsProtocol.READER, readerGuid.getGuid());
     String response = sendCommandAndWait(command);
 
-    return checkResponse(command, response);
+    String code64String = checkResponse(command, response);
+    if (code64String != null) {
+      return Base64.decode(code64String);
+    } else {
+      return null;
+    }
   }
 }

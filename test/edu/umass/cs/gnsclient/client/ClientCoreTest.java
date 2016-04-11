@@ -29,6 +29,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
+import edu.umass.cs.gnscommon.utils.Base64;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -37,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.RandomUtils;
 import static org.hamcrest.Matchers.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -79,7 +81,7 @@ public class ClientCoreTest {
         address = new InetSocketAddress(System.getProperty("host"),
                 Integer.parseInt(System.getProperty("port")));
       } else {
-        address = ServerSelectDialog.selectServer();
+        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
@@ -1318,8 +1320,34 @@ public class ClientCoreTest {
       fail("Exception while reading JSON: " + e);
     }
   }
+  
+  private static final String BYTE_TEST_FIELD = "testBytes";
+  private static byte[] byteTestValue;
 
-  private static int numberTocreate = 100;
+  @Test
+  public void test_440_CreateBytesField() {
+    try {
+      byteTestValue = RandomUtils.nextBytes(16000);
+      String encodedValue = Base64.encodeToString(byteTestValue, true);
+      //System.out.println("Encoded string: " + encodedValue);
+      client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
+    } catch (IOException | GnsClientException | JSONException e) {
+      fail("Exception during create field: " + e);
+    }
+  }
+
+  @Test
+  public void test_441_ReadBytesField() {
+    try {
+      String string = client.fieldRead(masterGuid, BYTE_TEST_FIELD);
+      //System.out.println("Read string: " + string);
+      assertArrayEquals(byteTestValue, Base64.decode(string));
+    } catch (Exception e) {
+      fail("Exception while reading field: " + e);
+    }
+  }
+
+ private static int numberTocreate = 100;
  private static GuidEntry accountGuidForBatch = null;
 
   @Test
