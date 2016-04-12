@@ -177,7 +177,7 @@ public class GNSConfig {
    */
   public static String consoleOutputLevel = "INFO"; //should be INFO for production use
 
-  private final static Logger LOGGER = Logger.getLogger(GNSConfig.class.getName());
+  private final static Logger LOG = Logger.getLogger(GNSConfig.class.getName());
 
   /**
    * True if the logger has been initialized.
@@ -190,12 +190,12 @@ public class GNSConfig {
    * @return the master GNS logger
    */
   public static Logger getLogger() {
-    if (!loggerInitRun) {
-      System.out.println("Setting GNSConfig Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
-      Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
-      loggerInitRun = true;
-    }
-    return LOGGER;
+//    if (!loggerInitRun) {
+//      System.out.println("Setting GNSConfig Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
+//      Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
+//      loggerInitRun = true;
+//    }
+    return LOG;
   }
 
   /**

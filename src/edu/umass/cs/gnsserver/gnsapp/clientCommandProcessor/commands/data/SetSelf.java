@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class SetSelf extends AbstractUpdate {
     super(module);
   }
 
- /**
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.SetSelf;
+  }
+
+  /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -60,6 +66,6 @@ public class SetSelf extends AbstractUpdate {
   @Override
   public String getCommandDescription() {
     return "Replaces element N with newvalue in the key value pair for the given GUID. See below for more on the signature.";
-            
+
   }
 }

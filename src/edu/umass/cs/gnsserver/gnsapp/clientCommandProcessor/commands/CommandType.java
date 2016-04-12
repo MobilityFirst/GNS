@@ -37,6 +37,8 @@ public enum CommandType {
   AppendOrCreateList(121),
   AppendOrCreateListSelf(122),
   AppendOrCreateListUnsigned(123),
+  AppendOrCreateSelf(124),
+  AppendOrCreateUnsigned(125),
   //
   AppendSelf(130),
   AppendUnsigned(131),
@@ -143,6 +145,8 @@ public enum CommandType {
   //
   SetPassword(450),
   VerifyAccount(451),
+  //
+  ResetKey(460),
   // ACL
   AclAdd(510),
   AclAddSelf(511),
@@ -166,8 +170,10 @@ public enum CommandType {
   RemoveMembersFromGroupSelf(623),
   // Admin
   Help(710),
-  Admin(711),
-  Dump(712),
+  HelpTcp(711),
+  HelpTcpWiki(712),
+  Admin(715),
+  Dump(716),
   //
   GetParameter(720),
   SetParameter(721),

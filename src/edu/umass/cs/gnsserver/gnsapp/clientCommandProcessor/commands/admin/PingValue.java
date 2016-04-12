@@ -23,8 +23,8 @@ import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,8 +44,13 @@ public class PingValue extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.PingValue;
+  }
+
+  @Override
   public String[] getCommandParameters() {
-    return new String[]{N,N2};
+    return new String[]{N, N2};
   }
 
   @Override

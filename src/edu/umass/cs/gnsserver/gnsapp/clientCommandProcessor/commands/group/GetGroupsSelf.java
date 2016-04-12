@@ -21,10 +21,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * Command to return the groups that a GUID is a member of formatted as a JSON Array.
- * 
+ *
  * @author westy
  */
 public class GetGroupsSelf extends GetGroups {
@@ -35,6 +36,11 @@ public class GetGroupsSelf extends GetGroups {
    */
   public GetGroupsSelf(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.GetGroupsSelf;
   }
 
   @Override

@@ -24,6 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDescriptionFormat;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
 import org.json.JSONObject;
@@ -40,6 +41,11 @@ public class Help extends GnsCommand {
    */
   public Help(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.Help;
   }
 
   @Override

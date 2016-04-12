@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class AppendWithDuplicationSelf extends AbstractUpdate {
     super(module);
   }
 
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AppendWithDuplicationSelf;
+  }
+
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -59,6 +65,6 @@ public class AppendWithDuplicationSelf extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return  "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates.";
+    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates.";
   }
 }

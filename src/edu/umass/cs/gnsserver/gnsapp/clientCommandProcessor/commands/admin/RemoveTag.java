@@ -26,13 +26,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import java.text.ParseException;
 import java.util.Date;
 import org.json.JSONException;
@@ -43,7 +42,7 @@ import org.json.JSONObject;
  * @author westy
  */
 public class RemoveTag extends GnsCommand {
-  
+
   /**
    *
    * @param module
@@ -51,17 +50,22 @@ public class RemoveTag extends GnsCommand {
   public RemoveTag(CommandModule module) {
     super(module);
   }
-  
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RemoveTag;
+  }
+
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-  
+
   @Override
   public String getCommandName() {
     return REMOVE_TAG;
   }
-  
+
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -77,7 +81,7 @@ public class RemoveTag extends GnsCommand {
     }
     return AccountAccess.removeTag(guidInfo, tag, guid, signature, message, timestamp, handler);
   }
-  
+
   @Override
   public String getCommandDescription() {
     return "Removes a tag from the guid. Must be signed by the guid. "

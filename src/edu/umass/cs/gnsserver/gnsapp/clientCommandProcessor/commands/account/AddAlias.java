@@ -26,14 +26,13 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import java.text.ParseException;
 import java.util.Date;
 import org.json.JSONException;
@@ -52,6 +51,11 @@ public class AddAlias extends GnsCommand {
    */
   public AddAlias(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AddAlias;
   }
 
   @Override

@@ -26,13 +26,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import java.text.ParseException;
 import java.util.Date;
 import org.json.JSONException;
@@ -51,6 +50,11 @@ public class RemoveAlias extends GnsCommand {
    */
   public RemoveAlias(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RemoveAlias;
   }
 
   @Override
@@ -79,7 +83,7 @@ public class RemoveAlias extends GnsCommand {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     } else if (!accountInfo.isVerified()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-    } 
+    }
     return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, timestamp, handler);
   }
 

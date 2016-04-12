@@ -24,6 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -48,18 +49,23 @@ public class ReadUnsigned extends Read {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.ReadUnsigned;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD};
   }
-  
+
   @Override
-   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-     // Tells the lookup handler that we don't need to authenticate.
-     // Will be moved to the client and will something more secure in the future.
-     json.put(READER, MAGIC_STRING);
-     return super.execute(json, handler);
-   }
+    // Tells the lookup handler that we don't need to authenticate.
+    // Will be moved to the client and will something more secure in the future.
+    json.put(READER, MAGIC_STRING);
+    return super.execute(json, handler);
+  }
 
   @Override
   public String getCommandDescription() {

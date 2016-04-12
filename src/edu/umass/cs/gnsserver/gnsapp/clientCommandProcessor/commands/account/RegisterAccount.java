@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,6 +52,11 @@ public class RegisterAccount extends GnsCommand {
    */
   public RegisterAccount(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RegisterAccount;
   }
 
   @Override
@@ -84,10 +90,10 @@ public class RegisterAccount extends GnsCommand {
       }
     }
     try {
-      CommandResponse<String> result = 
-              AccountAccess.addAccountWithVerification(handler.getHTTPServerHostPortString(), 
+      CommandResponse<String> result
+              = AccountAccess.addAccountWithVerification(handler.getHTTPServerHostPortString(),
                       name, guid, publicKey,
-              password, handler);
+                      password, handler);
       if (result.getReturnValue().equals(OK_RESPONSE)) {
         return new CommandResponse<String>(guid);
       } else {

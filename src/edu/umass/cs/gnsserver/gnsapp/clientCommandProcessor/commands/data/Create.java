@@ -26,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
@@ -52,6 +53,11 @@ public class Create extends GnsCommand {
    */
   public Create(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.Create;
   }
 
   @Override
@@ -83,7 +89,7 @@ public class Create extends GnsCommand {
       timestamp = null;
     }
     NSResponseCode responseCode;
-    if (!(responseCode = FieldAccess.create(guid, field, 
+    if (!(responseCode = FieldAccess.create(guid, field,
             (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
             writer, signature, message, timestamp, handler)).isAnError()) {
       return new CommandResponse<String>(OK_RESPONSE);
@@ -95,6 +101,6 @@ public class Create extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Adds a key value pair to the GNS for the given GUID."
-             + " Field must be writeable by the WRITER guid.";
+            + " Field must be writeable by the WRITER guid.";
   }
 }

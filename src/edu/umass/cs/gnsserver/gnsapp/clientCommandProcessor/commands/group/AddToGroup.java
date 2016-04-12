@@ -26,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
 import java.io.IOException;
@@ -49,6 +50,11 @@ public class AddToGroup extends GnsCommand {
    */
   public AddToGroup(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AddToGroup;
   }
 
   @Override

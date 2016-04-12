@@ -25,12 +25,13 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Initializes a new group guid to automatically update and maintain all records that satisfy the query.
- * 
+ *
  * @author westy
  */
 public class SelectGroupSetupQuery extends GnsCommand {
@@ -41,6 +42,11 @@ public class SelectGroupSetupQuery extends GnsCommand {
    */
   public SelectGroupSetupQuery(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.SelectGroupSetupQuery;
   }
 
   @Override
@@ -59,7 +65,7 @@ public class SelectGroupSetupQuery extends GnsCommand {
     String query = json.getString(QUERY);
     String publicKey = json.getString(PUBLIC_KEY);
     int interval = json.optInt(INTERVAL, -1);
-    
+
     return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKey, interval, handler);
   }
 

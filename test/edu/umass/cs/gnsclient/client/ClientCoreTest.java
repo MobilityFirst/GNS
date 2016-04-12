@@ -944,16 +944,16 @@ public class ClientCoreTest {
     }
   }
 
-  @Test
-  public void test_310_BasicSelect() {
-    try {
-      JSONArray result = client.select("cats", "fred");
-      // best we can do since there will be one, but possibly more objects in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
+//  @Test
+//  public void test_310_BasicSelect() {
+//    try {
+//      JSONArray result = client.select("cats", "fred");
+//      // best we can do since there will be one, but possibly more objects in results
+//      assertThat(result.length(), greaterThanOrEqualTo(1));
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
 
   @Test
   public void test_320_GeoSpatialSelect() {

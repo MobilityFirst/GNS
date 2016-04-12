@@ -24,13 +24,12 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,11 +41,16 @@ public class ResetKey extends GnsCommand {
 
   /**
    * Creates a ResetKey instance.
-   * 
+   *
    * @param module
    */
   public ResetKey(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.ResetKey;
   }
 
   @Override
@@ -62,10 +66,10 @@ public class ResetKey extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-      String guid = json.getString(GUID);
-      String publicKey = json.getString(PUBLIC_KEY);
-      String password = json.getString(PASSWORD);
-      return AccountAccess.resetPublicKey(guid, password, publicKey, handler);
+    String guid = json.getString(GUID);
+    String publicKey = json.getString(PUBLIC_KEY);
+    String password = json.getString(PASSWORD);
+    return AccountAccess.resetPublicKey(guid, password, publicKey, handler);
   }
 
   @Override

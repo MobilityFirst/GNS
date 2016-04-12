@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * Command that adds an empty field to the GNS for the given GUID.
@@ -35,6 +36,11 @@ public class CreateEmptySelf extends Create {
    */
   public CreateEmptySelf(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.CreateEmptySelf;
   }
 
   @Override

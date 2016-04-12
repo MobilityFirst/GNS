@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * Initializes the given group guid to automatically update and maintain all records that satisfy the query.
@@ -35,6 +36,11 @@ public class SelectGroupSetupQueryWithGuid extends SelectGroupSetupQuery {
    */
   public SelectGroupSetupQueryWithGuid(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.SelectGroupSetupQueryWithGuid;
   }
 
   @Override

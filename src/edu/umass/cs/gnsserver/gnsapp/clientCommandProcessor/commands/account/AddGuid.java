@@ -30,31 +30,35 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.Base64;
-
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Command to add a guid.
- * 
+ *
  * @author westy
  */
 public class AddGuid extends GnsCommand {
 
   /**
    * Creates an AddGuid instance.
-   * 
+   *
    * @param module
    */
   public AddGuid(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AddGuid;
   }
 
   @Override
@@ -70,41 +74,41 @@ public class AddGuid extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-      String name = json.getString(NAME);
-      String accountGuid = json.getString(GUID);
-      String publicKey = json.getString(PUBLIC_KEY);
-      String signature = json.getString(SIGNATURE);
-      String message = json.getString(SIGNATUREFULLMESSAGE);
-      
-      byte[] publicKeyBytes = Base64.decode(publicKey);
-      String newGuid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
-      
-      GuidInfo accountGuidInfo;
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+    String name = json.getString(NAME);
+    String accountGuid = json.getString(GUID);
+    String publicKey = json.getString(PUBLIC_KEY);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
+
+    byte[] publicKeyBytes = Base64.decode(publicKey);
+    String newGuid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
+
+    GuidInfo accountGuidInfo;
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+    }
+    if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
+      if (accountInfo == null) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }
-      if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
-        if (accountInfo == null) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
-        }
-        if (!accountInfo.isVerified()) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-        } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
-        } else {
-          CommandResponse<String> result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
-          if (result.getReturnValue().equals(OK_RESPONSE)) {
-            // THIS HAS BEEN MOVED INTO AccountAccess.addGuid
-            //ActiveCode.initCodeFields(newGuid, handler);
-            return new CommandResponse<String>(newGuid);
-          } else {
-            return result;
-          }
-        }
+      if (!accountInfo.isVerified()) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+      } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
+        return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+        CommandResponse<String> result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
+        if (result.getReturnValue().equals(OK_RESPONSE)) {
+          // THIS HAS BEEN MOVED INTO AccountAccess.addGuid
+          //ActiveCode.initCodeFields(newGuid, handler);
+          return new CommandResponse<String>(newGuid);
+        } else {
+          return result;
+        }
       }
+    } else {
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+    }
     //}
   }
 

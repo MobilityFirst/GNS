@@ -26,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Group
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -51,6 +52,11 @@ public class GetGroupMembers extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.GetGroupMembers;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
@@ -70,7 +76,7 @@ public class GetGroupMembers extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
-    return new CommandResponse<>(new JSONArray(GroupAccess.lookup(guid, 
+    return new CommandResponse<>(new JSONArray(GroupAccess.lookup(guid,
             reader, signature, message, timestamp, handler)).toString());
   }
 

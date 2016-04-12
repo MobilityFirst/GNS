@@ -20,7 +20,8 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+;
 
 /**
  *
@@ -34,6 +35,11 @@ public class HelpTcpWiki extends Help {
    */
   public HelpTcpWiki(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.HelpTcpWiki;
   }
 
   @Override

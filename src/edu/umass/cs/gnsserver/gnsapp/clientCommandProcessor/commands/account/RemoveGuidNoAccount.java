@@ -21,10 +21,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * Creates a RemoveGuidNoAccount instance.
- * 
+ *
  * @author westy
  */
 public class RemoveGuidNoAccount extends RemoveGuid {
@@ -35,6 +36,11 @@ public class RemoveGuidNoAccount extends RemoveGuid {
    */
   public RemoveGuidNoAccount(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RemoveGuidNoAccount;
   }
 
   @Override

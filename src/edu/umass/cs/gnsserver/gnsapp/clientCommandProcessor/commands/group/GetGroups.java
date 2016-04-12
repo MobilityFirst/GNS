@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
 import java.security.InvalidKeyException;
@@ -40,7 +41,7 @@ import org.json.JSONObject;
 
 /**
  * Command to return the groups that a GUID is a member of formatted as a JSON Array.
- * 
+ *
  * @author westy
  */
 public class GetGroups extends GnsCommand {
@@ -51,6 +52,11 @@ public class GetGroups extends GnsCommand {
    */
   public GetGroups(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.GetGroups;
   }
 
   @Override
@@ -73,7 +79,7 @@ public class GetGroups extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
-    return new CommandResponse<>(new JSONArray(GroupAccess.lookupGroupsLocally(guid, reader, 
+    return new CommandResponse<>(new JSONArray(GroupAccess.lookupGroupsLocally(guid, reader,
             signature, message, timestamp, handler)).toString());
   }
 

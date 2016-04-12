@@ -24,6 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
 import org.json.JSONException;
@@ -31,7 +32,7 @@ import org.json.JSONObject;
 
 /**
  * A query that returns all guids that have a location field near the given location.
- * 
+ *
  * @author westy
  */
 public class SelectNear extends GnsCommand {
@@ -42,6 +43,11 @@ public class SelectNear extends GnsCommand {
    */
   public SelectNear(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.SelectNear;
   }
 
   @Override

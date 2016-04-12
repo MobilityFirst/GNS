@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class AppendListWithDuplication extends AbstractUpdateList {
     super(module);
   }
 
- /**
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AppendListWithDuplication;
+  }
+
+  /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -59,7 +65,7 @@ public class AppendListWithDuplication extends AbstractUpdateList {
 
   @Override
   public String getCommandDescription() {
-    return  "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates. "
+    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates. "
             + "Value is a list of items formated as a JSON list."
             + " Field must be writeable by the WRITER guid.";
   }

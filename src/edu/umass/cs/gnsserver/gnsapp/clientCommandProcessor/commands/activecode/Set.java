@@ -34,6 +34,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import java.text.ParseException;
 import java.util.Date;
@@ -46,11 +47,16 @@ public class Set extends GnsCommand {
 
   /**
    * Create the set instance.
-   * 
-   * @param module 
+   *
+   * @param module
    */
   public Set(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.SetActiveCode;
   }
 
   @Override
@@ -76,7 +82,7 @@ public class Set extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
-    NSResponseCode response = ActiveCode.setCode(accountGuid, action, 
+    NSResponseCode response = ActiveCode.setCode(accountGuid, action,
             code, writer, signature, message, timestamp, handler);
 
     if (response.isAnError()) {

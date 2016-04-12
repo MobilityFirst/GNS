@@ -82,6 +82,13 @@ public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable
       return alphaResult;
     }
   }
+  
+  /**
+   * Returns the name of the command type.
+   * 
+   * @return the command type
+   */
+  public abstract CommandType getCommandType();
 
   /**
    * Returns a string array with names of the argument parameters to the command.

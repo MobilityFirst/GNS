@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class AppendOrCreateSelf extends AbstractUpdate {
     super(module);
   }
 
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AppendOrCreateSelf;
+  }
+
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override

@@ -31,6 +31,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 import java.text.ParseException;
 import java.util.Date;
@@ -48,6 +49,11 @@ public class Get extends GnsCommand {
    */
   public Get(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.GetActiveCode;
   }
 
   @Override
@@ -71,8 +77,8 @@ public class Get extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
-    
-    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action, 
+
+    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action,
             reader, signature, message, timestamp, handler));
   }
 

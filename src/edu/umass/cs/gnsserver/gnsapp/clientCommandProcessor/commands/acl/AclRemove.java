@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
 import java.security.InvalidKeyException;
@@ -53,6 +54,11 @@ public class AclRemove extends GnsCommand {
    */
   public AclRemove(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AclRemove;
   }
 
   @Override
@@ -96,7 +102,7 @@ public class AclRemove extends GnsCommand {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
-    if (!(responseCode = FieldMetaData.remove(access, 
+    if (!(responseCode = FieldMetaData.remove(access,
             guid, field, accessorPublicKey,
             writer, signature, message, timestamp, handler)).isAnError()) {
       return new CommandResponse<String>(OK_RESPONSE);

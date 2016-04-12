@@ -27,22 +27,37 @@ import java.util.TreeSet;
 import static edu.umass.cs.gnscommon.GnsProtocol.COMMANDNAME;
 import static edu.umass.cs.gnscommon.GnsProtocol.NEWLINE;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * This class helps to implement a unified set of client support commands that translate between client support requests
- * and core GNS commands that are sent to the server. Specifically the CommandModule class maintains the list
- * of commands, mechanisms for looking up commands from the contents of JSONObject encoded command packets
+ * This class helps to implement a unified set of client support commands that translate
+ * between client support requests and core GNS commands that are sent to the server.
+ * Specifically the CommandModule class maintains the list of commands, mechanisms
+ * for looking up commands from the contents of JSONObject encoded command packets
  * as well as supporting generation of command documentation.
  *
  * @author westy
  */
 public class CommandModule {
+
+  private Map<CommandType, GnsCommand> commandLookupTable;
+
+  public void addCommand(CommandType commandType, GnsCommand command) {
+    if (commandLookupTable.get(commandType) != null) {
+      ClientSupportConfig.getLogger().log(Level.SEVERE,
+              "Duplicate command: {0}", commandType);
+    }
+    commandLookupTable.put(commandType, command);
+  }
 
   private TreeSet<GnsCommand> commands;
   private boolean adminMode = false;
@@ -55,9 +70,11 @@ public class CommandModule {
   }
 
   private void initCommands() {
+    commandLookupTable = new HashMap<>();
+    // Legacy code
     this.commands = new TreeSet<>();
     addCommands(CommandDefs.getCommandDefs(), commands);
-    ClientCommandProcessorConfig.getLogger().log(Level.INFO, 
+    ClientCommandProcessorConfig.getLogger().log(Level.INFO,
             "{0} commands added.", commands.size());
   }
 
@@ -73,29 +90,37 @@ public class CommandModule {
   protected void addCommands(Class<?>[] commandClasses, Set<GnsCommand> commands) {
     for (int i = 0; i < commandClasses.length; i++) {
       Class<?> clazz = commandClasses[i];
-      //String commandClassName = commandClasses[i].trim();
-      try {
-        //clazz = Class.forName(commandClassName);
-        Constructor<?> constructor;
-        try {
-          constructor = clazz.getConstructor(new Class<?>[]{this.getClass()});
-        } catch (NoSuchMethodException e) {
-          constructor = clazz.getConstructor(new Class<?>[]{CommandModule.class});
-        }
-        GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
-        ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-                "Adding command {0}: {1} with {2}: {3}",
-                new Object[]{i + 1, clazz.getCanonicalName(), command.getCommandName(),
-                  command.getCommandParametersString()});
+      GnsCommand command = createCommandInstance(clazz);
+      if (command != null) {
+        commandLookupTable.put(command.getCommandType(), command);
+        // Legacy
         commands.add(command);
-      } catch (SecurityException | NoSuchMethodException | 
-              InstantiationException | IllegalAccessException | 
-              IllegalArgumentException | InvocationTargetException e) {
-        ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
-                "Unable to add command for class {0}: {1}",
-                new Object[]{clazz.getCanonicalName(), e});
       }
     }
+  }
+
+  private GnsCommand createCommandInstance(Class<?> clazz) {
+    try {
+      Constructor<?> constructor;
+      try {
+        constructor = clazz.getConstructor(new Class<?>[]{this.getClass()});
+      } catch (NoSuchMethodException e) {
+        constructor = clazz.getConstructor(new Class<?>[]{CommandModule.class});
+      }
+      GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
+      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+              "Creating command {0}: {1} with {2}: {3}",
+              new Object[]{command.getCommandType().getInt(), clazz.getCanonicalName(), command.getCommandName(),
+                command.getCommandParametersString()});
+      return command;
+    } catch (SecurityException | NoSuchMethodException |
+            InstantiationException | IllegalAccessException |
+            IllegalArgumentException | InvocationTargetException e) {
+      ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
+              "Unable to create command for class {0}: {1}",
+              new Object[]{clazz.getCanonicalName(), e});
+    }
+    return null;
   }
 
   /**
@@ -113,7 +138,7 @@ public class CommandModule {
               "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
       return null;
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.FINE, 
+    ClientCommandProcessorConfig.getLogger().log(Level.FINE,
             "Searching {0} commands:", commands.size());
     // for now a linear search is fine
     for (GnsCommand command : commands) {
@@ -126,7 +151,7 @@ public class CommandModule {
         }
       }
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.WARNING, 
+    ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
             "***COMMAND SEARCH***: Unable to find {0}", json);
     return null;
   }

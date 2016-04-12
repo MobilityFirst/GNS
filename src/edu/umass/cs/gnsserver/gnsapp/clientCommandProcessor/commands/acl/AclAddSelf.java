@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  *
@@ -34,6 +35,11 @@ public class AclAddSelf extends AclAdd {
    */
   public AclAddSelf(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AclAddSelf;
   }
 
   @Override
