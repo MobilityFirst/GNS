@@ -3,7 +3,7 @@ SCRIPTS="`dirname \"$0\"`"
 IDE_PATH=build/classes:build/test/classes:lib/*:
 
 java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
--Djava.util.logging.config.file=logging.properties \
+-Djava.util.logging.config.file=logging.gns.properties \
 -DgigapaxosConfig=conf/gigapaxos.server.singleNode.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
@@ -19,6 +19,7 @@ START_ALL &
 #exit
 
 java -ea -DgigapaxosConfig=conf/gigapaxos.server.singleNode.properties \
+-Djava.util.logging.config.file=logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \

@@ -13,7 +13,7 @@ fi
 
 
 nohup java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
--Djava.util.logging.config.file=logging.properties \
+-Djava.util.logging.config.file=logging.gns.properties \
 -DgigapaxosConfig=conf/gigapaxos.server.hazard.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
@@ -29,6 +29,7 @@ START_ALL > NSlogfile 2>&1 &
 #exit
 
 nohup java -ea -DgigapaxosConfig=conf/gigapaxos.server.hazard.properties \
+-Djava.util.logging.config.file=logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \

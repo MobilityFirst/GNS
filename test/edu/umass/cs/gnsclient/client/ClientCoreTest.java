@@ -75,6 +75,16 @@ public class ClientCoreTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  private static final int COORDINATION_WAIT = 100;
+
+  private static void waitSettle() {
+    try {
+      Thread.sleep(COORDINATION_WAIT);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
   public ClientCoreTest() {
     if (client == null) {
       if (System.getProperty("host") != null
@@ -659,6 +669,7 @@ public class ClientCoreTest {
     } catch (Exception e) {
       fail("Exception while removing testGuid: " + e);
     }
+    waitSettle();
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
@@ -954,7 +965,6 @@ public class ClientCoreTest {
 //      fail("Exception when we were not expecting it: " + e);
 //    }
 //  }
-
   @Test
   public void test_320_GeoSpatialSelect() {
     try {

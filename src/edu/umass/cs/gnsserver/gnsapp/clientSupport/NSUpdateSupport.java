@@ -78,7 +78,7 @@ public class NSUpdateSupport {
           SignatureException, JSONException, IOException, FailedDBOperationException,
           RecordNotFoundException, FieldNotFoundException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO,
+      GNSConfig.getLogger().log(Level.FINE,
               "Processing local update {0} / {1} {2} {3}",
               new Object[]{guid, field, operation, updateValue});
     }
@@ -117,8 +117,7 @@ public class NSUpdateSupport {
               app.getDB(), app.getActiveCodeHandler());
       return NSResponseCode.NO_ERROR;
     } else // Handle special case of a create index
-    {
-      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
+     if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNSConfig.getLogger().info("Creating index for " + field + " " + updateValue);
         }
@@ -131,7 +130,6 @@ public class NSUpdateSupport {
         }
         return NSResponseCode.ERROR;
       }
-    }
   }
 
   private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation, BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
@@ -139,13 +137,11 @@ public class NSUpdateSupport {
       // some operations don't require a read first
       return new NameRecord(db, guid);
     } else //try {
-    {
-      if (field == null) {
+     if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
         return NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.LIST_STRING, field);
       }
-    }
   }
 
   private static void updateNameRecord(NameRecord nameRecord, String guid, String field,
@@ -163,13 +159,11 @@ public class NSUpdateSupport {
       newValue = userJSON;
     }
     // END ACTIVE CODE HANDLING
-    if (AppReconfigurableNodeOptions.debuggingEnabled && field != null) {
-      GNSConfig
-              .getLogger()
-              .log(Level.INFO,
-                      "field={0}, operation={1}, value={2}, name_record={3}",
-                      new Object[]{field, operation, updateValue,
-                        nameRecord.getSummary()});
+    if (field != null) {
+      GNSConfig.getLogger().log(Level.FINE,
+              "field={0}, operation={1}, value={2}, name_record={3}",
+              new Object[]{field, operation, updateValue,
+                nameRecord.getSummary()});
     }
     // Apply update to record in the database
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);

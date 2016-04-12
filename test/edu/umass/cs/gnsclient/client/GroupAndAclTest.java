@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.newclient.NewGnsClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -44,7 +45,7 @@ public class GroupAndAclTest {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client;
+  private static NewGnsClient client;
   /**
    * The address of the GNS server we will contact
    */
@@ -53,6 +54,16 @@ public class GroupAndAclTest {
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
   private static GuidEntry mygroupEntry;
+
+  private static final int COORDINATION_WAIT = 100;
+
+  private static void waitSettle() {
+    try {
+      Thread.sleep(COORDINATION_WAIT);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
 
   public GroupAndAclTest() {
     if (client == null) {
@@ -63,14 +74,17 @@ public class GroupAndAclTest {
         address = new InetSocketAddress(System.getProperty("host"),
                 Integer.parseInt(System.getProperty("port")));
       } else {
-        address = ServerSelectDialog.selectServer();
+        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
+      try {
+        client = new NewGnsClient(address, System.getProperty("disableSSL").equals("true"));
+      } catch (IOException e) {
+        fail("Exception while creating client: " + e);
+      }
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
-        fail("Exception when we were not expecting it: " + e);
+        fail("Exception while creating account guid: " + e);
       }
     }
   }
@@ -88,7 +102,7 @@ public class GroupAndAclTest {
   }
 
   private static GuidEntry guidToDeleteEntry;
-  
+
   @Test
   public void test_210_GroupCreate() {
     String mygroupName = "mygroup" + RandomString.randomString(6);
@@ -130,6 +144,7 @@ public class GroupAndAclTest {
 
   @Test
   public void test_212_GroupRemoveGuid() {
+    waitSettle();
     // now remove a guid and check for group updates
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
@@ -148,6 +163,7 @@ public class GroupAndAclTest {
 
   @Test
   public void test_213_GroupRemoveCheck() {
+    waitSettle();
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
@@ -222,12 +238,15 @@ public class GroupAndAclTest {
 
   @Test
   public void test_223_GroupAndACLTestRemoveGuid() {
+
     try {
       try {
         client.groupRemoveGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       } catch (Exception e) {
         fail("Exception removing westy from mygroup: " + e);
       }
+
+      waitSettle();
 
       HashSet<String> expected = new HashSet<String>(Arrays.asList(samEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));

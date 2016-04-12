@@ -152,7 +152,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
     MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
     this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
-    GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}",
+    GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
             new Object[]{nodeID, nameRecordDB});
     this.messenger = messenger;
     // Create the admin object
@@ -306,7 +306,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
       // arun: always clean up all created state upon exiting
       if (request instanceof RequestIdentifier && prev == null) {
-        GNSConfig.getLogger().log(Level.INFO,
+        GNSConfig.getLogger().log(Level.FINE,
                 "{0} dequeueing request {1}",
                 new Object[]{this, request.getSummary()});
         this.outstanding.remove(((RequestIdentifier) request));
@@ -526,7 +526,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         ((BasicPacketWithClientAddress) originalRequest)
                 .setResponse((ClientRequest) response);
       }
-      GNSConfig.getLogger().log(Level.INFO,
+      GNSConfig.getLogger().log(Level.FINE,
               "{0} set response {1} for requesting client {2} for request {3}",
               new Object[]{
                 this,

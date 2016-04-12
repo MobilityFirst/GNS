@@ -107,7 +107,7 @@ public class AccountAccess {
     try {
       messageDigest = MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, 
+      GNSConfig.getLogger().log(Level.SEVERE,
               "Unable to initialize for authentication:{0}", e);
     }
   }
@@ -139,46 +139,41 @@ public class AccountAccess {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, ACCOUNT_INFO,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig
-                .getLogger()
-                .log(Level.INFO,
-                        "AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
-                        new Object[]{guid, ACCOUNT_INFO,
-                          result != null ? result.getSummary() : result});
-      }
+      GNSConfig
+              .getLogger()
+              .log(Level.FINE,
+                      "AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
+                      new Object[]{guid, ACCOUNT_INFO,
+                        result != null ? result.getSummary() : result});
       if (result != null) {
         return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Problem extracting ACCOUNT_INFO from {0} :{1}", 
+      GNSConfig.getLogger().log(Level.SEVERE, "Problem extracting ACCOUNT_INFO from {0} :{1}",
               new Object[]{guid, e});
     }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO, 
-              "AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for {0}", guid);
-    }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO, 
-              "AAAAAAAAAAAAAAAAAAAAAAAAA ACCOUNT_INFO NOT FOUND for {0}", guid);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for {0}", guid);
+
+    GNSConfig.getLogger().log(Level.FINE,
+            "AAAAAAAAAAAAAAAAAAAAAAAAA ACCOUNT_INFO NOT FOUND for {0}", guid);
+
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, 
-                "AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for {0}", guid);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for {0}", guid);
+
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, 
+        GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting GUID_INFO for {0} from remote server: {1}", new Object[]{guid, e});
       }
       if (value != null) {
         try {
           return new AccountInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-          GNSConfig.getLogger().log(Level.SEVERE, 
+          GNSConfig.getLogger().log(Level.SEVERE,
                   "Problem parsing GUID_INFO value from remote server for {0}: {1}", new Object[]{guid, e});
         }
       }
@@ -203,31 +198,26 @@ public class AccountAccess {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, PRIMARY_GUID,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, 
-                "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}", new Object[]{guid, PRIMARY_GUID, result});
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}", new Object[]{guid, PRIMARY_GUID, result});
       if (result != null) {
         return result.getString(PRIMARY_GUID);
       }
     } catch (FailedDBOperationException | JSONException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, 
+      GNSConfig.getLogger().log(Level.SEVERE,
               "Problem extracting PRIMARY_GUID from {0} :{1}", new Object[]{guid, e});
     }
     String value = null;
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO, 
-              "XXXXXXXXXXXXXXXXXXXXX PRIMARY_GUID NOT FOUND LOCALLY for {0}", guid);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX PRIMARY_GUID NOT FOUND LOCALLY for {0}", guid);
+
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, 
-                "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for {0}", guid);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for {0}", guid);
       try {
         value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, 
+        GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{guid, e});
       }
     }
@@ -255,34 +245,28 @@ public class AccountAccess {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name, HRN_GUID,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, 
-                "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}", 
-                new Object[]{name, HRN_GUID, result});
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}",
+              new Object[]{name, HRN_GUID, result});
       if (result != null) {
         return result.getString(HRN_GUID);
       }
     } catch (FailedDBOperationException | JSONException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, 
-              "Problem extracting HRN_GUID from {0} :{1}", 
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Problem extracting HRN_GUID from {0} :{1}",
               new Object[]{name, e});
     }
     //
     String value = null;
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO, 
-              "XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for {0}", name);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for {0}", name);
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, 
-                "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for {0}", name);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for {0}", name);
       try {
         value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, 
+        GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{name, e});
       }
     }
@@ -314,50 +298,43 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO, 
-              "XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is {0}", allowRemoteLookup);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is {0}", allowRemoteLookup);
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GUID_INFO,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO,
-                "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1} {2}",
-                new Object[]{guid, GUID_INFO, result != null ? result.getSummary() : result});
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1} {2}",
+              new Object[]{guid, GUID_INFO, result != null ? result.getSummary() : result});
+
       if (result != null) {
         return new GuidInfo(new JSONObject(result.getString(GUID_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, 
+      GNSConfig.getLogger().log(Level.SEVERE,
               "Problem extracting GUID_INFO from {0} :{1}", new Object[]{guid, e});
     }
 
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO, 
-              "XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for {0}", guid);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for {0}", guid);
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, 
-                "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for {0}", guid);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for {0}", guid);
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, 
-                "Problem getting GUID_INFO for {0} from remote server: {1}", 
+        GNSConfig.getLogger().log(Level.SEVERE,
+                "Problem getting GUID_INFO for {0} from remote server: {1}",
                 new Object[]{guid, e});
       }
       if (value != null) {
         try {
           return new GuidInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-          GNSConfig.getLogger().log(Level.SEVERE, 
-                  "Problem parsing GUID_INFO value from remote server for {0}: {1}", 
+          GNSConfig.getLogger().log(Level.SEVERE,
+                  "Problem parsing GUID_INFO value from remote server for {0}: {1}",
                   new Object[]{guid, e});
         }
       }
@@ -448,7 +425,7 @@ public class AccountAccess {
                   + VERIFICATION_ERROR + " " + "Unable to send verification email",
                   handler.getApp().getNodeID());
         }
-      } else if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      } else {
         GNSConfig.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
       }
     }
@@ -987,6 +964,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */
@@ -994,7 +972,7 @@ public class AccountAccess {
           String alias, String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
 
-    GNSConfig.getLogger().log(Level.INFO, 
+    GNSConfig.getLogger().log(Level.FINE,
             "ALIAS: {0} ALIASES:{1}", new Object[]{alias, accountInfo.getAliases()});
     if (!accountInfo.containsAlias(alias)) {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ALIAS);
@@ -1030,7 +1008,7 @@ public class AccountAccess {
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+    if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
             writer, signature, message, timestamp, handler, false).isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
@@ -1049,7 +1027,7 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> addTag(GuidInfo guidInfo, 
+  public static CommandResponse<String> addTag(GuidInfo guidInfo,
           String tag, String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.addTag(tag);
@@ -1072,7 +1050,7 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> removeTag(GuidInfo guidInfo, 
+  public static CommandResponse<String> removeTag(GuidInfo guidInfo,
           String tag, String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.removeTag(tag);
@@ -1084,7 +1062,7 @@ public class AccountAccess {
   }
 
   private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
-          String writer, String signature, String message, Date timestamp, 
+          String writer, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
       NSResponseCode response;
@@ -1099,7 +1077,7 @@ public class AccountAccess {
       } else {
         JSONObject json = new JSONObject();
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-        response = FieldAccess.updateUserJSON(guid, json, 
+        response = FieldAccess.updateUserJSON(guid, json,
                 writer, signature, message, timestamp, handler);
       }
       return response;
@@ -1115,7 +1093,7 @@ public class AccountAccess {
             null, null, null, null, handler, sendToReplica).isAnError();
   }
 
-  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, 
+  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo,
           String writer, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     try {

@@ -96,14 +96,12 @@ public class CommandHandler {
                 + command.getCommandName(), executeCommandStart);
       }
       if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
-        ClientCommandProcessorConfig
-                .getLogger()
-                .log(Level.WARNING,
-                        "Command {0} took {1}ms of execution delay (delay logging threshold={2}ms)",
-                        new Object[]{
-                          command.getSummary(),
-                          (System.currentTimeMillis() - executeCommandStart),
-                          LONG_DELAY_THRESHOLD});
+        ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+                "Command {0} took {1}ms of execution delay (delay logging threshold={2}ms)",
+                new Object[]{
+                  command.getSummary(),
+                  (System.currentTimeMillis() - executeCommandStart),
+                  LONG_DELAY_THRESHOLD});
       }
       // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
       CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
@@ -130,23 +128,20 @@ public class CommandHandler {
               "Problem  executing command: {0}", e);
       e.printStackTrace();
     }
-    
+
     // reply to client is true, this means this is the active replica
     // that recvd the request from the gnsClient. So, let's check for sending trigger
     // to Context service here.
-    if( AppReconfigurableNodeOptions.enableContextService )
-    {
-	    if( !doNotReplyToClient )
-	    {
-	    
-	    	if(command.getClass().getSuperclass() == AbstractUpdate.class)
-	    	{
-	    		GNSConfig.getLogger().fine("Sending trigger to CS jsonFormattedCommand "
-	    				+jsonFormattedCommand+" command "+command);
-	    		
-	    		app.getContextServiceGNSClient().sendTiggerOnGnsCommand(jsonFormattedCommand, command, false);
-	    	}
-	    }
+    if (AppReconfigurableNodeOptions.enableContextService) {
+      if (!doNotReplyToClient) {
+
+        if (command.getClass().getSuperclass() == AbstractUpdate.class) {
+          GNSConfig.getLogger().fine("Sending trigger to CS jsonFormattedCommand "
+                  + jsonFormattedCommand + " command " + command);
+
+          app.getContextServiceGNSClient().sendTiggerOnGnsCommand(jsonFormattedCommand, command, false);
+        }
+      }
     }
     //DelayProfiler.updateDelay("handlePacketCommandRequest", receiptTime);
   }
@@ -233,7 +228,7 @@ public class CommandHandler {
    * @throws JSONException
    * @throws IOException
    */
-  public static void handleCommandPacketForApp(CommandPacket packet, boolean doNotReplyToClient, GNSApp app) 
+  public static void handleCommandPacketForApp(CommandPacket packet, boolean doNotReplyToClient, GNSApp app)
           throws JSONException, IOException {
     // Squirrel away the host and port so we know where to send the command return value
     // A little unnecessary hair for debugging... also peek inside the command.

@@ -24,11 +24,9 @@ import org.json.JSONObject;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
-import static edu.umass.cs.gnscommon.GnsProtocol.COMMANDNAME;
-import static edu.umass.cs.gnscommon.GnsProtocol.NEWLINE;
+import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -130,6 +128,24 @@ public class CommandModule {
    * @return
    */
   public GnsCommand lookupCommand(JSONObject json) {
+    GnsCommand command = null;
+    if (json.has(COMMAND_INT)) {
+      try {
+        command = commandLookupTable.get(CommandType.getCommandType(json.getInt(COMMAND_INT)));
+      } catch (JSONException e) {
+        // do nothing
+      }
+    }
+    if (command != null) {
+      ClientCommandProcessorConfig.getLogger().log(Level.FINE, "Found {0} using table lookup", command);
+      return command;
+    }
+     // Keep the old method for backward compatibility with older clients that
+     // aren't using the COMMAND_INT field
+    return lookupCommandLinearSearch(json);
+  }
+
+  public GnsCommand lookupCommandLinearSearch(JSONObject json) {
     String action;
     try {
       action = json.getString(COMMANDNAME);
@@ -138,16 +154,16 @@ public class CommandModule {
               "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
       return null;
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-            "Searching {0} commands:", commands.size());
+    ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
+            "Linear search of {0} commands:", commands.size());
     // for now a linear search is fine
-    for (GnsCommand command : commands) {
+    for (GnsCommand lookupCommand : commands) {
       //GNS.getLogger().info("Search: " + command.toString());
-      if (command.getCommandName().equals(action)) {
+      if (lookupCommand.getCommandName().equals(action)) {
         //GNS.getLogger().info("Found action: " + action);
-        if (JSONContains(json, command.getCommandParameters())) {
+        if (JSONContains(json, lookupCommand.getCommandParameters())) {
           //GNS.getLogger().info("Matched parameters: " + json);
-          return command;
+          return lookupCommand;
         }
       }
     }

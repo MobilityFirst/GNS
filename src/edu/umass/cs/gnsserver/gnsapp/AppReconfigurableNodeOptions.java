@@ -318,23 +318,23 @@ public class AppReconfigurableNodeOptions {
     }
 
     if (isOptionTrue(DEBUG_AR, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
     if (isOptionTrue(DEBUG_RECON, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
     if (isOptionTrue(DEBUG_PAXOS, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
     if (isOptionTrue(DEBUG_NIO, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
     if (isOptionTrue(DEBUG_MISC, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.properties *********");
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
     if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
