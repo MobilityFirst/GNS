@@ -94,11 +94,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   public CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.clientRequestId = requestId;
-    this.LNSRequestId = -1; // this will be filled in at the LNS
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
     this.command = command;
 
+    this.LNSRequestId = -1; // this will be filled in at the LNS
     this.myListeningAddress = null;
   }
 
@@ -109,14 +109,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * @param requestId
    * @param command
    */
-  public CommandPacket(int requestId, JSONObject command) {
-    this.setType(PacketType.COMMAND);
-    this.clientRequestId = requestId;
-    this.senderAddress = null;
-    this.senderPort = -1;
-    this.command = command;
-
-    this.myListeningAddress = null;
+  public CommandPacket(long requestId, JSONObject command) {
+    this(requestId, null, -1, command);
   }
 
   /**
@@ -309,6 +303,19 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return "unknown";
   }
 
+  public int getCommandInteger() {
+    try {
+      if (command != null) {
+        if (command.has(GnsProtocol.COMMAND_INT)) {
+          return command.getInt(GnsProtocol.COMMAND_INT);
+        }
+      }
+    } catch (JSONException e) {
+      // Just ignore it
+    }
+    return -1;
+  }
+
   @Override
   public boolean needsCoordination() {
     if (needsCoordinationExplicitlySet) {
@@ -335,16 +342,18 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return new CommandPacket(json);
   }
 
-	@Override
-	public Object getSummary() {
-		return new Object() {
-			public String toString() {
-				return CommandPacket.this.getRequestType() + ":"
-						+ CommandPacket.this.getCommandName() + ":"
-						+ CommandPacket.this.getServiceName() + ":"
-						+ CommandPacket.this.getRequestID() + "["
-						+ CommandPacket.this.getClientAddress() + "]";
-			}
-		};
-	}
+  @Override
+  public Object getSummary() {
+    return new Object() {
+      @Override
+      public String toString() {
+        return getRequestType() + ":"
+                + getCommandInteger() + ":"
+                + getCommandName() + ":"
+                + getServiceName() + ":"
+                + getRequestID() + "["
+                + getClientAddress() + "]";
+      }
+    };
+  }
 }

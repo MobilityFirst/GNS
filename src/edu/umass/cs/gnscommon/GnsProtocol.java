@@ -243,7 +243,8 @@ public class GnsProtocol {
   public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   // This one is special, used for the action part of the command
-  public final static String COMMANDNAME = "COMMANDNAME"; // aka "action"
+  public final static String COMMANDNAME = "COMMANDNAME";
+  public final static String COMMAND_INT = "COMMANDINT";
 
   // Active code actions and fields
   public final static String AC_SET = "acSet";

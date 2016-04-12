@@ -33,6 +33,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
@@ -103,7 +104,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), CREATE_LIST, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.CreateList,
+            writer.getPrivateKey(), CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
     checkResponse(command, response);
@@ -122,7 +124,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldAppendOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), APPEND_OR_CREATE_LIST, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.AppendOrCreateList,
+            writer.getPrivateKey(), APPEND_OR_CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -142,7 +145,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldReplaceOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_OR_CREATE_LIST, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.ReplaceOrCreateList,
+            writer.getPrivateKey(), REPLACE_OR_CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
     checkResponse(command, response);
@@ -160,7 +164,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldAppend(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), APPEND_LIST_WITH_DUPLICATION, GUID,
+    JSONObject command = createAndSignCommand(CommandType.AppendListWithDuplication,
+            writer.getPrivateKey(), APPEND_LIST_WITH_DUPLICATION, GUID,
             targetGuid, FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -179,7 +184,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldReplaceList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_LIST, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.ReplaceList,
+            writer.getPrivateKey(), REPLACE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -198,7 +204,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldClear(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REMOVE_LIST, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.RemoveList,
+            writer.getPrivateKey(), REMOVE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -215,7 +222,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    * @throws GnsClientException
    */
   public void fieldClear(String targetGuid, String field, GuidEntry writer) throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), CLEAR, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.Clear,
+            writer.getPrivateKey(), CLEAR, GUID, targetGuid,
             FIELD, field, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -237,9 +245,11 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
   public JSONArray fieldReadArray(String guid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(READ_ARRAY, GUID, guid, FIELD, field);
+      command = createCommand(CommandType.ReadArrayUnsigned,
+              READ_ARRAY, GUID, guid, FIELD, field);
     } else {
-      command = createAndSignCommand(reader.getPrivateKey(), READ_ARRAY, GUID, guid, FIELD, field,
+      command = createAndSignCommand(CommandType.ReadArray,
+              reader.getPrivateKey(), READ_ARRAY, GUID, guid, FIELD, field,
               READER, reader.getGuid());
     }
 
@@ -262,7 +272,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldSetElement(String targetGuid, String field, String newValue, int index, GuidEntry writer)
           throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), SET, GUID, targetGuid, FIELD,
+    JSONObject command = createAndSignCommand(CommandType.Set,
+            writer.getPrivateKey(), SET, GUID, targetGuid, FIELD,
             field, VALUE, newValue, N, Integer.toString(index), WRITER,
             writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -285,7 +296,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldSetNull(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
           NoSuchAlgorithmException, SignatureException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), SET_FIELD_NULL, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.SetFieldNull,
+            writer.getPrivateKey(), SET_FIELD_NULL, GUID, targetGuid,
             FIELD, field, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -305,7 +317,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray select(String field, String value) throws Exception {
-    JSONObject command = createCommand(SELECT, FIELD, field, VALUE, value);
+    JSONObject command = createCommand(CommandType.Select,
+            SELECT, FIELD, field, VALUE, value);
     String response = sendCommandAndWait(command);
 
     return new JSONArray(checkResponse(command, response));
@@ -322,7 +335,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectWithin(String field, JSONArray value) throws Exception {
-    JSONObject command = createCommand(SELECT, FIELD, field, WITHIN,
+    JSONObject command = createCommand(CommandType.SelectWithin,
+            SELECT, FIELD, field, WITHIN,
             value.toString());
     String response = sendCommandAndWait(command);
 
@@ -341,7 +355,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectNear(String field, JSONArray value, Double maxDistance) throws Exception {
-    JSONObject command = createCommand(SELECT, FIELD, field, NEAR,
+    JSONObject command = createCommand(CommandType.SelectNear,
+            SELECT, FIELD, field, NEAR,
             value.toString(), MAX_DISTANCE, Double.toString(maxDistance));
     String response = sendCommandAndWait(command);
 
@@ -399,7 +414,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
 
   // Active Code
   public void activeCodeClear(String guid, String action, GuidEntry writerGuid) throws GnsClientException, IOException {
-    JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), AC_CLEAR,
+    JSONObject command = createAndSignCommand(CommandType.ClearActiveCode,
+            writerGuid.getPrivateKey(), AC_CLEAR,
             GUID, guid, AC_ACTION, action,
             WRITER, writerGuid.getGuid());
     String response = sendCommandAndWait(command);
@@ -410,7 +426,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
   public void activeCodeSet(String guid, String action, byte[] code, GuidEntry writerGuid)
           throws GnsClientException, IOException {
     String code64 = Base64.encodeToString(code, true);
-    JSONObject command = createAndSignCommand(writerGuid.getPrivateKey(), AC_SET,
+    JSONObject command = createAndSignCommand(CommandType.SetActiveCode,
+            writerGuid.getPrivateKey(), AC_SET,
             GUID, guid, AC_ACTION, action,
             AC_CODE, code64, WRITER, writerGuid.getGuid());
     String response = sendCommandAndWait(command);
@@ -419,7 +436,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
   }
 
   public byte[] activeCodeGet(String guid, String action, GuidEntry readerGuid) throws Exception {
-    JSONObject command = createAndSignCommand(readerGuid.getPrivateKey(), AC_GET,
+    JSONObject command = createAndSignCommand(CommandType.GetActiveCode,
+            readerGuid.getPrivateKey(), AC_GET,
             GUID, guid, AC_ACTION, action,
             READER, readerGuid.getGuid());
     String response = sendCommandAndWait(command);
@@ -461,7 +479,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldCreateOneElementList(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), CREATE, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.Create,
+            writer.getPrivateKey(), CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     try {
 
@@ -504,7 +523,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldAppendOrCreate(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), APPEND_OR_CREATE, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.AppendOrCreate,
+            writer.getPrivateKey(), APPEND_OR_CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
     checkResponse(command, response);
@@ -525,7 +545,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldReplaceOrCreate(String targetGuid, String field, String value, GuidEntry writer)
           throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_OR_CREATE, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.ReplaceOrCreate,
+            writer.getPrivateKey(), REPLACE_OR_CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
     checkResponse(command, response);
@@ -543,11 +564,7 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldReplaceOrCreateList(GuidEntry targetGuid, String field, JSONArray value)
           throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(targetGuid.getPrivateKey(), REPLACE_OR_CREATE_LIST,
-            GUID, targetGuid.getGuid(),
-            FIELD, field, VALUE, value.toString(), WRITER, targetGuid.getGuid());
-    String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    fieldReplaceOrCreateList(targetGuid.getGuid(), field, value, targetGuid);
   }
 
   /**
@@ -579,7 +596,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldReplace(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.Replace,
+            writer.getPrivateKey(), REPLACE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -628,7 +646,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldAppend(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), APPEND_WITH_DUPLICATION, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.AppendWithDuplication,
+            writer.getPrivateKey(), APPEND_WITH_DUPLICATION, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -663,7 +682,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), APPEND_LIST, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.AppendList,
+            writer.getPrivateKey(), APPEND_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -698,7 +718,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), APPEND, GUID, targetGuid,
+    JSONObject command = createAndSignCommand(CommandType.Append,
+            writer.getPrivateKey(), APPEND, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
@@ -736,10 +757,12 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
           GnsClientException {
     JSONObject command;
     if (writer == null) {
-      command = createCommand(REPLACE, GUID, targetGuid,
+      command = createCommand(CommandType.ReplaceUnsigned,
+              REPLACE, GUID, targetGuid,
               FIELD, field, VALUE, value);
     } else {
-      command = createAndSignCommand(writer.getPrivateKey(), REPLACE, GUID, targetGuid,
+      command = createAndSignCommand(CommandType.Replace,
+              writer.getPrivateKey(), REPLACE, GUID, targetGuid,
               FIELD, field, VALUE, value, WRITER, writer.getGuid());
     }
     String response = sendCommandAndWait(command);
@@ -776,7 +799,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldSubstitute(String targetGuid, String field, String newValue,
           String oldValue, GuidEntry writer) throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), SUBSTITUTE, GUID,
+    JSONObject command = createAndSignCommand(CommandType.Substitute,
+            writer.getPrivateKey(), SUBSTITUTE, GUID,
             targetGuid, FIELD, field, VALUE, newValue,
             OLD_VALUE, oldValue, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -815,7 +839,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    */
   public void fieldSubstitute(String targetGuid, String field,
           JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, GnsClientException {
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), SUBSTITUTE_LIST, GUID,
+    JSONObject command = createAndSignCommand(CommandType.SubstituteList,
+            writer.getPrivateKey(), SUBSTITUTE_LIST, GUID,
             targetGuid, FIELD, field, VALUE, newValue.toString(),
             OLD_VALUE, oldValue.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
@@ -853,9 +878,11 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
   public String fieldReadArrayFirstElement(String guid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(READ_ARRAY_ONE, GUID, guid, FIELD, field);
+      command = createCommand(CommandType.ReadArrayOneUnsigned,
+              READ_ARRAY_ONE, GUID, guid, FIELD, field);
     } else {
-      command = createAndSignCommand(reader.getPrivateKey(), READ_ARRAY_ONE, GUID, guid, FIELD, field,
+      command = createAndSignCommand(CommandType.ReadArrayOne,
+              reader.getPrivateKey(), READ_ARRAY_ONE, GUID, guid, FIELD, field,
               READER, reader.getGuid());
     }
 
@@ -895,7 +922,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
   }
 
   public String adminEnable(String passkey) throws Exception {
-    JSONObject command = createCommand(ADMIN, PASSKEY, passkey);
+    JSONObject command = createCommand(CommandType.Admin,
+            ADMIN, PASSKEY, passkey);
 
     String response = sendCommandAndWait(command);
 
@@ -903,7 +931,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
   }
 
   public void parameterSet(String name, Object value) throws Exception {
-    JSONObject command = createCommand(SET_PARAMETER, NAME, name, VALUE, value);
+    JSONObject command = createCommand(CommandType.SetParameter,
+            SET_PARAMETER, NAME, name, VALUE, value);
 
     String response = sendCommandAndWait(command);
 
@@ -911,7 +940,8 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
   }
 
   public String parameterGet(String name) throws Exception {
-    JSONObject command = createCommand(GET_PARAMETER, NAME, name);
+    JSONObject command = createCommand(CommandType.GetParameter,
+            GET_PARAMETER, NAME, name);
 
     String response = sendCommandAndWait(command);
 

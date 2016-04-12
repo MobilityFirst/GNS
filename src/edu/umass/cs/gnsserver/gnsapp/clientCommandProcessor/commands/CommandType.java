@@ -59,6 +59,7 @@ public enum CommandType {
   ReadSelf(161),
   ReadUnsigned(162),
   ReadMultiField(163),
+  ReadMultiFieldUnsigned(164),
   //
   ReadArray(170),
   ReadArrayOne(171),
@@ -131,7 +132,8 @@ public enum CommandType {
   LookupGuidRecord(424),
   //
   RegisterAccount(430),
-  RegisterAccountUnsigned(431),
+  RegisterAccountSansPassword(431),
+  RegisterAccountUnsigned(432),
   //
   RemoveAccount(440),
   RemoveAlias(441),

@@ -40,6 +40,7 @@ import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -329,7 +330,8 @@ public class ThroughputAsynchMultiClientTest {
           }
         }
         try {
-          JSONObject command = createCommand(LOOKUP_RANDOM_GUIDS, GUID,
+          JSONObject command = createCommand(CommandType.LookupRandomGuids,
+                  LOOKUP_RANDOM_GUIDS, GUID,
                   masterGuid.getGuid(), GUIDCNT, numberOfGuids);
           String result = checkResponse(command, clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
@@ -491,22 +493,23 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createReadCommandPacket(BasicTcpClientV1 client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(READ, GUID, targetGuid, FIELD, field);
+      command = createCommand(CommandType.ReadUnsigned,
+              READ, GUID, targetGuid, FIELD, field);
     } else {
-      command = createAndSignCommand(reader.getPrivateKey(), READ, 
+      command = createAndSignCommand(CommandType.Read,
+              reader.getPrivateKey(), READ, 
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
-    //int id = client.generateNextRequestID();
     return new CommandPacket(-1, command);
   }
 
   private static CommandPacket createUpdateCommandPacket(BasicTcpClientV1 client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
-    command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
+    command = createAndSignCommand(CommandType.ReplaceUserJSON,
+            writer.getPrivateKey(), REPLACE_USER_JSON, 
             GUID, targetGuid, USER_JSON, json.toString(), 
             WRITER, writer.getGuid());
-    //int id = client.generateNextRequestID();
     return new CommandPacket(-1, command);
   }
 

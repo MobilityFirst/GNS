@@ -110,15 +110,15 @@ public class ClientCoreTest {
 
   @Test
   public void test_010_CreateEntity() {
-    String alias = "testGUID" + RandomString.randomString(6);
+    String localAlias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
-      guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);
+      guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, localAlias);
     } catch (Exception e) {
       fail("Exception while creating guid: " + e);
     }
     assertNotNull(guidEntry);
-    assertEquals(alias, guidEntry.getEntityName());
+    assertEquals(localAlias, guidEntry.getEntityName());
   }
 
   @Test
@@ -180,7 +180,7 @@ public class ClientCoreTest {
     }
     try {
       assertEquals(masterGuid.getGuid(), client.lookupPrimaryGuid(testGuid.getGuid()));
-    } catch (Exception e) {
+    } catch (IOException | GnsClientException e) {
       fail("Exception while looking up primary guid for testGuid: " + e);
     }
   }
@@ -220,7 +220,7 @@ public class ClientCoreTest {
   public void test_080_CreateFieldForFieldExists() {
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
-    } catch (Exception e) {
+    } catch (IOException | GnsClientException e) {
       e.printStackTrace();
       fail("Exception during create field: " + e);
     }
@@ -401,7 +401,7 @@ public class ClientCoreTest {
       try {
         JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GnsProtocol.ALL_FIELDS)));
+        JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(GnsProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
@@ -424,7 +424,7 @@ public class ClientCoreTest {
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("hooch", "maya", "red", "sox", "toby")), westyEntry);
 
-      HashSet<String> expected = new HashSet<String>(Arrays.asList("hooch",
+      HashSet<String> expected = new HashSet<>(Arrays.asList("hooch",
               "maya", "red", "sox", "toby", "whacky"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(westyEntry.getGuid(), "cats", westyEntry));
@@ -432,7 +432,7 @@ public class ClientCoreTest {
 
       client.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("maya", "toby")), westyEntry);
-      expected = new HashSet<String>(Arrays.asList("hooch", "red", "sox",
+      expected = new HashSet<>(Arrays.asList("hooch", "red", "sox",
               "whacky"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
@@ -455,13 +455,13 @@ public class ClientCoreTest {
 //      } catch (GnsClientException e) {
 //      }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
       assertEquals(expected, actual);
 
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
       assertEquals(expected, actual);
@@ -477,7 +477,7 @@ public class ClientCoreTest {
     try {
 
       client.fieldAppendOrCreate(westyEntry.getGuid(), "dogs", "bear", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("bear"));
+      expected = new HashSet<>(Arrays.asList("bear"));
       actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(westyEntry.getGuid(), "dogs", westyEntry));
       assertEquals(expected, actual);
@@ -488,7 +488,7 @@ public class ClientCoreTest {
     try {
       client.fieldAppendOrCreateList(westyEntry.getGuid(), "dogs",
               new JSONArray(Arrays.asList("wags", "tucker")), westyEntry);
-      expected = new HashSet<String>(Arrays.asList("bear", "wags", "tucker"));
+      expected = new HashSet<>(Arrays.asList("bear", "wags", "tucker"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "dogs", westyEntry));
       assertEquals(expected, actual);
@@ -497,7 +497,7 @@ public class ClientCoreTest {
     }
     try {
       client.fieldReplaceOrCreate(westyEntry.getGuid(), "goats", "sue", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("sue"));
+      expected = new HashSet<>(Arrays.asList("sue"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
       assertEquals(expected, actual);

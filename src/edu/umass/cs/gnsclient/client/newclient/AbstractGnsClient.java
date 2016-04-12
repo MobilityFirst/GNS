@@ -387,7 +387,7 @@ public class AbstractGnsClient {
   private long desktopSendCommmandNoWait(JSONObject command) throws IOException {
     long startTime = System.currentTimeMillis();
     long id = generateNextRequestID();
-    CommandPacket packet = new CommandPacket(id, null, -1, command);
+    CommandPacket packet = new CommandPacket(id, command);
     GNSClientConfig.getLogger().log(Level.FINE, "{0} sending {1}:{2}",
             new Object[]{this, id + "", packet.getSummary()});
     queryTimeStamp.put(id, startTime);

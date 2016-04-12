@@ -61,6 +61,7 @@ import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -170,7 +171,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   private long sendCommandAsynch(JSONObject command, RequestCallback callback) throws IOException, JSONException {
     long id = generateNextRequestID();
-    CommandPacket packet = new CommandPacket(id, null, -1, command);
+    CommandPacket packet = new CommandPacket(id, command);
     GNSConfig.getLogger().log(Level.INFO, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
   }
@@ -370,7 +371,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws GnsClientException
    */
   public long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, GnsClientException {
-    return sendCommandAsynch(createCommand(LOOKUP_GUID, NAME, alias), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuid,
+            LOOKUP_GUID, NAME, alias), callback);
   }
 
   /**
@@ -386,7 +388,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long lookupPrimaryGuid(String guid, RequestCallback callback)
           throws UnsupportedEncodingException, IOException, GnsClientException, JSONException {
-    return sendCommandAsynch(createCommand(LOOKUP_PRIMARY_GUID, GUID, guid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupPrimaryGuid,
+            LOOKUP_PRIMARY_GUID, GUID, guid), callback);
   }
 
   /**
@@ -404,7 +407,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long lookupGuidRecord(String guid, RequestCallback callback)
           throws IOException, GnsClientException, JSONException {
-    return sendCommandAsynch(createCommand(LOOKUP_GUID_RECORD, GUID, guid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord,
+            LOOKUP_GUID_RECORD, GUID, guid), callback);
   }
 
   /**
@@ -425,7 +429,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long lookupAccountRecord(String accountGuid, RequestCallback callback)
           throws IOException, GnsClientException, JSONException {
-    return sendCommandAsynch(createCommand(LOOKUP_ACCOUNT_RECORD, GUID, accountGuid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, 
+            LOOKUP_ACCOUNT_RECORD, GUID, accountGuid), callback);
   }
 
   /**
@@ -444,7 +449,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
           throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
-    return sendCommandAsynch(createCommand(READ, GUID, guid, FIELD, field), callback);
+    return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, 
+            READ, GUID, guid, FIELD, field), callback);
   }
 
   /**
@@ -462,7 +468,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
           throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
-    return sendCommandAsynch(createCommand(READ_ARRAY, GUID, guid, FIELD, field), callback);
+    return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned,
+            READ_ARRAY, GUID, guid, FIELD, field), callback);
   }
 
   /**
@@ -481,7 +488,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     // Send a read command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REPLACE_USER_JSON,
+    return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
+            REPLACE_USER_JSON,
             GUID, guid,
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
@@ -501,7 +509,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long fieldReplaceOrCreateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
-    return sendCommandAsynch(createCommand(REPLACE_OR_CREATE_LIST,
+    return sendCommandAsynch(createCommand(CommandType.ReplaceOrCreateListUnsigned,
+            REPLACE_OR_CREATE_LIST,
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
@@ -522,7 +531,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
-    return sendCommandAsynch(createCommand(APPEND_LIST,
+    return sendCommandAsynch(createCommand(CommandType.AppendListUnsigned,
+            APPEND_LIST,
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
@@ -545,7 +555,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REMOVE, GUID, guid,
+    return sendCommandAsynch(createCommand(CommandType.RemoveFieldUnsigned,
+            REMOVE, GUID, guid,
             FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
@@ -566,7 +577,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(REMOVE_LIST, GUID, guid,
+    return sendCommandAsynch(createCommand(CommandType.RemoveListUnsigned,
+            REMOVE_LIST, GUID, guid,
             FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
@@ -584,7 +596,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, GnsClientException {
     // Send a read command that doesn't need authentication.
-    return sendCommandAsynch(createCommand(REPLACE_USER_JSON, GUID, guid,
+    return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
+            REPLACE_USER_JSON, GUID, guid,
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
   }

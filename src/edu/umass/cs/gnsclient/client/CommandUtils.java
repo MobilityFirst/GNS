@@ -22,6 +22,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.UnsupportedEncodingException;
@@ -83,6 +84,18 @@ public class CommandUtils {
       throw new GnsClientException("Error encoding message", e);
     }
   }
+  
+   public static JSONObject createCommand(CommandType commandType, String action, 
+           Object... keysAndValues) 
+           throws GnsClientException {
+     try {
+      JSONObject result = createCommand(action, keysAndValues);
+      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
+      return result;
+    } catch (JSONException e) {
+      throw new GnsClientException("Error encoding message", e);
+    }
+   }
 
   /**
    * Creates a command object from the given action string and a variable
@@ -95,7 +108,8 @@ public class CommandUtils {
    * @return the query string
    * @throws GnsClientException
    */
-  public static JSONObject createAndSignCommand(PrivateKey privateKey, String action, Object... keysAndValues) throws GnsClientException {
+  public static JSONObject createAndSignCommand(PrivateKey privateKey, String action,
+          Object... keysAndValues) throws GnsClientException {
     try {
       JSONObject result = createCommand(action, keysAndValues);
       result.put(GnsProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
@@ -104,7 +118,28 @@ public class CommandUtils {
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GnsProtocol.SIGNATURE, signatureString);
       return result;
-    } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | JSONException | UnsupportedEncodingException e) {
+    } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException 
+            | SignatureException | JSONException | UnsupportedEncodingException e) {
+      throw new GnsClientException("Error encoding message", e);
+    }
+  }
+
+  // FIXME: Temporarily hacked version for adding new command type integer. Will clean up once
+  // transition is done.
+  public static JSONObject createAndSignCommand(CommandType commandType,
+          PrivateKey privateKey, String action, Object... keysAndValues)
+          throws GnsClientException {
+    try {
+      JSONObject result = createAndSignCommand(privateKey, action, keysAndValues);
+      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
+      // Temp hack: need to redo the signature done above
+      result.remove(GnsProtocol.SIGNATURE);
+      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
+      String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
+      result.put(GnsProtocol.SIGNATURE, signatureString);
+      return result;
+    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException 
+            | SignatureException | UnsupportedEncodingException e) {
       throw new GnsClientException("Error encoding message", e);
     }
   }

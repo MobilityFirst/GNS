@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import org.json.JSONObject;
 
 /**
@@ -95,15 +96,18 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
-              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), WRITER, accountGuidEntry.getGuid());
+      command = createAndSignCommand(CommandType.ReplaceUserJSON,
+              accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
+              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), 
+              WRITER, accountGuidEntry.getGuid());
     } else {
-      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
+      command = createAndSignCommand(CommandType.Read,
+              accountGuidEntry.getPrivateKey(), READ,
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }
     // Create the command packet with a bogus id
-    CommandPacket commandPacket = new CommandPacket(-1, null, -1, command);
+    CommandPacket commandPacket = new CommandPacket(-1, command);
     // Keep track of what we've sent for the other thread to look at.
     Set<Long> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     // Create and run another thread to pick up the responses

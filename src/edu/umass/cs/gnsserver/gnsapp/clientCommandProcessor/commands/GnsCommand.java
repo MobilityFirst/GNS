@@ -34,8 +34,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This class helps to implement a unified set of client support commands that translate between client support requests
- * and core GNS commands that are sent to the server. Specifically the GnsCommand is the superclass for all other commands.
+ * This class helps to implement a unified set of client support commands that translate 
+ * between client support requests and core GNS commands that are sent to the server. 
+ * Specifically the GnsCommand is the superclass for all other commands.
  * It supports command sorting to facilitate command lookup. It also supports command documentation. 
  * 
  * @author westy, arun

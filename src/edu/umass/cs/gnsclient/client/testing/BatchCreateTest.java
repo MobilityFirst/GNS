@@ -41,6 +41,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * Simple guid creation test.
@@ -134,7 +135,8 @@ public class BatchCreateTest {
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
-        command = createCommand(LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
+        command = createCommand(CommandType.LookupRandomGuids,
+                LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
         result = checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
