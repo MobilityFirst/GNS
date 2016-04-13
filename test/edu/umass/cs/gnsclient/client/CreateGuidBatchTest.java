@@ -19,10 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClientExtended;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
@@ -43,7 +41,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CreateGuidBatchTest {
 
-  private static UniversalTcpClientExtended client;
+  private static GnsClient client;
   /**
    * The address of the GNS server we will contact
    */
@@ -61,10 +59,13 @@ public class CreateGuidBatchTest {
         address = new InetSocketAddress(System.getProperty("host"),
                 Integer.parseInt(System.getProperty("port")));
       } else {
-        address = ServerSelectDialog.selectServer();
+        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
+     try {
+        client = new GnsClient(address, System.getProperty("disableSSL").equals("true"));
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
+      }
       // can change the number to create on the command line
       if (System.getProperty("count") != null
               && !System.getProperty("count").isEmpty()) {

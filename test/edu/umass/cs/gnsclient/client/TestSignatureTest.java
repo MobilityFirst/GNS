@@ -19,11 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -33,6 +30,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import java.io.IOException;
 
 /**
  * Signature functionality test for the GNS Tcp client.
@@ -43,7 +41,7 @@ public class TestSignatureTest {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String privateKeyFile = "/Users/westy/pkcs8_key";
-  private static UniversalTcpClient client;
+  private static GnsClient client;
   private static GuidEntry guid;
   /**
    * The address of the GNS server we will contact
@@ -59,10 +57,13 @@ public class TestSignatureTest {
         address = new InetSocketAddress(System.getProperty("host"),
                 Integer.parseInt(System.getProperty("port")));
       } else {
-        address = ServerSelectDialog.selectServer();
+        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
+       try {
+        client = new GnsClient(address, System.getProperty("disableSSL").equals("true"));
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
+      }
       // Retrive the GUID using the account id
       String guidString;
       try {

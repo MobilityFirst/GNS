@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.oldclient.GNSClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import java.io.IOException;
@@ -39,7 +38,7 @@ public class NewGnsClientTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GNSClient client;
+  private static GnsClient client;
   /**
    * The address of the GNS server we will contact
    */
@@ -58,10 +57,9 @@ public class NewGnsClientTest {
         address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
       try {
-        client = new GNSClient(null,
-                address, !System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient(address, System.getProperty("disableSSL").equals("true"));
       } catch (IOException e) {
-        fail("Unable to create client: " + e);
+        fail("Exception creating client: " + e);
       }
 
     }

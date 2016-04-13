@@ -19,8 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -34,7 +33,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AdminTest {
 
-  private static UniversalTcpClientExtended client;
+  private static GnsClient client;
   /**
    * The address of the GNS server we will contact
    */
@@ -49,10 +48,13 @@ public class AdminTest {
         address = new InetSocketAddress(System.getProperty("host"),
                 Integer.parseInt(System.getProperty("port")));
       } else {
-        address = ServerSelectDialog.selectServer();
+        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
+     try {
+        client = new GnsClient(address, System.getProperty("disableSSL").equals("true"));
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
+      }
     }
   }
 
