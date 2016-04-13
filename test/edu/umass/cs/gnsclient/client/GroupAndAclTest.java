@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
+import org.json.JSONException;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -125,19 +126,27 @@ public class GroupAndAclTest {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
       client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);
-    } catch (Exception e) {
+    } catch (IOException | GnsClientException e) {
       fail("Exception while adding to groups: " + e);
     }
     try {
-      HashSet<String> expected = new HashSet<String>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
+      // Make sure the group has all the right members
+      HashSet<String> expected = new HashSet<>(Arrays.asList(westyEntry.getGuid(), samEntry.getGuid(), guidToDeleteEntry.getGuid()));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client.groupGetMembers(mygroupEntry.getGuid(), mygroupEntry));
       assertEquals(expected, actual);
 
-      expected = new HashSet<String>(Arrays.asList(mygroupEntry.getGuid()));
+      // and that each of the guids is in the right group
+      expected = new HashSet<>(Arrays.asList(mygroupEntry.getGuid()));
       actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(westyEntry.getGuid(), westyEntry));
       assertEquals(expected, actual);
+      
+      actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(samEntry.getGuid(), samEntry));
+      assertEquals(expected, actual);
+      
+      actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(guidToDeleteEntry.getGuid(), guidToDeleteEntry));
+      assertEquals(expected, actual);
 
-    } catch (Exception e) {
+    } catch (IOException | GnsClientException | JSONException e) {
       fail("Exception while getting members and groups: " + e);
     }
   }

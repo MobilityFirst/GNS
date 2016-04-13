@@ -71,14 +71,11 @@ public enum CommandType {
   ReadArrayUnsigned(175),
   //
   Remove(180),
-  RemoveField(181),
-  RemoveFieldSelf(182),
-  RemoveFieldUnsigned(183),
-  RemoveList(184),
-  RemoveListSelf(185),
-  RemoveListUnsigned(186),
-  RemoveSelf(187),
-  RemoveUnsigned(188),
+  RemoveList(181),
+  RemoveListSelf(182),
+  RemoveListUnsigned(183),
+  RemoveSelf(184),
+  RemoveUnsigned(185),
   //
   Replace(190),
   ReplaceList(191),
@@ -105,10 +102,14 @@ public enum CommandType {
   SubstituteSelf(235),
   SubstituteUnsigned(236),
   //
-  Set(240),
-  SetSelf(241),
-  SetFieldNull(242),
-  SetFieldNullSelf(243),
+  RemoveField(240),
+  RemoveFieldSelf(241),
+  RemoveFieldUnsigned(242),
+  //
+  Set(250),
+  SetSelf(251),
+  SetFieldNull(252),
+  SetFieldNullSelf(253),
   // Select
   Select(310),
   SelectGroupLookupQuery(311),

@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcess
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -132,16 +133,32 @@ public class CommandModule {
     if (json.has(COMMAND_INT)) {
       try {
         command = commandLookupTable.get(CommandType.getCommandType(json.getInt(COMMAND_INT)));
+        // Some sanity checks
+        String commandName = json.optString(COMMANDNAME, null);
+        // Check to see if command name
+        if (command != null && commandName != null && !commandName.equals(command.getCommandName())) {
+          ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
+                  "Command name {0} in json does not match {1}",
+                  new Object[]{commandName, command.getCommandName()});
+          command = null;
+        }
+        if (command != null && !JSONContains(json, command.getCommandParameters())) {
+          ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
+                  "For {0} missing parameter {1}",
+                  new Object[]{commandName, JSONMissing(json, command.getCommandParameters())});
+          command = null;
+        }
       } catch (JSONException e) {
         // do nothing
       }
     }
     if (command != null) {
-      ClientCommandProcessorConfig.getLogger().log(Level.FINE, "Found {0} using table lookup", command);
+      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+              "Found {0} using table lookup", command);
       return command;
     }
-     // Keep the old method for backward compatibility with older clients that
-     // aren't using the COMMAND_INT field
+    // Keep the old method for backward compatibility with older clients that
+    // aren't using the COMMAND_INT field
     return lookupCommandLinearSearch(json);
   }
 
@@ -222,13 +239,17 @@ public class CommandModule {
     return result.toString();
   }
 
-  private boolean JSONContains(JSONObject json, String[] parameters) {
+  private String JSONMissing(JSONObject json, String[] parameters) {
     for (int i = 0; i < parameters.length; i++) {
       if (json.optString(parameters[i], null) == null) {
-        return false;
+        return parameters[i];
       }
     }
-    return true;
+    return null;
+  }
+
+  private boolean JSONContains(JSONObject json, String[] parameters) {
+    return JSONMissing(json, parameters) == null;
   }
 
   /**

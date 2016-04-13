@@ -555,7 +555,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
-    return sendCommandAsynch(createCommand(CommandType.RemoveFieldUnsigned,
+    return sendCommandAsynch(createCommand(CommandType.RemoveUnsigned,
             REMOVE, GUID, guid,
             FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);

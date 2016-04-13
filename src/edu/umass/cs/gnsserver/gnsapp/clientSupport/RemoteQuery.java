@@ -233,7 +233,7 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Creates a record at an appropriate reconfigurator.
-   * 
+   *
    * @param name
    * @param value
    * @return a NSResponseCode
@@ -252,7 +252,7 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Creates multiple records at the appropriate reconfigurators.
-   * 
+   *
    * @param names
    * @param values
    * @param handler
@@ -280,16 +280,16 @@ public class RemoteQuery extends ClientAsynchBase {
   }
 
   /**
-   * Based on edu.umass.cs.reconfiguration.testing.ReconfigurableClientCreateTester 
+   * Based on edu.umass.cs.reconfiguration.testing.ReconfigurableClientCreateTester
    * but this one handles multiple states.
    *
    * @param names
    * @param states
    * @param handler
    * @return
-   * @throws JSONException 
+   * @throws JSONException
    */
-   private static CreateServiceName[] makeBatchedCreateNameRequest(Set<String> names,
+  private static CreateServiceName[] makeBatchedCreateNameRequest(Set<String> names,
           Map<String, JSONObject> states, ClientRequestHandlerInterface handler) throws JSONException {
     Collection<Set<String>> batches = ConsistentReconfigurableNodeConfig
             .splitIntoRCGroups(names, handler.getGnsNodeConfig().getReconfigurators());
@@ -309,9 +309,9 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Deletes a record at the appropriate reconfigurators.
-   * 
+   *
    * @param name
-   * @return 
+   * @return
    */
   public NSResponseCode deleteRecord(String name) {
     try {
@@ -327,12 +327,12 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Handles the reponse from some query with a default timeout period.
-   * 
+   *
    * @param requestId
    * @param monitor
    * @param notFoundReponse
    * @return the response from the query
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   private String handleQueryResponse(long requestId, Object monitor, String notFoundReponse) throws GnsClientException {
     return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
@@ -340,13 +340,13 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Handles the reponse from some query with a specified timeout period.
-   * 
+   *
    * @param requestId
    * @param monitor
    * @param timeout
    * @param notFoundReponse
    * @return the response from the query
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   private String handleQueryResponse(long requestId, Object monitor, long timeout,
           String notFoundReponse) throws GnsClientException {
@@ -359,7 +359,7 @@ public class RemoteQuery extends ClientAsynchBase {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} {1} got from {2} this: {3}",
                 new Object[]{this, packet.getServiceName(),
-                  packet.getResponder(), Util.truncate(returnValue, 16, 16)});
+                  packet.getResponder(), returnValue});
         // FIX ME: Tidy up all these error reponses for updates
         return checkResponse(returnValue);
       }
@@ -382,7 +382,7 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldRead(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     ClientSupportConfig.getLogger().log(Level.FINE,
-            "{0} Field read of {1} / {2}",
+            "{0} Field read of {1} : {2}",
             new Object[]{this, guid, Util.truncate(field, 16, 16)});
     Object monitor = new Object();
     long requestId = fieldRead(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -404,7 +404,7 @@ public class RemoteQuery extends ClientAsynchBase {
   public String fieldReadArray(String guid, String field) throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     ClientSupportConfig.getLogger().log(Level.FINE,
-            "{0} Field read array of {1} / {2}",
+            "{0} Field read array of {1} : {2}",
             new Object[]{this, guid, field});
     Object monitor = new Object();
     long requestId = fieldReadArray(guid, field, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -426,34 +426,29 @@ public class RemoteQuery extends ClientAsynchBase {
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     ClientSupportConfig.getLogger().log(Level.FINE,
-            "{0} Field update {1} / {2} = {3}",
+            "{0} Field update {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
-
     Object monitor = new Object();
     long requestId = fieldUpdate(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
-
-    ClientSupportConfig.getLogger().log(Level.FINE,
-            "{0} Field update {1} / {2} {3} = {4}",
-            new Object[]{this, guid, field, requestId, Util.truncate(value, 16, 16)});
     return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
   }
 
   /**
    * Updates or creates a field that is an array at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
    * @return the response to the query
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public String fieldReplaceOrCreateArray(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     ClientSupportConfig.getLogger().log(Level.FINE,
-            "{0} Field fieldReplaceOrCreateArray {1} / {2} = {3}",
+            "{0} Field fieldReplaceOrCreateArray {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
     long requestId = fieldReplaceOrCreateArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
@@ -463,23 +458,21 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Appends a value to a field that is an array at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
    * @return the response to the query
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public String fieldAppendToArray(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
-    GNSConfig
-            .getLogger()
-            .log(Level.FINE,
-                    "{0} Field fieldAppendToArray {1} / {2} = {3}",
-                    new Object[]{this, guid, field, Util.truncate(value, 64, 64)});
+    GNSConfig.getLogger().log(Level.FINE,
+            "{0} Field fieldAppendToArray {1} / {2} : {3}",
+            new Object[]{this, guid, field, Util.truncate(value, 64, 64)});
     Object monitor = new Object();
     long requestId = fieldAppendToArray(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
     return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT,
@@ -488,37 +481,38 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Removes a value from a field that is an array at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
    * @return the response to the query
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public String fieldRemove(String guid, String field, Object value)
           throws IOException, JSONException, GnsClientException {
     // FIXME: NEED TO FIX COMMANDPACKET AND FRIENDS TO USE LONG
     assert value instanceof String || value instanceof Number;
     ClientSupportConfig.getLogger().log(Level.FINE,
-            "{0} Field update {1} / {2} = {3}",
-            new Object[]{this, guid, field, Util.truncate(value, 16, 16)});
+            "{0} Field remove {1} / {2} : {3}",
+            new Object[]{this, guid, field, value});
     Object monitor = new Object();
-    long requestId = fieldRemove(guid, field, value, this.getRequestCallback(monitor));//replicaCommandCallback);
-    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    long requestId = fieldRemove(guid, field, value, this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor,
+            DEFAULT_REPLICA_UPDATE_TIMEOUT, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   /**
    * Removes all the values given from a field that is an array at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
    * @return the response to the query
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public String fieldRemoveMultiple(String guid, String field, ResultValue value)
           throws IOException, JSONException, GnsClientException {
@@ -536,14 +530,14 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Sends a select command to the remote replica.
-   * 
+   *
    * @param operation
    * @param key
    * @param value
    * @param otherValue
    * @return a JSONArray of guids that match the select query
    * @throws IOException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public JSONArray sendSelect(SelectOperation operation, String key, Object value, Object otherValue)
           throws IOException, GnsClientException {
@@ -563,11 +557,11 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Sends a select query to the remote replica.
-   * 
+   *
    * @param query
    * @return a JSONArray of guids that match the select query
    * @throws IOException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public JSONArray sendSelectQuery(String query) throws IOException, GnsClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
@@ -585,13 +579,13 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Sends a setup select query to the remote replica with a specified refresh interval.
-   * 
+   *
    * @param query
    * @param guid
    * @param interval
    * @return a JSONArray of guids that match the select query
    * @throws IOException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid, int interval)
           throws IOException, GnsClientException {
@@ -611,12 +605,12 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Sends a setup select query to the remote replica with the default refresh interval.
-   * 
+   *
    * @param query
    * @param guid
    * @return a JSONArray of guids that match the select query
    * @throws IOException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid)
           throws IOException, GnsClientException {
@@ -625,11 +619,11 @@ public class RemoteQuery extends ClientAsynchBase {
 
   /**
    * Sends a lookup select query to the remote replica.
-   * 
+   *
    * @param guid
    * @return a JSONArray of guids that match the original select query
    * @throws IOException
-   * @throws GnsClientException 
+   * @throws GnsClientException
    */
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, GnsClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);

@@ -206,13 +206,13 @@ public class GroupAccess {
           throws GnsClientException, IOException, JSONException {
     // just so you know all the nulls mean we're ignoring signatures and authentication
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("DELETE CLEANUP: " + guid);
+      GNSConfig.getLogger().fine("DELETE CLEANUP: " + guid);
     }
     try {
       for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null, 
               null, handler, true).toStringSet()) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().info("GROUP CLEANUP: " + groupGuid);
+          GNSConfig.getLogger().fine("GROUP CLEANUP: " + groupGuid);
         }
         removeFromGroup(groupGuid, guid, null, null, null, handler);
       }

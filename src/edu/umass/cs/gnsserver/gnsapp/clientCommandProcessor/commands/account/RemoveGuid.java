@@ -103,7 +103,7 @@ public class RemoveGuid extends GnsCommand {
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     } catch (GnsClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
 

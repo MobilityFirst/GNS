@@ -1218,33 +1218,30 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
   }
 
   private void aclAdd(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
-    JSONObject command = createAndSignCommand(CommandType.AclAdd,
+    JSONObject command = createAndSignCommand(CommandType.AclAddSelf,
             guid.getPrivateKey(), ACL_ADD, ACL_TYPE, accessType,
-            GUID, guid.getGuid(), FIELD, field, ACCESSER, accesserGuid == null
-                    ? ALL_USERS
-                    : accesserGuid);
+            GUID, guid.getGuid(), FIELD, field, 
+            ACCESSER, accesserGuid == null ? ALL_USERS : accesserGuid);
     String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
 
   private void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
-    JSONObject command = createAndSignCommand(CommandType.AclRemove,
+    JSONObject command = createAndSignCommand(CommandType.AclRemoveSelf,
             guid.getPrivateKey(), ACL_REMOVE, ACL_TYPE, accessType,
-            GUID, guid.getGuid(), FIELD, field, ACCESSER, accesserGuid == null
-                    ? ALL_USERS
-                    : accesserGuid);
+            GUID, guid.getGuid(), FIELD, field, 
+            ACCESSER, accesserGuid == null ? ALL_USERS : accesserGuid);
     String response = sendCommandAndWait(command);
 
     checkResponse(command, response);
   }
 
-  private JSONArray aclGet(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
+  private JSONArray aclGet(String accessType, GuidEntry guid, String field, String readerGuid) throws Exception {
     JSONObject command = createAndSignCommand(CommandType.AclRetrieve,
             guid.getPrivateKey(), ACL_RETRIEVE, ACL_TYPE, accessType,
-            GUID, guid.getGuid(), FIELD, field, ACCESSER, accesserGuid == null
-                    ? ALL_USERS
-                    : accesserGuid);
+            GUID, guid.getGuid(), FIELD, field, 
+            READER, readerGuid == null ? ALL_USERS : readerGuid);
     String response = sendCommandAndWait(command);
     try {
       return new JSONArray(checkResponse(command, response));

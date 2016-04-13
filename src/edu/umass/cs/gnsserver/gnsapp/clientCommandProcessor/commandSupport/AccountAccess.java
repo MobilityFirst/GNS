@@ -139,18 +139,16 @@ public class AccountAccess {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, ACCOUNT_INFO,
               handler.getApp(), false);
-      GNSConfig
-              .getLogger()
-              .log(Level.FINE,
-                      "AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
-                      new Object[]{guid, ACCOUNT_INFO,
-                        result != null ? result.getSummary() : result});
+      GNSConfig.getLogger().log(Level.FINE,
+              "AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
+              new Object[]{guid, ACCOUNT_INFO,
+                result != null ? result.getSummary() : result});
       if (result != null) {
         return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Problem extracting ACCOUNT_INFO from {0} :{1}",
-              new Object[]{guid, e});
+//      GNSConfig.getLogger().log(Level.SEVERE, "Problem extracting ACCOUNT_INFO from {0} :{1}",
+//              new Object[]{guid, e});
     }
     GNSConfig.getLogger().log(Level.FINE,
             "AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for {0}", guid);
@@ -161,20 +159,21 @@ public class AccountAccess {
     if (allowRemoteLookup) {
       GNSConfig.getLogger().log(Level.FINE,
               "AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for {0}", guid);
-
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
       } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().log(Level.SEVERE,
-                "Problem getting GUID_INFO for {0} from remote server: {1}", new Object[]{guid, e});
+//        GNSConfig.getLogger().log(Level.SEVERE,
+//                "Problem getting GUID_INFO for {0} from remote server: {1}",
+//                new Object[]{guid, e});
       }
       if (value != null) {
         try {
           return new AccountInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-          GNSConfig.getLogger().log(Level.SEVERE,
-                  "Problem parsing GUID_INFO value from remote server for {0}: {1}", new Object[]{guid, e});
+//          GNSConfig.getLogger().log(Level.SEVERE,
+//                  "Problem parsing GUID_INFO value from remote server for {0}: {1}",
+//                  new Object[]{guid, e});
         }
       }
     }
@@ -853,7 +852,7 @@ public class AccountAccess {
    * so we don't have to check or update that info. The accountInfo parameter
    * can be null in which case we look it up using the guid.
    *
-   * @param guid
+   * @param guidInfo
    * @param accountInfo - can be null in which case we look it up
    * @param ignoreAccountGuid
    * @param handler
@@ -862,44 +861,46 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo,
+  public static CommandResponse<String> removeGuid(GuidInfo guidInfo, AccountInfo accountInfo,
           boolean ignoreAccountGuid,
           ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
+    GNSConfig.getLogger().log(Level.FINE,
+            "REMOVE: GUID INFO: {0} ACCOUNT INFO: {1}", new Object[]{guidInfo, accountInfo});
     // First make sure guid is not an account GUID 
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
-      if (lookupAccountInfoFromGuid(guid.getGuid(), handler, true) != null) {
+      if (lookupAccountInfoFromGuid(guidInfo.getGuid(), handler, true) != null) {
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " "
-                + guid.getGuid() + " is an account guid");
+                + guidInfo.getGuid() + " is an account guid");
       }
     }
     // Fill in a missing account info
     if (accountInfo == null) {
-      String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid(), handler, true);
+      String accountGuid = AccountAccess.lookupPrimaryGuid(guidInfo.getGuid(), handler, true);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid.getGuid() + " does not have a primary account guid");
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT
+                + " " + guidInfo.getGuid() + " does not have a primary account guid");
       }
       if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, handler, true)) == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT
+                + " " + guidInfo.getGuid() + " cannot find primary account guid for " + accountGuid);
       }
     }
     // First remove any group links
-    GroupAccess.cleanupGroupsForDelete(guid.getGuid(), handler);
+    GroupAccess.cleanupGroupsForDelete(guidInfo.getGuid(), handler);
     // Then remove the guid record
-    if (!handler.getRemoteQuery().deleteRecord(guid.getGuid()).isAnError()) {
-      //if (!handler.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
+    if (!handler.getRemoteQuery().deleteRecord(guidInfo.getGuid()).isAnError()) {
       // remove reverse record
-      handler.getRemoteQuery().deleteRecord(guid.getName());
-      //handler.getIntercessor().sendRemoveRecord(guid.getName());
+      handler.getRemoteQuery().deleteRecord(guidInfo.getName());
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
         return new CommandResponse<>(OK_RESPONSE);
       } else {
         // update the account guid to know that we deleted the guid
-        accountInfo.removeGuid(guid.getGuid());
+        accountInfo.removeGuid(guidInfo.getGuid());
         accountInfo.noteUpdate();
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           return new CommandResponse<>(OK_RESPONSE);

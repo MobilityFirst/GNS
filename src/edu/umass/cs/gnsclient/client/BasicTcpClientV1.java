@@ -1152,24 +1152,33 @@ public class BasicTcpClientV1 implements GNSClientInterface {
   }
 
   /**
-   * Get an access control list of the given user's field on the GNS server to
-   * include the guid specified in the accesser param. The accesser can be a
-   * guid of a user or a group guid or null which means anyone can access the
-   * field. The field can be also be +ALL+ which means all fields can be read by
-   * the reader. Signs the query using the private key of the user associated
-   * with the guid.
+   * Get an access control list of the given user's field on the GNS server.
    *
    * @param accessType
    * @param guid
    * @param field
-   * @param accesserGuid
+   * @param readerGuid
    * @return list of GUIDs for that ACL
    * @throws Exception
    * @throws GnsClientException if the query is not accepted by the server.
    */
-  public JSONArray aclGet(AccessType accessType, GuidEntry guid, String field, String accesserGuid)
+  public JSONArray aclGet(AccessType accessType, GuidEntry guid, String field, String readerGuid)
           throws Exception {
-    return aclGet(accessType.name(), guid, field, accesserGuid);
+    return aclGet(accessType.name(), guid, field, readerGuid);
+  }
+  
+  /**
+   * Get an access control list of the given user's field on the GNS server.
+   * 
+   * @param accessType
+   * @param guid
+   * @param field
+   * @return
+   * @throws Exception 
+   */
+  public JSONArray aclGet(AccessType accessType, GuidEntry guid, String field)
+          throws Exception {
+    return aclGet(accessType, guid, field, guid.getGuid());
   }
 
   // ALIASES
@@ -1359,11 +1368,10 @@ public class BasicTcpClientV1 implements GNSClientInterface {
     checkResponse(command, response);
   }
 
-  private JSONArray aclGet(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
+  private JSONArray aclGet(String accessType, GuidEntry guid, String field, String readerGuid) throws Exception {
     JSONObject command = createAndSignCommand(guid.getPrivateKey(), ACL_RETRIEVE, ACL_TYPE, accessType,
-            GUID, guid.getGuid(), FIELD, field, ACCESSER, accesserGuid == null
-                    ? ALL_USERS
-                    : accesserGuid);
+            GUID, guid.getGuid(), FIELD, field, 
+            READER, readerGuid);
     String response = sendCommandAndWait(command);
     try {
       return new JSONArray(checkResponse(command, response));

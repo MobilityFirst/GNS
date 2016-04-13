@@ -60,7 +60,7 @@ public class AclRetrieve extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACL_TYPE, ACCESSER, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, ACL_TYPE, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -74,8 +74,8 @@ public class AclRetrieve extends GnsCommand {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
     String accessType = json.getString(ACL_TYPE);
-    // allows someone other than guid to change the acl, defaults to guid
-    String reader = json.optString(ACCESSER, guid);
+    // allows someone other than guid to read acl, defaults to guid
+    String reader = json.optString(READER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
