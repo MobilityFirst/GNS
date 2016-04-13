@@ -25,7 +25,7 @@ package edu.umass.cs.msocket.proxy.console.commands;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 

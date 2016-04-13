@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**

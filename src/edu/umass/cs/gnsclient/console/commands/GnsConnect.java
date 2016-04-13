@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.console.commands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 

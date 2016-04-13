@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.oldclient.GNSClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;

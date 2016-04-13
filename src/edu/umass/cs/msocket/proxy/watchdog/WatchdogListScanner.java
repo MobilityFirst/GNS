@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 
 
 

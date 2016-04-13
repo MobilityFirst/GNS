@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -41,7 +42,7 @@ public class MultiFieldLookupTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static BasicTcpClientV1 client;
+  private static BasicTcpClient client;
   /**
    * The address of the GNS server we will contact
    */
@@ -61,7 +62,7 @@ public class MultiFieldLookupTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new BasicTcpClientV1(address.getHostName(), address.getPort());
+      client = new BasicTcpClient(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {

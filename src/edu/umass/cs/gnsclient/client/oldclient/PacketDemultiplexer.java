@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.oldclient;
 
 import java.util.logging.Level;
 
@@ -26,7 +26,6 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
@@ -36,11 +35,12 @@ import org.json.JSONException;
  * 
  * @author westy
  */
+@Deprecated
 public class PacketDemultiplexer extends AbstractJSONPacketDemultiplexer{
   
-  BasicTcpClientV1 client;
+  BasicTcpClient client;
 
-  public PacketDemultiplexer(BasicTcpClientV1 client) {
+  public PacketDemultiplexer(BasicTcpClient client) {
     this.client = client;
     this.register(Packet.PacketType.COMMAND);
     this.register(Packet.PacketType.COMMAND_RETURN_VALUE);

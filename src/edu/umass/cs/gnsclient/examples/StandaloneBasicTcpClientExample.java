@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
+import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -48,7 +48,7 @@ import org.json.JSONObject;
 public class StandaloneBasicTcpClientExample {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static BasicTcpClientV1 client;
+  private static BasicTcpClient client;
   private static GuidEntry guid;
 
   public static void main(String[] args) throws IOException,
@@ -58,7 +58,7 @@ public class StandaloneBasicTcpClientExample {
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Start the client
-    client = new BasicTcpClientV1(address.getHostName(), address.getPort());
+    client = new BasicTcpClient(address.getHostName(), address.getPort());
     try {
       // Create a guid (which is also an account guid)
       guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);

@@ -22,7 +22,7 @@
 package edu.umass.cs.msocket.gns;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 
 

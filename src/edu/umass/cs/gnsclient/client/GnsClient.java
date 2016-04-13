@@ -17,10 +17,8 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.newclient;
+package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.GNSClientInterface;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -37,6 +35,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
+ * * Cleaner implementation of a GNS client using gigapaxos' async client.
+ * 
  * This class defines a client to communicate with a GNS instance over TCP.
  * This class adds single field list based commands to the {@link BasicTcpClientV1}'s JSONObject based commands.
  *
@@ -46,7 +46,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
  * @version 1.0
  */
-public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
+public class GnsClient extends BasicGnsClient implements GNSClientInterface {
 
   /**
    * Creates a NewGnsClient. 
@@ -56,14 +56,14 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    * @param disableSSL
    * @throws java.io.IOException
    */
-  public NewGnsClient(InetSocketAddress anyReconfigurator,
+  public GnsClient(InetSocketAddress anyReconfigurator,
           InetSocketAddress localNameServer, boolean disableSSL)
           throws IOException {
     super(anyReconfigurator, localNameServer, disableSSL);
   }
 
   /**
-   * Same as {@link #NewGnsClient(InetSocketAddress, InetSocketAddress, boolean)}
+   * Same as {@link #GnsClient(InetSocketAddress, InetSocketAddress, boolean)}
    * with a default reconfigurator. Either a default reconfigurator must be
    * provided or the gigapaxos properties file must contain at least one
    * legitimate reconfigurator.
@@ -72,12 +72,12 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    * @param disableSSL
    * @throws IOException
    */
-  public NewGnsClient(InetSocketAddress localNameServer, boolean disableSSL) throws IOException {
+  public GnsClient(InetSocketAddress localNameServer, boolean disableSSL) throws IOException {
     this(null, localNameServer, false);
   }
 
   /**
-   * Same as {@link #NewGnsClient(InetSocketAddress, boolean)}
+   * Same as {@link #GnsClient(InetSocketAddress, boolean)}
    * with a default reconfigurator and ssl enabled. 
    * Either a default reconfigurator must be
    * provided or the gigapaxos properties file must contain at least one
@@ -86,8 +86,24 @@ public class NewGnsClient extends BasicGnsClient implements GNSClientInterface {
    * @param localNameServer
    * @throws IOException
    */
-  public NewGnsClient(InetSocketAddress localNameServer) throws IOException {
+  public GnsClient(InetSocketAddress localNameServer) throws IOException {
     this(null, localNameServer, false);
+  }
+  
+  /**
+   * Same as {@link #GnsClient(InetSocketAddress, InetSocketAddress, boolean)}
+   * with ssl enabled. 
+   * Either a default reconfigurator must be
+   * provided or the gigapaxos properties file must contain at least one
+   * legitimate reconfigurator.
+   *
+   * @param anyReconfigurator
+   * @param localNameServer
+   * @throws IOException
+   */
+  public GnsClient(InetSocketAddress anyReconfigurator,
+          InetSocketAddress localNameServer) throws IOException {
+    this(anyReconfigurator, localNameServer, false);
   }
 
   /**

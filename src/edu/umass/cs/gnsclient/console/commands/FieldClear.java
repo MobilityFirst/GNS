@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.console.ConsoleModule;

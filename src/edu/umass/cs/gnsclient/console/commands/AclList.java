@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.console.commands;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**

@@ -5,11 +5,8 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsclient.client.newclient;
+package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GNSClientInterface;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import static edu.umass.cs.gnsclient.client.CommandUtils.checkResponse;
 import static edu.umass.cs.gnsclient.client.CommandUtils.createAndSignCommand;
 import static edu.umass.cs.gnsclient.client.CommandUtils.createCommand;
@@ -47,7 +44,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * THIS IS A NEW CLIENT CLASS SIMILAR TO GNSCLIENT.
+ * * Cleaner implementation of a GNS client using gigapaxos' async client.
+ * 
+ * THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.GNSClient.
  * BOTH ARE BASED ON AsyncClient.
  * This class contains a concise set of read and write commands
  * which read and write JSON Objects.

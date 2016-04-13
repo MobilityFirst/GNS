@@ -17,8 +17,10 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.oldclient;
 
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 
 import java.io.IOException;
@@ -36,7 +38,7 @@ import edu.umass.cs.gnscommon.utils.Base64;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP.
- * This class adds single field list based commands to the {@link BasicTcpClientV1}'s JSONObject based commands.
+ * This class adds single field list based commands to the {@link BasicTcpClient}'s JSONObject based commands.
  *
  * This class contains a concise subset of all available server operations.
  * For a more complete set see {@link UniversalTcpClientExtended}.
@@ -44,7 +46,8 @@ import edu.umass.cs.gnscommon.utils.Base64;
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
  * @version 1.0
  */
-public class UniversalTcpClient extends BasicTcpClientV1 implements GNSClientInterface {
+@Deprecated
+public class UniversalTcpClient extends BasicTcpClient implements GNSClientInterface {
 
 	UniversalTcpClient() {
 		

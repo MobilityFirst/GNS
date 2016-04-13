@@ -31,7 +31,7 @@ import org.json.JSONArray;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.msocket.common.GnsConstants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;

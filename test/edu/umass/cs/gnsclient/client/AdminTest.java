@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import java.net.InetSocketAddress;
 import static org.junit.Assert.*;

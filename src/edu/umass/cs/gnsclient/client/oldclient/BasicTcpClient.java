@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, arun, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.oldclient;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -45,6 +45,9 @@ import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
@@ -84,7 +87,8 @@ import java.util.logging.Level;
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>, arun
  *
  */
-public class BasicTcpClientV1 implements GNSClientInterface {
+@Deprecated
+public class BasicTcpClient implements GNSClientInterface {
 
   /**
    * The messenger we're using.
@@ -145,14 +149,14 @@ public class BasicTcpClientV1 implements GNSClientInterface {
    * @param remoteHost
    * @param remotePort
    */
-  public BasicTcpClientV1(String remoteHost, int remotePort) {
+  public BasicTcpClient(String remoteHost, int remotePort) {
     this(remoteHost, remotePort, false);
   }
 
   /**
    * @param disableSSL
    */
-  public BasicTcpClientV1(boolean disableSSL) {
+  public BasicTcpClient(boolean disableSSL) {
     this(null, -1, disableSSL);
   }
 
@@ -161,7 +165,7 @@ public class BasicTcpClientV1 implements GNSClientInterface {
    * @param localNameServer
    * @param disableSSL
    */
-  public BasicTcpClientV1(InetSocketAddress anyReconfigurator,
+  public BasicTcpClient(InetSocketAddress anyReconfigurator,
           InetSocketAddress localNameServer, boolean disableSSL) {
     this(localNameServer != null ? localNameServer.getAddress().toString()
             : null, localNameServer != null ? localNameServer.getPort()
@@ -174,7 +178,7 @@ public class BasicTcpClientV1 implements GNSClientInterface {
    * @param disableSSL
    */
   @Deprecated
-  public BasicTcpClientV1(String remoteHost, int remotePort,
+  public BasicTcpClient(String remoteHost, int remotePort,
           boolean disableSSL) {
     this(null, remoteHost, remotePort, disableSSL);
     GNSClientConfig.getLogger().warning(
@@ -183,7 +187,7 @@ public class BasicTcpClientV1 implements GNSClientInterface {
 
   private static final String DEFAULT_INSTANCE = "server.gns.name";
 
-  BasicTcpClientV1() {
+  BasicTcpClient() {
     this.disableSSL = false;
     // FIXME: This should be initalized to something better.
     // See the doc for GNSInstance.
@@ -199,7 +203,7 @@ public class BasicTcpClientV1 implements GNSClientInterface {
    * @param remotePort
    * @param disableSSL
    */
-  public BasicTcpClientV1(InetSocketAddress anyReconfigurator, String remoteHost, int remotePort, boolean disableSSL) {
+  public BasicTcpClient(InetSocketAddress anyReconfigurator, String remoteHost, int remotePort, boolean disableSSL) {
     this.disableSSL = disableSSL;
     this.GNSInstance = DEFAULT_INSTANCE;
     //this.anyReconfigurator = anyReconfigurator;
@@ -275,7 +279,7 @@ public class BasicTcpClientV1 implements GNSClientInterface {
    * @throws GnsClientException
    */
   public void update(GuidEntry guid, JSONObject json) throws IOException, GnsClientException {
-    BasicTcpClientV1.this.update(guid.getGuid(), json, guid);
+    BasicTcpClient.this.update(guid.getGuid(), json, guid);
   }
 
   /**

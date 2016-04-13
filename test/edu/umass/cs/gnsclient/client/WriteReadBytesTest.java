@@ -19,8 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.newclient.BasicGnsClient;
-import edu.umass.cs.gnsclient.client.newclient.NewGnsClient;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -42,7 +40,7 @@ public class WriteReadBytesTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static NewGnsClient client = null;
+  private static GnsClient client = null;
   private static GuidEntry masterGuid;
 
   public WriteReadBytesTest() {
@@ -58,7 +56,7 @@ public class WriteReadBytesTest {
         address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
       try {
-        client = new NewGnsClient(null, address, System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient(null, address, System.getProperty("disableSSL").equals("true"));
       } catch (IOException e) {
         fail("Exception while trying to create the client: " + e);
       }

@@ -49,7 +49,7 @@ import jline.SimpleCompletor;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.msocket.proxy.ProxyGnsPublisher;

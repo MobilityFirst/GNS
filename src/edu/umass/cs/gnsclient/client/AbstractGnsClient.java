@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, arun, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.newclient;
+package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,8 +29,6 @@ import org.json.JSONObject;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
@@ -216,6 +214,13 @@ public class AbstractGnsClient {
    */
   public final void checkConnectivity() throws IOException {
     this.asyncClient.checkConnectivity();
+  }
+  
+  /**
+   * Closes the underlying async client.
+   */
+  public void close() {
+    this.asyncClient.close();
   }
 
   /**

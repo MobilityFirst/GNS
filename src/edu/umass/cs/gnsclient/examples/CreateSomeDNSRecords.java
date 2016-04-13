@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
+import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -38,7 +38,7 @@ import java.net.InetSocketAddress;
  */
 public class CreateSomeDNSRecords {
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static BasicTcpClientV1 client;
+  private static BasicTcpClient client;
   private static GuidEntry accountGuid;
   
   private static boolean disableSSL = true;
@@ -51,7 +51,7 @@ public class CreateSomeDNSRecords {
     if (args.length == 0 || (address = ServerSelectDialog.parseHostPortTuple(args[0])) == null) {
       address = ServerSelectDialog.selectServer();
     }
-    client = new BasicTcpClientV1(address.getHostName(), address.getPort(), disableSSL);
+    client = new BasicTcpClient(address.getHostName(), address.getPort(), disableSSL);
     try {
       accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
     } catch (Exception e) {

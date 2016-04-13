@@ -60,12 +60,8 @@ import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
-import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-
 import java.awt.geom.Point2D;
 import java.util.Set;
-
 import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONException;
 
@@ -79,7 +75,7 @@ public class ServerIntegrationTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE																// ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client = null;
+  private static GnsClient client = null;
 
   /**
    * The address of the GNS server we will contact
@@ -112,6 +108,10 @@ public class ServerIntegrationTest {
 
     // aditya: FIXME: just added a bit of delay, as client was trying to connect before the GNS was getting started.
     // need a better way for GNS to start and then start tests
+    // That's why the connectivity check was done below and not in the client constructor. 
+    // edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync.CONNECTIVITY_CHECK_TIMEOUT wasn't
+    // final we could set that. - Westy
+    System.out.println("Pausing for 50 seconds!");
     Thread.sleep(50000);
     if (System.getProperty("host") != null
             && !System.getProperty("host").isEmpty()
@@ -122,27 +122,11 @@ public class ServerIntegrationTest {
     } else {
       address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
     }
-    boolean ssl = (System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null
-            || !System.getProperty(
-                    AppReconfigurableNodeOptions.DISABLE_SSL)
-            .equals("true") ? ReconfigurationConfig
-            .getClientSSLMode() != SSL_MODES.CLEAR : false);
-    System.out.print("Connecting to " + address.getHostName() + ":"
-            + address.getPort() + (ssl ? " [ssl]" : ""));
-    client = new GNSClient(
-            (InetSocketAddress) null,
-            address,
-            // arun: FIXME: System property not shared with server script above 
-            ssl = (System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null
-            || !System.getProperty(
-                    AppReconfigurableNodeOptions.DISABLE_SSL)
-            .equals("true") ? ReconfigurationConfig
-            .getClientSSLMode() != SSL_MODES.CLEAR : false));
-
+    client = new GnsClient(null, address);
     // arun: connectivity check embedded in GNSClient constructor
-    boolean connected = client instanceof GNSClient;
+    boolean connected = client instanceof GnsClient;
     if (connected) {
-      System.out.println("successful" + (ssl ? " [ssl]" : ""));
+      System.out.println("successful");
     }
 
     // Now we try to actually connect to the server we created further above

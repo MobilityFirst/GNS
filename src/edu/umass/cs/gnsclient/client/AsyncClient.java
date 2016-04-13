@@ -5,10 +5,9 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsclient.client.newclient;
+package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;

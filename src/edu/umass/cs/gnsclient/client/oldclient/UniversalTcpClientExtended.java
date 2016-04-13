@@ -17,8 +17,10 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.oldclient;
 
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.io.IOException;
@@ -39,6 +41,7 @@ import org.json.JSONObject;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
+@Deprecated
 public class UniversalTcpClientExtended extends UniversalTcpClient {
 
 	UniversalTcpClientExtended() {
@@ -564,7 +567,7 @@ public class UniversalTcpClientExtended extends UniversalTcpClient {
   
   // arun
   public static void main(String[] main) throws IOException {
-	  BasicTcpClientV1 client = new UniversalTcpClientExtended("127.0.0.1", GNSClientConfig.LNS_PORT);
+	  BasicTcpClient client = new UniversalTcpClientExtended("127.0.0.1", GNSClientConfig.LNS_PORT);
 	  client.checkConnectivity();
   }
 

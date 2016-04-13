@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.security.PublicKey;
 import java.util.StringTokenizer;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnsclient.console.GnsUtils;

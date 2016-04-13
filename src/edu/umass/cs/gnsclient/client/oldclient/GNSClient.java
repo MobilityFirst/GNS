@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.oldclient;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -32,6 +32,7 @@ import edu.umass.cs.utils.Config;
  *
  * Cleaner implementation of a GNS client using gigapaxos' async client.
  */
+@Deprecated
 public class GNSClient extends UniversalTcpClientExtended {
 
   // initialized from properties file

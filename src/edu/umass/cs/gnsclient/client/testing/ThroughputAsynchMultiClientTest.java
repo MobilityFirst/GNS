@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
+import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
 import edu.umass.cs.gnsclient.client.GuidEntry;
@@ -145,7 +145,7 @@ public class ThroughputAsynchMultiClientTest {
   /**
    * Stores the clients we are using.
    */
-  private static BasicTcpClientV1 clients[];
+  private static BasicTcpClient clients[];
   /**
    * The account guid we are using.
    */
@@ -206,13 +206,13 @@ public class ThroughputAsynchMultiClientTest {
     } else {
       address = ServerSelectDialog.selectServer();
     }
-    clients = new BasicTcpClientV1[numberOfClients];
+    clients = new BasicTcpClient[numberOfClients];
     subGuids = new String[numberOfGuids];
     commmandPackets = new CommandPacket[numberOfGuids][numberOfClients];
     execPool = Executors.newFixedThreadPool(numberOfClients);
     chosen = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
     for (int i = 0; i < numberOfClients; i++) {
-      clients[i] = new BasicTcpClientV1(address.getHostName(), address.getPort(), disableSSL);
+      clients[i] = new BasicTcpClient(address.getHostName(), address.getPort(), disableSSL);
     }
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(clients[0], accountAlias, "password", true);
@@ -490,7 +490,7 @@ public class ThroughputAsynchMultiClientTest {
   //
   // Stuff below here is mostly currently for testing only
   //
-  private static CommandPacket createReadCommandPacket(BasicTcpClientV1 client, String targetGuid, String field, GuidEntry reader) throws Exception {
+  private static CommandPacket createReadCommandPacket(BasicTcpClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
       command = createCommand(CommandType.ReadUnsigned,
@@ -504,7 +504,7 @@ public class ThroughputAsynchMultiClientTest {
     return new CommandPacket(-1, command);
   }
 
-  private static CommandPacket createUpdateCommandPacket(BasicTcpClientV1 client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
+  private static CommandPacket createUpdateCommandPacket(BasicTcpClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
     command = createAndSignCommand(CommandType.ReplaceUserJSON,
             writer.getPrivateKey(), REPLACE_USER_JSON, 

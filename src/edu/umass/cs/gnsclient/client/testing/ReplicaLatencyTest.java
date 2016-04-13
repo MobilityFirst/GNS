@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
+import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -73,7 +73,7 @@ import org.apache.commons.cli.ParseException;
 public class ReplicaLatencyTest {
 
   private static String accountAlias = "boo@hoo.com";
-  private static BasicTcpClientV1 client = null;
+  private static BasicTcpClient client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
 
@@ -96,7 +96,7 @@ public class ReplicaLatencyTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new BasicTcpClientV1(address.getHostName(), address.getPort());
+      client = new BasicTcpClient(address.getHostName(), address.getPort());
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, "password", true);
       } catch (Exception e) {

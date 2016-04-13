@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.newclient.NewGnsClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -62,7 +61,7 @@ public class ClientCoreTest {
 
   private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
-  private static NewGnsClient client = null;
+  private static GnsClient client = null;
   /**
    * The address of the GNS server we will contact
    */
@@ -98,7 +97,7 @@ public class ClientCoreTest {
       }
       System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       try {
-        client = new NewGnsClient(address, System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient(address, System.getProperty("disableSSL").equals("true"));
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
@@ -955,16 +954,17 @@ public class ClientCoreTest {
     }
   }
 
-//  @Test
-//  public void test_310_BasicSelect() {
-//    try {
-//      JSONArray result = client.select("cats", "fred");
-//      // best we can do since there will be one, but possibly more objects in results
-//      assertThat(result.length(), greaterThanOrEqualTo(1));
-//    } catch (Exception e) {
-//      fail("Exception when we were not expecting it: " + e);
-//    }
-//  }
+  @Test
+  public void test_310_BasicSelect() {
+    try {
+      JSONArray result = client.select("cats", "fred");
+      // best we can do since there will be one, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(1));
+    } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+  
   @Test
   public void test_320_GeoSpatialSelect() {
     try {

@@ -29,7 +29,7 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
 import edu.umass.cs.gnsclient.console.GnsUtils;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
