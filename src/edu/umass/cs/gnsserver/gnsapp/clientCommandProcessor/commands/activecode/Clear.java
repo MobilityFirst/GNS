@@ -80,7 +80,7 @@ public class Clear extends GnsCommand {
     String action = json.getString(AC_ACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = Format.parseDateISO8601UTC(json.optString(TIMESTAMP, null)); // can be null on older client
+    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     NSResponseCode response = ActiveCode.clearCode(accountGuid, action,
             writer, signature, message, timestamp, handler);
 

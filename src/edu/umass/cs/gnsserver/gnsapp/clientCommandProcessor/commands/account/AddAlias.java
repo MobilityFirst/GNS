@@ -75,7 +75,7 @@ public class AddAlias extends GnsCommand {
     String name = json.getString(NAME);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = Format.parseDateISO8601UTC(json.optString(TIMESTAMP, null)); // can be null on older client
+    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
     if (accountInfo == null) {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
