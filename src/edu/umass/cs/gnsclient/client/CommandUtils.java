@@ -84,18 +84,18 @@ public class CommandUtils {
       throw new GnsClientException("Error encoding message", e);
     }
   }
-  
-   public static JSONObject createCommand(CommandType commandType, String action, 
-           Object... keysAndValues) 
-           throws GnsClientException {
-     try {
+
+  public static JSONObject createCommand(CommandType commandType, String action,
+          Object... keysAndValues)
+          throws GnsClientException {
+    try {
       JSONObject result = createCommand(action, keysAndValues);
       result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
       return result;
     } catch (JSONException e) {
       throw new GnsClientException("Error encoding message", e);
     }
-   }
+  }
 
   /**
    * Creates a command object from the given action string and a variable
@@ -108,6 +108,7 @@ public class CommandUtils {
    * @return the query string
    * @throws GnsClientException
    */
+  @Deprecated
   public static JSONObject createAndSignCommand(PrivateKey privateKey, String action,
           Object... keysAndValues) throws GnsClientException {
     try {
@@ -118,14 +119,26 @@ public class CommandUtils {
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GnsProtocol.SIGNATURE, signatureString);
       return result;
-    } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException 
-            | SignatureException | JSONException | UnsupportedEncodingException e) {
+    } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | JSONException | UnsupportedEncodingException e) {
       throw new GnsClientException("Error encoding message", e);
     }
   }
 
+  /**
+   * Creates a command object from the given CommandType and a variable
+   * number of key and value pairs with a signature parameter. The signature is
+   * generated from the query signed by the given guid.
+   *
+   * @param privateKey
+   * @param action
+   * @param keysAndValues
+   * @return the query string
+   * @throws GnsClientException
+   */
   // FIXME: Temporarily hacked version for adding new command type integer. Will clean up once
   // transition is done.
+  // The action argument will be going away and be ultimately replaced by the
+  // enum string.
   public static JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, String action, Object... keysAndValues)
           throws GnsClientException {
@@ -138,8 +151,7 @@ public class CommandUtils {
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GnsProtocol.SIGNATURE, signatureString);
       return result;
-    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException 
-            | SignatureException | UnsupportedEncodingException e) {
+    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
       throw new GnsClientException("Error encoding message", e);
     }
   }

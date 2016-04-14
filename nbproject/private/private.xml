@@ -12,40 +12,9 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/AclTest.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/console/commands/AclAdd.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AccountInfo.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/FieldAccess.java</file>
-            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/GroupAndAclTest.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/data/Read.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/GroupAccess.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/data/RemoveField.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/console/commands/AclRemove.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/acl/AclAddSelf.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/console/commands/AclList.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/AccountAccess.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnscommon/asynch/ClientAsynchBase.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/BasicTcpClientV1.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/acl/AclRemove.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnscommon/GnsProtocol.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/NSFieldAccess.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandModule.java</file>
-            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/AliasTest.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/account/RemoveGuid.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/account/LookupAccountRecord.java</file>
-            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/ClientCoreTest.java</file>
-            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsclient/client/ServerIntegrationTest.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/data/RemoveUnsigned.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/data/Remove.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/data/ReadUnsigned.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/http/UniversalHttpClient.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/data/RemoveSelf.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientSupport/RemoteQuery.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/CommandHandler.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/acl/AclRetrieve.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/newclient/BasicGnsClient.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/msocket/proxy/console/commands/GnsConnect.java</file>
             <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandType.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/acl/AclAdd.java</file>
+            <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/run-hazard.sh</file>
         </group>
     </open-files>
 </project-private>

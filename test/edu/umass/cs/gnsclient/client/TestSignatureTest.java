@@ -30,6 +30,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.io.IOException;
 
 /**
@@ -103,7 +104,7 @@ public class TestSignatureTest {
   @Test
   public void test_01() {
     try {
-      JSONObject command = createAndSignCommand(guid.getPrivateKey(), GnsProtocol.READ_ARRAY,
+      JSONObject command = createAndSignCommand(CommandType.ReadArrayUnsigned, guid.getPrivateKey(), GnsProtocol.READ_ARRAY,
               GnsProtocol.GUID, guid.getGuid(), GnsProtocol.FIELD, "joe");
       System.out.println(command);
     } catch (Exception e) {

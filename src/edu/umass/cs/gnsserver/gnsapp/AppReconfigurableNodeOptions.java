@@ -20,21 +20,13 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.utils.Logging;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
-import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
 
 import java.util.Map;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -137,14 +129,14 @@ public class AppReconfigurableNodeOptions {
    * NS_FILE
    */
   public static final String NS_FILE = "nsfile";
-  /**
-   * FILE_LOGGING_LEVEL
-   */
-  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
-  /**
-   * CONSOLE_OUTPUT_LEVEL
-   */
-  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
+//  /**
+//   * FILE_LOGGING_LEVEL
+//   */
+//  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
+//  /**
+//   * CONSOLE_OUTPUT_LEVEL
+//   */
+//  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
   /**
    * DEBUG
    */
@@ -184,7 +176,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * DEMAND_PROFILE_CLASS
    */
-  public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
+  //public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
   // for CCP
   /**
    * DNS_GNS_ONLY
@@ -227,8 +219,8 @@ public class AppReconfigurableNodeOptions {
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nodeId = new Option(ID, true, "Node ID");
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
-    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
-    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+//    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+//    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
     Option debug = new Option(DEBUG, "Enables debugging for everything");
     Option debugApp = new Option(DEBUG_APP, "Enables debugging output for the app");
     Option debugAR = new Option(DEBUG_AR, "Enables debugging output for the Active Replica");
@@ -238,7 +230,7 @@ public class AppReconfigurableNodeOptions {
     Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for all miscellaneous utilities");
     Option test = new Option(TEST, "Runs multiple test nodes on one machine");
     Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
-    Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, true, "The class to use for the demand profile");
+    //Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, true, "The class to use for the demand profile");
     // for CCP
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
@@ -256,8 +248,8 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(help);
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(fileLoggingLevel);
-    commandLineOptions.addOption(consoleOutputLevel);
+//    commandLineOptions.addOption(fileLoggingLevel);
+//    commandLineOptions.addOption(consoleOutputLevel);
     commandLineOptions.addOption(debug);
     commandLineOptions.addOption(debugApp);
     commandLineOptions.addOption(debugAR);
@@ -267,7 +259,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(debugMisc);
     commandLineOptions.addOption(test);
     commandLineOptions.addOption(standAlone);
-    commandLineOptions.addOption(demandProfileClass);
+    //commandLineOptions.addOption(demandProfileClass);
     // for CCP
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
@@ -337,14 +329,14 @@ public class AppReconfigurableNodeOptions {
       System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
-    if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
-      GNSConfig.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
-
-    }
-    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
-      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
-      GNSConfig.consoleOutputLevel = levelString;
-    }
+//    if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
+//      GNSConfig.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
+//
+//    }
+//    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
+//      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
+//      GNSConfig.consoleOutputLevel = levelString;
+//    }
     if (allValues.containsKey(STANDALONE)) {
       standAloneApp = true;
     }

@@ -599,6 +599,7 @@ public class AbstractGnsClient {
    * @throws GnsClientException
    * @throws JSONException
    */
+  @Deprecated
   public void fieldUpdateAsynch(String targetGuid, String field, Object value, GuidEntry writer) throws GnsClientException, IOException, JSONException {
     JSONObject json = new JSONObject();
     json.put(field, value);
@@ -618,6 +619,7 @@ public class AbstractGnsClient {
    * @throws GnsClientException
    * @throws JSONException
    */
+  @Deprecated
   public void fieldUpdateAsynch(GuidEntry targetGuid, String field, Object value) throws GnsClientException, IOException, JSONException {
     fieldUpdateAsynch(targetGuid.getGuid(), field, value, targetGuid);
   }
