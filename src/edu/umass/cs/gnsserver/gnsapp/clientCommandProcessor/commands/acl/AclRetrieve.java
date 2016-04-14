@@ -78,7 +78,7 @@ public class AclRetrieve extends GnsCommand {
     String reader = json.optString(READER, guid);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    Date timestamp = Format.parseDateISO8601UTC(json.optString(TIMESTAMP, null)); // can be null on older client
     
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {

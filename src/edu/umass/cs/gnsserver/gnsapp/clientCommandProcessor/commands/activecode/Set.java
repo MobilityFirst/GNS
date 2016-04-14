@@ -81,7 +81,7 @@ public class Set extends GnsCommand {
     String code = json.getString(AC_CODE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    Date timestamp = Format.parseDateISO8601UTC(json.optString(TIMESTAMP, null)); // can be null on older client
     NSResponseCode response = ActiveCode.setCode(accountGuid, action,
             code, writer, signature, message, timestamp, handler);
 

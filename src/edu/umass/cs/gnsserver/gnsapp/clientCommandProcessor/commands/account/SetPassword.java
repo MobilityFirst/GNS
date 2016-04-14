@@ -75,7 +75,7 @@ public class SetPassword extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
-    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    Date timestamp = Format.parseDateISO8601UTC(json.optString(TIMESTAMP, null)); // can be null on older client
     if (accountInfo == null) {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     } else if (!accountInfo.isVerified()) {

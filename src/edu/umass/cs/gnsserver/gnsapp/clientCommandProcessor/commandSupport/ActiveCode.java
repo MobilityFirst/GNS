@@ -127,6 +127,7 @@ public class ActiveCode {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a string
    */

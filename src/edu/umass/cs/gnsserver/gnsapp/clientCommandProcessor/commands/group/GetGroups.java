@@ -78,7 +78,7 @@ public class GetGroups extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    Date timestamp = Format.parseDateISO8601UTC(json.optString(TIMESTAMP, null)); // can be null on older client
     return new CommandResponse<>(new JSONArray(GroupAccess.lookupGroupsLocally(guid, reader,
             signature, message, timestamp, handler)).toString());
   }
