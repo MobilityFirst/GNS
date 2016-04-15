@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
@@ -110,7 +111,9 @@ public class NSAccessSupport {
     //Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
     sig.initVerify(publicKey);
     sig.update(message.getBytes("UTF-8"));
-    return sig.verify(Base64.decode(signature));
+    // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE IOS CLIENT IS UPDATED AS WELL
+    return sig.verify(ByteUtils.hexStringToByteArray(signature));
+    //return sig.verify(Base64.decode(signature));
   }
 
   /**

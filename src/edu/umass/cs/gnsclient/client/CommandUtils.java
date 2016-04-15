@@ -20,6 +20,7 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
@@ -173,7 +174,9 @@ public class CommandUtils {
     signatureInstance.initSign(privateKey);
     signatureInstance.update(message.getBytes("UTF-8"));
     byte[] signedString = signatureInstance.sign();
-    String result = Base64.encodeToString(signedString, false);
+    // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE IOS CLIENT IS UPDATED AS WELL
+    String result = ByteUtils.toHex(signedString);
+    //String result = Base64.encodeToString(signedString, false);
     return result;
   }
 
