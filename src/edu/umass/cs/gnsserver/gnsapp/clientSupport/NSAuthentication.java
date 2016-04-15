@@ -77,6 +77,8 @@ public class NSAuthentication {
   private static AclResult aclCheck(String guid, String field,
           String accessorGuid, MetaDataTypeName access,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+     ClientSupportConfig.getLogger().log(Level.FINE,
+              "ACL Check guid={0} key={1} accessor={2} access={3}", new Object[]{guid, field, accessorGuid, access});
     String publicKey;
     boolean aclCheckPassed = false;
     if (accessorGuid.equals(guid)) {

@@ -12,7 +12,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
@@ -21,7 +20,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.io.IOException;
@@ -77,13 +75,10 @@ public class NSUpdateSupport {
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
           SignatureException, JSONException, IOException, FailedDBOperationException,
           RecordNotFoundException, FieldNotFoundException {
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.FINE,
-              "Processing local update {0} / {1} {2} {3}",
-              new Object[]{guid, field, operation, updateValue});
-    }
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "Processing local update {0} / {1} {2} {3}",
+            new Object[]{guid, field, operation, updateValue});
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
-    // FIXME : handle ACL checks for full JSON user updates
     if (writer != null) {
       if (field != null) {
         // writer will be null for internal system reads
@@ -118,16 +113,13 @@ public class NSUpdateSupport {
       return NSResponseCode.NO_ERROR;
     } else // Handle special case of a create index
      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().info("Creating index for " + field + " " + updateValue);
-        }
+        ClientSupportConfig.getLogger().log(Level.FINE,
+                "Creating index for {0} {1}", new Object[]{field, updateValue});
         app.getDB().createIndex(field, (String) updateValue.get(0));
 
         return NSResponseCode.NO_ERROR;
       } else {
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().severe("Invalid index value:" + updateValue);
-        }
+        ClientSupportConfig.getLogger().log(Level.SEVERE, "Invalid index value:{0}", updateValue);
         return NSResponseCode.ERROR;
       }
   }
@@ -152,7 +144,8 @@ public class NSUpdateSupport {
       try {
         newValue = handleActiveCode(guid, field, userJSON, db, activeCodeHandler);
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("JSON problem while handling active code: " + e);
+        ClientSupportConfig.getLogger().log(Level.SEVERE,
+                "JSON problem while handling active code: {0}", e);
       }
     }
     if (newValue == null) {
@@ -160,7 +153,7 @@ public class NSUpdateSupport {
     }
     // END ACTIVE CODE HANDLING
     if (field != null) {
-      GNSConfig.getLogger().log(Level.FINE,
+      ClientSupportConfig.getLogger().log(Level.FINE,
               "field={0}, operation={1}, value={2}, name_record={3}",
               new Object[]{field, operation, updateValue,
                 nameRecord.getSummary()});
@@ -177,17 +170,15 @@ public class NSUpdateSupport {
         activeCodeNameRecord = NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
       } catch (RecordNotFoundException e) {
       }
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("AC--->>> " + activeCodeNameRecord.toString());
+      if (activeCodeNameRecord != null) {
+        ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
       }
       int hopLimit = 1;
       if (activeCodeNameRecord != null
               && activeCodeHandler.hasCode(activeCodeNameRecord, ActiveCode.WRITE_ACTION)) {
         String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
         ValuesMap packetValuesMap = userJSON;
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toReasonableString());
-        }
+        ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}", new Object[]{guid, field, packetValuesMap.toReasonableString()});
         return activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
       }
     }

@@ -75,12 +75,8 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    Date timestamp;
-    if (json.has(TIMESTAMP)) {
-      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    } else {
-      timestamp = null;
-    }
+    Date timestamp = json.has(TIMESTAMP) ? 
+            Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (writer.equals(MAGIC_STRING)) {
       writer = null;
     }

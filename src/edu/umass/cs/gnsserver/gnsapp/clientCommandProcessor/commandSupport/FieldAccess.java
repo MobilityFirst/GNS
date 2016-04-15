@@ -53,8 +53,10 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.commons.lang3.time.DateUtils;
 
 /**
@@ -350,7 +352,7 @@ public class FieldAccess {
    */
   public static NSResponseCode update(String guid, String key, String value, String oldValue,
           int argument, UpdateOperation operation,
-          String writer, String signature, String message, 
+          String writer, String signature, String message,
           Date timestamp,
           ClientRequestHandlerInterface handler) {
     return update(guid, key,
@@ -382,18 +384,19 @@ public class FieldAccess {
    */
   public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue,
           int argument, UpdateOperation operation,
-          String writer, String signature, String message, 
+          String writer, String signature, String message,
           Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     try {
-      return NSUpdateSupport.executeUpdateLocal(guid, key, writer, signature, message, 
+      return NSUpdateSupport.executeUpdateLocal(guid, key, writer, signature, message,
               timestamp,
               operation,
               value, oldValue, argument, null, handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | JSONException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
+      ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
       return NSResponseCode.ERROR;
     }
   }
@@ -414,7 +417,7 @@ public class FieldAccess {
    * @return an NSResponseCode
    */
   private static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
-          String writer, String signature, String message, 
+          String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     try {
       return NSUpdateSupport.executeUpdateLocal(guid, null,
@@ -423,6 +426,7 @@ public class FieldAccess {
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
             SignatureException | JSONException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
+      ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
       return NSResponseCode.ERROR;
     }
   }
@@ -443,7 +447,7 @@ public class FieldAccess {
    * @return an NSResponseCode
    */
   public static NSResponseCode updateUserJSON(String guid, JSONObject json,
-          String writer, String signature, String message, 
+          String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     return FieldAccess.update(guid, new ValuesMap(json),
             UpdateOperation.USER_JSON_REPLACE,
@@ -471,7 +475,7 @@ public class FieldAccess {
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     return update(guid, key, value, null, -1,
-            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message, 
+            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message,
             timestamp, handler);
   }
 
