@@ -32,12 +32,12 @@ START_ALL > NSlogfile 2>&1 &
 # comment to start optional LNS
 #exit
 
-nohup java -ea -cp jars/GNS.jar \
+nohup java -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djava.util.logging.config.file=logging.gns.properties \
 -DgigapaxosConfig=conf/gigapaxos.server.singleNode.hazard.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
--Djavax.net.ssl.keyStore=conf/keyStore/node100.jks 
+-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks \
 edu.umass.cs.gnsserver.localnameserver.LocalNameServer -configFile \
 $SCRIPTS/lns_hazard.properties > LNSlogfile 2>&1 &
