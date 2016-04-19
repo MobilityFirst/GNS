@@ -282,8 +282,10 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     return clientRequestId;
   }
 
+  @Override
   public Object getSummary() {
     return new Object() {
+      @Override
       public String toString() {
         return (CommandValueReturnPacket.this.responder != null ? CommandValueReturnPacket.this.responder
                 + "->"

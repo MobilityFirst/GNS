@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
@@ -99,7 +99,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param minRefreshInterval
    */
   @SuppressWarnings("unchecked")
-  private SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupOperation, 
+  private SelectRequestPacket(long id, SelectOperation selectOperation, SelectGroupBehavior groupOperation,
           String query, String guid, int minRefreshInterval) {
     super(null);
     this.type = Packet.PacketType.SELECT_REQUEST;
@@ -122,7 +122,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @return a SelectRequestPacket
    */
   public static SelectRequestPacket<String> MakeQueryRequest(long id, String query) {
-    return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
+    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.NONE, query, null, -1);
   }
 
   /**
@@ -137,7 +137,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    */
   public static SelectRequestPacket<String> MakeGroupSetupRequest(long id, String query, String guid,
           int refreshInterval) {
-    return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
+    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_SETUP,
+            query, guid, refreshInterval);
   }
 
   /**
@@ -149,7 +150,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @return a SelectRequestPacket
    */
   public static SelectRequestPacket<String> MakeGroupLookupRequest(long id, String guid) {
-    return new SelectRequestPacket<String>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
+    return new SelectRequestPacket<>(id, SelectOperation.QUERY, SelectGroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
   /**
@@ -252,14 +253,12 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
 
   /**
    * Sets the request id.
-   * 
-   * @param requestId 
+   *
+   * @param requestId
    */
   public void setRequestId(long requestId) {
     this.requestId = requestId;
   }
-  
-  
 
   /**
    * Return the key.
@@ -373,7 +372,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
 
   @Override
   public ClientRequest getResponse() {
-   return this.response;
+    return this.response;
   }
 
   @Override
@@ -381,14 +380,15 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
     return requestId;
   }
 
-	@Override
-	public Object getSummary() {
-		return new Object() {
-			public String toString() {
-				return SelectRequestPacket.this.getType() + ":"
-						+ SelectRequestPacket.this.requestId + ":"
-						+ SelectRequestPacket.this.getQuery() + "[" + SelectRequestPacket.this.getClientAddress()+"]";
-			}
-		};
-	}
+  @Override
+  public Object getSummary() {
+    return new Object() {
+      @Override
+      public String toString() {
+        return SelectRequestPacket.this.getType() + ":"
+                + SelectRequestPacket.this.requestId + ":"
+                + SelectRequestPacket.this.getQuery() + "[" + SelectRequestPacket.this.getClientAddress() + "]";
+      }
+    };
+  }
 }

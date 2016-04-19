@@ -263,11 +263,9 @@ public class RemoteQuery extends ClientAsynchBase {
     try {
       CreateServiceName[] creates = makeBatchedCreateNameRequest(names, values, handler);
       for (CreateServiceName create : creates) {
-        if (handler.isDebugMode()) {
-          ClientSupportConfig.getLogger().log(Level.FINE,
-                  "{0} sending create for NAME = ",
-                  new Object[]{this, create.getServiceName()});
-        }
+        ClientSupportConfig.getLogger().log(Level.FINE,
+                "{0} sending create for NAME = ",
+                new Object[]{this, create.getServiceName()});
         sendReconRequest(create);
       }
       return NSResponseCode.NO_ERROR;

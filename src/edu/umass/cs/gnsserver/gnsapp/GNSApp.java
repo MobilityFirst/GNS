@@ -163,8 +163,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID),
                     this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
-            gnsNodeConfig,
-            AppReconfigurableNodeOptions.debuggingEnabled);
+            gnsNodeConfig);
     // Finish admin setup
     CCPListenerAdmin ccpListenerAdmin = new CCPListenerAdmin(requestHandler);
     ccpListenerAdmin.start();
@@ -212,8 +211,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             new Admintercessor(),
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
-            ((GNSNodeConfig<String>) messenger.getNodeConfig()),
-            AppReconfigurableNodeOptions.debuggingEnabled);
+            ((GNSNodeConfig<String>) messenger.getNodeConfig()));
     // Should add this to the shutdown method - do we have a shutdown method?
     GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
     // start the NSListenerAdmin thread

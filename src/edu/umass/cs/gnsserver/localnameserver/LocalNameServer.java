@@ -100,7 +100,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    */
   public final static int DEFAULT_LNS_TCP_PORT = 24398;
 
-  private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests 
+  private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   private final Cache<String, CacheEntry> cache;
@@ -145,7 +145,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     }
 
     this.address = convertedNodeAddress;
-    LOG.log(Level.INFO, "LNS: SSL Mode is {0}; listening on {1}", 
+    LOG.log(Level.INFO, "LNS: SSL Mode is {0}; listening on {1}",
             new Object[]{sslMode.name(), address});
 
     this.nodeConfig = nodeConfig;
@@ -435,10 +435,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
         serverAddress = serverId;
       }
     }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      LOG.log(Level.INFO, "Closest server is {0}", 
-              serverAddress);
-    }
+    LOG.log(Level.FINE, "Closest server is {0}", serverAddress);
     return serverAddress;
   }
 

@@ -305,15 +305,10 @@ public class GnsHttpServer {
         responseBody.write("Gigapaxos is enabled<br>".getBytes());
 
         responseBody.write("New app is enabled<br>".getBytes());
-
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          responseBody.write("Server debug is true<br>".getBytes());
-        }
-        if (requestHandler.isDebugMode()) {
-          responseBody.write("CCP debug is true<br>".getBytes());
-        }
+        responseBody.write("Console logging level is ".getBytes());
         responseBody.write(consoleLogLevelString.getBytes());
         responseBody.write("<br>".getBytes());
+        responseBody.write("File logging level is ".getBytes());
         responseBody.write(fileLogLevelString.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write("<br>".getBytes());

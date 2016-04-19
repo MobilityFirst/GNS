@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -72,7 +72,7 @@ public enum NSResponseCode implements Serializable{
   
   //
   // stash the codes in a lookup table
-  private static NSResponseCode[] responseCodes;
+  private static final NSResponseCode[] responseCodes;
 
   static {
     responseCodes = new NSResponseCode[NSResponseCode.values().length];

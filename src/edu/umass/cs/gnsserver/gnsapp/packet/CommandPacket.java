@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
@@ -89,7 +89,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * @param senderAddress
    * @param command
    * @param senderPort
-   * @param myListeningAddress
    */
   public CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
@@ -160,9 +159,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     if (senderPort != -1) {
       json.put(SENDERPORT, this.senderPort);
     }
-    if (this.myListeningAddress != null)
-    	// do nothing
-    	;
+    if (this.myListeningAddress != null) {
+
+    }
     return json;
   }
 

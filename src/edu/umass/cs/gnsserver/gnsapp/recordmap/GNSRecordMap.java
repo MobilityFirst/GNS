@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.recordmap;
@@ -34,13 +34,14 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Supports abstract access to a collection of MondoDB records specified by the
  * <code>collectionName</code> string.
- * 
+ *
  * @author westy
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
 
@@ -49,7 +50,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
 
   /**
    * Creates an MongoRecordMap instance.
-   * 
+   *
    * @param mongoRecords
    * @param collectionName
    */
@@ -57,7 +58,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
     this.collectionName = collectionName;
     this.mongoRecords = mongoRecords;
   }
-  
+
   @Override
   public void createIndex(String field, String index) {
     mongoRecords.createIndex(collectionName, field, index);
@@ -71,14 +72,13 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
         JSONObject json = records.lookupEntireRecord(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("Error updating json record: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Error updating json record: {0}", e);
         return null;
       }
     } else {
       return null;
     }
   }
-
 
   @Override
   public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
@@ -159,7 +159,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
         return new NameRecord(this, json);
       }
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Error getting name record " + name + ": " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Error getting name record {0}: {1}", new Object[]{name, e});
     }
     return null;
   }
@@ -169,8 +169,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
     try {
       addNameRecord(recordEntry.toJSONObject());
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Error adding name record: " + e);
-      return;
+      GNSConfig.getLogger().log(Level.SEVERE, "Error adding name record: {0}", e);
     }
   }
 
@@ -180,9 +179,11 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
     try {
       String name = json.getString(NameRecord.NAME.getName());
       records.insert(collectionName, name, json);
-      GNSConfig.getLogger().finer(records.toString() + ":: Added " + name + " JSON: " + json);
+      GNSConfig.getLogger().log(Level.FINER, "{0}:: Added {1} JSON: {2}",
+              new Object[]{records.toString(), name, json});
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe(records.toString() + ":: Error adding name record: " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "{0}:: Error adding name record: {1}",
+              new Object[]{records.toString(), e});
     }
   }
 
@@ -190,7 +191,8 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException {
     NoSQLRecords records = mongoRecords;
     records.bulkInsert(collectionName, jsons);
-    GNSConfig.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
+    GNSConfig.getLogger().log(Level.FINER, 
+            "{0}:: Added all json records. JSON: {1}", new Object[]{records.toString(), jsons});
   }
 
   @Override
@@ -198,7 +200,8 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
     try {
       mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
     } catch (JSONException e) {
-      GNSConfig.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
+      GNSConfig.getLogger().log(Level.WARNING, 
+              "JSON Exception while converting record to JSON: {0}", e.getMessage());
     } catch (FieldNotFoundException e) {
     }
   }

@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import java.util.Date;
+import java.util.logging.Level;
 import org.json.JSONException;
 
 //import edu.umass.cs.gnsserver.packet.QueryResultValue;
@@ -65,6 +66,9 @@ public class GroupAccess {
    * @param message
    * @param handler
    * @return a response code
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
    */
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws IOException, JSONException, GnsClientException {
@@ -84,13 +88,16 @@ public class GroupAccess {
    * @param message
    * @param handler
    * @return a response code
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
     handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
     for (String memberGuid : members.toStringSet()) {
       handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
-    };
+    }
     return NSResponseCode.NO_ERROR;
   }
 
@@ -145,13 +152,14 @@ public class GroupAccess {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a response code
    */
-  public static ResultValue lookup(String guid, 
+  public static ResultValue lookup(String guid,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, 
+    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
             GROUP, null,
             reader, signature, message, timestamp,
             handler.getApp());
@@ -168,10 +176,13 @@ public class GroupAccess {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
+   * @param remoteLookup
    * @return a response code
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ResultValue lookupGroupsAnywhere(String guid, 
+  public static ResultValue lookupGroupsAnywhere(String guid,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
@@ -182,8 +193,8 @@ public class GroupAccess {
     return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler);
   }
 
-  public static ResultValue lookupGroupsLocally(String guid, 
-          String reader, String signature, String message, Date timestamp, 
+  public static ResultValue lookupGroupsLocally(String guid,
+          String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
             reader, signature, message, timestamp, handler.getApp());
@@ -204,20 +215,17 @@ public class GroupAccess {
    */
   public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
-    // just so you know all the nulls mean we're ignoring signatures and authentication
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().fine("DELETE CLEANUP: " + guid);
-    }
+
+    GNSConfig.getLogger().log(Level.FINE, "DELETE CLEANUP: {0}", guid);
     try {
-      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null, 
+      // just so you know all the nulls mean we're ignoring signatures and authentication
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null,
               null, handler, true).toStringSet()) {
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().fine("GROUP CLEANUP: " + groupGuid);
-        }
+        GNSConfig.getLogger().log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
         removeFromGroup(groupGuid, guid, null, null, null, handler);
       }
     } catch (FailedDBOperationException e) {
-      GNSConfig.getLogger().severe("Unabled to remove guid from groups:" + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);
     }
   }
 

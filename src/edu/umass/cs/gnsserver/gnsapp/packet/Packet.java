@@ -41,7 +41,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.logging.Level;
 
 /**
  * So we have these packets see and we convert them back and forth to and from JSON Objects.
@@ -86,7 +86,6 @@ public class Packet {
      * ADMIN_RESPONSE
      */
     ADMIN_RESPONSE(43, AdminResponsePacket.class.getCanonicalName()),
-
     /**
      * SELECT_REQUEST
      */
@@ -120,25 +119,25 @@ public class Packet {
     /**
      * TEST_NOOP
      */
-    TEST_NOOP(224, null),
-
-    ;
-    private int number;
+    TEST_NOOP(224, null),;
+    private final int number;
     private String className;
-    private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
+    private static final Map<Integer, PacketType> map = new HashMap<>();
 
     static {
       for (PacketType type : PacketType.values()) {
         if (map.containsKey(type.getInt())) {
-          GNSConfig.getLogger().warning("**** Duplicate ID number for packet type " + type + ": " + type.getInt());
+          GNSConfig.getLogger().log(Level.WARNING,
+                  "**** Duplicate ID number for packet type {0}: {1}", new Object[]{type, type.getInt()});
         }
         map.put(type.getInt(), type);
         if (type.className != null) {
           try {
-            Class klass = Class.forName(type.className, false, Packet.class.getClassLoader());
+            Class<?> klass = Class.forName(type.className, false, Packet.class.getClassLoader());
             //GNS.getLogger().info(type.name() + "->" + klass.getName());
           } catch (ClassNotFoundException e) {
-            GNSConfig.getLogger().warning("Unknown class for " + type.name() + ":" + type.className);
+            GNSConfig.getLogger().log(Level.WARNING,
+                    "Unknown class for {0}:{1}", new Object[]{type.name(), type.className});
           }
         }
       }
@@ -156,7 +155,7 @@ public class Packet {
 
     /**
      * Return the class name.
-     * 
+     *
      * @return the class name
      */
     public String getClassName() {
@@ -165,7 +164,7 @@ public class Packet {
 
     /**
      * Return the packet type.
-     * 
+     *
      * @param number
      * @return the packet type
      */
@@ -177,7 +176,7 @@ public class Packet {
   // some shorthand helpers
   /**
    * Return the packet type.
-   * 
+   *
    * @param number
    * @return the packet type
    */
@@ -187,7 +186,7 @@ public class Packet {
 
   /**
    * Return the packet type.
-   * 
+   *
    * @param json
    * @return the packet type
    * @throws JSONException
@@ -202,7 +201,7 @@ public class Packet {
 
   /**
    * Returns true if the packet has a type field.
-   * 
+   *
    * @param json
    * @return true or false
    */
@@ -212,7 +211,7 @@ public class Packet {
 
   /**
    * Put the packet type into the packet.
-   * 
+   *
    * @param json
    * @param type
    * @throws JSONException
@@ -266,7 +265,8 @@ public class Packet {
         case TEST_NOOP:
           return null;
         default:
-          GNSConfig.getLogger().severe("Packet type not found: " + getPacketType(json) + " JSON: " + json);
+          GNSConfig.getLogger().log(Level.SEVERE, 
+                  "Packet type not found: {0} JSON: {1}", new Object[]{getPacketType(json), json});
           return null;
       }
     } catch (ParseException e) {
@@ -393,16 +393,20 @@ public class Packet {
    * @throws java.io.IOException *
    */
   @SuppressWarnings("unchecked")
-  public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, Object nameserverId, GNSConfig.PortType portType) throws IOException {
+  public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, 
+          Object nameserverId, GNSConfig.PortType portType) throws IOException {
     int port = gnsNodeConfig.getPortForTopLevelNode(nameserverId, portType);
     if (port == -1) {
-      GNSConfig.getLogger().warning("sendTCPPacket:: FAIL, BAD PORT! to: " + nameserverId + " json: " + json.toString());
+      GNSConfig.getLogger().log(Level.WARNING, 
+              "sendTCPPacket:: FAIL, BAD PORT! to: {0} json: {1}", new Object[]{nameserverId, json.toString()});
       throw new IOException("Invalid port number " + port);
     }
 
     InetAddress addr = gnsNodeConfig.getNodeAddress(nameserverId);
     if (addr == null) {
-      GNSConfig.getLogger().warning("sendTCPPacket:: FAIL, BAD ADDRESS! to: " + nameserverId + " port: " + port + " json: " + json.toString());
+      GNSConfig.getLogger().log(Level.WARNING, 
+              "sendTCPPacket:: FAIL, BAD ADDRESS! to: {0} port: {1} json: {2}", 
+              new Object[]{nameserverId, port, json.toString()});
       return null;
     }
     return sendTCPPacket(json, new InetSocketAddress(addr, port));
@@ -410,14 +414,16 @@ public class Packet {
 
   /**
    * Send a TCP packet.
-   * 
+   *
    * @param json
    * @param addr
    * @return a Socket
    * @throws IOException
    */
   public static Socket sendTCPPacket(JSONObject json, InetSocketAddress addr) throws IOException {
-    GNSConfig.getLogger().finer("sendTCPPacket:: to " + addr.getHostString() + ":" + addr.getPort() + " json: " + json.toString());
+    GNSConfig.getLogger().log(Level.FINER, 
+            "sendTCPPacket:: to {0}:{1} json: {2}", 
+            new Object[]{addr.getHostString(), addr.getPort(), json.toString()});
     Socket socket = new Socket(addr.getHostString(), addr.getPort());
     sendTCPPacket(json, socket);
     return socket;
@@ -438,7 +444,9 @@ public class Packet {
     Integer jsonSize = packet.getBytes().length;
     String msg = Packet.HEADER_PATTERN + jsonSize.toString() + Packet.HEADER_PATTERN + packet;
 
-    GNSConfig.getLogger().finer("sendTCPPacket:: to: " + socket.getInetAddress().getHostName() + ":" + socket.getPort() + " json: " + json.toString());
+    GNSConfig.getLogger().log(Level.FINER, 
+            "sendTCPPacket:: to: {0}:{1} json: {2}", 
+            new Object[]{socket.getInetAddress().getHostName(), socket.getPort(), json.toString()});
     PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
     output.println(msg);
     output.flush();
@@ -455,7 +463,9 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServers *
    */
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry,
+  @SuppressWarnings("unchecked")
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, 
+          Set nameServerIds, JSONObject json, int numRetry,
           GNSConfig.PortType portType, Set excludeNameServers) {
     int tries;
     for (Object id : nameServerIds) {
@@ -467,13 +477,13 @@ public class Packet {
       do {
         tries += 1;
         try {
-          Socket socket = Packet.sendTCPPacket(gnsNodeConfig, json, (String) id, portType);
+          Socket socket = Packet.sendTCPPacket(gnsNodeConfig, json, id, portType);
           if (socket != null) {
             socket.close();
           }
           break;
         } catch (IOException e) {
-          GNSConfig.getLogger().severe("Exception: socket closed by nameserver " + id);
+          GNSConfig.getLogger().log(Level.SEVERE, "Exception: socket closed by nameserver {0}", id);
           e.printStackTrace();
         }
       } while (tries < numRetry);

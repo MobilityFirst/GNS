@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy
+ *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.recordmap;
@@ -33,26 +33,24 @@ import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.Util;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * The name record.
  * It specifies what is store in the database for system and user fields.
  * This is also the in memory version of what is store in the database.
- * 
+ *
  * Probably could just be a JSON Object.
  *
  *
  * @author abhigyan
  */
-
 public class NameRecord implements Comparable<NameRecord>, Summarizable {
 
   /**
@@ -108,7 +106,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
           Set<String> replicaControllers) {
     this.recordMap = recordMap;
 
-    hashMap = new HashMap<ColumnField, Object>();
+    hashMap = new HashMap<>();
     hashMap.put(NAME, name);
     hashMap.put(PRIMARY_NAMESERVERS, replicaControllers);
     hashMap.put(ACTIVE_VERSION, activeVersion);
@@ -127,7 +125,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   public NameRecord(BasicRecordMap recordMap, JSONObject jsonObject) throws JSONException {
     this.recordMap = recordMap;
 
-    hashMap = new HashMap<ColumnField, Object>();
+    hashMap = new HashMap<>();
     if (jsonObject.has(NAME.getName())) {
       hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
     }
@@ -286,7 +284,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   /**
    * Checks whether the key exists in the values map for this name record.
    *
-   * Call this method after reading this key from the database. 
+   * Call this method after reading this key from the database.
    * If the key is not found, then field does not exist.
    *
    * @param key
@@ -342,7 +340,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     // whose purpose is to remove the field with name = key from values map.
     if (operation.equals(UpdateOperation.SINGLE_FIELD_REMOVE_FIELD)) {
 
-      ArrayList<ColumnField> keys = new ArrayList<ColumnField>();
+      ArrayList<ColumnField> keys = new ArrayList<>();
       keys.add(new ColumnField(recordKey, ColumnFieldType.LIST_STRING));
       recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
       return true;
@@ -372,8 +370,8 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
             : UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
     if (updated) {
       // commit update to database
-      ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();
-      ArrayList<Object> updatedValues = new ArrayList<Object>();
+      ArrayList<ColumnField> updatedFields = new ArrayList<>();
+      ArrayList<Object> updatedValues = new ArrayList<>();
       if (userJSON != null) {
         // full userJSON (new style) update
         Iterator<?> keyIter = userJSON.keys();
@@ -383,7 +381,8 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
             updatedFields.add(new ColumnField(key, ColumnFieldType.USER_JSON));
             updatedValues.add(userJSON.get(key));
           } catch (JSONException e) {
-            GNSConfig.getLogger().severe("Unable to get " + key + " from userJSON:" + e);
+            GNSConfig.getLogger().log(Level.SEVERE,
+                    "Unable to get {0} from userJSON:{1}", new Object[]{key, e});
           }
         }
       } else {
@@ -406,10 +405,10 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    */
   public void updateState(ValuesMap currentValue, int ttl) throws FieldNotFoundException, FailedDBOperationException {
 
-    ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
+    ArrayList<ColumnField> updateFields = new ArrayList<>();
     updateFields.add(VALUES_MAP);
     updateFields.add(TIME_TO_LIVE);
-    ArrayList<Object> updateValues = new ArrayList<Object>();
+    ArrayList<Object> updateValues = new ArrayList<>();
     updateValues.add(currentValue);
     updateValues.add(ttl);
 
@@ -494,7 +493,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   }
 
   private static ArrayList<ColumnField> userFieldList(ColumnFieldType returnType, String... fieldNames) {
-    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
+    ArrayList<ColumnField> result = new ArrayList<>();
     for (String fieldName : fieldNames) {
       result.add(new ColumnField(fieldName, returnType));
     }
@@ -617,9 +616,9 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     return result;
   }
 
-	@Override
-	public Object getSummary() {
-		return Util.truncate(NameRecord.this, 64, 64);
-	}
-  
+  @Override
+  public Object getSummary() {
+    return Util.truncate(NameRecord.this, 64, 64);
+  }
+
 }

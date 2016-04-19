@@ -56,7 +56,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   private final String activeReplicaID;
   private final GNSApp app;
   private int httpServerPort;
-  private boolean debugMode = false;
 
   /**
    * Creates an instance of the ClientRequestHandler.
@@ -66,15 +65,13 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
    * @param activeReplicaID
    * @param app
    * @param gnsNodeConfig
-   * @param debugMode
    * @throws java.io.IOException
    */
   public ClientRequestHandler(Admintercessor admintercessor,
           InetSocketAddress nodeAddress,
           String activeReplicaID,
           GNSApp app,
-          GNSNodeConfig<String> gnsNodeConfig,
-          boolean debugMode) throws IOException {
+          GNSNodeConfig<String> gnsNodeConfig) throws IOException {
     
     assert (activeReplicaID != null);
     this.admintercessor = admintercessor;
@@ -89,17 +86,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
-    this.debugMode = debugMode;
-  }
-
-  @Override
-  public boolean isDebugMode() {
-    return debugMode;
-  }
-
-  @Override
-  public void setDebugMode(boolean debugMode) {
-    this.debugMode = debugMode;
   }
 
   @Override

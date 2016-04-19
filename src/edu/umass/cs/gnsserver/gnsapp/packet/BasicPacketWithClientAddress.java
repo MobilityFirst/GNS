@@ -14,13 +14,12 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.utils.Util;
 

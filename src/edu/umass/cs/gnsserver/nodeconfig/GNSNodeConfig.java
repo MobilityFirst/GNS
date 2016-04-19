@@ -44,6 +44,7 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -573,9 +574,9 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
         break;
       }
     }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("Closest server is " + nameServerID + " exluded: " + excludeServers);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "Closest server is {0} exluded: {1}", new Object[]{nameServerID, excludeServers});
+
     return nameServerID;
   }
 

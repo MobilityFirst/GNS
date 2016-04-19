@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -63,18 +63,6 @@ public class AppReconfigurableNodeOptions {
   public static double normalizingConstant = 0.5;
 
   /**
-   * Fixed timeout after which a query is retransmitted.
-   */
-  public static int queryTimeout = GNSConfig.DEFAULT_QUERY_TIMEOUT;
-
-  //  Abhigyan: parameters related to retransmissions.
-  //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
-  /**
-   * Maximum time a local name server waits for a response from name server query is logged as failed after this.
-   */
-  public static int maxQueryWaitTime = GNSConfig.DEFAULT_MAX_QUERY_WAIT_TIME;
-
-  /**
    * If this is true sending of email by the verification mechanism is disabled.
    */
   public static boolean noEmail = false;
@@ -90,10 +78,6 @@ public class AppReconfigurableNodeOptions {
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
   public static boolean dnsOnly = false;
-  /**
-   * Set this to true to enable additional debugging output.
-   */
-  public static boolean debuggingEnabled = false;
   /**
    * If this is true the app will handle all operations locally (ie., it won't send request to reconfigurators).
    */
@@ -129,42 +113,7 @@ public class AppReconfigurableNodeOptions {
    * NS_FILE
    */
   public static final String NS_FILE = "nsfile";
-//  /**
-//   * FILE_LOGGING_LEVEL
-//   */
-//  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
-//  /**
-//   * CONSOLE_OUTPUT_LEVEL
-//   */
-//  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
-  /**
-   * DEBUG
-   */
-  public static final String DEBUG = "debug"; // for backwards compat
-  /**
-   * DEBUG_APP
-   */
-  public static final String DEBUG_APP = "debugAPP";
-  /**
-   * DEBUG_AR
-   */
-  public static final String DEBUG_AR = "debugAR";
-  /**
-   * DEBUG_RECON
-   */
-  public static final String DEBUG_RECON = "debugRecon";
-  /**
-   * DEBUG_PAXOS
-   */
-  public static final String DEBUG_PAXOS = "debugPaxos";
-  /**
-   * DEBUG_NIO
-   */
-  public static final String DEBUG_NIO = "debugNio";
-  /**
-   * DEBUG_MISC
-   */
-  public static final String DEBUG_MISC = "debugMisc";
+// 
   /**
    * TEST. This option is used to create multiple nodes on a single host
    */
@@ -173,11 +122,6 @@ public class AppReconfigurableNodeOptions {
    * STANDALONE
    */
   public static final String STANDALONE = "standalone";
-  /**
-   * DEMAND_PROFILE_CLASS
-   */
-  //public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
-  // for CCP
   /**
    * DNS_GNS_ONLY
    */
@@ -207,8 +151,6 @@ public class AppReconfigurableNodeOptions {
   
   public static final String CONTEXT_SERVICE_IP_PORT = "contextServiceHostPort";
   
-  
-
   /**
    * Returns all the options.
    *
@@ -219,18 +161,8 @@ public class AppReconfigurableNodeOptions {
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nodeId = new Option(ID, true, "Node ID");
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
-//    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
-//    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
-    Option debug = new Option(DEBUG, "Enables debugging for everything");
-    Option debugApp = new Option(DEBUG_APP, "Enables debugging output for the app");
-    Option debugAR = new Option(DEBUG_AR, "Enables debugging output for the Active Replica");
-    Option debugRecon = new Option(DEBUG_RECON, "Enables debugging output for the Reconfigurator");
-    Option debugPaxos = new Option(DEBUG_PAXOS, "Enables debugging output for Paxos");
-    Option debugNio = new Option(DEBUG_NIO, "Enables debugging output for Nio");
-    Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for all miscellaneous utilities");
     Option test = new Option(TEST, "Runs multiple test nodes on one machine");
     Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
-    //Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, true, "The class to use for the demand profile");
     // for CCP
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
@@ -248,18 +180,8 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(help);
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
-//    commandLineOptions.addOption(fileLoggingLevel);
-//    commandLineOptions.addOption(consoleOutputLevel);
-    commandLineOptions.addOption(debug);
-    commandLineOptions.addOption(debugApp);
-    commandLineOptions.addOption(debugAR);
-    commandLineOptions.addOption(debugRecon);
-    commandLineOptions.addOption(debugPaxos);
-    commandLineOptions.addOption(debugNio);
-    commandLineOptions.addOption(debugMisc);
     commandLineOptions.addOption(test);
     commandLineOptions.addOption(standAlone);
-    //commandLineOptions.addOption(demandProfileClass);
     // for CCP
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
@@ -302,31 +224,6 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
       System.out.println("******** Email Verification is OFF *********");
       GNSConfig.enableEmailAccountVerification = false;
-    }
-
-    if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
-      debuggingEnabled = true;
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
-    }
-
-    if (isOptionTrue(DEBUG_AR, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
-    }
-
-    if (isOptionTrue(DEBUG_RECON, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
-    }
-
-    if (isOptionTrue(DEBUG_PAXOS, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
-    }
-
-    if (isOptionTrue(DEBUG_NIO, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
-    }
-
-    if (isOptionTrue(DEBUG_MISC, allValues)) {
-      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
 //    if (allValues.containsKey(FILE_LOGGING_LEVEL)) {

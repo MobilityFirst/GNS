@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.noopTest;
@@ -45,7 +45,7 @@ public class TestNodeConfig<NodeIDType> implements
    * port numbers assigned.
    */
   public static final int DEFAULT_PORT = 20000;
-  private HashMap<NodeIDType, InetAddress> nmap = new HashMap<NodeIDType, InetAddress>();
+  private HashMap<NodeIDType, InetAddress> nmap = new HashMap<>();
   private final int defaultPort;
 
   /**
@@ -116,6 +116,7 @@ public class TestNodeConfig<NodeIDType> implements
   /**
    * Pretty prints this node config information.
    */
+  @Override
   public String toString() {
     String s = "";
     for (NodeIDType i : nmap.keySet()) {

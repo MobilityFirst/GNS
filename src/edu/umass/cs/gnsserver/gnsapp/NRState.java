@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Abhigyan Sharma
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -29,7 +29,7 @@ import org.json.JSONObject;
 /**
  * Represents the state for a name record that GNS will transfer to (or received from) coordinator,
  * and other replicas.
- * This exists because we need the valuesMap from the NameRecord but 
+ * This exists because we need the valuesMap from the NameRecord but
  * we also want the TTL as well.
  *
  *
@@ -37,7 +37,7 @@ import org.json.JSONObject;
  */
 // FIXME: This could probably go away if the NameRecord class was rewritten.
 public class NRState implements Summarizable {
-  
+
   final static String SEPARATOR = ":::"; // Made this something that probably won't appear in JSON. - Westy
 
   /**
@@ -67,7 +67,7 @@ public class NRState implements Summarizable {
    */
   public NRState(String state) throws JSONException {
     int ttlIndex;
-    if (state != null &&  (ttlIndex = state.indexOf(SEPARATOR)) != -1) {
+    if (state != null && (ttlIndex = state.indexOf(SEPARATOR)) != -1) {
       this.ttl = Integer.parseInt(state.substring(0, ttlIndex));
       this.valuesMap = new ValuesMap(new JSONObject(state.substring(ttlIndex + SEPARATOR.length())));
     } else if (state != null) {
@@ -76,7 +76,7 @@ public class NRState implements Summarizable {
     } else {
       this.ttl = 0;
       this.valuesMap = new ValuesMap();
-    } 
+    }
   }
 
   @Override
@@ -84,14 +84,15 @@ public class NRState implements Summarizable {
     return ttl + SEPARATOR + valuesMap; // need to convert to json as it will be reinserted into database.
   }
 
-	@Override
-	public Object getSummary() {
-		return new Object() {
-			public String toString() {
-				return Util.truncate(NRState.this.valuesMap.toString(), 16, 16)
-						.toString();
-			}
-		};
-	}
+  @Override
+  public Object getSummary() {
+    return new Object() {
+      @Override
+      public String toString() {
+        return Util.truncate(NRState.this.valuesMap.toString(), 16, 16)
+                .toString();
+      }
+    };
+  }
 
 }
