@@ -26,7 +26,6 @@ import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.security.KeyPair;
@@ -65,6 +64,7 @@ public class GuidUtils {
    *
    * @param client
    * @param name
+   * @param password
    * @return
    * @throws Exception
    */
@@ -72,10 +72,11 @@ public class GuidUtils {
           String password) throws Exception {
     return lookupOrCreateAccountGuid(client, name, password, false);
   }
-  
-  public static final String ACCOUNT_ALREADY_VERIFIED="Account already verified";
+
+  public static final String ACCOUNT_ALREADY_VERIFIED = "Account already verified";
 
   private static final int NUM_VERIFICATION_ATTEMPTS = 3;
+
   public static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client, String name, String password,
           boolean verbose) throws Exception {
     GuidEntry guid = lookupGuidEntryFromPreferences(client, name);
@@ -92,26 +93,26 @@ public class GuidUtils {
       // Since we're cheating here we're going to catch already verified errors which means
       // someone on the server probably turned off verification for testing purposes
       // but we'll rethrow everything else
-      while(true) {
-				try {
-					client.accountGuidVerify(guid, createVerificationCode(name));
-				} catch (GnsClientException e) {
-					// a bit of a hack here that depends on someone not changing
-					// that error message
-					if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
-						if(attempts++ < NUM_VERIFICATION_ATTEMPTS)
-							continue;
-						else  {
-						e.printStackTrace();
-							throw e;
-						}
-					} else {
-						System.out
-								.println("Caught and ignored \"Account already verified\" error for "
-										+ name);
-						break;
-					}
-				}
+      while (true) {
+        try {
+          client.accountGuidVerify(guid, createVerificationCode(name));
+        } catch (GnsClientException e) {
+          // a bit of a hack here that depends on someone not changing
+          // that error message
+          if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
+            if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
+              continue;
+            } else {
+              e.printStackTrace();
+              throw e;
+            }
+          } else {
+            System.out
+                    .println("Caught and ignored \"Account already verified\" error for "
+                            + name);
+            break;
+          }
+        }
       }
       if (verbose) {
         System.out.println("Created and verified account guid for " + guid.getEntityName() + " (" + guid.getGuid() + ")");
@@ -133,6 +134,7 @@ public class GuidUtils {
    * Creates and verifies an account GUID. Yes it cheats on verification.
    *
    * @param client
+   * @param accountGuid
    * @param name
    * @return
    * @throws Exception
@@ -145,7 +147,9 @@ public class GuidUtils {
    * Creates and verifies an account GUID. Yes it cheats on verification.
    *
    * @param client
+   * @param accountGuid
    * @param name
+   * @param verbose
    * @return
    * @throws Exception
    */

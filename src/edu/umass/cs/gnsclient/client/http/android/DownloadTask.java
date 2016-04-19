@@ -32,25 +32,21 @@ import android.util.Log;
 
 /**
  * This class defines a DownloadTask
- * 
+ *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class DownloadTask extends AsyncTask<String, String, Object>
-{
+public class DownloadTask extends AsyncTask<String, String, Object> {
+
   private static final String LOG_TAG = "GNS";
 
   @Override
-  protected Object doInBackground(String... urls)
-  {
+  protected Object doInBackground(String... urls) {
     String stringUrl = urls[0];
     // params comes from the execute() call: params[0] is the url.
-    try
-    {
+    try {
       return downloadUrl(stringUrl);
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       return "Unable to retrieve web page. URL may be invalid.";
     }
   }
@@ -58,11 +54,9 @@ public class DownloadTask extends AsyncTask<String, String, Object>
   // Given a URL, establishes an HttpUrlConnection and retrieves
   // the web page content as a InputStream, which it returns as
   // a string.
-  private Object downloadUrl(String myUrl) throws IOException
-  {
+  private Object downloadUrl(String myUrl) throws IOException {
     InputStream is = null;
-    try
-    {
+    try {
       URL url = new URL(myUrl);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
       conn.setReadTimeout(10000 /* milliseconds */);
@@ -83,16 +77,11 @@ public class DownloadTask extends AsyncTask<String, String, Object>
 
       // Makes sure that the InputStream is closed after the app is
       // finished using it.
-    }
-    catch (Exception e)
-    {
+    } catch (Exception e) {
       Log.e(LOG_TAG, "HTTP error on: " + myUrl, e);
       return e;
-    }
-    finally
-    {
-      if (is != null)
-      {
+    } finally {
+      if (is != null) {
         is.close();
       }
     }
@@ -100,25 +89,19 @@ public class DownloadTask extends AsyncTask<String, String, Object>
 
   // Reads an InputStream and converts it to a String.
   private String readIt(InputStream stream) throws IOException,
-      UnsupportedEncodingException
-  {
+          UnsupportedEncodingException {
     BufferedReader rd = new BufferedReader(new InputStreamReader(stream));
 
     String response = null;
     int cnt = 3;
-    do
-    {
-      try
-      {
+    do {
+      try {
         response = rd.readLine(); // we only expect one line to be sent
         break;
-      }
-      catch (java.net.SocketTimeoutException e)
-      {
+      } catch (java.net.SocketTimeoutException e) {
         Log.i(LOG_TAG, "Get Response timed out. Trying " + cnt + " more times.");
       }
-    }
-    while (cnt-- > 0);
+    } while (cnt-- > 0);
     Log.d(LOG_TAG, "Received: " + response);
     return response;
   }

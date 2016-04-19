@@ -58,6 +58,8 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 
 /**
  * This class defines a UniversalHttpClient to communicate with a GNS instance
@@ -73,7 +75,7 @@ public class UniversalHttpClient implements GNSClientInterface {
   /**
    * Check whether we are on an Android platform or not
    */
-  public static final boolean isAndroid = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
+  public static final boolean IS_ANDROID = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
 
   private final static String QUERYPREFIX = "?";
   private final static String VALSEP = "=";
@@ -100,7 +102,7 @@ public class UniversalHttpClient implements GNSClientInterface {
   /**
    * Static reference to a GNS object (use setGnrs() to define)
    */
-  public static UniversalHttpClient gns;
+  private static UniversalHttpClient gns;
 
   /**
    * Creates a new <code>AbstractGnrsClient</code> object
@@ -199,7 +201,6 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws IOException
    * @throws UnsupportedEncodingException
    * @throws GnsClientException
-   * @throws Exception
    */
   public String lookupGuid(String alias) throws UnsupportedEncodingException, IOException, GnsClientException {
     String command = createQuery(GnsProtocol.LOOKUP_GUID, GnsProtocol.NAME, URIEncoderDecoder.quoteIllegal(alias, ""));
@@ -298,9 +299,7 @@ public class UniversalHttpClient implements GNSClientInterface {
       return keyFactory.generatePublic(publicKeySpec);
     } catch (JSONException e) {
       throw new GnsClientException("Failed to parse LOOKUP_USER response", e);
-    } catch (NoSuchAlgorithmException e) {
-      throw new EncryptionException("Public key encryption failed", e);
-    } catch (InvalidKeySpecException e) {
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new EncryptionException("Public key encryption failed", e);
     }
 
@@ -316,6 +315,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return
    * @throws Exception
    */
+  @Override
   public GuidEntry accountGuidCreate(String alias, String password) throws Exception {
 
     KeyPair keyPair = KeyPairGenerator.getInstance(GnsProtocol.RSA_ALGORITHM).generateKeyPair();
@@ -366,6 +366,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return the newly created GUID entry
    * @throws Exception
    */
+  @Override
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias) throws Exception {
 
     KeyPair keyPair = KeyPairGenerator.getInstance(GnsProtocol.RSA_ALGORITHM).generateKeyPair();
@@ -1084,8 +1085,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    *
    * @throws IOException throws exception if a communication error occurs
    */
+  @Override
   public void checkConnectivity() throws IOException {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       String urlString = "http://" + host + ":" + port + "/";
       final AndroidHttpGet httpGet = new AndroidHttpGet();
       httpGet.execute(urlString);
@@ -1094,7 +1096,7 @@ public class UniversalHttpClient implements GNSClientInterface {
         if (httpGetResponse instanceof IOException) {
           throw (IOException) httpGetResponse;
         }
-      } catch (Exception e) {
+      } catch (InterruptedException | ExecutionException | IOException e) {
         throw new IOException(e);
       }
     } else // Desktop version
@@ -1262,8 +1264,9 @@ public class UniversalHttpClient implements GNSClientInterface {
     for (int i = 0; i < keysAndValues.length; i = i + 2) {
       key = keysAndValues[i];
       value = keysAndValues[i + 1];
-      result.append(URIEncoderDecoder.quoteIllegal(key, "") + VALSEP + URIEncoderDecoder.quoteIllegal(value, "")
-              + (i + 2 < keysAndValues.length ? KEYSEP : ""));
+      result.append(URIEncoderDecoder.quoteIllegal(key, ""))
+              .append(VALSEP).append(URIEncoderDecoder.quoteIllegal(value, ""))
+              .append(i + 2 < keysAndValues.length ? KEYSEP : "");
     }
     return result.toString();
   }
@@ -1290,9 +1293,13 @@ public class UniversalHttpClient implements GNSClientInterface {
       for (int i = 0; i < keysAndValues.length; i = i + 2) {
         key = keysAndValues[i];
         value = keysAndValues[i + 1];
-        encodedString.append(URIEncoderDecoder.quoteIllegal(key, "") + VALSEP
-                + URIEncoderDecoder.quoteIllegal(value, "") + (i + 2 < keysAndValues.length ? KEYSEP : ""));
-        unencodedString.append(key + VALSEP + value + (i + 2 < keysAndValues.length ? KEYSEP : ""));
+        encodedString.append(URIEncoderDecoder.quoteIllegal(key, ""))
+                .append(VALSEP).append(URIEncoderDecoder.quoteIllegal(value, ""))
+                .append(i + 2 < keysAndValues.length ? KEYSEP : "");
+        unencodedString.append(key)
+                .append(VALSEP)
+                .append(value)
+                .append(i + 2 < keysAndValues.length ? KEYSEP : "");
       }
 
       KeyPair keypair;
@@ -1303,7 +1310,8 @@ public class UniversalHttpClient implements GNSClientInterface {
       String signature = signDigestOfMessage(privateKey, unencodedString.toString());
       // return the encoded query with the signature appended
       return encodedString.toString() + KEYSEP + GnsProtocol.SIGNATURE + VALSEP + signature;
-    } catch (Exception e) {
+    } catch (UnsupportedEncodingException | NoSuchAlgorithmException 
+            | InvalidKeyException | SignatureException e) {
       throw new GnsClientException("Error encoding message", e);
     }
   }
@@ -1345,7 +1353,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws IOException if an error occurs
    */
   protected String sendGetCommand(String queryString) throws IOException {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       return androidSendGetCommand(queryString);
     } else {
       return desktopSendGetCommmand(queryString);
@@ -1369,7 +1377,7 @@ public class UniversalHttpClient implements GNSClientInterface {
       if (queryString != null) {
         urlString += "/GNS/" + queryString;
       }
-      GNSClientConfig.getLogger().fine("Sending: " + urlString);
+      GNSClientConfig.getLogger().log(Level.FINE, "Sending: {0}", urlString);
       URL serverURL = new URL(urlString);
       // set up out communications stuff
       connection = null;
@@ -1393,7 +1401,8 @@ public class UniversalHttpClient implements GNSClientInterface {
           // sent
           break;
         } catch (java.net.SocketTimeoutException e) {
-          GNSClientConfig.getLogger().info("Get Response timed out. Trying " + cnt + " more times. Query is " + queryString);
+          GNSClientConfig.getLogger().log(Level.INFO, 
+                  "Get Response timed out. Trying {0} more times. Query is {1}", new Object[]{cnt, queryString});
         }
       } while (cnt-- > 0);
       try {
@@ -1404,7 +1413,7 @@ public class UniversalHttpClient implements GNSClientInterface {
       } catch (IOException e) {
         GNSClientConfig.getLogger().warning("Problem closing the HttpURLConnection's stream.");
       }
-      GNSClientConfig.getLogger().fine("Received: " + response);
+      GNSClientConfig.getLogger().log(Level.FINE, "Received: {0}", response);
       if (response != null) {
         return response;
       } else {
@@ -1431,7 +1440,7 @@ public class UniversalHttpClient implements GNSClientInterface {
       } else {
         return (String) httpGetResponse;
       }
-    } catch (Exception e) {
+    } catch (InterruptedException | ExecutionException | IOException e) {
       throw new IOException(e);
     }
   }

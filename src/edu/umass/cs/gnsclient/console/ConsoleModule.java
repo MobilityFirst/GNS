@@ -51,6 +51,10 @@ import edu.umass.cs.gnsclient.console.commands.GnsConnect;
 import edu.umass.cs.gnsclient.console.commands.GuidUse;
 import edu.umass.cs.gnsclient.console.commands.Help;
 import edu.umass.cs.gnsclient.console.commands.Quit;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import org.json.JSONException;
 
 /**
  * This class defines a ConsoleModule
@@ -60,9 +64,9 @@ import edu.umass.cs.gnsclient.console.commands.Quit;
  */
 public class ConsoleModule {
 
-  ConsoleReader console;
-  TreeSet<ConsoleCommand> commands;
-  boolean quit = false;
+  private ConsoleReader console;
+  private TreeSet<ConsoleCommand> commands;
+  private boolean quit = false;
   private boolean useGnsDefaults = true;
   @SuppressWarnings("javadoc")
   protected Completor consoleCompletor;
@@ -109,7 +113,8 @@ public class ConsoleModule {
         long startTime = System.currentTimeMillis();
         //storeHistory();
         if (debuggingEnabled) {
-          GNSClientConfig.getLogger().info("Save history took " + (System.currentTimeMillis() - startTime) + "ms");
+          GNSClientConfig.getLogger().log(Level.INFO, "Save history took {0}ms", 
+                  (System.currentTimeMillis() - startTime));
         }
       }
     });
@@ -122,7 +127,7 @@ public class ConsoleModule {
       String[] historyKeys = prefs.keys();
       Arrays.sort(historyKeys, 0, historyKeys.length);
       if (debuggingEnabled) {
-        GNSClientConfig.getLogger().info("Loading history. Size is " + historyKeys.length);
+        GNSClientConfig.getLogger().log(Level.INFO, "Loading history. Size is {0}", historyKeys.length);
       }
       for (int i = 0; i < historyKeys.length; i++) {
         String key = historyKeys[i];
@@ -212,13 +217,15 @@ public class ConsoleModule {
         clazz = Class.forName(commandClass);
         Constructor<?> constructor;
         try {
-          constructor = clazz.getConstructor(new Class[]{this.getClass()});
+          constructor = clazz.getConstructor(new Class<?>[]{this.getClass()});
         } catch (NoSuchMethodException e) {
-          constructor = clazz.getConstructor(new Class[]{ConsoleModule.class});
+          constructor = clazz.getConstructor(new Class<?>[]{ConsoleModule.class});
         }
         ConsoleCommand command = (ConsoleCommand) constructor.newInstance(new Object[]{this});
         commands.add(command);
-      } catch (Exception e) {
+      } catch (ClassNotFoundException | SecurityException 
+              | NoSuchMethodException | InstantiationException 
+              | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
         // fail silently: the command won't be added to the commands list
       }
     }
@@ -249,10 +256,10 @@ public class ConsoleModule {
    * Loads the commands for this module
    */
   protected void loadCompletor() {
-    List<Completor> completors = new LinkedList<Completor>();
+    List<Completor> completors = new LinkedList<>();
     int size = commands.size();
     if (size > 0) {
-      TreeSet<String> set = new TreeSet<String>();
+      TreeSet<String> set = new TreeSet<>();
       Iterator<ConsoleCommand> it = commands.iterator();
       while (it.hasNext()) {
         set.add(it.next().getCommandName());
@@ -393,8 +400,8 @@ public class ConsoleModule {
     }
   }
 
-  boolean lastWasCR = false;
-  List<Byte> currentLine = new ArrayList<Byte>();
+  private boolean lastWasCR = false;
+  private List<Byte> currentLine = new ArrayList<>();
 
   /**
    * Implements SEQUOIA-887. We would like to create a BufferedReader to use its
@@ -440,7 +447,7 @@ public class ConsoleModule {
     // EOF also counts as an end of line. Not sure this is what JLine does but
     // it looks good.
     while (ch != -1 && ch != '\n' && ch != '\r') {
-      currentLine.add(new Byte((byte) ch));
+      currentLine.add((byte) ch);
       ch = jlineInternal.read();
     }
 
@@ -452,7 +459,7 @@ public class ConsoleModule {
     byte[] encoded = new byte[currentLine.size()];
     Iterator<Byte> it = currentLine.iterator();
     for (int i = 0; it.hasNext(); i++) {
-      encoded[i] = it.next().byteValue();
+      encoded[i] = it.next();
     }
 
     /**
@@ -490,7 +497,7 @@ public class ConsoleModule {
     if (st.hasMoreTokens()) {
       ConsoleCommand command = findConsoleCommand(commandLine, hashCommands);
       if (debuggingEnabled) {
-        GNSClientConfig.getLogger().info("Command:" + command);
+        GNSClientConfig.getLogger().log(Level.INFO, "Command:{0}", command);
       }
       if (command != null) {
         command.execute(commandLine.substring(command.getCommandName().length()));
@@ -705,11 +712,11 @@ public class ConsoleModule {
       } else { // This is not an account GUID but make sure the GUID is valid
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
       }
-    } catch (Exception e) {
+    } catch (IOException | GnsClientException | JSONException e) {
       // This might not be an account GUID let's check if the GUID is valid
       try {
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
-      } catch (Exception e1) {
+      } catch (GnsClientException | IOException e1) {
         return false;
       }
     }
@@ -732,7 +739,7 @@ public class ConsoleModule {
    * This class defines a CommandDelimiter used to delimit a command from user
    * input
    */
-  class CommandDelimiter extends ArgumentCompletor.AbstractArgumentDelimiter {
+  private class CommandDelimiter extends ArgumentCompletor.AbstractArgumentDelimiter {
 
     /**
      * @see jline.ArgumentCompletor.AbstractArgumentDelimiter#isDelimiterChar(java.lang.String,

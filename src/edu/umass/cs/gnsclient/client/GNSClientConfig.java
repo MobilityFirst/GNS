@@ -50,7 +50,7 @@ public class GNSClientConfig {
   public static String readBuildVersion() {
     String result = null;
     try {
-      Class clazz = GNSClientConfig.class;
+      Class<?> clazz = GNSClientConfig.class;
       String className = clazz.getSimpleName() + ".class";
       String classPath = clazz.getResource(className).toString();
       //System.out.println("readBuildVersion: classPath is " + classPath);

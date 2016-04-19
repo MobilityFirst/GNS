@@ -14,7 +14,6 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnscommon.utils;
@@ -22,8 +21,7 @@ package edu.umass.cs.gnscommon.utils;
 import java.util.Arrays;
 
 /**
- *
- * @author westy 
+ * Encoding and decoding of Base64 strings.
  */
 public class Base64 {
 
@@ -227,7 +225,7 @@ public class Base64 {
     // Check special case
     int sourceLength = sourceArray.length;
 
-		// Count illegal characters (including '\r', '\n') to know what size the returned array will be,
+    // Count illegal characters (including '\r', '\n') to know what size the returned array will be,
     // so we don't have to reallocate & copy it later.
     int sepCnt = 0; // Number of separator characters. (Actually illegal characters, but that's a bonus...)
     for (int i = 0; i < sourceLength; i++) // If input is "pure" (I.e. no line separators or illegal chars) base64 this loop can be commented out.
@@ -308,7 +306,7 @@ public class Base64 {
     if (sourceLength == 0) {
       return new byte[0];
     }
- 
+
     // Count illegal characters (including '\r', '\n') to know what size the returned array will be,
     // so we don't have to reallocate & copy it later.
     int sepCnt = 0; // Number of separator characters. (Actually illegal characters, but that's a bonus...)

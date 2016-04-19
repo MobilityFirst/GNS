@@ -19,7 +19,6 @@ import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
-import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
@@ -35,7 +34,6 @@ import java.security.SignatureException;
 import java.util.Date;
 import java.util.Random;
 import java.util.logging.Level;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -110,6 +108,8 @@ public class CommandUtils {
    * @throws GnsClientException
    */
   @Deprecated
+  // This is deprecated because the method below will be the one we end up using once the
+  // transtion to using enums is finished.
   public static JSONObject createAndSignCommand(PrivateKey privateKey, String action,
           Object... keysAndValues) throws GnsClientException {
     try {
@@ -130,6 +130,7 @@ public class CommandUtils {
    * number of key and value pairs with a signature parameter. The signature is
    * generated from the query signed by the given guid.
    *
+   * @param commandType
    * @param privateKey
    * @param action
    * @param keysAndValues

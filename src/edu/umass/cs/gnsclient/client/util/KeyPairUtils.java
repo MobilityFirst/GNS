@@ -49,9 +49,9 @@ public class KeyPairUtils {
   /**
    * Check whether we are on an Android platform or not
    */
-  public static final boolean isAndroid = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
+  public static final boolean IS_ANDROID = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
 
-  private static SimpleKeyStore keyStore = new SimpleKeyStore();
+  private static final SimpleKeyStore KEYSTORE = new SimpleKeyStore();
   //private static Preferences keyStore = Preferences.userRoot().node(KeyPairUtils.class.getName());
  
   // Added these and made the shorter because there is a maximum key length limit!
@@ -73,13 +73,13 @@ public class KeyPairUtils {
       return null;
     }
 
-    if (isAndroid) {
+    if (IS_ANDROID) {
       return KeyPairUtilsAndroid.getGuidEntryFromPreferences(gnsName, username);
     }
 
-    String guid = keyStore.get(generateKey(gnsName, username, GUID), "");
-    String publicString = keyStore.get(generateKey(gnsName, username, PUBLIC), "");
-    String privateString = keyStore.get(generateKey(gnsName, username, PRIVATE), "");
+    String guid = KEYSTORE.get(generateKey(gnsName, username, GUID), "");
+    String publicString = KEYSTORE.get(generateKey(gnsName, username, PUBLIC), "");
+    String privateString = KEYSTORE.get(generateKey(gnsName, username, PRIVATE), "");
     if (!guid.isEmpty() && !publicString.isEmpty() && !privateString.isEmpty()) {
       try {
         byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
@@ -90,10 +90,7 @@ public class KeyPairUtils {
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
         PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
         return new GuidEntry(username, guid, publicKey, privateKey);
-      } catch (NoSuchAlgorithmException e) {
-        System.out.println(e.toString());
-        return null;
-      } catch (InvalidKeySpecException e) {
+      } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
         System.out.println(e.toString());
         return null;
       }
@@ -109,13 +106,13 @@ public class KeyPairUtils {
    * @param username the user name
    */
   public static void removeKeyPair(String gnsName, String username) {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       KeyPairUtilsAndroid.removeKeyPairFromPreferences(gnsName, username);
       return;
     }
-    keyStore.remove(generateKey(gnsName, username, PUBLIC));
-    keyStore.remove(generateKey(gnsName, username, PRIVATE));
-    keyStore.remove(generateKey(gnsName, username, GUID));
+    KEYSTORE.remove(generateKey(gnsName, username, PUBLIC));
+    KEYSTORE.remove(generateKey(gnsName, username, PRIVATE));
+    KEYSTORE.remove(generateKey(gnsName, username, GUID));
   }
 
   /**
@@ -127,15 +124,15 @@ public class KeyPairUtils {
    * @param keyPair public and private keys for that GUID
    */
   public static void saveKeyPair(String gnsName, String username, String guid, KeyPair keyPair) {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       KeyPairUtilsAndroid.saveKeyPairToPreferences(gnsName, username, guid, keyPair);
       return;
     }
     String publicString = ByteUtils.toHex(keyPair.getPublic().getEncoded());
     String privateString = ByteUtils.toHex(keyPair.getPrivate().getEncoded());
-    keyStore.put(generateKey(gnsName, username, PUBLIC), publicString);
-    keyStore.put(generateKey(gnsName, username, PRIVATE), privateString);
-    keyStore.put(generateKey(gnsName, username, GUID), guid);
+    KEYSTORE.put(generateKey(gnsName, username, PUBLIC), publicString);
+    KEYSTORE.put(generateKey(gnsName, username, PRIVATE), privateString);
+    KEYSTORE.put(generateKey(gnsName, username, GUID), guid);
   }
 
   /**
@@ -159,10 +156,10 @@ public class KeyPairUtils {
    * @param username the alias of the default GUID to use
    */
   public static void setDefaultGuidEntry(String gnsName, String username) {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       KeyPairUtilsAndroid.setDefaultGuidEntryToPreferences(gnsName, username);
     } else {
-      keyStore.put(gnsName + DEFAULT_GUID, username);
+      KEYSTORE.put(gnsName + DEFAULT_GUID, username);
     }
   }
   
@@ -173,10 +170,10 @@ public class KeyPairUtils {
    * @param gnsName the name of the GNS instance (e.g. "server.gns.name:8080")
    */
   public static void removeDefaultGuidEntry(String gnsName) {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       KeyPairUtilsAndroid.removeDefaultGuidEntryFromPreferences(gnsName);
     } else {
-      keyStore.remove(gnsName + DEFAULT_GUID);
+      KEYSTORE.remove(gnsName + DEFAULT_GUID);
     }
   }
 
@@ -188,10 +185,10 @@ public class KeyPairUtils {
    * @return the default GUID entry or null if not set or invalid
    */
   public static GuidEntry getDefaultGuidEntry(String gnsName) {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       return KeyPairUtilsAndroid.getDefaultGuidEntryFromPreferences(gnsName);
     } else {
-      return getGuidEntry(gnsName, keyStore.get(gnsName + DEFAULT_GUID, null));
+      return getGuidEntry(gnsName, KEYSTORE.get(gnsName + DEFAULT_GUID, null));
     }
   }
 
@@ -203,10 +200,10 @@ public class KeyPairUtils {
    * @param gnsHostPort a string of host:port:disableSSLBoolean
    */
   public static void setDefaultGns(String gnsHostPort) {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       KeyPairUtilsAndroid.setDefaultGnsToPreferences(gnsHostPort);
     } else {
-      keyStore.put(DEFAULT_GNS, gnsHostPort);
+      KEYSTORE.put(DEFAULT_GNS, gnsHostPort);
     }
   }
 
@@ -217,10 +214,10 @@ public class KeyPairUtils {
    * @return the default GNS saved in the user prefences as a string of host:port:disableSSLBoolean
    */
   public static String getDefaultGns() {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       return KeyPairUtilsAndroid.getDefaultGnsFromPreferences();
     } else {
-      return keyStore.get(DEFAULT_GNS, null);
+      return KEYSTORE.get(DEFAULT_GNS, null);
     }
   }
   
@@ -228,10 +225,10 @@ public class KeyPairUtils {
    * Remove the default GNS to use in the user preferences.
    */
   public static void removeDefaultGns() {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       KeyPairUtilsAndroid.removeDefaultGnsFromPreferences();
     } else {
-      keyStore.remove(DEFAULT_GNS);
+      KEYSTORE.remove(DEFAULT_GNS);
     }
   }
   
@@ -248,10 +245,11 @@ public class KeyPairUtils {
   public static PrivateKey getPrivateKeyFromPKCS8File(String filename) throws IOException, InvalidKeySpecException,
           NoSuchAlgorithmException {
     File f = new File(filename);
-    DataInputStream dis = new DataInputStream(new FileInputStream(f));
-    byte[] keyBytes = new byte[(int) f.length()];
-    dis.readFully(keyBytes);
-    dis.close();
+    byte[] keyBytes;
+    try (DataInputStream dis = new DataInputStream(new FileInputStream(f))) {
+      keyBytes = new byte[(int) f.length()];
+      dis.readFully(keyBytes);
+    }
 
     PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
     KeyFactory kf = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
@@ -300,13 +298,13 @@ public class KeyPairUtils {
    * @return all matching GUIDs
    */
   public static List<GuidEntry> getAllGuids(String gnsName) {
-    if (isAndroid) {
+    if (IS_ANDROID) {
       return KeyPairUtilsAndroid.getAllGuids(gnsName);
     }
 
-    List<GuidEntry> guids = new LinkedList<GuidEntry>();
+    List<GuidEntry> guids = new LinkedList<>();
     //try {
-      String[] keys = keyStore.keys();
+      String[] keys = KEYSTORE.keys();
       for (String key : keys) {
         if ((gnsName == null || key.startsWith(gnsName + "#")) && key.endsWith(GUID)) {
           //System.out.println(key);
@@ -339,11 +337,11 @@ public class KeyPairUtils {
 
   public static void main(String args[]) throws BackingStoreException {
     if ((args.length == 1) && "-clear".equals(args[0])) {
-      keyStore.clear();
+      KEYSTORE.clear();
       //keyStore.removeNode();
-      System.out.println(keyStore.toString() + " cleared.");
+      System.out.println(KEYSTORE.toString() + " cleared.");
     } else if ((args.length == 1) && "-size".equals(args[0])) {
-      System.out.println(keyStore.toString() + " contains " + keyStore.keys().length + " keys");
+      System.out.println(KEYSTORE.toString() + " contains " + KEYSTORE.keys().length + " keys");
     } else {
       if (args.length < 3) {
         List<GuidEntry> allGuids = getAllGuids(args.length > 0 ? args[0] : null);

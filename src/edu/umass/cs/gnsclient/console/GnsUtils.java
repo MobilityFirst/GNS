@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 public class GnsUtils
 {
 
-  private static Pattern hex = Pattern.compile("^[0-9A-Fa-f]+$");
+  private static final Pattern HEX_PATTERN = Pattern.compile("^[0-9A-Fa-f]+$");
 
   /**
    * Returns true if the given String is a potentially valid GUID (160 bits
@@ -40,6 +40,6 @@ public class GnsUtils
   public static boolean isValidGuidString(String guid)
   {
     return (guid != null) && (guid.length() == 40)
-        && hex.matcher(guid).matches();
+        && HEX_PATTERN.matcher(guid).matches();
   }
 }

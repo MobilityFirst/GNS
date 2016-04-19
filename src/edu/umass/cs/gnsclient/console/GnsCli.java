@@ -78,7 +78,7 @@ public class GnsCli {
 
   // command line arguments
   // COMMAND LINE STUFF
-  private static HelpFormatter formatter = new HelpFormatter();
+  private static final HelpFormatter FORMATTER = new HelpFormatter();
   private static Options commandLineOptions;
 
   private static CommandLine initializeOptions(String[] args) throws ParseException {
@@ -96,7 +96,7 @@ public class GnsCli {
   }
 
   private static void printUsage() {
-    formatter.printHelp("java -jar <JAR> <options>", commandLineOptions);
+    FORMATTER.printHelp("java -jar <JAR> <options>", commandLineOptions);
   }
 
 }

@@ -20,7 +20,8 @@
 package edu.umass.cs.aws.support;
 
 /**
- *
+ * Records for AWS regions.
+ * 
  * @author westy
  */
 public enum RegionRecord {
@@ -37,8 +38,8 @@ public enum RegionRecord {
  
  ;
  
- String URL;
- String location;
+ private String URL;
+ private String location;
 
   private RegionRecord(String name, String location) {
     this.URL = name;

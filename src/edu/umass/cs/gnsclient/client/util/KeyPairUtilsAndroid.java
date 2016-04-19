@@ -50,7 +50,6 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 public class KeyPairUtilsAndroid {
 
   // directory to store GNS keys
-
   private static final String GNS_KEY_DIR = Environment.getExternalStorageDirectory().toString() + "/GNS";
   // GNS keys file on external storage
   private static final String GNS_KEYS_FILENAME = "GNSKeys.txt";
@@ -168,21 +167,20 @@ public class KeyPairUtilsAndroid {
     try {
       File file = new File(extStorageDirectory, DEFAULT_GUIDS_FILENAME);
       file.createNewFile();
-      FileOutputStream fOut = new FileOutputStream(file);
-      OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+      try (FileOutputStream fOut = new FileOutputStream(file);
+              OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut)) {
 
-      // not appending here, overwritng previous entries
-      myOutWriter.write(aliasKey + "\n");
-      myOutWriter.write(username + "\n");
+        // not appending here, overwritng previous entries
+        myOutWriter.write(aliasKey + "\n");
+        myOutWriter.write(username + "\n");
 
-      myOutWriter.close();
-      fOut.close();
+      }
     } catch (Exception e) {
       Log.e(KeyPairUtilsAndroid.class.getName(), "Could not create file", e);
       e.printStackTrace();
     }
   }
-  
+
   /**
    * Set the default GUID to use in the user preferences (usually the account
    * GUID)
@@ -212,7 +210,6 @@ public class KeyPairUtilsAndroid {
       e.printStackTrace();
     }
   }
-  
 
   /**
    * Return the GUID entry for the default GUID set in the user preferences (if
@@ -274,13 +271,12 @@ public class KeyPairUtilsAndroid {
         file.delete();
       }
       file.createNewFile();
-      FileOutputStream fOut = new FileOutputStream(file);
-      OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+      try (FileOutputStream fOut = new FileOutputStream(file);
+              OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut)) {
 
-      // not appending here, overwritng previous entries
-      myOutWriter.write(gnsHostPort);
-      myOutWriter.close();
-      fOut.close();
+        // not appending here, overwritng previous entries
+        myOutWriter.write(gnsHostPort);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       Log.e(KeyPairUtilsAndroid.class.getName(), "Could not create file", e);
@@ -288,7 +284,7 @@ public class KeyPairUtilsAndroid {
   }
 
   /**
-   * Remove the default GNS to use in the user preferences. 
+   * Remove the default GNS to use in the user preferences.
    */
   public static void removeDefaultGnsFromPreferences() {
     // Create Folder
@@ -323,9 +319,10 @@ public class KeyPairUtilsAndroid {
     File file = new File(extStorageDirectory, DEFAULT_GNS_FILENAME);
 
     try {
-      BufferedReader br = new BufferedReader(new FileReader(file));
-      String line = br.readLine();
-      br.close();
+      String line;
+      try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        line = br.readLine();
+      }
       if (line != null) {
         return line.trim();
       }
@@ -344,7 +341,7 @@ public class KeyPairUtilsAndroid {
    * @return all matching GUIDs
    */
   public static List<GuidEntry> getAllGuids(String gnsName) {
-    List<GuidEntry> guids = new LinkedList<GuidEntry>();
+    List<GuidEntry> guids = new LinkedList<>();
 
     File gnsFolder = new File(GNS_KEY_DIR);
 
@@ -407,16 +404,15 @@ public class KeyPairUtilsAndroid {
     try {
       File file = new File(extStorageDirectory, GNS_KEYS_FILENAME);
       file.createNewFile();
-      FileOutputStream fOut = new FileOutputStream(file, true);
-      OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+      try (FileOutputStream fOut = new FileOutputStream(file, true);
+              OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut)) {
 
-      myOutWriter.append(alias + "\n");
-      myOutWriter.append(guid + "\n");
-      myOutWriter.append(publicKey + "\n");
-      myOutWriter.append(privateKey + "\n");
+        myOutWriter.append(alias + "\n");
+        myOutWriter.append(guid + "\n");
+        myOutWriter.append(publicKey + "\n");
+        myOutWriter.append(privateKey + "\n");
 
-      myOutWriter.close();
-      fOut.close();
+      }
     } catch (Exception e) {
       e.printStackTrace();
       Log.e(KeyPairUtilsAndroid.class.getName(), "Could not create file", e);
@@ -455,9 +451,7 @@ public class KeyPairUtilsAndroid {
               PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
               PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
               return new GuidEntry(username, guid, publicKey, privateKey);
-            } catch (NoSuchAlgorithmException e) {
-              Log.e(KeyPairUtilsAndroid.class.getName(), "Cannot decode keys", e);
-            } catch (InvalidKeySpecException e) {
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
               Log.e(KeyPairUtilsAndroid.class.getName(), "Cannot decode keys", e);
             }
           }

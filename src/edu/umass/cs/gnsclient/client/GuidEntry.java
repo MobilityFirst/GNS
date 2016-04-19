@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.oldclient.GNSClient;
+import edu.umass.cs.gnsclient.client.GnsClient;
 import edu.umass.cs.gnscommon.GnsProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -179,7 +179,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     String password = "123";
     String file_name = "guid";
 
-    GNSClient client = new GNSClient((InetSocketAddress) null, 
+    GnsClient client = new GnsClient(null,
             new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
 
     GuidEntry guidEntry = client.accountGuidCreate(name, password);
@@ -191,11 +191,9 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
 
     FileInputStream fis = new FileInputStream(file_name);
     ObjectInputStream ois = new ObjectInputStream(fis);
-    
 
     GuidEntry newEntry = new GuidEntry(ois);
     System.out.println(newEntry);
   }
 
 }
-
