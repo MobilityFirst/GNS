@@ -22,14 +22,13 @@ package edu.umass.cs.gnsserver.database;
 import com.mongodb.*;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
 
 /**
  * Provides a cursor that can be used to iterate through rows of a collection.
@@ -230,7 +229,8 @@ public class MongoRecordCursor extends AbstractRecordCursor {
         try {
           json.put(entry.getKey().getName(), entry.getValue());
         } catch (JSONException e) {
-          GNSConfig.getLogger().severe("Problem putting object in JSONObject: " + e);
+          DatabaseConfig.getLogger().log(Level.SEVERE, 
+                  "Problem putting object in JSONObject: {0}", e);
         }
       }
       return json;

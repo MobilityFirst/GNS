@@ -32,6 +32,8 @@ import java.io.Serializable;
  * @author westy
  */
 public class CommandResult implements Serializable /* does it */ {
+  
+  private static final long serialVersionUID = 2326392043474125897L;
 
   /**
    * Set if the response is not an error.

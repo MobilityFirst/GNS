@@ -33,16 +33,11 @@ import org.xbill.DNS.SimpleResolver;
  */
 public class GnsDnsLookupTask implements Callable<Message> {
 
-  enum WorkerClass {
-
-    DNS, GNS, GNSLOCAL
-  }
-
   private final WorkerClass workerClass;
   private final Message query;
   private Message response;
   private final SimpleResolver nameServer; // It is used for both dnsServer and gnsServer
-  private ClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface handler;
 
   /**
    * Creates a worker task that handles a query using the GNS.

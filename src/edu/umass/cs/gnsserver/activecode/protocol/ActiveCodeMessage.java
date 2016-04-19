@@ -30,43 +30,46 @@ import java.io.Serializable;
  */
 public class ActiveCodeMessage implements Serializable {
 
+  private static final long serialVersionUID = 2326392043474125897L;
+
   /**
    * Indicates that the worker should shut down
    */
-  public boolean shutdown;
+  private boolean shutdown;
 
   /**
    * Indicates that the active code request finished
    */
-  public boolean finished;
+  private boolean finished;
 
   /**
    * Inidicates that the active code request crashed
    */
-  public boolean crashed;
+  private boolean crashed;
 
   /**
    * The active code params to execute
    */
-  public ActiveCodeParams acp;
+  private ActiveCodeParams acp;
 
   /**
    * Stores the result of the active code computation
    */
-  public String valuesMapString;
+  private String valuesMapString;
 
   /**
    * Denotes a request by the worker to perform a query
    */
-  public ActiveCodeQueryRequest acqreq;
+  private ActiveCodeQueryRequest acqreq;
 
   /**
    * Returns a query response to the worker
    */
-  public ActiveCodeQueryResponse acqresp;
+  private ActiveCodeQueryResponse acqresp;
 
   /**
    * shutdown getter
+   *
    * @return true if has been shutdown
    */
   public boolean isShutdown() {
@@ -75,6 +78,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * shutdown setter
+   *
    * @param shutdown
    */
   public void setShutdown(boolean shutdown) {
@@ -83,6 +87,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * finished getter
+   *
    * @return true if it's finished
    */
   public boolean isFinished() {
@@ -91,6 +96,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * finished setter
+   *
    * @param finished
    */
   public void setFinished(boolean finished) {
@@ -99,6 +105,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * crashed getter
+   *
    * @return true if worker crashed
    */
   public boolean isCrashed() {
@@ -107,6 +114,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * crashed setter
+   *
    * @param crashed
    */
   public void setCrashed(boolean crashed) {
@@ -115,6 +123,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * parameter getter
+   *
    * @return active code params
    */
   public ActiveCodeParams getAcp() {
@@ -123,6 +132,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * params setter
+   *
    * @param acp
    */
   public void setAcp(ActiveCodeParams acp) {
@@ -131,6 +141,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * result getter
+   *
    * @return result
    */
   public String getValuesMapString() {
@@ -139,6 +150,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * result setter
+   *
    * @param valuesMapString
    */
   public void setValuesMapString(String valuesMapString) {
@@ -147,6 +159,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * request getter
+   *
    * @return request
    */
   public ActiveCodeQueryRequest getAcqreq() {
@@ -155,6 +168,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * request setter
+   *
    * @param acqreq
    */
   public void setAcqreq(ActiveCodeQueryRequest acqreq) {
@@ -163,6 +177,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * response getter
+   *
    * @return response
    */
   public ActiveCodeQueryResponse getAcqresp() {
@@ -171,6 +186,7 @@ public class ActiveCodeMessage implements Serializable {
 
   /**
    * response setter
+   *
    * @param acqresp
    */
   public void setAcqresp(ActiveCodeQueryResponse acqresp) {

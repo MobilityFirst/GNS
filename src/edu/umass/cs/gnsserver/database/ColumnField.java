@@ -19,9 +19,6 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 /**
  * Encapsulates the name and type of a column in the database.
  *

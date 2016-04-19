@@ -30,7 +30,7 @@ import javax.script.SimpleScriptContext;
 
 /**
  * This class is used to run active code
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeRunner {
@@ -39,6 +39,7 @@ public class ActiveCodeRunner {
   private final Invocable invocable;
   private final HashMap<String, ScriptContext> contexts;
   private final HashMap<String, Integer> codeHashes;
+
   /**
    * Intialize an ActiveCodeRunner with nashorn script engine
    * by default.
@@ -51,7 +52,7 @@ public class ActiveCodeRunner {
     contexts = new HashMap<>();
     codeHashes = new HashMap<>();
 
-		// uncomment to enable the lua-to-java bytecode compiler 
+    // uncomment to enable the lua-to-java bytecode compiler 
     // (require bcel library in class path)
     // Globals globals = JsePlatform.standardGlobals();
     // LuaJC.install(globals);
@@ -97,7 +98,7 @@ public class ActiveCodeRunner {
    }
    }
    */
-  /*
+ /*
    private ValuesMap runLuaCode(String guid, String action, String field, String code, ValuesMap value, ActiveCodeGuidQuerier querier) {
    String codeId = guid + "_" + action;
 		
@@ -135,7 +136,7 @@ public class ActiveCodeRunner {
    * @return the output of the code
    */
   public ValuesMap runCode(String guid, String action, String field, String code, ValuesMap value, ActiveCodeGuidQuerier querier) {
-		// if(true)
+    // if(true)
     //	return runLuaCode(guid, action, field, code, value, querier);
 
     try {

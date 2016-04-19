@@ -114,7 +114,6 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     hashMap.put(ACTIVE_VERSION, activeVersion);
     hashMap.put(TIME_TO_LIVE, ttl);
     hashMap.put(VALUES_MAP, values);
-    hashMap.put(LOOKUP_TIME, -1);
 
   }
 
@@ -147,10 +146,6 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
 
     if (jsonObject.has(VALUES_MAP.getName())) {
       hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
-    }
-
-    if (jsonObject.has(LOOKUP_TIME.getName())) {
-      hashMap.put(LOOKUP_TIME, JSONUtils.getObject(LOOKUP_TIME, jsonObject));
     }
   }
 

@@ -50,24 +50,26 @@ import org.json.JSONObject;
  */
 public class MongoRecordsThroughputTest {
 
-	private static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
-	private static long initTime = System.currentTimeMillis();
+  private static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
+  private static long initTime = System.currentTimeMillis();
+
   /**
    * Run the test.
-   * 
+   *
    * @param args
    * @throws Exception
-   * @throws RecordNotFoundException 
+   * @throws RecordNotFoundException
    */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length == 3) {
-    	for(int i=0; i<executor.getCorePoolSize(); i++)
-			executor.submit(new Runnable() {
-				public void run() {
-					testlookupMultipleSystemAndUserFields(args[0], args[1],
-							args[2]);
-				}
-			});
+      for (int i = 0; i < executor.getCorePoolSize(); i++) {
+        executor.submit(new Runnable() {
+          public void run() {
+            testlookupMultipleSystemAndUserFields(args[0], args[1],
+                    args[2]);
+          }
+        });
+      }
     } else {
       System.out.println("Usage: edu.umass.cs.gnsserver.test.MongoRecordsThroughputTest <node> <guid> <field>");
     }
@@ -81,17 +83,20 @@ public class MongoRecordsThroughputTest {
     dnsSystemFields.add(NameRecord.ACTIVE_VERSION);
     dnsSystemFields.add(NameRecord.TIME_TO_LIVE);
   }
-  
+
   private static int count = 0;
+
   private static synchronized int incrCount() {
-	  return ++count;
+    return ++count;
   }
+
   private static synchronized int getCount() {
-	  return count;
+    return count;
   }
-  private static synchronized void reset(){
-	  count=0;
-	  initTime=System.currentTimeMillis();
+
+  private static synchronized void reset() {
+    count = 0;
+    initTime = System.currentTimeMillis();
   }
 
   private static void testlookupMultipleSystemAndUserFields(String node, String guid, String field) {
@@ -121,8 +126,8 @@ public class MongoRecordsThroughputTest {
     try {
       ArrayList<ColumnField> userFields
               = new ArrayList<ColumnField>(Arrays.asList(new ColumnField(field,
-                                      ColumnFieldType.USER_JSON)));
-      int frequency=10000;
+                      ColumnFieldType.USER_JSON)));
+      int frequency = 10000;
       int cnt = 0;
       long startTime = System.currentTimeMillis();
       do {
@@ -137,12 +142,12 @@ public class MongoRecordsThroughputTest {
         if (incrCount() % frequency == 0) {
           System.out.println(map);
           System.out.println(DelayProfiler.getStats());
-          System.out.println("op/s = " + Format.formatTime(getCount()*1000.0 / (System.currentTimeMillis() - initTime)));
+          System.out.println("op/s = " + Format.formatTime(getCount() * 1000.0 / (System.currentTimeMillis() - initTime)));
           startTime = System.currentTimeMillis();
-      	if(getCount()>frequency*20) {
-      		System.out.println("**********************resetting************************");
-      		reset();
-      	}
+          if (getCount() > frequency * 20) {
+            System.out.println("**********************resetting************************");
+            reset();
+          }
         }
       } while (true);
     } catch (FailedDBOperationException | RecordNotFoundException e) {

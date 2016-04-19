@@ -306,7 +306,7 @@ public class AppReconfigurableNodeOptions {
 
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       debuggingEnabled = true;
-      System.out.println("******** DEBUGGING IS ENABLED IN THE APP *********");
+      System.out.println("******** TO ENABLE DEBUGGGING USE logging.gns.properties *********");
     }
 
     if (isOptionTrue(DEBUG_AR, allValues)) {

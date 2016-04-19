@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
 import com.datastax.driver.core.Host;
@@ -29,12 +28,9 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
-
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,13 +38,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
 /**
  * An unfinished Cassandra implementation of NoSQLRecords.
- * 
+ *
  * @author westy
  */
 public class CassandraRecords implements NoSQLRecords {
@@ -67,7 +63,7 @@ public class CassandraRecords implements NoSQLRecords {
 
   /**
    * Returns the CassandraRecords.CollectionSpec for the given name.
-   * 
+   *
    * @param name the name
    * @return a CassandraRecords.CollectionSpec object
    */
@@ -77,7 +73,7 @@ public class CassandraRecords implements NoSQLRecords {
 
   @Override
   public void createIndex(String collectionName, String field, String index) {
-    throw new UnsupportedOperationException("Not supported yet."); 
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   /**
@@ -90,9 +86,9 @@ public class CassandraRecords implements NoSQLRecords {
 
     /**
      * Create a CollectionSpec instance.
-     * 
+     *
      * @param name
-     * @param primaryKey 
+     * @param primaryKey
      */
     public CollectionSpec(String name, String primaryKey) {
       this.name = name;
@@ -102,7 +98,7 @@ public class CassandraRecords implements NoSQLRecords {
 
     /**
      * Return the name of a collection.
-     * 
+     *
      * @return the name
      */
     public String getName() {
@@ -111,27 +107,27 @@ public class CassandraRecords implements NoSQLRecords {
 
     /**
      * Return the name of field that is the primary key of a collection.
-     * 
+     *
      * @return field name of primary key
      */
     public String getPrimaryKey() {
       return primaryKey;
     }
   }
-  private static List<CassandraRecords.CollectionSpec> collectionSpecs =
-          Arrays.asList(
-          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName())
+  private static List<CassandraRecords.CollectionSpec> collectionSpecs
+          = Arrays.asList(
+                  new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName())
           //,new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName())
           );
 
   /**
    * Create a CassandraRecords instance.
-   * 
+   *
    * @param nodeID
    */
   public CassandraRecords(int nodeID) {
     dbName = DBROOTNAME + nodeID;
-    GNSConfig.getLogger().info("CASSANDRA: " + dbName + " INIT");
+    DatabaseConfig.getLogger().log(Level.INFO, "CASSANDRA: {0} INIT", dbName);
     this.connect("localhost");
     this.createKeyspace();
     this.createSchemas();
@@ -140,9 +136,11 @@ public class CassandraRecords implements NoSQLRecords {
   private void connect(String node) {
     cluster = Cluster.builder().addContactPoint(node).build();
     Metadata metadata = cluster.getMetadata();
-    GNSConfig.getLogger().info("Connected to cluster: " + metadata.getClusterName());
+    DatabaseConfig.getLogger().log(Level.INFO, "Connected to cluster: {0}",
+            metadata.getClusterName());
     for (Host host : metadata.getAllHosts()) {
-      GNSConfig.getLogger().info("Datacenter: " + host.getDatacenter() + " Host: " + host.getAddress() + " Rack: " + host.getRack());
+      DatabaseConfig.getLogger().log(Level.INFO, "Datacenter: {0} Host: {1} Rack: {2}",
+              new Object[]{host.getDatacenter(), host.getAddress(), host.getRack()});
     }
     session = cluster.connect();
   }
@@ -195,7 +193,7 @@ public class CassandraRecords implements NoSQLRecords {
             + CSI(key) + " text"
             + ",PRIMARY KEY (" + CSI(key) + ")"
             + ");";
-    GNSConfig.getLogger().finer("Executing query " + query);
+    DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
     try {
       session.execute(query);
     } catch (AlreadyExistsException e) {
@@ -207,7 +205,7 @@ public class CassandraRecords implements NoSQLRecords {
     if (spec != null) {
       insertColumn(tableName, spec.getPrimaryKey(), guid, columnName, value);
     } else {
-      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      DatabaseConfig.getLogger().log(Level.SEVERE, "CASSANDRA DB: No table named: {0}", tableName);
     }
   }
 
@@ -215,7 +213,7 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "ALTER TABLE " + CSI(tableName) + " ADD " + CSI(columnName) + " text;";
-      GNSConfig.getLogger().finer("Executing query " + query);
+      DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
       try {
         session.execute(query);
       } catch (InvalidQueryException e) {
@@ -225,7 +223,7 @@ public class CassandraRecords implements NoSQLRecords {
               + "'" + guid + "'"
               + ",'" + value + "'"
               + ");";
-      GNSConfig.getLogger().finer("Executing query " + query);
+      DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
       session.execute(query);
 
     }
@@ -246,18 +244,18 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "SELECT * FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      GNSConfig.getLogger().finer("Executing query " + query);
+      DatabaseConfig.getLogger().finer("Executing query " + query);
       ResultSet results = session.execute(query);
       Row row = results.one();
       if (row != null) {
         JSONObject json = retrieveJSONObjectFromRow(row);
-        GNSConfig.getLogger().finest(json.toString());
+        DatabaseConfig.getLogger().finest(json.toString());
         return json;
       } else {
         return null;
       }
     } else {
-      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      DatabaseConfig.getLogger().log(Level.SEVERE, "CASSANDRA DB: No table named: {0}", tableName);
       return null;
     }
   }
@@ -272,7 +270,8 @@ public class CassandraRecords implements NoSQLRecords {
       String value = row.getString(name);
       if (value != null) {
         // Building the JSON string here
-        GNSConfig.getLogger().finer("Name = " + name + " value = " + value);
+        DatabaseConfig.getLogger().log(Level.FINER,
+                "Name = {0} value = {1}", new Object[]{name, value});
         result.append(prefix);
         result.append("\"");
         result.append(name);
@@ -295,7 +294,8 @@ public class CassandraRecords implements NoSQLRecords {
     try {
       return new JSONObject(result.toString());
     } catch (JSONException e) {
-      GNSConfig.getLogger().warning("Problem creating JSON object: " + e);
+      DatabaseConfig.getLogger().log(Level.WARNING,
+              "Problem creating JSON object: {0}", e);
       return null;
     }
     //return json;
@@ -306,11 +306,13 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "TRUNCATE " + CSI(tableName) + ";";
-      GNSConfig.getLogger().finer("Executing query " + query);
+      DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
       session.execute(query);
-      GNSConfig.getLogger().info("CASSANDRA DB RESET. DBNAME: " + dbName + " Table name: " + tableName);
+      DatabaseConfig.getLogger().log(Level.INFO,
+              "CASSANDRA DB RESET. DBNAME: {0} Table name: {1}", new Object[]{dbName, tableName});
     } else {
-      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      DatabaseConfig.getLogger().log(Level.SEVERE,
+              "CASSANDRA DB: No table named: {0}", tableName);
     }
   }
 
@@ -361,13 +363,12 @@ public class CassandraRecords implements NoSQLRecords {
   public AbstractRecordCursor getAllRowsIterator(String collection) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
- 
+
   @Override
   public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   @Override
   public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) {
     throw new UnsupportedOperationException("Not supported yet.");
@@ -377,7 +378,7 @@ public class CassandraRecords implements NoSQLRecords {
   public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   @Override
   public AbstractRecordCursor selectRecordsQuery(String collectionName, ColumnField valuesMapField, String query) {
     throw new UnsupportedOperationException("Not supported yet.");
@@ -388,10 +389,10 @@ public class CassandraRecords implements NoSQLRecords {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
       String query = "DELETE FROM " + CSI(tableName) + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      GNSConfig.getLogger().finer("Executing query " + query);
+      DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
       ResultSet results = session.execute(query);
     } else {
-      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      DatabaseConfig.getLogger().log(Level.SEVERE, "CASSANDRA DB: No table named: {0}", tableName);
     }
   }
 
@@ -401,11 +402,11 @@ public class CassandraRecords implements NoSQLRecords {
     if (spec != null) {
       String query = "SELECT " + CSI(spec.getPrimaryKey()) + " FROM " + CSI(tableName)
               + " WHERE " + CSI(spec.getPrimaryKey()) + " = '" + guid + "';";
-      GNSConfig.getLogger().finer("Executing query " + query);
+      DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
       ResultSet results = session.execute(query);
       return !results.isExhausted();
     } else {
-      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      DatabaseConfig.getLogger().log(Level.SEVERE, "CASSANDRA DB: No table named: {0}", tableName);
       return false;
     }
   }
@@ -429,25 +430,25 @@ public class CassandraRecords implements NoSQLRecords {
             String value = json.getString(key);
             insertColumn(tableName, primaryKey, guid, key, value);
           } catch (JSONException e) {
-            GNSConfig.getLogger().warning("Problem extracting field from JSON object: " + e);
+            DatabaseConfig.getLogger().log(Level.WARNING,
+                    "Problem extracting field from JSON object: {0}", e);
           }
         }
       }
     } else {
-      GNSConfig.getLogger().severe("CASSANDRA DB: No table named: " + tableName);
+      DatabaseConfig.getLogger().log(Level.SEVERE, "CASSANDRA DB: No table named: {0}", tableName);
     }
   }
 
   @Override
   public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedDBOperationException {
-        // todo
+    // todo
   }
 
   @Override
   public void update(String tableName, String guid, JSONObject value) {
     insert(tableName, guid, value);
   }
-
 
 //  //
 //  // TEST CODE
