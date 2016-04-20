@@ -8,8 +8,6 @@
 package edu.umass.cs.gnsclient.client;
 
 import static edu.umass.cs.gnsclient.client.CommandUtils.checkResponse;
-import static edu.umass.cs.gnsclient.client.CommandUtils.createAndSignCommand;
-import static edu.umass.cs.gnsclient.client.CommandUtils.createCommand;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;

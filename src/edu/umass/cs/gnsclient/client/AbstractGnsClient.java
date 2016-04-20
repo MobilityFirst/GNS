@@ -81,10 +81,6 @@ public class AbstractGnsClient {
    */
   public static final boolean IS_ANDROID = System.getProperty("java.vm.name")
           .equalsIgnoreCase("Dalvik");
-//  /**
-//   * * Legacy address used when attempting to connect to the TCP service.
-//   */
-//  private InetSocketAddress localNameServerAddress;
 
   /**
    * A string representing the GNS Server that we are connecting to.
@@ -373,7 +369,6 @@ public class AbstractGnsClient {
     }
     CommandResult result = resultMap.remove(id);
     GNSClientConfig.getLogger().log(Level.FINE,
-            // String.format(
             "Command name: {0} {1} {2} id: {3} " + "NS: {4} ",
             new Object[]{command.optString(COMMANDNAME, "Unknown"),
               command.optString(GUID, ""),
@@ -384,7 +379,7 @@ public class AbstractGnsClient {
 
   private long desktopSendCommmandNoWait(JSONObject command) throws IOException {
     long startTime = System.currentTimeMillis();
-    long id = generateNextRequestID();
+    long id = getRandomRequestId();
     CommandPacket packet = new CommandPacket(id, command);
     GNSClientConfig.getLogger().log(Level.FINE, "{0} sending {1}:{2}",
             new Object[]{this, id + "", packet.getSummary()});
@@ -403,9 +398,10 @@ public class AbstractGnsClient {
     }
   }
 
+  // FIXME: fix this
   private AndroidNIOTask androidSendCommandNoWait(JSONObject command) throws IOException {
     final AndroidNIOTask sendTask = new AndroidNIOTask();
-    sendTask.setId(generateNextRequestID()); // so we can get it back from the task later
+    sendTask.setId(getRandomRequestId()); // so we can get it back from the task later
     sendTask.execute(
             //messenger, 
             command, sendTask.getId(),
@@ -514,16 +510,6 @@ public class AbstractGnsClient {
     DelayProfiler.updateDelay("handleCommandValueReturnPacket", methodStartTime);
   }
 
-  public synchronized long generateNextRequestID() {
-    long id;
-    do {
-      id = randomID.nextLong();
-      // this is actually wrong because we can still generate duplicate keys
-      // because the resultMap doesn't contain pending requests until they come back
-    } while (resultMap.containsKey(id));
-    return id;
-  }
-
   /**
    * Returns true if a response has been received.
    *
@@ -601,19 +587,49 @@ public class AbstractGnsClient {
           PrivateKey privateKey, String action, Object... keysAndValues)
           throws GnsClientException {
     try {
-      JSONObject result = createCommand(action, keysAndValues);
+      JSONObject result = createCommand(commandType, action, keysAndValues);
       result.put(GnsProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
-      result.put(GnsProtocol.SEQUENCE_NUMBER, getNextRequestId());
-      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
-      if (forceCoordinatedReads) {
-        result.put(COORDINATE_READS, true);
-      }
-      result.remove(GnsProtocol.SIGNATURE);
+      result.put(GnsProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GnsProtocol.SIGNATURE, signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
+      throw new GnsClientException("Error encoding message", e);
+    }
+  }
+
+  /**
+   * Creates a command object from the given action string and a variable
+   * number of key and value pairs.
+   *
+   * @param commandType
+   * @param action
+   * @param keysAndValues
+   * @return the query string
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   */
+  // Fixme: remove action parameter
+  public JSONObject createCommand(CommandType commandType, String action,
+          Object... keysAndValues)
+          throws GnsClientException {
+    try {
+      JSONObject result = new JSONObject();
+      String key;
+      Object value;
+      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
+      result.put(GnsProtocol.COMMANDNAME, action);
+      for (int i = 0; i < keysAndValues.length; i = i + 2) {
+        key = (String) keysAndValues[i];
+        value = keysAndValues[i + 1];
+        result.put(key, value);
+      }
+      if (forceCoordinatedReads) {
+        result.put(COORDINATE_READS, true);
+      }
+      return result;
+    } catch (JSONException e) {
       throw new GnsClientException("Error encoding message", e);
     }
   }

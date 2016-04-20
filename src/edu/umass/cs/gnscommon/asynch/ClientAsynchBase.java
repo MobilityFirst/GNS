@@ -21,6 +21,8 @@ package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 
@@ -30,10 +32,8 @@ import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.util.Random;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -60,10 +60,17 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -226,7 +233,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws Exception
    */
   public long accountGuidVerify(GuidEntry guid, String code, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(guid.getPrivateKey(), VERIFY_ACCOUNT, GUID, guid.getGuid(),
+    return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount, guid.getPrivateKey(), VERIFY_ACCOUNT, GUID, guid.getGuid(),
             CODE, code), callback);
   }
 
@@ -616,6 +623,67 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     GNSConfig.getLogger().log(Level.FINE, "{0} sending select packet {1}",
             new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
+  }
+  
+  /**
+   * Creates a command object from the given CommandType and a variable
+   * number of key and value pairs with a signature parameter. The signature is
+   * generated from the query signed by the given guid.
+   *
+   * @param commandType
+   * @param privateKey
+   * @param action
+   * @param keysAndValues
+   * @return the query string
+   * @throws GnsClientException
+   */
+  // Same as the version on CommandUtils but it forces coordinated reads (see createCommand)
+  public JSONObject createAndSignCommand(CommandType commandType,
+          PrivateKey privateKey, String action, Object... keysAndValues)
+          throws GnsClientException {
+    try {
+      JSONObject result = createCommand(commandType, action, keysAndValues);
+      result.put(GnsProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
+      result.put(GnsProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+
+      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
+      String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
+      result.put(GnsProtocol.SIGNATURE, signatureString);
+      return result;
+    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
+      throw new GnsClientException("Error encoding message", e);
+    }
+  }
+
+  /**
+   * Creates a command object from the given action string and a variable
+   * number of key and value pairs.
+   *
+   * @param commandType
+   * @param action
+   * @param keysAndValues
+   * @return the query string
+   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   */
+ // Same as the version on CommandUtils but it forces coordinated reads
+  public JSONObject createCommand(CommandType commandType, String action,
+          Object... keysAndValues) throws GnsClientException {
+    try {
+      JSONObject result = new JSONObject();
+      String key;
+      Object value;
+      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
+      result.put(GnsProtocol.COMMANDNAME, action);
+      for (int i = 0; i < keysAndValues.length; i = i + 2) {
+        key = (String) keysAndValues[i];
+        value = keysAndValues[i + 1];
+        result.put(key, value);
+      }
+      result.put(COORDINATE_READS, true);
+      return result;
+    } catch (JSONException e) {
+      throw new GnsClientException("Error encoding message", e);
+    }
   }
 
   /**
