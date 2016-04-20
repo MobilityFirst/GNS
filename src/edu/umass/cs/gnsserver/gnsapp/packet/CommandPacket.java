@@ -314,6 +314,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     }
     return -1;
   }
+  
+  private static boolean readsNeedCoordination = true;
 
   @Override
   public boolean needsCoordination() {
@@ -322,7 +324,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     } else {
       // Cache it.
       needsCoordinationExplicitlySet = true;
-      needsCoordination = GnsProtocol.UPDATE_COMMANDS.contains(getCommandName());
+      needsCoordination = GnsProtocol.UPDATE_COMMANDS.contains(getCommandName())
+              || readsNeedCoordination && GnsProtocol.READ_COMMANDS.contains(getCommandName());
       return needsCoordination;
     }
   }
@@ -355,4 +358,5 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       }
     };
   }
+
 }

@@ -618,7 +618,8 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse<String> removeAccount(AccountInfo accountInfo, ClientRequestHandlerInterface handler)
+  public static CommandResponse<String> removeAccount(AccountInfo accountInfo, 
+          ClientRequestHandlerInterface handler)
           throws GnsClientException, IOException, JSONException {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);

@@ -76,7 +76,8 @@ public class GroupAndAclTest {
         address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
       try {
-        client = new GnsClient(address, System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient(//address, 
+                System.getProperty("disableSSL").equals("true"));
       } catch (IOException e) {
         fail("Exception while creating client: " + e);
       }

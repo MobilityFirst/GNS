@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.main;
 
-import edu.umass.cs.gnsserver.utils.Logging;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;

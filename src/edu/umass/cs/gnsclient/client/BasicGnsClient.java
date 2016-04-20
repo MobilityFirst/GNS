@@ -45,7 +45,7 @@ import org.json.JSONObject;
 
 /**
  * * Cleaner implementation of a GNS client using gigapaxos' async client.
- * 
+ *
  * THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.GNSClient.
  * BOTH ARE BASED ON AsyncClient.
  * This class contains a concise set of read and write commands
@@ -65,19 +65,25 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * and read and write fields.
    *
    * @param anyReconfigurator
-   * @param localNameServer
    * @param disableSSL
    * @throws IOException
    */
-  public BasicGnsClient(InetSocketAddress anyReconfigurator,
-          InetSocketAddress localNameServer, boolean disableSSL)
+  public BasicGnsClient(InetSocketAddress anyReconfigurator, boolean disableSSL)
           throws IOException {
-    super(anyReconfigurator, localNameServer, disableSSL);
+    super(anyReconfigurator, disableSSL);
   }
 
-  public BasicGnsClient(InetSocketAddress localNameServer, boolean disableSSL)
+  /**
+   * Creates a new client for communication with the GNS.
+   * Has the basic command functionality needed to created records
+   * and read and write fields.
+   *
+   * @param disableSSL
+   * @throws IOException
+   */
+  public BasicGnsClient(boolean disableSSL)
           throws IOException {
-    super(null, localNameServer, disableSSL);
+    super(null, disableSSL);
   }
 
   // READ AND WRITE COMMANDS
@@ -1219,7 +1225,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
   private void aclAdd(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
     JSONObject command = createAndSignCommand(CommandType.AclAddSelf,
             guid.getPrivateKey(), ACL_ADD, ACL_TYPE, accessType,
-            GUID, guid.getGuid(), FIELD, field, 
+            GUID, guid.getGuid(), FIELD, field,
             ACCESSER, accesserGuid == null ? ALL_USERS : accesserGuid);
     String response = sendCommandAndWait(command);
 
@@ -1229,7 +1235,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
   private void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
     JSONObject command = createAndSignCommand(CommandType.AclRemoveSelf,
             guid.getPrivateKey(), ACL_REMOVE, ACL_TYPE, accessType,
-            GUID, guid.getGuid(), FIELD, field, 
+            GUID, guid.getGuid(), FIELD, field,
             ACCESSER, accesserGuid == null ? ALL_USERS : accesserGuid);
     String response = sendCommandAndWait(command);
 
@@ -1239,7 +1245,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
   private JSONArray aclGet(String accessType, GuidEntry guid, String field, String readerGuid) throws Exception {
     JSONObject command = createAndSignCommand(CommandType.AclRetrieve,
             guid.getPrivateKey(), ACL_RETRIEVE, ACL_TYPE, accessType,
-            GUID, guid.getGuid(), FIELD, field, 
+            GUID, guid.getGuid(), FIELD, field,
             READER, readerGuid == null ? ALL_USERS : readerGuid);
     String response = sendCommandAndWait(command);
     try {

@@ -50,7 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 /**
- * This class defines a basic client to communicate with a GNS instance over TCP. 
+ * This class defines a basic client to communicate with a GNS instance over TCP.
  *
  * For a more complete set of commands see also {@link UniversalTcpClient} and {@link UniversalTcpClientExtended}.
  *
@@ -72,10 +72,10 @@ public class AbstractGnsClient {
    */
   public static final boolean IS_ANDROID = System.getProperty("java.vm.name")
           .equalsIgnoreCase("Dalvik");
-  /**
-   * * Legacy address used when attempting to connect to the TCP service.
-   */
-  private InetSocketAddress localNameServerAddress;
+//  /**
+//   * * Legacy address used when attempting to connect to the TCP service.
+//   */
+//  private InetSocketAddress localNameServerAddress;
 
   /**
    * A string representing the GNS Server that we are connecting to.
@@ -108,25 +108,19 @@ public class AbstractGnsClient {
 
   // instrumentation
   private double movingAvgLatency;
-  //private long lastLatency;
   private int totalAsynchErrors;
 
   /**
    * Creates a new client for communication with the GNS.
-   * 
+   *
    * @param anyReconfigurator
-   * @param localNameServer
    * @param disableSSL
-   * @throws IOException 
+   * @throws IOException
    */
-  public AbstractGnsClient(InetSocketAddress anyReconfigurator,
-          InetSocketAddress localNameServer, boolean disableSSL)
+  public AbstractGnsClient(InetSocketAddress anyReconfigurator, boolean disableSSL)
           throws IOException {
     // First we initialize some of the old stuff
-    this(localNameServer != null ? localNameServer
-            .getAddress().toString() : null,
-            localNameServer != null ? localNameServer.getPort() : -1,
-            disableSSL);
+    this(disableSSL);
     // Now we do the new stuff
     this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
     if (this.reconfigurators == null || this.reconfigurators.isEmpty()) {
@@ -145,27 +139,16 @@ public class AbstractGnsClient {
   private static final String DEFAULT_INSTANCE = "server.gns.name";
 
   // ALl the old parts are in here waiting to be thrown out or moved.
-  private AbstractGnsClient(String remoteHost, int remotePort, boolean disableSSL) {
-    // FIXME: This should be initalized to something better.
-    // See the doc for GNSInstance.
+  private AbstractGnsClient(boolean disableSSL) {
+    // FIXME: This should be initalized to something better. See the doc for GNSInstance.
     this.GNSInstance = DEFAULT_INSTANCE;
-    try {
-      this.localNameServerAddress = remoteHost != null && remotePort > 0
-              ? new InetSocketAddress(edu.umass.cs.utils.Util.getInetAddressFromString(remoteHost), remotePort)
-              : null;
-      SSLDataProcessingWorker.SSL_MODES sslMode
-              = disableSSL ? CLEAR
-                      : ReconfigurationConfig.getClientSSLMode();
-      GNSClientConfig.getLogger().log(Level.FINE, "SSL Mode is {0}", sslMode.name());
-
-      resetInstrumentation();
-    } catch (IOException e) {
-      GNSClientConfig.getLogger().log(Level.SEVERE, "Problem starting Client listener: {0}", e);
-      e.printStackTrace();
-    }
+    SSLDataProcessingWorker.SSL_MODES sslMode = disableSSL ? CLEAR
+            : ReconfigurationConfig.getClientSSLMode();
+    GNSClientConfig.getLogger().log(Level.FINE, "SSL Mode is {0}", sslMode.name());
+    resetInstrumentation();
   }
 
-  // FROM GNSCLIENT
+  // FROM old GNSCLIENT
   /**
    * TODO: implement request/response to know of other reconfigurators. It is
    * also okay to just use a single reconfigurator address if it is an anycast
@@ -215,7 +198,7 @@ public class AbstractGnsClient {
   public final void checkConnectivity() throws IOException {
     this.asyncClient.checkConnectivity();
   }
-  
+
   /**
    * Closes the underlying async client.
    */
@@ -295,7 +278,6 @@ public class AbstractGnsClient {
           throws IOException {
     return this.sendSync(packet, null);
   }
-
 
   // END OF FROM GNSCLIENT
   /**
@@ -413,8 +395,11 @@ public class AbstractGnsClient {
   private AndroidNIOTask androidSendCommandNoWait(JSONObject command) throws IOException {
     final AndroidNIOTask sendTask = new AndroidNIOTask();
     sendTask.setId(generateNextRequestID()); // so we can get it back from the task later
-    sendTask.execute(//messenger, 
-            command, sendTask.getId(), localNameServerAddress, monitor,
+    sendTask.execute(
+            //messenger, 
+            command, sendTask.getId(),
+            //localNameServerAddress, 
+            monitor,
             queryTimeStamp, resultMap, readTimeout);
     return sendTask;
   }

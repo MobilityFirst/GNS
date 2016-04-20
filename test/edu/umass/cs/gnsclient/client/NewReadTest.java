@@ -63,7 +63,8 @@ public class NewReadTest {
       }
       //System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       try {
-        client = new GnsClient(address, System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient(//address, 
+                System.getProperty("disableSSL").equals("true"));
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }

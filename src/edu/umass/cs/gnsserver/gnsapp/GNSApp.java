@@ -280,13 +280,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
           Select.handleSelectResponse(
                   (SelectResponsePacket<String>) request, this);
           break;
-        /* TODO: arun: I assume the GNS doesn't need STOP and NOOP
-				 * anymore; if so, remove them. 
+        /* TODO: arun: I assume the GNS doesn't need STOP and NOOP anymore; if so, remove them. 
          */
-        case STOP:
-          break;
-        case NOOP:
-          break;
+//        case STOP:
+//          break;
+//        case NOOP:
+//          break;
         case COMMAND:
           CommandHandler.handleCommandPacketForApp(
                   (CommandPacket) request, doNotReplyToClient, this);

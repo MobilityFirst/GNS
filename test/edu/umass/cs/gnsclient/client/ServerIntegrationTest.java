@@ -122,8 +122,8 @@ public class ServerIntegrationTest {
     } else {
       address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
     }
-    client = new GnsClient(null, address);
-    // arun: connectivity check embedded in GNSClient constructor
+    client = new GnsClient();
+    // arun: connectivity check embedded in GnsClient constructor
     boolean connected = client instanceof GnsClient;
     if (connected) {
       System.out.println("successful");

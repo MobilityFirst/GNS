@@ -52,14 +52,12 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * Creates a NewGnsClient. 
    *
    * @param anyReconfigurator
-   * @param localNameServer
    * @param disableSSL
    * @throws java.io.IOException
    */
-  public GnsClient(InetSocketAddress anyReconfigurator,
-          InetSocketAddress localNameServer, boolean disableSSL)
+  public GnsClient(InetSocketAddress anyReconfigurator, boolean disableSSL)
           throws IOException {
-    super(anyReconfigurator, localNameServer, disableSSL);
+    super(anyReconfigurator, disableSSL);
   }
 
   /**
@@ -68,12 +66,11 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * provided or the gigapaxos properties file must contain at least one
    * legitimate reconfigurator.
    *
-   * @param localNameServer
    * @param disableSSL
    * @throws IOException
    */
-  public GnsClient(InetSocketAddress localNameServer, boolean disableSSL) throws IOException {
-    this(null, localNameServer, false);
+  public GnsClient(boolean disableSSL) throws IOException {
+    this(null, disableSSL);
   }
 
   /**
@@ -83,11 +80,10 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * provided or the gigapaxos properties file must contain at least one
    * legitimate reconfigurator.
    *
-   * @param localNameServer
    * @throws IOException
    */
-  public GnsClient(InetSocketAddress localNameServer) throws IOException {
-    this(null, localNameServer, false);
+  public GnsClient() throws IOException {
+    this(null, false);
   }
   
   /**
@@ -98,12 +94,10 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * legitimate reconfigurator.
    *
    * @param anyReconfigurator
-   * @param localNameServer
    * @throws IOException
    */
-  public GnsClient(InetSocketAddress anyReconfigurator,
-          InetSocketAddress localNameServer) throws IOException {
-    this(anyReconfigurator, localNameServer, false);
+  public GnsClient(InetSocketAddress anyReconfigurator) throws IOException {
+    this(anyReconfigurator, false);
   }
 
   /**
