@@ -55,6 +55,7 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * @param disableSSL
    * @throws java.io.IOException
    */
+  @Deprecated
   public GnsClient(InetSocketAddress anyReconfigurator, boolean disableSSL)
           throws IOException {
     super(anyReconfigurator, disableSSL);
@@ -69,6 +70,7 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * @param disableSSL
    * @throws IOException
    */
+  @Deprecated
   public GnsClient(boolean disableSSL) throws IOException {
     this(null, disableSSL);
   }

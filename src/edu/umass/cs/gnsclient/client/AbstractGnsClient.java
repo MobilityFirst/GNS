@@ -29,21 +29,30 @@ import org.json.JSONObject;
 import static edu.umass.cs.gnscommon.GnsProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.tcp.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.tcp.CommandResult;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsclient.client.util.Util;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.utils.CanonicalJSON;
+import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.utils.Config;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -109,6 +118,8 @@ public class AbstractGnsClient {
   // instrumentation
   private double movingAvgLatency;
   private int totalAsynchErrors;
+
+  private boolean forceCoordinatedReads = false;
 
   /**
    * Creates a new client for communication with the GNS.
@@ -571,44 +582,46 @@ public class AbstractGnsClient {
   }
 
   /**
-   * Updates the field in the targetGuid without waiting for a response.
-   * The writer is the guid
-   * of the user attempting access. Signs the query using
-   * the private key of the writer guid.
+   * Creates a command object from the given CommandType and a variable
+   * number of key and value pairs with a signature parameter. The signature is
+   * generated from the query signed by the given guid.
    *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
+   * @param commandType
+   * @param privateKey
+   * @param action
+   * @param keysAndValues
+   * @return the query string
    * @throws GnsClientException
-   * @throws JSONException
    */
-  @Deprecated
-  public void fieldUpdateAsynch(String targetGuid, String field, Object value, GuidEntry writer) throws GnsClientException, IOException, JSONException {
-    JSONObject json = new JSONObject();
-    json.put(field, value);
-    JSONObject command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, GUID,
-            targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
-    sendCommandNoWait(command);
+  // FIXME: Temporarily hacked version for adding new command type integer. Will clean up once
+  // transition is done.
+  // The action argument will be going away and be ultimately replaced by the
+  // enum string.
+  public JSONObject createAndSignCommand(CommandType commandType,
+          PrivateKey privateKey, String action, Object... keysAndValues)
+          throws GnsClientException {
+    try {
+      JSONObject result = createCommand(action, keysAndValues);
+      result.put(GnsProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
+      result.put(GnsProtocol.SEQUENCE_NUMBER, getNextRequestId());
+      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
+      if (forceCoordinatedReads) {
+        result.put(COORDINATE_READS, true);
+      }
+      result.remove(GnsProtocol.SIGNATURE);
+      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
+      String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
+      result.put(GnsProtocol.SIGNATURE, signatureString);
+      return result;
+    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
+      throw new GnsClientException("Error encoding message", e);
+    }
   }
 
   /**
-   * Updates the field in the targetGuid without waiting for a response.
-   * Signs the query using the private key of the given guid.
+   * Resets the instrumentation.
    *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @throws IOException
-   * @throws GnsClientException
-   * @throws JSONException
    */
-  @Deprecated
-  public void fieldUpdateAsynch(GuidEntry targetGuid, String field, Object value) throws GnsClientException, IOException, JSONException {
-    fieldUpdateAsynch(targetGuid.getGuid(), field, value, targetGuid);
-  }
-
   public final void resetInstrumentation() {
     movingAvgLatency = 0;
   }
@@ -640,4 +653,13 @@ public class AbstractGnsClient {
   public String getGNSInstance() {
     return GNSInstance;
   }
+
+  public boolean isForceCoordinatedReads() {
+    return forceCoordinatedReads;
+  }
+
+  public void setForceCoordinatedReads(boolean forceCoordinatedReads) {
+    this.forceCoordinatedReads = forceCoordinatedReads;
+  }
+
 }

@@ -22,7 +22,6 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -38,27 +37,14 @@ public class CreateGuidTest {
   private static String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GnsClient client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
   public CreateGuidTest() {
 
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
-      }
       try {
-        client = new GnsClient(//address, 
-                System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient();
+        client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }

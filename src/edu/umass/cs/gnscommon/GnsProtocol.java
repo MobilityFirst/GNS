@@ -234,6 +234,7 @@ public class GnsProtocol {
   // This one is special, used for the action part of the command
   public final static String COMMANDNAME = "COMMANDNAME";
   public final static String COMMAND_INT = "COMMANDINT";
+  public final static String COORDINATE_READS = "COORDREAD";
 
   // Active code actions and fields
   public final static String AC_SET = "acSet";

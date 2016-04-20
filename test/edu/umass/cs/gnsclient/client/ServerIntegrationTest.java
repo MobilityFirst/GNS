@@ -30,21 +30,16 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-
 import static org.hamcrest.Matchers.*;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
-
 import static org.junit.Assert.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -76,11 +71,6 @@ public class ServerIntegrationTest {
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE																// ALIAS
   private static final String PASSWORD = "password";
   private static GnsClient client = null;
-
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -113,16 +103,9 @@ public class ServerIntegrationTest {
     // final we could set that. - Westy
     System.out.println("Pausing for 50 seconds!");
     Thread.sleep(50000);
-    if (System.getProperty("host") != null
-            && !System.getProperty("host").isEmpty()
-            && System.getProperty("port") != null
-            && !System.getProperty("port").isEmpty()) {
-      address = new InetSocketAddress(System.getProperty("host"),
-              Integer.parseInt(System.getProperty("port")));
-    } else {
-      address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
-    }
-    client = new GnsClient();
+    client = new GnsClient();;
+    // Make all the reads be coordinated
+    client.setForceCoordinatedReads(true);
     // arun: connectivity check embedded in GnsClient constructor
     boolean connected = client instanceof GnsClient;
     if (connected) {

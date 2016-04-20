@@ -178,9 +178,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     String password = "123";
     String file_name = "guid";
 
-    GnsClient client = new GnsClient(
-            //new InetSocketAddress(address, GNSClientConfig.LNS_PORT), 
-            true);
+    GnsClient client = new GnsClient();
 
     GuidEntry guidEntry = client.accountGuidCreate(name, password);
 

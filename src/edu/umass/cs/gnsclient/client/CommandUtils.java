@@ -115,7 +115,7 @@ public class CommandUtils {
     try {
       JSONObject result = createCommand(action, keysAndValues);
       result.put(GnsProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
-      result.put(GnsProtocol.SEQUENCE_NUMBER, random.nextLong());
+      result.put(GnsProtocol.SEQUENCE_NUMBER, getNextRequestId());
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GnsProtocol.SIGNATURE, signatureString);
@@ -248,6 +248,10 @@ public class CommandUtils {
     } else {
       return response;
     }
+  }
+  
+  public static long getNextRequestId() {
+    return random.nextLong();
   }
 
 }

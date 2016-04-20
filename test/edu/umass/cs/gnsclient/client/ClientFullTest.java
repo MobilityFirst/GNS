@@ -54,10 +54,6 @@ public class ClientFullTest {
   private static String accountAlias = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
   private static GnsClient client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -68,19 +64,9 @@ public class ClientFullTest {
 
   public ClientFullTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
-      }
-      System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       try {
-        client = new GnsClient(//address, 
-                System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient();
+        client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }

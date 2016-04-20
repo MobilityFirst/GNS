@@ -68,6 +68,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @param disableSSL
    * @throws IOException
    */
+  @Deprecated
   public BasicGnsClient(InetSocketAddress anyReconfigurator, boolean disableSSL)
           throws IOException {
     super(anyReconfigurator, disableSSL);
@@ -81,9 +82,22 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @param disableSSL
    * @throws IOException
    */
+  @Deprecated
   public BasicGnsClient(boolean disableSSL)
           throws IOException {
-    super(null, disableSSL);
+    this(null, disableSSL);
+  }
+  
+  /**
+   * Creates a new client for communication with the GNS.
+   * Has the basic command functionality needed to created records
+   * and read and write fields.
+   *
+   * @throws IOException
+   */
+  public BasicGnsClient()
+          throws IOException {
+    this(null, false);
   }
 
   // READ AND WRITE COMMANDS

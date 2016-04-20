@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -34,25 +33,12 @@ import org.junit.runners.MethodSorters;
 public class AdminTest {
 
   private static GnsClient client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
 
   public AdminTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
-      }
      try {
-        client = new GnsClient(//address,
-                System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient();
+        client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
@@ -62,7 +48,7 @@ public class AdminTest {
   @Test
   public void test_01_AdminEnter() {
     try {
-      client.adminEnable(address.getHostName() + ":8080");
+      client.adminEnable("shabiz");
     } catch (Exception e) {
       fail("Exception while enabling admin mode: " + e);
     }

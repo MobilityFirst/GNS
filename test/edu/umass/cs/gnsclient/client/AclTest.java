@@ -26,7 +26,6 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONArray;
@@ -45,31 +44,16 @@ public class AclTest {
   private static final String ACCOUNT_ALIAS = "test@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GnsClient client = null;
-  private static InetSocketAddress address;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
   private static GuidEntry barneyEntry;
 
   public AclTest() {
-
-		/* arun: Fixed a bug here that checked if address==null && was calling
-		 * masterGuid creation again in every test causing the second test
-		 * onwards to fail. */
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
-      }
-
       try {
-        client = new GnsClient(//address, 
-                System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient();
+        client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }

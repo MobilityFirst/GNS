@@ -539,7 +539,8 @@ public class RemoteQuery extends ClientAsynchBase {
     Object monitor = new Object();
     long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
+    SelectResponsePacket<String> responsePacket
+            = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
     if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {

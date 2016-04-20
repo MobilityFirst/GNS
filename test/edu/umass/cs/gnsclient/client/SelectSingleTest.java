@@ -23,7 +23,6 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import static org.hamcrest.Matchers.*;
@@ -43,29 +42,15 @@ public class SelectSingleTest {
   private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
   private static GnsClient client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
   public SelectSingleTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
-      }
-      System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
       try {
-        client = new GnsClient(//address, 
-                System.getProperty("disableSSL").equals("true"));
+        client = new GnsClient();
+        client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
@@ -141,7 +126,7 @@ public class SelectSingleTest {
       fail("Exception when we were not expecting testing DB: " + e);
     }
   }
-  
+
   @Test
   public void test_3_BasicSelect() {
     try {
