@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
-
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 /**
@@ -63,8 +62,8 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
     this.nodeConfig = nc;
     this.activeReplicas = this.nodeConfig.getActiveReplicas();
     this.reconfigurators = this.nodeConfig.getReconfigurators();
-    this.CH_RC = new ConsistentHashing<NodeIDType>(this.reconfigurators);
-    this.CH_AR = new ConsistentHashing<NodeIDType>(this.activeReplicas);
+    this.CH_RC = new ConsistentHashing<>(this.reconfigurators);
+    this.CH_AR = new ConsistentHashing<>(this.activeReplicas);
   }
 
   @Override
@@ -102,7 +101,7 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
    * @return a set of addresses
    */
   public ArrayList<InetAddress> getNodeIPs(Set<NodeIDType> nodeIDs) {
-    ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
+    ArrayList<InetAddress> addresses = new ArrayList<>();
     for (NodeIDType id : nodeIDs) {
       addresses.add(this.nodeConfig.getNodeAddress(id));
     }
@@ -155,8 +154,8 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
    */
   public Set<NodeIDType> getIPToActiveReplicaIDs(ArrayList<InetAddress> newAddresses,
           Set<NodeIDType> oldNodes) {
-    Set<NodeIDType> newNodes = new HashSet<NodeIDType>(); // return value
-    ArrayList<InetAddress> unassigned = new ArrayList<InetAddress>();
+    Set<NodeIDType> newNodes = new HashSet<>(); // return value
+    ArrayList<InetAddress> unassigned = new ArrayList<>();
     for (InetAddress address : newAddresses) {
       unassigned.add(address);
     }

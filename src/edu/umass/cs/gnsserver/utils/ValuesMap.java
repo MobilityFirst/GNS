@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import java.util.Iterator;
 
 import java.util.List;
+import java.util.logging.Level;
 import org.json.JSONArray;
 
 /**
@@ -42,8 +43,6 @@ import org.json.JSONArray;
  * @author westy
  */
 public class ValuesMap extends JSONObject implements Summarizable {
-
-  private static boolean debuggingEnabled = false;
 
   /**
    * Creates an empty ValuesMap.
@@ -156,7 +155,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
         return null;
       }
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Unable to parse JSON array: " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse JSON array: {0}", e);
       e.printStackTrace();
       return new ResultValue();
     }
@@ -176,7 +175,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
       //GNS.getLogger().severe("@@@@@AFTER PUT (key =" + key + " value=" + value + "): " + newContent.toString());
     } catch (JSONException e) {
       e.printStackTrace();
-      GNSConfig.getLogger().severe("Unable to add JSON array to JSON Object: " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Unable to add JSON array to JSON Object: {0}", e);
     }
   }
 
@@ -200,7 +199,8 @@ public class ValuesMap extends JSONObject implements Summarizable {
         JSONDotNotation.putWithDotNotation(destination, key, super.get(key));
         somethingChanged = true;
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
+        GNSConfig.getLogger().log(Level.SEVERE, 
+                "Unable to write {0} field to ValuesMap:{1}", new Object[]{key, e});
       }
     }
     return somethingChanged;

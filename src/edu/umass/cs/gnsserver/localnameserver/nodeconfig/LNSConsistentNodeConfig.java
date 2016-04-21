@@ -50,7 +50,7 @@ public abstract class LNSConsistentNodeConfig implements
   public LNSConsistentNodeConfig(NodeConfig<InetSocketAddress> nc) {
     this.nodeConfig = nc;
     this.nodes = this.nodeConfig.getNodeIDs();
-    this.CH = new ConsistentHashing<InetSocketAddress>(this.nodes);
+    this.CH = new ConsistentHashing<>(this.nodes);
   }
 
   private synchronized boolean refresh() {

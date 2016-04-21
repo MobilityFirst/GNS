@@ -87,10 +87,6 @@ public class GNSConfig {
      * Port used to send admin requests to a name server.
      */
     NS_ADMIN_PORT(4),
-    /**
-     * Port used to send pings requests to a name server.
-     */
-    NS_PING_PORT(5),
     // sub ports
     /**
      * Port used to send requests to a command pre processor.
@@ -99,11 +95,7 @@ public class GNSConfig {
     /**
      * Port used to send admin requests to a command pre processor.
      */
-    CCP_ADMIN_PORT(7),
-    /**
-     * Port used to send pings to a command pre processor.
-     */
-    CCP_PING_PORT(8);
+    CCP_ADMIN_PORT(7);
 
     //
     int offset;
@@ -164,24 +156,7 @@ public class GNSConfig {
    */
   public static int DEFAULT_MAX_QUERY_WAIT_TIME = 16000; // was 10
 
-  // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
-  // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE
-  // OR IN A CONFIG FILE
-  /**
-   * Logging level for main logger
-   */
-  public static String fileLoggingLevel = "INFO"; // should be INFO for production use
-  /**
-   * Console output level for main logger
-   */
-  public static String consoleOutputLevel = "INFO"; //should be INFO for production use
-
   private final static Logger LOG = Logger.getLogger(GNSConfig.class.getName());
-
-  /**
-   * True if the logger has been initialized.
-   */
-  private static boolean loggerInitRun = false;
 
   /**
    * Returns the master GNS logger.
@@ -189,11 +164,6 @@ public class GNSConfig {
    * @return the master GNS logger
    */
   public static Logger getLogger() {
-//    if (!loggerInitRun) {
-//      System.out.println("Setting GNSConfig Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
-//      Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
-//      loggerInitRun = true;
-//    }
     return LOG;
   }
 

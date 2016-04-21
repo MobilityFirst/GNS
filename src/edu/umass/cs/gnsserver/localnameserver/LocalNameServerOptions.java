@@ -21,17 +21,11 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-
 import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
-import static edu.umass.cs.gnsserver.utils.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
-import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * The command line options for LocalNameServer.
@@ -144,31 +138,6 @@ public class LocalNameServerOptions {
       disableSSL = true;
     }
     System.out.println("LNS: SSL is " + (disableSSL ? "disabled" : "enabled"));
-
-    if (isOptionTrue(DEBUG, allValues)) {
-      LocalNameServer.debuggingEnabled = true;
-      System.out.println("******** DEBUGGING IS ENABLED IN LocalNameServer *********");
-    }
-
-    if (isOptionTrue(DEBUG_MISC, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN ProtocolExecutor *********");
-      ProtocolExecutor.getLogger().setLevel(Level.INFO);
-    } else {
-      ProtocolExecutor.getLogger().setLevel(Level.WARNING);
-    }
-
-//    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
-//      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
-//      try {
-//        Level level = Level.parse(levelString);
-//        // until a better way comes along
-//        LocalNameServer.LOG.setLevel(level);
-//      } catch (Exception e) {
-//        LocalNameServer.LOG.setLevel(DEFAULTCONSOLELEVEL);
-//        System.out.println("Could not parse " + levelString
-//                + "; set LocalNameServer log level to default level " + DEFAULTCONSOLELEVEL);
-//      }
-//    }
   }
 
 }

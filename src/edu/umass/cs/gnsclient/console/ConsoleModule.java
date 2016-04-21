@@ -76,7 +76,7 @@ public class ConsoleModule {
   // might be a better way to do this, but for now
   private boolean accountVerified;
   private boolean silent;
-  
+
   /**
    * Prompt to prepend to the console message prompts
    */
@@ -85,8 +85,6 @@ public class ConsoleModule {
    * location of the default command lists for the console modules
    */
   public static String DEFAULT_COMMAND_PROPERTIES_FILE = "edu/umass/cs/gnsclient/console/console.properties";
-
-  private static boolean debuggingEnabled = false;
 
   /**
    * Creates a new <code>ConsoleModule.java</code> object
@@ -107,15 +105,11 @@ public class ConsoleModule {
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
-        if (debuggingEnabled) {
-          GNSClientConfig.getLogger().info("Saving history.");
-        }
+        GNSClientConfig.getLogger().fine("Saving history.");
         long startTime = System.currentTimeMillis();
         //storeHistory();
-        if (debuggingEnabled) {
-          GNSClientConfig.getLogger().log(Level.INFO, "Save history took {0}ms", 
-                  (System.currentTimeMillis() - startTime));
-        }
+        GNSClientConfig.getLogger().log(Level.FINE, "Save history took {0}ms",
+                (System.currentTimeMillis() - startTime));
       }
     });
   }
@@ -126,9 +120,7 @@ public class ConsoleModule {
       Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
       String[] historyKeys = prefs.keys();
       Arrays.sort(historyKeys, 0, historyKeys.length);
-      if (debuggingEnabled) {
-        GNSClientConfig.getLogger().log(Level.INFO, "Loading history. Size is {0}", historyKeys.length);
-      }
+      GNSClientConfig.getLogger().log(Level.INFO, "Loading history. Size is {0}", historyKeys.length);
       for (int i = 0; i < historyKeys.length; i++) {
         String key = historyKeys[i];
         String value = prefs.get(key, ""); //$NON-NLS-1$
@@ -223,9 +215,7 @@ public class ConsoleModule {
         }
         ConsoleCommand command = (ConsoleCommand) constructor.newInstance(new Object[]{this});
         commands.add(command);
-      } catch (ClassNotFoundException | SecurityException 
-              | NoSuchMethodException | InstantiationException 
-              | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      } catch (ClassNotFoundException | SecurityException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
         // fail silently: the command won't be added to the commands list
       }
     }
@@ -368,9 +358,7 @@ public class ConsoleModule {
 
       }
     }
-    if (debuggingEnabled) {
-      GNSClientConfig.getLogger().info("Quitting");
-    }
+    GNSClientConfig.getLogger().fine("Quitting");
   }
 
   /**
@@ -496,9 +484,7 @@ public class ConsoleModule {
     StringTokenizer st = new StringTokenizer(commandLine);
     if (st.hasMoreTokens()) {
       ConsoleCommand command = findConsoleCommand(commandLine, hashCommands);
-      if (debuggingEnabled) {
-        GNSClientConfig.getLogger().log(Level.INFO, "Command:{0}", command);
-      }
+      GNSClientConfig.getLogger().log(Level.FINE, "Command:{0}", command);
       if (command != null) {
         command.execute(commandLine.substring(command.getCommandName().length()));
         return;
@@ -637,15 +623,13 @@ public class ConsoleModule {
     if (currentGuid == null) {
       printString("Select the GUID to use first with guid_use.\n");
       return false;
-    } else {
-      if (!accountVerified) {
-        if (checkGnsIsAccountVerified(currentGuid)) {
-          accountVerified = true;
-          return true;
-        }
-        printString(currentGuid.getEntityName() + " is not verified.\n");
-        return false;
+    } else if (!accountVerified) {
+      if (checkGnsIsAccountVerified(currentGuid)) {
+        accountVerified = true;
+        return true;
       }
+      printString(currentGuid.getEntityName() + " is not verified.\n");
+      return false;
     }
     return true;
   }

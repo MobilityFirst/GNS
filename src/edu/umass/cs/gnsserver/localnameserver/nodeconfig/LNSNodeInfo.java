@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import edu.umass.cs.utils.Util;
 
 /**
@@ -137,14 +136,14 @@ public class LNSNodeInfo {
 
   /**
    * Returns the ip address for this node.
-   * 
+   *
    * @return the ip address
    */
   public synchronized InetAddress getIpAddress() {
     // Lookup IP address on first access.
     if (ipAddress == null) {
       try {
-    	  // arun
+        // arun
         ipAddress = Util.getInetAddressFromString(ipAddressString);//InetAddress.getByName(ipAddressString);
       } catch (UnknownHostException e) {
         e.printStackTrace();
@@ -155,7 +154,7 @@ public class LNSNodeInfo {
 
   /**
    * Returns the external IP for this node.
-   * 
+   *
    * @return the externalIP
    */
   public String getExternalIP() {
@@ -164,7 +163,7 @@ public class LNSNodeInfo {
 
   /**
    * Returns the starting port number for this node.
-   * 
+   *
    * @return starting port number
    */
   public int getStartingPortNumber() {
@@ -182,7 +181,7 @@ public class LNSNodeInfo {
 
   /**
    * Sets the recorded ping latency (in milleseconds).
-   * 
+   *
    * @param pingLatency
    */
   public synchronized void setPingLatency(long pingLatency) {
@@ -191,7 +190,7 @@ public class LNSNodeInfo {
 
   /**
    * Returns the latitude for this node.
-   * 
+   *
    * @return the latitude
    */
   public double getLatitude() {
@@ -200,7 +199,7 @@ public class LNSNodeInfo {
 
   /**
    * Returns the longitude for this node.
-   * 
+   *
    * @return the longitude
    */
   public double getLongitude() {

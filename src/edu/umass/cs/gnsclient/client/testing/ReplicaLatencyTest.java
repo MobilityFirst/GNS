@@ -129,8 +129,6 @@ public class ReplicaLatencyTest {
       // Need this on to read the which replica is responding
       //client.setEnableInstrumentation(true);
       test.findSlowGuid(closeActiveReplica);
-//      // Now maybe turn on output
-//      client.setDebuggingEnabled(debug);
       // send the reads and writes
       test.readsAndWrites(closeActiveReplica);
       //test.removeSubGuid();
