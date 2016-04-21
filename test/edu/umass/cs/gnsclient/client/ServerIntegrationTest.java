@@ -96,13 +96,6 @@ public class ServerIntegrationTest {
       }
     }
 
-    // aditya: FIXME: just added a bit of delay, as client was trying to connect before the GNS was getting started.
-    // need a better way for GNS to start and then start tests
-    // That's why the connectivity check was done below and not in the client constructor. 
-    // edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync.CONNECTIVITY_CHECK_TIMEOUT wasn't
-    // final we could set that. - Westy
-    System.out.println("Pausing for 50 seconds!");
-    Thread.sleep(50000);
     client = new GnsClient();;
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
