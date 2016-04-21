@@ -42,16 +42,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * * Cleaner implementation of a GNS client using gigapaxos' async client.
- *
- * THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.GNSClient.
- * BOTH ARE BASED ON AsyncClient.
+ * 
+ * This class defines a client to communicate with a GNS instance over TCP.
  * This class contains a concise set of read and write commands
  * which read and write JSON Objects.
+ * See also {@link GnsClient} for the full set of client commands.
+ * 
+ * It also contains a set of commands to use context aware group guids.
+ * 
  * It uses AbstractGnsClient to provide the essential connectivity to the server.
- * It also contains the basic field read and write commands as well a
- * set of commands to use context aware group guids.
- *
+ * 
+ * Uses on gigapaxos' async client.
  *
  * @author westy
  */
@@ -690,7 +691,9 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
   /**
    * Batch create guids with the given aliases. If
    * createPublicKeys is true, key pairs will be created and saved
-   * by the client for the guids.
+   * by the client for the guids. If not, bogus public keys will
+   * be uses which will make the guids only accessible using the 
+   * account guid (which has ACL access to each guid).
    *
    * @param accountGuid
    * @param aliases

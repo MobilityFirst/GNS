@@ -35,16 +35,16 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
 /**
- * * Cleaner implementation of a GNS client using gigapaxos' async client.
- * 
  * This class defines a client to communicate with a GNS instance over TCP.
- * This class adds single field list based commands to the {@link BasicTcpClientV1}'s JSONObject based commands.
- *
- * This class contains a concise subset of all available server operations.
- * For a more complete set see {@link UniversalTcpClientExtended}.
- *
- * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
- * @version 1.0
+ * This class adds additional commands to the {@link BasicGnsClient}'s basic set of
+ * JSONObject based commands.
+ * 
+ * THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.GNSClient
+ * which it is a replacement for.
+ * 
+ * Uses gigapaxos' async client.
+ * 
+ * @author westy
  */
 public class GnsClient extends BasicGnsClient implements GNSClientInterface {
 
