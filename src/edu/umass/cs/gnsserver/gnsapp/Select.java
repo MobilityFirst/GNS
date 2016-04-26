@@ -132,7 +132,6 @@ public class Select {
    */
   private static void handleSelectRequestFromClient(SelectRequestPacket<String> packet,
           GNSApplicationInterface<String> app) throws JSONException, UnknownHostException, FailedDBOperationException {
-    //SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
     if (packet.getGroupBehavior().equals(SelectGroupBehavior.GROUP_LOOKUP)) {
@@ -225,9 +224,12 @@ public class Select {
               "NS {0} sending back {1} record(s) in response to self-select request {2}",
               new Object[]{app.getNodeID(), jsonRecords.length(),
                 request.getSummary()});
-    } catch (Exception e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Exception while handling self-select request: {0}", e);
-      e.printStackTrace();
+    } catch (FailedDBOperationException e) {
+      GNSConfig.getLogger().log(Level.SEVERE, "Exception while handling self-select request: {0}",
+              e.getMessage());
+      //e.printStackTrace();
+      response = SelectResponsePacket.makeFailPacket(request.getId(), request.getClientAddress(),
+              request.getCcpQueryId(), request.getNsQueryId(), app.getNodeID(), e.getMessage());
     }
     return response;
   }
@@ -304,8 +306,8 @@ public class Select {
     if (ResponseCode.NOERROR.equals(packet.getResponseCode())) {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getRecords(), info, replica);
-    } else // error response
-    {
+    } else {
+      // error response
       GNSConfig.getLogger().log(Level.FINE,
               "NS {0} processing error response: {1}",
               new Object[]{replica.getNodeID(), packet.getErrorMessage()});
@@ -332,7 +334,6 @@ public class Select {
             new Object[]{app.getNodeID(), address,
               response.getSummary()});
     try {
-      //app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
       app.sendToClient(address, response, response.toJSONObject(), myListeningAddress);
       // arun: synchronous select handling
       if (GNSApp.DELEGATE_CLIENT_MESSAGING) {
