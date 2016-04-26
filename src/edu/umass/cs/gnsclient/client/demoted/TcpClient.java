@@ -41,14 +41,14 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
  * This class adds additional commands to the {@link BasicGnsClient}'s basic set of
  JSONObject based commands.
  
- THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.GnsClient
+ THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.TcpClient
  which it is a replacement for.
  
  Uses gigapaxos' async client.
  * 
  * @author westy
  */
-public class GnsClient extends BasicGnsClient implements GNSClientInterface {
+public class TcpClient extends BasicGnsClient implements GNSClientInterface {
 
   /**
    * Creates a NewGnsClient. 
@@ -58,7 +58,7 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * @throws java.io.IOException
    */
   @Deprecated
-  public GnsClient(InetSocketAddress anyReconfigurator, boolean disableSSL)
+  public TcpClient(InetSocketAddress anyReconfigurator, boolean disableSSL)
           throws IOException {
     super(anyReconfigurator, disableSSL);
   }
@@ -73,7 +73,7 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * @throws IOException
    */
   @Deprecated
-  public GnsClient(boolean disableSSL) throws IOException {
+  public TcpClient(boolean disableSSL) throws IOException {
     this(null, disableSSL);
   }
 
@@ -86,7 +86,7 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    *
    * @throws IOException
    */
-  public GnsClient() throws IOException {
+  public TcpClient() throws IOException {
     this(null, false);
   }
   
@@ -100,7 +100,7 @@ public class GnsClient extends BasicGnsClient implements GNSClientInterface {
    * @param anyReconfigurator
    * @throws IOException
    */
-  public GnsClient(InetSocketAddress anyReconfigurator) throws IOException {
+  public TcpClient(InetSocketAddress anyReconfigurator) throws IOException {
     this(anyReconfigurator, false);
   }
 
