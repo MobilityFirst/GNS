@@ -325,22 +325,17 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws RecordNotFoundException {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
   public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
+  public void updateAllFields(String collection, String name, ArrayList<Object> values1) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
-  public void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
+  public void updateFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
@@ -440,16 +435,6 @@ public class CassandraRecords implements NoSQLRecords {
     }
   }
 
-  @Override
-  public void bulkInsert(String collection, ArrayList<JSONObject> values) throws FailedDBOperationException {
-    // todo
-  }
-
-  @Override
-  public void update(String tableName, String guid, JSONObject value) {
-    insert(tableName, guid, value);
-  }
-
 //  //
 //  // TEST CODE
 //  // 
@@ -505,9 +490,9 @@ public class CassandraRecords implements NoSQLRecords {
 //      }
 //
 ////    System.out.println("LOOKUP BY GUID =>" + instance.lookupEntireRecord(n.getName(), true));
-////    instance.update(n.getName(), "timeToLive", "777");
+////    instance.updateAllFields(n.getName(), "timeToLive", "777");
 ////    System.out.println("LOOKUP AFTER 777 =>" + instance.lookupEntireRecord(n.getName(), true));
-////    instance.update(n.getName(), "FRANK", "777");
+////    instance.updateAllFields(n.getName(), "FRANK", "777");
 ////    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookupEntireRecord(n.getName(), true));
 ////    
 //      JSONObject json = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
@@ -517,7 +502,7 @@ public class CassandraRecords implements NoSQLRecords {
 //      NameRecord record = new NameRecord(json);
 //      record.updateKey("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
 //      System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
-//      instance.update(DBNAMERECORD, record.getName(), record.toJSONObject());
+//      instance.updateAllFields(DBNAMERECORD, record.getName(), record.toJSONObject());
 //      JSONObject json2 = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
 //      System.out.println("2ND LOOKUP BY GUID => " + json2);
 //      //

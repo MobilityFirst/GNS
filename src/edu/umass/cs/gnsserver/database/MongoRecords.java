@@ -36,7 +36,6 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -53,8 +52,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for
- * guid, key, record triples using JSONObjects as the intermediate representation.
+ * Provides insert, updateAllFields, removeEntireRecord and lookupEntireRecord operations for
+ guid, key, record triples using JSONObjects as the intermediate representation.
  * All records are stored in a document called NameRecord.
  *
  * @author westy, Abhigyan, arun
@@ -192,23 +191,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   }
 
   @Override
-  public void bulkInsert(String collectionName, ArrayList<JSONObject> values) throws FailedDBOperationException, RecordExistsException {
-
-    DBCollection collection = db.getCollection(collectionName);
-    ArrayList<DBObject> dbObjects = new ArrayList<DBObject>();
-    for (JSONObject json : values) {
-      dbObjects.add((DBObject) JSON.parse(json.toString()));
-    }
-    try {
-      collection.insert(dbObjects);
-    } catch (DuplicateKeyException e) {
-      throw new RecordExistsException(collectionName, "MultiInsert");
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, dbObjects.toString());
-    }
-  }
-
-  @Override
   public JSONObject lookupEntireRecord(String collectionName, String guid) throws RecordNotFoundException, FailedDBOperationException {
     return lookupEntireRecord(collectionName, guid, false);
   }
@@ -251,14 +233,8 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String collectionName, String guid, ColumnField nameField,
-          ArrayList<ColumnField> fields1)
-          throws RecordNotFoundException, FailedDBOperationException {
-    return lookupMultipleSystemAndUserFields(collectionName, guid, nameField, fields1, null, null);
-  }
-
-  @Override
-  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName, String guid, ColumnField nameField,
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName,
+          String guid, ColumnField nameField,
           ArrayList<ColumnField> systemFields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
     long startTime = System.currentTimeMillis(), t = System.nanoTime();
@@ -420,30 +396,23 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       throw new FailedDBOperationException(collectionName, guid);
     }
   }
+  
+  private final static ArrayList<ColumnField> valuesMapField = new ArrayList<>();
 
-  @Override
-  public void update(String collectionName, String guid, JSONObject value) throws FailedDBOperationException {
-    String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    DBObject dbObject = (DBObject) JSON.parse(value.toString());
-    try {
-      collection.update(query, dbObject);
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, dbObject.toString());
-    }
+  static {
+    valuesMapField.add(NameRecord.VALUES_MAP);
   }
 
   @Override
-  public void update(String collectionName, String guid, ColumnField nameField,
-          ArrayList<ColumnField> fields1, ArrayList<Object> values1) throws FailedDBOperationException {
-    update(collectionName, guid, nameField, fields1, values1, null, null, null);
+  public void updateAllFields(String collectionName, String guid, ArrayList<Object> values1) 
+          throws FailedDBOperationException {
+    updateFields(collectionName, guid, NameRecord.NAME, valuesMapField, values1, null, null, null);
   }
 
   @Override
   // THE ONLY METHOD THAT CURRENTLY SUPPORTS WRITING USER JSON OBJECTS AS VALUES IN THE VALUES MAP
   // ALSO SUPPORTS DOT NOTATION
-  public void update(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields,
+  public void updateFields(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields,
           ArrayList<Object> systemValues, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
     String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -544,7 +513,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     }
     DatabaseConfig.getLogger().log(Level.FINE, "UPDATES: {0}", new Object[]{updates});
 
-    if (updates.keySet().size() > 0) { // only if there are some things to update
+    if (updates.keySet().size() > 0) { // only if there are some things to updateAllFields
       long startTime = System.currentTimeMillis();
       WriteResult writeResult;
       try {

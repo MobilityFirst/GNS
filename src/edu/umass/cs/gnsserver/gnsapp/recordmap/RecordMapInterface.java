@@ -26,14 +26,12 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 
 /**
  *
- * @author westy, abhigyan
+ * @author Westy
  */
 public interface RecordMapInterface {
 
@@ -46,13 +44,13 @@ public interface RecordMapInterface {
   public void createIndex(String field, String index);
   
   /**
-   * Add a name record to the database.
+   * Add a name record to the database from a JSON Object.
    * 
-   * @param recordEntry
+   * @param json
    * @throws FailedDBOperationException
    * @throws RecordExistsException
    */
-  public void addNameRecord(NameRecord recordEntry) throws FailedDBOperationException, RecordExistsException;
+  public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException;
 
   /**
    * Retrieve a name record from the database.
@@ -64,32 +62,7 @@ public interface RecordMapInterface {
    */
   public NameRecord getNameRecord(String name) throws RecordNotFoundException, FailedDBOperationException;
 
-  /**
-   * Update a name record in the database.
-   * 
-   * @param recordEntry
-   * @throws FailedDBOperationException
-   */
-  public void updateNameRecord(NameRecord recordEntry) throws FailedDBOperationException;
-
-  /**
-   * Add a name record to the database from a JSON Object.
-   * 
-   * @param json
-   * @throws FailedDBOperationException
-   * @throws RecordExistsException
-   */
-  public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException;
-
-  /**
-   * Add multiple name records to the database from an list of JSON Objects.
-   * 
-   * @param jsons
-   * @throws FailedDBOperationException
-   * @throws RecordExistsException
-   */
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException;
-
+  
   /**
    * Remove a name record from the database.
    * 
@@ -108,36 +81,6 @@ public interface RecordMapInterface {
   public boolean containsName(String name) throws FailedDBOperationException;
 
   /**
-   * Return all the column keys from a name record in the database.
-   * 
-   * @param key
-   * @return a set of strings
-   * @throws RecordNotFoundException
-   * @throws FailedDBOperationException
-   */
-  public Set<String> getAllColumnKeys(String key) throws RecordNotFoundException, FailedDBOperationException;
-
-  /**
-   * Clears the database and reinitializes all indices.
-   * 
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public void reset() throws FailedDBOperationException;
-
-  /**
-   * Retrieves all the system fields from the database that match field.
-   * 
-   * @param name - the name of the record
-   * @param nameField - the field that contains the name of the record
-   * @param fields - the system fields to retrieve
-   * @return a map of {@link ColumnField} to objects
-   * @throws FailedDBOperationException
-   * @throws RecordNotFoundException
-   */
-  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> fields) throws
-          FailedDBOperationException, RecordNotFoundException;
-
-  /**
    *
    * @param name  - the name of the record
    * @param nameField - the field that contains the name of the record
@@ -148,7 +91,8 @@ public interface RecordMapInterface {
    * @throws FailedDBOperationException
    * @throws RecordNotFoundException
    */
-  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> fields,
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, 
+          ColumnField nameField, ArrayList<ColumnField> fields,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws
           FailedDBOperationException, RecordNotFoundException;
 
@@ -156,12 +100,10 @@ public interface RecordMapInterface {
    * Update system fields in a record.
    * 
    * @param name - the name of the record
-   * @param nameField - the field that contains the name of the record
-   * @param fields - the system fields to update
    * @param values - the values to set them to
    * @throws FailedDBOperationException
    */
-  public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values)
+  public abstract void updateAllFields(String name, ArrayList<Object> values)
           throws FailedDBOperationException;
 
   /**
@@ -169,59 +111,28 @@ public interface RecordMapInterface {
    * 
    * @param name - the name of the record
    * @param nameField - the field that contains the name of the record
-   * @param fields - the system fields to update
+   * @param fields - the system fields to updateAllFields
    * @param values - the values to set the system fields to
    * @param valuesMapField - the field that contains all the user fields
-   * @param valuesMapKeys - the user fields to update
+   * @param valuesMapKeys - the user fields to updateAllFields
    * @param valuesMapValues - the values to set the user fields to to
    * @throws FailedDBOperationException
    */
-  public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values,
+  public abstract void update(String name, 
+          ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedDBOperationException;
-
-  /**
-   * Updates the record indexed by name conditionally. The condition specified by 
-   * conditionField whose value must be equal to conditionValue.
-   * 
-   * @param name - the name of the record
-   * @param nameField - the field that contains the name of the record
-   * @param conditionField
-   * @param conditionValue
-   * @param fields - the system fields to update
-   * @param values - the values to set the system fields to
-   * @param valuesMapField - the field that contains all the user fields
-   * @param valuesMapKeys - the user fields to update
-   * @param valuesMapValues - the values to set the user fields to to
-   * @return Returns true if the update was applied false otherwise.
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public abstract boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
-          ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField,
-          ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException;
 
   /**
    * Remove keys from a field.
    * 
    * @param name - the name of the record
-   * @param mapField - the system fields to update
+   * @param mapField - the system fields to updateAllFields
    * @param mapKeys - the keys to remove
    * @throws FailedDBOperationException
    */
   public abstract void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException;
-
-  /**
-   * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
-   * the NAME (AKA the primary key) is always there.
-   *
-   * @param nameField - the field in the row that contains the name field
-   * @param fields
-   * @return an {@link AbstractRecordCursor}
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public abstract AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException;
 
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
@@ -241,7 +152,8 @@ public interface RecordMapInterface {
    * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException;
+  public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, 
+          String key, Object value) throws FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified 
@@ -253,7 +165,8 @@ public interface RecordMapInterface {
    * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) throws FailedDBOperationException;
+  public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, 
+          String key, String value) throws FailedDBOperationException;
 
   /**
    * If key is a GeoSpatial field return all fields that are near value which is a point specified 
@@ -266,7 +179,8 @@ public interface RecordMapInterface {
    * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException;
+  public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, 
+          String key, String value, Double maxDistance) throws FailedDBOperationException;
 
   /**
    * Return all the fields that match the query.
@@ -276,6 +190,7 @@ public interface RecordMapInterface {
    * @return {@link AbstractRecordCursor}
    * @throws FailedDBOperationException
    */
-  public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException;
+  public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, 
+          String query) throws FailedDBOperationException;
 
 }

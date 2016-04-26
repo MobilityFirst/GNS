@@ -48,6 +48,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -384,14 +390,8 @@ public class Admintercessor {
         try {
           result.append("  NAME: ");
           result.append(record.getName());
-//        result.append(" / KEY: ");
-//        result.append(record.getRecordKey().getName());
-          result.append(" P: ");
-          result.append(Util.setOfNodeIdToString(record.getPrimaryNameservers()));
-//          result.append(" A: ");
-//          result.append(record.getActiveNameServers().toString());
-          result.append(" TTL: ");
-          result.append(record.getTimeToLive());
+//          result.append(" P: ");
+//          result.append(Util.setOfNodeIdToString(record.getPrimaryNameservers()));
           result.append(LINE_SEPARATOR);
           result.append("    VALUE: ");
           try {

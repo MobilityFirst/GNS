@@ -68,7 +68,7 @@ public enum ColumnFieldType {
   LIST_STRING,
 
   /**
-   * Column type that a map of user values.
+   * Column type that is a map of user values.
    */
   VALUES_MAP,
 

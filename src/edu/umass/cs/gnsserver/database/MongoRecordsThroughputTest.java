@@ -28,14 +28,10 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -77,13 +73,6 @@ public class MongoRecordsThroughputTest {
     //System.exit(0);
   }
 
-  private static final ArrayList<ColumnField> dnsSystemFields = new ArrayList<ColumnField>();
-
-  static {
-    dnsSystemFields.add(NameRecord.ACTIVE_VERSION);
-    dnsSystemFields.add(NameRecord.TIME_TO_LIVE);
-  }
-
   private static int count = 0;
 
   private static synchronized int incrCount() {
@@ -111,7 +100,13 @@ public class MongoRecordsThroughputTest {
       System.out.println("Problem creating json " + e);
     }
     ValuesMap valuesMap = new ValuesMap(json);
-    NameRecord nameRecord = new NameRecord(recordMap, guid, 0, valuesMap, 0, new HashSet<String>());
+    NameRecord nameRecord = new NameRecord(recordMap, guid, 
+            //0, 
+            valuesMap
+            //, 
+            //0, 
+            //new HashSet<String>()
+    );
     try {
       instance.insert(DBNAMERECORD, guid, nameRecord.toJSONObject());
     } catch (JSONException e) {
@@ -136,7 +131,7 @@ public class MongoRecordsThroughputTest {
                         DBNAMERECORD,
                         guid,
                         NameRecord.NAME,
-                        dnsSystemFields,
+                        null,
                         NameRecord.VALUES_MAP,
                         userFields);
         if (incrCount() % frequency == 0) {

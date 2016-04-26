@@ -109,8 +109,8 @@ public class NSFieldAccess {
         ClientSupportConfig.getLogger().log(Level.FINE, "Field={0} Format={1}",
                 new Object[]{field, returnFormat});
         // otherwise grab a few system fields we need plus the field the user wanted
-        nameRecord = NameRecord.getNameRecordMultiField(database, guid,
-                null, returnFormat, field);
+        nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
+                returnFormat, field);
       }
       if (nameRecord != null) {
         return nameRecord.getValuesMap();
@@ -136,8 +136,8 @@ public class NSFieldAccess {
       String[] fieldArray = new String[fields.size()];
       fieldArray = fields.toArray(fieldArray);
       // Grab a few system fields and the fields the user wanted
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid,
-              null, returnFormat, fieldArray);
+      NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
+              returnFormat, fieldArray);
       if (nameRecord != null) {
         return nameRecord.getValuesMap();
       }
@@ -165,7 +165,7 @@ public class NSFieldAccess {
     ResultValue result = null;
     try {
       // arun: cleaned up logging
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null,
+      NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
               ColumnFieldType.LIST_STRING, field);
       ClientSupportConfig.getLogger().log(Level.FINE,
               "LOOKUPFIELDONTHISSERVER: {0} : {1} -> {2}",
@@ -296,7 +296,7 @@ public class NSFieldAccess {
       // Grab the code because it is of a different type
       NameRecord codeRecord = null;
       try {
-        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+        codeRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), guid,
                 ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());

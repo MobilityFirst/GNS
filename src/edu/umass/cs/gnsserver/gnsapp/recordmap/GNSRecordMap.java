@@ -27,13 +27,11 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.utils.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -46,113 +44,78 @@ import java.util.logging.Level;
 public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
 
   private final String collectionName;
-  private final NoSQLRecords mongoRecords;
+  private final NoSQLRecords noSqlRecords;
 
   /**
    * Creates an MongoRecordMap instance.
    *
-   * @param mongoRecords
+   * @param noSqlRecords
    * @param collectionName
    */
-  public GNSRecordMap(NoSQLRecords mongoRecords, String collectionName) {
+  public GNSRecordMap(NoSQLRecords noSqlRecords, String collectionName) {
     this.collectionName = collectionName;
-    this.mongoRecords = mongoRecords;
+    this.noSqlRecords = noSqlRecords;
   }
 
   @Override
   public void createIndex(String field, String index) {
-    mongoRecords.createIndex(collectionName, field, index);
-  }
-
-  @Override
-  public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException, FailedDBOperationException {
-    if (!containsName(name)) {
-      try {
-        NoSQLRecords records = mongoRecords;
-        JSONObject json = records.lookupEntireRecord(collectionName, name);
-        return JSONUtils.JSONArrayToSetString(json.names());
-      } catch (JSONException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, "Error updating json record: {0}", e);
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
-
-  @Override
-  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
-    return mongoRecords.lookupMultipleSystemFields(collectionName, name, nameField, systemFields);
+    noSqlRecords.createIndex(collectionName, field, index);
   }
 
   @Override
   public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> systemFields,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
-    return mongoRecords.lookupMultipleSystemAndUserFields(collectionName, name, nameField, systemFields, valuesMapField, valuesMapKeys);
+    return noSqlRecords.lookupMultipleSystemAndUserFields(collectionName, name, nameField, systemFields, valuesMapField, valuesMapKeys);
   }
 
   @Override
-  public void update(String name, ColumnField nameField, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues)
+  public void updateAllFields(String name, ArrayList<Object> systemValues)
           throws FailedDBOperationException {
-    mongoRecords.update(collectionName, name, nameField, systemFields, systemValues);
+    noSqlRecords.updateAllFields(collectionName, name, systemValues);
   }
 
   @Override
   public void update(String name, ColumnField nameField, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException {
-    mongoRecords.update(collectionName, name, nameField, systemFields, systemValues, valuesMapField, valuesMapKeys, valuesMapValues);
-  }
-
-  @Override
-  public boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
-          ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues, ColumnField valuesMapField,
-          ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedDBOperationException {
-    return mongoRecords.updateConditional(collectionName, name, nameField, conditionField, conditionValue,
-            systemFields, systemValues, valuesMapField, valuesMapKeys, valuesMapValues);
+    noSqlRecords.updateFields(collectionName, name, nameField, systemFields, systemValues, valuesMapField, valuesMapKeys, valuesMapValues);
   }
 
   @Override
   public void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException {
-    mongoRecords.removeMapKeys(collectionName, name, mapField, mapKeys);
-  }
-
-  @Override
-  public AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException {
-    return mongoRecords.getAllRowsIterator(collectionName, nameField, fields);
+    noSqlRecords.removeMapKeys(collectionName, name, mapField, mapKeys);
   }
 
   @Override
   public AbstractRecordCursor getAllRowsIterator() throws FailedDBOperationException {
-    return mongoRecords.getAllRowsIterator(collectionName);
+    return noSqlRecords.getAllRowsIterator(collectionName);
   }
 
   @Override
   public AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException {
-    return mongoRecords.selectRecords(collectionName, valuesMapField, key, value);
+    return noSqlRecords.selectRecords(collectionName, valuesMapField, key, value);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) throws FailedDBOperationException {
-    return mongoRecords.selectRecordsWithin(collectionName, valuesMapField, key, value);
+    return noSqlRecords.selectRecordsWithin(collectionName, valuesMapField, key, value);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException {
-    return mongoRecords.selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
+    return noSqlRecords.selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException {
-    return mongoRecords.selectRecordsQuery(collectionName, valuesMapField, query);
+    return noSqlRecords.selectRecordsQuery(collectionName, valuesMapField, query);
   }
 
   @Override
   public NameRecord getNameRecord(String name) throws RecordNotFoundException, FailedDBOperationException {
     try {
-      JSONObject json = mongoRecords.lookupEntireRecord(collectionName, name);
+      JSONObject json = noSqlRecords.lookupEntireRecord(collectionName, name);
       if (json == null) {
         return null;
       } else {
@@ -165,17 +128,8 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public void addNameRecord(NameRecord recordEntry) throws FailedDBOperationException, RecordExistsException {
-    try {
-      addNameRecord(recordEntry.toJSONObject());
-    } catch (JSONException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Error adding name record: {0}", e);
-    }
-  }
-
-  @Override
   public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException {
-    NoSQLRecords records = mongoRecords;
+    NoSQLRecords records = noSqlRecords;
     try {
       String name = json.getString(NameRecord.NAME.getName());
       records.insert(collectionName, name, json);
@@ -188,42 +142,18 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException {
-    NoSQLRecords records = mongoRecords;
-    records.bulkInsert(collectionName, jsons);
-    GNSConfig.getLogger().log(Level.FINER, 
-            "{0}:: Added all json records. JSON: {1}", new Object[]{records.toString(), jsons});
-  }
-
-  @Override
-  public void updateNameRecord(NameRecord recordEntry) throws FailedDBOperationException {
-    try {
-      mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
-    } catch (JSONException e) {
-      GNSConfig.getLogger().log(Level.WARNING, 
-              "JSON Exception while converting record to JSON: {0}", e.getMessage());
-    } catch (FieldNotFoundException e) {
-    }
-  }
-
-  @Override
   public void removeNameRecord(String name) throws FailedDBOperationException {
-    mongoRecords.removeEntireRecord(collectionName, name);
+    noSqlRecords.removeEntireRecord(collectionName, name);
   }
 
   @Override
   public boolean containsName(String name) throws FailedDBOperationException {
-    return mongoRecords.contains(collectionName, name);
-  }
-
-  @Override
-  public void reset() throws FailedDBOperationException {
-    mongoRecords.reset(collectionName);
+    return noSqlRecords.contains(collectionName, name);
   }
 
   @Override
   public String toString() {
-    return "MongoRecordMap{" + "collectionName=" + collectionName + ", mongoRecords=" + mongoRecords + '}';
+    return "MongoRecordMap{" + "collectionName=" + collectionName + ", records=" + noSqlRecords + '}';
   }
 
 }

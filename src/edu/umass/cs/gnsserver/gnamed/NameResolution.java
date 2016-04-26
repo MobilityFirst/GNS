@@ -267,8 +267,8 @@ public class NameResolution {
     GNSApp app = handler.getApp();
     NameRecord hrnNameRecord = null;
     try {
-      hrnNameRecord = NameRecord.getNameRecordMultiField(app.getDB(), domainName,
-              null, ColumnFieldType.USER_JSON, HRN_GUID);
+      hrnNameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), domainName,
+              ColumnFieldType.USER_JSON, HRN_GUID);
     } catch (RecordNotFoundException e) {
       // Normal result when the record doesn't exist
     } catch (FailedDBOperationException e) {
@@ -287,8 +287,8 @@ public class NameResolution {
       }
       if (guid != null) {
         try {
-          guidNameRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid,
-                  null, ColumnFieldType.USER_JSON, fieldArray);
+          guidNameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), guid,
+                  ColumnFieldType.USER_JSON, fieldArray);
         } catch (RecordNotFoundException e) {
           // Normal result
         } catch (FailedDBOperationException e) {

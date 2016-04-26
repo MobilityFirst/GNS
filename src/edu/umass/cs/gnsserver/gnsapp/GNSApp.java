@@ -37,14 +37,11 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
@@ -65,6 +62,7 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GNSAdminHttpServer;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
@@ -76,7 +74,6 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -113,7 +110,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
-  private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<Long, Request>(
+  private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<>(
           new GCConcurrentHashMapCallback() {
     @Override
     public void callbackGC(Object key, Object value) {
@@ -215,7 +212,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     // Should add this to the shutdown method - do we have a shutdown method?
     GNSAdminHttpServer httpServer = new GNSAdminHttpServer(requestHandler);
     // start the NSListenerAdmin thread
-    new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
+    new AppAdmin(this, nodeConfig).start();
     GNSConfig.getLogger().log(Level.INFO,
             "{0} Admin thread initialized", nodeID);
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
@@ -306,7 +303,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         GNSConfig.getLogger().log(Level.FINE,
                 "{0} dequeueing request {1}",
                 new Object[]{this, request.getSummary()});
-        this.outstanding.remove(((RequestIdentifier) request));
+        this.outstanding.remove(request);
       }
 
     } catch (JSONException | IOException | GnsClientException e) {
@@ -361,18 +358,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
   static {
     curValueRequestFields.add(NameRecord.VALUES_MAP);
-    curValueRequestFields.add(NameRecord.TIME_TO_LIVE);
+    //curValueRequestFields.add(NameRecord.TIME_TO_LIVE);
   }
 
   @Override
   public String checkpoint(String name) {
     try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-      NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
+      NameRecord nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
+      //NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
       GNSConfig.getLogger().log(Level.FINE,
               "&&&&&&& {0} getting state {1} ",
-              new Object[]{this, state.getSummary()});
-      return state.toString();
+              new Object[]{this, nameRecord.getValuesMap().getSummary()});
+      return nameRecord.getValuesMap().toString();
     } catch (RecordNotFoundException e) {
       // normal result
     } catch (FieldNotFoundException e) {
@@ -390,7 +387,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    *
    * @param name
    * @param state
-   * @return true if we were able to update the state
+   * @return true if we were able to updateAllFields the state
    */
   @Override
   public boolean restore(String name, String state) {
@@ -403,19 +400,25 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // If state is null the only thing it means is that we need to delete 
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
-      } else { //state does not equal null so we either create a new record or update the existing one
+      } else { //state does not equal null so we either create a new record or updateAllFields the existing one
         NameRecord nameRecord = null;
         try {
-          nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
+          nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
         } catch (RecordNotFoundException e) {
           // normal result if the field does not exist
         }
         if (nameRecord == null) { // create a new record
           try {
-            NRState nrState = new NRState(state); // parse the new state
-            nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
-                    nrState.valuesMap, nrState.ttl,
-                    nodeConfig.getReplicatedReconfigurators(name));
+            ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
+            //NRState nrState = new NRState(state); // parse the new state
+            nameRecord = new NameRecord(nameRecordDB, name, 
+                    valuesMap
+                    //,
+                    //INITIAL_RECORD_VERSION,
+                    //nrState.valuesMap,
+                    //nrState.ttl,
+                    //nodeConfig.getReplicatedReconfigurators(name)
+            );
             NameRecord.addNameRecord(nameRecordDB, nameRecord);
           } catch (RecordExistsException e) {
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state, record already exists: {0}",
@@ -424,10 +427,14 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}",
                     e.getMessage());
           }
-        } else { // update the existing record
+        } else { // updateAllFields the existing record
           try {
-            NRState nrState = new NRState(state); // parse the new state
-            nameRecord.updateState(nrState.valuesMap, nrState.ttl);
+            //NRState nrState = new NRState(state); // parse the new state
+            nameRecord.updateState(
+                    new ValuesMap(new JSONObject(state))
+                    //nrState.valuesMap, 
+                    //nrState.ttl
+            );
           } catch (JSONException | FieldNotFoundException e) {
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}",
                     e.getMessage());
@@ -516,7 +523,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     if (DELEGATE_CLIENT_MESSAGING) {
       assert (response instanceof ClientRequest);
       Request originalRequest = this.outstanding
-              .remove(((ClientRequest) response).getRequestID());
+              .remove(((RequestIdentifier) response).getRequestID());
       assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress)
               : ((ClientRequest) response).getSummary();
       if (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) {

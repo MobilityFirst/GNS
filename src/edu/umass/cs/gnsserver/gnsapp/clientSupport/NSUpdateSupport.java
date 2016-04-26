@@ -42,7 +42,7 @@ public class NSUpdateSupport {
   private static final int OLD_COMMAND_TIME = -30; // how far back is old?
 
   /**
-   * Executes a local update operation.
+   * Executes a local updateAllFields operation.
    *
    * @param guid
    * @param field
@@ -132,7 +132,8 @@ public class NSUpdateSupport {
      if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
-        return NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.LIST_STRING, field);
+        return NameRecord.getNameRecordMultiUserFields(db, guid, 
+                ColumnFieldType.LIST_STRING, field);
       }
   }
 
@@ -158,7 +159,7 @@ public class NSUpdateSupport {
               new Object[]{field, operation, updateValue,
                 nameRecord.getSummary()});
     }
-    // Apply update to record in the database
+    // Apply updateAllFields to record in the database
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
   }
 
@@ -167,7 +168,8 @@ public class NSUpdateSupport {
     if (field == null || !InternalField.isInternalField(field)) {
       NameRecord activeCodeNameRecord = null;
       try {
-        activeCodeNameRecord = NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
+        activeCodeNameRecord = NameRecord.getNameRecordMultiUserFields(db, guid,
+                ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
       } catch (RecordNotFoundException e) {
       }
       if (activeCodeNameRecord != null) {
