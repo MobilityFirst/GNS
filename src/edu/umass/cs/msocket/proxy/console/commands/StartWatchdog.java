@@ -32,9 +32,9 @@ import org.json.JSONArray;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.msocket.common.GnsConstants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 import edu.umass.cs.msocket.proxy.watchdog.Watchdog;
@@ -131,7 +131,7 @@ public class StartWatchdog extends ConsoleCommand
       if (!module.isSilent())
         console.printString("Looking for watchdog  " + watchdogName + " GUID and certificates...\n");
       GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), watchdogName);
-      final UniversalTcpClient gnsClient = module.getGnsClient();
+      final GNSClientCommands gnsClient = module.getGnsClient();
 
       if (myGuid == null)
       {

@@ -19,7 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -40,14 +41,14 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CreateGuidBatchTest {
 
-  private static GnsClient client;
+  private static GNSClientCommands client;
   private static int numberTocreate = 100;
 
   public CreateGuidBatchTest() {
 
     if (client == null) {
      try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
@@ -87,7 +88,7 @@ public class CreateGuidBatchTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -127,7 +128,7 @@ public class CreateGuidBatchTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -163,7 +164,7 @@ public class CreateGuidBatchTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test

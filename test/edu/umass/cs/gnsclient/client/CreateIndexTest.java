@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.awt.geom.Point2D;
@@ -44,14 +45,14 @@ public class CreateIndexTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GnsClient client = null;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static String testField;
 
   public CreateIndexTest() {
     if (client == null) {
       try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);

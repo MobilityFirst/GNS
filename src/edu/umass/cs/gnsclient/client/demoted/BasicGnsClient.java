@@ -5,14 +5,17 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.demoted;
 
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import static edu.umass.cs.gnsclient.client.CommandUtils.checkResponse;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
-import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
@@ -408,15 +411,15 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
   /**
    * Selects all records that match query.
    * Returns the result of the query as a JSONArray of guids.
-   *
-   * The query syntax is described here:
-   * https://gns.name/wiki/index.php?title=Query_Syntax
-   *
-   * Currently there are two predefined field names in the GNS client (this is in edu.umass.cs.gnsclient.client.GnsProtocol):
-   * LOCATION_FIELD_NAME = "geoLocation"; Defined as a "2d" index in the database.
-   * IPADDRESS_FIELD_NAME = "netAddress";
-   *
-   * There are links in the wiki page abive to find the exact syntax for querying spacial coordinates.
+
+ The query syntax is described here:
+ https://gns.name/wiki/index.php?title=Query_Syntax
+
+ Currently there are two predefined field names in the GNS client (this is in edu.umass.cs.gnsclient.client.GNSCommandProtocol):
+ LOCATION_FIELD_NAME = "geoLocation"; Defined as a "2d" index in the database.
+ IPADDRESS_FIELD_NAME = "netAddress";
+
+ There are links in the wiki page abive to find the exact syntax for querying spacial coordinates.
    *
    * @param query - the query
    * @return - a JSONArray of guids
@@ -948,7 +951,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @throws Exception
    */
   public void groupAddMembershipUpdatePermission(GuidEntry groupGuid, String guidToAuthorize) throws Exception {
-    aclAdd(GnsProtocol.AccessType.WRITE_WHITELIST, groupGuid, GROUP_ACL, guidToAuthorize);
+    aclAdd(GNSCommandProtocol.AccessType.WRITE_WHITELIST, groupGuid, GROUP_ACL, guidToAuthorize);
   }
 
   /**
@@ -964,7 +967,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @throws Exception
    */
   public void groupRemoveMembershipUpdatePermission(GuidEntry groupGuid, String guidToUnauthorize) throws Exception {
-    aclRemove(GnsProtocol.AccessType.WRITE_WHITELIST, groupGuid, GROUP_ACL, guidToUnauthorize);
+    aclRemove(GNSCommandProtocol.AccessType.WRITE_WHITELIST, groupGuid, GROUP_ACL, guidToUnauthorize);
   }
 
   /**
@@ -980,7 +983,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @throws Exception
    */
   public void groupAddMembershipReadPermission(GuidEntry groupGuid, String guidToAuthorize) throws Exception {
-    aclAdd(GnsProtocol.AccessType.READ_WHITELIST, groupGuid, GROUP_ACL, guidToAuthorize);
+    aclAdd(GNSCommandProtocol.AccessType.READ_WHITELIST, groupGuid, GROUP_ACL, guidToAuthorize);
   }
 
   /**
@@ -996,7 +999,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @throws Exception
    */
   public void groupRemoveMembershipReadPermission(GuidEntry groupGuid, String guidToUnauthorize) throws Exception {
-    aclRemove(GnsProtocol.AccessType.READ_WHITELIST, groupGuid, GROUP_ACL, guidToUnauthorize);
+    aclRemove(GNSCommandProtocol.AccessType.READ_WHITELIST, groupGuid, GROUP_ACL, guidToUnauthorize);
   }
 
   // ACL COMMANDS
@@ -1014,7 +1017,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @throws Exception
    * @throws GnsClientException if the query is not accepted by the server.
    */
-  public void aclAdd(GnsProtocol.AccessType accessType, GuidEntry targetGuid, String field, String accesserGuid)
+  public void aclAdd(GNSCommandProtocol.AccessType accessType, GuidEntry targetGuid, String field, String accesserGuid)
           throws Exception {
     aclAdd(accessType.name(), targetGuid, field, accesserGuid);
   }
@@ -1034,7 +1037,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @throws Exception
    * @throws GnsClientException if the query is not accepted by the server.
    */
-  public void aclRemove(GnsProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
+  public void aclRemove(GNSCommandProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
     aclRemove(accessType.name(), guid, field, accesserGuid);
   }
@@ -1055,7 +1058,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
    * @throws Exception
    * @throws GnsClientException if the query is not accepted by the server.
    */
-  public JSONArray aclGet(GnsProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
+  public JSONArray aclGet(GNSCommandProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
     return aclGet(accessType.name(), guid, field, accesserGuid);
   }

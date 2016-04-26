@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
@@ -41,7 +42,7 @@ public class SelectAutoGroupTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GnsClient client;
+  private static GNSClientCommands client;
   private static GuidEntry masterGuid;
   private static final String groupTestFieldName = "_SelectAutoGroupTestQueryField_";
   private static GuidEntry groupOneGuid;
@@ -52,7 +53,7 @@ public class SelectAutoGroupTest {
   public SelectAutoGroupTest() {
     if (client == null) {
        try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);

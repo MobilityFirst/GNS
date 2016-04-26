@@ -25,7 +25,7 @@ package edu.umass.cs.msocket.proxy.console.commands;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -92,7 +92,7 @@ public class GnsConnect extends ConsoleCommand
       int gnsPort = Integer.valueOf(st.nextToken());
 
       // Create a client
-      UniversalTcpClient gnsClient = new UniversalTcpClient(gnsHost, gnsPort);
+      GNSClientCommands gnsClient = new GNSClientCommands(null);
       if (!module.isSilent())
         console.printString("Checking GNS connectivity with " + gnsHost + ":" + gnsPort + " using account GUID "
             + accountGuid + "\n");

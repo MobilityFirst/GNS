@@ -19,7 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnsclient.client.demoted.GnsClient;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -157,7 +158,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     byte[] encodedPrivateKey = Base64.decode(encodedPrivate);
 
     try {
-      KeyFactory keyFactory = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+      KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
               encodedPublicKey);
       PublicKey thePublicKey = keyFactory.generatePublic(publicKeySpec);

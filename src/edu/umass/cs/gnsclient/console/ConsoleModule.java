@@ -38,18 +38,18 @@ import jline.ArgumentCompletor;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.FileNameCompletor;
-import jline.History;
 import jline.SimpleCompletor;
 import org.json.JSONObject;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.commands.ConsoleCommand;
 import edu.umass.cs.gnsclient.console.commands.GnsConnect;
 import edu.umass.cs.gnsclient.console.commands.GuidUse;
 import edu.umass.cs.gnsclient.console.commands.Help;
+import edu.umass.cs.gnsclient.console.commands.History;
 import edu.umass.cs.gnsclient.console.commands.Quit;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import java.lang.reflect.InvocationTargetException;
@@ -71,7 +71,7 @@ public class ConsoleModule {
   @SuppressWarnings("javadoc")
   protected Completor consoleCompletor;
   private String promptString = CONSOLE_PROMPT + "not connected to GNS>";
-  private UniversalTcpClient gnsClient;
+  private GNSClientCommands gnsClient;
   private GuidEntry currentGuid;
   // might be a better way to do this, but for now
   private boolean accountVerified;
@@ -95,7 +95,7 @@ public class ConsoleModule {
     this.console = console;
     this.commands = new TreeSet<ConsoleCommand>();
     commands.add(new Help(this));
-    commands.add(new edu.umass.cs.gnsclient.console.commands.History(this));
+    commands.add(new History(this));
     commands.add(new Quit(this));
     this.loadCommands();
     this.loadCompletor();
@@ -114,7 +114,7 @@ public class ConsoleModule {
     });
   }
 
-  private History loadHistory() {
+  private jline.History loadHistory() {
     jline.History jHistory = new jline.History();
     try {
       Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
@@ -230,13 +230,25 @@ public class ConsoleModule {
    * command classes corresponding to the module identified by
    */
   protected String loadCommandsFromProperties(String moduleID) {
+
+    //System.out.println(this.getClass().getClassLoader().getResource(".").getPath());
     Properties props = new Properties();
     try {
       String propertiesFile = System.getProperty("console.commands", DEFAULT_COMMAND_PROPERTIES_FILE);
-      //GNSClient.getLogger().info("Loading commands from " + propertiesFile);
-      props.load(ClassLoader.getSystemResourceAsStream(propertiesFile));
+      GNSClientConfig.getLogger().log(Level.INFO, "Loading commands from {0}", propertiesFile);
+      InputStream is = ClassLoader.getSystemResourceAsStream(propertiesFile);
+//      GNSClientConfig.getLogger().warning("THREAD: "
+//              + Thread.currentThread().getContextClassLoader().getResourceAsStream(propertiesFile));
+      if (is == null) {
+        GNSClientConfig.getLogger().log(Level.WARNING, "Unable to load from {0}", propertiesFile);
+        return null;
+      }
+      props.load(is);
     } catch (IOException e) {
       // fail silently: no commands will be loaded
+    } catch (RuntimeException e) {
+      GNSClientConfig.getLogger().log(Level.INFO, "Unable to load commands: {0}", e.getMessage());
+      e.printStackTrace();
     }
     String commandClassesAsString = props.getProperty(moduleID, "");
     return commandClassesAsString;
@@ -565,7 +577,7 @@ public class ConsoleModule {
    *
    * @return Returns the gnsClient.
    */
-  public UniversalTcpClient getGnsClient() {
+  public GNSClientCommands getGnsClient() {
     return gnsClient;
   }
 
@@ -574,7 +586,7 @@ public class ConsoleModule {
    *
    * @param gnsClient A valid GNS connection
    */
-  public void setGnsClient(UniversalTcpClient gnsClient) {
+  public void setGnsClient(GNSClientCommands gnsClient) {
     this.gnsClient = gnsClient;
   }
 
@@ -692,7 +704,7 @@ public class ConsoleModule {
     try {
       JSONObject json = gnsClient.lookupAccountRecord(guid.getGuid());
       if (json != null) {
-        return json.getBoolean(GnsProtocol.ACCOUNT_RECORD_VERIFIED);
+        return json.getBoolean(GNSCommandProtocol.ACCOUNT_RECORD_VERIFIED);
       } else { // This is not an account GUID but make sure the GUID is valid
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
       }

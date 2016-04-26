@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
@@ -74,7 +74,7 @@ public class GuidLookup extends ConsoleCommand
       }
       String alias = st.nextToken();
 
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
       String value = gnsClient.lookupGuid(alias);
       console.printString(alias + " has GUID " + value);
       console.printNewline();

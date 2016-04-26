@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -126,7 +126,7 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
-            GnsProtocol.CREATE_DELETE_COMMANDS.contains(lnsRequestInfo.getCommandName())
+            GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(lnsRequestInfo.getCommandName())
             ? Config.getGlobalString(RC.SPECIAL_NAME)
             : lnsRequestInfo.getServiceName(), 0);
 

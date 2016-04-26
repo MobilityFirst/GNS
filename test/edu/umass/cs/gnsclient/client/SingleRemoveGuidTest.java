@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
@@ -37,13 +38,13 @@ public class SingleRemoveGuidTest {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GnsClient client;
+  private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
   public SingleRemoveGuidTest() {
     if (client == null) {
        try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);

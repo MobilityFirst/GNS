@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;

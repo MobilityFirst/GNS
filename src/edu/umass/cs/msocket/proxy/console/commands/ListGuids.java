@@ -26,7 +26,7 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.msocket.common.GnsConstants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -89,7 +89,7 @@ public class ListGuids extends ConsoleCommand
     try
     {
       String listName = commandText.trim();
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
       JSONArray proxies;
 
       if (GnsConstants.isValidList(listName))

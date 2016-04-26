@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.tcp;
+package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
@@ -32,7 +32,7 @@ import java.io.Serializable;
  * @author westy
  */
 public class CommandResult implements Serializable /* does it */ {
-  
+
   private static final long serialVersionUID = 2326392043474125897L;
 
   /**
@@ -85,23 +85,23 @@ public class CommandResult implements Serializable /* does it */ {
   }
 
   // FIXME: Not sure what to do with these instrumentation fields
-	public CommandResult(ActiveReplicaError packet, long receivedTime,
-			long clientLatency) {
-		this.result = packet.getResponseMessage();
-		this.receivedTime = receivedTime;
-		this.errorCode = NSResponseCode.BAD_GUID_ERROR;
-		this.CCPRoundTripTime = 0;
-		this.CCPProcessingTime = 0;
-		this.responder = packet.getSender()!=null ? packet.getSender().toString() : null;
-		this.requestCnt = 0;
-		this.requestRate = 0;
-		this.clientLatency = clientLatency;
-	}
+  public CommandResult(ActiveReplicaError packet, long receivedTime,
+          long clientLatency) {
+    this.result = packet.getResponseMessage();
+    this.receivedTime = receivedTime;
+    this.errorCode = NSResponseCode.BAD_GUID_ERROR;
+    this.CCPRoundTripTime = 0;
+    this.CCPProcessingTime = 0;
+    this.responder = packet.getSender() != null ? packet.getSender().toString() : null;
+    this.requestCnt = 0;
+    this.requestRate = 0;
+    this.clientLatency = clientLatency;
+  }
 
   /**
    * Returns the result of the command as a string.
-   * 
-   * @return 
+   *
+   * @return
    */
   public String getResult() {
     return result;
@@ -109,7 +109,7 @@ public class CommandResult implements Serializable /* does it */ {
 
   /**
    * Instrumentation - holds the time when the return message is received.
-   * 
+   *
    * @return the time in milliseconds
    */
   public long getReceivedTime() {
@@ -118,7 +118,7 @@ public class CommandResult implements Serializable /* does it */ {
 
   /**
    * Returns the error code if any returned by the execution of the command (could be null).'
-   * 
+   *
    * @return the code
    */
   public NSResponseCode getErrorCode() {
@@ -127,16 +127,16 @@ public class CommandResult implements Serializable /* does it */ {
 
   /**
    * Instrumentation - The RTT as measured from the client out and back.
-   * 
+   *
    * @return the time in milliseconds
    */
   public long getClientLatency() {
     return clientLatency;
   }
- 
+
   /**
    * Instrumentation - The RTT as measured from the CCP out and back.
-   * 
+   *
    * @return the time in milliseconds
    */
   public long getCCPRoundTripTime() {
@@ -145,7 +145,8 @@ public class CommandResult implements Serializable /* does it */ {
 
   /**
    * Instrumentation - Returns the total command processing time at the LNS.
-   * @return 
+   *
+   * @return
    */
   public long getCCPProcessingTime() {
     return CCPProcessingTime;
@@ -153,7 +154,7 @@ public class CommandResult implements Serializable /* does it */ {
 
   /**
    * Instrumentation - what nameserver responded to this query (could be null for some non-query command)
-   * 
+   *
    * @return the id
    */
   public String getResponder() {
@@ -162,7 +163,7 @@ public class CommandResult implements Serializable /* does it */ {
 
   /**
    * Instrumentation - the request counter from the LNS (can be used to tell how busy LNS is)
-   * 
+   *
    * @return the counter
    */
   public long getRequestCnt() {

@@ -19,21 +19,21 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.tcp.CommandResult;
+import edu.umass.cs.gnsclient.client.CommandResult;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
-import static edu.umass.cs.gnscommon.GnsProtocol.READ;
-import static edu.umass.cs.gnscommon.GnsProtocol.READER;
-import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.REPLACE_USER_JSON;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.io.IOException;
@@ -45,8 +45,9 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import org.json.JSONObject;
 
@@ -78,7 +79,7 @@ public class ClientAsynchExample {
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
-    BasicTcpClient client = new BasicTcpClient(address.getHostName(), address.getPort());
+ GNSClientCommands client = new GNSClientCommands(null);
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
@@ -128,7 +129,7 @@ public class ClientAsynchExample {
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(BasicTcpClient client, Set<Long> pendingIds) {
+  private static void lookForResponses(AbstractGNSClient client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent

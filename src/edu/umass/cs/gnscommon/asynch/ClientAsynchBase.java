@@ -34,7 +34,7 @@ import java.security.KeyPairGenerator;
 import java.util.Random;
 import org.json.JSONException;
 import org.json.JSONObject;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -60,7 +60,7 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
@@ -82,6 +82,7 @@ import java.util.logging.Level;
  *
  * @author Westy
  */
+// FIXME: This might be redundant with the AsyncClient internal class used in GNSClient.
 public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
   public static final Set<IntegerPacketType> CLIENT_PACKET_TYPES
@@ -643,12 +644,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
           throws GnsClientException {
     try {
       JSONObject result = createCommand(commandType, action, keysAndValues);
-      result.put(GnsProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
-      result.put(GnsProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+      result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
+      result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
 
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
-      result.put(GnsProtocol.SIGNATURE, signatureString);
+      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
       throw new GnsClientException("Error encoding message", e);
@@ -672,8 +673,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
       JSONObject result = new JSONObject();
       String key;
       Object value;
-      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
-      result.put(GnsProtocol.COMMANDNAME, action);
+      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
+      result.put(GNSCommandProtocol.COMMANDNAME, action);
       for (int i = 0; i < keysAndValues.length; i = i + 2) {
         key = (String) keysAndValues[i];
         value = keysAndValues[i + 1];

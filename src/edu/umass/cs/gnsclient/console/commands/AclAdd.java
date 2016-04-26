@@ -23,8 +23,8 @@ import java.util.StringTokenizer;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
@@ -84,7 +84,7 @@ public class AclAdd extends ConsoleCommand
   {
     try
     {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
       StringTokenizer st = new StringTokenizer(commandText.trim());
       if (st.countTokens() != 3)
       {

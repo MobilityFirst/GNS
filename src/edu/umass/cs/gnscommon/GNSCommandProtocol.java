@@ -26,14 +26,14 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfiguration
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
 /**
- * This class defines a GnsProtocol. Which is to say that
+ * This class defines a GNSCommandProtocol. Which is to say that
  * it defines a bunch of constants that define the protocol
  * support for communicating between the client and the local name server.
  *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>, arun
  * @version 1.17
  */
-public class GnsProtocol {
+public class GNSCommandProtocol {
 
   /* FIXME: Convert to using enums. 
   See edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType */
@@ -106,18 +106,18 @@ public class GnsProtocol {
   public final static String HELP = "help";
   // Admin commands (some not accesible in unless the server is in "admin mode")
   public final static String ADMIN = "admin";
+  @Deprecated
   public final static String DELETE_ALL_RECORDS = "deleteAllRecords";
+  @Deprecated
   public final static String RESET_DATABASE = "resetDatabase";
+  @Deprecated
   public final static String CLEAR_CACHE = "clearCache";
   public final static String DUMPCACHE = "dumpCache";
+  @Deprecated
   public final static String DELETE_ALL_GUID_RECORDS = "deleteAllGuidRecords";
   public final static String DUMP = "dump";
   //
   public final static String CONNECTION_CHECK = "connectionCheck";
-  @Deprecated
-  public final static String PING_TABLE = "pingTable";
-  @Deprecated
-  public final static String PING_VALUE = "pingValue";
   public final static String CHANGE_LOG_LEVEL = "changeLogLevel";
   public final static String SET_PARAMETER = "setParameter";
   public final static String GET_PARAMETER = "getParameter";

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -138,14 +138,14 @@ public class ActiveCode {
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
-      return GnsProtocol.NULL_RESPONSE;
+      return GNSCommandProtocol.NULL_RESPONSE;
     }
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, field,
               handler.getApp(), false);
       return result.getString(field);
     } catch (FailedDBOperationException | JSONException e) {
-      return GnsProtocol.NULL_RESPONSE;
+      return GNSCommandProtocol.NULL_RESPONSE;
     }
   }
 }

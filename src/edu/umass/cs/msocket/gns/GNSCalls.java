@@ -13,7 +13,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.msocket.common.GnsConstants;
 
 
@@ -23,8 +23,8 @@ public class GNSCalls
 	public static final String NOTIFICATION_SET               	= "NOTIFICATION_SET";
 	
 	//private static final String defaultGns = KeyPairUtils.getDefaultGnsFromPreferences();
-	//public static final UniversalTcpClient gnsClient 
-	//			= new UniversalTcpClient(defaultGns.split(":")[0], Integer.parseInt(defaultGns.split(":")[1]));
+	//public static final GNSClientCommands gnsClient 
+	//			= new GNSClientCommands(defaultGns.split(":")[0], Integer.parseInt(defaultGns.split(":")[1]));
 	
 	//private static final GuidEntry myGuidEntry = KeyPairUtils.getDefaultGuidEntryFromPreferences(defaultGns);
 	
@@ -297,7 +297,7 @@ public class GNSCalls
 	   */
 	  public static JSONArray selectNear(JSONArray coordJson, double radius) throws Exception
 	  {
-		  JSONArray queryResult = DefaultGNSClient.getGnsClient().selectNear(GnsProtocol.LOCATION_FIELD_NAME, coordJson, radius);
+		  JSONArray queryResult = DefaultGNSClient.getGnsClient().selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, coordJson, radius);
 		  log.trace("size of selected GUIDs "+ queryResult.length() );
 		        
         // returns the list of GUIDs, read whole records and return 

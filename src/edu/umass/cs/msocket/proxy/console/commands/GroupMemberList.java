@@ -29,7 +29,7 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.GnsUtils;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -73,7 +73,7 @@ public class GroupMemberList extends ConsoleCommand
   @Override
   public void parse(String commandText) throws Exception
   {
-	  UniversalTcpClient gnsClient = module.getGnsClient();
+	  GNSClientCommands gnsClient = module.getGnsClient();
     try
     {
       StringTokenizer st = new StringTokenizer(commandText.trim());

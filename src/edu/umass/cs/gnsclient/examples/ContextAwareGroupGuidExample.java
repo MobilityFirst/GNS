@@ -20,8 +20,11 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.BasicGuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -53,7 +56,7 @@ import org.json.JSONArray;
  * field in question to be zero. Then we will show how the two different context aware
  * group guids will retrieve the guids that correspond to their differeing queries.
  * <p>
- * The <code>BasicTcpClient</code> class contains two methods for creating and
+ * The <code>AbstractGNSClient</code> class contains two methods for creating and
  * looking up the value of a context aware group guid:
  * <p>
  * <code>JSONArray selectSetupGroupQuery(String guid, String query, int interval)</code>  - given
@@ -76,7 +79,7 @@ import org.json.JSONArray;
 public class ContextAwareGroupGuidExample {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static BasicTcpClient client;
+  private static GNSClientCommands client;
   private static GuidEntry masterGuid;
   private static final String fieldName = "contextAwareExampleField";
   private static GuidEntry groupOneGuidEntry;
@@ -90,7 +93,7 @@ public class ContextAwareGroupGuidExample {
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Start the client
-    client = new BasicTcpClient(address.getHostName(), address.getPort());
+    client = new GNSClientCommands(null);
     try {
       // Create the account guid using your email address and password = "password"
       masterGuid = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password");
@@ -211,7 +214,7 @@ public class ContextAwareGroupGuidExample {
    * @return
    * @throws Exception
    */
-  private static GuidEntry lookupOrCreateAccountGuid(BasicTcpClient client,
+  private static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client,
           String name, String password) throws Exception {
     GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSInstance(), name);
     if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
@@ -223,7 +226,7 @@ public class ContextAwareGroupGuidExample {
     }
   }
 
-  private static boolean guidExists(BasicTcpClient client, GuidEntry guidEntry)
+  private static boolean guidExists(GNSClientInterface client, GuidEntry guidEntry)
           throws IOException {
     try {
       client.lookupGuidRecord(guidEntry.getGuid());

@@ -31,8 +31,8 @@ import org.json.JSONArray;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.msocket.common.GnsConstants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -107,7 +107,7 @@ public class ApproveGuid extends ConsoleCommand
 
       guid = st.nextToken();
 
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
       gnsClient.groupAddGuid(groupGuid.getGuid(), guid, groupGuid);
 
       /*
@@ -159,7 +159,7 @@ public class ApproveGuid extends ConsoleCommand
     }
   }
 
-  private void setReadWriteAccess(String guid, final GuidEntry myGuid, UniversalTcpClient gnsClient, String field)
+  private void setReadWriteAccess(String guid, final GuidEntry myGuid, GNSClientCommands gnsClient, String field)
       throws Exception
   {
     gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, field, guid);

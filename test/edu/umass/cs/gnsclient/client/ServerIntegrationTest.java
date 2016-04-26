@@ -15,8 +15,8 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
@@ -70,7 +70,7 @@ public class ServerIntegrationTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE																// ALIAS
   private static final String PASSWORD = "password";
-  private static GnsClient client = null;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -96,11 +96,11 @@ public class ServerIntegrationTest {
       }
     }
 
-    client = new GnsClient();;
+    client = new GNSClientCommands();
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
-    // arun: connectivity check embedded in GnsClient constructor
-    boolean connected = client instanceof GnsClient;
+    // arun: connectivity check embedded in GNSClient constructor
+    boolean connected = client instanceof GNSClient;
     if (connected) {
       System.out.println("successful");
     }
@@ -382,7 +382,7 @@ public class ServerIntegrationTest {
     try {
       // remove default read acces for this test
       client.aclRemove(AccessType.READ_WHITELIST, westyEntry,
-              GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn",
@@ -460,7 +460,7 @@ public class ServerIntegrationTest {
       waitSettle();
       // remove default read access for this test
       client.aclRemove(AccessType.READ_WHITELIST, barneyEntry,
-              GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell",
               "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address",
@@ -469,7 +469,7 @@ public class ServerIntegrationTest {
       try {
         // let anybody read barney's cell field
         client.aclAdd(AccessType.READ_WHITELIST, barneyEntry, "cell",
-                GnsProtocol.ALL_USERS);
+                GNSCommandProtocol.ALL_USERS);
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: "
                 + e);
@@ -528,7 +528,7 @@ public class ServerIntegrationTest {
 
       // let superuser read any of barney's fields
       client.aclAdd(AccessType.READ_WHITELIST, barneyEntry,
-              GnsProtocol.ALL_FIELDS, superuserEntry.getGuid());
+              GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
 
       assertEquals("413-555-1234", client.fieldReadArrayFirstElement(
               barneyEntry.getGuid(), "cell", superuserEntry));
@@ -553,7 +553,7 @@ public class ServerIntegrationTest {
       waitSettle();
       try {
         client.aclAdd(AccessType.READ_WHITELIST, westyEntry,
-                "test.deeper.field", GnsProtocol.ALL_FIELDS);
+                "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
       } catch (Exception e) {
         fail("Problem adding acl: " + e);
       }
@@ -562,7 +562,7 @@ public class ServerIntegrationTest {
         JSONArray actual = client.aclGet(AccessType.READ_WHITELIST,
                 westyEntry, "test.deeper.field", westyEntry.getGuid());
         JSONArray expected = new JSONArray(new ArrayList(
-                Arrays.asList(GnsProtocol.ALL_FIELDS)));
+                Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
@@ -909,7 +909,7 @@ public class ServerIntegrationTest {
               masterGuid, groupAccessUserName);
       // remove all fields read by all
       client.aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry,
-              GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
     }
@@ -1088,7 +1088,7 @@ public class ServerIntegrationTest {
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               unsignedReadFieldName, "funkadelicread", westyEntry);
       client.aclAdd(AccessType.READ_WHITELIST, westyEntry,
-              unsignedReadFieldName, GnsProtocol.ALL_USERS);
+              unsignedReadFieldName, GNSCommandProtocol.ALL_USERS);
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), unsignedReadFieldName, null));
 
@@ -1096,7 +1096,7 @@ public class ServerIntegrationTest {
               standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
       // client.removeFromACL(AccessType.READ_WHITELIST, westyEntry,
-      // GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      // GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       try {
         String result = client.fieldReadArrayFirstElement(
                 westyEntry.getGuid(), standardReadFieldName, null);
@@ -1121,7 +1121,7 @@ public class ServerIntegrationTest {
               unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
       client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry,
-              unsignedWriteFieldName, GnsProtocol.ALL_USERS);
+              unsignedWriteFieldName, GNSCommandProtocol.ALL_USERS);
       client.fieldReplaceFirstElement(westyEntry.getGuid(),
               unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(
@@ -1242,8 +1242,9 @@ public class ServerIntegrationTest {
                 masterGuid, "geoTest-" + RandomString.randomString(6));
         client.setLocation(testEntry, 0.0, 0.0);
       }
+      Thread.sleep(2000); // wait a bit to make sure everything is updated
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while writing fields for GeoSpatialSelect: " + e);
     }
 
     try {
@@ -1251,8 +1252,7 @@ public class ServerIntegrationTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(
-              GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1271,8 +1271,7 @@ public class ServerIntegrationTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(
-              GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1321,8 +1320,7 @@ public class ServerIntegrationTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(
-              GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1719,7 +1717,7 @@ public class ServerIntegrationTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -1764,7 +1762,7 @@ public class ServerIntegrationTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -1805,7 +1803,7 @@ public class ServerIntegrationTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test

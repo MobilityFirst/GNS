@@ -21,9 +21,9 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
@@ -71,7 +71,7 @@ public class AccountVerify extends ConsoleCommand {
   @Override
   public void parse(String commandText) throws Exception {
     try {
-      UniversalTcpClient client = module.getGnsClient();
+      GNSClientCommands client = module.getGnsClient();
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
       if (st.countTokens() != 2) {
@@ -88,7 +88,7 @@ public class AccountVerify extends ConsoleCommand {
       String code = st.nextToken();
 
       try {
-        if (client.accountGuidVerify(guid, code).startsWith(GnsProtocol.OK_RESPONSE)) {
+        if (client.accountGuidVerify(guid, code).startsWith(GNSCommandProtocol.OK_RESPONSE)) {
           printString("Account verified.\n");
           module.setAccountVerified(true);
           return;

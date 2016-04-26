@@ -27,9 +27,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-
 import edu.umass.cs.gnsserver.main.GNSConfig;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -39,11 +37,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
@@ -56,6 +53,7 @@ import java.util.Date;
 import java.util.Map;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONObject;
 
@@ -64,7 +62,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class GnsHttpServer {
+public class GNSAdminHttpServer {
 
   private static final String GNSPATH = GNSConfig.GNS_URL_PATH;
   private static final int STARTING_PORT = 8080;
@@ -73,8 +71,10 @@ public class GnsHttpServer {
   private final CommandModule commandModule;
   private final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
+  
+  private final static Logger LOG = Logger.getLogger(GNSAdminHttpServer.class.getName());
 
-  public GnsHttpServer(ClientRequestHandlerInterface requestHandler) {
+  public GNSAdminHttpServer(ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
     runServer();
@@ -111,12 +111,12 @@ public class GnsHttpServer {
       server.createContext("/" + GNSPATH, new DefaultHandler());
       server.setExecutor(Executors.newCachedThreadPool());
       server.start();
-      GNSConfig.getLogger().log(Level.INFO, 
+      LOG.log(Level.INFO,
               "HTTP server is listening on port {0}", port);
       return true;
     } catch (IOException e) {
-      GNSConfig.getLogger().log(Level.FINE,
-              "HTTP server failed to start on port {0} due to {1}", 
+      LOG.log(Level.FINE,
+              "HTTP server failed to start on port {0} due to {1}",
               new Object[]{port, e});
       return false;
     }
@@ -138,7 +138,7 @@ public class GnsHttpServer {
           OutputStream responseBody = exchange.getResponseBody();
 
           URI uri = exchange.getRequestURI();
-          GNSConfig.getLogger().log(Level.FINE, 
+          LOG.log(Level.FINE,
                   "HTTP SERVER REQUEST FROM {0}: {1}", new Object[]{exchange.getRemoteAddress().getHostName(), uri.toString()});
           String path = uri.getPath();
           String query = uri.getQuery() != null ? uri.getQuery() : ""; // stupidly it returns null for empty query
@@ -147,18 +147,18 @@ public class GnsHttpServer {
 
           String response;
           if (!action.isEmpty()) {
-            GNSConfig.getLogger().log(Level.FINE, 
+            LOG.log(Level.FINE,
                     "Action: {0} Query:{1}", new Object[]{action, query});
             response = processQuery(host, action, query);
           } else {
             response = BAD_RESPONSE + " " + NO_ACTION_FOUND;
           }
-          GNSConfig.getLogger().log(Level.FINER, "Response: {0}", response);
+          LOG.log(Level.FINER, "Response: {0}", response);
           responseBody.write(response.getBytes());
           responseBody.close();
         }
       } catch (Exception e) {
-        GNSConfig.getLogger().log(Level.SEVERE, "Error: {0}", e);
+        LOG.log(Level.SEVERE, "Error: {0}", e);
         e.printStackTrace();
         try {
           String response = BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e;

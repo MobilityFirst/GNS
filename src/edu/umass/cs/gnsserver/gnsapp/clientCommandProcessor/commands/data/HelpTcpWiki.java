@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 ;
 
 /**

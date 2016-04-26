@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+
 import java.io.IOException;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -32,12 +33,12 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AdminTest {
 
-  private static GnsClient client;
+  private static GNSClientCommands client;
 
   public AdminTest() {
     if (client == null) {
      try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);

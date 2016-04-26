@@ -31,10 +31,10 @@ import org.json.JSONArray;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.msocket.common.GnsConstants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -89,7 +89,7 @@ public class ProxyGroupCreate extends ConsoleCommand
     try
     {
       String proxyGroupName = commandText.trim();
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       try
       {
@@ -113,7 +113,7 @@ public class ProxyGroupCreate extends ConsoleCommand
         myGuid = gnsClient.guidCreate(module.getAccountGuid(), proxyGroupName);
         // Allow anyone to access the group membership that contains verified
         // proxies
-        gnsClient.groupAddMembershipReadPermission(myGuid, GnsProtocol.ALL_USERS);
+        gnsClient.groupAddMembershipReadPermission(myGuid, GNSCommandProtocol.ALL_USERS);
       }
 
       // Create the fields containing the GUID lists
@@ -144,7 +144,7 @@ public class ProxyGroupCreate extends ConsoleCommand
     }
   }
 
-  private void createField(UniversalTcpClient gnsClient, GuidEntry myGuid, String field, boolean writeAll)
+  private void createField(GNSClientCommands gnsClient, GuidEntry myGuid, String field, boolean writeAll)
       throws Exception
   {
     try
@@ -155,8 +155,8 @@ public class ProxyGroupCreate extends ConsoleCommand
     {
       gnsClient.fieldCreateList(myGuid.getGuid(), field, new JSONArray(), myGuid);
     }
-    gnsClient.aclAdd(GnsProtocol.AccessType.READ_WHITELIST, myGuid, field, GnsProtocol.ALL_USERS);
+    gnsClient.aclAdd(GNSCommandProtocol.AccessType.READ_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
     if (writeAll)
-      gnsClient.aclAdd(GnsProtocol.AccessType.WRITE_WHITELIST, myGuid, field, GnsProtocol.ALL_USERS);
+      gnsClient.aclAdd(GNSCommandProtocol.AccessType.WRITE_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
   }
 }

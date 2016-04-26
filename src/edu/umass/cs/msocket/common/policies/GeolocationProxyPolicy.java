@@ -86,7 +86,7 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
   public List<InetSocketAddress> getNewProxy() throws Exception
   {
     // Lookup for active location service GUIDs
-    //final UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
+    //final GNSClientCommands gnsClient = gnsCredentials.getGnsClient();
     //final GuidEntry guidEntry = gnsCredentials.getGuidEntry();
     JSONArray guids;
     try

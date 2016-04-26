@@ -38,7 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 
 /**
@@ -84,7 +84,7 @@ public class KeyPairUtils {
       try {
         byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
         byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
-        KeyFactory keyFactory = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+        KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
         X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
         PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
@@ -199,6 +199,7 @@ public class KeyPairUtils {
    *
    * @param gnsHostPort a string of host:port:disableSSLBoolean
    */
+  @Deprecated
   public static void setDefaultGns(String gnsHostPort) {
     if (IS_ANDROID) {
       KeyPairUtilsAndroid.setDefaultGnsToPreferences(gnsHostPort);
@@ -213,6 +214,7 @@ public class KeyPairUtils {
    *
    * @return the default GNS saved in the user prefences as a string of host:port:disableSSLBoolean
    */
+  @Deprecated
   public static String getDefaultGns() {
     if (IS_ANDROID) {
       return KeyPairUtilsAndroid.getDefaultGnsFromPreferences();
@@ -224,6 +226,7 @@ public class KeyPairUtils {
   /**
    * Remove the default GNS to use in the user preferences.
    */
+  @Deprecated
   public static void removeDefaultGns() {
     if (IS_ANDROID) {
       KeyPairUtilsAndroid.removeDefaultGnsFromPreferences();
@@ -252,7 +255,7 @@ public class KeyPairUtils {
     }
 
     PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-    KeyFactory kf = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+    KeyFactory kf = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
     return kf.generatePrivate(spec);
   }
 

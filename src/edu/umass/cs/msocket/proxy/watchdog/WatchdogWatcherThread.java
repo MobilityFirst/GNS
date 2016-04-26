@@ -31,7 +31,7 @@ import java.util.logging.Logger;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.msocket.common.GnsConstants;
 
 /**
@@ -44,7 +44,7 @@ import edu.umass.cs.msocket.common.GnsConstants;
 public class WatchdogWatcherThread extends Thread
 {
   private boolean                    isKilled  = false;
-  private UniversalTcpClient         gnsClient;
+  private GNSClientCommands         gnsClient;
   private GuidEntry                  watchdogGuid;
   private String                     targetGuid;
   private long                       suspiciousTimeout;
@@ -65,7 +65,7 @@ public class WatchdogWatcherThread extends Thread
    * @param failureTimeout timeout in ms before the target is declared
    *          inactive/failde
    */
-  public WatchdogWatcherThread(UniversalTcpClient gnsClient, GuidEntry watchdogGuid, String targetGuid,
+  public WatchdogWatcherThread(GNSClientCommands gnsClient, GuidEntry watchdogGuid, String targetGuid,
       long suspiciousTimeout, long failureTimeout)
   {
     this.gnsClient = gnsClient;

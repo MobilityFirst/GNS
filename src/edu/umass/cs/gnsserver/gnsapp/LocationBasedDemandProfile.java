@@ -29,7 +29,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
@@ -203,8 +203,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
     // else
     CommandPacket command = (CommandPacket) request;
-    return GnsProtocol.CREATE_DELETE_COMMANDS.contains(command.getCommandName())
-            || GnsProtocol.SELECT.equals(command.getCommandName());
+    return GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(command.getCommandName())
+            || GNSCommandProtocol.SELECT.equals(command.getCommandName());
   }
 
   @Override

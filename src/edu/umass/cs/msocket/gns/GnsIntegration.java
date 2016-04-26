@@ -76,7 +76,7 @@ public class GnsIntegration
 	    log.trace("Looking for entity " + name + " GUID and certificates...");
 	
 	    GuidEntry myGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), name);
-	    //final UniversalTcpClient gnsClient = credentials.getGnsClient();
+	    //final GNSClientCommands gnsClient = credentials.getGnsClient();
 	
 	    /*
 	     * Take a lock on the GNS connection object to prevent concurrent queries to
@@ -210,7 +210,7 @@ public class GnsIntegration
     //if (gnsCredentials == null)
     //  gnsCredentials = GnsCredentials.getDefaultCredentials();
 
-    //final UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
+    //final GNSClientCommands gnsClient = gnsCredentials.getGnsClient();
     GuidEntry socketGuid = KeyPairUtils.getGuidEntry(DefaultGNSClient.getDefaultGNSName(), name);
     String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
 

@@ -24,7 +24,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.lang.reflect.InvocationTargetException;

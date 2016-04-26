@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -31,6 +31,7 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
  * @version 1.0
  */
+@Deprecated
 public class SetDefaultGns extends ConsoleCommand {
 
   /**
@@ -44,7 +45,7 @@ public class SetDefaultGns extends ConsoleCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Sets the default GNS to use in the user preferences. "
+    return "*DEPRECATED* Sets the default GNS to use in the user preferences. "
             + "The third argument should be true if the server isn't using SSL (AKA SSL mode = CLEAR)";
   }
 
@@ -69,6 +70,7 @@ public class SetDefaultGns extends ConsoleCommand {
 
   @Override
   public void parse(String commandText) throws Exception {
+    console.printString("THIS COMMAND IS DEPRECATED AND WILL GO AWAY IN A FUTURE RELEASE!\n");
     try {
       StringTokenizer st = new StringTokenizer(commandText);
       if (st.countTokens() != 2 && st.countTokens() != 3) {
@@ -82,7 +84,7 @@ public class SetDefaultGns extends ConsoleCommand {
         disableSSL = Boolean.valueOf(st.nextToken());
       }
       // Create a client
-      UniversalTcpClient gnsClient = new UniversalTcpClient(gnsHost, gnsPort, disableSSL);
+      GNSClientCommands gnsClient = new GNSClientCommands(null);
       if (!module.isSilent()) {
         console.printString("Checking GNS connectivity.\n");
       }

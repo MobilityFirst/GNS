@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnsclient.console.GnsUtils;
 import org.json.JSONObject;
@@ -74,7 +74,7 @@ public class Read extends ConsoleCommand {
   @Override
   public void parse(String commandText) throws Exception {
     try {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;

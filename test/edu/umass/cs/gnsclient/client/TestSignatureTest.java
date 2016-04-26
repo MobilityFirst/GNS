@@ -19,7 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -41,13 +42,13 @@ public class TestSignatureTest {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String privateKeyFile = "/Users/westy/pkcs8_key";
-  private static GnsClient client;
+  private static GNSClientCommands client;
   private static GuidEntry guid;
 
   public TestSignatureTest() {
     if (client == null) {
        try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
@@ -91,8 +92,8 @@ public class TestSignatureTest {
   @Test
   public void test_01() {
     try {
-      JSONObject command = createAndSignCommand(CommandType.ReadArrayUnsigned, guid.getPrivateKey(), GnsProtocol.READ_ARRAY,
-              GnsProtocol.GUID, guid.getGuid(), GnsProtocol.FIELD, "joe");
+      JSONObject command = createAndSignCommand(CommandType.ReadArrayUnsigned, guid.getPrivateKey(), GNSCommandProtocol.READ_ARRAY,
+              GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, "joe");
       System.out.println(command);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

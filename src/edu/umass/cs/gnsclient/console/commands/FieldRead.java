@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnsclient.console.GnsUtils;
 
@@ -79,7 +79,7 @@ public class FieldRead extends ConsoleCommand
   {
     try
     {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;

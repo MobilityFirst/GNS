@@ -7,8 +7,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.SIGNATURE_ALGORITHM;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE_ALGORITHM;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsACLException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
@@ -71,7 +71,7 @@ public class CommandUtils {
       JSONObject result = new JSONObject();
       String key;
       Object value;
-      result.put(GnsProtocol.COMMANDNAME, action);
+      result.put(GNSCommandProtocol.COMMANDNAME, action);
       for (int i = 0; i < keysAndValues.length; i = i + 2) {
         key = (String) keysAndValues[i];
         value = keysAndValues[i + 1];
@@ -89,7 +89,7 @@ public class CommandUtils {
           throws GnsClientException {
     try {
       JSONObject result = createCommand(action, keysAndValues);
-      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
+      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
       return result;
     } catch (JSONException e) {
       throw new GnsClientException("Error encoding message", e);
@@ -114,11 +114,11 @@ public class CommandUtils {
           Object... keysAndValues) throws GnsClientException {
     try {
       JSONObject result = createCommand(action, keysAndValues);
-      result.put(GnsProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
-      result.put(GnsProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+      result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
+      result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
-      result.put(GnsProtocol.SIGNATURE, signatureString);
+      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       return result;
     } catch (GnsClientException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | JSONException | UnsupportedEncodingException e) {
       throw new GnsClientException("Error encoding message", e);
@@ -146,12 +146,12 @@ public class CommandUtils {
           throws GnsClientException {
     try {
       JSONObject result = createAndSignCommand(privateKey, action, keysAndValues);
-      result.put(GnsProtocol.COMMAND_INT, commandType.getInt());
+      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
       // Temp hack: need to redo the signature done above
-      result.remove(GnsProtocol.SIGNATURE);
+      result.remove(GNSCommandProtocol.SIGNATURE);
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
-      result.put(GnsProtocol.SIGNATURE, signatureString);
+      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
       throw new GnsClientException("Error encoding message", e);
@@ -192,7 +192,7 @@ public class CommandUtils {
    */
   public static String checkResponse(JSONObject command, String response) throws GnsClientException {
     // System.out.println("response:" + response);
-    if (response.startsWith(GnsProtocol.BAD_RESPONSE)) {
+    if (response.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
       String[] results = response.split(" ");
       // System.out.println("results length:" + results.length);
       if (results.length < 2) {
@@ -208,42 +208,42 @@ public class CommandUtils {
           parts.append(results[i]);
         }
         String rest = parts.toString();
-        if (error.startsWith(GnsProtocol.BAD_SIGNATURE)) {
+        if (error.startsWith(GNSCommandProtocol.BAD_SIGNATURE)) {
           throw new EncryptionException();
         }
-        if (error.startsWith(GnsProtocol.BAD_GUID)
-                || error.startsWith(GnsProtocol.BAD_ACCESSOR_GUID)
-                || error.startsWith(GnsProtocol.DUPLICATE_GUID)
-                || error.startsWith(GnsProtocol.BAD_ACCOUNT)) {
+        if (error.startsWith(GNSCommandProtocol.BAD_GUID)
+                || error.startsWith(GNSCommandProtocol.BAD_ACCESSOR_GUID)
+                || error.startsWith(GNSCommandProtocol.DUPLICATE_GUID)
+                || error.startsWith(GNSCommandProtocol.BAD_ACCOUNT)) {
           throw new GnsInvalidGuidException(error + rest);
         }
-        if (error.startsWith(GnsProtocol.DUPLICATE_FIELD)) {
+        if (error.startsWith(GNSCommandProtocol.DUPLICATE_FIELD)) {
           throw new GnsInvalidFieldException(error + rest);
         }
-        if (error.startsWith(GnsProtocol.BAD_FIELD) || error.startsWith(GnsProtocol.FIELD_NOT_FOUND)) {
+        if (error.startsWith(GNSCommandProtocol.BAD_FIELD) || error.startsWith(GNSCommandProtocol.FIELD_NOT_FOUND)) {
           throw new GnsFieldNotFoundException(error + rest);
         }
-        if (error.startsWith(GnsProtocol.BAD_USER) || error.startsWith(GnsProtocol.DUPLICATE_USER)) {
+        if (error.startsWith(GNSCommandProtocol.BAD_USER) || error.startsWith(GNSCommandProtocol.DUPLICATE_USER)) {
           throw new GnsInvalidUserException(error + rest);
         }
-        if (error.startsWith(GnsProtocol.BAD_GROUP) || error.startsWith(GnsProtocol.DUPLICATE_GROUP)) {
+        if (error.startsWith(GNSCommandProtocol.BAD_GROUP) || error.startsWith(GNSCommandProtocol.DUPLICATE_GROUP)) {
           throw new GnsInvalidGroupException(error + rest);
         }
-        if (error.startsWith(GnsProtocol.ACCESS_DENIED)) {
+        if (error.startsWith(GNSCommandProtocol.ACCESS_DENIED)) {
           throw new GnsACLException(error + rest);
         }
-        if (error.startsWith(GnsProtocol.DUPLICATE_NAME)) {
+        if (error.startsWith(GNSCommandProtocol.DUPLICATE_NAME)) {
           throw new GnsDuplicateNameException(error + rest);
         }
-        if (error.startsWith(GnsProtocol.VERIFICATION_ERROR)) {
+        if (error.startsWith(GNSCommandProtocol.VERIFICATION_ERROR)) {
           throw new GnsVerificationException(error + rest);
         }
         throw new GnsClientException("General command failure: " + error + rest);
       }
     }
-    if (response.startsWith(GnsProtocol.NULL_RESPONSE)) {
+    if (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) {
       return null;
-    } else if (response.startsWith(GnsProtocol.NO_ACTIVE_REPLICAS)) {
+    } else if (response.startsWith(GNSCommandProtocol.NO_ACTIVE_REPLICAS)) {
       throw new GnsInvalidGuidException(response);
     } else {
       return response;

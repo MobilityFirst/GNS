@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class CreateMultipleGuidsTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GnsClient client;
+  private static GNSClientCommands client;
   /**
    * The address of the GNS server we will contact
    */
@@ -61,7 +62,7 @@ public class CreateMultipleGuidsTest {
         address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
       }
        try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);

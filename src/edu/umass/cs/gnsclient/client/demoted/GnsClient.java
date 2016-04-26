@@ -17,9 +17,11 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.demoted;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.GuidEntry;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -37,12 +39,12 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 /**
  * This class defines a client to communicate with a GNS instance over TCP.
  * This class adds additional commands to the {@link BasicGnsClient}'s basic set of
- * JSONObject based commands.
- * 
- * THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.GNSClient
- * which it is a replacement for.
- * 
- * Uses gigapaxos' async client.
+ JSONObject based commands.
+ 
+ THIS IS A NEW CLIENT CLASS SIMILAR TO the older client.oldclient.GnsClient
+ which it is a replacement for.
+ 
+ Uses gigapaxos' async client.
  * 
  * @author westy
  */

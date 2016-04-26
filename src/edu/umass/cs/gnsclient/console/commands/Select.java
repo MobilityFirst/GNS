@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
@@ -79,7 +79,7 @@ public class Select extends ConsoleCommand
   {
     try
     {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       StringTokenizer st = new StringTokenizer(commandText.trim());
       if (st.countTokens() != 2)

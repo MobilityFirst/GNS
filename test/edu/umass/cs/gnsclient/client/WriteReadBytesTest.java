@@ -39,13 +39,13 @@ public class WriteReadBytesTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GnsClient client = null;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
 
   public WriteReadBytesTest() {
     if (client == null) {
       try {
-        client = new GnsClient();
+        client = new GNSClientCommands();
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception while trying to create the client: " + e);

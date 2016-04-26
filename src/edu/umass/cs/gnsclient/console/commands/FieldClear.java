@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import java.util.StringTokenizer;
 
 import edu.umass.cs.gnsclient.console.ConsoleModule;
@@ -78,7 +78,7 @@ public class FieldClear extends ConsoleCommand
   @Override
   public void parse(String commandText) throws Exception
   {
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     try
     {
       StringTokenizer st = new StringTokenizer(commandText.trim());

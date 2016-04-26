@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.console.commands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
@@ -56,7 +56,8 @@ public class GnsConnect extends ConsoleCommand {
 
   @Override
   public String getCommandParameters() {
-    return "GnsHostName [GnsPortNumber] [disableSSL]";
+    return "";
+    //return "GnsHostName [GnsPortNumber] [disableSSL]";
   }
 
   /**
@@ -73,41 +74,30 @@ public class GnsConnect extends ConsoleCommand {
   public void parse(String commandText) throws Exception {
     try {
       StringTokenizer st = new StringTokenizer(commandText);
-      if (st.countTokens() != 1 && st.countTokens() != 2 && st.countTokens() != 3) {
-        console.printString("Wrong number of arguments for this command.\n");
-        return;
+      if (st.countTokens() > 0) {
+        console.printString("THE USE OF host, port and disableSSL HAS BEEN DEPRECATED AND WILL"
+                + " GO AWAY IN A FUTURE RELEASE! See instead gigapaxos.properties.\n");
       }
-      String gnsHost = st.nextToken();
-      int gnsPort;
-      if (st.countTokens() == 1 || st.countTokens() == 2) {
-        gnsPort = Integer.valueOf(st.nextToken());
-      } else {
-        gnsPort = GNSClientConfig.LNS_PORT;
-      }
-      boolean disableSSL = false;
-      if (st.countTokens() == 1) {
-        disableSSL = Boolean.valueOf(st.nextToken());
-      }
-      UniversalTcpClient gnsClient;
-      gnsClient = new UniversalTcpClient(gnsHost, gnsPort, disableSSL);
+
+      GNSClientCommands gnsClient;
+      gnsClient = new GNSClientCommands();
       if (!module.isSilent()) {
         console.printString("Checking GNS connectivity.\n");
       }
       gnsClient.checkConnectivity();
       if (!module.isSilent()) {
-        console.printString("Connected to GNS at " + gnsHost + ":" + gnsPort +"\n");
+        console.printString("Connected to GNS.");
       }
       // Set the global variable for other activities
-      //UniversalTcpClient.setGns(gnsClient);
-      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + "Connected to " + gnsHost + ":" + gnsPort + ">");
+      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + "Connected to GNS>");
       module.setGnsClient(gnsClient);
 
-      // If no default GNS has been defined yet, use this GNS as the default
-      if (KeyPairUtils.getDefaultGns() == null) {
-        module.setUseGnsDefaults(true);
-        KeyPairUtils.setDefaultGns(gnsHost + ":" + gnsPort + ":" + Boolean.toString(disableSSL));
-        module.printString(gnsHost + ":" + gnsPort + " saved as default GNS.\n");
-      }
+//      // If no default GNS has been defined yet, use this GNS as the default
+//      if (KeyPairUtils.getDefaultGns() == null) {
+//        module.setUseGnsDefaults(true);
+//        KeyPairUtils.setDefaultGns(gnsHost + ":" + gnsPort + ":" + Boolean.toString(disableSSL));
+//        module.printString(gnsHost + ":" + gnsPort + " saved as default GNS.\n");
+//      }
     } catch (Exception e) {
       console.printString("Failed to connect to GNS ( " + e + ")\n");
       module.setGnsClient(null);

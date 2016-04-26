@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.console.commands;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import java.io.IOException;
@@ -77,7 +77,7 @@ public class SetDefaultGuid extends ConsoleCommand {
       return;
     }
     String aliasName = st.nextToken();
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     
     try {
       try {

@@ -76,7 +76,7 @@ public class ProxyStatusThread extends Thread
    */
   protected void populateProxyList() throws Exception
   {
-    //final UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
+    //final GNSClientCommands gnsClient = gnsCredentials.getGnsClient();
     //final GuidEntry guidEntry = gnsCredentials.getGuidEntry();
     JSONArray guids;
     try

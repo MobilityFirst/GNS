@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 
 
 
@@ -46,7 +46,7 @@ public class Watchdog extends Thread implements MembershipChangeCallback, Status
   private String                                 inactiveListName;
   private long                                   suspiciousTimeout;
   private long                                   failureTimeout;
-  private UniversalTcpClient                     gnsClient;
+  private GNSClientCommands                     gnsClient;
   private GuidEntry                              watchdogGuid;
   private String                                 targetGuid;
   private long                                   refreshFrequencyInMs;
@@ -69,7 +69,7 @@ public class Watchdog extends Thread implements MembershipChangeCallback, Status
    * @param suspiciousTimeout
    * @param failureTimeout
    */
-  public Watchdog(UniversalTcpClient gnsClient, GuidEntry watchdogGuid, String targetGuid, long refreshFrequencyInMs,
+  public Watchdog(GNSClientCommands gnsClient, GuidEntry watchdogGuid, String targetGuid, long refreshFrequencyInMs,
       String activeListName, String suspiciousListName, String inactiveListName, long suspiciousTimeout,
       long failureTimeout)
   {

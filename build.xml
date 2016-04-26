@@ -17,6 +17,8 @@
   <property name="jars.dir" value="jars"/>
   <property name="conf.dir" value="conf"/>
   <property name="scripts.dir" value="scripts"/>
+  <property name="db-props-file" location="edu/umass/cs/gnsclient/console/console.properties" />
+
     
   <!-- Properties -->
   <property file="build.properties" />
@@ -71,7 +73,10 @@
                      edu/umass/cs/gnscommon/**/*.class,
                      edu/umass/cs/gnsserver/**/*.class, 
                      org/**/*.class"-->
-  
+                     
+  <fileset id="console.properties" dir="${src.dir}">
+        <include name="edu/umass/cs/gnsclient/console/console.properties" />
+  </fileset>
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
   
@@ -121,10 +126,11 @@
       </manifest>
       <fileset refid="client.includes"/>
       <fileset refid="client.keystore" />
+      <fileset refid="console.properties" />
       <zipgroupfileset refid="client.lib" />
-      <fileset dir="${src.dir}">
+<!--      <fileset dir="${src.dir}">
         <include name="edu/umass/cs/gnsclient/console/console.properties" />
-      </fileset>
+      </fileset>-->
     </jar>
   </target>
 
@@ -210,8 +216,9 @@
     <pathelement location="${lib.dir}/derby.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.16.jar"/>
     <pathelement location="${lib.dir}/gigapaxos-1.0.jar"/>
-  	<pathelement location="${lib.dir}/context-client-GNS.jar"/>
+    <pathelement location="${lib.dir}/context-client-GNS.jar"/>
     <pathelement location="${conf.dir}"/>
+    <pathelement location="${db-props-file}" />
   </path>
   
   <target name="ensure-test-name" unless="test">

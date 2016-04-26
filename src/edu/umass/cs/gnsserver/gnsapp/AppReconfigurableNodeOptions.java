@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;

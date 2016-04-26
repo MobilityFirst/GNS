@@ -19,10 +19,9 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
@@ -41,11 +40,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * Simple guid creation test.
- * 
+ *
  * Note that TWO methods for batch creating guids exist. This one uses the "fast" method which
  * uses bogus aliases and public keys and generates random guids that have to be accessed through the
  * account guid.
@@ -58,7 +58,7 @@ public class BatchCreateTest {
   private static final int MAX_BATCH_SIZE = 4000;
   private static final String ACCOUNT_ALIAS = "batch@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client;
+  private static GNSClientCommands client;
   /**
    * The address of the GNS server we will contact
    */
@@ -82,7 +82,13 @@ public class BatchCreateTest {
         address = ServerSelectDialog.selectServer();
       }
     }
-    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), disableSSL);
+    try {
+      client = new GNSClientCommands(null);
+    } catch (IOException e) {
+      System.out.println("Unable to create client: " + e);
+      e.printStackTrace();
+      System.exit(1);
+    }
 
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, alias, PASSWORD, true);
@@ -102,11 +108,11 @@ public class BatchCreateTest {
       while (guidCnt > 0) {
         System.out.print("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
         command = createAndSignCommand(masterGuid.getPrivateKey(),
-                GnsProtocol.ADD_MULTIPLE_GUIDS,
-                GnsProtocol.GUID, masterGuid.getGuid(),
-                GnsProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
+                GNSCommandProtocol.ADD_MULTIPLE_GUIDS,
+                GNSCommandProtocol.GUID, masterGuid.getGuid(),
+                GNSCommandProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
         result = checkResponse(command, client.sendCommandAndWait(command));
-        if (!result.equals(GnsProtocol.OK_RESPONSE)) {
+        if (!result.equals(GNSCommandProtocol.OK_RESPONSE)) {
           System.out.println();
           System.out.println("Batch test command saw bad reponse " + result);
           return;
@@ -138,7 +144,7 @@ public class BatchCreateTest {
         command = createCommand(CommandType.LookupRandomGuids,
                 LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
         result = checkResponse(command, client.sendCommandAndWait(command));
-        if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
+        if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);
         } else {

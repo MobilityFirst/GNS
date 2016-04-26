@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.StringTokenizer;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnsclient.console.GnsUtils;
@@ -81,7 +81,7 @@ public class ActiveCodeSet extends ConsoleCommand
   @Override
   public void parse(String commandText) throws Exception
   {
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     try
     {
       StringTokenizer st = new StringTokenizer(commandText.trim());

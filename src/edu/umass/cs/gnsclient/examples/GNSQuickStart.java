@@ -19,8 +19,8 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.oldclient.UniversalTcpClientExtended;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -78,7 +78,7 @@ public class GNSQuickStart {
     // A convenience function that pops up a GUI for picking which GNS server you want to use.
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create a new client object
-    UniversalTcpClientExtended client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+ GNSClientCommands client = new GNSClientCommands(null);
     System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
     
     // Retrive the GUID using the account id

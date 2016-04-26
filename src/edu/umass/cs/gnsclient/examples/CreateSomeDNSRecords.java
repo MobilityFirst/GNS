@@ -19,8 +19,10 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.oldclient.BasicTcpClient;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
@@ -38,7 +40,7 @@ import java.net.InetSocketAddress;
  */
 public class CreateSomeDNSRecords {
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static BasicTcpClient client;
+  private static GNSClientCommands client;
   private static GuidEntry accountGuid;
   
   private static boolean disableSSL = true;
@@ -51,7 +53,7 @@ public class CreateSomeDNSRecords {
     if (args.length == 0 || (address = ServerSelectDialog.parseHostPortTuple(args[0])) == null) {
       address = ServerSelectDialog.selectServer();
     }
-    client = new BasicTcpClient(address.getHostName(), address.getPort(), disableSSL);
+    client = new GNSClientCommands(null);
     try {
       accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
     } catch (Exception e) {

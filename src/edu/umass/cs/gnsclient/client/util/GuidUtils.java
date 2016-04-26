@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.client.util;
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
@@ -210,7 +210,7 @@ public class GuidUtils {
    */
   public static GuidEntry createAndSaveGuidEntry(String alias, String hostport) throws NoSuchAlgorithmException {
     long keyPairStart = System.currentTimeMillis();
-    KeyPair keyPair = KeyPairGenerator.getInstance(GnsProtocol.RSA_ALGORITHM).generateKeyPair();
+    KeyPair keyPair = KeyPairGenerator.getInstance(GNSCommandProtocol.RSA_ALGORITHM).generateKeyPair();
     DelayProfiler.updateDelay("createKeyPair", keyPairStart);
     String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
     long saveStart = System.currentTimeMillis();

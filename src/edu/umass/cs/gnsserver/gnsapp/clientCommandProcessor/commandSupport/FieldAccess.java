@@ -19,8 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -58,6 +58,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.lang3.time.DateUtils;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -90,7 +91,7 @@ public class FieldAccess {
    * @return true if the field doesn't use dot notation or is the all-fields indicator
    */
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
-    return GnsProtocol.ALL_FIELDS.equals(field) || !isKeyDotNotation(field);
+    return GNSCommandProtocol.ALL_FIELDS.equals(field) || !isKeyDotNotation(field);
   }
 
   /**
@@ -130,9 +131,9 @@ public class FieldAccess {
         resultString = EMPTY_STRING;
       }
     } catch (FailedDBOperationException e) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.GENERIC_ERROR + " " + e;
+      resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.GENERIC_ERROR + " " + e;
     } catch (JSONException e) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e;
+      resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e;
     }
     return new CommandResponse<>(resultString);
   }
@@ -171,7 +172,7 @@ public class FieldAccess {
       }
       resultString = valuesMap.toString(); // multiple field return
     } catch (FailedDBOperationException e) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.GENERIC_ERROR + " " + e;
+      resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.GENERIC_ERROR + " " + e;
     }
     return new CommandResponse<>(resultString);
   }
@@ -227,7 +228,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
-            GnsProtocol.ALL_FIELDS, null,
+            GNSCommandProtocol.ALL_FIELDS, null,
             reader, signature, message, timestamp,
             handler.getApp());
     if (errorCode.isAnError()) {
@@ -237,16 +238,16 @@ public class FieldAccess {
     String resultString;
     NSResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GnsProtocol.ALL_FIELDS, handler.getApp());
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GNSCommandProtocol.ALL_FIELDS, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toString();
         responseCode = NSResponseCode.NO_ERROR;
       } else {
-        resultString = GnsProtocol.BAD_RESPONSE;
+        resultString = GNSCommandProtocol.BAD_RESPONSE;
         responseCode = NSResponseCode.ERROR;
       }
     } catch (FailedDBOperationException e) {
-      resultString = GnsProtocol.BAD_RESPONSE;
+      resultString = GNSCommandProtocol.BAD_RESPONSE;
       responseCode = NSResponseCode.ERROR;
     }
     return new CommandResponse<>(resultString, responseCode, 0, handler.getApp().getNodeID());
@@ -282,7 +283,7 @@ public class FieldAccess {
         resultString = (String) value.get(0);
       }
     } else {
-      return new CommandResponse<>(BAD_RESPONSE + " " + GnsProtocol.FIELD_NOT_FOUND,
+      return new CommandResponse<>(BAD_RESPONSE + " " + GNSCommandProtocol.FIELD_NOT_FOUND,
               NSResponseCode.NO_ERROR, 0, "");
     }
     return new CommandResponse<>(resultString);
@@ -304,7 +305,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
-            GnsProtocol.ALL_FIELDS, null,
+            GNSCommandProtocol.ALL_FIELDS, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode, 0, "");
@@ -313,19 +314,19 @@ public class FieldAccess {
     NSResponseCode responseCode;
     try {
       ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid,
-              GnsProtocol.ALL_FIELDS, handler.getApp());
+              GNSCommandProtocol.ALL_FIELDS, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toJSONObjectFirstOnes().toString();
         responseCode = NSResponseCode.NO_ERROR;
       } else {
-        resultString = GnsProtocol.BAD_RESPONSE;
+        resultString = GNSCommandProtocol.BAD_RESPONSE;
         responseCode = NSResponseCode.ERROR;
       }
     } catch (FailedDBOperationException e) {
-      resultString = GnsProtocol.BAD_RESPONSE;
+      resultString = GNSCommandProtocol.BAD_RESPONSE;
       responseCode = NSResponseCode.ERROR;
     } catch (JSONException e) {
-      resultString = GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.JSON_PARSE_ERROR + " " + e.getMessage();
+      resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e.getMessage();
       responseCode = NSResponseCode.ERROR;
     }
     return new CommandResponse<>(resultString, responseCode, 0, "");

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
@@ -99,7 +99,7 @@ public class NSFieldAccess {
     // Try to look up the value in the database
     try {
       // Check for the case where we're returning all the fields the entire record.
-      if (GnsProtocol.ALL_FIELDS.equals(field)) {
+      if (GNSCommandProtocol.ALL_FIELDS.equals(field)) {
         ClientSupportConfig.getLogger().log(Level.FINE, "Field={0} Format={1}",
                 new Object[]{field, returnFormat});
         // need everything so just grab all the fields

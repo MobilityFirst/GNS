@@ -38,7 +38,7 @@ import java.util.List;
 import android.os.Environment;
 import android.util.Log;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 
 /**
@@ -364,7 +364,7 @@ public class KeyPairUtilsAndroid {
           try {
             byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
             byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
-            KeyFactory keyFactory = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+            KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
             X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
             PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
             PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
@@ -445,7 +445,7 @@ public class KeyPairUtilsAndroid {
             try {
               byte[] encodedPublicKey = ByteUtils.hexStringToByteArray(publicString);
               byte[] encodedPrivateKey = ByteUtils.hexStringToByteArray(privateString);
-              KeyFactory keyFactory = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+              KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
               X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
               PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
               PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);

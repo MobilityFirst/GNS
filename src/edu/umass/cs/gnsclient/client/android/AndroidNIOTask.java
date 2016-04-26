@@ -17,30 +17,9 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.tcp;
-
-import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentMap;
-
-import org.json.JSONObject;
-
-
-
-
-
-
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.JSONMessenger;
-
-import java.io.IOException;
-
-import org.json.JSONException;
+package edu.umass.cs.gnsclient.client.android;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 /**
  * This class defines a AndroidNIOTask
@@ -101,7 +80,7 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
 //        if (System.currentTimeMillis() - startTime >= readTimeout)
 //        {
 //          GNSClientConfig.getLogger().fine("TIMEOUT (" + id + ") : " + command.toString());
-//          return GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.TIMEOUT;
+//          return GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT;
 //        }
 //      }
 //      GNSClientConfig.getLogger().fine("Query id response received: " + id);
@@ -116,8 +95,8 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
 //    queryTimeStamp.remove(id); // instrumentation
 //    long rtt = result.getReceivedTime() - sentTime;
 //    GNSClientConfig.getLogger().info(
-//        "Command name: " + command.optString(GnsProtocol.COMMANDNAME, "Unknown") + " "
-//            + command.optString(GnsProtocol.GUID, "") + " " + command.optString(GnsProtocol.NAME, "") + " id: " + id
+//        "Command name: " + command.optString(GNSCommandProtocol.COMMANDNAME, "Unknown") + " "
+//            + command.optString(GNSCommandProtocol.GUID, "") + " " + command.optString(GNSCommandProtocol.NAME, "") + " id: " + id
 //            + " RTT: " + rtt + "ms" + " LNS RTT: " + result.getCCPRoundTripTime() + "ms" + " NS: "
 //            + result.getResponder() + " LNS Counter:" + result.getRequestCnt());
 //    return result.getResult();

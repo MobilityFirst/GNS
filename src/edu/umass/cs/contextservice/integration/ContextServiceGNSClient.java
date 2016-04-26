@@ -1,15 +1,15 @@
 package edu.umass.cs.contextservice.integration;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
-import static edu.umass.cs.gnscommon.GnsProtocol.MAGIC_STRING;
-import static edu.umass.cs.gnscommon.GnsProtocol.N;
-import static edu.umass.cs.gnscommon.GnsProtocol.OLD_VALUE;
-import static edu.umass.cs.gnscommon.GnsProtocol.SIGNATURE;
-import static edu.umass.cs.gnscommon.GnsProtocol.SIGNATUREFULLMESSAGE;
-import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.VALUE;
-import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.MAGIC_STRING;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.N;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import org.json.JSONObject;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;

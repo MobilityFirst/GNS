@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
