@@ -57,8 +57,8 @@ import java.util.Date;
 import java.util.HashSet;
 
 /**
- * This class handles select operations which have a similar semantics to an SQL SELECT.
- * The semantics is that we want to look up all the records with a given value or whose
+ * This class handles select operations which have a similar semantic to an SQL SELECT.
+ * The idea is that we want to look up all the records with a given value or whose
  * value falls in a given range or that more generally match a query.
  *
  * The SelectRequestPacket is sent to some NS (determining which one is done by the
@@ -429,7 +429,7 @@ public class Select {
     }
     // think about returning a cursor that has prefetched a limited (100 which is like mongo limit)
     // number of records in it and the ability to fetch more
-    while (cursor.hasNext()) {
+    while (cursor != null && cursor.hasNext()) {
       jsonRecords.put(cursor.nextJSONObject());
     }
     return jsonRecords;

@@ -23,7 +23,6 @@ import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -69,16 +68,18 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public void updateAllFields(String name, ArrayList<Object> systemValues)
+  public void updateEntireValuesMap(String name, ArrayList<Object> systemValues)
           throws FailedDBOperationException {
-    noSqlRecords.updateAllFields(collectionName, name, systemValues);
+    noSqlRecords.updateEntireValuesMap(collectionName, name, systemValues);
   }
 
   @Override
-  public void update(String name, ColumnField nameField, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
+  public void updateIndividualFields(String name, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException {
-    noSqlRecords.updateFields(collectionName, name, nameField, systemFields, systemValues, valuesMapField, valuesMapKeys, valuesMapValues);
+    noSqlRecords.updateIndividualFields(collectionName, name, 
+            NameRecord.VALUES_MAP, valuesMapKeys, valuesMapValues);
+//    noSqlRecords.updateFields(collectionName, name, NameRecord.NAME, null, null, 
+//            NameRecord.VALUES_MAP, valuesMapKeys, valuesMapValues);
   }
 
   @Override

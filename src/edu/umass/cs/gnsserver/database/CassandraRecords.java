@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -199,16 +198,7 @@ public class CassandraRecords implements NoSQLRecords {
     } catch (AlreadyExistsException e) {
     }
   }
-
-  private void insertColumn(String tableName, String guid, String columnName, String value) {
-    CollectionSpec spec = getCollectionSpec(tableName);
-    if (spec != null) {
-      insertColumn(tableName, spec.getPrimaryKey(), guid, columnName, value);
-    } else {
-      DatabaseConfig.getLogger().log(Level.SEVERE, "CASSANDRA DB: No table named: {0}", tableName);
-    }
-  }
-
+  
   private void insertColumn(String tableName, String keyColumn, String guid, String columnName, String value) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {
@@ -330,18 +320,13 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void updateAllFields(String collection, String name, ArrayList<Object> values1) {
+  public void updateEntireValuesMap(String collection, String name, ArrayList<Object> values) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-
+  
   @Override
-  public void updateFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public boolean updateConditional(String collectionName, String guid, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public void updateIndividualFields(String collectionName, String guid, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
@@ -490,9 +475,9 @@ public class CassandraRecords implements NoSQLRecords {
 //      }
 //
 ////    System.out.println("LOOKUP BY GUID =>" + instance.lookupEntireRecord(n.getName(), true));
-////    instance.updateAllFields(n.getName(), "timeToLive", "777");
+////    instance.updateEntireValuesMap(n.getName(), "timeToLive", "777");
 ////    System.out.println("LOOKUP AFTER 777 =>" + instance.lookupEntireRecord(n.getName(), true));
-////    instance.updateAllFields(n.getName(), "FRANK", "777");
+////    instance.updateEntireValuesMap(n.getName(), "FRANK", "777");
 ////    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookupEntireRecord(n.getName(), true));
 ////    
 //      JSONObject json = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
@@ -502,7 +487,7 @@ public class CassandraRecords implements NoSQLRecords {
 //      NameRecord record = new NameRecord(json);
 //      record.updateKey("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
 //      System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
-//      instance.updateAllFields(DBNAMERECORD, record.getName(), record.toJSONObject());
+//      instance.updateEntireValuesMap(DBNAMERECORD, record.getName(), record.toJSONObject());
 //      JSONObject json2 = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
 //      System.out.println("2ND LOOKUP BY GUID => " + json2);
 //      //

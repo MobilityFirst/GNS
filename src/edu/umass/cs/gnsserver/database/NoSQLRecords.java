@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.database;
 
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import org.json.JSONObject;
 
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Provides an interface for insert, updateAllFields, remove and lookup operations in a nosql database.
+ * Provides an interface for insert, updateEntireValuesMap, remove and lookup operations in a nosql database.
  *
  * In some of the methods below we're going to make a distinction between *user* fields and *system* fields.
  * User fields are all stored in a single system field which we call the valuesMapField. Some of the methods
@@ -114,53 +115,25 @@ public interface NoSQLRecords {
    * @param values
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public abstract void updateAllFields(String collection, String name, 
+  public abstract void updateEntireValuesMap(String collection, String name, 
           ArrayList<Object> values) throws
           edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
-   * For the record with given name, replace the values of given fields to the given values,
-   * and in the values map field of the record, replace the values of given keys to the given values.
+   * THE ONLY METHOD THAT CURRENTLY SUPPORTS WRITING USER JSON OBJECTS AS VALUES IN THE VALUES MAP.
+   * ALSO SUPPORTS DOT NOTATION.
    *
-   * @param collection the name of the collection
-   * @param name the name of the record
-   * @param nameField 
-   * @param fields the fields
-   * @param values
+   * @param collectionName
+   * @param guid
    * @param valuesMapField
    * @param valuesMapKeys
    * @param valuesMapValues
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws FailedDBOperationException
    */
-  public abstract void updateFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
-          ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws
-          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
-  /**
-   * Updates the record indexed by name conditionally. The condition specified by
-   * conditionField whose value must be equal to conditionValue.
-   * Didn't write this so not sure about all the other arguments.
-   *
-   * @param collectionName the name of the collection
-   * @param guid the guid
-   * @param nameField
-   * @param conditionField
-   * @param conditionValue
-   * @param fields the fields
-   * @param values
-   * @param valuesMapField
-   * @param valuesMapKeys
-   * @param valuesMapValues
-   * @return Returns true if the updateAllFields happened, false otherwise.
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public abstract boolean updateConditional(String collectionName, String guid, ColumnField nameField,
-          ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
+  public void updateIndividualFields(String collectionName, String guid,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws
-          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
+          ArrayList<Object> valuesMapValues) throws FailedDBOperationException;
+  
   /**
    * For record with name, removes (unset) keys in list <code>mapKeys</code> from the map <code>mapField</code>.
    *

@@ -231,16 +231,16 @@ public class JSONUtils {
       switch (field.type()) {
 //        case BOOLEAN:
 //          return jsonObject.getBoolean(field.getName());
-        case INTEGER:
-          return jsonObject.getInt(field.getName());
+//        case INTEGER:
+//          return jsonObject.getInt(field.getName());
         case STRING:
           return jsonObject.getString(field.getName());
 //        case SET_INTEGER:
 //          return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getName()));
 //        case SET_STRING:
 //          return JSONUtils.JSONArrayToSetString(jsonObject.getJSONArray(field.getName()));
-        case SET_NODE_ID_STRING:
-          return JSONUtils.JSONArrayToSetNodeIdString(jsonObject.getJSONArray(field.getName()));
+//        case SET_NODE_ID_STRING:
+//          return JSONUtils.JSONArrayToSetNodeIdString(jsonObject.getJSONArray(field.getName()));
 //        case LIST_INTEGER:
 //          return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_STRING:
@@ -273,9 +273,9 @@ public class JSONUtils {
 //        case BOOLEAN:
 //          jsonObject.put(field.getName(), value);
 //          break;
-        case INTEGER:
-          jsonObject.put(field.getName(), value);
-          break;
+//        case INTEGER:
+//          jsonObject.put(field.getName(), value);
+//          break;
         case STRING:
           jsonObject.put(field.getName(), value);
           break;
@@ -285,11 +285,11 @@ public class JSONUtils {
 //        case SET_STRING:
 //          jsonObject.put(field.getName(), (Set<String>) value);
 //          break;
-        case SET_NODE_ID_STRING:
-          @SuppressWarnings("unchecked") 
-          Set<String> set = (Set<String>) value;
-          jsonObject.put(field.getName(), nodeIdSetToStringSet(set));
-          break;
+//        case SET_NODE_ID_STRING:
+//          @SuppressWarnings("unchecked") 
+//          Set<String> set = (Set<String>) value;
+//          jsonObject.put(field.getName(), nodeIdSetToStringSet(set));
+//          break;
 //        case LIST_INTEGER:
 //          jsonObject.put(field.getName(), (ArrayList<Integer>) value);
 //          break;

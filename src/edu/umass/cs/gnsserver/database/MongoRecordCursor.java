@@ -173,20 +173,6 @@ public class MongoRecordCursor extends AbstractRecordCursor {
   }
 
   /**
-   * Returns the next row as a HashMap.
-   *
-   * @return the next row as a HashMap
-   */
-  @Override
-  public HashMap<ColumnField, Object> nextHashMap() {
-    if (allFields) {
-      throw new UnsupportedOperationException("Not supported yet.");
-    } else {
-      return nextSomeFieldsHashMap();
-    }
-  }
-
-  /**
    * Returns the value of the field named name in the next row.
    *
    * @param name

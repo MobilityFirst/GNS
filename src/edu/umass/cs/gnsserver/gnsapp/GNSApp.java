@@ -387,7 +387,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    *
    * @param name
    * @param state
-   * @return true if we were able to updateAllFields the state
+   * @return true if we were able to updateEntireValuesMap the state
    */
   @Override
   public boolean restore(String name, String state) {
@@ -400,7 +400,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // If state is null the only thing it means is that we need to delete 
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
-      } else { //state does not equal null so we either create a new record or updateAllFields the existing one
+      } else { //state does not equal null so we either create a new record or updateEntireValuesMap the existing one
         NameRecord nameRecord = null;
         try {
           nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
@@ -427,7 +427,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}",
                     e.getMessage());
           }
-        } else { // updateAllFields the existing record
+        } else { // updateEntireValuesMap the existing record
           try {
             //NRState nrState = new NRState(state); // parse the new state
             nameRecord.updateState(

@@ -42,7 +42,7 @@ public class NSUpdateSupport {
   private static final int OLD_COMMAND_TIME = -30; // how far back is old?
 
   /**
-   * Executes a local updateAllFields operation.
+   * Executes a local updateEntireValuesMap operation.
    *
    * @param guid
    * @param field
@@ -159,7 +159,7 @@ public class NSUpdateSupport {
               new Object[]{field, operation, updateValue,
                 nameRecord.getSummary()});
     }
-    // Apply updateAllFields to record in the database
+    // Apply updateEntireValuesMap to record in the database
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
   }
 

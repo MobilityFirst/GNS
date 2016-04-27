@@ -47,20 +47,20 @@ public enum ColumnFieldType {
 //   */
 //  BOOLEAN,
 
-  /**
-   * Column type that is a Integer.
-   */
-  INTEGER,
+//  /**
+//   * Column type that is a Integer.
+//   */
+//  INTEGER,
 
   /**
    * Column type that is a String.
    */
   STRING,
 
-  /**
-   * Column type that is a NodeID.
-   */
-  SET_NODE_ID_STRING,
+//  /**
+//   * Column type that is a NodeID.
+//   */
+//  SET_NODE_ID_STRING,
 
   /**
    * Column type that is a list of Strings.
@@ -96,20 +96,20 @@ public enum ColumnFieldType {
         } else {
           String value = fieldValue.toString();
           switch (field.type()) {
-            case INTEGER:
-              hashMap.put(field, Integer.parseInt(value));
-              break;
-            case STRING:
-              hashMap.put(field, value);
-              break;
-            case SET_NODE_ID_STRING:
-              try {
-                hashMap.put(field, JSONUtils.JSONArrayToSetNodeIdString(new JSONArray(value)));
-              } catch (JSONException e) {
-                GNSConfig.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
-                e.printStackTrace();
-              }
-              break;
+//            case INTEGER:
+//              hashMap.put(field, Integer.parseInt(value));
+//              break;
+//            case STRING:
+//              hashMap.put(field, value);
+//              break;
+//            case SET_NODE_ID_STRING:
+//              try {
+//                hashMap.put(field, JSONUtils.JSONArrayToSetNodeIdString(new JSONArray(value)));
+//              } catch (JSONException e) {
+//                GNSConfig.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
+//                e.printStackTrace();
+//              }
+//              break;
             case LIST_STRING:
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToArrayListString(new JSONArray(value)));

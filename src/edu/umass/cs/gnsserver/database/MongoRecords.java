@@ -52,8 +52,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 /**
- * Provides insert, updateAllFields, removeEntireRecord and lookupEntireRecord operations for
- guid, key, record triples using JSONObjects as the intermediate representation.
+ * Provides insert, updateEntireValuesMap, removeEntireRecord and lookupEntireRecord operations for
+ * guid, key, record triples using JSONObjects as the intermediate representation.
  * All records are stored in a document called NameRecord.
  *
  * @author westy, Abhigyan, arun
@@ -396,7 +396,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       throw new FailedDBOperationException(collectionName, guid);
     }
   }
-  
+
   private final static ArrayList<ColumnField> valuesMapField = new ArrayList<>();
 
   static {
@@ -404,20 +404,13 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   }
 
   @Override
-  public void updateAllFields(String collectionName, String guid, ArrayList<Object> values1) 
+  public void updateEntireValuesMap(String collectionName, String guid, ArrayList<Object> values)
           throws FailedDBOperationException {
-    updateFields(collectionName, guid, NameRecord.NAME, valuesMapField, values1, null, null, null);
+    updateSystemFields(collectionName, guid, valuesMapField, values);
   }
 
-  @Override
-  // THE ONLY METHOD THAT CURRENTLY SUPPORTS WRITING USER JSON OBJECTS AS VALUES IN THE VALUES MAP
-  // ALSO SUPPORTS DOT NOTATION
-  public void updateFields(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields,
-          ArrayList<Object> systemValues, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
-    String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
+  private void updateSystemFields(String collectionName, String guid, 
+          ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues) throws FailedDBOperationException {
     BasicDBObject updates = new BasicDBObject();
     if (systemFields != null) {
       for (int i = 0; i < systemFields.size(); i++) {
@@ -432,7 +425,15 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
         updates.append(systemFields.get(i).getName(), newValue);
       }
-    }
+    } 
+    doUpdate(collectionName, guid, updates);
+  }
+
+  @Override
+  public void updateIndividualFields(String collectionName, String guid,
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
+          ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
+    BasicDBObject updates = new BasicDBObject();
     if (valuesMapField != null && valuesMapKeys != null) {
       for (int i = 0; i < valuesMapKeys.size(); i++) {
         String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
@@ -452,6 +453,14 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
       }
     }
+    doUpdate(collectionName, guid, updates);
+  }
+
+  private void doUpdate(String collectionName, String guid, BasicDBObject updates)
+          throws FailedDBOperationException {
+    String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    BasicDBObject query = new BasicDBObject(primaryKey, guid);
     if (updates.keySet().size() > 0) {
       long startTime = System.currentTimeMillis();
       try {
@@ -475,62 +484,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     } else {
       return JSON.parse(object.toString());
     }
-  }
-
-  @Override
-  public boolean updateConditional(String collectionName, String guid, ColumnField nameField,
-          ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
-          throws FailedDBOperationException {
-    boolean actuallyUpdatedTheRecord = false;
-    String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    // build the query part
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    query.append(conditionField.getName(), conditionValue);
-    // build the updates part
-    BasicDBObject updates = new BasicDBObject();
-    if (fields != null) {
-      for (int i = 0; i < fields.size(); i++) {
-        Object newValue;
-        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
-        if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          // convert the JSONObject value of the ValuesMap into a string that we then parse into
-          // a BSON object (ugly, but necessary)
-          newValue = JSON.parse(values.get(i).toString());
-        } else {
-          newValue = values.get(i);
-        }
-        updates.append(fields.get(i).getName(), newValue);
-      }
-    }
-
-    if (valuesMapField != null && valuesMapKeys != null) {
-      for (int i = 0; i < valuesMapKeys.size(); i++) {
-        String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
-        updates.append(fieldName, valuesMapValues.get(i));
-      }
-    }
-    DatabaseConfig.getLogger().log(Level.FINE, "UPDATES: {0}", new Object[]{updates});
-
-    if (updates.keySet().size() > 0) { // only if there are some things to updateAllFields
-      long startTime = System.currentTimeMillis();
-      WriteResult writeResult;
-      try {
-        writeResult = collection.update(query, new BasicDBObject("$set", updates));
-      } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, updates.toString());
-      }
-      actuallyUpdatedTheRecord = writeResult.isUpdateOfExisting();
-      DelayProfiler.updateDelay("updateConditionalJustThe$set", startTime);
-      long finishTime = System.currentTimeMillis();
-      if (finishTime - startTime > 10) {
-        DatabaseConfig.getLogger().log(Level.FINE, "Long latency mongoUpdate {0}", (finishTime - startTime));
-      }
-    }
-    DatabaseConfig.getLogger().log(Level.INFO, "{0} {1}",
-            new Object[]{actuallyUpdatedTheRecord ? "ACTUALLY UPDATED " : "DIDN'T UPDATE ", guid});
-    return actuallyUpdatedTheRecord;
   }
 
   @Override

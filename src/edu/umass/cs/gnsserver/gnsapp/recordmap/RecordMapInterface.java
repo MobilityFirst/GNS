@@ -97,37 +97,31 @@ public interface RecordMapInterface {
           FailedDBOperationException, RecordNotFoundException;
 
   /**
-   * Update system fields in a record.
+   * Update all fields in a record.
    * 
    * @param name - the name of the record
    * @param values - the values to set them to
    * @throws FailedDBOperationException
    */
-  public abstract void updateAllFields(String name, ArrayList<Object> values)
+  public abstract void updateEntireValuesMap(String name, ArrayList<Object> values)
           throws FailedDBOperationException;
 
   /**
-   * Update system and user fields in a record.
+   * Update particular fields in a record.
    * 
    * @param name - the name of the record
-   * @param nameField - the field that contains the name of the record
-   * @param fields - the system fields to updateAllFields
-   * @param values - the values to set the system fields to
-   * @param valuesMapField - the field that contains all the user fields
-   * @param valuesMapKeys - the user fields to updateAllFields
+   * @param valuesMapKeys - the user fields to update
    * @param valuesMapValues - the values to set the user fields to to
    * @throws FailedDBOperationException
    */
-  public abstract void update(String name, 
-          ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
+  public abstract void updateIndividualFields(String name, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException;
 
   /**
    * Remove keys from a field.
    * 
    * @param name - the name of the record
-   * @param mapField - the system fields to updateAllFields
+   * @param mapField - the system fields to updateEntireValuesMap
    * @param mapKeys - the keys to remove
    * @throws FailedDBOperationException
    */
