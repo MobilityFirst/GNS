@@ -75,16 +75,11 @@ public class CassandraRecords implements NoSQLRecords {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  @Override
-  public HashMap<ColumnField, Object> lookupSystemFields(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public HashMap<ColumnField, Object> lookupUserFields(String collectionName, String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
+//  @Override
+//  public HashMap<ColumnField, Object> lookupSystemFields(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
+//    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//  }
+  
   /**
    * Stores the name, primary key, and index of each collection we maintain in the mongo db.
    */
@@ -302,21 +297,6 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void reset(String tableName) {
-    CollectionSpec spec = getCollectionSpec(tableName);
-    if (spec != null) {
-      String query = "TRUNCATE " + CSI(tableName) + ";";
-      DatabaseConfig.getLogger().log(Level.FINER, "Executing query {0}", query);
-      session.execute(query);
-      DatabaseConfig.getLogger().log(Level.INFO,
-              "CASSANDRA DB RESET. DBNAME: {0} Table name: {1}", new Object[]{dbName, tableName});
-    } else {
-      DatabaseConfig.getLogger().log(Level.SEVERE,
-              "CASSANDRA DB: No table named: {0}", tableName);
-    }
-  }
-
-  @Override
   public void printAllEntries(String collectionName) throws FailedDBOperationException {
     AbstractRecordCursor cursor = getAllRowsIterator(collectionName);
     while (cursor.hasNext()) {
@@ -324,8 +304,13 @@ public class CassandraRecords implements NoSQLRecords {
     }
   }
   
+   @Override
+  public HashMap<ColumnField, Object> lookupSomeFields(String collectionName, String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
   @Override
-  public void updateEntireValuesMap(String collection, String name, ArrayList<Object> values) {
+  public void updateEntireRecord(String collection, String name, ArrayList<Object> values) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   
@@ -475,9 +460,9 @@ public class CassandraRecords implements NoSQLRecords {
 //      }
 //
 ////    System.out.println("LOOKUP BY GUID =>" + instance.lookupEntireRecord(n.getName(), true));
-////    instance.updateEntireValuesMap(n.getName(), "timeToLive", "777");
+////    instance.updateEntireRecord(n.getName(), "timeToLive", "777");
 ////    System.out.println("LOOKUP AFTER 777 =>" + instance.lookupEntireRecord(n.getName(), true));
-////    instance.updateEntireValuesMap(n.getName(), "FRANK", "777");
+////    instance.updateEntireRecord(n.getName(), "FRANK", "777");
 ////    System.out.println("LOOKUP AFTER FRANK =>" + instance.lookupEntireRecord(n.getName(), true));
 ////    
 //      JSONObject json = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
@@ -487,7 +472,7 @@ public class CassandraRecords implements NoSQLRecords {
 //      NameRecord record = new NameRecord(json);
 //      record.updateKey("FRED", new ArrayList<String>(Arrays.asList("BARNEY")), null, UpdateOperation.REPLACE_ALL);
 //      System.out.println("JSON AFTER UPDATE => " + record.toJSONObject());
-//      instance.updateEntireValuesMap(DBNAMERECORD, record.getName(), record.toJSONObject());
+//      instance.updateEntireRecord(DBNAMERECORD, record.getName(), record.toJSONObject());
 //      JSONObject json2 = instance.lookupEntireRecord(DBNAMERECORD, n.getName());
 //      System.out.println("2ND LOOKUP BY GUID => " + json2);
 //      //

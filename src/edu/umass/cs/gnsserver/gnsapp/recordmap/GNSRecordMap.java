@@ -62,27 +62,51 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookupUserFields(String name, ColumnField nameField, 
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) 
-          throws RecordNotFoundException, FailedDBOperationException {
-    return noSqlRecords.lookupUserFields(collectionName, name, nameField, valuesMapField, valuesMapKeys);
+  public JSONObject getEntireRecord(String name) throws RecordNotFoundException, FailedDBOperationException {
+    return noSqlRecords.lookupEntireRecord(collectionName, name);
   }
-  
-  public HashMap<ColumnField, Object> lookupSystemFields(String name, ColumnField nameField, 
-          ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
-    return noSqlRecords.lookupSystemFields(collectionName, name, nameField, systemFields);
+
+  @Override
+  public HashMap<ColumnField, Object> lookupUserFields(String name, ColumnField nameField,
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+          throws RecordNotFoundException, FailedDBOperationException {
+    return noSqlRecords.lookupSomeFields(collectionName, name, nameField, valuesMapField, valuesMapKeys);
+  }
+
+  @Override
+  public void addRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException {
+    NoSQLRecords records = noSqlRecords;
+    try {
+      String name = json.getString(NameRecord.NAME.getName());
+      records.insert(collectionName, name, json);
+      GNSConfig.getLogger().log(Level.FINER, "{0}:: Added {1} JSON: {2}",
+              new Object[]{records.toString(), name, json});
+    } catch (JSONException e) {
+      GNSConfig.getLogger().log(Level.SEVERE, "{0}:: Error adding name record: {1}",
+              new Object[]{records.toString(), e});
+    }
+  }
+
+  @Override
+  public void removeRecord(String name) throws FailedDBOperationException {
+    noSqlRecords.removeEntireRecord(collectionName, name);
+  }
+
+  @Override
+  public boolean containsName(String name) throws FailedDBOperationException {
+    return noSqlRecords.contains(collectionName, name);
   }
 
   @Override
   public void updateEntireValuesMap(String name, ArrayList<Object> systemValues)
           throws FailedDBOperationException {
-    noSqlRecords.updateEntireValuesMap(collectionName, name, systemValues);
+    noSqlRecords.updateEntireRecord(collectionName, name, systemValues);
   }
 
   @Override
   public void updateIndividualFields(String name, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException {
-    noSqlRecords.updateIndividualFields(collectionName, name, 
+    noSqlRecords.updateIndividualFields(collectionName, name,
             NameRecord.VALUES_MAP, valuesMapKeys, valuesMapValues);
 //    noSqlRecords.updateFields(collectionName, name, NameRecord.NAME, null, null, 
 //            NameRecord.VALUES_MAP, valuesMapKeys, valuesMapValues);
@@ -117,45 +141,6 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   @Override
   public AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException {
     return noSqlRecords.selectRecordsQuery(collectionName, valuesMapField, query);
-  }
-
-  @Override
-  public NameRecord getNameRecord(String name) throws RecordNotFoundException, FailedDBOperationException {
-    try {
-      JSONObject json = noSqlRecords.lookupEntireRecord(collectionName, name);
-      if (json == null) {
-        return null;
-      } else {
-        return new NameRecord(this, json);
-      }
-    } catch (JSONException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "Error getting name record {0}: {1}", new Object[]{name, e});
-    }
-    return null;
-  }
-
-  @Override
-  public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException {
-    NoSQLRecords records = noSqlRecords;
-    try {
-      String name = json.getString(NameRecord.NAME.getName());
-      records.insert(collectionName, name, json);
-      GNSConfig.getLogger().log(Level.FINER, "{0}:: Added {1} JSON: {2}",
-              new Object[]{records.toString(), name, json});
-    } catch (JSONException e) {
-      GNSConfig.getLogger().log(Level.SEVERE, "{0}:: Error adding name record: {1}",
-              new Object[]{records.toString(), e});
-    }
-  }
-
-  @Override
-  public void removeNameRecord(String name) throws FailedDBOperationException {
-    noSqlRecords.removeEntireRecord(collectionName, name);
-  }
-
-  @Override
-  public boolean containsName(String name) throws FailedDBOperationException {
-    return noSqlRecords.contains(collectionName, name);
   }
 
   @Override

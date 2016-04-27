@@ -96,10 +96,10 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     this.recordMap = recordMap;
     hashMap = new HashMap<>();
     if (jsonObject.has(NAME.getName())) {
-      hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
+      hashMap.put(NAME, jsonObject.getString(NAME.getName()));
     }
     if (jsonObject.has(VALUES_MAP.getName())) {
-      hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
+      hashMap.put(VALUES_MAP, new ValuesMap(jsonObject.getJSONObject(VALUES_MAP.getName())));
     }
   }
 
@@ -160,7 +160,8 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject jsonObject = new JSONObject();
     for (ColumnField f : hashMap.keySet()) {
-      JSONUtils.putFieldInJsonObject(f, hashMap.get(f), jsonObject);
+      jsonObject.put(f.getName(), hashMap.get(f));
+      //JSONUtils.putFieldInJsonObject(f, hashMap.get(f), jsonObject);
     }
     return jsonObject;
   }
@@ -339,24 +340,16 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    */
   public static NameRecord getNameRecord(BasicRecordMap recordMap, String name)
           throws RecordNotFoundException, FailedDBOperationException {
-    return recordMap.getNameRecord(name);
-  }
+    try {
+      JSONObject json = recordMap.getEntireRecord(name);
+      if (json != null) {
+        return new NameRecord(recordMap, json);
+      }
+    } catch (JSONException e) {
+      GNSConfig.getLogger().log(Level.SEVERE, "Error getting name record {0}: {1}", new Object[]{name, e});
+    }
+    return null;
 
-  /**
-   * Load a name record from the backing database and retrieve certain fields as well.
-   *
-   * @param recordMap
-   * @param name
-   * @param systemFields - a list of Field structures representing "system" fields to retrieve
-   * @return a NameRecord
-   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public static NameRecord getNameRecordMultiSystemFields(BasicRecordMap recordMap, String name,
-          ArrayList<ColumnField> systemFields)
-          throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupSystemFields(name,
-            NameRecord.NAME, systemFields));
   }
 
   /**
@@ -395,7 +388,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
   public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws JSONException, FailedDBOperationException, RecordExistsException {
-    recordMap.addNameRecord(record.toJSONObject());
+    recordMap.addRecord(record.toJSONObject());
   }
 
   /**
@@ -406,7 +399,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void removeNameRecord(BasicRecordMap recordMap, String name) throws FailedDBOperationException {
-    recordMap.removeNameRecord(name);
+    recordMap.removeRecord(name);
   }
 
   /**

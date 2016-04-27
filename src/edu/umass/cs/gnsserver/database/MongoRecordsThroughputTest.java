@@ -127,7 +127,7 @@ public class MongoRecordsThroughputTest {
       long startTime = System.currentTimeMillis();
       do {
         Map<ColumnField, Object> map
-                = instance.lookupUserFields(
+                = instance.lookupSomeFields(
                         DBNAMERECORD,
                         guid,
                         NameRecord.NAME,

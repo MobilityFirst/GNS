@@ -27,14 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Provides an interface for insert, updateEntireValuesMap, remove and lookup operations in a nosql database.
- *
- * In some of the methods below we're going to make a distinction between *user* fields and *system* fields.
- * User fields are all stored in a single system field which we call the valuesMapField. Some of the methods
- * below let you read and write user fields just by specifying the short, unqualified name of the user field.
- * You could always access the fully qualified field if you know the magic syntax.
- *
- * And to make things more confusing some of the *user* fields are actually only used internally by the GNS.
+ * Provides an interface for insert, updateEntireRecord, remove and lookup operations in a nosql database.
  *
  * @author Westy
  */
@@ -50,7 +43,7 @@ public interface NoSQLRecords {
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
   public void insert(String collection, String name, JSONObject value)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException,
           edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 
   /**
@@ -63,27 +56,10 @@ public interface NoSQLRecords {
    * @throws RecordNotFoundException
    */
   public JSONObject lookupEntireRecord(String collection, String name)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException,
           edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
- 
-    /**
-   * For record with given name, return the values of given fields and from the values map field of the record,
-   * return the values of given keys as a HashMap.
-   *
-   * @param collectionName
-   * @param guid
-   * @param systemFields
-   * @param nameField
-   * @return a hashmap of ColumnField to Objects
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
-   */
-   public HashMap<ColumnField, Object> lookupSystemFields(String collectionName,
-          String guid, ColumnField nameField,
-          ArrayList<ColumnField> systemFields)
-          throws RecordNotFoundException, FailedDBOperationException;
-   
-     /**
+
+  /**
    * For record with given name, return the values of given fields and from the values map field of the record,
    * return the values of given keys as a HashMap.
    *
@@ -96,7 +72,7 @@ public interface NoSQLRecords {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
    */
-   public HashMap<ColumnField, Object> lookupUserFields(String collectionName,
+  public HashMap<ColumnField, Object> lookupSomeFields(String collectionName,
           String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException;
 
@@ -129,7 +105,7 @@ public interface NoSQLRecords {
    * @param values
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public abstract void updateEntireValuesMap(String collection, String name, 
+  public abstract void updateEntireRecord(String collection, String name,
           ArrayList<Object> values) throws
           edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
@@ -147,7 +123,7 @@ public interface NoSQLRecords {
   public void updateIndividualFields(String collectionName, String guid,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedDBOperationException;
-  
+
   /**
    * For record with name, removes (unset) keys in list <code>mapKeys</code> from the map <code>mapField</code>.
    *
@@ -167,7 +143,7 @@ public interface NoSQLRecords {
    * @return an AbstractRecordCursor
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public AbstractRecordCursor getAllRowsIterator(String collection) 
+  public AbstractRecordCursor getAllRowsIterator(String collection)
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
@@ -222,26 +198,18 @@ public interface NoSQLRecords {
    * @return an AbstractRecordCursor
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) 
+  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query)
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
-   * Sets the collection back to an initial empty state with indexes also initialized.
-   *
-   * @param collection the name of the collection
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public void reset(String collection) throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
-  /**
    * Creates an index for the given field.
-   * 
+   *
    * @param collectionName
    * @param field
-   * @param index 
+   * @param index
    */
   public void createIndex(String collectionName, String field, String index);
-  
+
   /**
    * Return a string representation of the record set.
    *

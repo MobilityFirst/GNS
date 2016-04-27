@@ -364,7 +364,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   @Override
   public String checkpoint(String name) {
     try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
+      NameRecord nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
+      //NameRecord nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
       //NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
       GNSConfig.getLogger().log(Level.FINE,
               "&&&&&&& {0} getting state {1} ",
@@ -387,7 +388,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    *
    * @param name
    * @param state
-   * @return true if we were able to updateEntireValuesMap the state
+   * @return true if we were able to updateEntireRecord the state
    */
   @Override
   public boolean restore(String name, String state) {
@@ -400,10 +401,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // If state is null the only thing it means is that we need to delete 
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
-      } else { //state does not equal null so we either create a new record or updateEntireValuesMap the existing one
+      } else { //state does not equal null so we either create a new record or update the existing one
         NameRecord nameRecord = null;
         try {
-          nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
+          nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
+          //nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
         } catch (RecordNotFoundException e) {
           // normal result if the field does not exist
         }
@@ -427,7 +429,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}",
                     e.getMessage());
           }
-        } else { // updateEntireValuesMap the existing record
+        } else { // update the existing record
           try {
             //NRState nrState = new NRState(state); // parse the new state
             nameRecord.updateState(
