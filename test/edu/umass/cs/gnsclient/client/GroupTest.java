@@ -23,7 +23,7 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -84,7 +84,7 @@ public class GroupTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
@@ -146,7 +146,7 @@ public class GroupTest {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);

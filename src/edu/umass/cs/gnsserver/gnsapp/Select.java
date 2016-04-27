@@ -24,7 +24,7 @@ package edu.umass.cs.gnsserver.gnsapp;
  * University of Massachusetts
  * All Rights Reserved
  */
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -202,7 +202,7 @@ public class Select {
         }
       }
 
-    } catch (IOException | GnsClientException e) {
+    } catch (IOException | ClientException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Exception while sending select request: {0}", e);
     }
   }
@@ -286,11 +286,11 @@ public class Select {
    * @param packet
    * @param replica
    * @throws JSONException
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    */
   public static void handleSelectResponse(SelectResponsePacket<String> packet,
-          GNSApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
+          GNSApplicationInterface<String> replica) throws JSONException, ClientException, IOException {
     GNSConfig.getLogger().log(Level.FINE,
             "NS {0} recvd from NS {1}",
             new Object[]{replica.getNodeID(),
@@ -347,7 +347,7 @@ public class Select {
   }
 
   private static void handledAllServersResponded(SelectResponsePacket<String> packet, NSSelectInfo<String> info,
-          GNSApplicationInterface<String> replica) throws JSONException, GnsClientException, IOException {
+          GNSApplicationInterface<String> replica) throws JSONException, ClientException, IOException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     InetSocketAddress iDontKnowMyListeningAddress = null;

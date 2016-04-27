@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
@@ -76,13 +76,13 @@ public class CommandHandler {
     final JSONObject jsonFormattedCommand = packet.getCommand();
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
-    final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+    final BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     runCommand(jsonFormattedCommand, command, handler, packet, doNotReplyToClient, app, receiptTime);
   }
 
   private static final long LONG_DELAY_THRESHOLD = 1;
 
-  private static void runCommand(JSONObject jsonFormattedCommand, GnsCommand command,
+  private static void runCommand(JSONObject jsonFormattedCommand, BasicCommand command,
           ClientRequestHandlerInterface handler, CommandPacket packet, boolean doNotReplyToClient, GNSApp app, long receiptTime) {
     try {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
@@ -149,14 +149,14 @@ public class CommandHandler {
   private static class WorkerTask implements Runnable {
 
     private final JSONObject jsonFormattedCommand;
-    private final GnsCommand command;
+    private final BasicCommand command;
     private final ClientRequestHandlerInterface handler;
     private final CommandPacket packet;
     private final GNSApp app;
     private final long receiptTime;
     private final boolean doNotReplyToClient;
 
-    public WorkerTask(JSONObject jsonFormattedCommand, GnsCommand command, ClientRequestHandlerInterface handler, CommandPacket packet, boolean doNotReplyToClient, GNSApp app, long receiptTime) {
+    public WorkerTask(JSONObject jsonFormattedCommand, BasicCommand command, ClientRequestHandlerInterface handler, CommandPacket packet, boolean doNotReplyToClient, GNSApp app, long receiptTime) {
       this.jsonFormattedCommand = jsonFormattedCommand;
       this.command = command;
       this.handler = handler;
@@ -198,7 +198,7 @@ public class CommandHandler {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> executeCommand(GnsCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> executeCommand(BasicCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       if (command != null) {
         ClientCommandProcessorConfig.getLogger().log(Level.FINE,

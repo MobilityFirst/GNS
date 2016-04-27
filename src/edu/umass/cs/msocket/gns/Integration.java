@@ -37,7 +37,7 @@ import org.json.JSONArray;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.common.CommonMethods;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.common.policies.DefaultProxyPolicy;
 import edu.umass.cs.msocket.common.policies.FixedProxyPolicy;
 import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
@@ -50,9 +50,9 @@ import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsIntegration
+public class Integration
 {
-	private static Logger log = Logger.getLogger(GnsIntegration.class.getName());
+	private static Logger log = Logger.getLogger(Integration.class.getName());
 	private static final Object  gnsLock = new Object();
   /**
    * Register any globally unique Human Readable Name in the GNS and create a
@@ -99,13 +99,13 @@ public class GnsIntegration
 	        // storing alias in gns record, need it to find it when we have GUID
 	        // from group members
 	        DefaultGNSClient.getGnsClient().fieldCreateList
-	        		(myGuid.getGuid(), GnsConstants.ALIAS_FIELD, new JSONArray().put(name), myGuid);
+	        		(myGuid.getGuid(), Constants.ALIAS_FIELD, new JSONArray().put(name), myGuid);
 	      }
 	
 	      // Put the IP address in the GNS
 	      String ipPort = saddr.getAddress().getHostAddress() + ":" + saddr.getPort();
-	      log.trace("Updating " + GnsConstants.SERVER_REG_ADDR + " GNSValue " + ipPort);
-	      DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.SERVER_REG_ADDR, new JSONArray().put(ipPort), myGuid);
+	      log.trace("Updating " + Constants.SERVER_REG_ADDR + " GNSValue " + ipPort);
+	      DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVER_REG_ADDR, new JSONArray().put(ipPort), myGuid);
 	    }
 	} catch(Exception ex)
 	{
@@ -145,7 +145,7 @@ public class GnsIntegration
 		    
 		    // Read from the GNS
 		    resultArray = DefaultGNSClient.getGnsClient().
-		    		fieldReadArray(guidString, GnsConstants.SERVER_REG_ADDR, null);
+		    		fieldReadArray(guidString, Constants.SERVER_REG_ADDR, null);
 	    }
 	    
 	    Vector<InetSocketAddress> resultVector = new Vector<InetSocketAddress>();
@@ -185,7 +185,7 @@ public class GnsIntegration
 	    {
 	      if(socketGuid != null)
 	    	  DefaultGNSClient.getGnsClient().fieldClear
-	    	  (socketGuid.getGuid(), GnsConstants.SERVER_REG_ADDR, socketGuid);
+	    	  (socketGuid.getGuid(), Constants.SERVER_REG_ADDR, socketGuid);
 	    }
 	    log.trace("All fields cleared from GNS for MServerSocket " + name);
 	} catch(Exception ex)
@@ -218,7 +218,7 @@ public class GnsIntegration
     // concurrency issue while updating
     synchronized (gnsLock)
     {
-      JSONArray currentIPs = DefaultGNSClient.getGnsClient().fieldReadArray(socketGuid.getGuid(), GnsConstants.SERVER_REG_ADDR,
+      JSONArray currentIPs = DefaultGNSClient.getGnsClient().fieldReadArray(socketGuid.getGuid(), Constants.SERVER_REG_ADDR,
     		  socketGuid);
       
       JSONArray newIPs = new JSONArray();
@@ -238,7 +238,7 @@ public class GnsIntegration
       if (idx != -1)
       {
     	  //currentIPs.remove(idx);
-    	  DefaultGNSClient.getGnsClient().fieldReplaceList(socketGuid.getGuid(), GnsConstants.SERVER_REG_ADDR, newIPs,
+    	  DefaultGNSClient.getGnsClient().fieldReplaceList(socketGuid.getGuid(), Constants.SERVER_REG_ADDR, newIPs,
     			  socketGuid);
       }
     }

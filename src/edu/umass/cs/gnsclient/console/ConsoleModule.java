@@ -46,12 +46,12 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.commands.ConsoleCommand;
-import edu.umass.cs.gnsclient.console.commands.GnsConnect;
+import edu.umass.cs.gnsclient.console.commands.Connect;
 import edu.umass.cs.gnsclient.console.commands.GuidUse;
 import edu.umass.cs.gnsclient.console.commands.Help;
 import edu.umass.cs.gnsclient.console.commands.History;
 import edu.umass.cs.gnsclient.console.commands.Quit;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.json.JSONException;
@@ -384,7 +384,7 @@ public class ConsoleModule {
       return;
     }
     try {
-      new GnsConnect(this).parse(gns.replace(":", " "));
+      new Connect(this).parse(gns.replace(":", " "));
     } catch (Exception e) {
       printString("Couldn't connect to default GNS " + gns);
     }
@@ -708,11 +708,11 @@ public class ConsoleModule {
       } else { // This is not an account GUID but make sure the GUID is valid
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
       }
-    } catch (IOException | GnsClientException | JSONException e) {
+    } catch (IOException | ClientException | JSONException e) {
       // This might not be an account GUID let's check if the GUID is valid
       try {
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
-      } catch (GnsClientException | IOException e1) {
+      } catch (ClientException | IOException e1) {
         return false;
       }
     }

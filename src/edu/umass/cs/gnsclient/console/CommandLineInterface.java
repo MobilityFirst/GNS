@@ -34,12 +34,12 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * This class defines a GnsCli
+ * This class defines a CommandLineInterface
  *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsCli {
+public class CommandLineInterface {
 
   /**
    * Starts the GNS command line interface (CLI) console

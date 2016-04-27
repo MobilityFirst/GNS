@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
@@ -273,7 +273,7 @@ public class NSFieldAccess {
           result = new ValuesMap();
           result.put(field, stringResult);
         }
-      } catch (IOException | JSONException | GnsClientException e) {
+      } catch (IOException | JSONException | ClientException e) {
         ClientSupportConfig.getLogger().log(Level.SEVERE,
                 "Problem getting record from remote server: {0}", e);
       }

@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import java.io.IOException;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -82,7 +82,7 @@ public class FieldExistsTest {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
-    } catch (GnsFieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

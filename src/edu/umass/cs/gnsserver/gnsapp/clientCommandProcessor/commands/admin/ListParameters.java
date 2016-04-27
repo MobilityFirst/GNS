@@ -25,14 +25,14 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SystemParameter;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONObject;
 
 /**
  *
  * @author westy
  */
-public class ListParameters extends GnsCommand {
+public class ListParameters extends BasicCommand {
 
   /**
    *

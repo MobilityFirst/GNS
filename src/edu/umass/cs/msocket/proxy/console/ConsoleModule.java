@@ -52,9 +52,9 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.msocket.proxy.ProxyGnsPublisher;
+import edu.umass.cs.msocket.proxy.ProxyPublisher;
 import edu.umass.cs.msocket.proxy.console.commands.ConsoleCommand;
-import edu.umass.cs.msocket.proxy.console.commands.GnsConnect;
+import edu.umass.cs.msocket.proxy.console.commands.Connect;
 import edu.umass.cs.msocket.proxy.console.commands.Help;
 import edu.umass.cs.msocket.proxy.console.commands.Quit;
 import edu.umass.cs.msocket.proxy.location.LocationService;
@@ -76,7 +76,7 @@ public class ConsoleModule {
   private GNSClientCommands gnsClient;
   private GuidEntry accountGuid;
   private GuidEntry proxyGroupGuid;
-  private ProxyGnsPublisher runningProxy;
+  private ProxyPublisher runningProxy;
   private LocationService runningLocationService;
   private Watchdog runningLocationWatchdog;
   private Watchdog runningProxyWatchdog;
@@ -374,7 +374,7 @@ public class ConsoleModule {
       return;
     }
     try {
-      new GnsConnect(this).parse(guid.getEntityName() + " " + gns);
+      new Connect(this).parse(guid.getEntityName() + " " + gns);
       currentGuid = guid;
     } catch (Exception e) {
       printString("Couldn't connect to default GNS " + gns + " with default GUID " + guid);
@@ -607,7 +607,7 @@ public class ConsoleModule {
    *
    * @param proxy
    */
-  public void setRunningProxy(ProxyGnsPublisher proxy) {
+  public void setRunningProxy(ProxyPublisher proxy) {
     this.runningProxy = proxy;
   }
 
@@ -616,7 +616,7 @@ public class ConsoleModule {
    *
    * @return Returns the runningProxy.
    */
-  public ProxyGnsPublisher getRunningProxy() {
+  public ProxyPublisher getRunningProxy() {
     return runningProxy;
   }
 

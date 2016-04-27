@@ -20,52 +20,52 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsInvalidUserException
+ * This class defines a InvalidGuidException
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsInvalidUserException extends GnsClientException
+public class InvalidGuidException extends ClientException
 {
-  private static final long serialVersionUID = -9116661769609344698L;
-
+  private static final long serialVersionUID = 4263493664073760147L;
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsInvalidGuidException</code> object
    */
-  public GnsInvalidUserException()
+  public InvalidGuidException()
   {
+    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsInvalidGuidException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsInvalidUserException(String message, Throwable cause)
+  public InvalidGuidException(String message, Throwable cause)
   {
     super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsInvalidGuidException</code> object
    * 
    * @param message
    */
-  public GnsInvalidUserException(String message)
+  public InvalidGuidException(String message)
   {
     super(message);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidUserException</code> object
+   * Creates a new <code>GnsInvalidGuidException</code> object
    * 
    * @param throwable
    */
-  public GnsInvalidUserException(Throwable throwable)
+  public InvalidGuidException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

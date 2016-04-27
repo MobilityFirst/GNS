@@ -14,61 +14,55 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnscommon.exceptions.client;
+package edu.umass.cs.gnscommon.exceptions.server;
 
 /**
- * This class defines a GnrsACLException
- * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
- * @version 1.0
+ * This class defines a ServerException
  */
-public class GnsACLException extends GnsClientException
+public class ServerException extends Exception
 {
-  private static final long serialVersionUID = 7789779657368481702L;
+  private static final long serialVersionUID = 6627620787610127842L;
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsException</code> object
    */
-  public GnsACLException()
+  public ServerException()
   {
-    // TODO Auto-generated constructor stub
+    super();
   }
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsACLException(String message, Throwable cause)
+  public ServerException(String message, Throwable cause)
   {
     super(message, cause);
-    // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsException</code> object
    * 
    * @param message
    */
-  public GnsACLException(String message)
+  public ServerException(String message)
   {
     super(message);
-    // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnrsACLException</code> object
+   * Creates a new <code>GnsException</code> object
    * 
    * @param throwable
    */
-  public GnsACLException(Throwable throwable)
+  public ServerException(Throwable throwable)
   {
     super(throwable);
-    // TODO Auto-generated constructor stub
   }
 
 }

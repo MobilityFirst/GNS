@@ -20,55 +20,53 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a EncryptionException
+ * This class defines a FieldNotFoundException
  * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class EncryptionException extends ClientException
+public class FieldNotFoundException extends ClientException
 {
-  private static final long serialVersionUID = 1721392537222462554L;
+  private static final long serialVersionUID = 2676899572105162853L;
 
   /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    */
-  public EncryptionException()
+  public FieldNotFoundException()
   {
-    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>EncryptionException</code> object
-   * 
-   * @param detailMessage
-   * @param throwable
-   */
-  public EncryptionException(String detailMessage, Throwable throwable)
-  {
-    super(detailMessage, throwable);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    * 
    * @param detailMessage
    */
-  public EncryptionException(String detailMessage)
+  public FieldNotFoundException(String detailMessage)
   {
     super(detailMessage);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    * 
    * @param throwable
    */
-  public EncryptionException(Throwable throwable)
+  public FieldNotFoundException(Throwable throwable)
   {
     super(throwable);
+    // TODO Auto-generated constructor stub
+  }
+
+  /**
+   * Creates a new <code>GnsInvalidFieldException</code> object
+   * 
+   * @param detailMessage
+   * @param throwable
+   */
+  public FieldNotFoundException(String detailMessage, Throwable throwable)
+  {
+    super(detailMessage, throwable);
     // TODO Auto-generated constructor stub
   }
 

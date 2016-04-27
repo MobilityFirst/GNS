@@ -120,7 +120,7 @@
         <attribute name="Implementation-Title" value="GNS CLI" />
         <attribute name="Implementation-Version"
                    value="${VERSION}-${RELEASE}" />
-        <attribute name="Main-Class" value="edu.umass.cs.gnsclient.console.GnsCli" />
+        <attribute name="Main-Class" value="edu.umass.cs.gnsclient.console.CommandLineInterface" />
         <!--       <attribute name="Class-Path" value="${jar.classpath}" />-->
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>

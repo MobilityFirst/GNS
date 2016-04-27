@@ -25,7 +25,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 
 /**
  * Command that creates a new proxy group
@@ -120,7 +120,7 @@ public class GuidCreate extends ConsoleCommand
             KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
           }
         }
-        catch (GnsInvalidGuidException e)
+        catch (InvalidGuidException e)
         {
           KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
         }

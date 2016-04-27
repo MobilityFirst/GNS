@@ -26,7 +26,7 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.MongoRecords;
@@ -306,7 +306,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         this.outstanding.remove(request);
       }
 
-    } catch (JSONException | IOException | GnsClientException e) {
+    } catch (JSONException | IOException | ClientException e) {
       e.printStackTrace();
     } catch (FailedDBOperationException e) {
       // all database operations throw this exception, therefore we keep

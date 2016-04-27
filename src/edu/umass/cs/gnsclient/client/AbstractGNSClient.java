@@ -35,7 +35,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnsclient.client.util.Util;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
@@ -132,7 +132,7 @@ public abstract class AbstractGNSClient {
    * @param action
    * @param keysAndValues
    * @return the query string
-   * @throws GnsClientException
+   * @throws ClientException
    */
   // FIXME: Temporarily hacked version for adding new command type integer. Will clean up once
   // transition is done.
@@ -140,7 +140,7 @@ public abstract class AbstractGNSClient {
   // enum string.
   public JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, String action, Object... keysAndValues)
-          throws GnsClientException {
+          throws ClientException {
     try {
       JSONObject result = createCommand(commandType, action, keysAndValues);
       result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
@@ -151,7 +151,7 @@ public abstract class AbstractGNSClient {
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
-      throw new GnsClientException("Error encoding message", e);
+      throw new ClientException("Error encoding message", e);
     }
   }
 
@@ -163,12 +163,12 @@ public abstract class AbstractGNSClient {
    * @param action
    * @param keysAndValues
    * @return the query string
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
   // Fixme: remove action parameter
   public JSONObject createCommand(CommandType commandType, String action,
           Object... keysAndValues)
-          throws GnsClientException {
+          throws ClientException {
     try {
       JSONObject result = new JSONObject();
       String key;
@@ -185,7 +185,7 @@ public abstract class AbstractGNSClient {
       }
       return result;
     } catch (JSONException e) {
-      throw new GnsClientException("Error encoding message", e);
+      throw new ClientException("Error encoding message", e);
     }
   }
 
@@ -482,10 +482,10 @@ public abstract class AbstractGNSClient {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    * @throws JSONException
    */
-  public void fieldUpdateAsynch(String targetGuid, String field, Object value, GuidEntry writer) throws GnsClientException, IOException, JSONException {
+  public void fieldUpdateAsynch(String targetGuid, String field, Object value, GuidEntry writer) throws ClientException, IOException, JSONException {
     JSONObject json = new JSONObject();
     json.put(field, value);
     JSONObject command = createAndSignCommand(CommandType.ReplaceUserJSON,
@@ -502,10 +502,10 @@ public abstract class AbstractGNSClient {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    * @throws JSONException
    */
-  public void fieldUpdateAsynch(GuidEntry targetGuid, String field, Object value) throws GnsClientException, IOException, JSONException {
+  public void fieldUpdateAsynch(GuidEntry targetGuid, String field, Object value) throws ClientException, IOException, JSONException {
     fieldUpdateAsynch(targetGuid.getGuid(), field, value, targetGuid);
   }
 

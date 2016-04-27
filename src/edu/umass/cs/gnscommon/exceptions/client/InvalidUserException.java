@@ -20,53 +20,52 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a EncryptionException
+ * This class defines a InvalidUserException
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class EncryptionException extends ClientException
+public class InvalidUserException extends ClientException
 {
-  private static final long serialVersionUID = 1721392537222462554L;
+  private static final long serialVersionUID = -9116661769609344698L;
 
   /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidUserException</code> object
    */
-  public EncryptionException()
+  public InvalidUserException()
   {
-    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>EncryptionException</code> object
+   * Creates a new <code>GnsInvalidUserException</code> object
    * 
-   * @param detailMessage
+   * @param message
+   * @param cause
+   */
+  public InvalidUserException(String message, Throwable cause)
+  {
+    super(message, cause);
+    // TODO Auto-generated constructor stub
+  }
+
+  /**
+   * Creates a new <code>GnsInvalidUserException</code> object
+   * 
+   * @param message
+   */
+  public InvalidUserException(String message)
+  {
+    super(message);
+    // TODO Auto-generated constructor stub
+  }
+
+  /**
+   * Creates a new <code>GnsInvalidUserException</code> object
+   * 
    * @param throwable
    */
-  public EncryptionException(String detailMessage, Throwable throwable)
-  {
-    super(detailMessage, throwable);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>EncryptionException</code> object
-   * 
-   * @param detailMessage
-   */
-  public EncryptionException(String detailMessage)
-  {
-    super(detailMessage);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>EncryptionException</code> object
-   * 
-   * @param throwable
-   */
-  public EncryptionException(Throwable throwable)
+  public InvalidUserException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

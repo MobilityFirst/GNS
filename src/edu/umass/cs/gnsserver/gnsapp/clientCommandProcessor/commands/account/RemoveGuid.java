@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
@@ -28,8 +28,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -45,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveGuid extends GnsCommand {
+public class RemoveGuid extends BasicCommand {
 
   /**
    * Creates a RemoveGuid instance.
@@ -102,7 +102,7 @@ public class RemoveGuid extends GnsCommand {
       } else {
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }

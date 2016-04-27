@@ -24,7 +24,7 @@ import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.util.HashSet;
 import static org.hamcrest.Matchers.*;
@@ -99,7 +99,7 @@ public class AliasTest {
 //    try {
 //      client.lookupGuid(alias);
 //      System.out.println(alias + " should not exist (first read)");
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //    } catch (IOException e) {
 //      fail("Exception while looking up alias: " + e);
 //    }
@@ -107,7 +107,7 @@ public class AliasTest {
 //    try {
 //      client.lookupGuid(alias);
 //      fail(alias + " should not exist (second read)");
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //    } catch (IOException e) {
 //      fail("Exception while looking up alias: " + e);
 //    }
@@ -127,7 +127,7 @@ public class AliasTest {
         ThreadUtils.sleep(10);
       } while (true);
       // the lookup should fail and throw to here
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
       System.out.println(alias + " was gone on " + (cnt + 1) + " read");
     }
   }

@@ -25,7 +25,7 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -97,7 +97,7 @@ public class GroupAndAclTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
@@ -112,7 +112,7 @@ public class GroupAndAclTest {
       client.groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       client.groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
       client.groupAddGuid(mygroupEntry.getGuid(), guidToDeleteEntry.getGuid(), mygroupEntry);
-    } catch (IOException | GnsClientException e) {
+    } catch (IOException | ClientException e) {
       fail("Exception while adding to groups: " + e);
     }
     try {
@@ -132,7 +132,7 @@ public class GroupAndAclTest {
       actual = JSONUtils.JSONArrayToHashSet(client.guidGetGroups(guidToDeleteEntry.getGuid(), guidToDeleteEntry));
       assertEquals(expected, actual);
 
-    } catch (IOException | GnsClientException | JSONException e) {
+    } catch (IOException | ClientException | JSONException e) {
       fail("Exception while getting members and groups: " + e);
     }
   }
@@ -149,7 +149,7 @@ public class GroupAndAclTest {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -180,7 +180,7 @@ public class GroupAndAclTest {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -215,7 +215,7 @@ public class GroupAndAclTest {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);

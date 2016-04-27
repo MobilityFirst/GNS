@@ -20,11 +20,11 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
+import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -162,7 +162,7 @@ public class AccountAccess {
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
-      } catch (IOException | JSONException | GnsClientException e) {
+      } catch (IOException | JSONException | ClientException e) {
 //        GNSConfig.getLogger().log(Level.SEVERE,
 //                "Problem getting GUID_INFO for {0} from remote server: {1}",
 //                new Object[]{guid, e});
@@ -215,7 +215,7 @@ public class AccountAccess {
               "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for {0}", guid);
       try {
         value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
-      } catch (IOException | JSONException | GnsClientException e) {
+      } catch (IOException | JSONException | ClientException e) {
         GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{guid, e});
       }
@@ -264,7 +264,7 @@ public class AccountAccess {
               "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for {0}", name);
       try {
         value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
-      } catch (IOException | JSONException | GnsClientException e) {
+      } catch (IOException | JSONException | ClientException e) {
         GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{name, e});
       }
@@ -323,7 +323,7 @@ public class AccountAccess {
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
-      } catch (IOException | JSONException | GnsClientException e) {
+      } catch (IOException | JSONException | ClientException e) {
         GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting GUID_INFO for {0} from remote server: {1}",
                 new Object[]{guid, e});
@@ -385,14 +385,14 @@ public class AccountAccess {
    * @param password
    * @param handler
    * @return the command response
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> addAccountWithVerification(final String hostPortString, final String name, final String guid,
           String publicKey, String password,
           ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
 
     CommandResponse<String> response;
     String verifyCode = createVerificationCode(name); // make this even if we don't need it
@@ -614,13 +614,13 @@ public class AccountAccess {
    * @param accountInfo
    * @param handler
    * @return status result
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> removeAccount(AccountInfo accountInfo, 
           ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
@@ -695,7 +695,7 @@ public class AccountAccess {
       return new CommandResponse<>(OK_RESPONSE);
     } catch (JSONException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
-    } catch (GnsRuntimeException e) {
+    } catch (ServerRuntimeException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
@@ -764,7 +764,7 @@ public class AccountAccess {
       return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + names);
     } catch (JSONException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
-    } catch (GnsRuntimeException e) {
+    } catch (ServerRuntimeException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
@@ -822,12 +822,12 @@ public class AccountAccess {
    * @param guid
    * @param handler
    * @return the command response
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     return removeGuid(guid, null, false, handler);
   }
 
@@ -838,12 +838,12 @@ public class AccountAccess {
    * @param guid
    * @param handler
    * @return status result
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo,
-          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
+          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
     return removeGuid(guid, accountInfo, false, handler);
   }
 
@@ -858,14 +858,14 @@ public class AccountAccess {
    * @param ignoreAccountGuid
    * @param handler
    * @return the command response
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> removeGuid(GuidInfo guidInfo, AccountInfo accountInfo,
           boolean ignoreAccountGuid,
           ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     GNSConfig.getLogger().log(Level.FINE,
             "REMOVE: GUID INFO: {0} ACCOUNT INFO: {1}", new Object[]{guidInfo, accountInfo});
     // First make sure guid is not an account GUID 
@@ -1072,7 +1072,7 @@ public class AccountAccess {
         try {
           handler.getRemoteQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
           response = NSResponseCode.NO_ERROR;
-        } catch (GnsClientException | IOException | JSONException e) {
+        } catch (ClientException | IOException | JSONException e) {
           GNSConfig.getLogger().log(Level.SEVERE, "Problem with remote query:{0}", e);
           response = NSResponseCode.ERROR;
         }

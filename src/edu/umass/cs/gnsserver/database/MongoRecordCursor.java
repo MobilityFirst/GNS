@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.database;
 
 import com.mongodb.*;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
+import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.NoSuchElementException;
@@ -121,7 +121,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
         } catch (JSONException e) {
           // Since next can't throw anything which isn't a runtime exception.
           // replace these with not a runtime exception?
-          throw new GnsRuntimeException("Error parsing JSON object.");
+          throw new ServerRuntimeException("Error parsing JSON object.");
         }
       } else {
         // replace these with not a runtime exception?
@@ -181,7 +181,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
         // capitalizing on the fact that we know dbObjects are really JSONObjects
         return new JSONObject(dbObject.toString()).getString(name);
       } catch (JSONException e) {
-        throw new GnsRuntimeException("Error parsing JSON object.");
+        throw new ServerRuntimeException("Error parsing JSON object.");
       }
     } else {
       // replace these with not a runtime exception?

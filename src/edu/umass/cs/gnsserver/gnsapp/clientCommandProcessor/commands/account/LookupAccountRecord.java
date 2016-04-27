@@ -24,7 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import org.json.JSONException;
@@ -34,7 +34,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupAccountRecord extends GnsCommand {
+public class LookupAccountRecord extends BasicCommand {
 
   /**
    * Creates a LookupAccountRecord instance.

@@ -28,7 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -43,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AclRetrieve extends GnsCommand {
+public class AclRetrieve extends BasicCommand {
 
   /**
    *

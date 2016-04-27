@@ -12,7 +12,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import org.json.JSONObject;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.logging.Level;
 
@@ -41,7 +41,7 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
 //	{	
 //	}
   @Override
-  public void sendTiggerOnGnsCommand(JSONObject jsonFormattedCommand, GnsCommand command, boolean blocking) {
+  public void sendTiggerOnGnsCommand(JSONObject jsonFormattedCommand, BasicCommand command, boolean blocking) {
     try {
       // code copied exactly from AbstractUpdate class
       String guid = jsonFormattedCommand.getString(GUID);

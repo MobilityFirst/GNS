@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -101,7 +101,7 @@ public class CreateGuidBatchTestWithPublicKeys {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }

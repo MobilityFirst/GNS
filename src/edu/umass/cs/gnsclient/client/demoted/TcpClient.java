@@ -31,7 +31,7 @@ import java.util.Arrays;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -114,10 +114,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.CreateList,
             writer.getPrivateKey(), CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -134,10 +134,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppendOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, GnsClientException {
+          throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.AppendOrCreateList,
             writer.getPrivateKey(), APPEND_OR_CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -155,10 +155,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplaceOrCreateList(String targetGuid, String field, JSONArray value, GuidEntry writer)
-          throws IOException, GnsClientException {
+          throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.ReplaceOrCreateList,
             writer.getPrivateKey(), REPLACE_OR_CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -174,10 +174,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value list of values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppend(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.AppendListWithDuplication,
             writer.getPrivateKey(), APPEND_LIST_WITH_DUPLICATION, GUID,
             targetGuid, FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -194,10 +194,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value list of values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplaceList(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.ReplaceList,
             writer.getPrivateKey(), REPLACE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -214,10 +214,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value list of values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldClear(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.RemoveList,
             writer.getPrivateKey(), REMOVE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -233,9 +233,9 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field field name
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
-  public void fieldClear(String targetGuid, String field, GuidEntry writer) throws IOException, GnsClientException {
+  public void fieldClear(String targetGuid, String field, GuidEntry writer) throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.Clear,
             writer.getPrivateKey(), CLEAR, GUID, targetGuid,
             FIELD, field, WRITER, writer.getGuid());
@@ -282,10 +282,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param index
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldSetElement(String targetGuid, String field, String newValue, int index, GuidEntry writer)
-          throws IOException, GnsClientException {
+          throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.Set,
             writer.getPrivateKey(), SET, GUID, targetGuid, FIELD,
             field, VALUE, newValue, N, Integer.toString(index), WRITER,
@@ -306,10 +306,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldSetNull(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsClientException {
+          NoSuchAlgorithmException, SignatureException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.SetFieldNull,
             writer.getPrivateKey(), SET_FIELD_NULL, GUID, targetGuid,
             FIELD, field, WRITER, writer.getGuid());
@@ -427,7 +427,7 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
   }
 
   // Active Code
-  public void activeCodeClear(String guid, String action, GuidEntry writerGuid) throws GnsClientException, IOException {
+  public void activeCodeClear(String guid, String action, GuidEntry writerGuid) throws ClientException, IOException {
     JSONObject command = createAndSignCommand(CommandType.ClearActiveCode,
             writerGuid.getPrivateKey(), AC_CLEAR,
             GUID, guid, AC_ACTION, action,
@@ -438,7 +438,7 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
   }
 
   public void activeCodeSet(String guid, String action, byte[] code, GuidEntry writerGuid)
-          throws GnsClientException, IOException {
+          throws ClientException, IOException {
     String code64 = Base64.encodeToString(code, true);
     JSONObject command = createAndSignCommand(CommandType.SetActiveCode,
             writerGuid.getPrivateKey(), AC_SET,
@@ -472,10 +472,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldCreateList(GuidEntry target, String field, JSONArray value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldCreateList(target.getGuid(), field, value, target);
   }
 
@@ -489,10 +489,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldCreateOneElementList(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.Create,
             writer.getPrivateKey(), CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
@@ -515,10 +515,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldCreateOneElementList(GuidEntry target, String field, String value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldCreateOneElementList(target.getGuid(), field, value, target);
   }
 
@@ -533,10 +533,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppendOrCreate(String targetGuid, String field, String value, GuidEntry writer)
-          throws IOException, GnsClientException {
+          throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.AppendOrCreate,
             writer.getPrivateKey(), APPEND_OR_CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
@@ -555,10 +555,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplaceOrCreate(String targetGuid, String field, String value, GuidEntry writer)
-          throws IOException, GnsClientException {
+          throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.ReplaceOrCreate,
             writer.getPrivateKey(), REPLACE_OR_CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
@@ -574,10 +574,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplaceOrCreateList(GuidEntry targetGuid, String field, JSONArray value)
-          throws IOException, GnsClientException {
+          throws IOException, ClientException {
     fieldReplaceOrCreateList(targetGuid.getGuid(), field, value, targetGuid);
   }
 
@@ -589,10 +589,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplaceOrCreateList(GuidEntry target, String field, String value)
-          throws IOException, GnsClientException {
+          throws IOException, ClientException {
     fieldReplaceOrCreate(target.getGuid(), field, value, target);
   }
 
@@ -606,10 +606,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value the new value
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplace(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.Replace,
             writer.getPrivateKey(), REPLACE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
@@ -625,10 +625,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplace(GuidEntry target, String field, String value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldReplace(target.getGuid(), field, value, target);
   }
 
@@ -639,10 +639,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplace(GuidEntry target, String field, JSONArray value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldReplaceList(target.getGuid(), field, value, target);
   }
 
@@ -656,10 +656,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppend(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.AppendWithDuplication,
             writer.getPrivateKey(), APPEND_WITH_DUPLICATION, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
@@ -675,10 +675,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppend(GuidEntry target, String field, String value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldAppend(target.getGuid(), field, value, target);
   }
 
@@ -692,10 +692,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.AppendList,
             writer.getPrivateKey(), APPEND_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -711,10 +711,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppendWithSetSemantics(GuidEntry target, String field, JSONArray value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldAppendWithSetSemantics(target.getGuid(), field, value, target);
   }
 
@@ -728,10 +728,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command = createAndSignCommand(CommandType.Append,
             writer.getPrivateKey(), APPEND, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
@@ -747,10 +747,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldAppendWithSetSemantics(GuidEntry target, String field, String value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldAppendWithSetSemantics(target.getGuid(), field, value, target);
   }
 
@@ -765,10 +765,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param value
    * @param writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplaceFirstElement(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
-          GnsClientException {
+          ClientException {
     JSONObject command;
     if (writer == null) {
       command = createCommand(CommandType.ReplaceUnsigned,
@@ -791,10 +791,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param field
    * @param value
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldReplaceFirstElement(GuidEntry target, String field, String value) throws IOException,
-          GnsClientException {
+          ClientException {
     fieldReplaceFirstElement(target.getGuid(), field, value, target);
   }
 
@@ -809,10 +809,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param oldValue
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldSubstitute(String targetGuid, String field, String newValue,
-          String oldValue, GuidEntry writer) throws IOException, GnsClientException {
+          String oldValue, GuidEntry writer) throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.Substitute,
             writer.getPrivateKey(), SUBSTITUTE, GUID,
             targetGuid, FIELD, field, VALUE, newValue,
@@ -830,10 +830,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param newValue
    * @param oldValue
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldSubstitute(GuidEntry target, String field, String newValue,
-          String oldValue) throws IOException, GnsClientException {
+          String oldValue) throws IOException, ClientException {
     fieldSubstitute(target.getGuid(), field, newValue, oldValue, target);
   }
 
@@ -849,10 +849,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param oldValue list of old values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldSubstitute(String targetGuid, String field,
-          JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, GnsClientException {
+          JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, ClientException {
     JSONObject command = createAndSignCommand(CommandType.SubstituteList,
             writer.getPrivateKey(), SUBSTITUTE_LIST, GUID,
             targetGuid, FIELD, field, VALUE, newValue.toString(),
@@ -870,10 +870,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @param newValue
    * @param oldValue
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldSubstitute(GuidEntry target, String field,
-          JSONArray newValue, JSONArray oldValue) throws IOException, GnsClientException {
+          JSONArray newValue, JSONArray oldValue) throws IOException, ClientException {
     fieldSubstitute(target.getGuid(), field, newValue, oldValue, target);
   }
 
@@ -928,10 +928,10 @@ public class TcpClient extends BasicGnsClient implements GNSClientInterface {
    * @throws InvalidKeyException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public void fieldRemove(GuidEntry guid, String field) throws IOException, InvalidKeyException,
-          NoSuchAlgorithmException, SignatureException, GnsClientException {
+          NoSuchAlgorithmException, SignatureException, ClientException {
     fieldRemove(guid.getGuid(), field, guid);
   }
 

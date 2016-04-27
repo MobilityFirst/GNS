@@ -24,7 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,7 +32,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Dump extends GnsCommand {
+public class Dump extends BasicCommand {
 
   /**
    *

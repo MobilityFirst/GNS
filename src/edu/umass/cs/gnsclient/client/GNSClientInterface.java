@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import org.json.JSONObject;
 
@@ -52,9 +52,9 @@ public interface GNSClientInterface {
    * @param guid
    * @return
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
-  public JSONObject lookupGuidRecord(String guid) throws IOException, GnsClientException;
+  public JSONObject lookupGuidRecord(String guid) throws IOException, ClientException;
 
   /**
    * Register a new account guid with the corresponding alias on the GNS server.

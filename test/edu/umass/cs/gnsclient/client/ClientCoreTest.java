@@ -24,8 +24,8 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.utils.Base64;
@@ -133,7 +133,7 @@ public class ClientCoreTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -157,7 +157,7 @@ public class ClientCoreTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -175,7 +175,7 @@ public class ClientCoreTest {
     }
     try {
       assertEquals(masterGuid.getGuid(), client.lookupPrimaryGuid(testGuid.getGuid()));
-    } catch (IOException | GnsClientException e) {
+    } catch (IOException | ClientException e) {
       fail("Exception while looking up primary guid for testGuid: " + e);
     }
   }
@@ -195,7 +195,7 @@ public class ClientCoreTest {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
-    } catch (GnsFieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
       System.out.println("Exception testing field not found: " + e);
@@ -215,7 +215,7 @@ public class ClientCoreTest {
   public void test_080_CreateFieldForFieldExists() {
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
-    } catch (IOException | GnsClientException e) {
+    } catch (IOException | ClientException e) {
       e.printStackTrace();
       fail("Exception during create field: " + e);
     }
@@ -260,7 +260,7 @@ public class ClientCoreTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it in create fields: " + e);
@@ -301,7 +301,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
@@ -342,7 +342,7 @@ public class ClientCoreTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -362,7 +362,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);
@@ -440,14 +440,14 @@ public class ClientCoreTest {
 //      try {
 //        client.fieldCreateOneElementList(westyEntry, "cats", "maya");
 //        fail("Should have got an exception when trying to create the field westy / cats.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       //this one always fails... check it out
 //      try {
 //        client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs", "freddybub",
 //                westyEntry);
 //        fail("Should have got an exception when trying to create the field westy / frogs.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
       expected = new HashSet<>(Arrays.asList("maya", "fred"));
@@ -614,7 +614,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
@@ -658,7 +658,7 @@ public class ClientCoreTest {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -675,7 +675,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -710,7 +710,7 @@ public class ClientCoreTest {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
@@ -780,7 +780,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(alias);
         fail(alias + " should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while checking alias: " + e);
@@ -819,7 +819,7 @@ public class ClientCoreTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName + " by sam: " + e);
@@ -846,7 +846,7 @@ public class ClientCoreTest {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -868,7 +868,7 @@ public class ClientCoreTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -880,7 +880,7 @@ public class ClientCoreTest {
     String fieldToDelete = "fieldToDelete";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), fieldToDelete, "work", westyEntry);
-    } catch (IOException | GnsClientException e) {
+    } catch (IOException | ClientException e) {
       fail("Exception while creating the field: " + e);
     }
     try {
@@ -891,7 +891,7 @@ public class ClientCoreTest {
     }
     try {
       client.fieldRemove(westyEntry.getGuid(), fieldToDelete, westyEntry);
-    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | SignatureException | GnsClientException e) {
+    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | SignatureException | ClientException e) {
       fail("Exception while removing field: " + e);
     }
 
@@ -900,7 +900,7 @@ public class ClientCoreTest {
 
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }
@@ -1333,7 +1333,7 @@ public class ClientCoreTest {
       String encodedValue = Base64.encodeToString(byteTestValue, true);
       //System.out.println("Encoded string: " + encodedValue);
       client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
-    } catch (IOException | GnsClientException | JSONException e) {
+    } catch (IOException | ClientException | JSONException e) {
       fail("Exception during create field: " + e);
     }
   }
@@ -1390,7 +1390,7 @@ public class ClientCoreTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(accountGuidForBatch.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
@@ -1430,7 +1430,7 @@ public class ClientCoreTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(accountGuidForWithoutPublicKeys.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
@@ -1466,7 +1466,7 @@ public class ClientCoreTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(accountGuidForFastest.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }

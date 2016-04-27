@@ -31,7 +31,7 @@ import org.xbill.DNS.SimpleResolver;
  * 
  * @author westy
  */
-public class GnsDnsLookupTask implements Callable<Message> {
+public class LookupTask implements Callable<Message> {
 
   private final WorkerClass workerClass;
   private final Message query;
@@ -44,7 +44,7 @@ public class GnsDnsLookupTask implements Callable<Message> {
    * 
    * @param query 
    */
-  GnsDnsLookupTask(Message query, ClientRequestHandlerInterface handler) {
+  LookupTask(Message query, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.GNSLOCAL;
     this.query = query;
     this.nameServer = null;
@@ -57,7 +57,7 @@ public class GnsDnsLookupTask implements Callable<Message> {
    * @param query 
    * @param dnsServer
    */
-  GnsDnsLookupTask(Message query, SimpleResolver dnsServer, ClientRequestHandlerInterface handler) {
+  LookupTask(Message query, SimpleResolver dnsServer, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.DNS;
     this.query = query;
     this.nameServer = dnsServer;
@@ -70,7 +70,7 @@ public class GnsDnsLookupTask implements Callable<Message> {
    * @param query
    * @param nameServer
    */
-  GnsDnsLookupTask(Message query, SimpleResolver nameServer, Boolean isGNS, ClientRequestHandlerInterface handler) {
+  LookupTask(Message query, SimpleResolver nameServer, Boolean isGNS, ClientRequestHandlerInterface handler) {
     if (isGNS) {
       this.workerClass = WorkerClass.GNS;
     } else {

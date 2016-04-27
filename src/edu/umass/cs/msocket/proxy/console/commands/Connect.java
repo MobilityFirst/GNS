@@ -36,7 +36,7 @@ import edu.umass.cs.msocket.proxy.console.ConsoleModule;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
  * @version 1.0
  */
-public class GnsConnect extends ConsoleCommand
+public class Connect extends ConsoleCommand
 {
 
   /**
@@ -44,7 +44,7 @@ public class GnsConnect extends ConsoleCommand
    * 
    * @param module
    */
-  public GnsConnect(ConsoleModule module)
+  public Connect(ConsoleModule module)
   {
     super(module);
   }

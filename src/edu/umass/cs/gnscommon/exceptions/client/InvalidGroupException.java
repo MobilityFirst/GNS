@@ -20,54 +20,52 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsDupplicateNameException
+ * This class defines a InvalidGroupException
  * 
- * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsVerificationException extends GnsClientException
+public class InvalidGroupException extends ClientException
 {
-
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1190440453314093353L;
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    */
-  public GnsVerificationException()
+  public InvalidGroupException()
   {
-    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsVerificationException(String message, Throwable cause)
+  public InvalidGroupException(String message, Throwable cause)
   {
     super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    * 
    * @param message
    */
-  public GnsVerificationException(String message)
+  public InvalidGroupException(String message)
   {
     super(message);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnsInvalidGroupException</code> object
    * 
    * @param throwable
    */
-  public GnsVerificationException(Throwable throwable)
+  public InvalidGroupException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

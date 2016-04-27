@@ -24,7 +24,7 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -102,7 +102,7 @@ public class ReadTest {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's environment by sam: " + e);

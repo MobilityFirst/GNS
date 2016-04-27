@@ -26,7 +26,7 @@ package edu.umass.cs.msocket.proxy.console.commands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.msocket.proxy.ProxyGnsPublisher;
+import edu.umass.cs.msocket.proxy.ProxyPublisher;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 import edu.umass.cs.msocket.proxy.forwarder.ProxyForwarder;
 
@@ -121,7 +121,7 @@ public class StartProxy extends ConsoleCommand
         console.printString("Starting proxy forwarder\n");
       }
       ProxyForwarder forwarder = new ProxyForwarder(proxyName, 0);
-      ProxyGnsPublisher proxy = new ProxyGnsPublisher(
+      ProxyPublisher proxy = new ProxyPublisher(
           proxyName, module.getProxyGroupGuid().getEntityName(), forwarder.getProxyListeningAddress());
       proxy.registerProxyInGns();
       proxy.start();

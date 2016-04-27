@@ -29,7 +29,7 @@ package edu.umass.cs.msocket.common;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsConstants
+public class Constants
 {
   /**
    * Field used to store the start time of the proxy using its local clock.

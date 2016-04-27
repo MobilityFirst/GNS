@@ -33,7 +33,7 @@ import org.json.JSONArray;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
 /**
@@ -114,41 +114,41 @@ public class ApproveGuid extends ConsoleCommand
        * Check what kind of service this GUID represents and put it in the
        * appropriate list
        */
-      String service = gnsClient.fieldReadArray(guid, GnsConstants.SERVICE_TYPE_FIELD, groupGuid).getString(0);
-      if (GnsConstants.PROXY_SERVICE.equals(service))
+      String service = gnsClient.fieldReadArray(guid, Constants.SERVICE_TYPE_FIELD, groupGuid).getString(0);
+      if (Constants.PROXY_SERVICE.equals(service))
       {
         console.printString("Granting access to proxy " + guid
             + " and moving it to the inactive proxy list. Make sure a watchdog is running to detect its activity.\n");
-        gnsClient.fieldAppend(module.getProxyGroupGuid().getGuid(), GnsConstants.INACTIVE_PROXY_FIELD,
+        gnsClient.fieldAppend(module.getProxyGroupGuid().getGuid(), Constants.INACTIVE_PROXY_FIELD,
             new JSONArray().put(guid), groupGuid);
       }
-      else if (GnsConstants.LOCATION_SERVICE.equals(service))
+      else if (Constants.LOCATION_SERVICE.equals(service))
       {
         console.printString("Granting access to location service " + guid
             + " and moving it to the inactive service list. Make sure a watchdog is running to detect its activity.\n");
-        gnsClient.fieldAppend(groupGuid.getGuid(), GnsConstants.INACTIVE_LOCATION_FIELD, new JSONArray().put(guid),
+        gnsClient.fieldAppend(groupGuid.getGuid(), Constants.INACTIVE_LOCATION_FIELD, new JSONArray().put(guid),
             groupGuid);
-        gnsClient.aclAdd(AccessType.READ_WHITELIST, groupGuid, GnsConstants.ACTIVE_PROXY_FIELD, guid);
+        gnsClient.aclAdd(AccessType.READ_WHITELIST, groupGuid, Constants.ACTIVE_PROXY_FIELD, guid);
       }
-      else if (GnsConstants.WATCHDOG_SERVICE.equals(service))
+      else if (Constants.WATCHDOG_SERVICE.equals(service))
       {
         console
             .printString("Granting access to watchdog service "
                 + guid
                 + " and moving it to the inactive wachdog list. Make sure another watchdog is running to detect its activity.\n");
-        gnsClient.fieldAppend(groupGuid.getGuid(), GnsConstants.INACTIVE_WATCHDOG_FIELD, new JSONArray().put(guid),
+        gnsClient.fieldAppend(groupGuid.getGuid(), Constants.INACTIVE_WATCHDOG_FIELD, new JSONArray().put(guid),
             groupGuid);
         // Open lists in read/write for the watchdog so that it can manipulate
         // lists
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.ACTIVE_PROXY_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.SUSPICIOUS_PROXY_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.INACTIVE_PROXY_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.ACTIVE_LOCATION_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.SUSPICIOUS_LOCATION_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.INACTIVE_LOCATION_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.ACTIVE_WATCHDOG_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.SUSPICIOUS_WATCHDOG_FIELD);
-        setReadWriteAccess(guid, groupGuid, gnsClient, GnsConstants.INACTIVE_WATCHDOG_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.ACTIVE_PROXY_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.SUSPICIOUS_PROXY_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.INACTIVE_PROXY_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.ACTIVE_LOCATION_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.SUSPICIOUS_LOCATION_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.INACTIVE_LOCATION_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.ACTIVE_WATCHDOG_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.SUSPICIOUS_WATCHDOG_FIELD);
+        setReadWriteAccess(guid, groupGuid, gnsClient, Constants.INACTIVE_WATCHDOG_FIELD);
       }
 
     }

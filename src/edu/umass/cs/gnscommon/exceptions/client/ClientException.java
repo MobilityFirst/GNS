@@ -20,52 +20,50 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsDupplicateNameException
+ * This class defines a GnrsException
  * 
- * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsDuplicateNameException extends GnsClientException
+public class ClientException extends Exception
 {
+  private static final long serialVersionUID = 6627620787610127842L;
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsException</code> object
    */
-  public GnsDuplicateNameException()
+  public ClientException()
   {
     super();
-    // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsDuplicateNameException(String message, Throwable cause)
+  public ClientException(String message, Throwable cause)
   {
     super(message, cause);
-    // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsException</code> object
    * 
    * @param message
    */
-  public GnsDuplicateNameException(String message)
+  public ClientException(String message)
   {
     super(message);
-    // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsException</code> object
    * 
    * @param throwable
    */
-  public GnsDuplicateNameException(Throwable throwable)
+  public ClientException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

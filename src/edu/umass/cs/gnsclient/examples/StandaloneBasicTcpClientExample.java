@@ -25,7 +25,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -54,7 +54,7 @@ public class StandaloneBasicTcpClientExample {
   private static GuidEntry guid;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
+          InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
     // Bring up the server selection dialog

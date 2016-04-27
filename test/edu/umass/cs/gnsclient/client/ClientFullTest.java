@@ -28,8 +28,8 @@ import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -129,12 +129,12 @@ public class ClientFullTest {
         ThreadUtils.sleep(10);
       } while (true);
       // the lookup should fail and throw to here
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     }
 //    try {
 //      client.lookupGuidRecord(testGuid.getGuid());
 //      fail("Lookup testGuid should have throw an exception.");
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //
 //    } catch (IOException e) {
 //      fail("Exception while doing Lookup testGuid: " + e);
@@ -158,7 +158,7 @@ public class ClientFullTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -196,7 +196,7 @@ public class ClientFullTest {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
-    } catch (GnsFieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);
@@ -261,7 +261,7 @@ public class ClientFullTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -302,7 +302,7 @@ public class ClientFullTest {
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
@@ -343,7 +343,7 @@ public class ClientFullTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -363,7 +363,7 @@ public class ClientFullTest {
       try {
         client.lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);
@@ -415,14 +415,14 @@ public class ClientFullTest {
 //      try {
 //        client.fieldCreateOneElementList(westyEntry, "cats", "maya");
 //        fail("Should have got an exception when trying to create the field westy / cats.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       //this one always fails... check it out
 //      try {
 //        client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs", "freddybub",
 //                westyEntry);
 //        fail("Should have got an exception when trying to create the field westy / frogs.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
@@ -589,7 +589,7 @@ public class ClientFullTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
@@ -619,7 +619,7 @@ public class ClientFullTest {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -645,7 +645,7 @@ public class ClientFullTest {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -680,7 +680,7 @@ public class ClientFullTest {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
@@ -741,7 +741,7 @@ public class ClientFullTest {
     try {
       client.lookupGuid(alias);
       System.out.println(alias + " should not exist");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (IOException e) {
       fail("Exception while looking up alias: " + e);
     }
@@ -763,7 +763,7 @@ public class ClientFullTest {
 //        ThreadUtils.sleep(10);
 //      } while (true);
 //      // the lookup should fail and throw to here
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //    }
   }
 
@@ -896,7 +896,7 @@ public class ClientFullTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName + " by sam: " + e);
@@ -923,7 +923,7 @@ public class ClientFullTest {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -945,7 +945,7 @@ public class ClientFullTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -976,7 +976,7 @@ public class ClientFullTest {
       String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), fieldToDelete, westyEntry);
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }

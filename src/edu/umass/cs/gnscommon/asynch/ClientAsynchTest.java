@@ -11,7 +11,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.json.JSONException;
@@ -65,7 +65,7 @@ public class ClientAsynchTest {
       System.out.println("##### id: " + id);
       waitForResponse();
       System.out.println("##### Received response: " + receivedResponse);
-    } catch (IOException | GnsClientException | JSONException e) {
+    } catch (IOException | ClientException | JSONException e) {
       GNSClientConfig.getLogger().log(Level.SEVERE, "Problem executing command:{0}", e);
       System.exit(-1);
     }

@@ -20,54 +20,52 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsDupplicateNameException
+ * This class defines a GnrsACLException
  * 
- * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsOperationNotSupportedException extends GnsClientException
+public class AclException extends ClientException
 {
-
-  private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 7789779657368481702L;
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsACLException</code> object
    */
-  public GnsOperationNotSupportedException()
+  public AclException()
   {
-    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsACLException</code> object
    * 
    * @param message
    * @param cause
    */
-  public GnsOperationNotSupportedException(String message, Throwable cause)
+  public AclException(String message, Throwable cause)
   {
     super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsACLException</code> object
    * 
    * @param message
    */
-  public GnsOperationNotSupportedException(String message)
+  public AclException(String message)
   {
     super(message);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
+   * Creates a new <code>GnrsACLException</code> object
    * 
    * @param throwable
    */
-  public GnsOperationNotSupportedException(Throwable throwable)
+  public AclException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub

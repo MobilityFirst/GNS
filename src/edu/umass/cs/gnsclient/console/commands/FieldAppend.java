@@ -25,7 +25,7 @@ import java.util.StringTokenizer;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnsclient.console.GnsUtils;
+import edu.umass.cs.gnscommon.utils.Util;
 
 /**
  * Command to update a field in the GNS
@@ -93,7 +93,7 @@ public class FieldAppend extends ConsoleCommand
       else if (st.countTokens() == 3)
       {
         guid = st.nextToken();
-        if (!GnsUtils.isValidGuidString(guid))
+        if (!Util.isValidGuidString(guid))
         {
           // We probably have an alias, lookup the GUID
           guid = gnsClient.lookupGuid(guid);

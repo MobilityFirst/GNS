@@ -36,12 +36,12 @@ import org.json.JSONObject;
 /**
  * This class helps to implement a unified set of client support commands that translate
  * between client support requests and core GNS commands that are sent to the server.
- * Specifically the GnsCommand is the superclass for all other commands.
- * It supports command sorting to facilitate command lookup. It also supports command documentation.
+ * Specifically the BasicCommand is the superclass for all other commands.
+ It supports command sorting to facilitate command lookup. It also supports command documentation.
  *
  * @author westy, arun
  */
-public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable {
+public abstract class BasicCommand implements Comparable<BasicCommand>, Summarizable {
 
   /**
    *
@@ -53,7 +53,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable
    *
    * @param module
    */
-  public GnsCommand(CommandModule module) {
+  public BasicCommand(CommandModule module) {
     this.module = module;
   }
 
@@ -66,7 +66,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable
    */
   // 
   @Override
-  public int compareTo(GnsCommand otherCommand) {
+  public int compareTo(BasicCommand otherCommand) {
     int alphaResult = getCommandName().compareTo(otherCommand.getCommandName());
     // sort by number of arguments putting the longer ones first because we need to do longest match first.
     if (alphaResult == 0) {
@@ -251,7 +251,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand>, Summarizable
     return new Object() {
       @Override
       public String toString() {
-        return GnsCommand.this.toString();
+        return BasicCommand.this.toString();
       }
     };
   }

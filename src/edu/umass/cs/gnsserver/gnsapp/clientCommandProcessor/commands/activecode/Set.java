@@ -35,7 +35,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Activ
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -43,7 +43,7 @@ import java.util.Date;
  * The command to retrieve the active code for the specified GUID and action.
  *
  */
-public class Set extends GnsCommand {
+public class Set extends BasicCommand {
 
   /**
    * Create the set instance.

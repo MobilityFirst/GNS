@@ -20,54 +20,56 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsInvalidFieldException
+ * This class defines a GnsDupplicateNameException
  * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
+ * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsInvalidFieldException extends GnsClientException
+public class OperationNotSupportedException extends ClientException
 {
-  private static final long serialVersionUID = 2676899572105162853L;
+
+  private static final long serialVersionUID = 1L;
 
   /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    */
-  public GnsInvalidFieldException()
+  public OperationNotSupportedException()
   {
+    super();
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
-   * @param detailMessage
+   * @param message
+   * @param cause
    */
-  public GnsInvalidFieldException(String detailMessage)
+  public OperationNotSupportedException(String message, Throwable cause)
   {
-    super(detailMessage);
+    super(message, cause);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
+   * Creates a new <code>GnsDupplicateNameException</code> object
+   * 
+   * @param message
+   */
+  public OperationNotSupportedException(String message)
+  {
+    super(message);
+    // TODO Auto-generated constructor stub
+  }
+
+  /**
+   * Creates a new <code>GnsDupplicateNameException</code> object
    * 
    * @param throwable
    */
-  public GnsInvalidFieldException(Throwable throwable)
+  public OperationNotSupportedException(Throwable throwable)
   {
     super(throwable);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param detailMessage
-   * @param throwable
-   */
-  public GnsInvalidFieldException(String detailMessage, Throwable throwable)
-  {
-    super(detailMessage, throwable);
     // TODO Auto-generated constructor stub
   }
 

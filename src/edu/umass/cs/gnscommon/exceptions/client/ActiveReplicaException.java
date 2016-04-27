@@ -14,60 +14,59 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsInvalidGroupException
+ * This class defines a ActiveReplicaException
  * 
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsInvalidGroupException extends GnsClientException
+public class ActiveReplicaException extends ClientException
 {
-  private static final long serialVersionUID = 1190440453314093353L;
+  private static final long serialVersionUID = 2676899572105162853L;
 
   /**
-   * Creates a new <code>GnsInvalidGroupException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    */
-  public GnsInvalidGroupException()
+  public ActiveReplicaException()
   {
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidGroupException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    * 
-   * @param message
-   * @param cause
+   * @param detailMessage
    */
-  public GnsInvalidGroupException(String message, Throwable cause)
+  public ActiveReplicaException(String detailMessage)
   {
-    super(message, cause);
+    super(detailMessage);
     // TODO Auto-generated constructor stub
   }
 
   /**
-   * Creates a new <code>GnsInvalidGroupException</code> object
-   * 
-   * @param message
-   */
-  public GnsInvalidGroupException(String message)
-  {
-    super(message);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidGroupException</code> object
+   * Creates a new <code>GnsInvalidFieldException</code> object
    * 
    * @param throwable
    */
-  public GnsInvalidGroupException(Throwable throwable)
+  public ActiveReplicaException(Throwable throwable)
   {
     super(throwable);
+    // TODO Auto-generated constructor stub
+  }
+
+  /**
+   * Creates a new <code>GnsInvalidFieldException</code> object
+   * 
+   * @param detailMessage
+   * @param throwable
+   */
+  public ActiveReplicaException(String detailMessage, Throwable throwable)
+  {
+    super(detailMessage, throwable);
     // TODO Auto-generated constructor stub
   }
 

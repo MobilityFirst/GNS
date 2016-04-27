@@ -29,7 +29,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.msocket.gns.GNSCalls;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 
 /**
  * This class defines a MSocketGroupMember
@@ -76,7 +76,7 @@ public class ContextMember
 	{
 		try
 		{
-			return GnsIntegration.getGUIDOfAlias(localName);
+			return Integration.getGUIDOfAlias(localName);
 		} catch (Exception e)
 		{
 			e.printStackTrace();

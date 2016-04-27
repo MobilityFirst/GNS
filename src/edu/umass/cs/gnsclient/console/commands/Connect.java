@@ -19,11 +19,8 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.util.StringTokenizer;
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
@@ -32,14 +29,14 @@ import edu.umass.cs.gnsclient.console.ConsoleModule;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet </a>
  * @version 1.0
  */
-public class GnsConnect extends ConsoleCommand {
+public class Connect extends ConsoleCommand {
 
   /**
    * Creates a new <code>GnsConnect</code> object
    *
    * @param module
    */
-  public GnsConnect(ConsoleModule module) {
+  public Connect(ConsoleModule module) {
     super(module);
   }
 

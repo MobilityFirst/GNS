@@ -35,7 +35,7 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
 /**
@@ -117,20 +117,20 @@ public class ProxyGroupCreate extends ConsoleCommand
       }
 
       // Create the fields containing the GUID lists
-      createField(gnsClient, myGuid, GnsConstants.ACTIVE_PROXY_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.SUSPICIOUS_PROXY_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.INACTIVE_PROXY_FIELD, false);
+      createField(gnsClient, myGuid, Constants.ACTIVE_PROXY_FIELD, false);
+      createField(gnsClient, myGuid, Constants.SUSPICIOUS_PROXY_FIELD, false);
+      createField(gnsClient, myGuid, Constants.INACTIVE_PROXY_FIELD, false);
 
-      createField(gnsClient, myGuid, GnsConstants.ACTIVE_WATCHDOG_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.SUSPICIOUS_WATCHDOG_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.INACTIVE_WATCHDOG_FIELD, false);
+      createField(gnsClient, myGuid, Constants.ACTIVE_WATCHDOG_FIELD, false);
+      createField(gnsClient, myGuid, Constants.SUSPICIOUS_WATCHDOG_FIELD, false);
+      createField(gnsClient, myGuid, Constants.INACTIVE_WATCHDOG_FIELD, false);
 
-      createField(gnsClient, myGuid, GnsConstants.ACTIVE_LOCATION_FIELD, false);
+      createField(gnsClient, myGuid, Constants.ACTIVE_LOCATION_FIELD, false);
       // Open the field in READ to everyone so that mSocket clients can look it
       // up
-      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.ACTIVE_LOCATION_FIELD, null);
-      createField(gnsClient, myGuid, GnsConstants.SUSPICIOUS_LOCATION_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.INACTIVE_PROXY_FIELD, false);
+      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.ACTIVE_LOCATION_FIELD, null);
+      createField(gnsClient, myGuid, Constants.SUSPICIOUS_LOCATION_FIELD, false);
+      createField(gnsClient, myGuid, Constants.INACTIVE_PROXY_FIELD, false);
 
       if (!module.isSilent())
         console.printString("We are guid " + myGuid.getGuid() + "\n");

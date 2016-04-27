@@ -24,8 +24,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
@@ -40,7 +40,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Admin extends GnsCommand {
+public class Admin extends BasicCommand {
 
   /**
    *

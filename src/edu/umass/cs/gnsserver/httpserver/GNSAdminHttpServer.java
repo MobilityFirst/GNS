@@ -44,7 +44,7 @@ import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
@@ -194,7 +194,7 @@ public class GNSAdminHttpServer {
     JSONObject jsonFormattedCommand = new JSONObject(queryMap);
 
     // Now we execute the command
-    GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+    BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler).getReturnValue();
   }
 

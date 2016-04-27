@@ -38,7 +38,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.ACCOUNT_INFO;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.GUID_INFO;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
@@ -376,9 +376,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws IOException
    * @throws org.json.JSONException
    * @throws UnsupportedEncodingException
-   * @throws GnsClientException
+   * @throws ClientException
    */
-  public long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, ClientException {
     return sendCommandAsynch(createCommand(CommandType.LookupGuid,
             LOOKUP_GUID, NAME, alias), callback);
   }
@@ -391,11 +391,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws UnsupportedEncodingException
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    * @throws org.json.JSONException
    */
   public long lookupPrimaryGuid(String guid, RequestCallback callback)
-          throws UnsupportedEncodingException, IOException, GnsClientException, JSONException {
+          throws UnsupportedEncodingException, IOException, ClientException, JSONException {
     return sendCommandAsynch(createCommand(CommandType.LookupPrimaryGuid,
             LOOKUP_PRIMARY_GUID, GUID, guid), callback);
   }
@@ -410,11 +410,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @param callback
    * @return the request id
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    * @throws org.json.JSONException
    */
   public long lookupGuidRecord(String guid, RequestCallback callback)
-          throws IOException, GnsClientException, JSONException {
+          throws IOException, ClientException, JSONException {
     return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord,
             LOOKUP_GUID_RECORD, GUID, guid), callback);
   }
@@ -432,11 +432,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @param callback
    * @return the request id
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    * @throws org.json.JSONException
    */
   public long lookupAccountRecord(String accountGuid, RequestCallback callback)
-          throws IOException, GnsClientException, JSONException {
+          throws IOException, ClientException, JSONException {
     return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, 
             LOOKUP_ACCOUNT_RECORD, GUID, accountGuid), callback);
   }
@@ -451,10 +451,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws IOException
    * @throws org.json.JSONException
    * @throws UnsupportedEncodingException
-   * @throws GnsClientException
+   * @throws ClientException
    */
   public long fieldRead(String guid, String field, RequestCallback callback) 
-          throws IOException, JSONException, GnsClientException {
+          throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
     return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, 
@@ -470,10 +470,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return a request id
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws ClientException 
    */
   public long fieldReadArray(String guid, String field, RequestCallback callback) 
-          throws IOException, JSONException, GnsClientException {
+          throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
     return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned,
@@ -490,9 +490,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException
+   * @throws ClientException
    */
-  public long fieldUpdate(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long fieldUpdate(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
@@ -513,9 +513,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws ClientException 
    */
-  public long fieldReplaceOrCreateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long fieldReplaceOrCreateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReplaceOrCreateListUnsigned,
             REPLACE_OR_CREATE_LIST,
@@ -535,9 +535,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws ClientException 
    */
-  public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.AppendListUnsigned,
             APPEND_LIST,
@@ -557,9 +557,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws ClientException 
    */
-  public long fieldRemove(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long fieldRemove(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
@@ -579,9 +579,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws ClientException 
    */
-  public long fieldRemoveMultiple(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long fieldRemoveMultiple(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
@@ -600,9 +600,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws GnsClientException 
+   * @throws ClientException 
    */
-  public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, GnsClientException {
+  public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
             REPLACE_USER_JSON, GUID, guid,
@@ -636,12 +636,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @param action
    * @param keysAndValues
    * @return the query string
-   * @throws GnsClientException
+   * @throws ClientException
    */
   // Same as the version on CommandUtils but it forces coordinated reads (see createCommand)
   public JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, String action, Object... keysAndValues)
-          throws GnsClientException {
+          throws ClientException {
     try {
       JSONObject result = createCommand(commandType, action, keysAndValues);
       result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
@@ -652,7 +652,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
-      throw new GnsClientException("Error encoding message", e);
+      throw new ClientException("Error encoding message", e);
     }
   }
 
@@ -664,11 +664,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @param action
    * @param keysAndValues
    * @return the query string
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
  // Same as the version on CommandUtils but it forces coordinated reads
   public JSONObject createCommand(CommandType commandType, String action,
-          Object... keysAndValues) throws GnsClientException {
+          Object... keysAndValues) throws ClientException {
     try {
       JSONObject result = new JSONObject();
       String key;
@@ -683,7 +683,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
       result.put(COORDINATE_READS, true);
       return result;
     } catch (JSONException e) {
-      throw new GnsClientException("Error encoding message", e);
+      throw new ClientException("Error encoding message", e);
     }
   }
 

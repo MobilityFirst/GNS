@@ -24,7 +24,7 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnsclient.console.GnsUtils;
+import edu.umass.cs.gnscommon.utils.Util;
 
 /**
  * Lookup a Public Key for an alias or GUID
@@ -73,7 +73,7 @@ public class KeyLookup extends ConsoleCommand {
       }
       GNSClientCommands gnsClient = module.getGnsClient();
       PublicKey pk;
-      if (!GnsUtils.isValidGuidString(alias)) {
+      if (!Util.isValidGuidString(alias)) {
         pk = gnsClient.publicKeyLookupFromAlias(alias);
       } else {
         pk = gnsClient.publicKeyLookupFromGuid(alias);

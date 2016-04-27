@@ -42,22 +42,22 @@ import org.json.JSONArray;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.forwarder.ProxyLoadStatistics;
 import edu.umass.cs.msocket.proxy.location.GlobalPosition;
 
 /**
- * This class defines a ProxyGnsPublisher
+ * This class defines a ProxyPublisher
  * 
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class ProxyGnsPublisher extends Thread
+public class ProxyPublisher extends Thread
 {
   private String              proxyGroupName;
   private String              proxyName;
-  private GnsTimerKeepalive   gnsTimer;
+  private TimerKeepalive   gnsTimer;
   private boolean             killed = false;
   private SocketAddress       proxySocketAddres;
   private static final Logger logger = Logger.getLogger("GnsProxy");
@@ -72,7 +72,7 @@ public class ProxyGnsPublisher extends Thread
    * @param socketAddress the address the proxy is currently listening to,
    *          waiting for connections from mServerSockets
    */
-  public ProxyGnsPublisher(String proxyName, String proxyGroupName,
+  public ProxyPublisher(String proxyName, String proxyGroupName,
       SocketAddress socketAddress)
   {
     this.proxyGroupName = proxyGroupName;
@@ -214,14 +214,14 @@ public class ProxyGnsPublisher extends Thread
 
     // Make sure we advertise ourselves as a proxy and make the field readable
     // by everyone
-    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.SERVICE_TYPE_FIELD,
-        new JSONArray().put(GnsConstants.PROXY_SERVICE), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.SERVICE_TYPE_FIELD, null);
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVICE_TYPE_FIELD,
+        new JSONArray().put(Constants.PROXY_SERVICE), myGuid);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.SERVICE_TYPE_FIELD, null);
     // Publish external IP (readable by everyone)
     InetSocketAddress externalIP = (InetSocketAddress) proxySocketAddres;
-    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.PROXY_EXTERNAL_IP_FIELD,
+    DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.PROXY_EXTERNAL_IP_FIELD,
         new JSONArray().put(externalIP.getAddress().getHostAddress() + ":" + externalIP.getPort()), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.PROXY_EXTERNAL_IP_FIELD, null);
 
     // Update our location if geolocation resolution worked
     if (proxyInfo.getLatLong() != null)
@@ -234,7 +234,7 @@ public class ProxyGnsPublisher extends Thread
               "This proxy has not been verified yet, it will stay in the unverified list until it gets added to the proxy group");
     }
 
-    gnsTimer = new GnsTimerKeepalive(myGuid, 1000);
+    gnsTimer = new TimerKeepalive(myGuid, 1000);
     gnsTimer.start();
   }
 
@@ -270,7 +270,7 @@ public class ProxyGnsPublisher extends Thread
       try
       {
         Thread.sleep(1000);
-        DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(DefaultGNSClient.getMyGuidEntry().getGuid(), GnsConstants.PROXY_LOAD,
+        DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(DefaultGNSClient.getMyGuidEntry().getGuid(), Constants.PROXY_LOAD,
             ProxyLoadStatistics.serializeLoadInformation(), DefaultGNSClient.getMyGuidEntry());
       }
       catch (Exception e)

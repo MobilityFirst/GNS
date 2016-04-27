@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
@@ -58,6 +58,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.lang3.time.DateUtils;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
@@ -494,7 +496,7 @@ public class FieldAccess {
       if (result != null) {
         return new CommandResponse<>(result.toString());
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
     }
     return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
   }
@@ -514,7 +516,7 @@ public class FieldAccess {
       if (result != null) {
         return new CommandResponse<>(result.toString());
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
     }
     return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
   }
@@ -536,7 +538,7 @@ public class FieldAccess {
       if (result != null) {
         return new CommandResponse<>(result.toString());
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
     }
     return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
   }
@@ -554,7 +556,7 @@ public class FieldAccess {
       if (result != null) {
         return new CommandResponse<>(result.toString());
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
     }
     return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
   }
@@ -605,7 +607,7 @@ public class FieldAccess {
       if (result != null) {
         return new CommandResponse<>(result.toString());
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
     }
     return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
   }
@@ -623,7 +625,7 @@ public class FieldAccess {
       if (result != null) {
         return new CommandResponse<>(result.toString());
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
     }
     return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
   }

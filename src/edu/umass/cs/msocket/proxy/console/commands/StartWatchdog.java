@@ -35,7 +35,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 import edu.umass.cs.msocket.proxy.watchdog.Watchdog;
 
@@ -149,9 +149,9 @@ public class StartWatchdog extends ConsoleCommand
         console.printString("Watchdog has guid " + myGuid.getGuid());
 
       // Make sure we advertise ourselves as a watchdog (readable for everyone)
-      gnsClient.fieldReplaceOrCreateList(myGuid.getGuid(), GnsConstants.SERVICE_TYPE_FIELD,
-          new JSONArray().put(GnsConstants.WATCHDOG_SERVICE), myGuid);
-      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.SERVICE_TYPE_FIELD, null);
+      gnsClient.fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVICE_TYPE_FIELD,
+          new JSONArray().put(Constants.WATCHDOG_SERVICE), myGuid);
+      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.SERVICE_TYPE_FIELD, null);
 
       // Check if we are a member of the group
       final String groupGuid = module.getProxyGroupGuid().getGuid();
@@ -177,7 +177,7 @@ public class StartWatchdog extends ConsoleCommand
       if ("proxy".equalsIgnoreCase(targetList) || "all".equalsIgnoreCase(targetList))
       {
         Watchdog proxyWatchdog = new Watchdog(gnsClient, myGuid, groupGuid, lookupIntervalInMs,
-            GnsConstants.ACTIVE_PROXY_FIELD, GnsConstants.SUSPICIOUS_PROXY_FIELD, GnsConstants.INACTIVE_PROXY_FIELD,
+            Constants.ACTIVE_PROXY_FIELD, Constants.SUSPICIOUS_PROXY_FIELD, Constants.INACTIVE_PROXY_FIELD,
             suspiciousTimeoutInMs, failureTimeoutInMs);
         module.setRunningProxyWatchdog(proxyWatchdog);
         proxyWatchdog.start();
@@ -185,16 +185,16 @@ public class StartWatchdog extends ConsoleCommand
       if ("location".equalsIgnoreCase(targetList) || "all".equalsIgnoreCase(targetList))
       {
         Watchdog locationWatchdog = new Watchdog(gnsClient, myGuid, groupGuid, lookupIntervalInMs,
-            GnsConstants.ACTIVE_LOCATION_FIELD, GnsConstants.SUSPICIOUS_LOCATION_FIELD,
-            GnsConstants.INACTIVE_LOCATION_FIELD, suspiciousTimeoutInMs, failureTimeoutInMs);
+            Constants.ACTIVE_LOCATION_FIELD, Constants.SUSPICIOUS_LOCATION_FIELD,
+            Constants.INACTIVE_LOCATION_FIELD, suspiciousTimeoutInMs, failureTimeoutInMs);
         module.setRunningLocationWatchdog(locationWatchdog);
         locationWatchdog.start();
       }
       if ("watchdog".equalsIgnoreCase(targetList) || "all".equalsIgnoreCase(targetList))
       {
         Watchdog watchdogWatchdog = new Watchdog(gnsClient, myGuid, groupGuid, lookupIntervalInMs,
-            GnsConstants.ACTIVE_WATCHDOG_FIELD, GnsConstants.SUSPICIOUS_WATCHDOG_FIELD,
-            GnsConstants.INACTIVE_WATCHDOG_FIELD, suspiciousTimeoutInMs, failureTimeoutInMs);
+            Constants.ACTIVE_WATCHDOG_FIELD, Constants.SUSPICIOUS_WATCHDOG_FIELD,
+            Constants.INACTIVE_WATCHDOG_FIELD, suspiciousTimeoutInMs, failureTimeoutInMs);
         module.setRunningWatchdogWatchdog(watchdogWatchdog);
         watchdogWatchdog.start();
       }

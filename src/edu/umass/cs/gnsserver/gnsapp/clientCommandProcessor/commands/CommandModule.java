@@ -48,9 +48,9 @@ import java.util.logging.Level;
  */
 public class CommandModule {
 
-  private Map<CommandType, GnsCommand> commandLookupTable;
+  private Map<CommandType, BasicCommand> commandLookupTable;
 
-  public void addCommand(CommandType commandType, GnsCommand command) {
+  public void addCommand(CommandType commandType, BasicCommand command) {
     if (commandLookupTable.get(commandType) != null) {
       ClientSupportConfig.getLogger().log(Level.SEVERE,
               "Duplicate command: {0}", commandType);
@@ -58,7 +58,7 @@ public class CommandModule {
     commandLookupTable.put(commandType, command);
   }
 
-  private TreeSet<GnsCommand> commands;
+  private TreeSet<BasicCommand> commands;
   private boolean adminMode = false;
 
   /**
@@ -86,10 +86,10 @@ public class CommandModule {
    * to instantiate
    * @param commands Set where the commands are added
    */
-  protected void addCommands(Class<?>[] commandClasses, Set<GnsCommand> commands) {
+  protected void addCommands(Class<?>[] commandClasses, Set<BasicCommand> commands) {
     for (int i = 0; i < commandClasses.length; i++) {
       Class<?> clazz = commandClasses[i];
-      GnsCommand command = createCommandInstance(clazz);
+      BasicCommand command = createCommandInstance(clazz);
       if (command != null) {
         commandLookupTable.put(command.getCommandType(), command);
         // Legacy
@@ -98,7 +98,7 @@ public class CommandModule {
     }
   }
 
-  private GnsCommand createCommandInstance(Class<?> clazz) {
+  private BasicCommand createCommandInstance(Class<?> clazz) {
     try {
       Constructor<?> constructor;
       try {
@@ -106,7 +106,7 @@ public class CommandModule {
       } catch (NoSuchMethodException e) {
         constructor = clazz.getConstructor(new Class<?>[]{CommandModule.class});
       }
-      GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
+      BasicCommand command = (BasicCommand) constructor.newInstance(new Object[]{this});
       ClientCommandProcessorConfig.getLogger().log(Level.FINE,
               "Creating command {0}: {1} with {2}: {3}",
               new Object[]{command.getCommandType().getInt(), clazz.getCanonicalName(), command.getCommandName(),
@@ -128,8 +128,8 @@ public class CommandModule {
    * @param json
    * @return
    */
-  public GnsCommand lookupCommand(JSONObject json) {
-    GnsCommand command = null;
+  public BasicCommand lookupCommand(JSONObject json) {
+    BasicCommand command = null;
     if (json.has(COMMAND_INT)) {
       try {
         command = commandLookupTable.get(CommandType.getCommandType(json.getInt(COMMAND_INT)));
@@ -162,7 +162,7 @@ public class CommandModule {
     return lookupCommandLinearSearch(json);
   }
 
-  public GnsCommand lookupCommandLinearSearch(JSONObject json) {
+  public BasicCommand lookupCommandLinearSearch(JSONObject json) {
     String action;
     try {
       action = json.getString(COMMANDNAME);
@@ -174,7 +174,7 @@ public class CommandModule {
     ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
             "Linear search of {0} commands:", commands.size());
     // for now a linear search is fine
-    for (GnsCommand lookupCommand : commands) {
+    for (BasicCommand lookupCommand : commands) {
       //GNS.getLogger().info("Search: " + command.toString());
       if (lookupCommand.getCommandName().equals(action)) {
         //GNS.getLogger().info("Found action: " + action);
@@ -211,13 +211,13 @@ public class CommandModule {
    */
   public String allCommandDescriptions(CommandDescriptionFormat format) {
     StringBuilder result = new StringBuilder();
-    List<GnsCommand> commandList = new ArrayList<>(commands);
+    List<BasicCommand> commandList = new ArrayList<>(commands);
     // First sort by name
     Collections.sort(commandList, CommandNameComparator);
     // The sort them by package
     Collections.sort(commandList, CommandPackageComparator);
     String lastPackageName = null;
-    for (GnsCommand command : commandList) {
+    for (BasicCommand command : commandList) {
       String packageName = command.getClass().getPackage().getName();
       if (!packageName.equals(lastPackageName)) {
         if (format.equals(CommandDescriptionFormat.TCP_Wiki) && lastPackageName != null) {
@@ -270,11 +270,11 @@ public class CommandModule {
     this.adminMode = adminMode;
   }
 
-  private static Comparator<GnsCommand> CommandPackageComparator
-          = new Comparator<GnsCommand>() {
+  private static Comparator<BasicCommand> CommandPackageComparator
+          = new Comparator<BasicCommand>() {
 
     @Override
-    public int compare(GnsCommand command1, GnsCommand command2) {
+    public int compare(BasicCommand command1, BasicCommand command2) {
 
       String packageName1 = command1.getClass().getPackage().getName();
       String packageName2 = command2.getClass().getPackage().getName();
@@ -291,11 +291,11 @@ public class CommandModule {
   /**
    *
    */
-  private static Comparator<GnsCommand> CommandNameComparator
-          = new Comparator<GnsCommand>() {
+  private static Comparator<BasicCommand> CommandNameComparator
+          = new Comparator<BasicCommand>() {
 
     @Override
-    public int compare(GnsCommand command1, GnsCommand command2) {
+    public int compare(BasicCommand command1, BasicCommand command2) {
 
       String commandName1 = command1.getCommandName();
       String commandName2 = command2.getCommandName();

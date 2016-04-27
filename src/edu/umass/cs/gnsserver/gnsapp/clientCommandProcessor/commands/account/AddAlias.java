@@ -27,7 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +42,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AddAlias extends GnsCommand {
+public class AddAlias extends BasicCommand {
 
   /**
    * Creates an AddAlias instance.

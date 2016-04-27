@@ -41,8 +41,8 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.location.GeodeticCalculator;
 import edu.umass.cs.msocket.proxy.location.GlobalPosition;
@@ -92,10 +92,10 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
     try
     {
       guids = DefaultGNSClient.getGnsClient().fieldReadArray
-   (proxyGroupName, GnsConstants.ACTIVE_LOCATION_FIELD, DefaultGNSClient.getMyGuidEntry() ); }
+   (proxyGroupName, Constants.ACTIVE_LOCATION_FIELD, DefaultGNSClient.getMyGuidEntry() ); }
     catch (Exception e)
     {
-      throw new GnsClientException("Could not find active location services (" + e + ")");
+      throw new ClientException("Could not find active location services (" + e + ")");
     }
 
     // Try every location proxy in the list until one works
@@ -104,7 +104,7 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
       // Retrieve the location service IP and connect to it
       String locationGuid = guids.getString(i);
       String locationIP = DefaultGNSClient.getGnsClient().fieldReadArray
-    		  (locationGuid, GnsConstants.LOCATION_SERVICE_IP, DefaultGNSClient.getMyGuidEntry()).getString(0);
+    		  (locationGuid, Constants.LOCATION_SERVICE_IP, DefaultGNSClient.getMyGuidEntry()).getString(0);
       logger.fine("Contacting location service " + locationIP + " to request " + numProxies + " proxies");
 
       // Location IP is stored as host:port
@@ -136,7 +136,7 @@ public class GeolocationProxyPolicy extends ProxySelectionPolicy
       }
     }
 
-    throw new GnsClientException("Could not find any location service to provide a geolocated proxy");
+    throw new ClientException("Could not find any location service to provide a geolocated proxy");
   }
 
   @Override

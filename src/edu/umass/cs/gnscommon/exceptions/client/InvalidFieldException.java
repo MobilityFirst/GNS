@@ -20,18 +20,19 @@
 package edu.umass.cs.gnscommon.exceptions.client;
 
 /**
- * This class defines a GnsFieldNotFoundException
+ * This class defines a InvalidFieldException
  * 
+ * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class GnsFieldNotFoundException extends GnsClientException
+public class InvalidFieldException extends ClientException
 {
   private static final long serialVersionUID = 2676899572105162853L;
 
   /**
    * Creates a new <code>GnsInvalidFieldException</code> object
    */
-  public GnsFieldNotFoundException()
+  public InvalidFieldException()
   {
     // TODO Auto-generated constructor stub
   }
@@ -41,7 +42,7 @@ public class GnsFieldNotFoundException extends GnsClientException
    * 
    * @param detailMessage
    */
-  public GnsFieldNotFoundException(String detailMessage)
+  public InvalidFieldException(String detailMessage)
   {
     super(detailMessage);
     // TODO Auto-generated constructor stub
@@ -52,7 +53,7 @@ public class GnsFieldNotFoundException extends GnsClientException
    * 
    * @param throwable
    */
-  public GnsFieldNotFoundException(Throwable throwable)
+  public InvalidFieldException(Throwable throwable)
   {
     super(throwable);
     // TODO Auto-generated constructor stub
@@ -64,7 +65,7 @@ public class GnsFieldNotFoundException extends GnsClientException
    * @param detailMessage
    * @param throwable
    */
-  public GnsFieldNotFoundException(String detailMessage, Throwable throwable)
+  public InvalidFieldException(String detailMessage, Throwable throwable)
   {
     super(detailMessage, throwable);
     // TODO Auto-generated constructor stub

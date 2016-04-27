@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import java.io.IOException;
 import org.apache.commons.lang3.RandomUtils;
@@ -69,7 +69,7 @@ public class WriteReadBytesTest {
       String encodedValue = Base64.encodeToString(testValue, true);
       //System.out.println("Encoded string: " + encodedValue);
       client.fieldUpdate(masterGuid, TEST_FIELD, encodedValue);
-    } catch (IOException | GnsClientException | JSONException e) {
+    } catch (IOException | ClientException | JSONException e) {
       fail("Exception during create field: " + e);
     }
   }

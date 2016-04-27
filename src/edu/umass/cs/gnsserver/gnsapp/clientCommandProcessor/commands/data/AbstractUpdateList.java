@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
@@ -43,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class AbstractUpdateList extends GnsCommand {
+public abstract class AbstractUpdateList extends BasicCommand {
 
   /**
    *

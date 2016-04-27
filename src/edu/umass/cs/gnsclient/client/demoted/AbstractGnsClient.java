@@ -42,7 +42,7 @@ import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.CLEAR;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
@@ -578,7 +578,7 @@ public class AbstractGnsClient {
    * @param action
    * @param keysAndValues
    * @return the query string
-   * @throws GnsClientException
+   * @throws ClientException
    */
   // FIXME: Temporarily hacked version for adding new command type integer. Will clean up once
   // transition is done.
@@ -586,7 +586,7 @@ public class AbstractGnsClient {
   // enum string.
   public JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, String action, Object... keysAndValues)
-          throws GnsClientException {
+          throws ClientException {
     try {
       JSONObject result = createCommand(commandType, action, keysAndValues);
       result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
@@ -597,7 +597,7 @@ public class AbstractGnsClient {
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
-      throw new GnsClientException("Error encoding message", e);
+      throw new ClientException("Error encoding message", e);
     }
   }
 
@@ -609,12 +609,12 @@ public class AbstractGnsClient {
    * @param action
    * @param keysAndValues
    * @return the query string
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
   // Fixme: remove action parameter
   public JSONObject createCommand(CommandType commandType, String action,
           Object... keysAndValues)
-          throws GnsClientException {
+          throws ClientException {
     try {
       JSONObject result = new JSONObject();
       String key;
@@ -631,7 +631,7 @@ public class AbstractGnsClient {
       }
       return result;
     } catch (JSONException e) {
-      throw new GnsClientException("Error encoding message", e);
+      throw new ClientException("Error encoding message", e);
     }
   }
 

@@ -29,7 +29,7 @@ package edu.umass.cs.gnscommon.exceptions.server;
  * an external mechanism would be needed to restart the database.
  *
  */
-public class FailedDBOperationException extends GnsServerException {
+public class FailedDBOperationException extends ServerException {
 
   private static final long serialVersionUID = 6627620787610127842L;
 

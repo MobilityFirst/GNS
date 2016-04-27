@@ -169,20 +169,20 @@ public class LookupWorker implements Runnable {
 
     // Create a clone of the query for duplicating the request to GNS and DNS
     Message dnsQuery = (Message) query.clone();
-    List<GnsDnsLookupTask> tasks;
+    List<LookupTask> tasks;
     if (gnsServer == null) {
       // We make two tasks to check the DNS and GNS in parallel
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new GnsDnsLookupTask(query, handler),
+              new LookupTask(query, handler),
               // Create DNS lookup task
-              new GnsDnsLookupTask(dnsQuery, dnsServer, handler));
+              new LookupTask(dnsQuery, dnsServer, handler));
     } else {
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new GnsDnsLookupTask(query, gnsServer, true, /* isGNS */ handler),
+              new LookupTask(query, gnsServer, true, /* isGNS */ handler),
               // Create DNS lookup task
-              new GnsDnsLookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler));
+              new LookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler));
     }
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
@@ -196,7 +196,7 @@ public class LookupWorker implements Runnable {
     Message successResponse = null;
     Message errorResponse = null;
     // loop throught the tasks getting results as they complete
-    for (GnsDnsLookupTask task : tasks) { // this is just doing things twice btw
+    for (LookupTask task : tasks) { // this is just doing things twice btw
       try {
         Message result = completionService.take().get();
         if (result.getHeader().getRcode() == Rcode.NOERROR) {

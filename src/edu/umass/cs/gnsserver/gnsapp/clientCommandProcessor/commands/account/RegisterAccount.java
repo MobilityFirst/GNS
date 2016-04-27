@@ -23,9 +23,9 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
@@ -43,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RegisterAccount extends GnsCommand {
+public class RegisterAccount extends BasicCommand {
 
   /**
    * Creates a RegisterAccount instance.
@@ -99,7 +99,7 @@ public class RegisterAccount extends GnsCommand {
       } else {
         return result;
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }

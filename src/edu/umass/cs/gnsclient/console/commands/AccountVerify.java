@@ -26,7 +26,7 @@ import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.exceptions.client.GnsVerificationException;
+import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 
 /**
  * Reads a field in the GNS
@@ -94,7 +94,7 @@ public class AccountVerify extends ConsoleCommand {
           return;
         }
         // this happens if it was already verified, but we didn't notice
-      } catch (GnsVerificationException e) {
+      } catch (VerificationException e) {
         module.setAccountVerified(true);
         printString("Account already verified.\n");
         return;

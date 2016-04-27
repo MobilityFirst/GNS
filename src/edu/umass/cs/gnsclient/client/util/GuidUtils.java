@@ -24,8 +24,8 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.security.KeyPair;
@@ -49,7 +49,7 @@ public class GuidUtils {
   private static boolean guidExists(GNSClientInterface client, GuidEntry guid) throws IOException {
     try {
       client.lookupGuidRecord(guid.getGuid());
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
       return false;
     }
     return true;
@@ -96,7 +96,7 @@ public class GuidUtils {
       while (true) {
         try {
           client.accountGuidVerify(guid, createVerificationCode(name));
-        } catch (GnsClientException e) {
+        } catch (ClientException e) {
           // a bit of a hack here that depends on someone not changing
           // that error message
           if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
@@ -177,7 +177,7 @@ public class GuidUtils {
     GuidEntry entry = client.guidCreate(masterGuid, entityName);
     try {
       client.addTag(entry, tagName);
-    } catch (GnsInvalidGuidException e) {
+    } catch (InvalidGuidException e) {
       ThreadUtils.sleep(100);
       client.addTag(entry, tagName);
     }

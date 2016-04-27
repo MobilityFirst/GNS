@@ -12,9 +12,9 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.msocket.common.Constants;
 
 
 public class GNSCalls
@@ -55,11 +55,11 @@ public class GNSCalls
 	 * , if reading from gns fails then request is sent to contextservice
 	 * @param query
 	 * @return guids of group members
-	 * @throws GnsClientException
+	 * @throws ClientException
 	 * @throws IOException
 	 * @throws UnsupportedEncodingException
 	 */
-	public static JSONArray readGroupMembers(String query, String groupGUID) throws UnsupportedEncodingException, IOException, GnsClientException
+	public static JSONArray readGroupMembers(String query, String groupGUID) throws UnsupportedEncodingException, IOException, ClientException
 	{
 		JSONArray grpMem = null;
 		//String queryHash = getSHA1(query);
@@ -69,7 +69,7 @@ public class GNSCalls
 		return grpMem;
 	}
 	
-	public static String getGroupGUID(String query) throws UnsupportedEncodingException, IOException, GnsClientException
+	public static String getGroupGUID(String query) throws UnsupportedEncodingException, IOException, ClientException
 	{
 		String queryHash = getSHA1(query);
 		String guidString = DefaultGNSClient.getGnsClient().lookupGuid(queryHash);
@@ -101,7 +101,7 @@ public class GNSCalls
 			        
 			        // storing alias in gns record, need it to find it when we have GUID
 			        // from group members
-			        DefaultGNSClient.getGnsClient().fieldCreateList(myGuid.getGuid(), GnsConstants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
+			        DefaultGNSClient.getGnsClient().fieldCreateList(myGuid.getGuid(), Constants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
 			        
 			        JSONArray valJSONArray = new JSONArray();
 			        valJSONArray.put(GNSValue);
@@ -161,7 +161,7 @@ public class GNSCalls
 			        
 			        // storing alias in gns record, need it to find it when we have GUID
 			        // from group members
-			        DefaultGNSClient.getGnsClient().fieldCreateList(myGuid.getGuid(), GnsConstants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
+			        DefaultGNSClient.getGnsClient().fieldCreateList(myGuid.getGuid(), Constants.ALIAS_FIELD, new JSONArray().put(localName), myGuid);
 			        
 			        DefaultGNSClient.getGnsClient()
 			        	.fieldReplaceOrCreateList(myGuid.getGuid(), GNSKey, new JSONArray().put(GNSValue), myGuid);
