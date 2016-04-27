@@ -65,26 +65,40 @@ public interface NoSQLRecords {
   public JSONObject lookupEntireRecord(String collection, String name)
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
           edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-
-  /**
+ 
+    /**
    * For record with given name, return the values of given fields and from the values map field of the record,
    * return the values of given keys as a HashMap.
    *
-   * @param collection the name of the collection
-   * @param name the name of the record
+   * @param collectionName
+   * @param guid
+   * @param systemFields
    * @param nameField
-   * @param fields the fields
+   * @return a hashmap of ColumnField to Objects
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
+   */
+   public HashMap<ColumnField, Object> lookupSystemFields(String collectionName,
+          String guid, ColumnField nameField,
+          ArrayList<ColumnField> systemFields)
+          throws RecordNotFoundException, FailedDBOperationException;
+   
+     /**
+   * For record with given name, return the values of given fields and from the values map field of the record,
+   * return the values of given keys as a HashMap.
+   *
+   * @param collectionName
+   * @param guid
+   * @param nameField
    * @param valuesMapField
    * @param valuesMapKeys
    * @return a hashmap of ColumnField to Objects
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
    */
-  public abstract HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collection, String name, 
-          ColumnField nameField, ArrayList<ColumnField> fields,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
-          edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+   public HashMap<ColumnField, Object> lookupUserFields(String collectionName,
+          String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+          throws RecordNotFoundException, FailedDBOperationException;
 
   /**
    * Returns true if a record with the given name exists, false otherwise.
@@ -144,19 +158,6 @@ public interface NoSQLRecords {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
-  /**
-   * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
-   * the NAME (AKA the primary key) is always there.
-   *
-   * @param collection the name of the collection
-   * @param nameField the name of the field
-   * @param fields the fields
-   * @return an AbstractRecordCursor
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) 
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**

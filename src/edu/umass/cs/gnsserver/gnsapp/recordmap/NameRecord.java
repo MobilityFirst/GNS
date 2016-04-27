@@ -355,8 +355,8 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   public static NameRecord getNameRecordMultiSystemFields(BasicRecordMap recordMap, String name,
           ArrayList<ColumnField> systemFields)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name,
-            NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
+    return new NameRecord(recordMap, recordMap.lookupSystemFields(name,
+            NameRecord.NAME, systemFields));
   }
 
   /**
@@ -373,8 +373,8 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   public static NameRecord getNameRecordMultiUserFields(BasicRecordMap recordMap, String name,
           ColumnFieldType returnType, String... userFieldNames)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name,
-            NameRecord.NAME, null, NameRecord.VALUES_MAP,
+    return new NameRecord(recordMap, recordMap.lookupUserFields(name,
+            NameRecord.NAME, NameRecord.VALUES_MAP,
             userFieldList(returnType, userFieldNames)));
   }
 

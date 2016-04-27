@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 
 /**
- * Supports abstract access to a collection of MondoDB records specified by the
+ * Supports abstract access to a collection of NoSQLRecords records specified by the
  * <code>collectionName</code> string.
  *
  * @author westy
@@ -62,9 +62,15 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> systemFields,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
-    return noSqlRecords.lookupMultipleSystemAndUserFields(collectionName, name, nameField, systemFields, valuesMapField, valuesMapKeys);
+  public HashMap<ColumnField, Object> lookupUserFields(String name, ColumnField nameField, 
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) 
+          throws RecordNotFoundException, FailedDBOperationException {
+    return noSqlRecords.lookupUserFields(collectionName, name, nameField, valuesMapField, valuesMapKeys);
+  }
+  
+  public HashMap<ColumnField, Object> lookupSystemFields(String name, ColumnField nameField, 
+          ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
+    return noSqlRecords.lookupSystemFields(collectionName, name, nameField, systemFields);
   }
 
   @Override

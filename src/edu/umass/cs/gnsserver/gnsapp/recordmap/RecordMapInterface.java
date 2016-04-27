@@ -84,18 +84,28 @@ public interface RecordMapInterface {
    *
    * @param name  - the name of the record
    * @param nameField - the field that contains the name of the record
-   * @param fields - the system fields to retrieve
    * @param valuesMapField - the field that contains all the user fields
    * @param valuesMapKeys - the user fields to return
    * @return a map of {@link ColumnField} to objects
    * @throws FailedDBOperationException
    * @throws RecordNotFoundException
    */
-  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, 
-          ColumnField nameField, ArrayList<ColumnField> fields,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws
-          FailedDBOperationException, RecordNotFoundException;
-
+   public HashMap<ColumnField, Object> lookupUserFields(String name, ColumnField nameField, 
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) 
+          throws RecordNotFoundException, FailedDBOperationException;
+   
+   /**
+   *
+   * @param name  - the name of the record
+   * @param nameField - the field that contains the name of the record
+   * @param systemFields
+   * @return a map of {@link ColumnField} to objects
+   * @throws FailedDBOperationException
+   * @throws RecordNotFoundException
+   */
+   public HashMap<ColumnField, Object> lookupSystemFields(String name, ColumnField nameField, 
+          ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException;
+   
   /**
    * Update all fields in a record.
    * 

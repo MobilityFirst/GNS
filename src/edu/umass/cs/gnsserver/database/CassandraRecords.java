@@ -75,6 +75,16 @@ public class CassandraRecords implements NoSQLRecords {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  @Override
+  public HashMap<ColumnField, Object> lookupSystemFields(String collectionName, String guid, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public HashMap<ColumnField, Object> lookupUserFields(String collectionName, String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException, FailedDBOperationException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
   /**
    * Stores the name, primary key, and index of each collection we maintain in the mongo db.
    */
@@ -313,12 +323,7 @@ public class CassandraRecords implements NoSQLRecords {
       System.out.println(cursor.nextJSONObject());
     }
   }
-
-  @Override
-  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws RecordNotFoundException {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
+  
   @Override
   public void updateEntireValuesMap(String collection, String name, ArrayList<Object> values) {
     throw new UnsupportedOperationException("Not supported yet.");
@@ -332,11 +337,6 @@ public class CassandraRecords implements NoSQLRecords {
   @Override
   public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys) {
     //To change body of implemented methods use File | Settings | File Templates.
-  }
-
-  @Override
-  public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) {
-    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override

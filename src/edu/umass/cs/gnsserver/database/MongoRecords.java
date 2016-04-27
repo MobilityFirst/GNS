@@ -29,9 +29,7 @@ import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
-import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
-
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
@@ -40,7 +38,6 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -232,12 +229,114 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     }
   }
 
+
+//  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName,
+//          String guid, ColumnField nameField,
+//          ArrayList<ColumnField> systemFields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+//          throws RecordNotFoundException, FailedDBOperationException {
+//    long startTime = System.currentTimeMillis(), t = System.nanoTime();
+//    if (guid == null) {
+//      DatabaseConfig.getLogger().log(Level.FINE, "GUID is null: {0}", new Object[]{guid});
+//      throw new RecordNotFoundException(guid);
+//    }
+//    db.requestStart();
+//    try {
+//      String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
+//      db.requestEnsureConnection();
+//
+//      DBCollection collection = db.getCollection(collectionName);
+//      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+//      BasicDBObject projection = new BasicDBObject().append("_id", 0);
+//      if (systemFields != null) {
+//        for (ColumnField f : systemFields) {
+//          projection.append(f.getName(), 1);
+//        }
+//      }
+//
+//      if (valuesMapField != null && valuesMapKeys != null) {
+//        for (int i = 0; i < valuesMapKeys.size(); i++) {
+//          String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
+//          projection.append(fieldName, 1);
+//        }
+//      }
+//
+//      // negligible
+//      //DelayProfiler.updateDelay("lookupMSAUFPreFind", startTime);
+//      //long findStartTime = System.currentTimeMillis();
+//      DBObject dbObject = collection.findOne(query, projection);
+//      //DelayProfiler.updateDelay("lookupMSAUFJustFind", findStartTime);
+//      //long postFindStartTime = System.currentTimeMillis();
+//      if (dbObject == null) {
+//        throw new RecordNotFoundException(guid);
+//      }
+//      HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
+//      hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
+//      // put all the system fields in the hashmap for the name record
+//      ColumnFieldType.populateHashMap(hashMap, dbObject, systemFields);
+//      // prepare to return the user values
+//      if (valuesMapField != null && valuesMapKeys != null) {
+//        // first we pull all the user values from the dbObject and put in a bson object
+//        // FIXME: Why not convert this to a JSONObject right now? We know that's what it is.
+//        BasicDBObject bson = (BasicDBObject) dbObject.get(valuesMapField.getName());
+//        DatabaseConfig.getLogger().log(Level.FINER, "@@@@@@@@ {0}", new Object[]{bson});
+//        // then we run thru each userkey in the valuesMapKeys and pull the
+//        // value put stuffing it into the values map
+//        ValuesMap valuesMap = new ValuesMap();
+//        for (int i = 0; i < valuesMapKeys.size(); i++) {
+//          String userKey = valuesMapKeys.get(i).getName();
+//          if (containsFieldDotNotation(userKey, bson) == false) {
+//            DatabaseConfig.getLogger().log(Level.FINE,
+//                    "DBObject doesn't contain {0}",
+//                    new Object[]{userKey});
+//
+//            continue;
+//          }
+//          try {
+//            switch (valuesMapKeys.get(i).type()) {
+//              case USER_JSON:
+//                Object value = getWithDotNotation(userKey, bson);
+//                DatabaseConfig.getLogger().log(Level.FINE,
+//                        "Object is {0}", new Object[]{value.toString()});
+//                valuesMap.put(userKey, value);
+//                break;
+//              case LIST_STRING:
+//                valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(getWithDotNotation(userKey, bson).toString())));
+//                break;
+//              default:
+//                DatabaseConfig.getLogger().log(Level.SEVERE,
+//                        "ERROR: Error: User keys field {0} is not a known type:{1}",
+//                        new Object[]{userKey, valuesMapKeys.get(i).type()});
+//                break;
+//            }
+//          } catch (JSONException e) {
+//            DatabaseConfig.getLogger().log(Level.SEVERE, "Error parsing json: {0}", e);
+//            e.printStackTrace();
+//          }
+//        }
+//        hashMap.put(valuesMapField, valuesMap);
+//      }
+//      // negligible
+//      //DelayProfiler.updateDelay("lookupMSAUFPostFind", postFindStartTime);
+//      // instrumentation
+//      DelayProfiler.updateDelay("lookupMSAUF", startTime);
+//      // older style
+//      int lookupTime = (int) (System.currentTimeMillis() - startTime);
+//      DatabaseConfig.getLogger().log(Level.FINE, " mongoLookup Long delay {0}", lookupTime);
+//      //hashMap.put(NameRecord.LOOKUP_TIME, lookupTime);
+//      return hashMap;
+//    } catch (MongoException e) {
+//      throw new FailedDBOperationException(collectionName, guid);
+//    } finally {
+//      db.requestDone();
+//    }
+//  }
+  
   @Override
-  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName,
+  // FIXME: Only needs to grab the valuesmap.
+  public HashMap<ColumnField, Object> lookupSystemFields(String collectionName,
           String guid, ColumnField nameField,
-          ArrayList<ColumnField> systemFields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+          ArrayList<ColumnField> systemFields)
           throws RecordNotFoundException, FailedDBOperationException {
-    long startTime = System.currentTimeMillis(), t = System.nanoTime();
     if (guid == null) {
       DatabaseConfig.getLogger().log(Level.FINE, "GUID is null: {0}", new Object[]{guid});
       throw new RecordNotFoundException(guid);
@@ -256,27 +355,52 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
       }
 
+      DBObject dbObject = collection.findOne(query, projection);
+      if (dbObject == null) {
+        throw new RecordNotFoundException(guid);
+      }
+      HashMap<ColumnField, Object> hashMap = new HashMap<>();
+      hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
+      // put all the system fields in the hashmap for the name record
+      ColumnFieldType.populateHashMap(hashMap, dbObject, systemFields);
+      // prepare to return the user values
+      return hashMap;
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, guid);
+    } finally {
+      db.requestDone();
+    }
+  }
+  
+  @Override
+  public HashMap<ColumnField, Object> lookupUserFields(String collectionName,
+          String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+          throws RecordNotFoundException, FailedDBOperationException {
+    if (guid == null) {
+      DatabaseConfig.getLogger().log(Level.FINE, "GUID is null: {0}", new Object[]{guid});
+      throw new RecordNotFoundException(guid);
+    }
+    db.requestStart();
+    try {
+      String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
+      db.requestEnsureConnection();
+
+      DBCollection collection = db.getCollection(collectionName);
+      BasicDBObject query = new BasicDBObject(primaryKey, guid);
+      BasicDBObject projection = new BasicDBObject().append("_id", 0);
+
       if (valuesMapField != null && valuesMapKeys != null) {
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String fieldName = valuesMapField.getName() + "." + valuesMapKeys.get(i).getName();
           projection.append(fieldName, 1);
         }
       }
-
-      // negligible
-      //DelayProfiler.updateDelay("lookupMSAUFPreFind", startTime);
-      //long findStartTime = System.currentTimeMillis();
       DBObject dbObject = collection.findOne(query, projection);
-      //DelayProfiler.updateDelay("lookupMSAUFJustFind", findStartTime);
-      //long postFindStartTime = System.currentTimeMillis();
       if (dbObject == null) {
         throw new RecordNotFoundException(guid);
       }
-      HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
+      HashMap<ColumnField, Object> hashMap = new HashMap<>();
       hashMap.put(nameField, guid);// put the name in the hashmap!! very important!!
-      // put all the system fields in the hashmap for the name record
-      ColumnFieldType.populateHashMap(hashMap, dbObject, systemFields);
-      // prepare to return the user values
       if (valuesMapField != null && valuesMapKeys != null) {
         // first we pull all the user values from the dbObject and put in a bson object
         // FIXME: Why not convert this to a JSONObject right now? We know that's what it is.
@@ -289,8 +413,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
           String userKey = valuesMapKeys.get(i).getName();
           if (containsFieldDotNotation(userKey, bson) == false) {
             DatabaseConfig.getLogger().log(Level.FINE,
-                    "DBObject doesn't contain {0}",
-                    new Object[]{userKey});
+                    "DBObject doesn't contain {0}", new Object[]{userKey});
 
             continue;
           }
@@ -303,7 +426,8 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
                 valuesMap.put(userKey, value);
                 break;
               case LIST_STRING:
-                valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(getWithDotNotation(userKey, bson).toString())));
+                valuesMap.putAsArray(userKey, 
+                        JSONUtils.JSONArrayToResultValue(new JSONArray(getWithDotNotation(userKey, bson).toString())));
                 break;
               default:
                 DatabaseConfig.getLogger().log(Level.SEVERE,
@@ -318,14 +442,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
         hashMap.put(valuesMapField, valuesMap);
       }
-      // negligible
-      //DelayProfiler.updateDelay("lookupMSAUFPostFind", postFindStartTime);
-      // instrumentation
-      DelayProfiler.updateDelay("lookupMSAUF", startTime);
-      // older style
-      int lookupTime = (int) (System.currentTimeMillis() - startTime);
-      DatabaseConfig.getLogger().log(Level.FINE, " mongoLookup Long delay {0}", lookupTime);
-      //hashMap.put(NameRecord.LOOKUP_TIME, lookupTime);
       return hashMap;
     } catch (MongoException e) {
       throw new FailedDBOperationException(collectionName, guid);
@@ -669,12 +785,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     query = query.replace("~", valuesMapField.getName() + ".");
     DBObject parse = (DBObject) JSON.parse(query);
     return parse;
-  }
-
-  @Override
-  public MongoRecordCursor getAllRowsIterator(String collectionName, ColumnField nameField, ArrayList<ColumnField> fields)
-          throws FailedDBOperationException {
-    return new MongoRecordCursor(db, collectionName, mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey(), fields);
   }
 
   @Override

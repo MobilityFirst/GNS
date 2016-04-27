@@ -127,11 +127,10 @@ public class MongoRecordsThroughputTest {
       long startTime = System.currentTimeMillis();
       do {
         Map<ColumnField, Object> map
-                = instance.lookupMultipleSystemAndUserFields(
+                = instance.lookupUserFields(
                         DBNAMERECORD,
                         guid,
                         NameRecord.NAME,
-                        null,
                         NameRecord.VALUES_MAP,
                         userFields);
         if (incrCount() % frequency == 0) {

@@ -108,7 +108,7 @@ public class NSFieldAccess {
       } else if (field != null) {
         ClientSupportConfig.getLogger().log(Level.FINE, "Field={0} Format={1}",
                 new Object[]{field, returnFormat});
-        // otherwise grab a few system fields we need plus the field the user wanted
+        // otherwise grab the field the user wanted
         nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
                 returnFormat, field);
       }
@@ -135,7 +135,7 @@ public class NSFieldAccess {
               new Object[]{fields, returnFormat});
       String[] fieldArray = new String[fields.size()];
       fieldArray = fields.toArray(fieldArray);
-      // Grab a few system fields and the fields the user wanted
+      // Grab the fields the user wanted
       NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
               returnFormat, fieldArray);
       if (nameRecord != null) {
