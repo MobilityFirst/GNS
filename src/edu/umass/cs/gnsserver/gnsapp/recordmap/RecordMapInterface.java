@@ -60,7 +60,7 @@ public interface RecordMapInterface {
    * @throws RecordNotFoundException
    * @throws FailedDBOperationException
    */
-  public JSONObject getEntireRecord(String name) throws RecordNotFoundException, FailedDBOperationException;
+  public JSONObject lookupEntireRecord(String name) throws RecordNotFoundException, FailedDBOperationException;
 
   /**
    *

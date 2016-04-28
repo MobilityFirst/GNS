@@ -326,9 +326,21 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     hashMap.put(VALUES_MAP, currentValue);
   }
 
+//BEGIN: static methods for reading/writing to database and iterating over records
+//
   /**
-   * BEGIN: static methods for reading/writing to database and iterating over records
+   * Returns true if the database contains a name record with the given name.
+   * 
+   * @param recordMap
+   * @param name
+   * @return
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
+  public static boolean containsRecord(BasicRecordMap recordMap, String name)
+          throws FailedDBOperationException {
+    return recordMap.containsName(name);
+  }
+
   /**
    * Load a name record from the backing database and retrieve all the fields.
    *
@@ -341,7 +353,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   public static NameRecord getNameRecord(BasicRecordMap recordMap, String name)
           throws RecordNotFoundException, FailedDBOperationException {
     try {
-      JSONObject json = recordMap.getEntireRecord(name);
+      JSONObject json = recordMap.lookupEntireRecord(name);
       if (json != null) {
         return new NameRecord(recordMap, json);
       }

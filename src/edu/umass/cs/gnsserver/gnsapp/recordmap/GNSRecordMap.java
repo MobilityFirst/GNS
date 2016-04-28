@@ -62,7 +62,7 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public JSONObject getEntireRecord(String name) throws RecordNotFoundException, FailedDBOperationException {
+  public JSONObject lookupEntireRecord(String name) throws RecordNotFoundException, FailedDBOperationException {
     return noSqlRecords.lookupEntireRecord(collectionName, name);
   }
 

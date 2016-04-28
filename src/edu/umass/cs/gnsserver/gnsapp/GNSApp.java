@@ -392,7 +392,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    */
   @Override
   public boolean restore(String name, String state) {
-    long startTime = System.currentTimeMillis();
     GNSConfig.getLogger().log(Level.FINE,
             "&&&&&&& {0} updating {1} with state [{2}]",
             new Object[]{this, name, Util.truncate(state, 32, 32)});
@@ -401,49 +400,26 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // If state is null the only thing it means is that we need to delete 
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
-      } else { //state does not equal null so we either create a new record or update the existing one
-        NameRecord nameRecord = null;
-        try {
-          nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
-          //nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
-        } catch (RecordNotFoundException e) {
-          // normal result if the field does not exist
-        }
-        if (nameRecord == null) { // create a new record
+      } else //state does not equal null so we either create a new record or update the existing one
+      {
+        if (!NameRecord.containsRecord(nameRecordDB, name)) {
+          // create a new record
           try {
             ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
-            //NRState nrState = new NRState(state); // parse the new state
-            nameRecord = new NameRecord(nameRecordDB, name, 
-                    valuesMap
-                    //,
-                    //INITIAL_RECORD_VERSION,
-                    //nrState.valuesMap,
-                    //nrState.ttl,
-                    //nodeConfig.getReplicatedReconfigurators(name)
-            );
+            NameRecord nameRecord = new NameRecord(nameRecordDB, name, valuesMap);
             NameRecord.addNameRecord(nameRecordDB, nameRecord);
-          } catch (RecordExistsException e) {
-            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state, record already exists: {0}",
-                    e.getMessage());
-          } catch (JSONException e) {
-            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}",
-                    e.getMessage());
+          } catch (RecordExistsException | JSONException e) {
+            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         } else { // update the existing record
           try {
-            //NRState nrState = new NRState(state); // parse the new state
-            nameRecord.updateState(
-                    new ValuesMap(new JSONObject(state))
-                    //nrState.valuesMap, 
-                    //nrState.ttl
-            );
-          } catch (JSONException | FieldNotFoundException e) {
-            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}",
-                    e.getMessage());
+            NameRecord nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
+            nameRecord.updateState(new ValuesMap(new JSONObject(state)));
+          } catch (JSONException | FieldNotFoundException | RecordNotFoundException | FailedDBOperationException e) {
+            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         }
       }
-      //DelayProfiler.updateDelay("restore", startTime);
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Failed update exception: {0}", e.getMessage());
@@ -526,8 +502,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       assert (response instanceof ClientRequest);
       Request originalRequest = this.outstanding
               .remove(((RequestIdentifier) response).getRequestID());
-      assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress)
-              : ((ClientRequest) response).getSummary();
+      assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response).getSummary();
       if (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) {
         ((BasicPacketWithClientAddress) originalRequest)
                 .setResponse((ClientRequest) response);
