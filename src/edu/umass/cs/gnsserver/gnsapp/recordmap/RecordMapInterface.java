@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -109,10 +110,10 @@ public interface RecordMapInterface {
    * Update all fields in a record.
    *
    * @param name - the name of the record
-   * @param values - the values to set them to
+   * @param valuesMap
    * @throws FailedDBOperationException
    */
-  public abstract void updateEntireValuesMap(String name, ArrayList<Object> values)
+  public abstract void updateEntireValuesMap(String name, ValuesMap valuesMap)
           throws FailedDBOperationException;
 
   /**

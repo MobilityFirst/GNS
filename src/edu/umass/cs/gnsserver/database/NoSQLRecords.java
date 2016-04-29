@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.database;
 
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -102,11 +103,11 @@ public interface NoSQLRecords {
    *
    * @param collection the name of the collection
    * @param name the name of the record
-   * @param values
+   * @param valuesMap
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public abstract void updateEntireRecord(String collection, String name,
-          ArrayList<Object> values) throws
+          ValuesMap valuesMap) throws
           edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**

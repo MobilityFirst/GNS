@@ -26,6 +26,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -98,9 +99,9 @@ public class GNSRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public void updateEntireValuesMap(String name, ArrayList<Object> systemValues)
+  public void updateEntireValuesMap(String name, ValuesMap valuesMap)
           throws FailedDBOperationException {
-    noSqlRecords.updateEntireRecord(collectionName, name, systemValues);
+    noSqlRecords.updateEntireRecord(collectionName, name, valuesMap);
   }
 
   @Override

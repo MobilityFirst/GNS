@@ -46,11 +46,13 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
 /**
  * Provides insert, updateEntireRecord, removeEntireRecord and lookupEntireRecord operations for
- guid, key, record triples using JSONObjects as the intermediate representation.
+ * guid, key, record triples using JSONObjects as the intermediate representation.
  * All records are stored in a document called NameRecord.
  *
  * @author westy, Abhigyan, arun
@@ -258,7 +260,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
                 valuesMap.put(userKey, value);
                 break;
               case LIST_STRING:
-                valuesMap.putAsArray(userKey, 
+                valuesMap.putAsArray(userKey,
                         JSONUtils.JSONArrayToResultValue(new JSONArray(getWithDotNotation(userKey, bson).toString())));
                 break;
               default:
@@ -345,41 +347,34 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     }
   }
 
-  private final static ArrayList<ColumnField> valuesMapField = new ArrayList<>();
-
-  static {
-    valuesMapField.add(NameRecord.VALUES_MAP);
-  }
-
   @Override
-  public void updateEntireRecord(String collectionName, String guid, ArrayList<Object> values)
+  public void updateEntireRecord(String collectionName, String guid, ValuesMap valuesMap)
           throws FailedDBOperationException {
     BasicDBObject updates = new BasicDBObject();
-    updates.append(NameRecord.VALUES_MAP.getName(), JSON.parse(values.toString()));
+    updates.append(NameRecord.VALUES_MAP.getName(), JSON.parse(valuesMap.toString()));
     doUpdate(collectionName, guid, updates);
-//    updateSystemFields(collectionName, guid, valuesMapField, values);
   }
-  
-//  private void updateSystemFields(String collectionName, String guid, 
-//          ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues) throws FailedDBOperationException {
-//    BasicDBObject updates = new BasicDBObject();
-//    if (systemFields != null) {
-//      for (int i = 0; i < systemFields.size(); i++) {
-//        Object newValue;
-//        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
-//        if (systemFields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-//          // convert the JSONObject value of the ValuesMap into a string that we then parse into
-//          // a BSON object (ugly, but necessary)
-//          newValue = JSON.parse(systemValues.get(i).toString());
-//        } else {
-//          newValue = systemValues.get(i);
-//        }
-//        updates.append(systemFields.get(i).getName(), newValue);
-//      }
-//    } 
-//    doUpdate(collectionName, guid, updates);
-//  }
-  
+
+  public void bulkInsert(String collectionName, Map<String, JSONObject> values)
+          throws FailedDBOperationException, RecordExistsException {
+    String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
+    List<DBObject> documents = new ArrayList<>();
+    for (Entry<String, JSONObject> entry : values.entrySet()) {
+      BasicDBObject document = new BasicDBObject();
+      document.append(primaryKey, entry.getKey());
+      document.append(NameRecord.VALUES_MAP.getName(), JSON.parse(entry.getValue().toString()));
+      documents.add(document);
+    }
+    try {
+      collection.insert(documents);
+    } catch (DuplicateKeyException e) {
+      throw new RecordExistsException(collectionName, "MultiInsert");
+    } catch (MongoException e) {
+      throw new FailedDBOperationException(collectionName, documents.toString());
+    }
+  }
+
   @Override
   public void updateIndividualFields(String collectionName, String guid,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,

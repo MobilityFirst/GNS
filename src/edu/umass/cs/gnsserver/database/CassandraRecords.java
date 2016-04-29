@@ -31,6 +31,7 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -310,7 +311,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
-  public void updateEntireRecord(String collection, String name, ArrayList<Object> values) {
+  public void updateEntireRecord(String collection, String name, ValuesMap valuesMap) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
   

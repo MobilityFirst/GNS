@@ -315,15 +315,13 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
 
   /**
    *
-   * @param currentValue
+   * @param valuesMap
    * @throws FieldNotFoundException
    * @throws FailedDBOperationException
    */
-  public void updateState(ValuesMap currentValue) throws FieldNotFoundException, FailedDBOperationException {
-    ArrayList<Object> updateValues = new ArrayList<>();
-    updateValues.add(currentValue);
-    recordMap.updateEntireValuesMap(getName(), updateValues);
-    hashMap.put(VALUES_MAP, currentValue);
+  public void updateState(ValuesMap valuesMap) throws FieldNotFoundException, FailedDBOperationException {
+    recordMap.updateEntireValuesMap(getName(), valuesMap);
+    hashMap.put(VALUES_MAP, valuesMap);
   }
 
 //BEGIN: static methods for reading/writing to database and iterating over records
