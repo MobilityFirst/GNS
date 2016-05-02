@@ -39,14 +39,14 @@ import org.json.JSONObject;
  * Ascertains the maximum throughput of reads on the mongo database.
  *
  * Typical incantation:
- *
- * java -cp GNS.jar edu.umass.cs.gnsserver.test.MongoRecordsThroughputTest frank_ActiveReplica CAB372BF40B3DB576786E5CC6AB05B63CC680F4D environment
+
+ java -cp jars/GNS.jar edu.umass.cs.gnsserver.database.NoSQLRecordsThroughputTest frank_ActiveReplica CAB372BF40B3DB576786E5CC6AB05B63CC680F4D environment
  *
  * @author westy
  */
-public class MongoRecordsThroughputTest {
+public class NoSQLRecordsThroughputTest {
 
-  private static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
+  private static final ScheduledThreadPoolExecutor EXECUTOR = new ScheduledThreadPoolExecutor(5);
   private static long initTime = System.currentTimeMillis();
 
   /**
@@ -58,8 +58,8 @@ public class MongoRecordsThroughputTest {
    */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length == 3) {
-      for (int i = 0; i < executor.getCorePoolSize(); i++) {
-        executor.submit(new Runnable() {
+      for (int i = 0; i < EXECUTOR.getCorePoolSize(); i++) {
+        EXECUTOR.submit(new Runnable() {
           public void run() {
             testlookupMultipleSystemAndUserFields(args[0], args[1],
                     args[2]);
@@ -91,7 +91,8 @@ public class MongoRecordsThroughputTest {
   private static void testlookupMultipleSystemAndUserFields(String node, String guid, String field) {
 
     // make a fake record
-    MongoRecords<String> instance = new MongoRecords<String>(node);
+    //MongoRecords<String> instance = new MongoRecords<String>(node);
+    DiskMapRecords instance = new DiskMapRecords(node);
     GNSRecordMap<String> recordMap = new GNSRecordMap<String>(instance, DBNAMERECORD);
     JSONObject json = new JSONObject();
     try {
@@ -100,13 +101,7 @@ public class MongoRecordsThroughputTest {
       System.out.println("Problem creating json " + e);
     }
     ValuesMap valuesMap = new ValuesMap(json);
-    NameRecord nameRecord = new NameRecord(recordMap, guid, 
-            //0, 
-            valuesMap
-            //, 
-            //0, 
-            //new HashSet<String>()
-    );
+    NameRecord nameRecord = new NameRecord(recordMap, guid, valuesMap);
     try {
       instance.insert(DBNAMERECORD, guid, nameRecord.toJSONObject());
     } catch (JSONException e) {
@@ -119,25 +114,18 @@ public class MongoRecordsThroughputTest {
 
     // and try to read it as fast as possible
     try {
-      ArrayList<ColumnField> userFields
-              = new ArrayList<ColumnField>(Arrays.asList(new ColumnField(field,
-                      ColumnFieldType.USER_JSON)));
+      ArrayList<ColumnField> userFields = new ArrayList<>(Arrays.asList(new ColumnField(field,
+              ColumnFieldType.USER_JSON)));
       int frequency = 10000;
-      int cnt = 0;
-      long startTime = System.currentTimeMillis();
+      reset();
       do {
-        Map<ColumnField, Object> map
-                = instance.lookupSomeFields(
-                        DBNAMERECORD,
-                        guid,
-                        NameRecord.NAME,
-                        NameRecord.VALUES_MAP,
-                        userFields);
+        Map<ColumnField, Object> map = instance.lookupSomeFields(
+                DBNAMERECORD, guid,
+                NameRecord.NAME, NameRecord.VALUES_MAP, userFields);
         if (incrCount() % frequency == 0) {
           System.out.println(map);
           System.out.println(DelayProfiler.getStats());
           System.out.println("op/s = " + Format.formatTime(getCount() * 1000.0 / (System.currentTimeMillis() - initTime)));
-          startTime = System.currentTimeMillis();
           if (getCount() > frequency * 20) {
             System.out.println("**********************resetting************************");
             reset();

@@ -217,6 +217,7 @@
     <pathelement location="${lib.dir}/log4j-1.2.16.jar"/>
     <pathelement location="${lib.dir}/gigapaxos-1.0.jar"/>
     <pathelement location="${lib.dir}/context-client-GNS.jar"/>
+    <pathelement location="${lib.dir}/mongo-java-driver-2.12.1.jar"/>
     <pathelement location="${conf.dir}"/>
     <pathelement location="${db-props-file}" />
   </path>

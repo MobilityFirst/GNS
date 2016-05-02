@@ -16,11 +16,12 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DiskMap;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import java.util.logging.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,36 +31,37 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class DiskMapRecords implements NoSQLRecords {
+public class DiskMapRecordsV1 implements NoSQLRecords {
 
-  private Map<String, DiskMapCollection> collections;
-  private String mongoNodeID;
-  private int mongoPort;
+  private DiskMap<String, JSONObject> map;
+  private MongoRecords<String> mongoRecords;
 
-  private DiskMapCollection getCollection(String name) {
-    DiskMapCollection collection = collections.get(name);
-    if (collection == null) {
-      collections.put(name, collection = new DiskMapCollection(mongoNodeID, mongoPort, name));
-    }
-    return collection;
-  }
-
-  public DiskMap<String, JSONObject> getMap(String name) {
-    return getCollection(name).getMap();
-  }
-
-  public MongoRecords<String> getMongoRecords(String name) {
-    return getCollection(name).getMongoRecords();
-  }
-
-  public DiskMapRecords(String nodeID) {
+  public DiskMapRecordsV1(String nodeID) {
     this(nodeID, -1);
   }
 
-  public DiskMapRecords(String nodeID, int port) {
-    this.collections = new ConcurrentHashMap<>();
-    this.mongoNodeID = nodeID;
-    this.mongoPort = port;
+  public DiskMapRecordsV1(String nodeID, int port) {
+    mongoRecords = new MongoRecords<>(nodeID + "-diskmap", port);
+    map = new DiskMap<String, JSONObject>(100000) {
+      @Override
+      public Set<String> commit(Map<String, JSONObject> toCommit) throws IOException {
+        try {
+          mongoRecords.bulkInsert(DBNAMERECORD, toCommit);
+        } catch (FailedDBOperationException | RecordExistsException e) {
+          throw new IOException(e);
+        }
+        return toCommit.keySet();
+      }
+
+      @Override
+      public JSONObject restore(String key) throws IOException {
+        try {
+          return mongoRecords.lookupEntireRecord(DBNAMERECORD, key);
+        } catch (FailedDBOperationException | RecordNotFoundException e) {
+          throw new IOException(e);
+        }
+      }
+    };
   }
 
   private String generateName(String collection, String name) {
@@ -68,21 +70,21 @@ public class DiskMapRecords implements NoSQLRecords {
 
   @Override
   public void insert(String collection, String name, JSONObject value) throws FailedDBOperationException, RecordExistsException {
-    getMap(collection).put(name, value);
+    map.put(generateName(collection, name), value);
   }
 
   @Override
   public JSONObject lookupEntireRecord(String collection, String name) throws FailedDBOperationException, RecordNotFoundException {
-    return getMap(collection).get(name);
+    return map.get(generateName(collection, name));
   }
 
   @Override
   // FIXME: Why does this still have
-  public HashMap<ColumnField, Object> lookupSomeFields(String collection, String guid,
+  public HashMap<ColumnField, Object> lookupSomeFields(String collectionName, String guid,
           ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
 
-    JSONObject fullRecord = getMap(collection).get(guid);
+    JSONObject fullRecord = map.get(generateName(collectionName, guid));
     if (fullRecord == null) {
       throw new RecordNotFoundException(guid);
     }
@@ -163,26 +165,26 @@ public class DiskMapRecords implements NoSQLRecords {
 
   @Override
   public boolean contains(String collection, String name) throws FailedDBOperationException {
-    return getMap(collection).containsKey(name);
+    return map.containsKey(generateName(collection, name));
   }
 
   @Override
   public void removeEntireRecord(String collection, String name) throws FailedDBOperationException {
-    getMap(collection).remove(name);
+    map.remove(generateName(collection, name));
   }
 
   @Override
   public void updateEntireRecord(String collection, String name, ValuesMap valuesMap) throws FailedDBOperationException {
-    getMap(collection).put(name, valuesMap);
+    map.put(generateName(collection, name), valuesMap);
   }
 
   @Override
-  public void updateIndividualFields(String collection, String guid,
+  public void updateIndividualFields(String collectionName, String guid,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
-    JSONObject json = getMap(collection).get(guid);
+    JSONObject json = map.get(generateName(collectionName, guid));
     if (json == null) {
-      throw new FailedDBOperationException(collection, guid);
+      throw new FailedDBOperationException(collectionName, guid);
     }
     if (valuesMapField != null && valuesMapKeys != null) {
       try {
@@ -207,7 +209,7 @@ public class DiskMapRecords implements NoSQLRecords {
                 "Problem updating json: {0}", e.getMessage());
       }
     }
-    getMap(collection).put(guid, json);
+    map.put(generateName(collectionName, guid), json);
   }
   // not sure why the JSON.parse doesn't handle things this way but it doesn't
 
@@ -220,12 +222,12 @@ public class DiskMapRecords implements NoSQLRecords {
   }
 
   @Override
-  public void removeMapKeys(String collection, String name,
+  public void removeMapKeys(String collectionName, String name,
           ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException {
-    JSONObject json = getMap(collection).get(name);
+    JSONObject json = map.get(generateName(collectionName, name));
     if (json == null) {
-      throw new FailedDBOperationException(collection, name);
+      throw new FailedDBOperationException(collectionName, name);
     }
     if (mapField != null && mapKeys != null) {
       for (int i = 0; i < mapKeys.size(); i++) {
@@ -233,57 +235,57 @@ public class DiskMapRecords implements NoSQLRecords {
         json.remove(fieldName);
       }
     }
-    getMap(collection).put(name, json);
+    map.put(generateName(collectionName, name), json);
   }
 
   @Override
   public AbstractRecordCursor getAllRowsIterator(String collection) throws FailedDBOperationException {
-    getMap(collection).commit();
-    return getMongoRecords(collection).getAllRowsIterator(collection);
+    map.commit();
+    return mongoRecords.getAllRowsIterator(collection);
   }
 
   @Override
-  public AbstractRecordCursor selectRecords(String collection, ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException {
-    getMap(collection).commit();
-    return getMongoRecords(collection).selectRecords(collection, valuesMapField, key, value);
+  public AbstractRecordCursor selectRecords(String collectionName, ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException {
+    map.commit();
+    return mongoRecords.selectRecords(collectionName, valuesMapField, key, value);
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsWithin(String collection, ColumnField valuesMapField, String key, String value) throws FailedDBOperationException {
-    getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsWithin(collection, valuesMapField, key, value);
+  public AbstractRecordCursor selectRecordsWithin(String collectionName, ColumnField valuesMapField, String key, String value) throws FailedDBOperationException {
+    map.commit();
+    return mongoRecords.selectRecordsWithin(collectionName, valuesMapField, key, value);
   }
 
   @Override
-  public AbstractRecordCursor selectRecordsNear(String collection, ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException {
-    getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsNear(collection, valuesMapField, key, value, maxDistance);
+  public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException {
+    map.commit();
+    return mongoRecords.selectRecordsNear(collectionName, valuesMapField, key, value, maxDistance);
   }
 
   @Override
   public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) throws FailedDBOperationException {
-    getMap(collection).commit();
-    return getMongoRecords(collection).selectRecordsQuery(collection, valuesMapField, query);
+    map.commit();
+    return mongoRecords.selectRecordsQuery(collection, valuesMapField, query);
   }
 
   @Override
-  public void createIndex(String collection, String field, String index) {
-    getMap(collection).commit();
-    getMongoRecords(collection).createIndex(collection, field, index);
+  public void createIndex(String collectionName, String field, String index) {
+    map.commit();
+    mongoRecords.createIndex(collectionName, field, index);
   }
 
   @Override
   public void printAllEntries(String collection) throws FailedDBOperationException {
-    getMap(collection).commit();
-    getMongoRecords(collection).printAllEntries(collection);
+    map.commit();
+    mongoRecords.printAllEntries(collection);
   }
 
   // test code... there's also a junit test elsewhere
+  
   public static void main(String[] args) throws Exception, RecordNotFoundException {
-    String collection = "test_collection";
     String guid = "testGuid";
     String field = "testField";
-    DiskMapRecords records = new DiskMapRecords("test");
+    DiskMapRecordsV1 map = new DiskMapRecordsV1("test");
     JSONObject json = new JSONObject();
     try {
       json.put("testField", "some value");
@@ -291,16 +293,17 @@ public class DiskMapRecords implements NoSQLRecords {
       System.out.println("Problem creating json " + e);
     }
     // insert
-    records.insert(DBNAMERECORD, guid, json);
-
-    records.printAllEntries(DBNAMERECORD);
-
-    System.out.println(records.lookupEntireRecord(DBNAMERECORD, guid));
+    map.insert(DBNAMERECORD, guid, json);
+    
+    map.printAllEntries(DBNAMERECORD);
+    
+    System.out.println(map.lookupEntireRecord(DBNAMERECORD, guid));
     //
     ArrayList<ColumnField> userFields = new ArrayList<>(Arrays.asList(new ColumnField(field,
             ColumnFieldType.USER_JSON)));
-    System.out.println(records.lookupSomeFields(DBNAMERECORD, guid, NameRecord.NAME, NameRecord.VALUES_MAP, userFields));
-
+    System.out.println(map.lookupSomeFields(DBNAMERECORD, guid, NameRecord.NAME, NameRecord.VALUES_MAP, userFields));
+    
+    
     System.exit(0);
   }
 }
