@@ -519,6 +519,7 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void makeConfAndcopyJarAndConfFiles(String hostname, boolean createLNS, boolean noopTest) {
+	System.out.println("Install path: " + installPath + ", hostname: " + hostname);//Colleen
     if (installPath != null) {
       System.out.println("Creating conf, keystore and truststore directories");
       SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER);
