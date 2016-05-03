@@ -58,7 +58,7 @@ public class ColumnField {
 
   @Override
   public String toString() {
-    return name + " " + type.toString();
+    return name + "/" + type.toString();
   }
 
 }

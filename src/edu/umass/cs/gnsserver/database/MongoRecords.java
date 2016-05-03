@@ -22,6 +22,9 @@ package edu.umass.cs.gnsserver.database;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.BulkWriteException;
+import com.mongodb.BulkWriteOperation;
+import com.mongodb.BulkWriteResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -47,7 +50,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 
 /**
@@ -357,13 +359,33 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   public void bulkInsert(String collectionName, Map<String, JSONObject> values)
           throws FailedDBOperationException, RecordExistsException {
+    //String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    DBCollection collection = db.getCollection(collectionName);
     String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
+    db.requestEnsureConnection();
+    BulkWriteOperation unordered = collection.initializeUnorderedBulkOperation();
+    for (JSONObject value : values.values()) {
+      try {
+        BasicDBObject query = new BasicDBObject(primaryKey, value.get(primaryKey));
+        DBObject document = (DBObject) JSON.parse(value.toString());
+        unordered.find(query).upsert().replaceOne(document);
+      } catch (JSONException e) {
+        DatabaseConfig.getLogger().severe("Unable to create query: " + e);
+      }
+    }
+    BulkWriteResult result = unordered.execute();
+  }
+
+  public void bulkInsertOld(String collectionName, Map<String, JSONObject> values)
+          throws FailedDBOperationException, RecordExistsException {
+    //String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
     List<DBObject> documents = new ArrayList<>();
-    for (Entry<String, JSONObject> entry : values.entrySet()) {
-      BasicDBObject document = new BasicDBObject();
-      document.append(primaryKey, entry.getKey());
-      document.append(NameRecord.VALUES_MAP.getName(), JSON.parse(entry.getValue().toString()));
+    for (JSONObject value : values.values()) {
+      DBObject document = (DBObject) JSON.parse(value.toString());
+//      BasicDBObject document = new BasicDBObject();
+//      document.append(primaryKey, entry.getKey());
+//      document.append(NameRecord.VALUES_MAP.getName(), JSON.parse(entry.getValue().toString()));
       documents.add(document);
     }
     try {

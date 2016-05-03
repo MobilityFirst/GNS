@@ -35,7 +35,8 @@ import java.util.logging.Level;
 import org.json.JSONArray;
 
 /**
- * This is the key / value representation for keys and values when we are manipulating them in memory.
+ * This is the key / value representation for keys and values when
+ * we are manipulating them in memory.
  *
  * This class also has some code that supports backwards compatability with older code.
  * In particular, in some older code result values are always a list.
@@ -105,7 +106,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
       json.put(key, super.getJSONArray(key).get(0));
     }
   }
-  
+
   public List<String> getKeys() throws JSONException {
     List<String> result = new ArrayList<>();
     Iterator<?> keyIter = keys();
@@ -199,7 +200,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
         JSONDotNotation.putWithDotNotation(destination, key, super.get(key));
         somethingChanged = true;
       } catch (JSONException e) {
-        GNSConfig.getLogger().log(Level.SEVERE, 
+        GNSConfig.getLogger().log(Level.SEVERE,
                 "Unable to write {0} field to ValuesMap:{1}", new Object[]{key, e});
       }
     }
@@ -208,6 +209,6 @@ public class ValuesMap extends JSONObject implements Summarizable {
 
   @Override
   public Object getSummary() {
-	  return edu.umass.cs.utils.Util.truncate(ValuesMap.this.toString(), 64, 64).toString();
+    return edu.umass.cs.utils.Util.truncate(ValuesMap.this.toString(), 64, 64).toString();
   }
 }

@@ -161,7 +161,6 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     JSONObject jsonObject = new JSONObject();
     for (ColumnField f : hashMap.keySet()) {
       jsonObject.put(f.getName(), hashMap.get(f));
-      //JSONUtils.putFieldInJsonObject(f, hashMap.get(f), jsonObject);
     }
     return jsonObject;
   }
