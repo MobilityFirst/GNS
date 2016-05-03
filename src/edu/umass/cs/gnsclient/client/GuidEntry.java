@@ -19,7 +19,8 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnsclient.client.demoted.TcpClient;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -35,12 +36,15 @@ import java.security.spec.X509EncodedKeySpec;
 
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.net.InetSocketAddress;
 
 /**
- * This class defines a GuidEntry which contains the alias, guid, public and private key. 
+ * This class defines a GuidEntry which contains the alias, guid, public and private key.
  * It encapsulates the values the client needs to send and receive queries from the server.
  * Most or all of the client calls use this data structure.
- * This class is Serializable so that it can be read and written to the local file system. 
+ * This class is Serializable so that it can be read and written to the local file system.
  * IT WILL NEVER BE WRITTEN REMOTELY AS WE DON'T TRANSMIT OR STORE PRIVATE KEYS REMOTELY.
  *
  */
@@ -131,8 +135,8 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
   public void writeObject(ObjectOutputStream s) throws IOException {
     s.writeUTF(entityName);
     s.writeUTF(guid);
-    s.writeUTF(Base64.encodeToString(publicKey.getEncoded(), false));
-    s.writeUTF(Base64.encodeToString(privateKey.getEncoded(), false));
+    s.writeUTF(Base64.encodeToString(publicKey.getEncoded(), true));
+    s.writeUTF(Base64.encodeToString(privateKey.getEncoded(), true));
   }
 
   private void readObject(ObjectInputStream s) throws IOException {
@@ -154,7 +158,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     byte[] encodedPrivateKey = Base64.decode(encodedPrivate);
 
     try {
-      KeyFactory keyFactory = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+      KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
               encodedPublicKey);
       PublicKey thePublicKey = keyFactory.generatePublic(publicKeySpec);
@@ -163,13 +167,32 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
               encodedPrivateKey);
       PrivateKey thePrivateKey = keyFactory.generatePrivate(privateKeySpec);
       return new KeyPair(thePublicKey, thePrivateKey);
-    } catch (NoSuchAlgorithmException e) {
-      throw new EncryptionException("Failed to generate keypair", e);
-    } catch (InvalidKeySpecException e) {
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new EncryptionException("Failed to generate keypair", e);
     }
   }
-  
-  
+
+  // Test code
+  public static void main(String[] args) throws IOException, Exception {
+    String address = "127.0.0.1";
+    String name = "testGuid@gigapaxos.net";
+    String password = "123";
+    String file_name = "guid";
+
+    TcpClient client = new TcpClient();
+
+    GuidEntry guidEntry = client.accountGuidCreate(name, password);
+
+    FileOutputStream fos = new FileOutputStream(file_name);
+    ObjectOutputStream os = new ObjectOutputStream(fos);
+    guidEntry.writeObject(os);
+    os.flush(); // Important to flush
+
+    FileInputStream fis = new FileInputStream(file_name);
+    ObjectInputStream ois = new ObjectInputStream(fis);
+
+    GuidEntry newEntry = new GuidEntry(ois);
+    System.out.println(newEntry);
+  }
 
 }

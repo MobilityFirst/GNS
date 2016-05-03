@@ -37,6 +37,8 @@ public enum CommandType {
   AppendOrCreateList(121),
   AppendOrCreateListSelf(122),
   AppendOrCreateListUnsigned(123),
+  AppendOrCreateSelf(124),
+  AppendOrCreateUnsigned(125),
   //
   AppendSelf(130),
   AppendUnsigned(131),
@@ -59,6 +61,7 @@ public enum CommandType {
   ReadSelf(161),
   ReadUnsigned(162),
   ReadMultiField(163),
+  ReadMultiFieldUnsigned(164),
   //
   ReadArray(170),
   ReadArrayOne(171),
@@ -68,14 +71,11 @@ public enum CommandType {
   ReadArrayUnsigned(175),
   //
   Remove(180),
-  RemoveField(181),
-  RemoveFieldSelf(182),
-  RemoveFieldUnsigned(183),
-  RemoveList(184),
-  RemoveListSelf(185),
-  RemoveListUnsigned(186),
-  RemoveSelf(187),
-  RemoveUnsigned(188),
+  RemoveList(181),
+  RemoveListSelf(182),
+  RemoveListUnsigned(183),
+  RemoveSelf(184),
+  RemoveUnsigned(185),
   //
   Replace(190),
   ReplaceList(191),
@@ -102,10 +102,14 @@ public enum CommandType {
   SubstituteSelf(235),
   SubstituteUnsigned(236),
   //
-  Set(240),
-  SetSelf(241),
-  SetFieldNull(242),
-  SetFieldNullSelf(243),
+  RemoveField(240),
+  RemoveFieldSelf(241),
+  RemoveFieldUnsigned(242),
+  //
+  Set(250),
+  SetSelf(251),
+  SetFieldNull(252),
+  SetFieldNullSelf(253),
   // Select
   Select(310),
   SelectGroupLookupQuery(311),
@@ -131,7 +135,8 @@ public enum CommandType {
   LookupGuidRecord(424),
   //
   RegisterAccount(430),
-  RegisterAccountUnsigned(431),
+  RegisterAccountSansPassword(431),
+  RegisterAccountUnsigned(432),
   //
   RemoveAccount(440),
   RemoveAlias(441),
@@ -141,6 +146,8 @@ public enum CommandType {
   //
   SetPassword(450),
   VerifyAccount(451),
+  //
+  ResetKey(460),
   // ACL
   AclAdd(510),
   AclAddSelf(511),
@@ -164,8 +171,10 @@ public enum CommandType {
   RemoveMembersFromGroupSelf(623),
   // Admin
   Help(710),
-  Admin(711),
-  Dump(712),
+  HelpTcp(711),
+  HelpTcpWiki(712),
+  Admin(715),
+  Dump(716),
   //
   GetParameter(720),
   SetParameter(721),

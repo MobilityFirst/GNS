@@ -32,16 +32,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
- * Implements SSH execute and copy commands
+ * Implements SSH execute and copy commands.
  *
  * @author westy
  */
 public class SSHClient {
-  
+
   private static boolean verbose = true;
 
   public static void exec() {
@@ -135,7 +136,7 @@ public class SSHClient {
           }
         }
         if (channel.isClosed()) {
-          GNSConfig.getLogger().fine("exit status: " + channel.getExitStatus());
+          GNSConfig.getLogger().log(Level.FINE, "exit status: {0}", channel.getExitStatus());
           break;
         }
         try {
@@ -145,7 +146,7 @@ public class SSHClient {
       }
       channel.disconnect();
       session.disconnect();
-    } catch (Exception e) {
+    } catch (JSchException | IOException e) {
       e.printStackTrace();
       GNSConfig.getLogger().severe(e.toString());
     }
@@ -244,7 +245,7 @@ public class SSHClient {
       channel.disconnect();
       session.disconnect();
 
-    } catch (Exception e) {
+    } catch (JSchException | IOException e) {
       GNSConfig.getLogger().severe(e.toString());
       try {
         if (fis != null) {
@@ -297,7 +298,7 @@ public class SSHClient {
     return session;
   }
 
-  static int checkAck(InputStream in) throws IOException {
+  private static int checkAck(InputStream in) throws IOException {
     int b = in.read();
     // b may be 0 for success,
     //          1 for error,
@@ -334,7 +335,7 @@ public class SSHClient {
   public static void setVerbose(boolean verbose) {
     SSHClient.verbose = verbose;
   }
- 
+
   public static void main(String[] arg) {
     String host = "23.21.160.80";
     String scriptPath = "/Users/westy/Documents/Code/GNRS-westy/scripts/5nodesregions/";

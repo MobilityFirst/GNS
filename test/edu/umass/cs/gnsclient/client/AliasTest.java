@@ -19,16 +19,13 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.HashSet;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -45,27 +42,18 @@ public class AliasTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static final String alias = "ALIAS-" + RandomString.randomString(4) + "@blah.org";
 
   public AliasTest() {
     if (client == null) {
-      InetSocketAddress address;
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+      try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
     }
   }
 
@@ -111,7 +99,7 @@ public class AliasTest {
 //    try {
 //      client.lookupGuid(alias);
 //      System.out.println(alias + " should not exist (first read)");
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //    } catch (IOException e) {
 //      fail("Exception while looking up alias: " + e);
 //    }
@@ -119,7 +107,7 @@ public class AliasTest {
 //    try {
 //      client.lookupGuid(alias);
 //      fail(alias + " should not exist (second read)");
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //    } catch (IOException e) {
 //      fail("Exception while looking up alias: " + e);
 //    }
@@ -139,7 +127,7 @@ public class AliasTest {
         ThreadUtils.sleep(10);
       } while (true);
       // the lookup should fail and throw to here
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
       System.out.println(alias + " was gone on " + (cnt + 1) + " read");
     }
   }

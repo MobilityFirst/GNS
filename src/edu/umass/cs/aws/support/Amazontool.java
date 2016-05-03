@@ -26,13 +26,15 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import java.io.IOException;
 
 /**
- *
+ * Main method for testing AWS classes.
+ * 
  * @author westy
  */
 public class Amazontool {
 
   /**
    * @param args the command line arguments
+   * @throws java.io.IOException
    */
   public static void main(String[] args) throws IOException {
     AWSCredentials credentials = new PropertiesCredentials(

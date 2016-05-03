@@ -20,11 +20,12 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * Initializes the group guid to automatically update and maintain all records that satisfy the query.
- * 
+ *
  * @author westy
  */
 public class SelectGroupSetupQueryWithGuidAndInterval extends SelectGroupSetupQuery {
@@ -38,6 +39,11 @@ public class SelectGroupSetupQueryWithGuidAndInterval extends SelectGroupSetupQu
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.SelectGroupSetupQueryWithGuidAndInterval;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, QUERY, INTERVAL};
   }
@@ -46,7 +52,7 @@ public class SelectGroupSetupQueryWithGuidAndInterval extends SelectGroupSetupQu
   public String getCommandDescription() {
     return "Initializes the group guid to automatically update and maintain all records that satisfy the query."
             + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this"
-            + "interval will retrieve a stale value." 
+            + "interval will retrieve a stale value."
             + "For details see http://gns.name/wiki/index.php/Query_Syntax "
             + "Values are returned as a JSON array of JSON Objects.";
   }

@@ -19,13 +19,12 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONException;
@@ -36,34 +35,24 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 /**
- * Basic test for the GNS using the UniversalTcpClient.
+ * Basic test for the GNS using the GnsClient.
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CreateGuidBatchTest {
 
-  private static UniversalTcpClientExtended client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
-
+  private static GNSClientCommands client;
   private static int numberTocreate = 100;
 
   public CreateGuidBatchTest() {
 
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+     try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
       // can change the number to create on the command line
       if (System.getProperty("count") != null
               && !System.getProperty("count").isEmpty()) {
@@ -99,7 +88,7 @@ public class CreateGuidBatchTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -107,7 +96,7 @@ public class CreateGuidBatchTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
@@ -139,7 +128,7 @@ public class CreateGuidBatchTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -147,7 +136,7 @@ public class CreateGuidBatchTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuidForWithoutPublicKeys.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
@@ -175,7 +164,7 @@ public class CreateGuidBatchTest {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -183,7 +172,7 @@ public class CreateGuidBatchTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuidForFastest.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }

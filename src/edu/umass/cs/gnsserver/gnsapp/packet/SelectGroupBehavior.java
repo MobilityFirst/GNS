@@ -8,7 +8,7 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 /**
- * The group behavior.
+ * The group behavior for select operations.
  */
 public enum SelectGroupBehavior {
   /**

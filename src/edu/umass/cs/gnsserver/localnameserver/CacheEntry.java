@@ -65,7 +65,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Constructs a cache entry for a name from a list of active replicas.
-   * 
+   *
    * @param name
    * @param activeNameServers
    */
@@ -79,7 +79,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Updates a cache entry with a new value.
-   * 
+   *
    * @param value
    */
   public synchronized void updateCacheEntry(String value) {
@@ -89,7 +89,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Updates a cache entry with a new list of active replicas.
-   * 
+   *
    * @param activeNameServers
    */
   public synchronized void updateCacheEntry(Set<InetSocketAddress> activeNameServers) {
@@ -123,7 +123,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the time since the cache value was updated.
-   * 
+   *
    * @param key
    * @return a long
    */
@@ -133,7 +133,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the time since the active replicas were updated.
-   * 
+   *
    * @param key
    * @return a long
    */
@@ -149,24 +149,24 @@ public class CacheEntry implements Comparable<CacheEntry> {
   @Override
   public synchronized String toString() {
     StringBuilder result = new StringBuilder();
-    result.append("Name:" + name);
-    result.append("\nValue:" + value);
+    result.append("Name:").append(name);
+    result.append("\nValue:").append(value);
     if (value != null) {
-      result.append(" (age: " + (System.currentTimeMillis() - valueTimestamp) + "ms)");
+      result.append(" (age: ").append(System.currentTimeMillis() - valueTimestamp).append("ms)");
       if (!isValidValue()) {
         result.append("\n    ***Expired***");
       }
     }
-    result.append("\nActives: " + activeNameServers);
+    result.append("\nActives: ").append(activeNameServers);
     if (activeNameServers != null) {
-      result.append("  (age: " + (System.currentTimeMillis() - activeNameServersTimestamp) + "ms)");
+      result.append("  (age: ").append(System.currentTimeMillis() - activeNameServersTimestamp).append("ms)");
       if (!isValidActives()) {
         result.append("\n    ***Expired***");
       }
     }
-    result.append("\n    TTL:" + timeToLive + "ms");
-    result.append("\n    Value Timestamp: " + valueTimestamp);
-    result.append("\n    Actives Timestamp: " + activeNameServersTimestamp);
+    result.append("\n    TTL:").append(timeToLive).append("ms");
+    result.append("\n    Value Timestamp: ").append(valueTimestamp);
+    result.append("\n    Actives Timestamp: ").append(activeNameServersTimestamp);
 
     return result.toString();
   }
@@ -184,7 +184,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the name.
-   * 
+   *
    * @return the name
    */
   public String getName() {
@@ -193,7 +193,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the TTL.
-   * 
+   *
    * @return the ttl
    */
   public int getTimeToLive() {
@@ -202,7 +202,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the timestamp of the value.
-   * 
+   *
    * @return the timestamp
    */
   public long getValueTimestamp() {
@@ -211,7 +211,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the cached value.
-   * 
+   *
    * @return the value
    */
   public String getValue() {
@@ -220,7 +220,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the set of active replicas.
-   * 
+   *
    * @return the set of active replicas
    */
   public Set<InetSocketAddress> getActiveNameServers() {
@@ -229,7 +229,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns the active replicas timestamp.
-   * 
+   *
    * @return the active replicas timestamp
    */
   public long getActiveNameServersTimestamp() {

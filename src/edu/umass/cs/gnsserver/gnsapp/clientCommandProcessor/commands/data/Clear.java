@@ -21,7 +21,8 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class Clear extends AbstractUpdate {
     super(module);
   }
 
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.Clear;
+  }
+
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -60,7 +66,7 @@ public class Clear extends AbstractUpdate {
   @Override
   public String getCommandDescription() {
     return "Clears the key value pair from the GNS for the given GUID."
-             + " Field must be writeable by the WRITER guid.";
-    
+            + " Field must be writeable by the WRITER guid.";
+
   }
 }

@@ -25,7 +25,7 @@ package edu.umass.cs.gnscommon.exceptions.client;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class EncryptionException extends GnsClientException
+public class EncryptionException extends ClientException
 {
   private static final long serialVersionUID = 1721392537222462554L;
 

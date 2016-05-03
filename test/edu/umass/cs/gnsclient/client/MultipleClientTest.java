@@ -19,14 +19,14 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -53,7 +53,7 @@ public class MultipleClientTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static List<UniversalTcpClientExtended> clients = null;
+  private static List<GNSClientCommands> clients = null;
   /**
    * The address of the GNS server we will contact
    */
@@ -75,16 +75,20 @@ public class MultipleClientTest {
 
   Random random = new Random();
 
-  private UniversalTcpClientExtended getRandomClient() {
+  private GNSClientCommands getRandomClient() {
     return clients.get(random.nextInt(clients.size()));
   }
 
   public MultipleClientTest() {
     if (clients == null) {
       clients = new ArrayList<>();
+      try {
       for (InetSocketAddress address : addresses) {
-        clients.add(new UniversalTcpClientExtended(address.getHostName(), address.getPort()));
+        clients.add(new GNSClientCommands(null));
         System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
+      }
+      } catch (IOException e) {
+        fail("Unable to create clients: " + e);
       }
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(getRandomClient(), ACCOUNT_ALIAS, PASSWORD, true);
@@ -136,12 +140,12 @@ public class MultipleClientTest {
         ThreadUtils.sleep(10);
       } while (true);
       // the lookup should fail and throw to here
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     }
 //    try {
 //      getRandomClient().lookupGuidRecord(testGuid.getGuid());
 //      fail("Lookup testGuid should have throw an exception.");
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //
 //    } catch (IOException e) {
 //      fail("Exception while doing Lookup testGuid: " + e);
@@ -165,7 +169,7 @@ public class MultipleClientTest {
     try {
       getRandomClient().lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -203,7 +207,7 @@ public class MultipleClientTest {
     try {
       getRandomClient().fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
-    } catch (GnsFieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);
@@ -250,7 +254,7 @@ public class MultipleClientTest {
     }
     try {
       // remove default read acces for this test
-      getRandomClient().aclRemove(AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      getRandomClient().aclRemove(AccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
@@ -268,7 +272,7 @@ public class MultipleClientTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -309,21 +313,21 @@ public class MultipleClientTest {
       try {
         getRandomClient().lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
       barneyEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, barneyName);
       // remove default read access for this test
-      getRandomClient().aclRemove(AccessType.READ_WHITELIST, barneyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      getRandomClient().aclRemove(AccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       getRandomClient().fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       getRandomClient().fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
         getRandomClient().aclAdd(AccessType.READ_WHITELIST, barneyEntry, "cell",
-                GnsProtocol.ALL_USERS);
+                GNSCommandProtocol.ALL_USERS);
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
@@ -350,7 +354,7 @@ public class MultipleClientTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -370,13 +374,13 @@ public class MultipleClientTest {
       try {
         getRandomClient().lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      getRandomClient().aclAdd(AccessType.READ_WHITELIST, barneyEntry, GnsProtocol.ALL_FIELDS, superuserEntry.getGuid());
+      getRandomClient().aclAdd(AccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               getRandomClient().fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -421,14 +425,14 @@ public class MultipleClientTest {
 //      try {
 //        getRandomClient().fieldCreateOneElementList(westyEntry, "cats", "maya");
 //        fail("Should have got an exception when trying to create the field westy / cats.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       //this one always fails... check it out
 //      try {
 //        getRandomClient().fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs", "freddybub",
 //                westyEntry);
 //        fail("Should have got an exception when trying to create the field westy / frogs.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       getRandomClient().fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
@@ -594,7 +598,7 @@ public class MultipleClientTest {
       try {
         getRandomClient().lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, mygroupName);
@@ -624,7 +628,7 @@ public class MultipleClientTest {
     try {
       getRandomClient().lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -650,7 +654,7 @@ public class MultipleClientTest {
       try {
         getRandomClient().lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -660,7 +664,7 @@ public class MultipleClientTest {
     try {
       groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, groupAccessUserName);
       // remove all fields read by all
-      getRandomClient().aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      getRandomClient().aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
       return;
@@ -685,7 +689,7 @@ public class MultipleClientTest {
         String result = getRandomClient().fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
@@ -746,7 +750,7 @@ public class MultipleClientTest {
     try {
       getRandomClient().lookupGuid(alias);
       System.out.println(alias + " should not exist");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (IOException e) {
       fail("Exception while looking up alias: " + e);
     }
@@ -768,7 +772,7 @@ public class MultipleClientTest {
 //        ThreadUtils.sleep(10);
 //      } while (true);
 //      // the lookup should fail and throw to here
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //    }
   }
 
@@ -799,7 +803,7 @@ public class MultipleClientTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = getRandomClient().selectNear(GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = getRandomClient().selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -817,7 +821,7 @@ public class MultipleClientTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = getRandomClient().selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = getRandomClient().selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -861,7 +865,7 @@ public class MultipleClientTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = getRandomClient().selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = getRandomClient().selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -901,7 +905,7 @@ public class MultipleClientTest {
       try {
         getRandomClient().fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName + " by sam: " + e);
@@ -918,17 +922,17 @@ public class MultipleClientTest {
     String standardReadFieldName = "standardreadaccess";
     try {
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
-      getRandomClient().aclAdd(AccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GnsProtocol.ALL_USERS);
+      getRandomClient().aclAdd(AccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSCommandProtocol.ALL_USERS);
       assertEquals("funkadelicread", getRandomClient().fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
-      //getRandomClient().removeFromACL(AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      //getRandomClient().removeFromACL(AccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       try {
         String result = getRandomClient().fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -942,7 +946,7 @@ public class MultipleClientTest {
     try {
       getRandomClient().fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      getRandomClient().aclAdd(AccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GnsProtocol.ALL_USERS);
+      getRandomClient().aclAdd(AccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSCommandProtocol.ALL_USERS);
       getRandomClient().fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", getRandomClient().fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 
@@ -950,7 +954,7 @@ public class MultipleClientTest {
       try {
         getRandomClient().fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -981,7 +985,7 @@ public class MultipleClientTest {
       String result = getRandomClient().fieldReadArrayFirstElement(westyEntry.getGuid(), fieldToDelete, westyEntry);
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }

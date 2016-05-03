@@ -51,7 +51,7 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   public GNSConsistentNodeConfig(GNSInterfaceNodeConfig<NodeIDType> nc) {
     this.nodeConfig = nc;
     this.nodes = this.nodeConfig.getNodeIDs();
-    this.CH = new ConsistentHashing<NodeIDType>(this.nodes);
+    this.CH = new ConsistentHashing<>(this.nodes);
   }
 
   private synchronized boolean refresh() {
@@ -111,11 +111,6 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   }
 
   @Override
-  public int getPingPort(NodeIDType id) {
-    return this.nodeConfig.getPingPort(id);
-  }
-
-  @Override
   public int getCcpPort(NodeIDType id) {
     return this.nodeConfig.getCcpPort(id);
   }
@@ -123,11 +118,6 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   @Override
   public int getCcpAdminPort(NodeIDType id) {
     return this.nodeConfig.getCcpAdminPort(id);
-  }
-
-  @Override
-  public int getCcpPingPort(NodeIDType id) {
-    return this.nodeConfig.getCcpPingPort(id);
   }
 
   @Override

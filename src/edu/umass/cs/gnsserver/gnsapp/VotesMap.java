@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +41,7 @@ import org.json.JSONObject;
  */
 public class VotesMap {
 
-  JSONObject storage;
+  private JSONObject storage;
 
   /**
    * Creates a new empty VotesMap.
@@ -51,7 +52,7 @@ public class VotesMap {
 
   /**
    * Creates a new VotesMap by copying a VotesMap.
-   * 
+   *
    * @param votesMap
    */
   public VotesMap(VotesMap votesMap) {
@@ -60,6 +61,7 @@ public class VotesMap {
 
   /**
    * Creates a new VotesMap from a JSON Object.
+   *
    * @param json
    */
   public VotesMap(JSONObject json) {
@@ -70,7 +72,7 @@ public class VotesMap {
       try {
         storage.put(key, json.get(key));
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse JSON: {0}", e);
       }
     }
   }
@@ -97,7 +99,7 @@ public class VotesMap {
       try {
         storage.increment(sender.getHostAddress());
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse JSON: {0}", e);
       }
     }
   }
@@ -114,7 +116,7 @@ public class VotesMap {
     try {
       storage.increment(sender.getHostString() + ":" + sender.getPort());
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse JSON: {0}", e);
     }
   }
 
@@ -137,7 +139,7 @@ public class VotesMap {
       try {
         result.add(InetAddress.getByName(entry.getKey()));
       } catch (UnknownHostException e) {
-        GNSConfig.getLogger().severe("Unable to parse InetAddress: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse InetAddress: {0}", e);
       }
       cnt++;
     }
@@ -163,7 +165,7 @@ public class VotesMap {
       try {
         result.add(parseIPSocketString(entry.getKey()));
       } catch (UnknownHostException e) {
-        GNSConfig.getLogger().severe("Unable to parse InetAddress: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse InetAddress: {0}", e);
       }
       cnt++;
     }
@@ -198,7 +200,7 @@ public class VotesMap {
         // optInt returns zero if the key doesn't exist
         storage.put(key, storage.optInt(key) + update.storage.getInt(key));
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse JSON: {0}", e);
       }
     }
   }
@@ -210,7 +212,7 @@ public class VotesMap {
 
   /**
    * Main routine. For testing only.
-   * 
+   *
    * @param args
    * @throws JSONException
    * @throws UnknownHostException
@@ -269,7 +271,7 @@ public class VotesMap {
    * @return a map
    */
   private static Map<String, Integer> toMap(JSONObject json) {
-    Map<String, Integer> map = new HashMap<String, Integer>();
+    Map<String, Integer> map = new HashMap<>();
     try {
       @SuppressWarnings("unchecked")
       Iterator<String> nameItr = json.keys();
@@ -278,8 +280,8 @@ public class VotesMap {
         map.put(name, json.getInt(name));
       }
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Unable to parse JSON: " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse JSON: {0}", e);
     }
-    return new HashMap<String, Integer>(map);
+    return new HashMap<>(map);
   }
 }

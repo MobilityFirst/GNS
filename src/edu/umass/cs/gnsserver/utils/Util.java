@@ -37,11 +37,10 @@ public class Util {
 
   private static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
   private static final double ALPHA = 0.05;
- 
 
   /**
    * Format as "#.#".
-   * 
+   *
    * @param d
    * @return a decimal formatted string
    */
@@ -51,7 +50,7 @@ public class Util {
 
   /**
    * Format as "#.#" microseconds.
-   * 
+   *
    * @param d
    * @return a decimal formatted as microseconds string
    */
@@ -61,19 +60,19 @@ public class Util {
 
   /**
    * Moving average.
-   * 
+   *
    * @param sample
    * @param historicalAverage
    * @param alpha
    * @return the moving average as a double
    */
   public static final double movingAverage(double sample, double historicalAverage, double alpha) {
-    return (1 - alpha) * ((double) historicalAverage) + alpha * ((double) sample);
+    return (1 - alpha) * historicalAverage + alpha * sample;
   }
 
   /**
    * Moving average.
-   * 
+   *
    * @param sample
    * @param historicalAverage
    * @return the moving average as a double
@@ -84,7 +83,7 @@ public class Util {
 
   /**
    * Moving average.
-   * 
+   *
    * @param sample
    * @param historicalAverage
    * @return the moving average as a double
@@ -95,7 +94,7 @@ public class Util {
 
   /**
    * Moving average.
-   * 
+   *
    * @param sample
    * @param historicalAverage
    * @param alpha
@@ -107,7 +106,7 @@ public class Util {
 
   /**
    * Round.
-   * 
+   *
    * @param d
    * @return the value rounded to an integer
    */
@@ -117,7 +116,7 @@ public class Util {
 
   /**
    * Parses a URI string into a map of strings to strings.
-   * 
+   *
    * @param query
    * @return a map of string to string
    */
@@ -132,7 +131,7 @@ public class Util {
 
   /**
    * Converts a set of integers into an array of integers.
-   * 
+   *
    * @param set
    * @return an integer array
    */
@@ -167,13 +166,13 @@ public class Util {
 
   /**
    * * Sorts a Map into a LinkedHashMap in increasing order.
-   * 
+   *
    * @param <K>
    * @param <V>
    * @param map
    * @return the map sorted in ascending order
    */
-  public static <K, V extends Comparable<? super V>> Map<K, V>sortByValueIncreasing(Map<K, V> map) {
+  public static <K, V extends Comparable<? super V>> Map<K, V> sortByValueIncreasing(Map<K, V> map) {
     List<Map.Entry<K, V>> list
             = new LinkedList<>(map.entrySet());
     Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
@@ -192,7 +191,7 @@ public class Util {
 
   /**
    * Sorts a Map into a LinkedHashMap in decreasing order.
-   * 
+   *
    * @param <K>
    * @param <V>
    * @param map
@@ -217,7 +216,7 @@ public class Util {
 
   /**
    * Returns a InetSocketAddress parsed from a string.
-   * 
+   *
    * @param s
    * @return an InetSocketAddress parsed from the string
    */
@@ -229,27 +228,26 @@ public class Util {
     }
     return new InetSocketAddress(tokens[0], Integer.valueOf(tokens[1]));
   }
-  
+
 //  private static final String NON_THIN = "[^iIl1\\.,']";
 //
 //  private static int textWidth(String str) {
 //    return (int) (str.length() - str.replaceAll(NON_THIN, "").length() / 2);
 //  }
-  
   // close enough
-  private static String sampleExplanation = " [555000 more chars] ...";
-  private static int explanationSize = sampleExplanation.length();
+  private static final String SAMPLE_EXPLANATION = " [555000 more chars] ...";
+  private static final int EXPLANATION_SIZE = SAMPLE_EXPLANATION.length();
 
   /**
    * Clips the text at length.
    * Max should be more than 20 or so or you'll have issues. You've been warned.
-   * 
+   *
    * @param text
    * @param max
-   * @return 
+   * @return
    */
   public static String ellipsize(String text, int max) {
-    return text.substring(0, max - explanationSize) + " [" + (text.length() - max) + " more chars] ...";
+    return text.substring(0, max - EXPLANATION_SIZE) + " [" + (text.length() - max) + " more chars] ...";
 //    if (textWidth(text) <= max) {
 //      return text;
 //    }
@@ -270,7 +268,7 @@ public class Util {
 
   /**
    * Returns a stack trace.
-   * 
+   *
    * @return the stack trace as a string
    */
   public String stackTraceToString() {

@@ -27,33 +27,36 @@ import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.
  * This is necessary because of limitations of Java's ThreadPoolExecutor.
+ *
  * @author mbadov
  *
  */
 public class ClientPool {
-	private Map<Long, ActiveCodeClient> clients;
-	private GNSApplicationInterface<?> app;
-	
-	/**
-	 * Initialize a ClientPool
-	 * @param app
-	 */
-	public ClientPool(GNSApplicationInterface<?> app) {
-		clients = new HashMap<>();
-		this.app = app;
-	}
-	
-	protected void addClient(Thread t) {
-		clients.put(t.getId(), new ActiveCodeClient(app, true));
-	}
-	
-	protected ActiveCodeClient getClient(Thread t) {
-		return clients.get(t.getId());
-	}
 
-	protected void shutdown() {
-		for(ActiveCodeClient client : clients.values()) {
-		    client.shutdownServer();
-		}
-	}
+  private final Map<Long, ActiveCodeClient> clients;
+  private final GNSApplicationInterface<?> app;
+
+  /**
+   * Initialize a ClientPool
+   *
+   * @param app
+   */
+  public ClientPool(GNSApplicationInterface<?> app) {
+    clients = new HashMap<>();
+    this.app = app;
+  }
+
+  protected void addClient(Thread t) {
+    clients.put(t.getId(), new ActiveCodeClient(app, true));
+  }
+
+  protected ActiveCodeClient getClient(Thread t) {
+    return clients.get(t.getId());
+  }
+
+  protected void shutdown() {
+    for (ActiveCodeClient client : clients.values()) {
+      client.shutdownServer();
+    }
+  }
 }

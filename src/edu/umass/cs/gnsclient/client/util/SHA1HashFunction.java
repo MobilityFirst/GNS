@@ -28,7 +28,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class SHA1HashFunction extends BasicHashFunction {
 
-  MessageDigest hashfunction;
+  private MessageDigest hashfunction;
 
   private SHA1HashFunction() {
     try {

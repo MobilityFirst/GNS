@@ -33,55 +33,65 @@ import org.json.JSONObject;
 /**
  * This pulls out some methods from GnsReconfigurableInterface that were needed for
  * transition to new app framework.
- * 
+ *
  * @author westy
  * @param <NodeIDType>
  */
 public interface GNSApplicationInterface<NodeIDType> {
-  
+
   /**
    * Returns the node id.
-   * 
+   *
    * @return the node id
    */
   NodeIDType getNodeID();
 
   /**
    * Returns the record map.
-   * 
+   *
    * @return the record map
    */
   BasicRecordMap getDB();
 
   /**
    * Returns the node config.
-   * 
+   *
    * @return the node config
    */
   ReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
-  
+
   /**
    * Sends a JSON packet to a client.
-   * 
+   *
    * @param isa
- * @param response 
+   * @param response
    * @param msg
- * @param myListeningAddress 
+   * @param myListeningAddress
    * @throws IOException
    */
   void sendToClient(InetSocketAddress isa, Request response, JSONObject msg, InetSocketAddress myListeningAddress) throws IOException;
-  
+
   /**
    * Sends a JSON packet to a node.
-   * 
+   *
    * @param id
    * @param msg
    * @throws IOException
    */
   void sendToID(NodeIDType id, JSONObject msg) throws IOException;
-  
+
+  /**
+   * Returns the request handler.
+   *
+   * @return the request handler
+   */
   ClientRequestHandlerInterface getRequestHandler();
-  
+
+  /**
+   * Returns the active code handler.
+   *
+   * @return the active code handler
+   */
   ActiveCodeHandler getActiveCodeHandler();
-  
+
 }

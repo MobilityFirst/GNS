@@ -26,36 +26,37 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * This is the task sent to active code worker.
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeTask implements Callable<ValuesMap> {
 
-    private ActiveCodeParams acp;
-    private ClientPool clientPool;
-    
-    /**
-     * Initialize a ActiveCodeTask
-     * @param acp
-     * @param clientPool
-     */
-    public ActiveCodeTask(ActiveCodeParams acp, ClientPool clientPool) {
-        this.acp = acp; 
-        this.clientPool = clientPool;
+  private final ActiveCodeParams acp;
+  private final ClientPool clientPool;
+
+  /**
+   * Initialize a ActiveCodeTask
+   *
+   * @param acp
+   * @param clientPool
+   */
+  public ActiveCodeTask(ActiveCodeParams acp, ClientPool clientPool) {
+    this.acp = acp;
+    this.clientPool = clientPool;
+  }
+
+  @Override
+  /**
+   * Called by the ThreadPoolExecutor to run the active code task
+   */
+  public ValuesMap call() throws ActiveCodeException {
+    ActiveCodeClient client = clientPool.getClient(Thread.currentThread());
+    ValuesMap result = null;
+
+    if (acp != null) {
+      result = client.runActiveCode(acp, false);
     }
 
-    @Override
-    /**
-     * Called by the ThreadPoolExecutor to run the active code task
-     */
-    public ValuesMap call() throws ActiveCodeException {
-    	ActiveCodeClient client = clientPool.getClient(Thread.currentThread());
-    	ValuesMap result = null;
-    	
-    	if(acp != null) {	
-    		result = client.runActiveCode(acp, false);
-    	}
-    	
-    	return result;
-    }
+    return result;
+  }
 }

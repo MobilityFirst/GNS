@@ -60,10 +60,6 @@ public interface ClientRequestHandlerInterface {
    */
   public ConsistentReconfigurableNodeConfig<String> getNodeConfig();
 
-  public boolean isDebugMode();
-
-  public void setDebugMode(boolean debugMode);
-
   /**
    * Returns the address of this node.
    *

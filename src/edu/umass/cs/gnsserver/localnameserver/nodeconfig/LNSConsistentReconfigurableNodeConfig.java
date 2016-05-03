@@ -22,10 +22,8 @@ package edu.umass.cs.gnsserver.localnameserver.nodeconfig;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
-
 import edu.umass.cs.reconfiguration.interfaces.ModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.interfaces.ModifiableRCConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
@@ -64,8 +62,8 @@ public class LNSConsistentReconfigurableNodeConfig extends
     this.nodeConfig = nc;
     this.activeReplicas = this.nodeConfig.getActiveReplicas();
     this.reconfigurators = this.nodeConfig.getReconfigurators();
-    this.CH_RC = new ConsistentHashing<InetSocketAddress>(this.reconfigurators);
-    this.CH_AR = new ConsistentHashing<InetSocketAddress>(this.activeReplicas); 
+    this.CH_RC = new ConsistentHashing<>(this.reconfigurators);
+    this.CH_AR = new ConsistentHashing<>(this.activeReplicas); 
   }
 
   @Override
@@ -194,17 +192,7 @@ public class LNSConsistentReconfigurableNodeConfig extends
   }
 
   @Override
-  public int getPingPort(InetSocketAddress id) {
-    return this.nodeConfig.getPingPort(id);
-  }
-
-  @Override
   public int getCcpPort(InetSocketAddress id) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public int getCcpPingPort(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 

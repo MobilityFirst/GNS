@@ -24,14 +24,18 @@ package edu.umass.cs.msocket.contextsocket;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.msocket.gns.GNSCalls;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 
 /**
  * This class defines a MSocketGroupMember
  * This class is used to set the context attributes and
  * receive any messages that are sent with context information matching to this MSocketGroupMember
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
+ * @author <a href="mailto:ayadav@cs.umass.edu">Aditya Yadav</a>
  * @version 1.0
  */
 public class ContextMember
@@ -40,12 +44,16 @@ public class ContextMember
 	private final String localName ;
 	private ContextMemberInternals msocketGroupMemberInternalsObj = null;
 	
+	private ContextServiceClient<Integer>	csClient;
+	
 	/**
 	 * @param groupName: multicast groupName
 	 * @throws Exception
 	 */
 	public ContextMember(String localName, Map<String, Object> contextMap) throws Exception
 	{
+		csClient 
+			= new ContextServiceClient<Integer>(ContextSocketConfig.contextNodeIP, ContextSocketConfig.contextNodePort);
 		this.localName = localName;
 		msocketGroupMemberInternalsObj = new ContextMemberInternals(localName);
 		
@@ -68,7 +76,7 @@ public class ContextMember
 	{
 		try
 		{
-			return GnsIntegration.getGUIDOfAlias(localName);
+			return Integration.getGUIDOfAlias(localName);
 		} catch (Exception e)
 		{
 			e.printStackTrace();
@@ -91,8 +99,15 @@ public class ContextMember
 		}
 		else
 		{
-			ContextServiceCallsSingleton.sendUpdateToContextService(msocketGroupMemberInternalsObj.getMyGUID(), 
-					field, value, msocketGroupMemberInternalsObj);
+			JSONObject attrValJSON = new JSONObject();
+			try {
+				attrValJSON.put(field, value);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			csClient.sendUpdate(msocketGroupMemberInternalsObj.getMyGUID(), attrValJSON, 
+					-1, true);
 		}
 	}
 	

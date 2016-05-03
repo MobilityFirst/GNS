@@ -29,8 +29,8 @@ import java.util.Collections;
  */
 public class Stats {
 
-  ArrayList<Double> data;
-  double size;
+  private ArrayList<Double> data;
+  private double size;
 
   /**
    *
@@ -92,7 +92,7 @@ public class Stats {
    * @return a double
    */
   public double median() {
-    ArrayList<Double> copy = new ArrayList<Double>(data);
+    ArrayList<Double> copy = new ArrayList<>(data);
     Collections.sort(data);
 
     if (copy.size() % 2 == 0) {

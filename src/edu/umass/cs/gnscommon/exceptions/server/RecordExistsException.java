@@ -25,7 +25,7 @@ package edu.umass.cs.gnscommon.exceptions.server;
  * 
  * @author westy
  */
-public class RecordExistsException extends GnsServerException {
+public class RecordExistsException extends ServerException {
   String collection;
   String guid;
 

@@ -21,8 +21,8 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
 /**
@@ -80,7 +80,7 @@ public class AclList extends ConsoleCommand
   {
     try
     {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       String field = commandText.trim();
 
