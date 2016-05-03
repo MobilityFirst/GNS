@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 
+import java.util.logging.Level;
 import org.json.JSONException;
 
 /**
@@ -69,7 +70,7 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
     try {
       return this.toJSONObject().toString();
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Problem converting packet to string:" + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Problem converting packet to string:{0}", e);
       return "BasicPacket{" + "type=" + getType() + '}';
     }
   }

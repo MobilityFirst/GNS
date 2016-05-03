@@ -168,8 +168,6 @@ public class CommandDefs {
     edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearTagged.class,
     edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetTagged.class,
     edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
-    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.PingTable.class,
-    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.PingValue.class,
     edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class,
     // Active code
     edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Set.class,

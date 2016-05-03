@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import java.util.HashSet;
@@ -75,8 +75,8 @@ public class ClientUtils {
     for (int i = 0; i < publicKeys.length(); i++) {
       // Special case
       try {
-        if (publicKeys.getString(i).equals(GnsProtocol.ALL_USERS)) {
-          guids.put(GnsProtocol.ALL_USERS);
+        if (publicKeys.getString(i).equals(GNSCommandProtocol.ALL_USERS)) {
+          guids.put(GNSCommandProtocol.ALL_USERS);
         } else {
           guids.put(createGuidStringFromBase64PublicKey(publicKeys.getString(i)));
         }

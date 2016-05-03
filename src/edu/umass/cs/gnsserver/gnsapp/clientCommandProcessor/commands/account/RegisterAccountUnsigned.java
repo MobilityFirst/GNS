@@ -19,12 +19,13 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  * THIS EXISTS FOR BACKWARDS COMPATIBILITY.
- * 
+ *
  * @author westy
  */
 public class RegisterAccountUnsigned extends RegisterAccount {
@@ -36,6 +37,11 @@ public class RegisterAccountUnsigned extends RegisterAccount {
    */
   public RegisterAccountUnsigned(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RegisterAccountUnsigned;
   }
 
   @Override

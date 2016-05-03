@@ -20,6 +20,7 @@
 package edu.umass.cs.gnscommon.utils;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import java.util.logging.Level;
 
 /**
  * Sleep without worries.
@@ -36,7 +37,8 @@ public class ThreadUtils {
     try {
       Thread.sleep(ms);
     } catch (Exception c) {
-      GNSConfig.getLogger().severe("Error sleeping :" + c);
+      GNSConfig.getLogger().log(Level.SEVERE, 
+              "Error sleeping :{0}", c);
     }
   }
   

@@ -20,10 +20,9 @@
 package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
-import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnsclient.console.GnsUtils;
+import edu.umass.cs.gnscommon.utils.Util;
 
 public class ActiveCodeGet extends ConsoleCommand {
 
@@ -64,7 +63,7 @@ public class ActiveCodeGet extends ConsoleCommand {
 
   @Override
   public void parse(String commandText) throws Exception {
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
@@ -72,7 +71,7 @@ public class ActiveCodeGet extends ConsoleCommand {
         guid = module.getCurrentGuid().getGuid();
       } else if (st.countTokens() == 2) {
         guid = st.nextToken();
-        if (!GnsUtils.isValidGuidString(guid)) {
+        if (!Util.isValidGuidString(guid)) {
           // We probably have an alias, lookup the GUID
           guid = gnsClient.lookupGuid(guid);
         }
@@ -82,10 +81,10 @@ public class ActiveCodeGet extends ConsoleCommand {
       }
 
       String action = st.nextToken();
-      String value = gnsClient.activeCodeGet(guid, action, module.getCurrentGuid());
+      byte[] value = gnsClient.activeCodeGet(guid, action, module.getCurrentGuid());
 
       if (value != null) {
-        console.printString(new String(Base64.decode(value)));
+        console.printString(new String(value, "UTF-8"));
         console.printNewline();
       } else {
         console.printString("No activecode set for GUID " + guid + "for action '" + action + "'");

@@ -19,10 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnamed;
 
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.utils.DelayProfiler;
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -35,7 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
+import java.util.logging.Level;
 import org.xbill.DNS.Flags;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.Rcode;
@@ -118,9 +116,8 @@ public class LookupWorker implements Runnable {
     } else {
       maxLength = 512;
     }
-    if (NameResolution.debuggingEnabled) {
-      GNSConfig.getLogger().info("Q/R: " + NameResolution.queryAndResponseToString(query, response));
-    }
+    NameResolution.getLogger().log(Level.FINE, "Q/R: {0}",
+            NameResolution.queryAndResponseToString(query, response));
     // Send out the response.
     DelayProfiler.updateDelay("LookupWorker.postGenerate", postStart);
     long sendStart = System.currentTimeMillis();
@@ -137,9 +134,7 @@ public class LookupWorker implements Runnable {
    */
   private Message generateReply(Message query) {
     long startTime = System.currentTimeMillis();
-    if (NameResolution.debuggingEnabled) {
-      GNSConfig.getLogger().fine("Incoming request: " + query.toString());
-    }
+    NameResolution.getLogger().log(Level.FINE, "Incoming request: {0}", query.toString());
 
     // If it's not a query we just ignore it.
     if (query.getHeader().getFlag(Flags.QR)) {
@@ -166,41 +161,42 @@ public class LookupWorker implements Runnable {
       Message tempQuery = (Message) query.clone();
       Message result = NameResolution.lookupDnsCache(tempQuery, dnsCache);
       if (result.getHeader().getRcode() == Rcode.NOERROR) {
-        GNSConfig.getLogger().info("Responding the request from cache " + NameResolution.queryAndResponseToString(query, result));
+        NameResolution.getLogger().log(Level.FINE,
+                "Responding the request from cache {0}", NameResolution.queryAndResponseToString(query, result));
         return result;
       }
     }
 
     // Create a clone of the query for duplicating the request to GNS and DNS
     Message dnsQuery = (Message) query.clone();
-    List<GnsDnsLookupTask> tasks;
+    List<LookupTask> tasks;
     if (gnsServer == null) {
       // We make two tasks to check the DNS and GNS in parallel
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new GnsDnsLookupTask(query, handler),
+              new LookupTask(query, handler),
               // Create DNS lookup task
-              new GnsDnsLookupTask(dnsQuery, dnsServer, handler));
+              new LookupTask(dnsQuery, dnsServer, handler));
     } else {
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new GnsDnsLookupTask(query, gnsServer, true, /* isGNS */ handler),
+              new LookupTask(query, gnsServer, true, /* isGNS */ handler),
               // Create DNS lookup task
-              new GnsDnsLookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler));
+              new LookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler));
     }
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
     // the altenative. Plus it's cool and trendy to use futures.
     ExecutorService executor = Executors.newFixedThreadPool(2);
-    ExecutorCompletionService<Message> completionService = new ExecutorCompletionService<Message>(executor);
-    List<Future<Message>> futures = new ArrayList<Future<Message>>(2);
+    ExecutorCompletionService<Message> completionService = new ExecutorCompletionService<>(executor);
+    List<Future<Message>> futures = new ArrayList<>(2);
     for (Callable<Message> task : tasks) {
       futures.add(completionService.submit(task));
     }
     Message successResponse = null;
     Message errorResponse = null;
     // loop throught the tasks getting results as they complete
-    for (GnsDnsLookupTask task : tasks) { // this is just doing things twice btw
+    for (LookupTask task : tasks) { // this is just doing things twice btw
       try {
         Message result = completionService.take().get();
         if (result.getHeader().getRcode() == Rcode.NOERROR) {
@@ -211,13 +207,9 @@ public class LookupWorker implements Runnable {
           errorResponse = result;
         }
       } catch (ExecutionException e) {
-        if (NameResolution.debuggingEnabled) {
-          GNSConfig.getLogger().warning("Problem handling lookup task: " + e);
-        }
+        NameResolution.getLogger().log(Level.WARNING, "Problem handling lookup task: {0}", e);
       } catch (InterruptedException e) {
-        if (NameResolution.debuggingEnabled) {
-          GNSConfig.getLogger().warning("Lookup task interrupted: " + e);
-        }
+        NameResolution.getLogger().log(Level.WARNING, "Lookup task interrupted: {0}", e);
       }
     }
     // Shutdown the executor threadpool
@@ -236,11 +228,12 @@ public class LookupWorker implements Runnable {
             }
             int cred = getCred(Section.ANSWER, isAuth);
             dnsCache.addRRset(answers[i], cred);
-            GNSConfig.getLogger().info("Records added to cache " + answers[i].toString());
+            NameResolution.getLogger().log(Level.FINE,
+                    "Records added to cache {0}", answers[i].toString());
           }
         }
       } catch (NullPointerException e) {
-        GNSConfig.getLogger().warning("Failed to add a dns response to cache" + e);
+        NameResolution.getLogger().log(Level.WARNING, "Failed to add a dns response to cache{0}", e);
       }
       return successResponse;
     } else if (errorResponse != null) {
@@ -260,29 +253,32 @@ public class LookupWorker implements Runnable {
     DatagramPacket outgoingPacket = new DatagramPacket(responseBytes, responseBytes.length, incomingPacket.getAddress(), incomingPacket.getPort());
     try {
       socket.send(outgoingPacket);
-      GNSConfig.getLogger().fine("Response sent to " + incomingPacket.getAddress().toString() + " " + incomingPacket.getPort());
+      NameResolution.getLogger().log(Level.FINE,
+              "Response sent to {0} {1}", new Object[]{incomingPacket.getAddress().toString(),
+                incomingPacket.getPort()});
     } catch (IOException e) {
-      GNSConfig.getLogger().severe("Failed to send response" + e);
+      NameResolution.getLogger().log(Level.SEVERE, "Failed to send response{0}", e);
     }
   }
 
-  private final int getCred(int section, boolean isAuth) {
-    if (section == Section.ANSWER) {
-      if (isAuth) {
-        return Credibility.AUTH_ANSWER;
-      } else {
-        return Credibility.NONAUTH_ANSWER;
-      }
-    } else if (section == Section.AUTHORITY) {
-      if (isAuth) {
-        return Credibility.AUTH_AUTHORITY;
-      } else {
-        return Credibility.NONAUTH_AUTHORITY;
-      }
-    } else if (section == Section.ADDITIONAL) {
-      return Credibility.ADDITIONAL;
-    } else {
-      throw new IllegalArgumentException("getCred: invalid section");
+  private int getCred(int section, boolean isAuth) {
+    switch (section) {
+      case Section.ANSWER:
+        if (isAuth) {
+          return Credibility.AUTH_ANSWER;
+        } else {
+          return Credibility.NONAUTH_ANSWER;
+        }
+      case Section.AUTHORITY:
+        if (isAuth) {
+          return Credibility.AUTH_AUTHORITY;
+        } else {
+          return Credibility.NONAUTH_AUTHORITY;
+        }
+      case Section.ADDITIONAL:
+        return Credibility.ADDITIONAL;
+      default:
+        throw new IllegalArgumentException("getCred: invalid section");
     }
   }
 }

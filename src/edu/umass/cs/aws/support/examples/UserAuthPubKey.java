@@ -22,20 +22,19 @@ package edu.umass.cs.aws.support.examples;
 import edu.umass.cs.aws.networktools.UserInfoPrompted;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
+import java.awt.HeadlessException;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 /**
- *
- * @author westy
- */
-/* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
-/**
  * This program will demonstrate the user authentification by public key. $ CLASSPATH=.:../build javac
  * UserAuthPubKey.java $ CLASSPATH=.:../build java UserAuthPubKey You will be asked username, hostname,
  * privatekey(id_dsa) and passphrase. If everything works fine, you will get the shell prompt
+ *
+ *
  *
  */
 public class UserAuthPubKey {
@@ -53,7 +52,7 @@ public class UserAuthPubKey {
         System.out.println("You chose "
                 + chooser.getSelectedFile().getAbsolutePath() + ".");
         jsch.addIdentity(chooser.getSelectedFile().getAbsolutePath() //			 , "passphrase"
-                );
+        );
       }
 
       String host = null;
@@ -80,7 +79,7 @@ public class UserAuthPubKey {
       channel.setOutputStream(System.out);
 
       channel.connect();
-    } catch (Exception e) {
+    } catch (HeadlessException | JSchException e) {
       System.out.println(e);
     }
   }

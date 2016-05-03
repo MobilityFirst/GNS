@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 
 
 
@@ -47,7 +47,7 @@ public class WatchdogListScanner extends Thread
   private List<MembershipChangeCallback> callbacks = new LinkedList<MembershipChangeCallback>();
   private long                           refreshFrequencyInMs;
   private boolean                        isKilled  = false;
-  private UniversalTcpClient             gnsClient;
+  private GNSClientCommands             gnsClient;
   private GuidEntry                      watchdogGuid;
   private String                         targetGuid;
   private static final Logger            logger    = Logger.getLogger("Watchdog");
@@ -61,7 +61,7 @@ public class WatchdogListScanner extends Thread
    * @param listName name of the field where the list is stored
    * @param refreshFrequencyInMs how often we should read the list
    */
-  public WatchdogListScanner(UniversalTcpClient gnsClient, GuidEntry watchdogGuid, String targetGuid, String listName,
+  public WatchdogListScanner(GNSClientCommands gnsClient, GuidEntry watchdogGuid, String targetGuid, String listName,
       long refreshFrequencyInMs)
   {
     this.gnsClient = gnsClient;

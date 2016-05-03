@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.location.ProxyStatusInfo;
 
@@ -92,13 +92,13 @@ public class RandomProxyPolicy extends ProxySelectionPolicy
 
       // Check first that this member is a proxy and not another service
       String serviceType = DefaultGNSClient.getGnsClient().fieldReadArray
-    		  (proxyGuid, GnsConstants.SERVICE_TYPE_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
-      if (!GnsConstants.PROXY_SERVICE.equals(serviceType))
+    		  (proxyGuid, Constants.SERVICE_TYPE_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
+      if (!Constants.PROXY_SERVICE.equals(serviceType))
         continue; // This is not a proxy, ignore
 
       // Grab the proxy IP address
       String proxyIp = DefaultGNSClient.getGnsClient().fieldReadArray
-    		  (proxyGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
+    		  (proxyGuid, Constants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
       String[] parsed = proxyIp.split(":");
       InetSocketAddress addr = new InetSocketAddress(parsed[0], Integer.parseInt(parsed[1]));
       result.add(addr);

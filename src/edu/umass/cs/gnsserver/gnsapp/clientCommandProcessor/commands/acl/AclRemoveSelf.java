@@ -19,8 +19,9 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
 /**
  *
@@ -34,6 +35,11 @@ public class AclRemoveSelf extends AclRemove {
    */
   public AclRemoveSelf(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AclRemoveSelf;
   }
 
   @Override

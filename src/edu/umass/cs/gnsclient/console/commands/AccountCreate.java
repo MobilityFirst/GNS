@@ -22,10 +22,10 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.security.PublicKey;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import java.util.StringTokenizer;
 
 /**
@@ -79,7 +79,7 @@ public class AccountCreate extends ConsoleCommand
 
     try
     {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       try
       {
@@ -112,7 +112,7 @@ public class AccountCreate extends ConsoleCommand
             KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
           }
         }
-        catch (GnsInvalidGuidException e)
+        catch (InvalidGuidException e)
         {
           KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
         }

@@ -14,17 +14,17 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.server.GnsRuntimeException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.server.ServerRuntimeException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -107,7 +107,8 @@ public class AccountAccess {
     try {
       messageDigest = MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException e) {
-      GNSConfig.getLogger().severe("Unable to initialize for authentication:" + e);
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Unable to initialize for authentication:{0}", e);
     }
   }
 
@@ -138,62 +139,45 @@ public class AccountAccess {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, ACCOUNT_INFO,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-				GNSConfig
-						.getLogger()
-						.log(Level.INFO,
-								"AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
-								new Object[] { guid, ACCOUNT_INFO,
-										result!=null ? result.getSummary() : result });
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "AAAAAAAAAAAAAAAAAAAAAAAAA ValuesMap for {0} / {1}: {2}",
+              new Object[]{guid, ACCOUNT_INFO,
+                result != null ? result.getSummary() : result});
       if (result != null) {
         return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-      GNSConfig.getLogger().severe("Problem extracting ACCOUNT_INFO from " + guid + " :" + e);
+//      GNSConfig.getLogger().log(Level.SEVERE, "Problem extracting ACCOUNT_INFO from {0} :{1}",
+//              new Object[]{guid, e});
     }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for " + guid);
-    }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA ACCOUNT_INFO NOT FOUND for " + guid);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for {0}", guid);
+
+    GNSConfig.getLogger().log(Level.FINE,
+            "AAAAAAAAAAAAAAAAAAAAAAAAA ACCOUNT_INFO NOT FOUND for {0}", guid);
+
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for " + guid);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "AAAAAAAAAAAAAAAAAAAAAAAAA LOOKING REMOTELY for ACCOUNT_INFO for {0}", guid);
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
-      } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
+      } catch (IOException | JSONException | ClientException e) {
+//        GNSConfig.getLogger().log(Level.SEVERE,
+//                "Problem getting GUID_INFO for {0} from remote server: {1}",
+//                new Object[]{guid, e});
       }
       if (value != null) {
         try {
           return new AccountInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-          GNSConfig.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
+//          GNSConfig.getLogger().log(Level.SEVERE,
+//                  "Problem parsing GUID_INFO value from remote server for {0}: {1}",
+//                  new Object[]{guid, e});
         }
       }
     }
     return null;
-
-//    QueryResult<String> accountResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-//    //QueryResult<String> accountResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-//    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-//      GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
-//    }
-//    if (!accountResult.isError()) {
-//      try {
-//        return new AccountInfo(accountResult.getValuesMap().getJSONObject(ACCOUNT_INFO));
-//        //return new AccountInfo(accountResult.getArray(ACCOUNT_INFO).toResultValueString());
-//      } catch (JSONException e) {
-//        GNS.getLogger().severe("Problem parsing accountinfo:" + e);
-//      } catch (ParseException e) {
-//        GNS.getLogger().severe("Problem parsing accountinfo:" + e);
-//      }
-//    }
-//    return null;
   }
 
   /**
@@ -213,35 +197,27 @@ public class AccountAccess {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, PRIMARY_GUID,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + guid + " / " + PRIMARY_GUID + ": " + result);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}", new Object[]{guid, PRIMARY_GUID, result});
       if (result != null) {
         return result.getString(PRIMARY_GUID);
       }
     } catch (FailedDBOperationException | JSONException e) {
-      GNSConfig.getLogger().severe("Problem extracting PRIMARY_GUID from " + guid + " :" + e);
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Problem extracting PRIMARY_GUID from {0} :{1}", new Object[]{guid, e});
     }
-//    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, PRIMARY_GUID);
-//     try {
-//      if (!guidResult.isError()) {
-//        return guidResult.getValuesMap().getString(PRIMARY_GUID);
-//        //return (String) guidResult.getArray(PRIMARY_GUID).get(0);
-//      }
-//    } catch (JSONException e) {
-//    }
     String value = null;
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX PRIMARY_GUID NOT FOUND LOCALLY for " + guid);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX PRIMARY_GUID NOT FOUND LOCALLY for {0}", guid);
+
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for " + guid);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for {0}", guid);
       try {
         value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
-      } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().severe("Problem getting HRN_GUID for " + guid + " from remote server: " + e);
+      } catch (IOException | JSONException | ClientException e) {
+        GNSConfig.getLogger().log(Level.SEVERE,
+                "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{guid, e});
       }
     }
     return value;
@@ -268,40 +244,29 @@ public class AccountAccess {
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name, HRN_GUID,
               handler.getApp(), false);
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX ValuesMap for " + name + " / " + HRN_GUID + ": " + result);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}",
+              new Object[]{name, HRN_GUID, result});
       if (result != null) {
         return result.getString(HRN_GUID);
       }
     } catch (FailedDBOperationException | JSONException e) {
-      GNSConfig.getLogger().severe("Problem extracting HRN_GUID from " + name + " :" + e);
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Problem extracting HRN_GUID from {0} :{1}",
+              new Object[]{name, e});
     }
-//    try {
-//      QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(name, HRN_GUID);
-//      //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(name, HRN_GUID);
-//      if (!guidResult.isError()) {
-//        return guidResult.getValuesMap().getString(HRN_GUID);
-//        //return (String) guidResult.getArray(HRN_GUID).get(0);
-//      }
-//    } catch (JSONException e) {
-//    }
-    /**
-     * *********
-     *
-     */
+    //
     String value = null;
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for " + name);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX HRN_GUID NOT FOUND for {0}", name);
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for " + name);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for {0}", name);
       try {
         value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
-      } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().severe("Problem getting HRN_GUID for " + name + " from remote server: " + e);
+      } catch (IOException | JSONException | ClientException e) {
+        GNSConfig.getLogger().log(Level.SEVERE,
+                "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{name, e});
       }
     }
     return value;
@@ -332,55 +297,44 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is " + allowRemoteLookup);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is {0}", allowRemoteLookup);
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GUID_INFO,
               handler.getApp(), false);
-			if (AppReconfigurableNodeOptions.debuggingEnabled) {
-				GNSConfig.getLogger().log(Level.INFO,
-						"XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1} {2}",
-						new Object[] { guid, GUID_INFO, result!=null ? result.getSummary():result });
-			}
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1} {2}",
+              new Object[]{guid, GUID_INFO, result != null ? result.getSummary() : result});
+
       if (result != null) {
         return new GuidInfo(new JSONObject(result.getString(GUID_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-      GNSConfig.getLogger().severe("Problem extracting GUID_INFO from " + guid + " :" + e);
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Problem extracting GUID_INFO from {0} :{1}", new Object[]{guid, e});
     }
 
-//    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, GUID_INFO);
-//    //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, GUID_INFO);
-//    if (!guidResult.isError()) {
-//      try {
-//        return new GuidInfo(guidResult.getValuesMap().getJSONObject(GUID_INFO));
-//        //return new GuidInfo(guidResult.getArray(GUID_INFO).toResultValueString());
-//      } catch (JSONException e) {
-//        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
-//      } catch (ParseException e) {
-//        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
-//      }
-//    }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for " + guid);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for {0}", guid);
     if (allowRemoteLookup) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for " + guid);
-      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for {0}", guid);
       String value = null;
       try {
         value = handler.getRemoteQuery().fieldRead(guid, GUID_INFO);
-      } catch (IOException | JSONException | GnsClientException e) {
-        GNSConfig.getLogger().severe("Problem getting GUID_INFO for " + guid + " from remote server: " + e);
+      } catch (IOException | JSONException | ClientException e) {
+        GNSConfig.getLogger().log(Level.SEVERE,
+                "Problem getting GUID_INFO for {0} from remote server: {1}",
+                new Object[]{guid, e});
       }
       if (value != null) {
         try {
           return new GuidInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-          GNSConfig.getLogger().severe("Problem parsing GUID_INFO value from remote server for " + guid + ": " + e);
+          GNSConfig.getLogger().log(Level.SEVERE,
+                  "Problem parsing GUID_INFO value from remote server for {0}: {1}",
+                  new Object[]{guid, e});
         }
       }
     }
@@ -394,6 +348,7 @@ public class AccountAccess {
    *
    * @param name
    * @param handler
+   * @param allowRemoteLookup
    * @return an {@link AccountInfo} instance
    */
   public static AccountInfo lookupAccountInfoFromName(String name, ClientRequestHandlerInterface handler,
@@ -430,14 +385,14 @@ public class AccountAccess {
    * @param password
    * @param handler
    * @return the command response
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> addAccountWithVerification(final String hostPortString, final String name, final String guid,
           String publicKey, String password,
           ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
 
     CommandResponse<String> response;
     String verifyCode = createVerificationCode(name); // make this even if we don't need it
@@ -458,18 +413,18 @@ public class AccountAccess {
         }).start();
 
         if (emailOK) {
-          return new CommandResponse<String>(OK_RESPONSE, handler.getApp().getNodeID());
+          return new CommandResponse<>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {
           // if we can't send the confirmation back out of the account creation
           AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler, true);
           if (accountInfo != null) {
             removeAccount(accountInfo, handler);
           }
-          return new CommandResponse<String>(BAD_RESPONSE + " "
+          return new CommandResponse<>(BAD_RESPONSE + " "
                   + VERIFICATION_ERROR + " " + "Unable to send verification email",
                   handler.getApp().getNodeID());
         }
-      } else if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      } else {
         GNSConfig.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
       }
     }
@@ -499,29 +454,29 @@ public class AccountAccess {
   public static CommandResponse<String> verifyAccount(String guid, String code, ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Unable to read account info");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
-			return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " "
-					+ GnsProtocol.VERIFICATION_ERROR + " "
-					+ GuidUtils.ACCOUNT_ALREADY_VERIFIED);
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " "
+              + GNSCommandProtocol.VERIFICATION_ERROR + " "
+              + GuidUtils.ACCOUNT_ALREADY_VERIFIED);
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Bad verification code");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Bad verification code");
     }
     if ((new Date()).getTime() - accountInfo.getCreated().getTime() > TWO_HOURS_IN_MILLESECONDS) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Account code no longer valid");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Account code no longer valid");
     }
     if (!accountInfo.getVerificationCode().equals(code)) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Code not correct");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Code not correct");
     }
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
     if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
-      return new CommandResponse<String>(GnsProtocol.OK_RESPONSE + " " + "Your account has been verified."); // add a little something for the kids
+      return new CommandResponse<>(GNSCommandProtocol.OK_RESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Unable to update account info");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to update account info");
     }
   }
 
@@ -538,27 +493,27 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE
-              + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Not an account guid");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Not an account guid");
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR
+      return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR
               + " Account not verified");
     }
     if (verifyPassword(accountInfo, password)) {
       GuidInfo guidInfo;
       if ((guidInfo = lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Unable to read guid info");
+        return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to read guid info");
       } else {
         guidInfo.setPublicKey(publicKey);
         guidInfo.noteUpdate();
         if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
-          return new CommandResponse<String>(GnsProtocol.OK_RESPONSE + " " + "Public key has been updated.");
+          return new CommandResponse<>(GNSCommandProtocol.OK_RESPONSE + " " + "Public key has been updated.");
         } else {
-          return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Unable to update guid info");
+          return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to update guid info");
         }
       }
     } else {
-      return new CommandResponse<String>(GnsProtocol.BAD_RESPONSE + " " + GnsProtocol.VERIFICATION_ERROR + " " + "Password mismatch");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Password mismatch");
     }
   }
 
@@ -567,11 +522,8 @@ public class AccountAccess {
     try {
       messageDigest.update((password + SALT + accountInfo.getPrimaryName()).getBytes("UTF-8"));
       return accountInfo.getPassword().equals(encryptPassword(password, accountInfo.getPrimaryName()));
-    } catch (NoSuchAlgorithmException e) {
-      GNSConfig.getLogger().warning("Problem hashing password:" + e);
-      return false;
-    } catch (UnsupportedEncodingException e) {
-      GNSConfig.getLogger().warning("Problem hashing password:" + e);
+    } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+      GNSConfig.getLogger().log(Level.WARNING, "Problem hashing password:{0}", e);
       return false;
     }
   }
@@ -619,7 +571,6 @@ public class AccountAccess {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isAnError()) {
-        //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -640,25 +591,20 @@ public class AccountAccess {
         JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE), null, null);
         // prefix is the same for all acls so just pick one to use here
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
-        // For active code
-        //json.put(ActiveCode.ON_READ, new JSONArray());
-        //json.put(ActiveCode.ON_WRITE, new JSONArray());
         // set up the default read access
         if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isAnError()) {
-          //if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
-          return new CommandResponse<String>(OK_RESPONSE, handler.getApp().getNodeID());
+          return new CommandResponse<>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           handler.getRemoteQuery().deleteRecord(name);
-          //handler.getIntercessor().sendRemoveRecord(name);
-          return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
+          return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
         }
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + name);
+        return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + name);
       }
     } catch (JSONException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
+      return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     }
   }
 
@@ -668,9 +614,13 @@ public class AccountAccess {
    * @param accountInfo
    * @param handler
    * @return status result
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
-  public static CommandResponse<String> removeAccount(AccountInfo accountInfo, ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+  public static CommandResponse<String> removeAccount(AccountInfo accountInfo, 
+          ClientRequestHandlerInterface handler)
+          throws ClientException, IOException, JSONException {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
@@ -692,9 +642,9 @@ public class AccountAccess {
       }
 
       // all is well
-      return new CommandResponse<String>(OK_RESPONSE);
+      return new CommandResponse<>(OK_RESPONSE);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT);
     }
   }
 
@@ -742,11 +692,11 @@ public class AccountAccess {
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
       updateAccountInfoNoAuthentication(accountInfo, handler, true);
-      return new CommandResponse<String>(OK_RESPONSE);
+      return new CommandResponse<>(OK_RESPONSE);
     } catch (JSONException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
-    } catch (GnsRuntimeException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
+    } catch (ServerRuntimeException e) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
 
@@ -801,21 +751,21 @@ public class AccountAccess {
       NSResponseCode returnCode;
       // First try to create the HRNS to insure that that name does not already exist
       if (!(returnCode = handler.getRemoteQuery().
-              createRecordBatch(new HashSet<String>(names), hrnMap, handler)).isAnError()) {
+              createRecordBatch(new HashSet<>(names), hrnMap, handler)).isAnError()) {
         //if (!(returnCode = handler.getIntercessor().sendAddBatchRecord(new HashSet<String>(names), hrnMap)).isAnError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids, guidInfoMap, handler);
           //handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
           GNSConfig.getLogger().info(DelayProfiler.getStats());
-          return new CommandResponse<String>(OK_RESPONSE);
+          return new CommandResponse<>(OK_RESPONSE);
         }
       }
-      return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + names);
+      return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + names);
     } catch (JSONException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
-    } catch (GnsRuntimeException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
+    } catch (ServerRuntimeException e) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }
 
@@ -827,6 +777,7 @@ public class AccountAccess {
    * @param accountInfo
    * @param accountGuidInfo
    * @param handler
+   * @return a CommandResponse
    */
   public static CommandResponse<String> addMultipleGuidsFaster(
           List<String> names,
@@ -871,12 +822,12 @@ public class AccountAccess {
    * @param guid
    * @param handler
    * @return the command response
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     return removeGuid(guid, null, false, handler);
   }
 
@@ -887,12 +838,12 @@ public class AccountAccess {
    * @param guid
    * @param handler
    * @return status result
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo,
-          ClientRequestHandlerInterface handler) throws GnsClientException, IOException, JSONException {
+          ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
     return removeGuid(guid, accountInfo, false, handler);
   }
 
@@ -902,59 +853,64 @@ public class AccountAccess {
    * so we don't have to check or update that info. The accountInfo parameter
    * can be null in which case we look it up using the guid.
    *
-   * @param guid
+   * @param guidInfo
    * @param accountInfo - can be null in which case we look it up
    * @param ignoreAccountGuid
    * @param handler
    * @return the command response
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+   * @throws java.io.IOException
+   * @throws org.json.JSONException
    */
-  public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, 
+  public static CommandResponse<String> removeGuid(GuidInfo guidInfo, AccountInfo accountInfo,
           boolean ignoreAccountGuid,
-          ClientRequestHandlerInterface handler) 
-          throws GnsClientException, IOException, JSONException {
+          ClientRequestHandlerInterface handler)
+          throws ClientException, IOException, JSONException {
+    GNSConfig.getLogger().log(Level.FINE,
+            "REMOVE: GUID INFO: {0} ACCOUNT INFO: {1}", new Object[]{guidInfo, accountInfo});
     // First make sure guid is not an account GUID 
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
-      if (lookupAccountInfoFromGuid(guid.getGuid(), handler, true) != null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " "
-                + guid.getGuid() + " is an account guid");
+      if (lookupAccountInfoFromGuid(guidInfo.getGuid(), handler, true) != null) {
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " "
+                + guidInfo.getGuid() + " is an account guid");
       }
     }
     // Fill in a missing account info
     if (accountInfo == null) {
-      String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid(), handler, true);
+      String accountGuid = AccountAccess.lookupPrimaryGuid(guidInfo.getGuid(), handler, true);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid.getGuid() + " does not have a primary account guid");
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT
+                + " " + guidInfo.getGuid() + " does not have a primary account guid");
       }
       if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, handler, true)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT
+                + " " + guidInfo.getGuid() + " cannot find primary account guid for " + accountGuid);
       }
     }
     // First remove any group links
-    GroupAccess.cleanupGroupsForDelete(guid.getGuid(), handler);
+    GroupAccess.cleanupGroupsForDelete(guidInfo.getGuid(), handler);
     // Then remove the guid record
-    if (!handler.getRemoteQuery().deleteRecord(guid.getGuid()).isAnError()) {
-      //if (!handler.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
+    if (!handler.getRemoteQuery().deleteRecord(guidInfo.getGuid()).isAnError()) {
       // remove reverse record
-      handler.getRemoteQuery().deleteRecord(guid.getName());
-      //handler.getIntercessor().sendRemoveRecord(guid.getName());
+      handler.getRemoteQuery().deleteRecord(guidInfo.getName());
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse<>(OK_RESPONSE);
       } else {
         // update the account guid to know that we deleted the guid
-        accountInfo.removeGuid(guid.getGuid());
+        accountInfo.removeGuid(guidInfo.getGuid());
         accountInfo.noteUpdate();
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
-          return new CommandResponse<String>(OK_RESPONSE);
+          return new CommandResponse<>(OK_RESPONSE);
         } else {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + UPDATE_ERROR);
+          return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
         }
       }
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID);
     }
   }
 
@@ -973,7 +929,7 @@ public class AccountAccess {
    * @return status result
    */
   public static CommandResponse<String> addAlias(AccountInfo accountInfo, String alias, String writer,
-          String signature, String message, ClientRequestHandlerInterface handler) {
+          String signature, String message, Date timestamp, ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
     try {
       NSResponseCode returnCode;
@@ -985,22 +941,20 @@ public class AccountAccess {
 //            new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))).isAnError()) {
         // roll this back
         accountInfo.removeAlias(alias);
-        return new CommandResponse<String>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + alias);
+        return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + alias);
       }
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-              writer, signature, message, handler, true).isAnError()) {
+              writer, signature, message, timestamp, handler, true).isAnError()) {
         // back out if we got an error
         handler.getRemoteQuery().deleteRecord(alias);
-        //handler.getIntercessor().sendRemoveRecord(alias);
-        //accountInfo.removeAlias(alias);
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ALIAS);
+        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ALIAS);
       } else {
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse<>(OK_RESPONSE);
       }
     } catch (JSONException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
+      return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     }
   }
 
@@ -1012,30 +966,33 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> removeAlias(AccountInfo accountInfo,
+          String alias, String writer, String signature, String message,
+          Date timestamp, ClientRequestHandlerInterface handler) {
 
-    GNSConfig.getLogger().info("ALIAS: " + alias + " ALIASES:" + accountInfo.getAliases());
+    GNSConfig.getLogger().log(Level.FINE,
+            "ALIAS: {0} ALIASES:{1}", new Object[]{alias, accountInfo.getAliases()});
     if (!accountInfo.containsAlias(alias)) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ALIAS);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ALIAS);
     }
     // remove the NAME -- GUID record
     NSResponseCode responseCode;
     if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isAnError()) {
       //if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     // Now updated the account record
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
     if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            writer, signature, message, handler, true)).isAnError()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+            writer, signature, message, timestamp, handler, true)).isAnError()) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
-    return new CommandResponse<String>(OK_RESPONSE);
+    return new CommandResponse<>(OK_RESPONSE);
   }
 
   /**
@@ -1050,13 +1007,14 @@ public class AccountAccess {
    * @return status result
    */
   public static CommandResponse<String> setPassword(AccountInfo accountInfo, String password, String writer, String signature,
-          String message, ClientRequestHandlerInterface handler) {
+          String message, Date timestamp, ClientRequestHandlerInterface handler) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, writer, signature, message, handler, false).isAnError()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UPDATE_ERROR);
+    if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
+            writer, signature, message, timestamp, handler, false).isAnError()) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse<String>(OK_RESPONSE);
+    return new CommandResponse<>(OK_RESPONSE);
   }
 
   /**
@@ -1067,17 +1025,19 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> addTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> addTag(GuidInfo guidInfo,
+          String tag, String writer, String signature, String message,
+          Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, handler).isAnError()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UPDATE_ERROR);
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isAnError()) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse<String>(OK_RESPONSE);
+    return new CommandResponse<>(OK_RESPONSE);
   }
 
   /**
@@ -1088,21 +1048,23 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> removeTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> removeTag(GuidInfo guidInfo,
+          String tag, String writer, String signature, String message,
+          Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, handler).isAnError()) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UPDATE_ERROR);
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isAnError()) {
+      return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse<String>(OK_RESPONSE);
+    return new CommandResponse<>(OK_RESPONSE);
   }
 
   private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
-          String writer, String signature, String message,
+          String writer, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
       NSResponseCode response;
@@ -1110,21 +1072,19 @@ public class AccountAccess {
         try {
           handler.getRemoteQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
           response = NSResponseCode.NO_ERROR;
-        } catch (GnsClientException | IOException | JSONException e) {
-          GNSConfig.getLogger().severe("Problem with remote query:" + e);
+        } catch (ClientException | IOException | JSONException e) {
+          GNSConfig.getLogger().log(Level.SEVERE, "Problem with remote query:{0}", e);
           response = NSResponseCode.ERROR;
         }
       } else {
         JSONObject json = new JSONObject();
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-        response = FieldAccess.updateUserJSON(guid, json, writer, signature, message, handler);
-//        response = handler.getIntercessor().sendUpdateUserJSON(guid,
-//                new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//                writer, signature, message, sendToReplica);
+        response = FieldAccess.updateUserJSON(guid, json,
+                writer, signature, message, timestamp, handler);
       }
       return response;
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Problem parsing account info:" + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing account info:{0}", e);
       return NSResponseCode.ERROR;
     }
   }
@@ -1132,22 +1092,20 @@ public class AccountAccess {
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            null, null, null, handler, sendToReplica).isAnError();
+            null, null, null, null, handler, sendToReplica).isAnError();
   }
 
-  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message,
+  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo,
+          String writer, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     try {
       JSONObject json = new JSONObject();
       json.put(GUID_INFO, guidInfo.toJSONObject());
       NSResponseCode response = FieldAccess.updateUserJSON(guidInfo.getGuid(), json,
-              writer, signature, message, handler);
-//      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
-//              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-//              writer, signature, message);
+              writer, signature, message, timestamp, handler);
       return response;
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Problem parsing guid info:" + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing guid info:{0}", e);
       return NSResponseCode.ERROR;
     }
   }
@@ -1155,7 +1113,7 @@ public class AccountAccess {
   private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo,
           ClientRequestHandlerInterface handler) {
 
-    return !updateGuidInfo(guidInfo, null, null, null, handler).isAnError();
+    return !updateGuidInfo(guidInfo, null, null, null, null, handler).isAnError();
   }
 
   /**

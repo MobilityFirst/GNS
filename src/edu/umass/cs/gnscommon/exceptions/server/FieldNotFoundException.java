@@ -27,7 +27,7 @@ import edu.umass.cs.gnsserver.database.ColumnField;
  * 
  * @author westy
  */
-public class FieldNotFoundException extends GnsServerException{
+public class FieldNotFoundException extends ServerException{
   ColumnField missingField;
 
   /**

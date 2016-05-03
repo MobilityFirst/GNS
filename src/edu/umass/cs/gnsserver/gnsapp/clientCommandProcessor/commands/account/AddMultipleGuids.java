@@ -22,11 +22,12 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -44,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AddMultipleGuids extends GnsCommand {
+public class AddMultipleGuids extends BasicCommand {
 
   /**
    * Creates an AddGuid instance.
@@ -53,6 +54,11 @@ public class AddMultipleGuids extends GnsCommand {
    */
   public AddMultipleGuids(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AddMultipleGuids;
   }
 
   @Override
@@ -89,24 +95,22 @@ public class AddMultipleGuids extends GnsCommand {
         return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
+      } else if (names != null && publicKeys != null) {
+        //GNS.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
+        return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
+                JSONUtils.JSONArrayToArrayListString(publicKeys),
+                accountInfo, accountGuidInfo, handler);
+      } else if (names != null) {
+        //GNS.getLogger().info("ADD FASTER" + names + " / " + publicKeys);
+        return AccountAccess.addMultipleGuidsFaster(JSONUtils.JSONArrayToArrayListString(names),
+                accountInfo, accountGuidInfo, handler);
+      } else if (guidCntString != null) {
+        //GNS.getLogger().info("ADD RANDOM" + names + " / " + publicKeys);
+        int guidCnt = Integer.parseInt(guidCntString);
+        return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
       } else {
-        if (names != null && publicKeys != null) {
-          //GNS.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
-          return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
-                  JSONUtils.JSONArrayToArrayListString(publicKeys),
-                  accountInfo, accountGuidInfo, handler);
-        } else if (names != null) {
-          //GNS.getLogger().info("ADD FASTER" + names + " / " + publicKeys);
-          return AccountAccess.addMultipleGuidsFaster(JSONUtils.JSONArrayToArrayListString(names),
-                  accountInfo, accountGuidInfo, handler);
-        } else if (guidCntString != null) {
-          //GNS.getLogger().info("ADD RANDOM" + names + " / " + publicKeys);
-          int guidCnt = Integer.parseInt(guidCntString);
-          return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
-        } else {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR
-                  + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT);
-        }
+        return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR
+                + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT);
       }
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);

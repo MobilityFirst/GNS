@@ -19,10 +19,10 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -42,7 +42,7 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CreateGuidBatchTestWithPublicKeys {
 
-  private static UniversalTcpClientExtended client;
+  private static GNSClientCommands client;
   /**
    * The address of the GNS server we will contact
    */
@@ -51,17 +51,12 @@ public class CreateGuidBatchTestWithPublicKeys {
   public CreateGuidBatchTestWithPublicKeys() {
 
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+       try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
     }
   }
 
@@ -98,7 +93,7 @@ public class CreateGuidBatchTestWithPublicKeys {
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -106,7 +101,7 @@ public class CreateGuidBatchTestWithPublicKeys {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }

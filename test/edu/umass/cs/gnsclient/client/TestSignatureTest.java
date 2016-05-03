@@ -19,10 +19,9 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import java.net.InetSocketAddress;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import org.json.JSONObject;
@@ -31,6 +30,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import java.io.IOException;
 
 /**
  * Signature functionality test for the GNS Tcp client.
@@ -41,26 +42,17 @@ public class TestSignatureTest {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String privateKeyFile = "/Users/westy/pkcs8_key";
-  private static UniversalTcpClient client;
+  private static GNSClientCommands client;
   private static GuidEntry guid;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
 
   public TestSignatureTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+       try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
       // Retrive the GUID using the account id
       String guidString;
       try {
@@ -100,8 +92,8 @@ public class TestSignatureTest {
   @Test
   public void test_01() {
     try {
-      JSONObject command = createAndSignCommand(guid.getPrivateKey(), GnsProtocol.READ_ARRAY,
-              GnsProtocol.GUID, guid.getGuid(), GnsProtocol.FIELD, "joe");
+      JSONObject command = createAndSignCommand(CommandType.ReadArrayUnsigned, guid.getPrivateKey(), GNSCommandProtocol.READ_ARRAY,
+              GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, "joe");
       System.out.println(command);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

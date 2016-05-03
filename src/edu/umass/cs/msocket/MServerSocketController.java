@@ -37,7 +37,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 
 import edu.umass.cs.msocket.common.CommonMethods;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 
 /**
  * This class implements the internals of MServerSocket. It implements the UDP
@@ -485,7 +485,7 @@ public class MServerSocketController implements Runnable
         try
         {
           getProxyConnObj().removeProxy(Obj.getProxyInfo(), Obj);
-          GnsIntegration.unregisterWithGNS(mserversocket.getServerName(), badProxyAdd);
+          Integration.unregisterWithGNS(mserversocket.getServerName(), badProxyAdd);
         }
         catch (Exception e)
         {
@@ -497,9 +497,9 @@ public class MServerSocketController implements Runnable
     // no active proxy remaining add a new one
     if (proxyMap.size() == 0)
     {
-      InetSocketAddress retProxy = GnsIntegration.getNewProxy(mserversocket.getProxySelection()).get(0);
+      InetSocketAddress retProxy = Integration.getNewProxy(mserversocket.getProxySelection()).get(0);
 
-      GnsIntegration.registerWithGNS(mserversocket.getServerName(), retProxy);
+      Integration.registerWithGNS(mserversocket.getServerName(), retProxy);
 
       ProxyInfo Obj = new ProxyInfo(retProxy.getHostName(), retProxy.getPort());
       // just setting it to current time

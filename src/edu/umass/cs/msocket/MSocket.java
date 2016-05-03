@@ -44,7 +44,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 
 import edu.umass.cs.msocket.common.CommonMethods;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 import edu.umass.cs.msocket.mobility.MobilityManagerClient;
 
 /**
@@ -202,7 +202,7 @@ public class MSocket extends Socket implements MultipathInterface
 		  Random rand = new Random(System.currentTimeMillis());
 		
 		  long getSockAddrStart = System.currentTimeMillis();
-		  List<InetSocketAddress> socketAddressFromGNS = GnsIntegration.getSocketAddressFromGNS(serverAlias);
+		  List<InetSocketAddress> socketAddressFromGNS = Integration.getSocketAddressFromGNS(serverAlias);
 		  long getSockAddrEnd = System.currentTimeMillis();
 		
 		  MSocketInstrumenter.updateSocketAddressFromGNS(getSockAddrEnd - getSockAddrStart);
@@ -212,7 +212,7 @@ public class MSocket extends Socket implements MultipathInterface
 		  serverPort = serverSock.getPort();
 		
 		  long getGUIDStart = System.currentTimeMillis();
-		  stringGUID = GnsIntegration.getGUIDOfAlias(serverAlias);
+		  stringGUID = Integration.getGUIDOfAlias(serverAlias);
 		  long getGUIDEnd = System.currentTimeMillis();
 		
 		  MSocketInstrumenter.updateGetGUID(getGUIDEnd - getGUIDStart);
@@ -1358,13 +1358,13 @@ public class MSocket extends Socket implements MultipathInterface
     String stringGUID = "";
 
     Random rand = new Random();
-    List<InetSocketAddress> socketAddressFromGNS = GnsIntegration.getSocketAddressFromGNS(serverGUID);
+    List<InetSocketAddress> socketAddressFromGNS = Integration.getSocketAddressFromGNS(serverGUID);
     typeOfCon = MSocketConstants.CON_TO_GNSGUID;
 
     InetSocketAddress serverSock = socketAddressFromGNS.get(rand.nextInt(socketAddressFromGNS.size()));
     serverIP = serverSock.getAddress();
     serverPort = serverSock.getPort();
-    stringGUID = GnsIntegration.getGUIDOfAlias(serverGUID);
+    stringGUID = Integration.getGUIDOfAlias(serverGUID);
 
     
     Vector<InetAddress> Interfaces = CommonMethods.getActiveInterfaceInetAddresses();

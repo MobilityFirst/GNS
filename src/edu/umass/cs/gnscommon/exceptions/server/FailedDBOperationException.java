@@ -24,18 +24,21 @@ package edu.umass.cs.gnscommon.exceptions.server;
  * Probably because the database server is crashed.
  *
  * This exception does not tell much about the cause of the error. Therefore, if this exception
- * is seen, one can only attempt to retry the operation hoping that the database 
- * unavailability is transient. If indeed the database is permanently crashed, 
+ * is seen, one can only attempt to retry the operation hoping that the database
+ * unavailability is transient. If indeed the database is permanently crashed,
  * an external mechanism would be needed to restart the database.
- * 
+ *
  */
-public class FailedDBOperationException extends GnsServerException {
-  String collection;
-  String name;
+public class FailedDBOperationException extends ServerException {
+
+  private static final long serialVersionUID = 6627620787610127842L;
+
+  private String collection;
+  private String name;
 
   /**
    * Create a FailedDBOperationException instance.
-   * 
+   *
    * @param collection
    * @param name
    */

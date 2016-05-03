@@ -22,11 +22,12 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -42,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RetrieveAliases extends GnsCommand {
+public class RetrieveAliases extends BasicCommand {
 
   /**
    * Creates a RetriveAliases instance.
@@ -51,6 +52,11 @@ public class RetrieveAliases extends GnsCommand {
    */
   public RetrieveAliases(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RetrieveAliases;
   }
 
   @Override

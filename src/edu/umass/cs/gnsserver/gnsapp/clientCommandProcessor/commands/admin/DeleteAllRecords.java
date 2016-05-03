@@ -20,10 +20,11 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -35,7 +36,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class DeleteAllRecords extends GnsCommand {
+public class DeleteAllRecords extends BasicCommand {
 
   /**
    *
@@ -43,6 +44,11 @@ public class DeleteAllRecords extends GnsCommand {
    */
   public DeleteAllRecords(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.DeleteAllRecords;
   }
 
   @Override

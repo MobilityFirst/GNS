@@ -23,9 +23,9 @@ import java.util.StringTokenizer;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnsclient.console.GnsUtils;
+import edu.umass.cs.gnscommon.utils.Util;
 
 /**
  * Command to list members in a group GUID
@@ -80,7 +80,7 @@ public class GroupMemberList extends ConsoleCommand
   @Override
   public void parse(String commandText) throws Exception
   {
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     try
     {
       StringTokenizer st = new StringTokenizer(commandText.trim());
@@ -92,7 +92,7 @@ public class GroupMemberList extends ConsoleCommand
       else if (st.countTokens() == 1)
       {
         groupGuid = st.nextToken();
-        if (!GnsUtils.isValidGuidString(groupGuid))
+        if (!Util.isValidGuidString(groupGuid))
         {
           // We probably have an alias, lookup the GUID
           groupGuid = gnsClient.lookupGuid(groupGuid);

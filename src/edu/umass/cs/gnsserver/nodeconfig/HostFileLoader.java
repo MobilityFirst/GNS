@@ -26,6 +26,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
 
 /**
  * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
@@ -36,8 +38,6 @@ public class HostFileLoader {
 
   private static final Long INVALID_FILE_VERSION = -1L;
   private static Long fileVersion = INVALID_FILE_VERSION;
-
-  private static final boolean debuggingEnabled = false;
 
   private static boolean hostFileHasNodeIds = false;
 
@@ -67,7 +67,7 @@ public class HostFileLoader {
    */
   public static List<HostSpec> loadHostFile(String hostsFile) throws Exception {
     hostFileHasNodeIds = false;
-    List<HostSpec> result = new ArrayList<HostSpec>();
+    List<HostSpec> result = new ArrayList<>();
     BufferedReader br = new BufferedReader(new FileReader(hostsFile));
     boolean readFirstLine = false;
     try {
@@ -78,9 +78,7 @@ public class HostFileLoader {
           // do nothing
         } else if (!readFirstLine && isLineTheFileVersion(line)) {
           fileVersion = getTheVersionFromLine(line);
-          if (debuggingEnabled) {
-            GNSConfig.getLogger().info("Read version line: " + fileVersion);
-          }
+          GNSConfig.getLogger().log(Level.FINE, "Read version line: {0}", fileVersion);
         } else {
           result.add(parseHostline(line));
         }
@@ -95,7 +93,7 @@ public class HostFileLoader {
 
   /**
    * Parses a line from a host file.
-   * 
+   *
    * Handles these cases:
    *
    * hostname
@@ -141,11 +139,9 @@ public class HostFileLoader {
 //        try {
 //          nodeID = Integer.parseInt(idString);
 //        } catch (NumberFormatException e) {
-          String nodeID = idString;
+        String nodeID = idString;
         //}
-        if (debuggingEnabled) {
-          GNSConfig.getLogger().info("Read ID: " + nodeID);
-        }
+        GNSConfig.getLogger().log(Level.FINE, "Read ID: {0}", nodeID);
 //        if (tokens[1].contains(".") && !tokens[1].equals("127.0.0.1")) {
 //          throw new IOException("Bad hostname " + tokens[1] + ". Should not be an ip address.");
 //        }
@@ -172,25 +168,27 @@ public class HostFileLoader {
    * @throws IOException
    */
   public static Long readVersionLine(String hostsFile) throws IOException {
-    BufferedReader br = new BufferedReader(new FileReader(hostsFile));
-    String line = br.readLine();
-    br.close();
+    String line;
+    try (BufferedReader br = new BufferedReader(new FileReader(hostsFile))) {
+      line = br.readLine();
+    }
     return getTheVersionFromLine(line);
   }
 
   /**
    * Returns true if the node file changed versions.
-   * 
+   *
    * @param hostsFile
    * @return true if the node file changed versions
    * @throws IOException
    */
   public static boolean isChangedFileVersion(String hostsFile) throws IOException {
     Long newVersion = readVersionLine(hostsFile);
-    if (debuggingEnabled) {
-      GNSConfig.getLogger().info("Old version: " + fileVersion + " new version: " + newVersion);
-    }
-    return newVersion != null && newVersion != INVALID_FILE_VERSION && newVersion != fileVersion;
+    GNSConfig.getLogger().log(Level.FINE, "Old version: {0} new version: {1}", 
+            new Object[]{fileVersion, newVersion});
+    return newVersion != null
+            && !Objects.equals(newVersion, INVALID_FILE_VERSION)
+            && !Objects.equals(newVersion, fileVersion);
   }
 
   private static Long getTheVersionFromLine(String line) {
@@ -212,7 +210,7 @@ public class HostFileLoader {
 
   /**
    * Returns the file version.
-   * 
+   *
    * @return a long
    */
   public static Long getFileVersion() {

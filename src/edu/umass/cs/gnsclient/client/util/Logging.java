@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.client.util;
 
 import java.io.File;
 import edu.umass.cs.gnscommon.utils.LogFormatter;
+import java.io.IOException;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -92,7 +93,7 @@ public class Logging {
       Handler fh = new FileHandler(logFilename, 40000000, 45);
       fh.setLevel(fileLevel);
       logger.addHandler(fh);
-    } catch (Exception e) {
+    } catch (IOException | SecurityException e) {
       logger.warning("Unable to attach FileHandler to logger!");
       e.printStackTrace();
     }

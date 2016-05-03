@@ -31,85 +31,90 @@ import java.util.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
 
 /**
- * This class is used to serialize and deserialize, send 
+ * This class is used to serialize and deserialize, send
  * and receive message between active worker and active client.
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeUtils {
-	/**
-	 * Serialize an object, ready to send
-	 * @param o
-	 * @return a byte array ready to send
-	 */
-	public static byte[] serializeObject(Object o) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		try {
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			oos.writeObject(o);
-			oos.flush();
-			oos.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return baos.toByteArray();
-	}
-	
-	/**
-	 * Deserialize a byte array, ready to cast
-	 * @param data
-	 * @return a object, ready to cast
-	 */
-	public static Object deserializeObject(byte[] data) {
-		ByteArrayInputStream bais = new ByteArrayInputStream(data);
-	    Object o = null;
-		try {
-			ObjectInputStream oin = new ObjectInputStream(bais);
-			o = oin.readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	    return o;
-	}
-	
-	/**
-	 * Send the serialized message
-	 * @param out
-	 * @param acm
-	 */
-	public static void sendMessage(PrintWriter out, ActiveCodeMessage acm) {
-		byte[] data = serializeObject(acm);
-		String data64 = Base64.getEncoder().encodeToString(data);
-		out.println(data64);
-	}
-	
-	/**
-	 * Receive the serialize the message
-	 * @param in
-	 * @return an {@link ActiveCodeMessage} ready to cast
-	 */
-	public static ActiveCodeMessage getMessage(BufferedReader in) {
-		String res64 = null;
-		
-		try {
-			res64 = in.readLine();
-		} catch (IOException e) {
-			// We timed out, but that's OK
-		}
-		
-		if(res64 == null) {
-			// We crashed, but still mark the request as finished
-			ActiveCodeMessage acm = new ActiveCodeMessage();
-			acm.setFinished(true);
-			acm.setCrashed(true);
-			return acm;
-		}
-		
-		byte[] res = Base64.getDecoder().decode(res64);
-	    return (ActiveCodeMessage) deserializeObject(res);
-	}
+
+  /**
+   * Serialize an object, ready to send
+   *
+   * @param o
+   * @return a byte array ready to send
+   */
+  public static byte[] serializeObject(Object o) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+    try {
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      oos.writeObject(o);
+      oos.flush();
+      oos.close();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    return baos.toByteArray();
+  }
+
+  /**
+   * Deserialize a byte array, ready to cast
+   *
+   * @param data
+   * @return a object, ready to cast
+   */
+  public static Object deserializeObject(byte[] data) {
+    ByteArrayInputStream bais = new ByteArrayInputStream(data);
+    Object o = null;
+    try {
+      ObjectInputStream oin = new ObjectInputStream(bais);
+      o = oin.readObject();
+    } catch (IOException | ClassNotFoundException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return o;
+  }
+
+  /**
+   * Send the serialized message
+   *
+   * @param out
+   * @param acm
+   */
+  public static void sendMessage(PrintWriter out, ActiveCodeMessage acm) {
+    byte[] data = serializeObject(acm);
+    String data64 = Base64.getEncoder().encodeToString(data);
+    out.println(data64);
+  }
+
+  /**
+   * Receive the serialize the message
+   *
+   * @param in
+   * @return an {@link ActiveCodeMessage} ready to cast
+   */
+  public static ActiveCodeMessage getMessage(BufferedReader in) {
+    String res64 = null;
+
+    try {
+      res64 = in.readLine();
+    } catch (IOException e) {
+      // We timed out, but that's OK
+    }
+
+    if (res64 == null) {
+      // We crashed, but still mark the request as finished
+      ActiveCodeMessage acm = new ActiveCodeMessage();
+      acm.setFinished(true);
+      acm.setCrashed(true);
+      return acm;
+    }
+
+    byte[] res = Base64.getDecoder().decode(res64);
+    return (ActiveCodeMessage) deserializeObject(res);
+  }
 }

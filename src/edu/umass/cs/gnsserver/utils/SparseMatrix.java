@@ -31,9 +31,9 @@ import java.util.HashMap;
  */
 public class SparseMatrix<U, V, T> {
 
-  HashMap<U, HashMap<V, T>> rows = new HashMap<>();
+  private final HashMap<U, HashMap<V, T>> rows = new HashMap<>();
 
-  T defaultValue;
+  private T defaultValue;
 
   /**
    * Creates a SparseMatrix with a default item value of null.
@@ -60,7 +60,7 @@ public class SparseMatrix<U, V, T> {
    */
   public void put(U i, V j, T t) {
     if (rows.get(i) == null) {
-      rows.put(i, new HashMap<V, T>());
+      rows.put(i, new HashMap<>());
     }
     rows.get(i).put(j, t);
   }

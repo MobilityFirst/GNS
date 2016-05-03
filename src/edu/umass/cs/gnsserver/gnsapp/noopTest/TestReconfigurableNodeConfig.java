@@ -14,11 +14,10 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.noopTest;
-
 
 import edu.umass.cs.gnsserver.nodeconfig.HostFileLoader;
 import edu.umass.cs.gnsserver.nodeconfig.HostSpec;
@@ -30,6 +29,7 @@ import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONArray;
@@ -43,12 +43,12 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
 
   private static final String RC_SUFFIX = "recon";
   private static final int RC_PORT_OFFSET = 1;
-  
-  private Logger log = Logger.getLogger(getClass().getName());
+
+  private static final Logger LOG = Logger.getLogger(TestReconfigurableNodeConfig.class.getName());
 
   /**
    * Creates a TestReconfigurableNodeConfig instance.
-   * 
+   *
    * @param hostsFile
    * @throws java.io.IOException
    */
@@ -77,7 +77,7 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
   @Override
   public Set<String> getReconfigurators() {
     Set<String> actives = this.getNodeIDs();
-    Set<String> generatedRCs = new HashSet<String>();
+    Set<String> generatedRCs = new HashSet<>();
     for (String id : actives) {
       generatedRCs.add(activeToRC(id));
     }
@@ -102,7 +102,7 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
       return super.getNodeAddress(RCToActive(id));
     }
   }
-  
+
   @Override
   public InetAddress getBindAddress(String id) {
     if (super.nodeExists(id)) {
@@ -155,7 +155,7 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
     if ((index = rcID.lastIndexOf("_")) != -1) {
       return rcID.substring(0, index);
     } else {
-      log.severe("Bad RC id:" + rcID);
+      LOG.log(Level.SEVERE, "Bad RC id:{0}", rcID);
       // this is probably going to cause issues...
       return null;
     }
@@ -173,9 +173,9 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
       System.out.println("For node " + spec.getId()
               + ":  public name => " + spec.getName()
               + " public ip => " + spec.getExternalIP());
-      add(spec.getId(), 
+      add(spec.getId(),
               InetAddress.getByName(spec.getExternalIP())
-              //InetAddress.getByName(spec.getName())
+      //InetAddress.getByName(spec.getName())
       );
     }
 

@@ -24,7 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
+ * Implements a AWS AMIRecord.
+ * 
  * @author westy
  */
 public class AMIRecord {
@@ -70,7 +71,7 @@ public class AMIRecord {
     return securityGroup;
   }
   
-  public static Map<AMIRecordType, Map<RegionRecord, AMIRecord>> records = null;
+  private static Map<AMIRecordType, Map<RegionRecord, AMIRecord>> records = null;
 
   public static AMIRecord getAMI(AMIRecordType type, RegionRecord region) {
     if (records == null) {
@@ -84,9 +85,9 @@ public class AMIRecord {
   }
 
   public static void init() {
-    records = new EnumMap<AMIRecordType, Map<RegionRecord, AMIRecord>>(AMIRecordType.class);
+    records = new EnumMap<>(AMIRecordType.class);
     // our new mongo AMI
-    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6_micro = new HashMap<RegionRecord, AMIRecord>();
+    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6_micro = new HashMap<>();
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.US_EAST_1, new AMIRecord("ami-0479996c", "Mongo_2014_5_6", "t1.micro"));
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.US_WEST_2, new AMIRecord("ami-b7fd8a87", "Mongo_2014_5_6", "t1.micro"));
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.US_WEST_1, new AMIRecord("ami-fad4efbf", "Mongo_2014_5_6", "t1.micro"));
@@ -97,7 +98,7 @@ public class AMIRecord {
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-ab54f9b6", "Mongo_2014_5_6", "t1.micro"));
     records.put(AMIRecordType.Mongo_2014_5_6_micro, amiMap_Mongo_2014_5_6_micro);
     
-    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2015_6_25_vpc = new HashMap<RegionRecord, AMIRecord>();
+    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2015_6_25_vpc = new HashMap<>();
     amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.US_EAST_1, new AMIRecord("ami-87916bec", "Mongo_2015_6_25_vpc", 
             "t2.small", "subnet-69c40c1e", "aws-vpc"));
     amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.US_WEST_2, new AMIRecord("ami-17a2a627", "Mongo_2015_6_25_vpc", 
@@ -118,7 +119,7 @@ public class AMIRecord {
             "t2.small", "subnet-9376eaf6", "aws-vpc"));
     records.put(AMIRecordType.Mongo_2015_6_25_vpc, amiMap_Mongo_2015_6_25_vpc);
     // our new mongo AMI
-    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6 = new HashMap<RegionRecord, AMIRecord>();
+    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6 = new HashMap<>();
     amiMap_Mongo_2014_5_6.put(RegionRecord.US_EAST_1, new AMIRecord("ami-0479996c", "Mongo_2014_5_6", "m1.small"));
     amiMap_Mongo_2014_5_6.put(RegionRecord.US_WEST_2, new AMIRecord("ami-b7fd8a87", "Mongo_2014_5_6", "m1.small"));
     amiMap_Mongo_2014_5_6.put(RegionRecord.US_WEST_1, new AMIRecord("ami-fad4efbf", "Mongo_2014_5_6", "m1.small"));
@@ -129,7 +130,7 @@ public class AMIRecord {
     amiMap_Mongo_2014_5_6.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-ab54f9b6", "Mongo_2014_5_6", "m1.small"));
     records.put(AMIRecordType.Mongo_2014_5_6, amiMap_Mongo_2014_5_6);
     // AMAZON LINUX
-    HashMap<RegionRecord, AMIRecord> amiMap_2014_03_1 = new HashMap<RegionRecord, AMIRecord>();
+    HashMap<RegionRecord, AMIRecord> amiMap_2014_03_1 = new HashMap<>();
     amiMap_2014_03_1.put(RegionRecord.US_EAST_1, new AMIRecord("ami-fb8e9292", "Amazon Linux AMI 2014.03.1", "t1.micro"));
     amiMap_2014_03_1.put(RegionRecord.US_WEST_1, new AMIRecord("ami-7aba833f", "Amazon Linux AMI 2014.03.1", "t1.micro"));
     amiMap_2014_03_1.put(RegionRecord.US_WEST_2, new AMIRecord("ami-043a5034", "Amazon Linux AMI 2014.03.1", "t1.micro"));
@@ -140,7 +141,7 @@ public class AMIRecord {
     amiMap_2014_03_1.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-215dff3c", "Amazon Linux AMI 2014.03.1", "t1.micro"));
     records.put(AMIRecordType.Amazon_Linux_AMI_2014_03_1, amiMap_2014_03_1);
     // AMAZON LINUX
-    HashMap<RegionRecord, AMIRecord> amiMap_2013_09_2 = new HashMap<RegionRecord, AMIRecord>();
+    HashMap<RegionRecord, AMIRecord> amiMap_2013_09_2 = new HashMap<>();
     amiMap_2013_09_2.put(RegionRecord.US_EAST_1, new AMIRecord("ami-bba18dd2", "Amazon Linux AMI 2013.09.2", "t1.micro"));
     amiMap_2013_09_2.put(RegionRecord.US_WEST_1, new AMIRecord("ami-a43909e1", "Amazon Linux AMI 2013.09.2", "t1.micro"));
     amiMap_2013_09_2.put(RegionRecord.US_WEST_2, new AMIRecord("ami-ccf297fc", "Amazon Linux AMI 2013.09.2", "t1.micro"));
@@ -151,7 +152,7 @@ public class AMIRecord {
     amiMap_2013_09_2.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-c99130d4", "Amazon Linux AMI 2013.09.2", "t1.micro"));
     records.put(AMIRecordType.Amazon_Linux_AMI_2013_09_2, amiMap_2013_09_2);
     
-    HashMap<RegionRecord, AMIRecord> amiMap_2013_03_1 = new HashMap<RegionRecord, AMIRecord>();
+    HashMap<RegionRecord, AMIRecord> amiMap_2013_03_1 = new HashMap<>();
     amiMap_2013_03_1.put(RegionRecord.US_EAST_1, new AMIRecord("ami-05355a6c", "Amazon Linux AMI 2013.03.1", "t1.micro"));
     amiMap_2013_03_1.put(RegionRecord.US_WEST_1, new AMIRecord("ami-3ffed17a", "Amazon Linux AMI 2013.03.1", "t1.micro"));
     amiMap_2013_03_1.put(RegionRecord.US_WEST_2, new AMIRecord("ami-0358ce33", "Amazon Linux AMI 2013.03.1", "t1.micro"));
@@ -162,7 +163,7 @@ public class AMIRecord {
     amiMap_2013_03_1.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-5253894f", "Amazon Linux AMI 2013.03.1", "t1.micro"));
     records.put(AMIRecordType.Amazon_Linux_AMI_2013_03_1, amiMap_2013_03_1);
     // MongoDB 2.4.8 with 1000 IOPS
-    HashMap<RegionRecord, AMIRecord> amiMap2 = new HashMap<RegionRecord, AMIRecord>();
+    HashMap<RegionRecord, AMIRecord> amiMap2 = new HashMap<>();
     amiMap2.put(RegionRecord.US_EAST_1, new AMIRecord("ami-f1416498", "MongoDB 2.4.8 with 1000 IOPS", "m1.large"));
     records.put(AMIRecordType.MongoDB_2_4_8_with_1000_IOPS, amiMap2);
   }

@@ -22,10 +22,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -37,15 +38,20 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupRandomGuids extends GnsCommand {
+public class LookupRandomGuids extends BasicCommand {
 
   /**
-   * Creates a LookupAccountRecord instance.
+   * Creates a LookupRandomGuids instance.
    *
    * @param module
    */
   public LookupRandomGuids(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.LookupRandomGuids;
   }
 
   @Override

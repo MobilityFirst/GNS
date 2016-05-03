@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.common.policies.NoProxyPolicy;
 import edu.umass.cs.msocket.common.policies.ProxySelectionPolicy;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 import edu.umass.cs.msocket.mobility.MobilityManagerServer;
 
 /**
@@ -170,7 +170,7 @@ public class MServerSocket extends ServerSocket
    */
   public MServerSocket(String serverName) throws IOException
   {
-    this(serverName, GnsIntegration.getDefaultProxyPolicy(), null, 0);
+    this(serverName, Integration.getDefaultProxyPolicy(), null, 0);
   }
 
   /**
@@ -275,7 +275,7 @@ public class MServerSocket extends ServerSocket
     MobilityManagerServer.unregisterWithManager(controller);
     try
     {
-      GnsIntegration.unregisterWithGNS(getServerName());
+      Integration.unregisterWithGNS(getServerName());
     }
     catch (Exception e)
     {
@@ -349,7 +349,7 @@ public class MServerSocket extends ServerSocket
 	    {
 	    	try
 	    	{
-	    		GnsIntegration.registerWithGNS(serverAlias, (InetSocketAddress) ss.getLocalSocketAddress());
+	    		Integration.registerWithGNS(serverAlias, (InetSocketAddress) ss.getLocalSocketAddress());
 	    	}
 	    	catch (Exception ex)
 	    	{
@@ -586,14 +586,14 @@ public class MServerSocket extends ServerSocket
 
       if (proxySelection.hasAvailableProxies())
       {
-        List<InetSocketAddress> proxyVector = GnsIntegration.getNewProxy(proxySelectionPolicy);
+        List<InetSocketAddress> proxyVector = Integration.getNewProxy(proxySelectionPolicy);
 
-        GnsIntegration.unregisterWithGNS(serverAlias);
+        Integration.unregisterWithGNS(serverAlias);
 
         for (Iterator<InetSocketAddress> iterator = proxyVector.iterator(); iterator.hasNext();)
         {
           InetSocketAddress retProxy = iterator.next();
-          GnsIntegration.registerWithGNS(serverAlias, retProxy);
+          Integration.registerWithGNS(serverAlias, retProxy);
 
           ProxyInfo proxyInfo = new ProxyInfo(retProxy.getHostName(), retProxy.getPort());
           // just setting it to current time
@@ -609,7 +609,7 @@ public class MServerSocket extends ServerSocket
 	      {
 		      try
 		      {
-		    	  GnsIntegration.registerWithGNS(serverAlias, (InetSocketAddress) ss.getLocalSocketAddress());
+		    	  Integration.registerWithGNS(serverAlias, (InetSocketAddress) ss.getLocalSocketAddress());
 		      }
 		      catch (Exception ex)
 		      {
@@ -663,14 +663,14 @@ public class MServerSocket extends ServerSocket
 
 	    //controller.setGNSCredential(gnsCredentials);
 
-	    List<InetSocketAddress> proxyVector = GnsIntegration.getNewProxy(proxyPolicy);
+	    List<InetSocketAddress> proxyVector = Integration.getNewProxy(proxyPolicy);
 	    
 	    
 	    if (proxyVector != null)
 	    {
 	    	try 
 	    	{
-	    		GnsIntegration.unregisterWithGNS(serverAlias);
+	    		Integration.unregisterWithGNS(serverAlias);
 	    	}
 	    	catch(IOException ex)
 	    	{
@@ -682,11 +682,11 @@ public class MServerSocket extends ServerSocket
 	      for (Iterator<InetSocketAddress> iterator = proxyVector.iterator(); iterator.hasNext();)
 	      {
 	        InetSocketAddress retProxy = iterator.next();
-	        GnsIntegration.registerWithGNS(serverAlias, retProxy);
+	        Integration.registerWithGNS(serverAlias, retProxy);
 	        
 	        if(firstTime)
 	        {
-	        	serverGUID = GnsIntegration.getGUIDOfAlias(serverAlias);
+	        	serverGUID = Integration.getGUIDOfAlias(serverAlias);
 	            controller.setProxyConnObj(new ConnectionToProxyServer(serverGUID, controller));
 	            firstTime = false;
 	        }
@@ -705,7 +705,7 @@ public class MServerSocket extends ServerSocket
 	      {
 		      try
 		      {
-		        GnsIntegration.registerWithGNS(serverAlias, (InetSocketAddress) ss.getLocalSocketAddress());
+		        Integration.registerWithGNS(serverAlias, (InetSocketAddress) ss.getLocalSocketAddress());
 		      }
 		      catch (Exception ex)
 		      {

@@ -19,18 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,7 +37,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ChangeLogLevel extends GnsCommand {
+public class ChangeLogLevel extends BasicCommand {
 
   /**
    *
@@ -46,6 +45,11 @@ public class ChangeLogLevel extends GnsCommand {
    */
   public ChangeLogLevel(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.ChangeLogLevel;
   }
 
   @Override

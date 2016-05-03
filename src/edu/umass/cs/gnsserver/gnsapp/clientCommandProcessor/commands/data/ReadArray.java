@@ -19,18 +19,22 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
+import java.text.ParseException;
+import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ReadArray extends GnsCommand {
+public class ReadArray extends BasicCommand {
 
   /**
    *
@@ -49,6 +53,11 @@ public class ReadArray extends GnsCommand {
    */
   public ReadArray(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.ReadArray;
   }
 
   @Override
@@ -63,7 +72,7 @@ public class ReadArray extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
     // the opt hair below is for the subclasses... cute, huh?
@@ -72,20 +81,26 @@ public class ReadArray extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    Date timestamp;
+    if (json.has(TIMESTAMP)) {
+      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    } else {
+      timestamp = null;
+    }
     if (reader.equals(MAGIC_STRING)) {
       reader = null;
     }
 
     if (getCommandName().equals(READ_ARRAY_ONE)) {
       if (ALL_FIELDS.equals(field)) {
-        return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, handler);
+        return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {
-        return FieldAccess.lookupOne(guid, field, reader, signature, message, handler);
+        return FieldAccess.lookupOne(guid, field, reader, signature, message, timestamp, handler);
       }
     } else if (ALL_FIELDS.equals(field)) {
-      return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
+      return FieldAccess.lookupMultipleValues(guid, reader, signature, message, timestamp, handler);
     } else {
-      return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, handler);
+      return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, timestamp, handler);
     }
   }
 

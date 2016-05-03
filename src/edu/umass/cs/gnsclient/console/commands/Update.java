@@ -21,10 +21,10 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnsclient.console.GnsUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.Util;
 import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -76,7 +76,7 @@ public class Update extends ConsoleCommand {
 
   @Override
   public void parse(String commandText) throws Exception {
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     try {
       StringTokenizer st = new StringTokenizer(commandText.trim());
       String guid;
@@ -84,7 +84,7 @@ public class Update extends ConsoleCommand {
         guid = module.getCurrentGuid().getGuid();
       } else if (st.countTokens() == 2) {
         guid = st.nextToken();
-        if (!GnsUtils.isValidGuidString(guid)) {
+        if (!Util.isValidGuidString(guid)) {
           // We probably have an alias, lookup the GUID
           guid = gnsClient.lookupGuid(guid);
         }
@@ -101,7 +101,7 @@ public class Update extends ConsoleCommand {
       console.printNewline();
     } catch (IOException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     } catch (JSONException e) {
       console.printString("Unable to parse JSON string:" + e + "\n");

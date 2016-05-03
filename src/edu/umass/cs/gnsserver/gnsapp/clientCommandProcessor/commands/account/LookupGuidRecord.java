@@ -21,11 +21,12 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,7 +34,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupGuidRecord extends GnsCommand {
+public class LookupGuidRecord extends BasicCommand {
 
   /**
    * Creates a LookupGuidRecord instance.
@@ -42,6 +43,11 @@ public class LookupGuidRecord extends GnsCommand {
    */
   public LookupGuidRecord(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.LookupGuidRecord;
   }
 
   @Override

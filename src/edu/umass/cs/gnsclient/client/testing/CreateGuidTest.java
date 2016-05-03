@@ -20,11 +20,12 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.awt.HeadlessException;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -37,7 +38,7 @@ import org.apache.commons.cli.ParseException;
 
 /**
  * Simple guid creation test.
- * 
+ *
  * Usage:
  * java -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -cp dist/gns-1.16-2015-7-27.jar edu.umass.cs.gnsclient.client.testing.CreateGuidTest -host kittens.name -port 24398
  */
@@ -45,13 +46,13 @@ public class CreateGuidTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client;
+  private static GNSClientCommands client;
   /**
    * The address of the GNS server we will contact
    */
   private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
-  
+
   private static boolean disableSSL = true;
 
   /**
@@ -68,7 +69,13 @@ public class CreateGuidTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(), disableSSL);
+      try {
+        client = new GNSClientCommands(null);
+      } catch (IOException e) {
+        System.out.println("Unable to create client: " + e);
+        e.printStackTrace();
+        System.exit(1);
+      }
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {

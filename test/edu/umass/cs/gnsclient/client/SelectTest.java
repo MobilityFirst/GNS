@@ -19,13 +19,13 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.awt.geom.Point2D;
-import java.net.InetSocketAddress;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -48,29 +48,19 @@ public class SelectTest {
 
   private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
-  private static UniversalTcpClientExtended client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;
 
   public SelectTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+      try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
       if (System.getProperty("alias") != null
               && !System.getProperty("alias").isEmpty()) {
         accountAlias = System.getProperty("alias");
@@ -171,7 +161,7 @@ public class SelectTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -189,7 +179,7 @@ public class SelectTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -233,7 +223,7 @@ public class SelectTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {

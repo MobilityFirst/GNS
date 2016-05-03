@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 import edu.umass.cs.msocket.MServerSocket;
 import edu.umass.cs.msocket.MSocket;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 
 public class ContextMemberInternals
 {
@@ -70,7 +70,7 @@ public class ContextMemberInternals
 		
 		//mserversocket = new MServerSocket(localName, new FixedProxyPolicy(proxyList));
 		mserversocket = new MServerSocket(localName);
-		myGUID = GnsIntegration.getGUIDOfAlias(localName);
+		myGUID = Integration.getGUIDOfAlias(localName);
 		
 		accptMSockets = new HashMap<String, ContextSocket>();
 		

@@ -19,15 +19,16 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -41,7 +42,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class AddToGroup extends GnsCommand {
+public class AddToGroup extends BasicCommand {
 
   /**
    *
@@ -49,6 +50,11 @@ public class AddToGroup extends GnsCommand {
    */
   public AddToGroup(CommandModule module) {
     super(module);
+  }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AddToGroup;
   }
 
   @Override
@@ -78,7 +84,7 @@ public class AddToGroup extends GnsCommand {
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }

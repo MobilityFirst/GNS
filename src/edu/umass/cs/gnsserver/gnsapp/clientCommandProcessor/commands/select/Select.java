@@ -19,23 +19,23 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * A basic query that returns all guids that have a field with the given value.
- * 
+ *
  * @author westy
  */
-public class Select extends GnsCommand {
+public class Select extends BasicCommand {
 
   /**
    *
@@ -43,6 +43,11 @@ public class Select extends GnsCommand {
    */
   public Select(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.Select;
   }
 
   @Override
