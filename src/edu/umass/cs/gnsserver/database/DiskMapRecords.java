@@ -17,7 +17,6 @@ import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DiskMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

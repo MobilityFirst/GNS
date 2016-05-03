@@ -357,44 +357,25 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     doUpdate(collectionName, guid, updates);
   }
 
-  public void bulkInsert(String collectionName, Map<String, JSONObject> values)
+  public void bulkUpdate(String collectionName, Map<String, JSONObject> values)
           throws FailedDBOperationException, RecordExistsException {
     //String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
     DBCollection collection = db.getCollection(collectionName);
     String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
     db.requestEnsureConnection();
     BulkWriteOperation unordered = collection.initializeUnorderedBulkOperation();
-    for (JSONObject value : values.values()) {
-      try {
-        BasicDBObject query = new BasicDBObject(primaryKey, value.get(primaryKey));
+    for (Map.Entry<String, JSONObject> entry : values.entrySet()) {
+      BasicDBObject query = new BasicDBObject(primaryKey, entry.getKey());
+      JSONObject value = entry.getValue();
+      if (value != null) {
         DBObject document = (DBObject) JSON.parse(value.toString());
         unordered.find(query).upsert().replaceOne(document);
-      } catch (JSONException e) {
-        DatabaseConfig.getLogger().severe("Unable to create query: " + e);
+      } else {
+        unordered.find(query).removeOne();
       }
     }
+    // Maybe check the result?
     BulkWriteResult result = unordered.execute();
-  }
-
-  public void bulkInsertOld(String collectionName, Map<String, JSONObject> values)
-          throws FailedDBOperationException, RecordExistsException {
-    //String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    List<DBObject> documents = new ArrayList<>();
-    for (JSONObject value : values.values()) {
-      DBObject document = (DBObject) JSON.parse(value.toString());
-//      BasicDBObject document = new BasicDBObject();
-//      document.append(primaryKey, entry.getKey());
-//      document.append(NameRecord.VALUES_MAP.getName(), JSON.parse(entry.getValue().toString()));
-      documents.add(document);
-    }
-    try {
-      collection.insert(documents);
-    } catch (DuplicateKeyException e) {
-      throw new RecordExistsException(collectionName, "MultiInsert");
-    } catch (MongoException e) {
-      throw new FailedDBOperationException(collectionName, documents.toString());
-    }
   }
 
   @Override

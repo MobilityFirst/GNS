@@ -39,7 +39,7 @@ public class DiskMapCollection {
       public Set<String> commit(Map<String, JSONObject> toCommit) throws IOException {
         DatabaseConfig.getLogger().fine("Commit: " + toCommit);
         try {
-          mongoRecords.bulkInsert(DBNAMERECORD, toCommit);
+          mongoRecords.bulkUpdate(DBNAMERECORD, toCommit);
         } catch (FailedDBOperationException | RecordExistsException e) {
           throw new IOException(e);
         }
@@ -51,7 +51,7 @@ public class DiskMapCollection {
         try {
           return mongoRecords.lookupEntireRecord(DBNAMERECORD, key);
         } catch (FailedDBOperationException | RecordNotFoundException e) {
-          throw new IOException(e);
+          return null;
         }
       }
     };
