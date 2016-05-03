@@ -28,10 +28,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Provides an interface for insert, updateEntireRecord, remove and lookup operations in a nosql database.
+ * Provides an interface for insert, update, remove and lookup 
+ * operations in a nosql database.
  *
  * @author Westy
  */
+// Fixme: This interface needs to be cleaned up lot and made more consistent.
+// In particular there is an extra layer of bullshit here. Many of the
+// calls return a JSONObject (or equivalent - hence the inconsistency) that CONTAINS
+// a ValuesMap instead of just returning JSONObject that IS a ValuesMap. 
+// Someone with courage needs to fix this unnecessary design element that was
+// added way back when by someone else. 
 public interface NoSQLRecords {
 
   /**

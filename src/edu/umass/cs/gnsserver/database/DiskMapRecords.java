@@ -26,7 +26,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
+ * Uses a diskmap as the primary database with mongo as the 
+ * backup for when we need more NoSQL databasey features.
+ * 
+ * See DiskMapCollection for more details.
  *
+ * 
  * @author westy
  */
 public class DiskMapRecords implements NoSQLRecords {

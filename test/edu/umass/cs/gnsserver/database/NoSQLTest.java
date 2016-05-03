@@ -25,7 +25,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -57,7 +56,7 @@ public class NoSQLTest {
   public NoSQLTest() {
     if (instance == null) {
       instance = new DiskMapRecords(node);
-      recordMap = new GNSRecordMap<String>(instance, collection);
+      recordMap = new GNSRecordMap<>(instance, collection);
     }
   }
 
@@ -154,6 +153,10 @@ public class NoSQLTest {
     } catch (FailedDBOperationException e) {
       fail("Problem while deleting record: " + e);
     }
+  }
+
+  @Test
+  public void test_06_CheckForRecordGone() {
     try {
       JSONObject json = instance.lookupEntireRecord(collection, guid);
       fail("Record should not exist: " + json);
@@ -162,18 +165,10 @@ public class NoSQLTest {
     }
   }
 
-  @Test
-  public void test_06_PrintAll() {
-    try {
-      System.out.println("All entries:");
-      instance.printAllEntries(collection);
-    } catch (FailedDBOperationException e) {
-      fail("Problem showing all entries: " + e);
-    }
-  }
+  private static String guid2 = "guid#2";
 
   @Test
-  public void test_07_InsertRecord() {
+  public void test_20_InsertRecord() {
     JSONObject json = new JSONObject();
     try {
       json.put(field, "some value");
@@ -181,26 +176,16 @@ public class NoSQLTest {
       fail("Problem creating json " + e);
     }
     ValuesMap valuesMap = new ValuesMap(json);
-    NameRecord nameRecord = new NameRecord(recordMap, "guid#2", valuesMap);
+    NameRecord nameRecord = new NameRecord(recordMap, guid2, valuesMap);
     try {
-      instance.insert(collection, "guid#2", nameRecord.toJSONObject());
+      instance.insert(collection, guid2, nameRecord.toJSONObject());
     } catch (FailedDBOperationException | JSONException | RecordExistsException e) {
       fail("Problem during insert " + e);
     }
   }
 
   @Test
-  public void test_08_PrintAll() {
-    try {
-      System.out.println("All entries:");
-      instance.printAllEntries(collection);
-    } catch (FailedDBOperationException e) {
-      fail("Problem showing all entries: " + e);
-    }
-  }
-
-  @Test
-  public void test_09_UpdateEntireRecord() {
+  public void test_21_UpdateEntireRecord() {
     JSONObject json = new JSONObject();
     try {
       JSONObject innerJson = new JSONObject();
@@ -210,28 +195,47 @@ public class NoSQLTest {
       fail("Problem creating json " + e);
     }
     ValuesMap valuesMap = new ValuesMap(json);
-    NameRecord nameRecord = new NameRecord(recordMap, "guid#2", valuesMap);
+    NameRecord nameRecord = new NameRecord(recordMap, guid2, valuesMap);
     try {
-      instance.updateEntireRecord(collection, "guid#2", nameRecord.getValuesMap());
+      instance.updateEntireRecord(collection, guid2, nameRecord.getValuesMap());
     } catch (FailedDBOperationException | FieldNotFoundException e) {
       fail("Problem during insert " + e);
     }
   }
 
   @Test
-  public void test_10_PrintAll() {
+  public void test_22_LookupEntireRecordGuid2() {
+    JSONObject json = new JSONObject();
     try {
-      System.out.println("All entries after updateEntireRecord:");
-      instance.printAllEntries(collection);
-    } catch (FailedDBOperationException e) {
-      fail("Problem showing all entries: " + e);
+      JSONObject innerJson = new JSONObject();
+      innerJson.put("key", "value");
+      json.put("map", innerJson);
+    } catch (JSONException e) {
+      fail("Problem creating json " + e);
+    }
+    ValuesMap valuesMap = new ValuesMap(json);
+    JSONObject expected = new JSONObject();
+    try {
+      expected.put(NameRecord.NAME.getName(), guid2);
+      expected.put(NameRecord.VALUES_MAP.getName(), valuesMap);
+    } catch (JSONException e) {
+      fail("Problem creating json expected value: " + e);
+    }
+
+    try {
+      JSONAssert.assertEquals(
+              expected,
+              instance.lookupEntireRecord(collection, guid2),
+              JSONCompareMode.STRICT);
+    } catch (RecordNotFoundException | FailedDBOperationException | JSONException e) {
+      fail("Problem during LookupEntireRecord: " + e);
     }
   }
 
   @Test
-  public void test_11_UpdateIndividualFields() {
+  public void test_23_UpdateIndividualFields() {
     try {
-      instance.updateIndividualFields(collection, "guid#2",
+      instance.updateIndividualFields(collection, guid2,
               NameRecord.VALUES_MAP,
               new ArrayList<>(Arrays.asList(new ColumnField("new", ColumnFieldType.USER_JSON))),
               new ArrayList<>(Arrays.asList("newValue"))
@@ -242,17 +246,56 @@ public class NoSQLTest {
   }
 
   @Test
-  public void test_12_PrintAll() {
+  public void test_24_LookupEntireRecordGuid2Again() {
+    JSONObject json = new JSONObject();
     try {
-      System.out.println("All entries after UpdateIndividualFields:");
-      instance.printAllEntries(collection);
-    } catch (FailedDBOperationException e) {
-      fail("Problem showing all entries: " + e);
+      JSONObject innerJson = new JSONObject();
+      innerJson.put("key", "value");
+      json.put("map", innerJson);
+      json.put("new", "newValue");
+    } catch (JSONException e) {
+      fail("Problem creating json " + e);
+    }
+    ValuesMap valuesMap = new ValuesMap(json);
+    JSONObject expected = new JSONObject();
+    try {
+      expected.put(NameRecord.NAME.getName(), guid2);
+      expected.put(NameRecord.VALUES_MAP.getName(), valuesMap);
+    } catch (JSONException e) {
+      fail("Problem creating json expected value: " + e);
+    }
+
+    try {
+      JSONAssert.assertEquals(
+              expected,
+              instance.lookupEntireRecord(collection, guid2),
+              JSONCompareMode.STRICT);
+    } catch (RecordNotFoundException | FailedDBOperationException | JSONException e) {
+      fail("Problem during LookupEntireRecord: " + e);
     }
   }
 
   @Test
-  public void test_13_RemoveMapKeys() {
+  public void test_25_LookupSomeDottedFields() {
+    try {
+      Map<ColumnField, Object> actual = instance.lookupSomeFields(
+              collection, guid2,
+              NameRecord.NAME,
+              NameRecord.VALUES_MAP,
+              new ArrayList<>(Arrays.asList(new ColumnField("map.key",
+                      ColumnFieldType.USER_JSON))));
+
+      
+      assertEquals("value", 
+              ((JSONObject)actual.get(NameRecord.VALUES_MAP)).get("map.key"));
+
+    } catch (RecordNotFoundException | FailedDBOperationException | JSONException e) {
+      fail("Problem during LookupSomeFields: " + e);
+    }
+  }
+
+  @Test
+  public void test_30_RemoveMapKeys() {
     try {
       instance.removeMapKeys(collection, "guid#2",
               NameRecord.VALUES_MAP,
@@ -265,12 +308,24 @@ public class NoSQLTest {
   }
 
   @Test
-  public void test_14_PrintAll() {
+  public void test_31_LookupEntireRecordGuid2YetAgain() {
+    JSONObject json = new JSONObject();
+    ValuesMap valuesMap = new ValuesMap(json);
+    JSONObject expected = new JSONObject();
     try {
-      System.out.println("All entries after removeMapKeys:");
-      instance.printAllEntries(collection);
-    } catch (FailedDBOperationException e) {
-      fail("Problem showing all entries: " + e);
+      expected.put(NameRecord.NAME.getName(), guid2);
+      expected.put(NameRecord.VALUES_MAP.getName(), valuesMap);
+    } catch (JSONException e) {
+      fail("Problem creating json expected value: " + e);
+    }
+
+    try {
+      JSONAssert.assertEquals(
+              expected,
+              instance.lookupEntireRecord(collection, guid2),
+              JSONCompareMode.STRICT);
+    } catch (RecordNotFoundException | FailedDBOperationException | JSONException e) {
+      fail("Problem during LookupEntireRecord: " + e);
     }
   }
 }

@@ -19,6 +19,12 @@ import java.util.Set;
 import org.json.JSONObject;
 
 /**
+ * Implements a "collection" (in the sense of mongo) of records whose
+ * primary database is a DiskMap with Mongo as the backup for when we
+ * need more NoSQL databasey features.
+ *
+ * A collection is basically a named separate namespace for documents.
+ * A document is a JSONObject.
  *
  * @author westy
  */
@@ -27,10 +33,26 @@ public class DiskMapCollection {
   private DiskMap<String, JSONObject> map;
   private MongoRecords<String> mongoRecords;
 
+  /**
+   * Create a DiskMapCollection name collection on a given nodeID.
+   * Note: nodeID is here so we can run multiple hosts on the same machine.
+   *
+   * @param nodeID
+   * @param collectionName
+   */
   public DiskMapCollection(String nodeID, String collectionName) {
     this(nodeID, -1, collectionName);
   }
 
+  /**
+   * Create a DiskMapCollection name collection on a given nodeID.
+   * Specify port if you want to override the default mongo port.
+   * Note: nodeID is here so we can run multiple hosts on the same machine.
+   *
+   * @param nodeID
+   * @param port
+   * @param collectionName
+   */
   public DiskMapCollection(String nodeID, int port, String collectionName) {
     this.mongoRecords = new MongoRecords<>(nodeID + "-"
             + collectionName + new Random().nextInt(), port);
@@ -57,19 +79,20 @@ public class DiskMapCollection {
     };
   }
 
+  /**
+   * 
+   * @return the diskmap
+   */
   public DiskMap<String, JSONObject> getMap() {
     return map;
   }
 
+  /**
+   * 
+   * @return the mongo records
+   */
   public MongoRecords<String> getMongoRecords() {
     return mongoRecords;
   }
 
-  // test code... there's also a junit test elsewhere
-  public static void main(String[] args) throws Exception, RecordNotFoundException {
-
-    DiskMapCollection map = new DiskMapCollection("node", "test");
-
-    System.exit(0);
-  }
 }
