@@ -52,7 +52,7 @@ public class DiskMapRecords implements NoSQLRecords {
     return getCollection(name).getMap();
   }
 
-  public MongoRecords<String> getMongoRecords(String name) {
+  public MongoRecords getMongoRecords(String name) {
     return getCollection(name).getMongoRecords();
   }
 

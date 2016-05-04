@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.database;
 
-import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
@@ -87,13 +86,14 @@ public class NoSQLRecordsThroughputTest {
     count = 0;
     initTime = System.currentTimeMillis();
   }
+  
+  private static final String COLLECTION_NAME = MongoRecords.DBNAMERECORD;
 
   private static void testlookupMultipleSystemAndUserFields(String node, String guid, String field) {
 
-    // make a fake record
-    //MongoRecords<String> instance = new MongoRecords<String>(node);
-    DiskMapRecords instance = new DiskMapRecords(node);
-    GNSRecordMap<String> recordMap = new GNSRecordMap<String>(instance, DBNAMERECORD);
+    //NoSQLRecords instance = new MongoRecords<String>(node);
+    NoSQLRecords instance = new DiskMapRecords(node);
+    GNSRecordMap<String> recordMap = new GNSRecordMap<String>(instance, COLLECTION_NAME);
     JSONObject json = new JSONObject();
     try {
       json.put(field, "some value");
@@ -103,7 +103,7 @@ public class NoSQLRecordsThroughputTest {
     ValuesMap valuesMap = new ValuesMap(json);
     NameRecord nameRecord = new NameRecord(recordMap, guid, valuesMap);
     try {
-      instance.insert(DBNAMERECORD, guid, nameRecord.toJSONObject());
+      instance.insert(COLLECTION_NAME, guid, nameRecord.toJSONObject());
     } catch (JSONException e) {
       System.out.println("Problem writing json " + e);
     } catch (FailedDBOperationException e) {
@@ -120,7 +120,7 @@ public class NoSQLRecordsThroughputTest {
       reset();
       do {
         Map<ColumnField, Object> map = instance.lookupSomeFields(
-                DBNAMERECORD, guid,
+                COLLECTION_NAME, guid,
                 NameRecord.NAME, NameRecord.VALUES_MAP, userFields);
         if (incrCount() % frequency == 0) {
           System.out.println(map);

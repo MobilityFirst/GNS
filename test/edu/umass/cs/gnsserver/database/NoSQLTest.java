@@ -50,7 +50,7 @@ public class NoSQLTest {
   private static String collection = "testCollection";
   private static String guid = "testGuid";
   private static String field = "testField";
-  private static DiskMapRecords instance;
+  private static NoSQLRecords instance;
   private static GNSRecordMap<String> recordMap;
 
   public NoSQLTest() {

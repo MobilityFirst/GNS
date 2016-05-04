@@ -34,6 +34,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
@@ -147,8 +148,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.nodeID = messenger.getMyID();
     GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>();
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
-    MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
+    NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
     GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
             new Object[]{nodeID, nameRecordDB});
     this.messenger = messenger;
@@ -199,8 +200,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-    MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
+    NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
     GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}",
             new Object[]{nodeID, nameRecordDB});
     this.messenger = messenger;

@@ -58,9 +58,8 @@ import java.util.logging.Level;
  * All records are stored in a document called NameRecord.
  *
  * @author westy, Abhigyan, arun
- * @param <NodeIDType>
  */
-public class MongoRecords<NodeIDType> implements NoSQLRecords {
+public class MongoRecords implements NoSQLRecords {
 
   private static final String DBROOTNAME = "GNS";
   /**
@@ -79,7 +78,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
    *
    * @param nodeID nodeID of name server
    */
-  public MongoRecords(NodeIDType nodeID) {
+  public MongoRecords(String nodeID) {
     this(nodeID, -1);
   }
 
@@ -89,11 +88,11 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
    * @param nodeID nodeID of name server
    * @param port port at which mongo is running. if port = -1, mongo connects to default port.
    */
-  public MongoRecords(NodeIDType nodeID, int port) {
+  public MongoRecords(String nodeID, int port) {
     init(nodeID, port);
   }
 
-  private void init(NodeIDType nodeID, int mongoPort) {
+  private void init(String nodeID, int mongoPort) {
     mongoCollectionSpecs = new MongoCollectionSpecs();
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     // add location as another index

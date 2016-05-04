@@ -31,7 +31,7 @@ import org.json.JSONObject;
 public class DiskMapCollection {
 
   private DiskMap<String, JSONObject> map;
-  private MongoRecords<String> mongoRecords;
+  private MongoRecords mongoRecords;
 
   /**
    * Create a DiskMapCollection name collection on a given nodeID.
@@ -54,7 +54,7 @@ public class DiskMapCollection {
    * @param collectionName
    */
   public DiskMapCollection(String nodeID, int port, String collectionName) {
-    this.mongoRecords = new MongoRecords<>(nodeID + "-"
+    this.mongoRecords = new MongoRecords(nodeID + "-"
             + collectionName + new Random().nextInt(), port);
     this.map = new DiskMap<String, JSONObject>(100000) {
       @Override
@@ -91,7 +91,7 @@ public class DiskMapCollection {
    * 
    * @return the mongo records
    */
-  public MongoRecords<String> getMongoRecords() {
+  public MongoRecords getMongoRecords() {
     return mongoRecords;
   }
 
