@@ -25,6 +25,9 @@ public class TestGuidEntry {
 		FileOutputStream fos = new FileOutputStream(file_name);
 		ObjectOutputStream os = new ObjectOutputStream(fos);
 		guidEntry.writeObject(os);
+		os.flush();
+		os.close();
+		fos.close();
 		
 		FileInputStream fis = new FileInputStream(file_name);
 		ObjectInputStream ois = new ObjectInputStream(fis);
