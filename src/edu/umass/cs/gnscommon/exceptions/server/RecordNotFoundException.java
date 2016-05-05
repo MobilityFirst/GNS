@@ -30,7 +30,7 @@ package edu.umass.cs.gnscommon.exceptions.server;
  * @author westy
  */
 
-public class RecordNotFoundException extends GnsServerException{
+public class RecordNotFoundException extends ServerException{
   String name;
 
   /**

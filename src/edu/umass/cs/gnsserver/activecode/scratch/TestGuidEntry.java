@@ -17,21 +17,6 @@ public class TestGuidEntry {
 		String name = "testGuid@gigapaxos.net";
 		String password = "123";
 		String file_name = "guid";
-		
-		GNSClient client = new GNSClient( (InetSocketAddress) null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
-		 
-		GuidEntry guidEntry = client.accountGuidCreate(name, password);
-		
-		FileOutputStream fos = new FileOutputStream(file_name);
-		ObjectOutputStream os = new ObjectOutputStream(fos);
-		guidEntry.writeObject(os);
-		os.flush();
-		os.close();
-		fos.close();
-		
-		FileInputStream fis = new FileInputStream(file_name);
-		ObjectInputStream ois = new ObjectInputStream(fis);
-		
-		GuidEntry newEntry = new GuidEntry(ois);
+
 	}
 }

@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.console.commands;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import java.io.IOException;
@@ -77,7 +77,7 @@ public class SetDefaultGuid extends ConsoleCommand {
       return;
     }
     String aliasName = st.nextToken();
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     
     try {
       try {
@@ -91,7 +91,7 @@ public class SetDefaultGuid extends ConsoleCommand {
       if (!module.isSilent()) {
         console.printString("Looking up alias " + aliasName + " GUID and certificates...\n");
       }
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
       if (myGuid == null) {
         console.printString("You do not have the private key for alias " + aliasName);

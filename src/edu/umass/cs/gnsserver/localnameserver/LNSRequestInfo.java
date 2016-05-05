@@ -19,35 +19,39 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
-import edu.umass.cs.utils.Config;
 
 /**
  * Class represents the abstract class in which LNS stores info for each ongoing request,
  * from the time it is received by a LNS until a success/failure response is returned.
  * Only a single instance of this class is defined during the lifetime of a request.
-
- Some fields in this class are necessary to implement functionality of a local serviceName server, while
- some are there only to collect and log statistics for a request.
+ *
+ * Some fields in this class are necessary to implement functionality of a local serviceName server, while
+ * some are there only to collect and log statistics for a request.
  *
  */
 public class LNSRequestInfo {
 
   private final CommandPacket commandPacket;
 
-  /** Unique request ID assigned to this request by the local name server */
+  /**
+   * Unique request ID assigned to this request by the local name server
+   */
   private final long lnsReqID;
 
-  /** Time that CCP started processing this request. */
+  /**
+   * Time that CCP started processing this request.
+   */
   protected final long startTime;
-  
-  /** Time that LNS completed processing this request */
-  private long finishTime =  -1;
 
-  /** Whether requests is finally successful or not. */
+  /**
+   * Time that LNS completed processing this request
+   */
+  private long finishTime = -1;
+
+  /**
+   * Whether requests is finally successful or not.
+   */
   private boolean success = false;
 
   /**
@@ -63,18 +67,18 @@ public class LNSRequestInfo {
 
   /**
    * Returns the service name.
-   * 
+   *
    * @return the service name
    */
-	public synchronized String getServiceName() {
-		// arun: not needed any more, I think
-		return commandPacket
-				.getServiceName();
-	}
+  public synchronized String getServiceName() {
+    // arun: not needed any more, I think
+    return commandPacket
+            .getServiceName();
+  }
 
   /**
    * Returns the command packet.
-   * 
+   *
    * @return the command packet
    */
   public CommandPacket getCommandPacket() {
@@ -83,16 +87,16 @@ public class LNSRequestInfo {
 
   /**
    * Returns the command type.
-   * 
+   *
    * @return the command type
    */
   public String getCommandType() {
     return commandPacket.getCommandName();
   }
-  
+
   /**
    * Returns the host.
-   * 
+   *
    * @return the host
    */
   public String getHost() {
@@ -101,7 +105,7 @@ public class LNSRequestInfo {
 
   /**
    * Returns the port.
-   * 
+   *
    * @return the port
    */
   public int getPort() {
@@ -110,7 +114,7 @@ public class LNSRequestInfo {
 
   /**
    * Returns the LNS request id.
-   * 
+   *
    * @return the LNS request id
    */
   public synchronized long getLNSReqID() {
@@ -119,16 +123,17 @@ public class LNSRequestInfo {
 
   /**
    * Returns the start time.
-   * 
+   *
    * @return the start time
    */
   public synchronized long getStartTime() {
     return startTime;
   }
 
-  /** 
+  /**
    * Time duration for which the request was under processing at the local serviceName server.
-   * @return 
+   *
+   * @return
    */
   public synchronized long getResponseLatency() {
     return finishTime - startTime;
@@ -136,7 +141,7 @@ public class LNSRequestInfo {
 
   /**
    * Returns the finish time.
-   * 
+   *
    * @return the finish time
    */
   public synchronized long getFinishTime() {
@@ -152,7 +157,7 @@ public class LNSRequestInfo {
 
   /**
    * Returns the success value.
-   * 
+   *
    * @return true or false
    */
   public synchronized boolean isSuccess() {
@@ -161,19 +166,20 @@ public class LNSRequestInfo {
 
   /**
    * Sets the success value.
-   * 
+   *
    * @param success
    */
   public synchronized void setSuccess(boolean success) {
     this.success = success;
   }
 
+  @Override
   public String toString() {
-	  return this.getCommandType() + ":" + this.getServiceName() + ":" + this.lnsReqID;
+    return this.getCommandType() + ":" + this.getServiceName() + ":" + this.lnsReqID;
   }
 
   // arun
-public String getCommandName() {
-	return this.commandPacket.getCommandName();
-}
+  public String getCommandName() {
+    return this.commandPacket.getCommandName();
+  }
 }

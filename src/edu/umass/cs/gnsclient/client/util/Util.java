@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -29,25 +28,26 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 
 /**
  * Various generic static utility methods.
  */
 public class Util {
 
-  public static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
+  public static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#.#");
   public static final double ALPHA = 0.05;
 
   public static final String df(double d) {
-    return decimalFormat.format(d);
+    return DECIMAL_FORMAT.format(d);
   }
 
   public static final String mu(double d) {
-    return decimalFormat.format(d * 1000) + "us";
+    return DECIMAL_FORMAT.format(d * 1000) + "us";
   } // milli to microseconds
 
   public static final double movingAverage(double sample, double historicalAverage, double alpha) {
-    return (1 - alpha) * ((double) historicalAverage) + alpha * ((double) sample);
+    return (1 - alpha) * historicalAverage + alpha * sample;
   }
 
   public static final double movingAverage(double sample, double historicalAverage) {
@@ -61,75 +61,69 @@ public class Util {
   public static final double movingAverage(long sample, double historicalAverage, double alpha) {
     return movingAverage((double) sample, historicalAverage, alpha);
   }
-  
-  public static String refreshKey(String id) {
-		return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
-	}
 
+  public static String refreshKey(String id) {
+    return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
+  }
 
   public static int roundToInt(double d) {
     return (int) Math.round(d);
   }
-  
+
   public static void assertAssertionsEnabled() {
-	  boolean assertOn = false;
-	  // *assigns* true if assertions are on.
-	  assert assertOn = true; 
-	  if(!assertOn) throw new RuntimeException("Asserts not enabled; enable assertions using the '-ea' JVM option");
+    boolean assertOn = false;
+    // *assigns* true if assertions are on.
+    assert assertOn = true;
+    if (!assertOn) {
+      throw new RuntimeException("Asserts not enabled; enable assertions using the '-ea' JVM option");
+    }
   }
 
   @SuppressWarnings("unchecked")
   public static Object createObject(String className, Object... arguments) {
     Object object;
-    Class[] types = new Class[arguments.length];
+    Class<?>[] types = new Class<?>[arguments.length];
     for (int i = 0; i < arguments.length; i++) {
       types[i] = arguments[i].getClass();
     }
     try {
-      Class theClass = Class.forName(className);
-      Constructor constructor = theClass.getConstructor(types);
+      Class<?> theClass = Class.forName(className);
+      Constructor<?> constructor = theClass.getConstructor(types);
       object = constructor.newInstance(arguments);
       return object;
-    } catch (NoSuchMethodException e) {
-      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
-    } catch (ClassNotFoundException e) {
-      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
-    } catch (InstantiationException e) {
-      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
-    } catch (IllegalAccessException e) {
-      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
-    } catch (IllegalArgumentException e) {
-      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
-    } catch (InvocationTargetException e) {
-      GNSClientConfig.getLogger().severe("Problem creating instance: " + e);
+    } catch (NoSuchMethodException | ClassNotFoundException |
+            InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      GNSClientConfig.getLogger().log(Level.SEVERE, "Problem creating instance: {0}", e);
     }
     return null;
   }
 
   public static Map<String, String> parseURIQueryString(String query) {
-    Map<String, String> result = new HashMap<String, String>();
+    Map<String, String> result = new HashMap<>();
     QueryStringParser parser = new QueryStringParser(query);
     while (parser.next()) {
       result.put(parser.getName(), parser.getValue());
     }
     return result;
   }
-  
+
   public static String prefix(String str, int prefixLength) {
-	  if(str==null || str.length() <= prefixLength) return str;
-	  return str.substring(0, prefixLength);
+    if (str == null || str.length() <= prefixLength) {
+      return str;
+    }
+    return str.substring(0, prefixLength);
   }
 
   public static Set<Integer> arrayToIntSet(int[] array) {
-    TreeSet<Integer> set = new TreeSet<Integer>();
+    TreeSet<Integer> set = new TreeSet<>();
     for (int i = 0; i < array.length; i++) {
       set.add(array[i]);
     }
     return set;
   }
-  
-  public static Set<String> nodeIdSetToStringSet(Set set) {
-    Set<String> result = new HashSet<String>();
+
+  public static Set<String> nodeIdSetToStringSet(Set<String> set) {
+    Set<String> result = new HashSet<>();
     for (Object id : set) {
       result.add(id.toString());
     }
@@ -145,7 +139,7 @@ public class Util {
     return array;
   }
 
-  public static Object[] setToNodeIdArray(Set set) {
+  public static Object[] setToNodeIdArray(Set<?> set) {
     Object[] array = new Object[set.size()];
     int i = 0;
     for (Object id : set) {
@@ -172,17 +166,20 @@ public class Util {
     }
     return array;
   }
-  
+
   public static Integer[] intToIntegerArray(int[] array) {
-		if(array==null) return null;
-		else if(array.length==0) return new Integer[0];
-		Integer[] retarray = new Integer[array.length];
-		int i=0;
-		for(int member : array) {
-			retarray[i++] = member; 
-		}
-		return retarray;
-	}
+    if (array == null) {
+      return null;
+    } else if (array.length == 0) {
+      return new Integer[0];
+    }
+    Integer[] retarray = new Integer[array.length];
+    int i = 0;
+    for (int member : array) {
+      retarray[i++] = member;
+    }
+    return retarray;
+  }
 
   public static Integer[] objectToIntegerArray(Object[] objects) {
     if (objects == null) {
@@ -199,13 +196,13 @@ public class Util {
   }
 
   public static Set<String> arrayOfIntToStringSet(int[] array) {
-	  Set<String> set = new HashSet<String>();
-	  for(Integer member : array) {
-		  set.add(member.toString());
-	  }
-	  return set;
+    Set<String> set = new HashSet<>();
+    for (Integer member : array) {
+      set.add(member.toString());
+    }
+    return set;
   }
-  
+
   public static String arrayOfIntToString(int[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
@@ -214,20 +211,24 @@ public class Util {
     }
     return s;
   }
-  
+
   public static boolean contains(int member, int[] array) {
-	  for(int i=0; i<array.length; i++) if(array[i]==member) return true;
-	  return false;
+    for (int i = 0; i < array.length; i++) {
+      if (array[i] == member) {
+        return true;
+      }
+    }
+    return false;
   }
-  
+
   public static Set<String> arrayOfNodeIdsToStringSet(Object[] array) {
-	  Set<String> set = new HashSet<String>();
-	  for(Object member : array) {
-		  set.add(member.toString());
-	  }
-	  return set;
+    Set<String> set = new HashSet<>();
+    for (Object member : array) {
+      set.add(member.toString());
+    }
+    return set;
   }
- 
+
   /**
    * Converts a set of NodeIds to a string.
    *
@@ -247,16 +248,16 @@ public class Util {
     }
     return sb.toString();
   }
-  
+
   public void assertEnabled() {
-	  try {
-		  assert(false);
-	  } catch(Exception e) {
-		  return;
-	  }
-	  throw new RuntimeException("Asserts not enabled; exiting");
+    try {
+      assert (false);
+    } catch (Exception e) {
+      return;
+    }
+    throw new RuntimeException("Asserts not enabled; exiting");
   }
-  
+
   // cute little hack to show us where
   private String stackTraceToString() {
     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -270,8 +271,8 @@ public class Util {
   }
 
   public static void main(String[] args) {
-	  int[] members = {23, 44, 53, 21};
-	  System.out.println(Util.arrayOfIntToString(members));
-	  System.out.println(Util.arrayOfIntToStringSet(members));
+    int[] members = {23, 44, 53, 21};
+    System.out.println(Util.arrayOfIntToString(members));
+    System.out.println(Util.arrayOfIntToStringSet(members));
   }
 }

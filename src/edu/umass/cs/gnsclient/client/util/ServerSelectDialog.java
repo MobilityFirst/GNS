@@ -31,7 +31,7 @@ import edu.umass.cs.gnscommon.utils.NetworkUtils;
  */
 public class ServerSelectDialog {
 
-  private static final String[] hostStringOptions = {
+  private static final String[] HOST_STRING_OPTIONS = {
     "gnserve.net:" + GNSClientConfig.LNS_PORT + " (LNS)",
     "kittens.name:" + GNSClientConfig.LNS_PORT + " (LNS)",
     "gdns.name:" + GNSClientConfig.LNS_PORT + " (LNS)",
@@ -51,10 +51,10 @@ public class ServerSelectDialog {
               null,
               "Choose a GNS Server Host",
               "GNS Server Selection",
-              hostStringOptions,
-              hostStringOptions[1],
+              HOST_STRING_OPTIONS,
+              HOST_STRING_OPTIONS[1],
               null);
-      if (hostPort == "Other") {
+      if (hostPort.equals("Other")) {
         hostPort = JOptionPane.showInputDialog(null, "Enter host:port (" + GNSClientConfig.LNS_PORT + " is the default for TCP clients)");
       }
       if (hostPort == null) {

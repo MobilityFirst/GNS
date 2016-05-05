@@ -19,23 +19,23 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.tcp.CommandResult;
+import edu.umass.cs.gnsclient.client.CommandResult;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
-import static edu.umass.cs.gnscommon.GnsProtocol.READ;
-import static edu.umass.cs.gnscommon.GnsProtocol.READER;
-import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.REPLACE_USER_JSON;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-
+import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -46,6 +46,9 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import org.json.JSONObject;
 
 /**
@@ -70,13 +73,13 @@ public class ClientAsynchExample {
   private static final String ACCOUNT_ALIAS = "gnstest@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
+          InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
-    BasicUniversalTcpClient client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
+ GNSClientCommands client = new GNSClientCommands(null);
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
@@ -94,15 +97,18 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
-              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), WRITER, accountGuidEntry.getGuid());
+      command = createAndSignCommand(CommandType.ReplaceUserJSON,
+              accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
+              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), 
+              WRITER, accountGuidEntry.getGuid());
     } else {
-      command = client.createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
+      command = createAndSignCommand(CommandType.Read,
+              accountGuidEntry.getPrivateKey(), READ,
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }
     // Create the command packet with a bogus id
-    CommandPacket commandPacket = new CommandPacket(-1, null, -1, command);
+    CommandPacket commandPacket = new CommandPacket(-1, command);
     // Keep track of what we've sent for the other thread to look at.
     Set<Long> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     // Create and run another thread to pick up the responses
@@ -123,7 +129,7 @@ public class ClientAsynchExample {
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(BasicUniversalTcpClient client, Set<Long> pendingIds) {
+  private static void lookForResponses(AbstractGNSClient client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent

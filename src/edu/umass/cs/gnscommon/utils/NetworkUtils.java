@@ -21,6 +21,7 @@ package edu.umass.cs.gnscommon.utils;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.regex.Matcher;
@@ -61,10 +62,10 @@ public class NetworkUtils {
     try {
       InetAddress candidateAddress = null;
       // Iterate all NICs (network interface cards)...
-      for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
+      for (Enumeration<?> ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements();) {
         NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
         // Iterate all IP addresses assigned to each card...
-        for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
+        for (Enumeration<?>  inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements();) {
           InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
           // filter out IP6 addresses for now
           if (!inetAddr.isLoopbackAddress() && isIp4Address(inetAddr.getHostAddress())) {
@@ -95,7 +96,7 @@ public class NetworkUtils {
         throw new UnknownHostException("The JDK InetAddress.getLocalHost() method unexpectedly returned null.");
       }
       return jdkSuppliedAddress;
-    } catch (Exception e) {
+    } catch (SocketException | UnknownHostException e) {
       UnknownHostException unknownHostException = new UnknownHostException("Failed to determine LAN address: " + e);
       unknownHostException.initCause(e);
       throw unknownHostException;
@@ -104,13 +105,13 @@ public class NetworkUtils {
 
   private static Pattern VALID_IPV4_PATTERN = null;
   private static Pattern VALID_IPV6_PATTERN = null;
-  private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
-  private static final String ipv6Pattern = "([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}";
+  private static final String IP_V4_PATTERN = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+  private static final String IP_V6_PATTERN = "([0-9a-f]{1,4}:){7}([0-9a-f]){1,4}";
 
   static {
     try {
-      VALID_IPV4_PATTERN = Pattern.compile(ipv4Pattern, Pattern.CASE_INSENSITIVE);
-      VALID_IPV6_PATTERN = Pattern.compile(ipv6Pattern, Pattern.CASE_INSENSITIVE);
+      VALID_IPV4_PATTERN = Pattern.compile(IP_V4_PATTERN, Pattern.CASE_INSENSITIVE);
+      VALID_IPV6_PATTERN = Pattern.compile(IP_V6_PATTERN, Pattern.CASE_INSENSITIVE);
     } catch (PatternSyntaxException e) {
       //logger.severe("Unable to compile pattern", e);
     }

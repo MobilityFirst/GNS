@@ -24,7 +24,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.StringTokenizer;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
@@ -77,7 +77,7 @@ public class PrivateKeyImport extends ConsoleCommand
   @Override
   public void parse(String commandText) throws Exception
   {
-    UniversalTcpClient gnsClient = module.getGnsClient();
+    GNSClientCommands gnsClient = module.getGnsClient();
     try
     {
       StringTokenizer st = new StringTokenizer(commandText.trim());
@@ -100,7 +100,7 @@ public class PrivateKeyImport extends ConsoleCommand
       PublicKey publicKey = gnsClient.publicKeyLookupFromGuid(guid);
       GuidEntry guidEntry = new GuidEntry(aliasName, guid, publicKey, privateKey);
 
-      KeyPairUtils.saveKeyPair(module.getGnsHostPort(), guidEntry.getEntityName(), guidEntry.getGuid(),
+      KeyPairUtils.saveKeyPair(module.getGnsInstance(), guidEntry.getEntityName(), guidEntry.getGuid(),
           new KeyPair(guidEntry.getPublicKey(), guidEntry.getPrivateKey()));
       console.printString("Private key for " + guidEntry.getEntityName() + " read from " + filename
           + " and saved in local preferences.");

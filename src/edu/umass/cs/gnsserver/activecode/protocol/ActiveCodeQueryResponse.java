@@ -23,23 +23,26 @@ import java.io.Serializable;
 
 /**
  * This is the data structure for active code response
- * 
+ *
  * @author mbadov
  */
 @SuppressWarnings("serial")
 public class ActiveCodeQueryResponse implements Serializable {
-	public boolean success;
-	public String valuesMapString;
-	
-	public ActiveCodeQueryResponse(boolean success, String valuesMapString) {
-		this.success = success;
-		this.valuesMapString = valuesMapString;
-	}
-	
-	public ActiveCodeQueryResponse() {
-		this.success = false;
-		this.valuesMapString = null;
-	}
+
+  private static final long serialVersionUID = 2326392043474125897L;
+  
+  private boolean success;
+  private String valuesMapString;
+
+  public ActiveCodeQueryResponse(boolean success, String valuesMapString) {
+    this.success = success;
+    this.valuesMapString = valuesMapString;
+  }
+
+  public ActiveCodeQueryResponse() {
+    this.success = false;
+    this.valuesMapString = null;
+  }
 
   public boolean isSuccess() {
     return success;
@@ -56,5 +59,5 @@ public class ActiveCodeQueryResponse implements Serializable {
   public void setValuesMapString(String valuesMapString) {
     this.valuesMapString = valuesMapString;
   }
-        	
+
 }

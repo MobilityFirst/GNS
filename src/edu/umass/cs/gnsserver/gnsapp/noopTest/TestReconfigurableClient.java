@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.noopTest;
@@ -59,10 +59,10 @@ public class TestReconfigurableClient {
 
   private final ReconfigurableNodeConfig<String> nodeConfig;
   private final JSONMessenger<String> messenger;
-  private final ConcurrentHashMap<String, Boolean> exists = new ConcurrentHashMap<String, Boolean>();
+  private final ConcurrentHashMap<String, Boolean> exists = new ConcurrentHashMap<>();
   private Set<InetSocketAddress> activeReplicas = null;
 
-  private Logger log = Logger.getLogger(getClass().getName());
+  private static final Logger LOG = Logger.getLogger(TestReconfigurableClient.class.getName());
 
   TestReconfigurableClient(ReconfigurableNodeConfig<String> nc,
           JSONMessenger<String> messenger) {
@@ -122,7 +122,7 @@ public class TestReconfigurableClient {
   private void sendRequest(AppRequest req) throws JSONException, IOException,
           RequestParseException {
     InetSocketAddress id = (this.getRandomActiveReplica());
-    log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{
+    LOG.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{
       "Sending ", req.getRequestType(), " to ", id, ":", (id), ": ",
       req});
     this.exists.put(req.getServiceName(), true);
@@ -132,7 +132,7 @@ public class TestReconfigurableClient {
   private void sendRequest(BasicReconfigurationPacket<?> req)
           throws JSONException, IOException {
     InetSocketAddress id = (this.getRandomRCReplica());
-    log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""),
+    LOG.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""),
             new Object[]{"Sending ", req.getSummary(), " to ", id, ":",
               (id), ": ", req});
     this.exists.put(req.getServiceName(), true);
@@ -190,7 +190,7 @@ public class TestReconfigurableClient {
               exists.remove(reqActives.getServiceName());
               break;
             case RECONFIGURE_RC_NODE_CONFIG:
-              ReconfigureRCNodeConfig<String> rcnc = new ReconfigureRCNodeConfig<String>(
+              ReconfigureRCNodeConfig<String> rcnc = new ReconfigureRCNodeConfig<>(
                       json, new StringifiableDefault<String>(0));
               log.log(Level.INFO,
                       MyLogger.FORMAT[3],
@@ -237,7 +237,7 @@ public class TestReconfigurableClient {
     return this.activeReplicas;
   }
 
-  private static boolean includeAddDeleteReconfiguratorTest = false;
+  private static final boolean includeAddDeleteReconfiguratorTest = false;
 
   /**
    * Simple test client for the reconfiguration package. Clients only know the
@@ -256,7 +256,7 @@ public class TestReconfigurableClient {
        * Client can only send/receive clear text or do server-only
        * authentication
        */
-      JSONMessenger<String> messenger = new JSONMessenger<String>(
+      JSONMessenger<String> messenger = new JSONMessenger<>(
               (new JSONNIOTransport<String>(null, nc,
                       new PacketDemultiplexerDefault(),
                       ReconfigurationConfig.getClientSSLMode())));
@@ -324,38 +324,33 @@ public class TestReconfigurableClient {
 
       // add RC node
       if (includeAddDeleteReconfiguratorTest) {
-        client.sendRequest(new ReconfigureRCNodeConfig<Integer>(null, 1103,
+        client.sendRequest(new ReconfigureRCNodeConfig<>(null, 1103,
                 new InetSocketAddress(InetAddress.getByName("localhost"),
                         3103)));
         while (client.exists
                 .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODES
-                //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
+                        //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
                         .toString()))
 				;
         Thread.sleep(1000);
 
         // delete RC node
-        HashSet<Integer> deleted = new HashSet<Integer>();
+        HashSet<Integer> deleted = new HashSet<>();
         deleted.add(1103);
-        client.sendRequest(new ReconfigureRCNodeConfig<Integer>(null, null,
+        client.sendRequest(new ReconfigureRCNodeConfig<>(null, null,
                 deleted));
         while (client.exists
                 .containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODES
-                //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
+                        //.containsKey(AbstractReconfiguratorDB.RecordNames.RC_NODE_CONFIG
                         .toString()));
         Thread.sleep(500);
       }
 
       client.messenger.stop();
-    } catch (IOException ioe) {
+    } catch (IOException | JSONException | InterruptedException | RequestParseException ioe) {
       ioe.printStackTrace();
-    } catch (JSONException je) {
-      je.printStackTrace();
-    } catch (InterruptedException ie) {
-      ie.printStackTrace();
-    } catch (RequestParseException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
     }
+    // TODO Auto-generated catch block
+
   }
 }

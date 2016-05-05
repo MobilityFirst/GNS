@@ -37,7 +37,7 @@ import edu.umass.cs.utils.DelayProfiler;
 /**
  * This class is the worker to run active code
  * in an isolated process.
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeWorker {
@@ -202,6 +202,7 @@ public class ActiveCodeWorker {
 		
 		ActiveCodeWorker acs = new ActiveCodeWorker(port);
 		acs.run();
-		
-    }
+    
+  }
+
 }

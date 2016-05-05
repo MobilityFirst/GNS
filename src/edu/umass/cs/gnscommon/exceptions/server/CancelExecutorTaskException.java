@@ -26,7 +26,7 @@ package edu.umass.cs.gnscommon.exceptions.server;
  *
  * Created by abhigyan on 2/24/14.
  */
-public class CancelExecutorTaskException extends GnsServerException{
+public class CancelExecutorTaskException extends ServerException{
 
 }
 

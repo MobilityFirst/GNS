@@ -19,15 +19,16 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RetrieveAliases extends GnsCommand {
+public class RetrieveAliases extends BasicCommand {
 
   /**
    * Creates a RetriveAliases instance.
@@ -51,6 +52,11 @@ public class RetrieveAliases extends GnsCommand {
    */
   public RetrieveAliases(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RetrieveAliases;
   }
 
   @Override
@@ -66,9 +72,6 @@ public class RetrieveAliases extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
@@ -76,7 +79,7 @@ public class RetrieveAliases extends GnsCommand {
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
-    if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+    if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
       if (accountInfo == null) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
@@ -88,7 +91,6 @@ public class RetrieveAliases extends GnsCommand {
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
     }
-    //}
   }
 
   @Override

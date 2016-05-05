@@ -20,7 +20,8 @@
 package edu.umass.cs.aws.support;
 
 /**
- *
+ * Types of AMI records.
+ * 
  * @author westy
  */
 public enum AMIRecordType {

@@ -19,9 +19,7 @@
  */
 package edu.umass.cs.gnsserver.nodeconfig;
 
-import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
-
 import java.util.Set;
 
 /**
@@ -50,28 +48,12 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends
   public abstract int getAdminPort(NodeIDType id);
 
   /**
-   * Returns the ping port for the given node.
-   *
-   * @param id
-   * @return an int
-   */
-  public abstract int getPingPort(NodeIDType id);
-  
-  /**
    * Returns the Ccp for the given node.
    *
    * @param id
    * @return an int
    */
   public abstract int getCcpPort(NodeIDType id);
-  
-  /**
-   * Returns the Ccp ping port for the given node.
-   *
-   * @param id
-   * @return an int
-   */
-  public abstract int getCcpPingPort(NodeIDType id);
   
   /**
    * Returns the Ccp admin port for the given node.

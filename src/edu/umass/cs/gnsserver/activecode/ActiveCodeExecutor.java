@@ -30,6 +30,7 @@ import java.util.logging.Level;
 /**
  * This class is a hotfix for catching exceptions when using Future
  * See: afterExecute
+ *
  * @author mbadov
  *
  */

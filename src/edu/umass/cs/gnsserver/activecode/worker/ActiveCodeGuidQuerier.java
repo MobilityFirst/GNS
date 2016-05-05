@@ -39,7 +39,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * This class is used to send query to active code client
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeGuidQuerier {
@@ -179,8 +179,10 @@ public class ActiveCodeGuidQuerier {
       return false;
     }
   }
+
   /**
    * This class is used to send a http request
+   *
    * @param url
    * @return response as a string
    */

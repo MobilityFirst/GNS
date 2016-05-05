@@ -31,7 +31,7 @@ import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This is the task sent to active code worker.
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeTask implements Callable<ValuesMap> {
@@ -131,6 +131,5 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
     	}
     	return result;    	
     }
-    
     
 }

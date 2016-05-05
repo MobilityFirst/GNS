@@ -48,7 +48,7 @@ import edu.umass.cs.msocket.common.CommonMethods;
 import edu.umass.cs.msocket.common.policies.BlackBoxWritingPolicy;
 import edu.umass.cs.msocket.common.policies.ChunkInformation;
 import edu.umass.cs.msocket.common.policies.MultipathWritingPolicy;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 import edu.umass.cs.msocket.mobility.MobilityManagerClient;
 
 /**
@@ -2113,7 +2113,7 @@ public class ConnectionInfo
 	          if (typeOfCon == MSocketConstants.CON_TO_GNSNAME)
 	          {
 	            Random rand = new Random();
-	            List<InetSocketAddress> socketAddressFromGNS = GnsIntegration.getSocketAddressFromGNS(serverAlias);
+	            List<InetSocketAddress> socketAddressFromGNS = Integration.getSocketAddressFromGNS(serverAlias);
 	            InetSocketAddress serverSock = socketAddressFromGNS.get(rand.nextInt(socketAddressFromGNS.size()));
 	            serverIP = serverSock.getAddress();
 	            serverPort = serverSock.getPort();
@@ -2121,7 +2121,7 @@ public class ConnectionInfo
 	          else if (typeOfCon == MSocketConstants.CON_TO_GNSGUID)
 	          {
 	            Random rand = new Random();
-	            List<InetSocketAddress> socketAddressFromGNS = GnsIntegration.getSocketAddressFromGNS(serverAlias);
+	            List<InetSocketAddress> socketAddressFromGNS = Integration.getSocketAddressFromGNS(serverAlias);
 	            InetSocketAddress serverSock = socketAddressFromGNS.get(rand.nextInt(socketAddressFromGNS.size()));
 	            serverIP = serverSock.getAddress();
 	            serverPort = serverSock.getPort();

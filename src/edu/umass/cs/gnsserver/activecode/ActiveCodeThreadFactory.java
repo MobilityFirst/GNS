@@ -23,6 +23,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * This ThreadFactory allocates an ActiveCodeClient for every new worker thread.
+ *
  * @author mbadov
  *
  */

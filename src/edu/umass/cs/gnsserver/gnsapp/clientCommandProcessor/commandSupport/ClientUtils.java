@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import java.util.HashSet;
@@ -54,13 +54,12 @@ public class ClientUtils {
    * @return a guid string
    * @throws IllegalArgumentException
    */
-  public static String createGuidStringFromPublicKey(String publicKey) throws IllegalArgumentException {
+  public static String createGuidStringFromBase64PublicKey(String publicKey) throws IllegalArgumentException {
     byte[] publickeyBytes = Base64.decode(publicKey);
     if (publickeyBytes == null) { // bogus public key
       throw new IllegalArgumentException();
     }
-    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(publickeyBytes);
-    return ByteUtils.toHex(publicKeyDigest);
+    return createGuidStringFromPublicKey(publickeyBytes);
   }
 
   /**
@@ -76,10 +75,10 @@ public class ClientUtils {
     for (int i = 0; i < publicKeys.length(); i++) {
       // Special case
       try {
-        if (publicKeys.getString(i).equals(GnsProtocol.ALL_USERS)) {
-          guids.put(GnsProtocol.ALL_USERS);
+        if (publicKeys.getString(i).equals(GNSCommandProtocol.ALL_USERS)) {
+          guids.put(GNSCommandProtocol.ALL_USERS);
         } else {
-          guids.put(createGuidStringFromPublicKey(publicKeys.getString(i)));
+          guids.put(createGuidStringFromBase64PublicKey(publicKeys.getString(i)));
         }
       } catch (IllegalArgumentException e) {
         // ignore any bogus publicKeys
@@ -99,7 +98,7 @@ public class ClientUtils {
     Set<String> guids = new HashSet<>();
     for (String publicKey : publicKeys) {
       try {
-        guids.add(createGuidStringFromPublicKey(publicKey));
+        guids.add(createGuidStringFromBase64PublicKey(publicKey));
       } catch (IllegalArgumentException e) {
         // ignore any bogus publicKeys
       }
@@ -118,7 +117,7 @@ public class ClientUtils {
     if (guid != null) {
       for (String publicKey : publicKeys) {
         try {
-          if (guid.equals(createGuidStringFromPublicKey(publicKey))) {
+          if (guid.equals(createGuidStringFromBase64PublicKey(publicKey))) {
             return publicKey;
           }
         } catch (IllegalArgumentException e) {

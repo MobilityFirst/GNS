@@ -23,7 +23,7 @@ import java.io.Serializable;
 
 /**
  * This is the data structure for active code request
- * 
+ *
  * @author Zhaoyu Gao
  */
 @SuppressWarnings("serial")
@@ -88,4 +88,5 @@ public class ActiveCodeQueryRequest implements Serializable {
   public void setLimit(int hopLimit){
 	  this.hopLimit = hopLimit;
   }
+
 }

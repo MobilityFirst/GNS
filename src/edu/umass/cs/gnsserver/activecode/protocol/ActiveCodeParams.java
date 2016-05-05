@@ -24,7 +24,7 @@ import java.io.Serializable;
 /**
  * This class is used to pass in the parameters
  * into activecode task.
- * 
+ *
  * @author Zhaoyu Gao
  */
 @SuppressWarnings("serial")
@@ -88,24 +88,28 @@ public class ActiveCodeParams implements Serializable {
 		return "{guid:"+(guid==null?"[NULL]":guid)+",field:"+(field==null?"[NULL]":field)+"}";
 	}
 	
+
   /**
    * guid getter
+   *
    * @return guid
    */
   public String getGuid() {
     return guid;
   }
-  
+
   /**
    * guid setter
+   *
    * @param guid
    */
   public void setGuid(String guid) {
     this.guid = guid;
   }
-  
+
   /**
    * field getter
+   *
    * @return field
    */
   public String getField() {
@@ -114,6 +118,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * field setter
+   *
    * @param field
    */
   public void setField(String field) {
@@ -122,6 +127,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * action getter
+   *
    * @return action
    */
   public String getAction() {
@@ -130,6 +136,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * action setter
+   *
    * @param action
    */
   public void setAction(String action) {
@@ -138,6 +145,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * code getter
+   *
    * @return code
    */
   public String getCode() {
@@ -146,6 +154,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * code setter
+   *
    * @param code
    */
   public void setCode(String code) {
@@ -154,6 +163,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * result getter
+   *
    * @return result
    */
   public String getValuesMapString() {
@@ -162,6 +172,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * result setter
+   *
    * @param valuesMapString
    */
   public void setValuesMapString(String valuesMapString) {
@@ -170,6 +181,7 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * hot getter
+   *
    * @return number of hops
    */
   public int getHopLimit() {
@@ -178,10 +190,11 @@ public class ActiveCodeParams implements Serializable {
 
   /**
    * hop setter
+   *
    * @param hopLimit
    */
   public void setHopLimit(int hopLimit) {
     this.hopLimit = hopLimit;
   }
-        
+
 }

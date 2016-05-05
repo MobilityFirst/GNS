@@ -21,10 +21,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -36,15 +37,20 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class VerifyAccount extends GnsCommand {
+public class VerifyAccount extends BasicCommand {
 
   /**
    * Creates a VerifyAccount instance.
-   * 
+   *
    * @param module
    */
   public VerifyAccount(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.VerifyAccount;
   }
 
   @Override
@@ -60,13 +66,9 @@ public class VerifyAccount extends GnsCommand {
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String guid = json.getString(GUID);
-      String code = json.getString(CODE);
-      return AccountAccess.verifyAccount(guid, code, handler);
-    //}
+    String guid = json.getString(GUID);
+    String code = json.getString(CODE);
+    return AccountAccess.verifyAccount(guid, code, handler);
   }
 
   @Override

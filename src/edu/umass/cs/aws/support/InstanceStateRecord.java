@@ -20,7 +20,8 @@
 package edu.umass.cs.aws.support;
 
 /**
- *
+ * Keeps track of the instance state.
+ * 
  * @author westy
  */
  public enum InstanceStateRecord {
@@ -31,8 +32,8 @@ package edu.umass.cs.aws.support;
     TERMINATED(48, "terminated"),
     STOPPING(64, "stopping"),
     STOPPED(80, "stopped");
-    private Integer code;
-    private String name;
+    private final Integer code;
+    private final String name;
 
     private InstanceStateRecord(Integer code, String name) {
       this.code = code;

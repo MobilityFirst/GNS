@@ -26,20 +26,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
 
 /**
  * Provides a simple interface for starting and stopping an embedded Derby.
  */
 public class DerbyControl {
-  /* the default framework is embedded */
 
+  /* the default framework is embedded */
   private String framework = "embedded";
   private String protocol = "jdbc:derby:";
-
-  private boolean debuggingEnabled = false;
 
   public Connection start() {
     try {
@@ -50,9 +48,7 @@ public class DerbyControl {
       return null;
     }
     Connection conn = null;
-    if (debuggingEnabled) {
-      GNSClientConfig.getLogger().info("Derby starting in " + framework + " mode");
-    }
+    GNSClientConfig.getLogger().log(Level.FINE, "Derby starting in {0} mode", framework);
     Properties props = new Properties(); // connection properties
     // providing a user name and password is optional in the embedded
     // and derbyclient frameworks
@@ -84,9 +80,7 @@ public class DerbyControl {
     //START HERE
     try {
       conn = DriverManager.getConnection(url, props);
-      if (debuggingEnabled) {
-        GNSClientConfig.getLogger().info("Connected to and created database " + dbName);
-      }
+      GNSClientConfig.getLogger().log(Level.INFO, "Connected to and created database {0}", dbName);
       // If you want to control transactions manually uncomment this line.
       //conn.setAutoCommit(false);
       return conn;
@@ -149,7 +143,7 @@ public class DerbyControl {
    */
   private void reportFailure(String message) {
     GNSClientConfig.getLogger().warning("\nData verification failed:");
-    GNSClientConfig.getLogger().warning('\t' + message);
+    GNSClientConfig.getLogger().log(Level.WARNING, "\t{0}", message);
   }
 
   /**
@@ -163,9 +157,9 @@ public class DerbyControl {
     // Exception.
     while (e != null) {
       GNSClientConfig.getLogger().severe("\n----- SQLException -----");
-      GNSClientConfig.getLogger().severe("  SQL State:  " + e.getSQLState());
-      GNSClientConfig.getLogger().severe("  Error Code: " + e.getErrorCode());
-      GNSClientConfig.getLogger().severe("  Message:    " + e.getMessage());
+      GNSClientConfig.getLogger().log(Level.SEVERE, "  SQL State:  {0}", e.getSQLState());
+      GNSClientConfig.getLogger().log(Level.SEVERE, "  Error Code: {0}", e.getErrorCode());
+      GNSClientConfig.getLogger().log(Level.SEVERE, "  Message:    {0}", e.getMessage());
       // for stack traces, refer to derby.log or uncomment this:
       //e.printStackTrace(System.err);
       e = e.getNextException();
@@ -204,7 +198,7 @@ public class DerbyControl {
      * in an array list for convenience.
      */
     Connection conn = null;
-    ArrayList<Statement> statements = new ArrayList<Statement>(); // list of Statements, PreparedStatements
+    ArrayList<Statement> statements = new ArrayList<>(); // list of Statements, PreparedStatements
     PreparedStatement psInsert;
     PreparedStatement psUpdate;
     Statement s;
@@ -329,7 +323,7 @@ public class DerbyControl {
     } catch (SQLException sqle) {
       printSQLException(sqle);
     } finally {
-            // release all open resources to avoid unnecessary memory usage
+      // release all open resources to avoid unnecessary memory usage
 
       // ResultSet
       try {
@@ -345,7 +339,7 @@ public class DerbyControl {
       int i = 0;
       while (!statements.isEmpty()) {
         // PreparedStatement extend Statement
-        Statement st = (Statement) statements.remove(i);
+        Statement st = statements.remove(i);
         try {
           if (st != null) {
             st.close();

@@ -1,0 +1,8 @@
+modelRho=0.5
+modelCsByC=0.003594347
+modelCuByC=0.001626119
+modelAavg=2.0
+triggerEnable=false
+disableOptimizer=true
+basicConfig=true
+optimalH=2

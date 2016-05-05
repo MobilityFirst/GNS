@@ -31,11 +31,9 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -88,7 +86,7 @@ public class AppAdmin extends Thread implements Shutdownable {
     int numRequest = 0;
     GNSConfig.getLogger().log(Level.INFO,
             "NS Node {0} starting Admin Request Server on port {1}",
-            new Object[]{app.getNodeID().toString(), serverSocket.getLocalPort()});
+            new Object[]{app.getNodeID(), serverSocket.getLocalPort()});
     while (true) {
       try {
         //Read the packet from the input stream

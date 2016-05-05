@@ -14,27 +14,19 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
-import edu.umass.cs.gigapaxos.PaxosManager;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.utils.Logging;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
-import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
 
 import java.util.Map;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -71,18 +63,6 @@ public class AppReconfigurableNodeOptions {
   public static double normalizingConstant = 0.5;
 
   /**
-   * Fixed timeout after which a query is retransmitted.
-   */
-  public static int queryTimeout = GNSConfig.DEFAULT_QUERY_TIMEOUT;
-
-  //  Abhigyan: parameters related to retransmissions.
-  //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
-  /**
-   * Maximum time a local name server waits for a response from name server query is logged as failed after this.
-   */
-  public static int maxQueryWaitTime = GNSConfig.DEFAULT_MAX_QUERY_WAIT_TIME;
-
-  /**
    * If this is true sending of email by the verification mechanism is disabled.
    */
   public static boolean noEmail = false;
@@ -99,10 +79,6 @@ public class AppReconfigurableNodeOptions {
    */
   public static boolean dnsOnly = false;
   /**
-   * Set this to true to enable additional debugging output.
-   */
-  public static boolean debuggingEnabled = false;
-  /**
    * If this is true the app will handle all operations locally (ie., it won't send request to reconfigurators).
    */
   public static boolean standAloneApp = false;
@@ -110,7 +86,7 @@ public class AppReconfigurableNodeOptions {
    * If this is true SSL will not be used for communications between servers.
    */
   public static boolean disableSSL = false;
-  
+
   public static boolean enableActiveCode = false;
   
   /**
@@ -128,11 +104,21 @@ public class AppReconfigurableNodeOptions {
   /**
    * How long (in seconds) to blacklist active code.
    */
+
   public static long activeCodeTimeOut = 1000000000;
   /**
    * Enable debug message in active code package
    */
   public static boolean activeCodeEnableDebugging = false;
+
+  public static long activeCodeBlacklistSeconds = 10;
+  
+  // context service options
+  public static boolean enableContextService = false;
+  
+  // ip port of one node read from config files.
+  public static String contextServiceIpPort = "";
+
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -144,42 +130,7 @@ public class AppReconfigurableNodeOptions {
    * NS_FILE
    */
   public static final String NS_FILE = "nsfile";
-  /**
-   * FILE_LOGGING_LEVEL
-   */
-  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
-  /**
-   * CONSOLE_OUTPUT_LEVEL
-   */
-  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
-  /**
-   * DEBUG
-   */
-  public static final String DEBUG = "debug"; // for backwards compat
-  /**
-   * DEBUG_APP
-   */
-  public static final String DEBUG_APP = "debugAPP";
-  /**
-   * DEBUG_AR
-   */
-  public static final String DEBUG_AR = "debugAR";
-  /**
-   * DEBUG_RECON
-   */
-  public static final String DEBUG_RECON = "debugRecon";
-  /**
-   * DEBUG_PAXOS
-   */
-  public static final String DEBUG_PAXOS = "debugPaxos";
-  /**
-   * DEBUG_NIO
-   */
-  public static final String DEBUG_NIO = "debugNio";
-  /**
-   * DEBUG_MISC
-   */
-  public static final String DEBUG_MISC = "debugMisc";
+// 
   /**
    * TEST. This option is used to create multiple nodes on a single host
    */
@@ -188,11 +139,6 @@ public class AppReconfigurableNodeOptions {
    * STANDALONE
    */
   public static final String STANDALONE = "standalone";
-  /**
-   * DEMAND_PROFILE_CLASS
-   */
-  public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
-  // for CCP
   /**
    * DNS_GNS_ONLY
    */
@@ -223,7 +169,11 @@ public class AppReconfigurableNodeOptions {
   private static final String ACTIVE_CODE_ENABLE_DEBUGGING = "activeCodeEnableDebugging";
 
   private static final String ENABLE_ACTIVE_CODE = "enableActiveCode";
-
+  
+  public static final String ENABLE_CONTEXT_SERVICE  = "enableContextService";
+  
+  public static final String CONTEXT_SERVICE_IP_PORT = "contextServiceHostPort";
+  
   /**
    * Returns all the options.
    *
@@ -234,18 +184,8 @@ public class AppReconfigurableNodeOptions {
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nodeId = new Option(ID, true, "Node ID");
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
-    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
-    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
-    Option debug = new Option(DEBUG, "Enables debugging for everything");
-    Option debugApp = new Option(DEBUG_APP, "Enables debugging output for the app");
-    Option debugAR = new Option(DEBUG_AR, "Enables debugging output for the Active Replica");
-    Option debugRecon = new Option(DEBUG_RECON, "Enables debugging output for the Reconfigurator");
-    Option debugPaxos = new Option(DEBUG_PAXOS, "Enables debugging output for Paxos");
-    Option debugNio = new Option(DEBUG_NIO, "Enables debugging output for Nio");
-    Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for all miscellaneous utilities");
     Option test = new Option(TEST, "Runs multiple test nodes on one machine");
     Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
-    Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, true, "The class to use for the demand profile");
     // for CCP
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
@@ -254,29 +194,28 @@ public class AppReconfigurableNodeOptions {
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
     Option enableActiveCode = new Option(ENABLE_ACTIVE_CODE, "enables active code");
 
+    // for CS
+    Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
+    Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
+    									+ "information of GNS");
+    
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(help);
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(fileLoggingLevel);
-    commandLineOptions.addOption(consoleOutputLevel);
-    commandLineOptions.addOption(debug);
-    commandLineOptions.addOption(debugApp);
-    commandLineOptions.addOption(debugAR);
-    commandLineOptions.addOption(debugRecon);
-    commandLineOptions.addOption(debugPaxos);
-    commandLineOptions.addOption(debugNio);
-    commandLineOptions.addOption(debugMisc);
     commandLineOptions.addOption(test);
     commandLineOptions.addOption(standAlone);
-    commandLineOptions.addOption(demandProfileClass);
     // for CCP
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
     commandLineOptions.addOption(disableEmailVerification);
+    
+    //context service options
+    commandLineOptions.addOption(enableContextService);
+    commandLineOptions.addOption(contextServiceHostPort);
 
     // active code
     commandLineOptions.addOption(enableActiveCode);
@@ -303,150 +242,30 @@ public class AppReconfigurableNodeOptions {
       return;
     }
 
-    // make sure this has been initialized
-    GNSConfig.getLogger();
+    
 		if (!allValues.containsKey(DISABLE_SSL))
 			disableSSL = ReconfigurationConfig.getClientSSLMode()==SSL_MODES.CLEAR;
 		else
 			disableSSL = true;    
     
-
-//    if (!allValues.containsKey(DISABLE_SSL)) {
-//      disableSSL = false;
-////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
-////              100);
-//      // old
-//      ReconfigurationConfig.setClientPortOffset(100);
-//
-////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH);
-//      // old
-//      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
-//
-////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH);
-//      // old
-//      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
-//
-//      System.out.println("NS: SSL is enabled");
-//    } else {
-//      disableSSL = true;
-////      Config.getConfig(RC.class).put(RC.CLIENT_PORT_OFFSET.toString(),
-////              0);
-//      // old
-//      ReconfigurationConfig.setClientPortOffset(0);
-//
-////      Config.getConfig(RC.class).put(RC.CLIENT_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
-//      // old
-//      ReconfigurationConfig.setClientSSLMode(CLEAR);
-//
-////      Config.getConfig(RC.class).put(RC.SERVER_SSL_MODE.toString(),
-////              SSLDataProcessingWorker.SSL_MODES.CLEAR);
-//      // old
-//      ReconfigurationConfig.setServerSSLMode(CLEAR);
-//      System.out.println("NS: SSL is disabled");
-//    }
-
     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
       System.out.println("******** Email Verification is OFF *********");
       GNSConfig.enableEmailAccountVerification = false;
     }
 
-    if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
-      debuggingEnabled = true;
-      System.out.println("******** DEBUGGING IS ENABLED IN THE APP *********");
-    }
-
-    if (isOptionTrue(DEBUG_AR, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE ACTIVE REPLICA *********");
-      // For backwards compatibility until Config goes away
-    } else {
-    }
-
-    if (isOptionTrue(DEBUG_RECON, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********");
-      // For backwards compatibility until Config goes away
-
-      ConsoleHandler handler = Logging.getConsoleHandler();
-      handler.setLevel(Level.FINEST);
-      Logger log = Reconfigurator.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.FINER);
-    } else {
-      Reconfigurator.getLogger().setLevel(Level.INFO);
-    }
-
-    if (isOptionTrue(DEBUG_PAXOS, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN PAXOS *********");
-      // For backwards compatibility until Config goes away
-      ConsoleHandler handler = Logging.getConsoleHandler();
-      handler.setLevel(Level.FINEST);
-      Logger log = PaxosManager.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.FINER);
-    } else {
-      PaxosManager.getLogger().setLevel(Level.WARNING);
-    }
-
-    if (isOptionTrue(DEBUG_NIO, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
-      //For backwards compatibility until Config goes away
-      ConsoleHandler handler = Logging.getConsoleHandler();
-      handler.setLevel(Level.FINEST);
-      Logger log = NIOTransport.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.FINER);
-      log.setUseParentHandlers(false);
-    } else {
-      NIOTransport.getLogger().setLevel(Level.WARNING);
-    }
-
-    if (isOptionTrue(DEBUG_MISC, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN THE ProtocolExecutor *********");
-      // For backwards compatibility until Config goes away
-//      ConsoleHandler handler = new ConsoleHandler();
-//      handler.setLevel(Level.FINEST);
-//      Logger log = ProtocolExecutor.getLogger();
-//      log.addHandler(handler);
-      ProtocolExecutor.getLogger().setLevel(Level.INFO);
-    } else {
-      ProtocolExecutor.getLogger().setLevel(Level.WARNING);
-    }
-
-    if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
-      GNSConfig.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
-
-    }
-    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
-      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
-      GNSConfig.consoleOutputLevel = levelString;
-    }
+//    if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
+//      GNSConfig.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
+//
+//    }
+//    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
+//      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
+//      GNSConfig.consoleOutputLevel = levelString;
+//    }
     if (allValues.containsKey(STANDALONE)) {
       standAloneApp = true;
     }
 
-//    boolean demandProfileSet = false;
-//    if (allValues.containsKey(DEMAND_PROFILE_CLASS)) {
-//      String className = allValues.get(DEMAND_PROFILE_CLASS);
-//      try {
-//        Class klass = Class.forName(className);
-//        ReconfigurationConfig.setDemandProfile(klass);
-//        demandProfileSet = true;
-//      } catch (ClassNotFoundException e) {
-//        System.out.println("Demand profile class " + className + " not found");
-//      }
-//    }
-//    if (!demandProfileSet) {
-//      // FIXME: Make this the value of DEFAULT_DEMAND_PROFILE_TYPE?
-//      ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
-//    }
-//    System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
-//
-//    ReconfigurationConfig.setReconfigureInPlace(false);
-//    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
-
-    // CCP options
+    // APP options
     if (allValues.containsKey(DNS_GNS_ONLY)) {
       dnsGnsOnly = true;
     }
@@ -472,10 +291,20 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(ACTIVE_CODE_ENABLE_DEBUGGING)) {
     	activeCodeEnableDebugging = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_DEBUGGING));
     }
-    
+
     if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {
         enableActiveCode = true;
       }
+    
+    
+    if(	isOptionTrue(ENABLE_CONTEXT_SERVICE, allValues)	)
+    {
+    	enableContextService = true;
+    }
+    
+    if (allValues.containsKey(CONTEXT_SERVICE_IP_PORT)) {
+    	contextServiceIpPort = allValues.get(CONTEXT_SERVICE_IP_PORT);
+    }
   }
 
 }

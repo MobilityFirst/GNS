@@ -31,8 +31,8 @@ import java.util.logging.Logger;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.msocket.common.Constants;
 
 /**
  * This class defines a WatchdogWatcherThread that regularly polls the
@@ -44,7 +44,7 @@ import edu.umass.cs.msocket.common.GnsConstants;
 public class WatchdogWatcherThread extends Thread
 {
   private boolean                    isKilled  = false;
-  private UniversalTcpClient         gnsClient;
+  private GNSClientCommands         gnsClient;
   private GuidEntry                  watchdogGuid;
   private String                     targetGuid;
   private long                       suspiciousTimeout;
@@ -65,7 +65,7 @@ public class WatchdogWatcherThread extends Thread
    * @param failureTimeout timeout in ms before the target is declared
    *          inactive/failde
    */
-  public WatchdogWatcherThread(UniversalTcpClient gnsClient, GuidEntry watchdogGuid, String targetGuid,
+  public WatchdogWatcherThread(GNSClientCommands gnsClient, GuidEntry watchdogGuid, String targetGuid,
       long suspiciousTimeout, long failureTimeout)
   {
     this.gnsClient = gnsClient;
@@ -116,7 +116,7 @@ public class WatchdogWatcherThread extends Thread
     long lastFailureRemoteTime = 0;
     try
     {
-      refreshFrequencyInMs = gnsClient.fieldReadArray(targetGuid, GnsConstants.TIME_REFRESH_INTERVAL, watchdogGuid).getLong(
+      refreshFrequencyInMs = gnsClient.fieldReadArray(targetGuid, Constants.TIME_REFRESH_INTERVAL, watchdogGuid).getLong(
           0);
       logger.info("GUID " + targetGuid + " refreshes every " + refreshFrequencyInMs + " ms");
     }
@@ -192,7 +192,7 @@ public class WatchdogWatcherThread extends Thread
   {
     try
     {
-      return gnsClient.fieldReadArray(targetGuid, GnsConstants.CURRENT_TIME, watchdogGuid).getLong(0);
+      return gnsClient.fieldReadArray(targetGuid, Constants.CURRENT_TIME, watchdogGuid).getLong(0);
     }
     catch (Exception e)
     {

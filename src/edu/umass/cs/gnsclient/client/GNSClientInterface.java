@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import org.json.JSONObject;
 
@@ -34,20 +34,17 @@ public interface GNSClientInterface {
    * Shuts down the client.
    */
   public void stop();
-
+  
   /**
-   * Returns the host as a string.
-   *
-   * @return the host
+   * Return a string representing the GNS server that we are connecting to.
+   * NOTE THAT THIS STRING SHOULD BE DIFFERENT FOR DIFFERENT SERVERS (say
+   * a local test server vs the one on EC2 otherwise the key pair storage
+   * code overwrite keys with the same name that are being used for
+   * different servers.
+   * 
+   * @return a string representing the GNS server
    */
-  public String getGnsRemoteHost();
-
-  /**
-   * Returns the port as an integer.
-   *
-   * @return the port.
-   */
-  public int getGnsRemotePort();
+  public String getGNSInstance();
 
   /**
    * Returns a JSON object containing all of the guid information
@@ -55,9 +52,9 @@ public interface GNSClientInterface {
    * @param guid
    * @return
    * @throws IOException
-   * @throws GnsClientException
+   * @throws ClientException
    */
-  public JSONObject lookupGuidRecord(String guid) throws IOException, GnsClientException;
+  public JSONObject lookupGuidRecord(String guid) throws IOException, ClientException;
 
   /**
    * Register a new account guid with the corresponding alias on the GNS server.

@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -25,9 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 import org.json.JSONObject;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,7 +57,7 @@ public class NSSelectInfo<NodeIDType> {
     this.id = id;
     this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
-    this.responses = new ConcurrentHashMap<String, JSONObject>(10, 0.75f, 3);
+    this.responses = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectOperation = selectOperation;
     this.groupBehavior = groupBehavior;
     this.query = query;
@@ -120,7 +118,7 @@ public class NSSelectInfo<NodeIDType> {
    * @return a set of JSONObjects
    */
   public Set<JSONObject> getResponsesAsSet() {
-    return new HashSet<JSONObject>(responses.values());
+    return new HashSet<>(responses.values());
   }
 
   /**

@@ -19,16 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -42,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveAccount extends GnsCommand {
+public class RemoveAccount extends BasicCommand {
 
   /**
    * Creates a RemoveAccount instance.
@@ -51,6 +52,11 @@ public class RemoveAccount extends GnsCommand {
    */
   public RemoveAccount(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RemoveAccount;
   }
 
   @Override
@@ -75,7 +81,7 @@ public class RemoveAccount extends GnsCommand {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     try {
-      if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
+      if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler, true);
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
@@ -85,7 +91,7 @@ public class RemoveAccount extends GnsCommand {
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }

@@ -97,10 +97,9 @@ public class ActiveCodeHandler {
 			public NameRecord read(String querierGuid, String queriedGuid, String field) {
 				NameRecord record = null;
 				try {
-					NameRecord.getNameRecordMultiField(gnsApp.getDB(), queriedGuid, null, 
-						  ColumnFieldType.USER_JSON, field);
-				} catch (RecordNotFoundException | FailedDBOperationException e) {
-					// TODO Auto-generated catch block
+					//NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), queriedGuid, null, 
+					//	  ColumnFieldType.USER_JSON, field);
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				return record;
@@ -109,14 +108,10 @@ public class ActiveCodeHandler {
 			@Override
 			public boolean write(String querierGuid, String queriedGuid, String field, ValuesMap valuesMap) {
 				try {
-					NameRecord nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), queriedGuid, null, ColumnFieldType.USER_JSON, field);
-					nameRecord.updateNameRecord(field, null, null, 0, valuesMap,
-					          UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
-				} catch (FieldNotFoundException | FailedDBOperationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (RecordNotFoundException e) {
-					// TODO Auto-generated catch block
+					//NameRecord nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), queriedGuid, null, ColumnFieldType.USER_JSON, field);
+					//nameRecord.updateNameRecord(field, null, null, 0, valuesMap,
+					//         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				return false;

@@ -24,7 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- *
+ * Simple implementation of rsync that uses ProcessBuilder.
+ * 
  * @author westy
  */
 public class RSync {
@@ -33,7 +34,7 @@ public class RSync {
   
   public static void upload(String user, String host, File keyFile, String localFile, String remoteFile) {
     try {
-    ArrayList<String> command = new ArrayList<String>();
+    ArrayList<String> command = new ArrayList<>();
     command.add("rsync");
     command.add("-e");
     command.add("ssh -o StrictHostKeyChecking=no -i " + keyFile.getAbsolutePath());

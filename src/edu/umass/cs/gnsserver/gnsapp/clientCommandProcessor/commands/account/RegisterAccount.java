@@ -19,16 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccessSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -42,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RegisterAccount extends GnsCommand {
+public class RegisterAccount extends BasicCommand {
 
   /**
    * Creates a RegisterAccount instance.
@@ -51,6 +52,11 @@ public class RegisterAccount extends GnsCommand {
    */
   public RegisterAccount(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RegisterAccount;
   }
 
   @Override
@@ -77,23 +83,23 @@ public class RegisterAccount extends GnsCommand {
     // FIXME: this lacking signature check is for temporary backward compatability... remove it.
     // See RegisterAccountUnsigned
     if (signature != null && message != null) {
-      if (!AccessSupport.verifySignature(publicKey, signature, message)) {
+      if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
 //      } else {
 //        GNS.getLogger().info("########SIGNATURE VERIFIED FOR CREATE " + name);
       }
     }
     try {
-      CommandResponse<String> result = 
-              AccountAccess.addAccountWithVerification(handler.getHTTPServerHostPortString(), 
+      CommandResponse<String> result
+              = AccountAccess.addAccountWithVerification(handler.getHTTPServerHostPortString(),
                       name, guid, publicKey,
-              password, handler);
+                      password, handler);
       if (result.getReturnValue().equals(OK_RESPONSE)) {
         return new CommandResponse<String>(guid);
       } else {
         return result;
       }
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }

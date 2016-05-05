@@ -40,7 +40,7 @@ import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * This class is used to run active code
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeRunner {
@@ -55,7 +55,7 @@ public class ActiveCodeRunner {
   private int clientPort = -1;
   
   ScriptContext sc = new SimpleScriptContext();
- 
+
   /**
    * Initialize an ActiveCodeRunner with nashorn script engine
    * by default.
@@ -73,6 +73,7 @@ public class ActiveCodeRunner {
     codeHashes = new HashMap<>();
     
 	// uncomment to enable the lua-to-java bytecode compiler 
+
     // (require bcel library in class path)
     // Globals globals = JsePlatform.standardGlobals();
     // LuaJC.install(globals);
@@ -119,7 +120,7 @@ public class ActiveCodeRunner {
    }
    }
    */
-  /*
+ /*
    private ValuesMap runLuaCode(String guid, String action, String field, String code, ValuesMap value, ActiveCodeGuidQuerier querier) {
    String codeId = guid + "_" + action;
 		
@@ -159,6 +160,7 @@ public class ActiveCodeRunner {
    * @throws ScriptException 
    * @throws NoSuchMethodException 
    */
+
   public JSONObject runCode(String guid, String action, String field, String code, JSONObject value, ActiveCodeGuidQuerier querier) throws ScriptException,NoSuchMethodException{
 	JSONObject ret = null;
 	//return runLuaCode(guid, action, field, code, value, querier);
@@ -168,6 +170,7 @@ public class ActiveCodeRunner {
 	//String codeId = guid + "_" + action;
 	// Update the script context if needed
 	//updateCache(codeId, code);
+
 
 	// Set the context
 	//ScriptContext sc = contexts.get(codeId);      

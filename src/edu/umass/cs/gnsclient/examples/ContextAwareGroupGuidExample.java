@@ -20,14 +20,17 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.BasicGuidEntry;
-import edu.umass.cs.gnsclient.client.BasicUniversalTcpClient;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -53,7 +56,7 @@ import org.json.JSONArray;
  * field in question to be zero. Then we will show how the two different context aware
  * group guids will retrieve the guids that correspond to their differeing queries.
  * <p>
- * The <code>BasicUniversalTcpClient</code> class contains two methods for creating and
+ * The <code>AbstractGNSClient</code> class contains two methods for creating and
  * looking up the value of a context aware group guid:
  * <p>
  * <code>JSONArray selectSetupGroupQuery(String guid, String query, int interval)</code>  - given
@@ -76,21 +79,21 @@ import org.json.JSONArray;
 public class ContextAwareGroupGuidExample {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static BasicUniversalTcpClient client;
+  private static GNSClientCommands client;
   private static GuidEntry masterGuid;
   private static final String fieldName = "contextAwareExampleField";
   private static GuidEntry groupOneGuidEntry;
   private static GuidEntry groupTwoGuidEntry;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
+          InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
     // BOILER PLATE FOR RUNNING AN EXAMPLE
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Start the client
-    client = new BasicUniversalTcpClient(address.getHostName(), address.getPort());
+    client = new GNSClientCommands(null);
     try {
       // Create the account guid using your email address and password = "password"
       masterGuid = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password");
@@ -211,9 +214,9 @@ public class ContextAwareGroupGuidExample {
    * @return
    * @throws Exception
    */
-  private static GuidEntry lookupOrCreateAccountGuid(BasicUniversalTcpClient client,
+  private static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client,
           String name, String password) throws Exception {
-    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGnsRemoteHost() + ":" + client.getGnsRemotePort(), name);
+    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSInstance(), name);
     if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
       guidEntry = client.accountGuidCreate(name, password);
       client.accountGuidVerify(guidEntry, createVerificationCode(name));
@@ -223,17 +226,17 @@ public class ContextAwareGroupGuidExample {
     }
   }
 
-  private static boolean guidExists(BasicUniversalTcpClient client, GuidEntry guidEntry)
+  private static boolean guidExists(GNSClientInterface client, GuidEntry guidEntry)
           throws IOException {
     try {
       client.lookupGuidRecord(guidEntry.getGuid());
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
       return false;
     }
     return true;
   }
 
-  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
+  private static final int VERIFICATION_CODE_LENGTH = 3; // Three hex characters
   // this is so we can mimic the verification code the server is generting
   // AKA we're cheating... if the SECRET changes on the server side 
   // you'll need to change it here as well

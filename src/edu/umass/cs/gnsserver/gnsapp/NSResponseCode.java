@@ -14,13 +14,13 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import java.io.Serializable;
 
 /**
@@ -41,36 +41,38 @@ import java.io.Serializable;
  */
 public enum NSResponseCode implements Serializable{
 
-  /** NO ERROR. */
+  /** NO ERROR. *//** NO ERROR. */
   NO_ERROR(0, "", false),
   /** ERROR. This should be used sparingly, if at all because it doesn't convey enough information. */
-  ERROR(1, GnsProtocol.GENERIC_ERROR, true),
+  ERROR(1, GNSCommandProtocol.GENERIC_ERROR, true),
   /**  FIELD_NOT_FOUND_ERROR. Field in a record was not found. */
-  FIELD_NOT_FOUND_ERROR(2, GnsProtocol.FIELD_NOT_FOUND, true),
+  FIELD_NOT_FOUND_ERROR(2, GNSCommandProtocol.FIELD_NOT_FOUND, true),
   /** FAIL_ACTIVE_NAMESERVER. */
-  FAIL_ACTIVE_NAMESERVER(3, GnsProtocol.FAIL_ACTIVE_NAMESERVER, true),
+  FAIL_ACTIVE_NAMESERVER(3, GNSCommandProtocol.FAIL_ACTIVE_NAMESERVER, true),
   /** ERROR_INVALID_ACTIVE_NAMESERVER. */
-  ERROR_INVALID_ACTIVE_NAMESERVER(4, GnsProtocol.INVALID_ACTIVE_NAMESERVER, true),
+  ERROR_INVALID_ACTIVE_NAMESERVER(4, GNSCommandProtocol.INVALID_ACTIVE_NAMESERVER, true),
   // These next four following are access or signature errors
   /** SIGNATURE_ERROR. */
-  SIGNATURE_ERROR(5, GnsProtocol.BAD_SIGNATURE, true),
+  SIGNATURE_ERROR(5, GNSCommandProtocol.BAD_SIGNATURE, true),
+  /** SIGNATURE_ERROR. */
+  STALE_COMMAND_VALUE(6, GNSCommandProtocol.STALE_COMMMAND, true),
   /** ACCESS_ERROR. */
-  ACCESS_ERROR(6, GnsProtocol.ACCESS_DENIED, true),
+  ACCESS_ERROR(7, GNSCommandProtocol.ACCESS_DENIED, true),
   /** BAD_GUID_ERROR. */
-  BAD_GUID_ERROR(7, GnsProtocol.BAD_GUID, true),
+  BAD_GUID_ERROR(8, GNSCommandProtocol.BAD_GUID, true),
   /** BAD_ACCESSOR_ERROR. */
-  BAD_ACCESSOR_ERROR(8, GnsProtocol.BAD_ACCESSOR_GUID, true),
+  BAD_ACCESSOR_ERROR(9, GNSCommandProtocol.BAD_ACCESSOR_GUID, true),
   /** VERIFICATION_ERROR. An error during account guid verification. */
-  VERIFICATION_ERROR(9, GnsProtocol.VERIFICATION_ERROR, true),
+  VERIFICATION_ERROR(10, GNSCommandProtocol.VERIFICATION_ERROR, true),
   /** UPDATE_TIMEOUT. */
-  UPDATE_TIMEOUT(10, GnsProtocol.UPDATE_TIMEOUT, true),
+  UPDATE_TIMEOUT(11, GNSCommandProtocol.UPDATE_TIMEOUT, true),
   /** DUPLICATE_ERROR. */
-  DUPLICATE_ERROR(11, GnsProtocol.DUPLICATE_NAME, true)
+  DUPLICATE_ERROR(12, GNSCommandProtocol.DUPLICATE_NAME, true)
   ;
   
   //
   // stash the codes in a lookup table
-  private static NSResponseCode[] responseCodes;
+  private static final NSResponseCode[] responseCodes;
 
   static {
     responseCodes = new NSResponseCode[NSResponseCode.values().length];

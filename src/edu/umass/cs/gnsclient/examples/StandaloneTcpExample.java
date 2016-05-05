@@ -19,15 +19,11 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -35,17 +31,16 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 
 /**
  * In this example we create an account to write and read back some information in the GNS.
  *  <p>
- * This client uses the UniversalTcpClientExtended class which contains more weird
- * client methods than BasicUniversalTcpClient.
- * 
- * Note: This example cheats during account guid creation in that it creates the account 
- * guid and then uses the known secret to verify the account instead of making the user 
- * verify the account manually deal with the private key.
+ This client uses the GNSClientCommandsExtended class which contains more weird
+ client methods than BasicUniversalTcpClient.
+ 
+ Note: This example cheats during account guid creation in that it creates the account 
+ guid and then uses the known secret to verify the account instead of making the user 
+ verify the account manually deal with the private key.
  *
  * @author westy
  */
@@ -53,15 +48,15 @@ public class StandaloneTcpExample {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client;
+  private static GNSClientCommands client;
   private static GuidEntry accountGuid;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
+          InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
     
     InetSocketAddress address = ServerSelectDialog.selectServer();
-    client = new UniversalTcpClientExtended(address.getHostName(), address.getPort());
+    client = new GNSClientCommands(null);
     try {
       accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
     } catch (Exception e) {

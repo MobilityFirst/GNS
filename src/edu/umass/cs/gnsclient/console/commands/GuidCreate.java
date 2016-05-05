@@ -22,10 +22,10 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.security.PublicKey;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 
 /**
  * Command that creates a new proxy group
@@ -84,7 +84,7 @@ public class GuidCreate extends ConsoleCommand
     String aliasName = commandText.trim();
     try
     {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       try
       {
@@ -101,7 +101,7 @@ public class GuidCreate extends ConsoleCommand
       {
         printString("Looking for alias " + aliasName + " GUID and certificates...\n");
       }
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsHostPort(), aliasName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsInstance(), aliasName);
 
       if (myGuid != null)
       {
@@ -117,12 +117,12 @@ public class GuidCreate extends ConsoleCommand
           else
           {
             printString("Old certificates found locally and not matching key in GNS, deleting local keys\n");
-            KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+            KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
           }
         }
-        catch (GnsInvalidGuidException e)
+        catch (InvalidGuidException e)
         {
-          KeyPairUtils.removeKeyPair(module.getGnsHostPort(), aliasName);
+          KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
         }
       }
 
@@ -139,7 +139,7 @@ public class GuidCreate extends ConsoleCommand
       if (module.getCurrentGuid() == null)
       {
         module.setCurrentGuidAndCheckForVerified(myGuid);
-        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsHostPort() + "|" + aliasName + ">");
+        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
       }
     }
     catch (Exception e)

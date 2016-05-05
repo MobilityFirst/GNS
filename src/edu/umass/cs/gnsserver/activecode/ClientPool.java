@@ -39,9 +39,11 @@ import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.
  * This is necessary because of limitations of Java's ThreadPoolExecutor.
+ *
  * @author mbadov
  *
  */
+
 public class ClientPool implements Runnable{	
 	private HashMap<Long, ActiveCodeClient> clients;
 	private ActiveDBInterface app;
@@ -331,4 +333,5 @@ public class ClientPool implements Runnable{
 			addSpareWorker();
 		}
 	}
+
 }

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import java.security.KeyFactory;
@@ -31,9 +31,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This class defines a BasicGuidEntry. This objects encapsulates just the information associated with a guid that 
- * can be read and written from a GNS server. See also <code>GuidEntry</code> which also contains the private key 
- * and cannot be read or written to the GNS.
+ * This class defines a BasicGuidEntry. 
+ * This object encapsulates just the information associated with a guid that 
+ * can be read and written from a GNS server. See also <code>GuidEntry</code>
+ * which also contains the private key and cannot be read or written to the GNS.
  *
  * @author Westy
  */
@@ -70,9 +71,9 @@ public class BasicGuidEntry {
    * @throws edu.umass.cs.gnscommon.exceptions.client.EncryptionException 
    */
   public BasicGuidEntry (JSONObject json) throws JSONException, EncryptionException {
-    this.entityName = json.getString(GnsProtocol.GUID_RECORD_NAME);
-    this.guid = json.getString(GnsProtocol.GUID_RECORD_GUID);
-    this.publicKey = generatePublicKey(json.getString(GnsProtocol.GUID_RECORD_PUBLICKEY));
+    this.entityName = json.getString(GNSCommandProtocol.GUID_RECORD_NAME);
+    this.guid = json.getString(GNSCommandProtocol.GUID_RECORD_GUID);
+    this.publicKey = generatePublicKey(json.getString(GNSCommandProtocol.GUID_RECORD_PUBLICKEY));
   } 
 
   /**
@@ -160,14 +161,12 @@ public class BasicGuidEntry {
     byte[] encodedPublicKey = Base64.decode(encodedPublic);
 
     try {
-      KeyFactory keyFactory = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+      KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
               encodedPublicKey);
       return keyFactory.generatePublic(publicKeySpec);
 
-    } catch (NoSuchAlgorithmException e) {
-      throw new EncryptionException("Failed to generate keypair", e);
-    } catch (InvalidKeySpecException e) {
+    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new EncryptionException("Failed to generate keypair", e);
     }
   }

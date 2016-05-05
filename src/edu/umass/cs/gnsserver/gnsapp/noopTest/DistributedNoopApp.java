@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.noopTest;
@@ -66,7 +66,7 @@ public class DistributedNoopApp implements Replicable, Reconfigurable {
   }
 
   private final String myID;
-  private final HashMap<String, AppData> appData = new HashMap<String, AppData>();
+  private final HashMap<String, AppData> appData = new HashMap<>();
   // only address based communication needed in app
   private SSLMessenger<?, JSONObject> messenger;
 
@@ -170,13 +170,13 @@ public class DistributedNoopApp implements Replicable, Reconfigurable {
             AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
   }
 
-  private static AppRequest.PacketType[] types = {
+  private static final AppRequest.PacketType[] TYPES = {
     AppRequest.PacketType.DEFAULT_APP_REQUEST,
     AppRequest.PacketType.ANOTHER_APP_REQUEST};
 
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
-    return new HashSet<IntegerPacketType>(Arrays.asList(types));
+    return new HashSet<>(Arrays.asList(TYPES));
   }
 
   @Override

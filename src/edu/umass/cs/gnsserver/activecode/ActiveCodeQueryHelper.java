@@ -38,10 +38,11 @@ import edu.umass.cs.utils.DelayProfiler;
 /**
  * This class is used for handling queries from
  * active code worker and interact with local DB.
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeQueryHelper {
+	
 	private ActiveDBInterface app;
 	
 	/**
@@ -63,7 +64,7 @@ public class ActiveCodeQueryHelper {
 		boolean success = false;
 		
 		try {
-			NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
+			NameRecord nameRecord = null; //NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
 			if(nameRecord.containsUserKey(field)) {
 				ValuesMap vm = nameRecord.getValuesMap();
 				valuesMapString = vm.toString();
@@ -89,7 +90,7 @@ public class ActiveCodeQueryHelper {
 		
 		try {
 			ValuesMap userJSON = new ValuesMap(new JSONObject(valuesMapString));
-			NameRecord nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
+			NameRecord nameRecord = null; //NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
 			nameRecord.updateNameRecord(field, null, null, 0, userJSON,
 		              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 			success = true;

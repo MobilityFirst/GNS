@@ -24,15 +24,19 @@ import edu.umass.cs.gnscommon.utils.JSONDotNotation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
+import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
 
+import java.util.List;
+import java.util.logging.Level;
 import org.json.JSONArray;
 
 /**
- * This is the key / value representation for keys and values when we are manipulating them in memory.
+ * This is the key / value representation for keys and values when
+ * we are manipulating them in memory.
  *
  * This class also has some code that supports backwards compatability with older code.
  * In particular, in some older code result values are always a list.
@@ -40,8 +44,6 @@ import org.json.JSONArray;
  * @author westy
  */
 public class ValuesMap extends JSONObject implements Summarizable {
-
-  private static boolean debuggingEnabled = false;
 
   /**
    * Creates an empty ValuesMap.
@@ -105,6 +107,15 @@ public class ValuesMap extends JSONObject implements Summarizable {
     }
   }
 
+  public List<String> getKeys() throws JSONException {
+    List<String> result = new ArrayList<>();
+    Iterator<?> keyIter = keys();
+    while (keyIter.hasNext()) {
+      result.add((String) keyIter.next());
+    }
+    return result;
+  }
+
   @Override
   /**
    * Returns true if the ValuesMap contains the key.
@@ -145,7 +156,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
         return null;
       }
     } catch (JSONException e) {
-      GNSConfig.getLogger().severe("Unable to parse JSON array: " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Unable to parse JSON array: {0}", e);
       e.printStackTrace();
       return new ResultValue();
     }
@@ -165,7 +176,7 @@ public class ValuesMap extends JSONObject implements Summarizable {
       //GNS.getLogger().severe("@@@@@AFTER PUT (key =" + key + " value=" + value + "): " + newContent.toString());
     } catch (JSONException e) {
       e.printStackTrace();
-      GNSConfig.getLogger().severe("Unable to add JSON array to JSON Object: " + e);
+      GNSConfig.getLogger().log(Level.SEVERE, "Unable to add JSON array to JSON Object: {0}", e);
     }
   }
 
@@ -189,7 +200,8 @@ public class ValuesMap extends JSONObject implements Summarizable {
         JSONDotNotation.putWithDotNotation(destination, key, super.get(key));
         somethingChanged = true;
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("Unable to write " + key + " field to ValuesMap:" + e);
+        GNSConfig.getLogger().log(Level.SEVERE,
+                "Unable to write {0} field to ValuesMap:{1}", new Object[]{key, e});
       }
     }
     return somethingChanged;
@@ -197,6 +209,6 @@ public class ValuesMap extends JSONObject implements Summarizable {
 
   @Override
   public Object getSummary() {
-	  return edu.umass.cs.utils.Util.truncate(ValuesMap.this.toString(), 64, 64).toString();
+    return edu.umass.cs.utils.Util.truncate(ValuesMap.this.toString(), 64, 64).toString();
   }
 }

@@ -39,7 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Basic AWS Route53 support.
+ * 
  * @author westy
  */
 public class Route53 {
@@ -80,7 +81,7 @@ public class Route53 {
 
   private static void createRecordSetFromHostedZone() {
 
-    List<ResourceRecord> records = new ArrayList<ResourceRecord>();
+    List<ResourceRecord> records = new ArrayList<>();
     ResourceRecord record = new ResourceRecord();
     record.setValue("http://www.marksdevserver.com");
     records.add(record);
@@ -92,7 +93,7 @@ public class Route53 {
     recordSet.setResourceRecords(records);
 
     // Create the Change
-    List<Change> changes = new ArrayList<Change>();
+    List<Change> changes = new ArrayList<>();
     Change change = new Change();
     change.setAction(ChangeAction.CREATE);
     change.setResourceRecordSet(recordSet);

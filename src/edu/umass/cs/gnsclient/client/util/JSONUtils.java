@@ -71,7 +71,7 @@ public class JSONUtils {
    * @throws JSONException
    ***********************************************************/
   public static Set<Integer> JSONArrayToSetInteger(JSONArray json) throws JSONException {
-    Set<Integer> set = new HashSet<Integer>();
+    Set<Integer> set = new HashSet<>();
 
     if (json == null) {
       return set;
@@ -91,7 +91,7 @@ public class JSONUtils {
    * @throws JSONException 
    ***********************************************************/
   public static Set<String> JSONArraytToSetAddress(JSONArray json) throws JSONException {
-    Set<String> set = new HashSet<String>();
+    Set<String> set = new HashSet<>();
 
     if (json == null) {
       return set;
@@ -106,7 +106,7 @@ public class JSONUtils {
   
   public static Set<String> JSONArrayToSetString(JSONArray json)
           throws JSONException {
-    Set<String> set = new HashSet<String>();
+    Set<String> set = new HashSet<>();
 
     if (json == null) {
       return set;

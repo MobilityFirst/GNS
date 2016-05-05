@@ -86,7 +86,7 @@ public class GuidList extends ConsoleCommand
     if (!commandText.isEmpty())
       gnsName = commandText;
     else
-      gnsName = module.getGnsClient().getGnsRemoteHost() + ":" + module.getGnsClient().getGnsRemotePort();
+      gnsName = module.getGnsClient().getGNSInstance();
 
     // Lookup user preferences
     console.printString("GUIDs stored locally for GNS " + gnsName + ":\n");

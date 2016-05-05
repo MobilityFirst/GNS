@@ -82,13 +82,6 @@ public interface RequestHandlerInterface {
   public LNSRequestInfo getRequestInfo(long id);
   
   /**
-   * Is debug mode on?
-   * 
-   * @return true if debug mode is on
-   */
-  public boolean isDebugMode();
-  
-  /**
    * Returns the closest active replica.
    * 
    * @param servers

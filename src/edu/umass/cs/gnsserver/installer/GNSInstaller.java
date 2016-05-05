@@ -76,7 +76,7 @@ public class GNSInstaller {
   private static final String INSTALLER_CONFIG_FILENAME = "installer_config";
   private static final String LNS_PROPERTIES_FILENAME = "lns.properties";
   private static final String NS_PROPERTIES_FILENAME = "ns.properties";
-  private static final String PAXOS_PROPERTIES_FILENAME = "gigapaxos.gnsApp.properties";
+  private static final String PAXOS_PROPERTIES_FILENAME = "gigapaxos.server.local.properties";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
   private static final String DEFAULT_JAVA_COMMAND = "java -ea -Xms1024M";

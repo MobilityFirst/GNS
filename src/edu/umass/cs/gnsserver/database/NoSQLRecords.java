@@ -19,24 +19,26 @@
  */
 package edu.umass.cs.gnsserver.database;
 
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Provides an interface for insert, update, remove and lookup operations in a nosql database.
+ * Provides an interface for insert, update, remove and lookup 
+ * operations in a nosql database.
  *
- * In some of the methods below we're going to make a distinction between *user* fields and *system* fields.
- * User fields are all stored in a single system field which we call the valuesMapField. Some of the methods
- * below let you read and write user fields just by specifying the short, unqualified name of the user field.
- * You could always access the fully qualified field if you know the magic syntax.
- *
- * And to make things more confusing some of the *user* fields are actually only used internally by the GNS.
- *
- * @author westy, Abhigyan
+ * @author Westy
  */
+// Fixme: This interface needs to be cleaned up lot and made more consistent.
+// In particular there is an extra layer of bullshit here. Many of the
+// calls return a JSONObject (or equivalent - hence the inconsistency) that CONTAINS
+// a ValuesMap instead of just returning JSONObject that IS a ValuesMap. 
+// Someone with courage needs to fix this unnecessary design element that was
+// added way back when by someone else. 
 public interface NoSQLRecords {
 
   /**
@@ -49,19 +51,7 @@ public interface NoSQLRecords {
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
   public void insert(String collection, String name, JSONObject value)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
-          edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
-
-  /**
-   * Do a bulk insert of a bunch of documents into the database.
-   *
-   * @param collection collection to be inserted into.
-   * @param values the valueslist of records to be inserted
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
-   */
-  public void bulkInsert(String collection, ArrayList<JSONObject> values)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException,
           edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 
   /**
@@ -74,44 +64,26 @@ public interface NoSQLRecords {
    * @throws RecordNotFoundException
    */
   public JSONObject lookupEntireRecord(String collection, String name)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
-          edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-
-  /**
-   * For the record with given name, return the values of given fields in form of a HashMap.
-   *
-   * @param collection the name of the collection
-   * @param name the name of the record
-   * @param nameField
-   * @param fields the fields
-   * @return a hashmap of ColumnField to Objects
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
-   */
-  public abstract HashMap<ColumnField, Object> lookupMultipleSystemFields(String collection, String name,
-          ColumnField nameField, ArrayList<ColumnField> fields)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
+          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException,
           edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 
   /**
    * For record with given name, return the values of given fields and from the values map field of the record,
    * return the values of given keys as a HashMap.
    *
-   * @param collection the name of the collection
-   * @param name the name of the record
+   * @param collectionName
+   * @param guid
    * @param nameField
-   * @param fields the fields
    * @param valuesMapField
    * @param valuesMapKeys
    * @return a hashmap of ColumnField to Objects
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
    */
-  public abstract HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collection, String name, 
-          ColumnField nameField, ArrayList<ColumnField> fields,
-          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException, 
-          edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+  // FIXME: Why does this still have valuesMapField
+  public HashMap<ColumnField, Object> lookupSomeFields(String collectionName,
+          String guid, ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+          throws RecordNotFoundException, FailedDBOperationException;
 
   /**
    * Returns true if a record with the given name exists, false otherwise.
@@ -135,72 +107,31 @@ public interface NoSQLRecords {
           edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
-   * Update the record (row) with the given name using the JSONObject.
-   *
-   * @param collection the name of the collection
-   * @param name the name of the record
-   * @param value
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public void update(String collection, String name, JSONObject value) throws
-          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
-  /**
    * For the record with given name, replace the values of given fields to the given values.
    *
    * @param collection the name of the collection
    * @param name the name of the record
-   * @param nameField
-   * @param fields the fields
-   * @param values
+   * @param valuesMap
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
-          ArrayList<Object> values) throws
+  public abstract void updateEntireRecord(String collection, String name,
+          ValuesMap valuesMap) throws
           edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
-   * For the record with given name, replace the values of given fields to the given values,
-   * and in the values map field of the record, replace the values of given keys to the given values.
+   * THE ONLY METHOD THAT CURRENTLY SUPPORTS WRITING USER JSON OBJECTS AS VALUES IN THE VALUES MAP.
+   * ALSO SUPPORTS DOT NOTATION.
    *
-   * @param collection the name of the collection
-   * @param name the name of the record
-   * @param nameField 
-   * @param fields the fields
-   * @param values
+   * @param collectionName
+   * @param guid
    * @param valuesMapField
    * @param valuesMapKeys
    * @param valuesMapValues
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+   * @throws FailedDBOperationException
    */
-  public abstract void update(String collection, String name, ColumnField nameField, ArrayList<ColumnField> fields,
-          ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws
-          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
-  /**
-   * Updates the record indexed by name conditionally. The condition specified by
-   * conditionField whose value must be equal to conditionValue.
-   * Didn't write this so not sure about all the other arguments.
-   *
-   * @param collectionName the name of the collection
-   * @param guid the guid
-   * @param nameField
-   * @param conditionField
-   * @param conditionValue
-   * @param fields the fields
-   * @param values
-   * @param valuesMapField
-   * @param valuesMapKeys
-   * @param valuesMapValues
-   * @return Returns true if the update happened, false otherwise.
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public abstract boolean updateConditional(String collectionName, String guid, ColumnField nameField,
-          ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values,
+  public void updateIndividualFields(String collectionName, String guid,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
-          ArrayList<Object> valuesMapValues) throws
-          edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+          ArrayList<Object> valuesMapValues) throws FailedDBOperationException;
 
   /**
    * For record with name, removes (unset) keys in list <code>mapKeys</code> from the map <code>mapField</code>.
@@ -215,26 +146,13 @@ public interface NoSQLRecords {
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
-   * Returns an iterator for all the rows in the collection with only the columns in fields filled in except
-   * the NAME (AKA the primary key) is always there.
-   *
-   * @param collection the name of the collection
-   * @param nameField the name of the field
-   * @param fields the fields
-   * @return an AbstractRecordCursor
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public AbstractRecordCursor getAllRowsIterator(String collection, ColumnField nameField, ArrayList<ColumnField> fields) 
-          throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
-  /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @param collection
    * @return an AbstractRecordCursor
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public AbstractRecordCursor getAllRowsIterator(String collection) 
+  public AbstractRecordCursor getAllRowsIterator(String collection)
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
@@ -289,26 +207,18 @@ public interface NoSQLRecords {
    * @return an AbstractRecordCursor
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) 
+  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query)
           throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 
   /**
-   * Sets the collection back to an initial empty state with indexes also initialized.
-   *
-   * @param collection the name of the collection
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public void reset(String collection) throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-
-  /**
    * Creates an index for the given field.
-   * 
+   *
    * @param collectionName
    * @param field
-   * @param index 
+   * @param index
    */
   public void createIndex(String collectionName, String field, String index);
-  
+
   /**
    * Return a string representation of the record set.
    *

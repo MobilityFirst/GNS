@@ -19,9 +19,9 @@
  */
 package edu.umass.cs.gnsserver.main;
 
-import edu.umass.cs.gnsserver.utils.Logging;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
@@ -64,8 +64,7 @@ public class GNSConfig {
    * https://docs.mongodb.org/manual/reference/limits/#bson-documents
    */
   public static int MAXGUIDS = 300000;
-  
-  
+
   // This is designed so we can run multiple NSs on the same host if needed
   /**
    * Master port types.
@@ -79,7 +78,6 @@ public class GNSConfig {
      * Port used to requests to a reconfigurator replica.
      */
     RECONFIGURATOR_PORT(1),
-    
     // Reordered these so they work with the new GNSApp
     /**
      * Port used to send requests to a name server.
@@ -89,10 +87,6 @@ public class GNSConfig {
      * Port used to send admin requests to a name server.
      */
     NS_ADMIN_PORT(4),
-    /**
-     * Port used to send pings requests to a name server.
-     */
-    NS_PING_PORT(5),
     // sub ports
     /**
      * Port used to send requests to a command pre processor.
@@ -101,11 +95,7 @@ public class GNSConfig {
     /**
      * Port used to send admin requests to a command pre processor.
      */
-    CCP_ADMIN_PORT(7),
-    /**
-     * Port used to send pings to a command pre processor.
-     */
-    CCP_PING_PORT(8);
+    CCP_ADMIN_PORT(7);
 
     //
     int offset;
@@ -116,7 +106,7 @@ public class GNSConfig {
 
     /**
      * Returns the max port offset.
-     * 
+     *
      * @return an int
      */
     public static int maxOffset() {
@@ -131,7 +121,7 @@ public class GNSConfig {
 
     /**
      * Returns the offset for this port.
-     * 
+     *
      * @return an int
      */
     public int getOffset() {
@@ -166,26 +156,9 @@ public class GNSConfig {
    */
   public static int DEFAULT_MAX_QUERY_WAIT_TIME = 16000; // was 10
 
-  // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
-  // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE
-  // OR IN A CONFIG FILE
-  /**
-   * Logging level for main logger
-   */
-  //public static String fileLoggingLevel = "INFO"; // should be INFO for production use
-  public static String fileLoggingLevel = "SEVERE";
-  /**
-   * Console output level for main logger
-   */
-  //public static String consoleOutputLevel = "INFO"; //should be INFO for production use
-  public static String consoleOutputLevel = "SEVERE"; 
 
-  private final static Logger LOGGER = Logger.getLogger(GNSConfig.class.getName());
+  private final static Logger LOG = Logger.getLogger(GNSConfig.class.getName());
 
-  /**
-   * True if the logger has been initialized.
-   */
-  private static boolean loggerInitRun = false;
 
   /**
    * Returns the master GNS logger.
@@ -193,12 +166,7 @@ public class GNSConfig {
    * @return the master GNS logger
    */
   public static Logger getLogger() {
-    if (!loggerInitRun) {
-      System.out.println("Setting Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
-      Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
-      loggerInitRun = true;
-    }
-    return LOGGER;
+    return LOG;
   }
 
   /**
@@ -208,19 +176,41 @@ public class GNSConfig {
    */
   public static String readBuildVersion() {
     String result = null;
+    Enumeration<URL> resources = null;
     try {
-      Class clazz = GNSConfig.class;
-      String className = clazz.getSimpleName() + ".class";
-      String classPath = clazz.getResource(className).toString();
-      if (classPath.startsWith("jar")) {
-        String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1)
-                + "/META-INF/MANIFEST.MF";
-        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-        Attributes attr = manifest.getMainAttributes();
-        result = attr.getValue("Build-Version");
+      resources = GNSConfig.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+    } catch (IOException E) {
+      // handle
+    }
+    if (resources != null) {
+      while (resources.hasMoreElements()) {
+        try {
+          Manifest manifest = new Manifest(resources.nextElement().openStream());
+          // check that this is your manifest and do what you need or get the next one
+          Attributes attr = manifest.getMainAttributes();
+          result = attr.getValue("Build-Version");
+        } catch (IOException E) {
+          // handle
+        }
       }
-    } catch (IOException e) {
     }
     return result;
   }
+
+//    String result = null;
+//    try {
+//      Class<?> clazz = GNSConfig.class;
+//      String className = clazz.getSimpleName() + ".class";
+//      String classPath = clazz.getResource(className).toString();
+//      if (classPath.startsWith("jar")) {
+//        String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1)
+//                + "/META-INF/MANIFEST.MF";
+//        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+//        Attributes attr = manifest.getMainAttributes();
+//        result = attr.getValue("Build-Version");
+//      }
+//    } catch (IOException e) {
+//    }
+//    return result;
+// }
 }

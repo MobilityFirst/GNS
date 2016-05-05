@@ -19,14 +19,14 @@
  */
 package edu.umass.cs.gnsserver.installer;
 
-import edu.umass.cs.gnscommon.exceptions.server.GnsServerException;
+import edu.umass.cs.gnscommon.exceptions.server.ServerException;
 
 /**
  * This class defines a HostConfigParseException
  *
  * @author <a href="mailto:westy@cs.umass.edu">Westy</a>
  */
-public class HostConfigParseException extends GnsServerException {
+public class HostConfigParseException extends ServerException {
 
   /**
    * Creates a new <code>HostConfigParseException</code> object

@@ -38,19 +38,23 @@ import jline.ArgumentCompletor;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.FileNameCompletor;
-import jline.History;
 import jline.SimpleCompletor;
 import org.json.JSONObject;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.commands.ConsoleCommand;
-import edu.umass.cs.gnsclient.console.commands.GnsConnect;
+import edu.umass.cs.gnsclient.console.commands.Connect;
 import edu.umass.cs.gnsclient.console.commands.GuidUse;
 import edu.umass.cs.gnsclient.console.commands.Help;
+import edu.umass.cs.gnsclient.console.commands.History;
 import edu.umass.cs.gnsclient.console.commands.Quit;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import org.json.JSONException;
 
 /**
  * This class defines a ConsoleModule
@@ -60,19 +64,19 @@ import edu.umass.cs.gnsclient.console.commands.Quit;
  */
 public class ConsoleModule {
 
-  ConsoleReader console;
-  TreeSet<ConsoleCommand> commands;
-  boolean quit = false;
+  private ConsoleReader console;
+  private TreeSet<ConsoleCommand> commands;
+  private boolean quit = false;
   private boolean useGnsDefaults = true;
   @SuppressWarnings("javadoc")
   protected Completor consoleCompletor;
   private String promptString = CONSOLE_PROMPT + "not connected to GNS>";
-  private UniversalTcpClient gnsClient;
+  private GNSClientCommands gnsClient;
   private GuidEntry currentGuid;
   // might be a better way to do this, but for now
   private boolean accountVerified;
   private boolean silent;
-  
+
   /**
    * Prompt to prepend to the console message prompts
    */
@@ -81,8 +85,6 @@ public class ConsoleModule {
    * location of the default command lists for the console modules
    */
   public static String DEFAULT_COMMAND_PROPERTIES_FILE = "edu/umass/cs/gnsclient/console/console.properties";
-
-  private static boolean debuggingEnabled = false;
 
   /**
    * Creates a new <code>ConsoleModule.java</code> object
@@ -93,7 +95,7 @@ public class ConsoleModule {
     this.console = console;
     this.commands = new TreeSet<ConsoleCommand>();
     commands.add(new Help(this));
-    commands.add(new edu.umass.cs.gnsclient.console.commands.History(this));
+    commands.add(new History(this));
     commands.add(new Quit(this));
     this.loadCommands();
     this.loadCompletor();
@@ -103,27 +105,22 @@ public class ConsoleModule {
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
-        if (debuggingEnabled) {
-          GNSClientConfig.getLogger().info("Saving history.");
-        }
+        GNSClientConfig.getLogger().fine("Saving history.");
         long startTime = System.currentTimeMillis();
         //storeHistory();
-        if (debuggingEnabled) {
-          GNSClientConfig.getLogger().info("Save history took " + (System.currentTimeMillis() - startTime) + "ms");
-        }
+        GNSClientConfig.getLogger().log(Level.FINE, "Save history took {0}ms",
+                (System.currentTimeMillis() - startTime));
       }
     });
   }
 
-  private History loadHistory() {
+  private jline.History loadHistory() {
     jline.History jHistory = new jline.History();
     try {
       Preferences prefs = Preferences.userRoot().node(this.getClass().getName());
       String[] historyKeys = prefs.keys();
       Arrays.sort(historyKeys, 0, historyKeys.length);
-      if (debuggingEnabled) {
-        GNSClientConfig.getLogger().info("Loading history. Size is " + historyKeys.length);
-      }
+      GNSClientConfig.getLogger().log(Level.INFO, "Loading history. Size is {0}", historyKeys.length);
       for (int i = 0; i < historyKeys.length; i++) {
         String key = historyKeys[i];
         String value = prefs.get(key, ""); //$NON-NLS-1$
@@ -212,13 +209,13 @@ public class ConsoleModule {
         clazz = Class.forName(commandClass);
         Constructor<?> constructor;
         try {
-          constructor = clazz.getConstructor(new Class[]{this.getClass()});
+          constructor = clazz.getConstructor(new Class<?>[]{this.getClass()});
         } catch (NoSuchMethodException e) {
-          constructor = clazz.getConstructor(new Class[]{ConsoleModule.class});
+          constructor = clazz.getConstructor(new Class<?>[]{ConsoleModule.class});
         }
         ConsoleCommand command = (ConsoleCommand) constructor.newInstance(new Object[]{this});
         commands.add(command);
-      } catch (Exception e) {
+      } catch (ClassNotFoundException | SecurityException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
         // fail silently: the command won't be added to the commands list
       }
     }
@@ -233,13 +230,25 @@ public class ConsoleModule {
    * command classes corresponding to the module identified by
    */
   protected String loadCommandsFromProperties(String moduleID) {
+
+    //System.out.println(this.getClass().getClassLoader().getResource(".").getPath());
     Properties props = new Properties();
     try {
       String propertiesFile = System.getProperty("console.commands", DEFAULT_COMMAND_PROPERTIES_FILE);
-      //GNSClient.getLogger().info("Loading commands from " + propertiesFile);
-      props.load(ClassLoader.getSystemResourceAsStream(propertiesFile));
+      GNSClientConfig.getLogger().log(Level.INFO, "Loading commands from {0}", propertiesFile);
+      InputStream is = ClassLoader.getSystemResourceAsStream(propertiesFile);
+//      GNSClientConfig.getLogger().warning("THREAD: "
+//              + Thread.currentThread().getContextClassLoader().getResourceAsStream(propertiesFile));
+      if (is == null) {
+        GNSClientConfig.getLogger().log(Level.WARNING, "Unable to load from {0}", propertiesFile);
+        return null;
+      }
+      props.load(is);
     } catch (IOException e) {
       // fail silently: no commands will be loaded
+    } catch (RuntimeException e) {
+      GNSClientConfig.getLogger().log(Level.INFO, "Unable to load commands: {0}", e.getMessage());
+      e.printStackTrace();
     }
     String commandClassesAsString = props.getProperty(moduleID, "");
     return commandClassesAsString;
@@ -249,10 +258,10 @@ public class ConsoleModule {
    * Loads the commands for this module
    */
   protected void loadCompletor() {
-    List<Completor> completors = new LinkedList<Completor>();
+    List<Completor> completors = new LinkedList<>();
     int size = commands.size();
     if (size > 0) {
-      TreeSet<String> set = new TreeSet<String>();
+      TreeSet<String> set = new TreeSet<>();
       Iterator<ConsoleCommand> it = commands.iterator();
       while (it.hasNext()) {
         set.add(it.next().getCommandName());
@@ -361,9 +370,7 @@ public class ConsoleModule {
 
       }
     }
-    if (debuggingEnabled) {
-      GNSClientConfig.getLogger().info("Quitting");
-    }
+    GNSClientConfig.getLogger().fine("Quitting");
   }
 
   /**
@@ -377,11 +384,11 @@ public class ConsoleModule {
       return;
     }
     try {
-      new GnsConnect(this).parse(gns.replace(":", " "));
+      new Connect(this).parse(gns.replace(":", " "));
     } catch (Exception e) {
       printString("Couldn't connect to default GNS " + gns);
     }
-    GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsHostPort());
+    GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsInstance());
     printString("Default GUID: " + guid + "\n");
     if (guid == null) {
       return;
@@ -393,8 +400,8 @@ public class ConsoleModule {
     }
   }
 
-  boolean lastWasCR = false;
-  List<Byte> currentLine = new ArrayList<Byte>();
+  private boolean lastWasCR = false;
+  private List<Byte> currentLine = new ArrayList<>();
 
   /**
    * Implements SEQUOIA-887. We would like to create a BufferedReader to use its
@@ -440,7 +447,7 @@ public class ConsoleModule {
     // EOF also counts as an end of line. Not sure this is what JLine does but
     // it looks good.
     while (ch != -1 && ch != '\n' && ch != '\r') {
-      currentLine.add(new Byte((byte) ch));
+      currentLine.add((byte) ch);
       ch = jlineInternal.read();
     }
 
@@ -452,7 +459,7 @@ public class ConsoleModule {
     byte[] encoded = new byte[currentLine.size()];
     Iterator<Byte> it = currentLine.iterator();
     for (int i = 0; it.hasNext(); i++) {
-      encoded[i] = it.next().byteValue();
+      encoded[i] = it.next();
     }
 
     /**
@@ -489,9 +496,7 @@ public class ConsoleModule {
     StringTokenizer st = new StringTokenizer(commandLine);
     if (st.hasMoreTokens()) {
       ConsoleCommand command = findConsoleCommand(commandLine, hashCommands);
-      if (debuggingEnabled) {
-        GNSClientConfig.getLogger().info("Command:" + command);
-      }
+      GNSClientConfig.getLogger().log(Level.FINE, "Command:{0}", command);
       if (command != null) {
         command.execute(commandLine.substring(command.getCommandName().length()));
         return;
@@ -572,7 +577,7 @@ public class ConsoleModule {
    *
    * @return Returns the gnsClient.
    */
-  public UniversalTcpClient getGnsClient() {
+  public GNSClientCommands getGnsClient() {
     return gnsClient;
   }
 
@@ -581,7 +586,7 @@ public class ConsoleModule {
    *
    * @param gnsClient A valid GNS connection
    */
-  public void setGnsClient(UniversalTcpClient gnsClient) {
+  public void setGnsClient(GNSClientCommands gnsClient) {
     this.gnsClient = gnsClient;
   }
 
@@ -630,15 +635,13 @@ public class ConsoleModule {
     if (currentGuid == null) {
       printString("Select the GUID to use first with guid_use.\n");
       return false;
-    } else {
-      if (!accountVerified) {
-        if (checkGnsIsAccountVerified(currentGuid)) {
-          accountVerified = true;
-          return true;
-        }
-        printString(currentGuid.getEntityName() + " is not verified.\n");
-        return false;
+    } else if (!accountVerified) {
+      if (checkGnsIsAccountVerified(currentGuid)) {
+        accountVerified = true;
+        return true;
       }
+      printString(currentGuid.getEntityName() + " is not verified.\n");
+      return false;
     }
     return true;
   }
@@ -666,7 +669,7 @@ public class ConsoleModule {
    * @param guid the GUID to set as default GUID
    */
   public void setDefaultGuidAndCheckForVerified(GuidEntry guid) {
-    KeyPairUtils.setDefaultGuidEntry(getGnsHostPort(), guid.getEntityName());
+    KeyPairUtils.setDefaultGuidEntry(getGnsInstance(), guid.getEntityName());
     if (currentGuid == null) {
       currentGuid = guid;
     }
@@ -683,11 +686,11 @@ public class ConsoleModule {
    *
    * @return GNS host and port
    */
-  public String getGnsHostPort() {
+  public String getGnsInstance() {
     if (gnsClient == null) {
       return null;
     } else {
-      return gnsClient.getGnsRemoteHost() + ":" + gnsClient.getGnsRemotePort();
+      return gnsClient.getGNSInstance();
     }
   }
 
@@ -701,15 +704,15 @@ public class ConsoleModule {
     try {
       JSONObject json = gnsClient.lookupAccountRecord(guid.getGuid());
       if (json != null) {
-        return json.getBoolean(GnsProtocol.ACCOUNT_RECORD_VERIFIED);
+        return json.getBoolean(GNSCommandProtocol.ACCOUNT_RECORD_VERIFIED);
       } else { // This is not an account GUID but make sure the GUID is valid
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
       }
-    } catch (Exception e) {
+    } catch (IOException | ClientException | JSONException e) {
       // This might not be an account GUID let's check if the GUID is valid
       try {
         return gnsClient.publicKeyLookupFromGuid(guid.getGuid()) != null;
-      } catch (Exception e1) {
+      } catch (ClientException | IOException e1) {
         return false;
       }
     }
@@ -732,7 +735,7 @@ public class ConsoleModule {
    * This class defines a CommandDelimiter used to delimit a command from user
    * input
    */
-  class CommandDelimiter extends ArgumentCompletor.AbstractArgumentDelimiter {
+  private class CommandDelimiter extends ArgumentCompletor.AbstractArgumentDelimiter {
 
     /**
      * @see jline.ArgumentCompletor.AbstractArgumentDelimiter#isDelimiterChar(java.lang.String,

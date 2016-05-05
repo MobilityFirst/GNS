@@ -76,9 +76,9 @@ public class AWSStatusCheck {
    */
   private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
 
-  static AmazonEC2 ec2;
-  static AmazonS3 s3;
-  static AmazonSimpleDB sdb;
+  private static AmazonEC2 ec2;
+  private static AmazonS3 s3;
+  private static AmazonSimpleDB sdb;
 
   /**
    *
@@ -92,14 +92,14 @@ public class AWSStatusCheck {
   }
   private static ArrayList<String> endpoints
           = new ArrayList<>(Arrays.asList(
-                          "ec2.us-east-1.amazonaws.com",
-                          "ec2.us-west-1.amazonaws.com",
-                          "ec2.us-west-2.amazonaws.com",
-                          "ec2.eu-west-1.amazonaws.com",
-                          "ec2.eu-west-2.amazonaws.com",
-                          "ec2.ap-southeast-1.amazonaws.com",
-                          "ec2.ap-northeast-1.amazonaws.com",
-                          "ec2.sa-east-1.amazonaws.com"));
+                  "ec2.us-east-1.amazonaws.com",
+                  "ec2.us-west-1.amazonaws.com",
+                  "ec2.us-west-2.amazonaws.com",
+                  "ec2.eu-west-1.amazonaws.com",
+                  "ec2.eu-west-2.amazonaws.com",
+                  "ec2.ap-southeast-1.amazonaws.com",
+                  "ec2.ap-northeast-1.amazonaws.com",
+                  "ec2.sa-east-1.amazonaws.com"));
 
   public static void main(String[] args) throws Exception {
 

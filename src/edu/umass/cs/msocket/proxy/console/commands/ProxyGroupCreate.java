@@ -31,11 +31,11 @@ import org.json.JSONArray;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
 /**
@@ -89,7 +89,7 @@ public class ProxyGroupCreate extends ConsoleCommand
     try
     {
       String proxyGroupName = commandText.trim();
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       try
       {
@@ -104,8 +104,7 @@ public class ProxyGroupCreate extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for proxy group " + proxyGroupName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGnsRemoteHost() + ":"
-          + module.getGnsClient().getGnsRemotePort(), proxyGroupName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), proxyGroupName);
 
       if (myGuid == null)
       {
@@ -114,24 +113,24 @@ public class ProxyGroupCreate extends ConsoleCommand
         myGuid = gnsClient.guidCreate(module.getAccountGuid(), proxyGroupName);
         // Allow anyone to access the group membership that contains verified
         // proxies
-        gnsClient.groupAddMembershipReadPermission(myGuid, GnsProtocol.ALL_USERS);
+        gnsClient.groupAddMembershipReadPermission(myGuid, GNSCommandProtocol.ALL_USERS);
       }
 
       // Create the fields containing the GUID lists
-      createField(gnsClient, myGuid, GnsConstants.ACTIVE_PROXY_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.SUSPICIOUS_PROXY_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.INACTIVE_PROXY_FIELD, false);
+      createField(gnsClient, myGuid, Constants.ACTIVE_PROXY_FIELD, false);
+      createField(gnsClient, myGuid, Constants.SUSPICIOUS_PROXY_FIELD, false);
+      createField(gnsClient, myGuid, Constants.INACTIVE_PROXY_FIELD, false);
 
-      createField(gnsClient, myGuid, GnsConstants.ACTIVE_WATCHDOG_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.SUSPICIOUS_WATCHDOG_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.INACTIVE_WATCHDOG_FIELD, false);
+      createField(gnsClient, myGuid, Constants.ACTIVE_WATCHDOG_FIELD, false);
+      createField(gnsClient, myGuid, Constants.SUSPICIOUS_WATCHDOG_FIELD, false);
+      createField(gnsClient, myGuid, Constants.INACTIVE_WATCHDOG_FIELD, false);
 
-      createField(gnsClient, myGuid, GnsConstants.ACTIVE_LOCATION_FIELD, false);
+      createField(gnsClient, myGuid, Constants.ACTIVE_LOCATION_FIELD, false);
       // Open the field in READ to everyone so that mSocket clients can look it
       // up
-      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, GnsConstants.ACTIVE_LOCATION_FIELD, null);
-      createField(gnsClient, myGuid, GnsConstants.SUSPICIOUS_LOCATION_FIELD, false);
-      createField(gnsClient, myGuid, GnsConstants.INACTIVE_PROXY_FIELD, false);
+      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.ACTIVE_LOCATION_FIELD, null);
+      createField(gnsClient, myGuid, Constants.SUSPICIOUS_LOCATION_FIELD, false);
+      createField(gnsClient, myGuid, Constants.INACTIVE_PROXY_FIELD, false);
 
       if (!module.isSilent())
         console.printString("We are guid " + myGuid.getGuid() + "\n");
@@ -145,7 +144,7 @@ public class ProxyGroupCreate extends ConsoleCommand
     }
   }
 
-  private void createField(UniversalTcpClient gnsClient, GuidEntry myGuid, String field, boolean writeAll)
+  private void createField(GNSClientCommands gnsClient, GuidEntry myGuid, String field, boolean writeAll)
       throws Exception
   {
     try
@@ -156,8 +155,8 @@ public class ProxyGroupCreate extends ConsoleCommand
     {
       gnsClient.fieldCreateList(myGuid.getGuid(), field, new JSONArray(), myGuid);
     }
-    gnsClient.aclAdd(GnsProtocol.AccessType.READ_WHITELIST, myGuid, field, GnsProtocol.ALL_USERS);
+    gnsClient.aclAdd(GNSCommandProtocol.AccessType.READ_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
     if (writeAll)
-      gnsClient.aclAdd(GnsProtocol.AccessType.WRITE_WHITELIST, myGuid, field, GnsProtocol.ALL_USERS);
+      gnsClient.aclAdd(GNSCommandProtocol.AccessType.WRITE_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
   }
 }

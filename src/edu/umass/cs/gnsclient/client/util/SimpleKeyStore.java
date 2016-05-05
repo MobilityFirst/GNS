@@ -31,6 +31,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -46,7 +47,7 @@ public class SimpleKeyStore {
 
   public static final int MAX_KEY_LENGTH = 2048;
 
-  private static final String tableName = "GNS_CLIENT_KEYSTORE"; // Derby uses all upcase for table names
+  private static final String TABLE_NAME = "GNS_CLIENT_KEYSTORE"; // Derby uses all upcase for table names
   private static final String TABLE_CREATE = "(KEYFIELD varchar(2048) not null, "
           + "VALUEFIELD varchar(15360), "
           + "READTIME TIMESTAMP, "
@@ -56,31 +57,28 @@ public class SimpleKeyStore {
           + "primary key (KEYFIELD))";
 
   private static final String UPDATE_TRIGGER = "CREATE TRIGGER updateTimestamp "
-          + "AFTER UPDATE OF VALUEFIELD ON " + tableName + " "
+          + "AFTER UPDATE OF VALUEFIELD ON " + TABLE_NAME + " "
           + "REFERENCING OLD AS EXISTING "
           + "FOR EACH ROW MODE DB2SQL "
-          + "UPDATE " + tableName + " SET UPDATETIME = CURRENT_TIMESTAMP "
+          + "UPDATE " + TABLE_NAME + " SET UPDATETIME = CURRENT_TIMESTAMP "
           + "WHERE KEYFIELD = EXISTING.KEYFIELD";
 
   private DerbyControl derbyControl = new DerbyControl();
   private Connection conn = null;
 
-  private boolean debuggingEnabled = false;
-
   /**
    * Creates a new instance of a key store.
    */
   public SimpleKeyStore() {
-    if (debuggingEnabled) {
-      GNSClientConfig.getLogger().info("Attempting to connect and create table " + tableName);
-    }
+    GNSClientConfig.getLogger().fine("Attempting to connect and create table " + TABLE_NAME);
+
     conn = derbyControl.start();
     if (conn == null) {
-      GNSClientConfig.getLogger().info("Problem starting derby!");
+      GNSClientConfig.getLogger().severe("Problem starting derby!");
       return;
     }
     // We create a table...
-    maybeCreateTable(tableName, TABLE_CREATE, UPDATE_TRIGGER);
+    maybeCreateTable(TABLE_NAME, TABLE_CREATE, UPDATE_TRIGGER);
 
   }
 
@@ -100,14 +98,14 @@ public class SimpleKeyStore {
   public void put(String key, String value) {
     try {
       if (get(key, null) != null) {
-        PreparedStatement updateStatement = conn.prepareStatement("UPDATE " + tableName
+        PreparedStatement updateStatement = conn.prepareStatement("UPDATE " + TABLE_NAME
                 + " SET VALUEFIELD=? WHERE KEYFIELD=?");
         updateStatement.setString(1, value);
         updateStatement.setString(2, key);
         updateStatement.executeUpdate();
         //conn.commit();
       } else {
-        PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO " + tableName
+        PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO " + TABLE_NAME
                 + " VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)");
         insertStatement.setString(1, key);
         insertStatement.setString(2, value);
@@ -132,7 +130,7 @@ public class SimpleKeyStore {
     String result = def;
     ResultSet rs = null;
     try {
-      PreparedStatement getStatement = conn.prepareStatement("select VALUEFIELD from " + tableName + " where KEYFIELD=?");
+      PreparedStatement getStatement = conn.prepareStatement("select VALUEFIELD from " + TABLE_NAME + " where KEYFIELD=?");
       getStatement.setString(1, key);
       rs = getStatement.executeQuery();
       if (rs.next()) {
@@ -152,7 +150,7 @@ public class SimpleKeyStore {
 
   private void updateReadTime(String key) throws SQLException {
     if (!suppressUpdateRead) {
-      PreparedStatement updateStatement = conn.prepareStatement("UPDATE " + tableName
+      PreparedStatement updateStatement = conn.prepareStatement("UPDATE " + TABLE_NAME
               + " SET READTIME=? WHERE KEYFIELD=?");
       updateStatement.setTimestamp(1, new Timestamp(new Date().getTime()));
       updateStatement.setString(2, key);
@@ -163,11 +161,11 @@ public class SimpleKeyStore {
   public Date updateTime(String key) {
     ResultSet rs = null;
     try {
-      PreparedStatement getStatement = conn.prepareStatement("select UPDATETIME from " + tableName + " where KEYFIELD=?");
+      PreparedStatement getStatement = conn.prepareStatement("select UPDATETIME from " + TABLE_NAME + " where KEYFIELD=?");
       getStatement.setString(1, key);
       rs = getStatement.executeQuery();
       if (rs.next()) {
-        return (Date) rs.getTimestamp("UPDATETIME");
+        return rs.getTimestamp("UPDATETIME");
       }
     } catch (SQLException e) {
       DerbyControl.printSQLException(e);
@@ -180,11 +178,11 @@ public class SimpleKeyStore {
   public Date readTime(String key) {
     ResultSet rs = null;
     try {
-      PreparedStatement getStatement = conn.prepareStatement("select READTIME from " + tableName + " where KEYFIELD=?");
+      PreparedStatement getStatement = conn.prepareStatement("select READTIME from " + TABLE_NAME + " where KEYFIELD=?");
       getStatement.setString(1, key);
       rs = getStatement.executeQuery();
       if (rs.next()) {
-        return (Date) rs.getTimestamp("READTIME");
+        return rs.getTimestamp("READTIME");
       }
     } catch (SQLException e) {
       DerbyControl.printSQLException(e);
@@ -201,7 +199,7 @@ public class SimpleKeyStore {
    */
   public void remove(String key) {
     try {
-      PreparedStatement removeStatement = conn.prepareStatement("delete from " + tableName + " where KEYFIELD=?");
+      PreparedStatement removeStatement = conn.prepareStatement("delete from " + TABLE_NAME + " where KEYFIELD=?");
       removeStatement.setString(1, key);
       removeStatement.executeUpdate();
       //conn.commit();
@@ -215,7 +213,7 @@ public class SimpleKeyStore {
    */
   public void clear() {
     try {
-      PreparedStatement clearStatement = conn.prepareStatement("truncate table " + tableName);
+      PreparedStatement clearStatement = conn.prepareStatement("truncate table " + TABLE_NAME);
       clearStatement.executeUpdate();
       //conn.commit();
     } catch (SQLException e) {
@@ -226,11 +224,13 @@ public class SimpleKeyStore {
   /**
    * Returns all of the keys that have an associated value.
    * (The returned array will be of size zero if there are none.)
+   *
+   * @return all the keys
    */
   public String[] keys() {
     List<String> keys = new ArrayList<>();
     try {
-      PreparedStatement keysStatement = conn.prepareStatement("select KEYFIELD from " + tableName);
+      PreparedStatement keysStatement = conn.prepareStatement("select KEYFIELD from " + TABLE_NAME);
       ResultSet rs = keysStatement.executeQuery();
       while (rs.next()) {
         keys.add(rs.getString(1));
@@ -279,17 +279,13 @@ public class SimpleKeyStore {
       Statement s = conn.createStatement();
       if (!tableExists(tableName)) {
         String statement = "CREATE TABLE " + tableName + " " + creationString;
-        if (debuggingEnabled) {
-          GNSClientConfig.getLogger().info("Created table " + tableName);
-        }
+        GNSClientConfig.getLogger().log(Level.FINE, "Created table {0}", tableName);
         s.executeUpdate(statement);
         // Add the trigger
         Statement t = conn.createStatement();
         t.executeUpdate(triggerStatement);
       } else {
-        if (debuggingEnabled) {
-          GNSClientConfig.getLogger().info("Found table " + tableName);
-        }
+        GNSClientConfig.getLogger().log(Level.FINE, "Found table {0}", tableName);
       }
     } catch (SQLException e) {
       DerbyControl.printSQLException(e);
@@ -301,9 +297,7 @@ public class SimpleKeyStore {
       Statement s = conn.createStatement();
       if (tableExists(tableName)) {
         String statement = "DROP TABLE " + tableName;
-        if (debuggingEnabled) {
-          GNSClientConfig.getLogger().info("Statement:" + statement);
-        }
+        GNSClientConfig.getLogger().log(Level.FINE, "Statement:{0}", statement);
         s.executeUpdate(statement);
       }
     } catch (SQLException e) {
@@ -317,9 +311,7 @@ public class SimpleKeyStore {
       ResultSet resultSet = meta.getColumns(null, null, null, null);
       while (resultSet.next()) {
         if (!resultSet.getString("TABLE_NAME").startsWith("SYS")) {
-          if (debuggingEnabled) {
-            GNSClientConfig.getLogger().info("TABLE: " + resultSet.getString("TABLE_NAME"));
-          }
+          GNSClientConfig.getLogger().log(Level.FINE, "TABLE: {0}", resultSet.getString("TABLE_NAME"));
         }
       }
     } catch (SQLException e) {
@@ -332,29 +324,26 @@ public class SimpleKeyStore {
 
     SimpleKeyStore keyStore = new SimpleKeyStore();
     if (args.length == 1 && args[0].startsWith("-drop")) {
-      keyStore.dropTable(tableName);
-      GNSClientConfig.getLogger().info("Dropped table " + tableName);
+      keyStore.dropTable(TABLE_NAME);
+      GNSClientConfig.getLogger().info("Dropped table " + TABLE_NAME);
       keyStore.showAllTables();
     } else {
       try {
         keyStore.suppressUpdateRead = true;
         for (String key : keyStore.keys()) {
-          GNSClientConfig.getLogger().info(key + " -> "
-                  + keyStore.get(key, null)
-                  + " {U:"
-                  + Format.formatPrettyDateUTC(keyStore.updateTime(key))
-                  + ", R:"
-                  + Format.formatPrettyDateUTC(keyStore.readTime(key))
-                  + "}"
-          );
+          GNSClientConfig.getLogger().log(Level.INFO, 
+                  "{0} -> {1} '{'U:{2}, R:{3}'}'", 
+                  new Object[]{key, keyStore.get(key, null), 
+                    Format.formatPrettyDateUTC(keyStore.updateTime(key)), 
+                    Format.formatPrettyDateUTC(keyStore.readTime(key))});
         }
       } finally {
         keyStore.suppressUpdateRead = false;
       }
       String value = "value-" + RandomString.randomString(6);
-      GNSClientConfig.getLogger().info("Putting " + value);
+      GNSClientConfig.getLogger().log(Level.INFO, "Putting {0}", value);
       keyStore.put("frank", value);
-      GNSClientConfig.getLogger().info("New value is " + keyStore.get("frank", null));
+      GNSClientConfig.getLogger().log(Level.INFO, "New value is {0}", keyStore.get("frank", null));
       keyStore.shutdown();
     }
   }

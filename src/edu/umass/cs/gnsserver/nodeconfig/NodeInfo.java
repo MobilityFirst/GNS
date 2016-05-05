@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.nodeconfig;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import edu.umass.cs.utils.Util;
 
 /**

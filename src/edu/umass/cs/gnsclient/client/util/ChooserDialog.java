@@ -27,6 +27,8 @@ import java.awt.event.*;
  * A modal dialog to let the user choose one string from a list.
  */
 public class ChooserDialog extends JDialog implements ActionListener {
+  
+  private static final long serialVersionUID = 2326392043474125897L;
 
   private static ChooserDialog dialog;
   private static String returnValue = "";

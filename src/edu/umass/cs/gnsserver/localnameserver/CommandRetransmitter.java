@@ -19,12 +19,9 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
-
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolEvent;
@@ -33,13 +30,13 @@ import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-
 import java.net.InetSocketAddress;
+import java.util.logging.Level;
 import org.json.JSONObject;
 
 /**
  * Handles resending of packets to active replicas.
- * 
+ *
  * @author westy
  */
 public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
@@ -56,7 +53,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
   /**
    * The logger.
    */
-  public static final Logger log = Logger.getLogger(Reconfigurator.class.getName());
+  public static final Logger LOG = Logger.getLogger(Reconfigurator.class.getName());
 
   /**
    * Create an instance of the CommandRetransmitter.
@@ -73,9 +70,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     this.handler = handler;
     this.actives = actives;
     this.key = this.refreshKey();
-    if (handler.isDebugMode()) {
-      GNSConfig.getLogger().fine("CommandSender starting: " + key);
-    }
+    LOG.log(Level.FINE, "CommandSender starting: {0}", key);
   }
 
   @Override
@@ -83,9 +78,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     if (this.amObviated()) {
       ProtocolExecutor.cancel(this);
     }
-    if (handler.isDebugMode()) {
-      GNSConfig.getLogger().fine(this.refreshKey() + " re-sending ");
-    }
+    LOG.log(Level.FINE, "{0} re-sending ", this.refreshKey());
     return start();
   }
 
@@ -93,10 +86,8 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     if ((handler.getRequestInfo(requestId)) == null) {
       return true;
     } else if (activesAlreadyContacted.size() == actives.size()) {
-      if (handler.isDebugMode()) {
-        GNSConfig.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
-                + " No answer after trying all actives.");
-      }
+      LOG.log(Level.FINE,
+              "~~~~~~~~~~~~~~~~~~~~~~~~{0} No answer after trying all actives.", this.refreshKey());
       // should we return an NACK here or just let the client timeout?
       return true;
     } else {
@@ -110,11 +101,8 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
     json.remove(MessageNIOTransport.SNDR_IP_FIELD);
     json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
-    if (handler.isDebugMode()) {
-      GNSConfig.getLogger().fine(this.refreshKey()
-              + " Sending to " + address
-              + " " + json);
-    }
+    LOG.log(Level.FINE, 
+            "{0} Sending to {1} {2}", new Object[]{this.refreshKey(), address, json});
     activesAlreadyContacted.add(address);
     GenericMessagingTask<InetSocketAddress, ?> mtasks[] = new GenericMessagingTask<>(address, json).toArray();
     return mtasks;
