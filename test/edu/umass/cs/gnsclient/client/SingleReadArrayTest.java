@@ -22,6 +22,7 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import java.io.IOException;
 import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
@@ -33,7 +34,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SingleReadTest {
+public class SingleReadArrayTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -41,7 +42,7 @@ public class SingleReadTest {
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
 
-  public SingleReadTest() {
+  public SingleReadArrayTest() {
     if (client == null) {
       try {
         client = new GNSClientCommands();
@@ -79,7 +80,7 @@ public class SingleReadTest {
   @Test
   public void test_03_CreateField() {
     try {
-      client.fieldUpdate(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
+      client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception during create field: " + e);
@@ -87,10 +88,15 @@ public class SingleReadTest {
   }
 
   @Test
-  public void test_04_ReadField() {
+  public void test_04_ReadFieldTwice() {
     try {
       // read my own field
-      assertEquals("work", client.fieldRead(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      ThreadUtils.sleep(5);
+      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
+      ThreadUtils.sleep(5);
+      assertEquals("work", client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry));
     } catch (Exception e) {
       fail("Exception reading field: " + e);
       e.printStackTrace();

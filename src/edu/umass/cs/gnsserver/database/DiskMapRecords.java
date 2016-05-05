@@ -11,6 +11,7 @@ import com.mongodb.util.JSON;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.utils.JSONDotNotation;
 import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -26,12 +27,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Uses a diskmap as the primary database with mongo as the 
+ * Uses a diskmap as the primary database with mongo as the
  * backup for when we need more NoSQL databasey features.
- * 
+ *
  * See DiskMapCollection for more details.
  *
- * 
+ *
  * @author westy
  */
 public class DiskMapRecords implements NoSQLRecords {
@@ -83,7 +84,6 @@ public class DiskMapRecords implements NoSQLRecords {
   }
 
   @Override
-  // FIXME: Why does this still have valuesMapField
   public HashMap<ColumnField, Object> lookupSomeFields(String collection, String name,
           ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
@@ -101,14 +101,14 @@ public class DiskMapRecords implements NoSQLRecords {
         ValuesMap valuesMapOut = new ValuesMap();
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String userKey = valuesMapKeys.get(i).getName();
-          if (containsFieldDotNotation(userKey, readValuesMap) == false) {
-            DatabaseConfig.getLogger().log(Level.SEVERE, "DBObject doesn't contain {0}", userKey);
+          if (JSONDotNotation.containsFieldDotNotation(userKey, readValuesMap) == false) {
+            DatabaseConfig.getLogger().severe("valuesMap doesn't contain " + userKey);
             continue;
           }
           try {
             switch (valuesMapKeys.get(i).type()) {
               case USER_JSON:
-                Object value = getWithDotNotation(userKey, readValuesMap);
+                Object value = JSONDotNotation.getWithDotNotation(userKey, readValuesMap);
                 DatabaseConfig.getLogger().log(Level.FINE,
                         "Object is {0}", new Object[]{value.toString()});
                 valuesMapOut.put(userKey, value);
@@ -116,7 +116,8 @@ public class DiskMapRecords implements NoSQLRecords {
               case LIST_STRING:
                 valuesMapOut.putAsArray(userKey,
                         JSONUtils.JSONArrayToResultValue(
-                                new JSONArray(getWithDotNotation(userKey, readValuesMap).toString())));
+                                new JSONArray(JSONDotNotation.getWithDotNotation(userKey,
+                                        readValuesMap).toString())));
                 break;
               default:
                 DatabaseConfig.getLogger().log(Level.SEVERE,
@@ -135,33 +136,6 @@ public class DiskMapRecords implements NoSQLRecords {
       }
     }
     return hashMap;
-  }
-
-  private Object getWithDotNotation(String key, JSONObject json) throws JSONException {
-    if (key.contains(".")) {
-      int indexOfDot = key.indexOf(".");
-      String subKey = key.substring(0, indexOfDot);
-      JSONObject subJSON = (JSONObject) json.get(subKey);
-      if (subJSON == null) {
-        throw new JSONException(subKey + " is null");
-      }
-      try {
-        return getWithDotNotation(key.substring(indexOfDot + 1), subJSON);
-      } catch (JSONException e) {
-        throw new JSONException(subKey + "." + e.getMessage());
-      }
-    } else {
-      Object result = json.get(key);
-      return result;
-    }
-  }
-
-  private boolean containsFieldDotNotation(String key, JSONObject json) {
-    try {
-      return getWithDotNotation(key, json) != null;
-    } catch (JSONException e) {
-      return false;
-    }
   }
 
   @Override
