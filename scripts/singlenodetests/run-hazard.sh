@@ -1,4 +1,7 @@
 #!/bin/bash
+# THIS FILE IS DIFFERENT FROM THE STANDARD SINGLE NODE ONLY IN USING NON-STANDARD PORT NUMBERS
+# SEE gigapaxos.server.singleNode.hazard.properties for details.
+#
 SCRIPTS="`dirname \"$0\"`"
 #echo $SCRIPTS
 IDE_PATH=build/classes:build/test/classes:lib/*:
@@ -12,8 +15,6 @@ mv --backup=numbered NSlogfile NSlogfile.save
 fi
 fi
 
-#nohup java -ea -DgigapaxosConfig=conf/gigapaxos.server.hazard.properties -cp jars/GNS.jar edu.umass.cs.gnsserver.gnsapp.AppRecofigurableNode -test -configFile $SCRIPTS/ns_hazard.properties > NSlogfile 2>&1 &
-#nohup java -ea -cp jars/GNS.jar edu.umass.cs.gnsserver.localnameserver.LocalNameServer -configFile $SCRIPTS/lns_hazard.properties > LNSlogfile 2>&1 &
 
 
 nohup java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \

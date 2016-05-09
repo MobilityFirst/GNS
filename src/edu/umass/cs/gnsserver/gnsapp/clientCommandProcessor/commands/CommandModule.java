@@ -107,7 +107,7 @@ public class CommandModule {
         constructor = clazz.getConstructor(new Class<?>[]{CommandModule.class});
       }
       BasicCommand command = (BasicCommand) constructor.newInstance(new Object[]{this});
-      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+      ClientCommandProcessorConfig.getLogger().log(Level.FINER,
               "Creating command {0}: {1} with {2}: {3}",
               new Object[]{command.getCommandType().getInt(), clazz.getCanonicalName(), command.getCommandName(),
                 command.getCommandParametersString()});

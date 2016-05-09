@@ -102,7 +102,7 @@ public class DiskMapRecords implements NoSQLRecords {
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String userKey = valuesMapKeys.get(i).getName();
           if (JSONDotNotation.containsFieldDotNotation(userKey, readValuesMap) == false) {
-            DatabaseConfig.getLogger().severe("valuesMap doesn't contain " + userKey);
+            DatabaseConfig.getLogger().fine("valuesMap doesn't contain " + userKey);
             continue;
           }
           try {
