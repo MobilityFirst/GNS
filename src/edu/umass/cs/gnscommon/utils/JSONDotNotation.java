@@ -53,19 +53,20 @@ public class JSONDotNotation {
   }
 
   public static Object getWithDotNotation(String key, Object json) throws JSONException {
+    JSONDotNotation.getLogger().log(Level.FINE, "CLASS IS " + json.getClass());
     JSONDotNotation.getLogger().log(Level.FINE, "###fullkey={0} json={1}", new Object[]{key, json});
     if (key.contains(".")) {
       int indexOfDot = key.indexOf(".");
       String subKey = key.substring(0, indexOfDot);
       JSONDotNotation.getLogger().log(Level.FINE, "###subkey={0}", subKey);
 
-      Object subBson = ((JSONObject) json).get(subKey);
-      if (subBson == null) {
+      Object subJSON = ((JSONObject) json).get(subKey);
+      if (subJSON == null) {
         JSONDotNotation.getLogger().log(Level.FINE, "### {0} is null", subKey);
         throw new JSONException(subKey + " is null");
       }
       try {
-        return getWithDotNotation(key.substring(indexOfDot + 1), subBson);
+        return getWithDotNotation(key.substring(indexOfDot + 1), subJSON);
       } catch (JSONException e) {
         throw new JSONException(subKey + "." + e.getMessage());
       }

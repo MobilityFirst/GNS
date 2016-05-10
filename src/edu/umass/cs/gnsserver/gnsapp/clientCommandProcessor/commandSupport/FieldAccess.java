@@ -49,17 +49,12 @@ import java.util.Arrays;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
-
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.lang3.time.DateUtils;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
@@ -113,6 +108,7 @@ public class FieldAccess {
   public static CommandResponse<String> lookupSingleField(String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
+    ClientSupportConfig.getLogger().log(Level.INFO, "Lookup: " + guid + "/" + field);
     NSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isAnError()) {

@@ -93,11 +93,6 @@ public class DottedReadTest {
   public void test_3_ReadAll() {
     try {
       JSONObject expected = new JSONObject();
-      expected.put("name", "frank");
-      expected.put("occupation", "rocket scientist");
-      expected.put("location", "work");
-      expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList<>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();

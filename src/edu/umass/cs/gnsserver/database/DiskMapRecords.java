@@ -78,9 +78,15 @@ public class DiskMapRecords implements NoSQLRecords {
           throws FailedDBOperationException, RecordNotFoundException {
     JSONObject record;
     if ((record = getMap(collection).get(name)) == null) {
+
       throw new RecordNotFoundException(name);
     }
-    return record;
+    try {
+      // Make a new object to make sure there aren't any DBObjects lurking in here
+      return new JSONObject(record.toString());
+    } catch (JSONException e) {
+      throw new FailedDBOperationException(collection, name, "Unable to parse json record");
+    }
   }
 
   @Override
@@ -88,16 +94,14 @@ public class DiskMapRecords implements NoSQLRecords {
           ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
 
-    JSONObject record;
-    if ((record = getMap(collection).get(name)) == null) {
-      throw new RecordNotFoundException(name);
-    }
-    DatabaseConfig.getLogger().log(Level.FINE, "Full record {0}", new Object[]{record.toString()});
+    JSONObject record = lookupEntireRecord(collection, name);
+    DatabaseConfig.getLogger().log(Level.FINE, "Full record " + record.toString());
     HashMap<ColumnField, Object> hashMap = new HashMap<>();
     hashMap.put(nameField, name);
     if (valuesMapField != null && valuesMapKeys != null) {
       try {
         JSONObject readValuesMap = record.getJSONObject(valuesMapField.getName());
+        DatabaseConfig.getLogger().log(Level.FINE, "Read valuesMap " + readValuesMap.toString());
         ValuesMap valuesMapOut = new ValuesMap();
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String userKey = valuesMapKeys.get(i).getName();
@@ -151,6 +155,7 @@ public class DiskMapRecords implements NoSQLRecords {
 
   @Override
   public void updateEntireRecord(String collection, String name, ValuesMap valuesMap) throws FailedDBOperationException {
+    DatabaseConfig.getLogger().log(Level.FINE, "Update record " + name + "/" + valuesMap);
     JSONObject json = new JSONObject();
     try {
       json.put(NameRecord.NAME.getName(), name);
@@ -165,7 +170,13 @@ public class DiskMapRecords implements NoSQLRecords {
   public void updateIndividualFields(String collection, String name,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
-    JSONObject record = getMap(collection).get(name);
+    DatabaseConfig.getLogger().log(Level.FINE, "Update fields " + name + "/" + valuesMapKeys);
+    JSONObject record;
+    try {
+       record = lookupEntireRecord(collection, name);
+    } catch (RecordNotFoundException e) {
+      throw new FailedDBOperationException(collection, name, "Record not found.");
+    }
     DatabaseConfig.getLogger().fine("Record before:" + record);
     if (record == null) {
       throw new FailedDBOperationException(collection, name);
@@ -177,10 +188,12 @@ public class DiskMapRecords implements NoSQLRecords {
           String fieldName = valuesMapKeys.get(i).getName();
           switch (valuesMapKeys.get(i).type()) {
             case LIST_STRING:
-              json.put(fieldName, valuesMapValues.get(i));
+              JSONDotNotation.putWithDotNotation(json, fieldName, valuesMapValues.get(i));
+              //json.put(fieldName, valuesMapValues.get(i));
               break;
             case USER_JSON:
-              json.put(fieldName, JSONParse(valuesMapValues.get(i)));
+              JSONDotNotation.putWithDotNotation(json, fieldName, JSONParse(valuesMapValues.get(i)));
+              //json.put(fieldName, JSONParse(valuesMapValues.get(i)));
               break;
             default:
               DatabaseConfig.getLogger().log(Level.WARNING,
@@ -212,10 +225,14 @@ public class DiskMapRecords implements NoSQLRecords {
   public void removeMapKeys(String collection, String name,
           ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException {
-    JSONObject record = getMap(collection).get(name);
+    JSONObject record = null;
+    try {
+       record = lookupEntireRecord(collection, name);
+    } catch (RecordNotFoundException e) {
+    }
     DatabaseConfig.getLogger().fine("Record before:" + record);
     if (record == null) {
-      throw new FailedDBOperationException(collection, name);
+      throw new FailedDBOperationException(collection, name, "Record not found.");
     }
     if (mapField != null && mapKeys != null) {
       try {
