@@ -49,7 +49,7 @@ public class CapacityTestChainClient {
 			System.out.println("There are "+BENIGN+"/"+NUM_CLIENT+" clients, depth is "+MessageStats.DEPTH);
 			
 			clients = new SingleClient[NUM_CLIENT];
-			GNSClient client = new GNSClient(null, new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+			GNSClient client = new GNSClient(null);
 			
 			executorPool = new ThreadPoolExecutor(NUM_THREAD, NUM_THREAD, 0, TimeUnit.SECONDS, 
 		    		new LinkedBlockingQueue<Runnable>(), new CapacityTestClient.MyThreadFactory() );

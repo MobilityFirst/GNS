@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.database;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.BulkWriteException;
 import com.mongodb.BulkWriteOperation;
 import com.mongodb.BulkWriteResult;
 import com.mongodb.DB;
@@ -414,6 +413,7 @@ public class MongoRecords implements NoSQLRecords {
       try {
         collection.update(query, new BasicDBObject("$set", updates));
       } catch (MongoException e) {
+        DatabaseConfig.getLogger().severe("Update failed: " + e);
         throw new FailedDBOperationException(collectionName, updates.toString());
       }
       DelayProfiler.updateDelay("mongoSetUpdate", startTime);

@@ -33,8 +33,9 @@ public class FailedDBOperationException extends ServerException {
 
   private static final long serialVersionUID = 6627620787610127842L;
 
-  private String collection;
-  private String name;
+  private final String collection;
+  private final String name;
+  private final String message;
 
   /**
    * Create a FailedDBOperationException instance.
@@ -45,10 +46,18 @@ public class FailedDBOperationException extends ServerException {
   public FailedDBOperationException(String collection, String name) {
     this.collection = collection;
     this.name = name;
+    this.message = null;
+  }
+  
+  public FailedDBOperationException(String collection, String name, String message) {
+    this.collection = collection;
+    this.name = name;
+    this.message = message;
   }
 
   @Override
   public String getMessage() {
-    return "FailedDBOperationException: " + " Collection = " + collection + " Insert = " + name;
+    return "FailedDBOperationException: " + " collection = " + collection + " name = " + name
+            + (message != null ? "message = " + message : "");
   }
 }

@@ -34,7 +34,6 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
-import edu.umass.cs.gnsserver.database.DiskMapRecords;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
@@ -77,6 +76,8 @@ import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -149,9 +150,22 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.nodeID = messenger.getMyID();
     GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>();
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
+
+    NoSQLRecords noSqlRecords;
+    try {
+      Class<?> clazz = AppReconfigurableNodeOptions.getNoSqlRecordsClass();
+      Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
+      noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, AppReconfigurableNodeOptions.mongoPort);
+      GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException 
+            | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
+      // fallback plan
+      GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
+      noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    }
     // Switch these two to enable DiskMapRecords
     //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    //NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
     this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
     GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
             new Object[]{nodeID, nameRecordDB});
@@ -203,7 +217,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-   // Switch these two to enable DiskMapRecords
+    // Switch these two to enable DiskMapRecords
     //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
     NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
     this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
@@ -406,8 +420,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else //state does not equal null so we either create a new record or update the existing one
-      {
-        if (!NameRecord.containsRecord(nameRecordDB, name)) {
+       if (!NameRecord.containsRecord(nameRecordDB, name)) {
           // create a new record
           try {
             ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
@@ -424,7 +437,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         }
-      }
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Failed update exception: {0}", e.getMessage());
