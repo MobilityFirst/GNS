@@ -51,7 +51,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -64,6 +63,7 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -125,11 +125,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     //super(addresses);
     // will use above code once we get rid of  ReconfigurationConfig accessors
     super(addresses, ReconfigurationConfig.getClientSSLMode(),
-            ReconfigurationConfig.getClientPortOffset());
+            ReconfigurationConfig.getClientPortOffset(), false);
 
-    GNSConfig.getLogger().log(Level.FINE, "Reconfigurators {0}", addresses);
-    GNSConfig.getLogger().log(Level.FINE, "Client port offset {0}", ReconfigurationConfig.getClientPortOffset());
-    GNSConfig.getLogger().log(Level.FINE, "SSL Mode is {0}", ReconfigurationConfig.getClientSSLMode());
+    ClientSupportConfig.getLogger().log(Level.INFO, "Reconfigurators {0}", addresses);
+    ClientSupportConfig.getLogger().log(Level.INFO, "Client port offset {0}", ReconfigurationConfig.getClientPortOffset());
+    ClientSupportConfig.getLogger().log(Level.INFO, "SSL Mode is {0}", ReconfigurationConfig.getClientSSLMode());
 
     keyPairHostIndex = addresses.iterator().next();
     this.enableJSONPackets();
@@ -144,7 +144,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     try {
       return getRequestFromJSON(new JSONObject(stringified));
     } catch (JSONException e) {
-      GNSConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
+      ClientSupportConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
     }
     return request;
   }
@@ -158,7 +158,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
         request = (Request) Packet.createInstance(json, unstringer);
       }
     } catch (JSONException e) {
-      GNSConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
+      ClientSupportConfig.getLogger().log(Level.WARNING, "Problem handling JSON request: {0}", e);
     }
     return request;
   }
@@ -180,7 +180,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   private long sendCommandAsynch(JSONObject command, RequestCallback callback) throws IOException, JSONException {
     long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, command);
-    GNSConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
+    ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
   }
 
@@ -621,7 +621,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public long sendSelectPacket(SelectRequestPacket<String> packet, RequestCallback callback) throws IOException {
     long id = generateNextRequestID();
     packet.setRequestId(id);
-    GNSConfig.getLogger().log(Level.FINE, "{0} sending select packet {1}",
+    ClientSupportConfig.getLogger().log(Level.FINE, "{0} sending select packet {1}",
             new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
   }

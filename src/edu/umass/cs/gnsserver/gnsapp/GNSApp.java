@@ -205,41 +205,41 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     constructed = true;
   }
 
-  /**
-   * Creates the application.
-   *
-   * @param id
-   * @param nodeConfig
-   * @param messenger
-   * @throws java.io.IOException
-   */
-  @Deprecated
-  public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
-    this.nodeID = id;
-    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-    // Switch these two to enable DiskMapRecords
-    //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
-    GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}",
-            new Object[]{nodeID, nameRecordDB});
-    this.messenger = messenger;
-    this.requestHandler = new ClientRequestHandler(
-            new Admintercessor(),
-            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
-            nodeID, this,
-            ((GNSNodeConfig<String>) messenger.getNodeConfig()));
-    // Should add this to the shutdown method - do we have a shutdown method?
-    GNSAdminHttpServer httpServer = new GNSAdminHttpServer(requestHandler);
-    // start the NSListenerAdmin thread
-    new AppAdmin(this, nodeConfig).start();
-    GNSConfig.getLogger().log(Level.INFO,
-            "{0} Admin thread initialized", nodeID);
-    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
-            AppReconfigurableNodeOptions.activeCodeWorkerCount,
-            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
-    constructed = true;
-  }
+//  /**
+//   * Creates the application.
+//   *
+//   * @param id
+//   * @param nodeConfig
+//   * @param messenger
+//   * @throws java.io.IOException
+//   */
+//  @Deprecated
+//  public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
+//    this.nodeID = id;
+//    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
+//    // Switch these two to enable DiskMapRecords
+//    //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+//    NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+//    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
+//    GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}",
+//            new Object[]{nodeID, nameRecordDB});
+//    this.messenger = messenger;
+//    this.requestHandler = new ClientRequestHandler(
+//            new Admintercessor(),
+//            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
+//            nodeID, this,
+//            ((GNSNodeConfig<String>) messenger.getNodeConfig()));
+//    // Should add this to the shutdown method - do we have a shutdown method?
+//    GNSAdminHttpServer httpServer = new GNSAdminHttpServer(requestHandler);
+//    // start the NSListenerAdmin thread
+//    new AppAdmin(this, nodeConfig).start();
+//    GNSConfig.getLogger().log(Level.INFO,
+//            "{0} Admin thread initialized", nodeID);
+//    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
+//            AppReconfigurableNodeOptions.activeCodeWorkerCount,
+//            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
+//    constructed = true;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
