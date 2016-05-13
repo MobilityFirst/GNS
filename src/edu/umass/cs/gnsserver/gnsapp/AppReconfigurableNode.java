@@ -36,7 +36,6 @@ import edu.umass.cs.utils.Config;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -62,29 +61,28 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     super(nodeID, nc);
   }
 
-  /**
-   * Create and returns an app coordinator.
-   *
-   * @return a coordinator or null if one can't be created
-   */
-  @Override
-  @Deprecated
-  protected AbstractReplicaCoordinator<String> createAppCoordinator() {
-    GNSApp app = null;
-    try {
-      app = new GNSApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
-              this.messenger);
-    } catch (IOException e) {
-      GNSConfig.getLogger().info("Unable to create app: " + e);
-      // not sure what to do here other than just return null
-      return null;
-    }
-
-    GNSAppCoordinator<String> appCoordinator = new GNSAppCoordinator<String>(app, this.nodeConfig, this.messenger);
-    return appCoordinator;
-
-  }
-
+//  /**
+//   * Create and returns an app coordinator.
+//   *
+//   * @return a coordinator or null if one can't be created
+//   */
+//  @Override
+//  @Deprecated
+//  protected AbstractReplicaCoordinator<String> createAppCoordinator() {
+//    GNSApp app = null;
+//    try {
+//      app = new GNSApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
+//              this.messenger);
+//    } catch (IOException e) {
+//      GNSConfig.getLogger().info("Unable to create app: " + e);
+//      // not sure what to do here other than just return null
+//      return null;
+//    }
+//
+//    GNSAppCoordinator<String> appCoordinator = new GNSAppCoordinator<String>(app, this.nodeConfig, this.messenger);
+//    return appCoordinator;
+//
+//  }
   private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
     GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, nodeID);
     System.out.println("********* Starting active replica. *********");
@@ -184,5 +182,10 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
               AppReconfigurableNodeOptions.getAllOptions());
       System.exit(0);
     }
+  }
+
+  @Override
+  protected AbstractReplicaCoordinator<String> createAppCoordinator() {
+    throw new RuntimeException("This method should not have been called");
   }
 }
