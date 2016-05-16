@@ -12,28 +12,15 @@
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>jar:file:/Users/westy/Documents/GNS/lib/gigapaxos-nio-src.jar!/edu/umass/cs/utils/Diskable.java</file>
-            <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/run.sh</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/database/DiskMapRecords.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/database/DiskMapCollection.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/database/MongoRecords.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/org/json/JSONObject.java</file>
-            <file>jar:file:/Users/westy/Documents/GNS/lib/gigapaxos-nio-src.jar!/edu/umass/cs/utils/DiskMap.java</file>
-            <file>file:/Users/westy/Documents/GNS/build.properties</file>
-            <file>file:/Users/westy/Documents/GNS/conf/logging.gns.junit.properties</file>
-            <file>file:/Users/westy/Documents/GNS/conf/logging.gns.anttest.properties</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/utils/ValuesMap.java</file>
-            <file>file:/Users/westy/Documents/GNS/scripts/3nodeslocal/run.sh</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/recordmap/NameRecord.java</file>
-            <file>file:/Users/westy/Documents/GNS/test/edu/umass/cs/gnsserver/database/NoSQLTest.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/database/ColumnField.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/recordmap/RecordMapInterface.java</file>
-            <file>file:/Users/westy/Documents/GNS/build.xml</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnscommon/utils/JSONDotNotation.java</file>
-            <file>file:/Users/westy/Documents/GNS/conf/logging.gns.debug.properties</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/database/NoSQLRecords.java</file>
-            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/recordmap/GNSRecordMap.java</file>
-            <file>file:/Users/westy/Documents/GNS/scripts/singlenodetests/run-hazard.sh</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/GNSClientCommands.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/CommandHandler.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commandSupport/FieldAccess.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/testing/CapacityTestSequentialClient.java</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsclient/client/testing/SingleClient.java</file>
+            <file>file:/Users/westy/Documents/GNS/conf/gigapaxos.client.singleNode.ec2.properties</file>
+            <file>file:/Users/westy/Documents/GNS/conf/gigapaxos.server.singleNode.ec2.properties</file>
+            <file>file:/Users/westy/Documents/GNS/src/edu/umass/cs/gnsserver/gnsapp/GNSApp.java</file>
+            <file>file:/Users/westy/Documents/GNS/scripts/client/runClientSingleNodeEc2</file>
         </group>
     </open-files>
 </project-private>
