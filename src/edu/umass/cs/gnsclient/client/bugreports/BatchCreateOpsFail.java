@@ -21,6 +21,7 @@ import edu.umass.cs.gigapaxos.testing.TESTPaxosMain;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig;
@@ -31,8 +32,8 @@ import edu.umass.cs.utils.Util;
 
 public class BatchCreateOpsFail extends DefaultTest {
 
-	private static int numGuidsPerAccount = 100;
-	private static boolean accountGuidsOnly = false;
+	private static int numGuidsPerAccount;
+	private static boolean accountGuidsOnly;
 
 	private static final String ACCOUNT_GUID_PREFIX = "ACCOUNT_GUID";
 	private static final String PASSWORD = "some_password";
@@ -53,13 +54,14 @@ public class BatchCreateOpsFail extends DefaultTest {
 	}
 
 	private static void initParameters() {
+		numGuidsPerAccount = Config.getGlobalInt(GNSTC.NUM_GUIDS_PER_ACCOUNT);
+		accountGuidsOnly = Config.getGlobalBoolean(GNSTC.ACCOUNT_GUIDS_ONLY);
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		numGuids = Config.getGlobalInt(TC.NUM_GROUPS);
 		numAccountGuids = accountGuidsOnly ? numGuids : Math.max(numGuids
 				/ numGuidsPerAccount, 1);
 		executor = (ScheduledThreadPoolExecutor) Executors
 				.newScheduledThreadPool(numClients);
-		accountGuidEntries = new GuidEntry[numClients];
 	}
 
 	private void setupClientsAndGuids() throws Exception {

@@ -8,4 +8,4 @@ java -ea -DgigapaxosConfig=conf/gigapaxos.client.singleNode.local.properties \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
 -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp \
-build/classes:build/test/classes:jars/GNSClient.jar $*
+.:build/classes:build/test/classes:jars/GNSClient.jar $*
