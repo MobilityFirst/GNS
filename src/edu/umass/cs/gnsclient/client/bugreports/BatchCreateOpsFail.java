@@ -58,8 +58,8 @@ public class BatchCreateOpsFail extends DefaultTest {
 		accountGuidsOnly = Config.getGlobalBoolean(GNSTC.ACCOUNT_GUIDS_ONLY);
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		numGuids = Config.getGlobalInt(TC.NUM_GROUPS);
-		numAccountGuids = accountGuidsOnly ? numGuids : Math.max(numGuids
-				/ numGuidsPerAccount, 1);
+		numAccountGuids = accountGuidsOnly ? numGuids : Math.max((int)Math.ceil(numGuids*1.0
+				/ numGuidsPerAccount), 1);
 		executor = (ScheduledThreadPoolExecutor) Executors
 				.newScheduledThreadPool(numClients);
 	}
