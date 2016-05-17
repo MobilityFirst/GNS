@@ -39,10 +39,12 @@ import org.json.JSONObject;
 
 /**
  *
- * @author westy
+ * @author westy, arun
  */
 public class CommandUtils {
 
+	/* arun: fairly more instances than cores lets us randomly pick instances
+	 * with high concurrency. */
   private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()*2];
   private static Random random;
 
