@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsclient.client.bugreports;
+package edu.umass.cs.gnsclient.client.bugreports.fixed;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,6 +33,9 @@ import edu.umass.cs.utils.Util;
 /**
  * @author arun
  * 
+ * 
+ *         Fixed.
+ *         
  *         This single-node test shows that creating one sub-GUID per account
  *         for many accounts, e.g., 50, fails to subsequently be able to delete
  *         sub-GUIDs. With lower number of account GUIDs, it doesn't seem to

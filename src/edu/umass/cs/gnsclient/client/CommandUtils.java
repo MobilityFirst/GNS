@@ -168,8 +168,10 @@ public class CommandUtils {
    * @throws NoSuchAlgorithmException
    * @throws SignatureException
    * @throws java.io.UnsupportedEncodingException
+   * 
+   * arun: This method need to be synchronized, otherwise it will result in corrupted signatures.
    */
-  public static String signDigestOfMessage(PrivateKey privateKey, String message)
+  public synchronized static String signDigestOfMessage(PrivateKey privateKey, String message)
           throws NoSuchAlgorithmException, InvalidKeyException,
           SignatureException, UnsupportedEncodingException {
     signatureInstance.initSign(privateKey);

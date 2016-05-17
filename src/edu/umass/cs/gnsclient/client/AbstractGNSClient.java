@@ -143,12 +143,14 @@ public abstract class AbstractGNSClient {
           throws ClientException {
     try {
       JSONObject result = createCommand(commandType, action, keysAndValues);
+      long t = System.nanoTime();
       result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
       result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
 
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
+      if(edu.umass.cs.utils.Util.oneIn(10)) DelayProfiler.updateDelayNano("signing", t);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
       throw new ClientException("Error encoding message", e);
