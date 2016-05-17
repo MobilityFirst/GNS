@@ -49,17 +49,19 @@ import java.security.SignatureException;
 /**
  * Provides signing and ACL checks for commands.
  *
- * @author westy
+ * @author westy, arun
  */
 public class NSAccessSupport {
 
   private static KeyFactory keyFactory;
-  private static Signature sig;
+  // arun: at least as many instances as cores for parallelism.
+  private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()];
 
   static {
     try {
       keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
-      sig = Signature.getInstance(SIGNATURE_ALGORITHM);
+      for(int i=0; i<signatureInstances.length; i++)
+    	  signatureInstances[i] = Signature.getInstance(SIGNATURE_ALGORITHM);
     } catch (NoSuchAlgorithmException e) {
       ClientSupportConfig.getLogger().severe("Unable to initialize for authentication:" + e);
     }
@@ -100,6 +102,11 @@ public class NSAccessSupport {
               Util.truncate(message, 16, 16)});
     return result;
   }
+  
+  private static int sigIndex=0;
+  private synchronized static Signature getSignatureInstance() {
+	  return signatureInstances[sigIndex++%signatureInstances.length];
+  }
 
   private static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
           throws InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
@@ -108,12 +115,17 @@ public class NSAccessSupport {
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
-    //Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
-    sig.initVerify(publicKey);
-    sig.update(message.getBytes("UTF-8"));
-    // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE IOS CLIENT IS UPDATED AS WELL
-    return sig.verify(ByteUtils.hexStringToByteArray(signature));
-    //return sig.verify(Base64.decode(signature));
+    Signature sigInstance = getSignatureInstance();
+    synchronized(sigInstance) {
+			// Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
+    	sigInstance.initVerify(publicKey);
+    	sigInstance.update(message.getBytes("UTF-8"));
+			// FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
+			// IOS CLIENT IS UPDATED AS WELL
+			return sigInstance.verify(ByteUtils
+					.hexStringToByteArray(signature));
+			//return sig.verify(Base64.decode(signature));
+    }
   }
 
   /**

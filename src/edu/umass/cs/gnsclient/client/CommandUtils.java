@@ -39,11 +39,12 @@ import org.json.JSONObject;
 
 /**
  *
- * @author westy
+ * @author westy, arun
  */
 public class CommandUtils {
 
-  private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()*2];
+	/* arun: at least as many instances as cores for parallelism. */
+  private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()];
   private static Random random;
 
   static {
@@ -57,8 +58,9 @@ public class CommandUtils {
     }
   }
   
-  private static Signature getSignatureInstance() {
-	  return signatureInstances[(int)(Math.random()*signatureInstances.length)];
+  private static int sigIndex = 0;
+  private static synchronized Signature getSignatureInstance() {
+	  return signatureInstances[sigIndex++%signatureInstances.length];
   }
 
   /**
