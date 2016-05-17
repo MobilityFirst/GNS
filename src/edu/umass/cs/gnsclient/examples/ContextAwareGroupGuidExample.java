@@ -146,7 +146,7 @@ public class ContextAwareGroupGuidExample {
     System.out.println("Changing 4 of the 5 guids to have a their " + fieldName + " field's value be 0");
     for (int i = 0; i < result.length() - 1; i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       System.out.println("Changing value of " + fieldName + " field in " + entry.getEntityName() + " to 0");
       client.fieldUpdate(entry, fieldName, 0);
     }
@@ -180,7 +180,7 @@ public class ContextAwareGroupGuidExample {
   private static void showFieldValuesInGuids(JSONArray guids, String field) throws Exception {
     for (int i = 0; i < guids.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(guids.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldRead(entry, field);
       System.out.println(guids.get(i).toString() + ": " + field + " -> " + value);
     }
@@ -200,7 +200,7 @@ public class ContextAwareGroupGuidExample {
     JSONArray result = client.selectQuery(query);
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-      GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       client.guidRemove(masterGuid, guidEntry.getGuid());
     }
   }

@@ -17,11 +17,11 @@
  *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SHA1HashFunction;
 import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONArray;
@@ -31,7 +31,7 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class ClientUtils {
+public class SharedGuidUtils {
 
   /**
    * Uses a hash function to generate a GUID from a public key string.

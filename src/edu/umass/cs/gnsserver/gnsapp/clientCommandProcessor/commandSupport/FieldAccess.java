@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -55,6 +56,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.lang3.time.DateUtils;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
@@ -570,7 +574,7 @@ public class FieldAccess {
   public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey,
           int interval,
           ClientRequestHandlerInterface handler) {
-    String guid = ClientUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
     if (lookupGuidInfo(guid, handler, true) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.

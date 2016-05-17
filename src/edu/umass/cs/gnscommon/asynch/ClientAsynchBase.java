@@ -38,6 +38,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.ACCOUNT_INFO;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.GUID_INFO;
@@ -195,7 +196,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public GuidEntry accountGuidCreate(String alias, String password, RequestCallback callback) throws Exception {
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
-    String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
+    String guid =  SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(keyPairHostIndex.getHostString() + ":" + keyPairHostIndex.getPort(), alias, guid, keyPair);
     JSONObject jsonHRN = new JSONObject();
@@ -265,7 +266,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias, RequestCallback callback) throws Exception {
 
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
-    String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
+    String guid =  SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(keyPairHostIndex.getHostString() + ":" + keyPairHostIndex.getPort(), alias, guid, keyPair);
     JSONObject jsonHRN = new JSONObject();

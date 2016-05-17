@@ -14,6 +14,7 @@ import static edu.umass.cs.gnsclient.client.CommandUtils.checkResponse;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -616,7 +617,7 @@ public class BasicGnsClient extends AbstractGnsClient implements GNSClientInterf
   public GuidEntry accountGuidCreate(String alias, String password) throws Exception {
 
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
-    String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
+    String guid =  SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
     String returnedGuid = accountGuidCreateHelper(alias, keyPair.getPublic(), keyPair.getPrivate(), password);

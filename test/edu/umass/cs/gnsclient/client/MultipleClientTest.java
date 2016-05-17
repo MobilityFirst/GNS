@@ -1039,7 +1039,7 @@ public class MultipleClientTest {
 //      JSONArray result = getRandomClient().selectQuery(query);
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(getRandomClient().lookupGuidRecord(result.getString(i)));
-//        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromPreferences(getRandomClient(), guidInfo.getEntityName());
+//        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(getRandomClient(), guidInfo.getEntityName());
 //        System.out.println("Removing from " + guidEntry.getEntityName());
 //        getRandomClient().fieldRemove(guidEntry, groupTestFieldName);
 //      }
@@ -1169,7 +1169,7 @@ public class MultipleClientTest {
 //    // look up the individual values
 //    for (int i = 0; i < result.length(); i++) {
 //      BasicGuidEntry guidInfo = new BasicGuidEntry(getRandomClient().lookupGuidRecord(result.getString(i)));
-//      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(getRandomClient(), guidInfo.getEntityName());
+//      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(getRandomClient(), guidInfo.getEntityName());
 //      String value = getRandomClient().fieldReadArrayFirstElement(entry, groupTestFieldName);
 //      assertEquals("25", value);
 //    }
@@ -1183,7 +1183,7 @@ public class MultipleClientTest {
 //      // change ALL BUT ONE to be ZERO
 //      for (int i = 0; i < result.length() - 1; i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(getRandomClient().lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(getRandomClient(), guidInfo.getEntityName());
+//        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(getRandomClient(), guidInfo.getEntityName());
 //        JSONArray array = new JSONArray(Arrays.asList(0));
 //        getRandomClient().fieldReplaceOrCreateList(entry, groupTestFieldName, array);
 //      }
@@ -1202,7 +1202,7 @@ public class MultipleClientTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(getRandomClient().lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(getRandomClient(), guidInfo.getEntityName());
+//        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(getRandomClient(), guidInfo.getEntityName());
 //        String value = getRandomClient().fieldReadArrayFirstElement(entry, groupTestFieldName);
 //        assertEquals("25", value);
 //      }
@@ -1222,7 +1222,7 @@ public class MultipleClientTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(getRandomClient().lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(getRandomClient(), guidInfo.getEntityName());
+//        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(getRandomClient(), guidInfo.getEntityName());
 //        String value = getRandomClient().fieldReadArrayFirstElement(entry, groupTestFieldName);
 //        assertEquals("0", value);
 //      }

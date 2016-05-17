@@ -30,6 +30,7 @@ import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESSER;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACL_ADD;
@@ -685,7 +686,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   public GuidEntry accountGuidCreate(String alias, String password) throws Exception {
 
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
-    String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
     String returnedGuid = accountGuidCreateHelper(alias, keyPair.getPublic(), keyPair.getPrivate(), password);

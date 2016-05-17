@@ -34,7 +34,7 @@ import java.util.logging.Level;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.utils.Util;
@@ -131,7 +131,7 @@ public class NSAccessSupport {
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    //String accessorGuid = ClientUtils.createGuidStringFromBase64PublicKey(accessorPublicKey);
+    //String accessorGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(accessorPublicKey);
     ClientSupportConfig.getLogger().log(Level.FINE,
             "User: {0} Reader: {1} Field: {2}",
             new Object[]{guid, accessorGuid, field});
@@ -206,7 +206,7 @@ public class NSAccessSupport {
 
   private static boolean checkAllowedUsers(String accessorGuid,
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    if (ClientUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
+    if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
       //if (allowedUsers.contains(accessorPublicKey)) {
       return true;
     } else if (allowedUsers.contains(EVERYONE)) {
@@ -217,8 +217,8 @@ public class NSAccessSupport {
       // guid is a member of (which is stored with this guid)
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Looking up groups for {0} and check against {1}",
-              new Object[]{accessorGuid, ClientUtils.convertPublicKeysToGuids(allowedUsers)});
-      return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers),
+              new Object[]{accessorGuid, SharedGuidUtils.convertPublicKeysToGuids(allowedUsers)});
+      return !Sets.intersection(SharedGuidUtils.convertPublicKeysToGuids(allowedUsers),
               NSGroupAccess.lookupGroups(accessorGuid, activeReplica.getRequestHandler())).isEmpty();
     }
   }
