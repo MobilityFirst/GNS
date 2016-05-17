@@ -49,11 +49,12 @@ import java.security.SignatureException;
 /**
  * Provides signing and ACL checks for commands.
  *
- * @author westy
+ * @author westy, arun
  */
 public class NSAccessSupport {
 
   private static KeyFactory keyFactory;
+  // arun: at least as many instances as cores for parallelism.
   private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()];
 
   static {
@@ -102,8 +103,9 @@ public class NSAccessSupport {
     return result;
   }
   
-  private static Signature getSignatureInstance() {
-	  return signatureInstances[(int)(Math.random()*signatureInstances.length)];
+  private static int sigIndex=0;
+  private synchronized static Signature getSignatureInstance() {
+	  return signatureInstances[sigIndex++%signatureInstances.length];
   }
 
   private static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
@@ -116,11 +118,11 @@ public class NSAccessSupport {
     Signature sigInstance = getSignatureInstance();
     synchronized(sigInstance) {
 			// Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
-			signatureInstances[0].initVerify(publicKey);
-			signatureInstances[0].update(message.getBytes("UTF-8"));
+    	sigInstance.initVerify(publicKey);
+    	sigInstance.update(message.getBytes("UTF-8"));
 			// FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
 			// IOS CLIENT IS UPDATED AS WELL
-			return signatureInstances[0].verify(ByteUtils
+			return sigInstance.verify(ByteUtils
 					.hexStringToByteArray(signature));
 			//return sig.verify(Base64.decode(signature));
     }
