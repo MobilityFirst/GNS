@@ -43,17 +43,22 @@ import org.json.JSONObject;
  */
 public class CommandUtils {
 
-  private static Signature signatureInstance;
+  private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()*2];
   private static Random random;
 
   static {
     try {
-      signatureInstance = Signature.getInstance(SIGNATURE_ALGORITHM);
+    	for(int i=0;i<signatureInstances.length; i++)
+    		signatureInstances[i] = Signature.getInstance(SIGNATURE_ALGORITHM);
       random = new Random();
     } catch (NoSuchAlgorithmException e) {
       GNSConfig.getLogger().log(Level.SEVERE,
               "Unable to initialize for authentication:{0}", e);
     }
+  }
+  
+  private static Signature getSignatureInstance() {
+	  return signatureInstances[(int)(Math.random()*signatureInstances.length)];
   }
 
   /**
@@ -158,29 +163,34 @@ public class CommandUtils {
     }
   }
 
-  /**
-   * Signs a digest of a message using private key of the given guid.
-   *
-   * @param privateKey
-   * @param message
-   * @return a signed digest of the message string
-   * @throws InvalidKeyException
-   * @throws NoSuchAlgorithmException
-   * @throws SignatureException
-   * @throws java.io.UnsupportedEncodingException
-   * 
-   * arun: This method need to be synchronized, otherwise it will result in corrupted signatures.
-   */
-  public synchronized static String signDigestOfMessage(PrivateKey privateKey, String message)
+  	/**
+	 * Signs a digest of a message using private key of the given guid.
+	 *
+	 * @param privateKey
+	 * @param message
+	 * @return a signed digest of the message string
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws SignatureException
+	 * @throws java.io.UnsupportedEncodingException
+	 * 
+	 *             arun: This method need to be synchronized over the signature
+	 *             instance, otherwise it will result in corrupted signatures.
+	 */
+  public static String signDigestOfMessage(PrivateKey privateKey, String message)
           throws NoSuchAlgorithmException, InvalidKeyException,
           SignatureException, UnsupportedEncodingException {
-    signatureInstance.initSign(privateKey);
-    signatureInstance.update(message.getBytes("UTF-8"));
-    byte[] signedString = signatureInstance.sign();
-    // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE IOS CLIENT IS UPDATED AS WELL
-    String result = ByteUtils.toHex(signedString);
-    //String result = Base64.encodeToString(signedString, false);
-    return result;
+		Signature signatureInstance = getSignatureInstance();
+		synchronized (signatureInstance) {
+			signatureInstance.initSign(privateKey);
+			signatureInstance.update(message.getBytes("UTF-8"));
+			byte[] signedString = signatureInstance.sign();
+			// FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
+			// IOS CLIENT IS UPDATED AS WELL
+			String result = ByteUtils.toHex(signedString);
+			// String result = Base64.encodeToString(signedString, false);
+			return result;
+		}
   }
 
   /**
