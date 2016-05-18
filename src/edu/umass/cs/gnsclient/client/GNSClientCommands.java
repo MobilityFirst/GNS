@@ -770,16 +770,14 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    *
    * @param accountGuid
    * @param aliases
-   * @param createPublicKeys
    * @return
    * @throws Exception
    */
-  public String guidBatchCreate(GuidEntry accountGuid, Set<String> aliases,
-          boolean createPublicKeys) throws Exception {
+  public String guidBatchCreate(GuidEntry accountGuid, Set<String> aliases) throws Exception {
 
     List<String> aliasList = new ArrayList<>(aliases);
     List<String> publicKeys = null;
-    if (createPublicKeys) {
+    //if (createPublicKeys) {
       long publicKeyStartTime = System.currentTimeMillis();
       publicKeys = new ArrayList<>();
       for (String alias : aliasList) {
@@ -791,46 +789,46 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
         publicKeys.add(publicKeyString);
       }
       DelayProfiler.updateDelay("batchCreatePublicKeys", publicKeyStartTime);
-    }
+    //}
 
     System.out.println(DelayProfiler.getStats());
     JSONObject command;
-    if (createPublicKeys) {
+    //if (createPublicKeys) {
       command = createAndSignCommand(CommandType.AddMultipleGuids,
               accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
               GUID, accountGuid.getGuid(),
               NAMES, new JSONArray(aliasList),
               PUBLIC_KEYS, new JSONArray(publicKeys));
-    } else {
-      // This version creates guids that have bogus public keys
-      command = createAndSignCommand(CommandType.AddMultipleGuidsFast,
-              accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
-              GUID, accountGuid.getGuid(),
-              NAMES, new JSONArray(aliasList));
-    }
+//    } else {
+//      // This version creates guids that have bogus public keys
+//      command = createAndSignCommand(CommandType.AddMultipleGuidsFast,
+//              accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
+//              GUID, accountGuid.getGuid(),
+//              NAMES, new JSONArray(aliasList));
+//    }
     String result = checkResponse(command, sendCommandAndWait(command));
     return result;
   }
 
-  /**
-   * Batch create a number guids. These guids will have
-   * random aliases and can be accessed using the account guid.
-   *
-   * @param accountGuid
-   * @param guidCnt
-   * @return
-   * @throws Exception
-   */
-  public String guidBatchCreateFast(GuidEntry accountGuid, int guidCnt) throws Exception {
-    JSONObject command;
-    // This version creates guids that have bogus public keys
-    command = createAndSignCommand(CommandType.AddMultipleGuidsFastRandom,
-            accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
-            GUID, accountGuid.getGuid(),
-            GUIDCNT, guidCnt);
-    String result = checkResponse(command, sendCommandAndWait(command));
-    return result;
-  }
+//  /**
+//   * Batch create a number guids. These guids will have
+//   * random aliases and can be accessed using the account guid.
+//   *
+//   * @param accountGuid
+//   * @param guidCnt
+//   * @return
+//   * @throws Exception
+//   */
+//  public String guidBatchCreateFast(GuidEntry accountGuid, int guidCnt) throws Exception {
+//    JSONObject command;
+//    // This version creates guids that have bogus public keys
+//    command = createAndSignCommand(CommandType.AddMultipleGuidsFastRandom,
+//            accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
+//            GUID, accountGuid.getGuid(),
+//            GUIDCNT, guidCnt);
+//    String result = checkResponse(command, sendCommandAndWait(command));
+//    return result;
+//  }
 
   /**
    * Removes a guid (not for account Guids - use removeAccountGuid for them).

@@ -106,7 +106,7 @@ public class BatchCreateTest {
           aliases.add("testGUID" + RandomString.randomString(6));
         }
         //Actually create them on the server
-        result = client.guidBatchCreate(masterGuid, aliases, true);
+        result = client.guidBatchCreate(masterGuid, aliases);
         System.out.println("result = " + result);
 
 //        //make one non batch for comparison
