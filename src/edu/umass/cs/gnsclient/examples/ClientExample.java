@@ -19,19 +19,15 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.AbstractGNSClient;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONArray;
@@ -47,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class StandaloneBasicTcpClientExample {
+public class ClientExample {
 
   private static String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static GNSClientCommands client;
@@ -57,18 +53,20 @@ public class StandaloneBasicTcpClientExample {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
-    // Bring up the server selection dialog
-    InetSocketAddress address = ServerSelectDialog.selectServer();
-    // Start the client
-    client = new GNSClientCommands(null);
+    // Create the client. Connects to a default reconfigurator as specified in gigapaxos.properties file.
+    client = new GNSClientCommands();
     try {
-      // Create a guid (which is also an account guid)
+      // Create an account guid if one doesn't already exists.
+      // The true makes it verbosely print out what it is doing.
+      // The password is for future use.
+      // Note that lookupOrCreateAccountGuid "cheats" by bypassing the account verification
+      // mechanisms.
       guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
     } catch (Exception e) {
       System.out.println("Exception during accountGuid creation: " + e);
       System.exit(1);
     }
-    System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
+    System.out.println("Client connected to GNS.");
 
     // Create a JSON Object to initialize our guid record
     JSONObject json = new JSONObject("{\"occupation\":\"busboy\","

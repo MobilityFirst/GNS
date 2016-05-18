@@ -104,15 +104,13 @@ public class GuidUtils {
           // that error message
           if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
             if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
-              continue;
+              // do nothing
             } else {
               e.printStackTrace();
               throw e;
             }
           } else {
-            System.out
-                    .println("Caught and ignored \"Account already verified\" error for "
-                            + name);
+            System.out.println("Caught and ignored \"Account already verified\" error for " + name);
             break;
           }
         }
@@ -253,5 +251,4 @@ public class GuidUtils {
 //    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(keyBytes);
 //    return ByteUtils.toHex(publicKeyDigest);
 //  }
-
 }

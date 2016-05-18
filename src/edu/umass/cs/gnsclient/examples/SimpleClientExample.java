@@ -22,7 +22,6 @@ package edu.umass.cs.gnsclient.examples;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -30,7 +29,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.net.InetSocketAddress;
 
 /**
  * In this example we create an account to write and read back some information in the GNS.
@@ -40,11 +38,11 @@ import java.net.InetSocketAddress;
  
  Note: This example cheats during account guid creation in that it creates the account 
  guid and then uses the known secret to verify the account instead of making the user 
- verify the account manually deal with the private key.
+ verify the account manually or deal with the private key.
  *
  * @author westy
  */
-public class StandaloneTcpExample {
+public class SimpleClientExample {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
@@ -55,15 +53,20 @@ public class StandaloneTcpExample {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
     
-    InetSocketAddress address = ServerSelectDialog.selectServer();
-    client = new GNSClientCommands(null);
+    // Create the client. Connects to a default reconfigurator as specified in gigapaxos.properties file.
+    client = new GNSClientCommands();
     try {
-      accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD);
+      // Create an account guid if one doesn't already exists.
+      // The true makes it verbosely print out what it is doing.
+      // The password is for future use.
+      // Note that lookupOrCreateAccountGuid "cheats" by bypassing the account verification
+      // mechanisms.
+      accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
     } catch (Exception e) {
       System.out.println("Exception during accountGuid creation: " + e);
       System.exit(1);
     }
-    System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
+    System.out.println("Client connected to GNS");
 
     // Retrive the GUID using the account id
     String guid = client.lookupGuid(ACCOUNT_ALIAS);
@@ -74,19 +77,11 @@ public class StandaloneTcpExample {
     System.out.println("Retrieved public key: " + publicKey.toString());
 
     // Use the GuidEntry create an new record in the GNS
-    client.fieldCreateOneElementList(accountGuid, "homestate", "Florida");
-    System.out.println("Added location -> Florida record to the GNS for GUID " + accountGuid.getGuid());
+    client.fieldUpdate(accountGuid, "homestate", "Florida");
+    System.out.println("Added homestate -> Florida record to the GNS for GUID " + accountGuid.getGuid());
 
     // Retrive that record from the GNS
-    String result = client.fieldReadArrayFirstElement(accountGuid.getGuid(), "homestate", accountGuid);
-    System.out.println("Result of read location: " + result);
-    
-     // Retrive that record from the GNS
-    client.fieldReplace(accountGuid, "homestate", "Massachusetts");
-    System.out.println("Changed location -> Massachusetts in the GNS for GUID " + accountGuid.getGuid());
-    
-     // Retrive that record from the GNS
-    result = client.fieldReadArrayFirstElement(accountGuid.getGuid(), "homestate", accountGuid);
+    String result = client.fieldRead(accountGuid.getGuid(), "homestate", accountGuid);
     System.out.println("Result of read location: " + result);
     
     System.exit(0);

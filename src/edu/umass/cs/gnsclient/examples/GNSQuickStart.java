@@ -36,25 +36,25 @@ import java.security.spec.InvalidKeySpecException;
 
 /**
  * OUT OF DATE: THIS WILL BE UPDATED SHORTLY TO REFLECT THE LATEST CLIENT CHANGES.
- * 
- * This code example will help you get started using the GNS Java client library to access the GNS. 
- * In this example we will use an account you have created to write and read back some 
+ *
+ * This code example will help you get started using the GNS Java client library to access the GNS.
+ * In this example we will use an account you have created to write and read back some
  * information in the GNS.
-  
- * It uses the UniversalTcpClient class to issue HTTP requests the GNS service. 
+ *
+ * It uses the UniversalTcpClient class to issue HTTP requests the GNS service.
  * Some requests will return a value as a Java String. Requests that
- * don't expect a response to be returned will return the string +OK+. A bad 
+ * don't expect a response to be returned will return the string +OK+. A bad
  * response is indicated by the string +NO+. See the GnsProtocol class for more details.
- * 
- * You will need to create an account using your email at the site http://gns.name. 
+ *
+ * You will need to create an account using your email at the site http://gns.name.
  * Your email will be your account name. A public / private key pair will be generated when you register. The
  * GNS will store and use you public key for authentication. You will need to download the private key and
  * store it in a known location which you will also need to specify in the code below.
- * 
+ *
  * @author westy
  */
 public class GNSQuickStart {
-  
+
   // *** REPLACE THIS WITH THE VALUE YOU USED TO CREATE YOUR ACCOUNT ***
   // The email you used to create your GNS account guid
   private static final String accountId = "support@gns.name";
@@ -71,16 +71,16 @@ public class GNSQuickStart {
   // > openssl pkcs8 -topk8 -inform PEM -outform DER -in <input file>  -nocrypt > <output file>
   private static final String privateKeyFile = "/Users/Westy/test_key";
 
-  public static void main(String[] args) throws IOException, 
+  public static void main(String[] args) throws IOException,
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
-    
+
     // A convenience function that pops up a GUI for picking which GNS server you want to use.
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create a new client object
- GNSClientCommands client = new GNSClientCommands(null);
+    GNSClientCommands client = new GNSClientCommands(null);
     System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
-    
+
     // Retrive the GUID using the account id
     String guid = client.lookupGuid(accountId);
     System.out.println("Retrieved GUID for " + accountId + ": " + guid);
@@ -96,7 +96,7 @@ public class GNSQuickStart {
     // Create a GuidEntry
     GuidEntry accountGuid = new GuidEntry(accountId, guid, publicKey, privateKey);
     System.out.println("Created GUID entry: " + accountGuid.toString());
-    
+
     // Use the GuidEntry create a new record in the GNS
     client.fieldCreateOneElementList(accountGuid, "homestate", "Florida");
     System.out.println("Added location -> Florida record to the GNS for GUID " + accountGuid.getGuid());
@@ -104,15 +104,15 @@ public class GNSQuickStart {
     // Retrieve that record from the GNS
     String result = client.fieldReadArrayFirstElement(accountGuid.getGuid(), "homestate", accountGuid);
     System.out.println("Result of read location: " + result);
-    
+
     // Update the value of the field
     client.fieldReplace(accountGuid, "homestate", "Massachusetts");
     System.out.println("Changed location -> Massachusetts in the GNS for GUID " + accountGuid.getGuid());
-    
+
     // Retrieve that record from the GNS again
     result = client.fieldReadArrayFirstElement(accountGuid.getGuid(), "homestate", accountGuid);
     System.out.println("Result of read location: " + result);
-    
+
     System.exit(0);
   }
 }

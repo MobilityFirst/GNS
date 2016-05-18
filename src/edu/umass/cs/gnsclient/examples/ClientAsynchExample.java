@@ -45,18 +45,16 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import org.json.JSONObject;
 
 /**
- * In this example we demonstrate the asynchronous client. 
- * 
- * It sends read or update requests for one field in a guid. 
+ * In this example we demonstrate the asynchronous client.
+ *
+ * It sends read or update requests for one field in a guid.
  * If you supply the -write arg it updates otherwise reads.
- * You’ll want to run it once with the -write arg before running 
+ * You’ll want to run it once with the -write arg before running
  * it with read to actually put a value in the field.
  * It runs forever so hit CTRL-C to stop it.
  * <p>
@@ -79,7 +77,7 @@ public class ClientAsynchExample {
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
- GNSClientCommands client = new GNSClientCommands(null);
+    GNSClientCommands client = new GNSClientCommands(null);
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
@@ -99,7 +97,7 @@ public class ClientAsynchExample {
               + "\"location\":\"work\",\"name\":\"frank\"}");
       command = createAndSignCommand(CommandType.ReplaceUserJSON,
               accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
-              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), 
+              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(),
               WRITER, accountGuidEntry.getGuid());
     } else {
       command = createAndSignCommand(CommandType.Read,
@@ -139,8 +137,8 @@ public class ClientAsynchExample {
           CommandResult commandResult = client.removeAsynchResponse(id);
           System.out.println("commandResult for  " + id + " is "
                   + (commandResult.getErrorCode().equals(NSResponseCode.NO_ERROR)
-                          ? commandResult.getResult()
-                          : commandResult.getErrorCode().toString())
+                  ? commandResult.getResult()
+                  : commandResult.getErrorCode().toString())
                   + "\n"
                   + "Latency is " + commandResult.getClientLatency()
           );

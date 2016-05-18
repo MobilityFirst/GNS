@@ -298,13 +298,13 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
-    GNSConfig.getLogger().log(Level.INFO,
+    GNSConfig.getLogger().log(Level.FINE,
             "XXXXXXXXXXXXXXXXXXXXX allowRemoteLookup is {0}", allowRemoteLookup);
 
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GUID_INFO,
               handler.getApp(), false);
-      GNSConfig.getLogger().log(Level.INFO,
+      GNSConfig.getLogger().log(Level.FINE,
               "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1} {2}",
               new Object[]{guid, GUID_INFO, result != null ? result.getSummary() : result});
 
@@ -316,10 +316,10 @@ public class AccountAccess {
               "Problem extracting GUID_INFO from {0} :{1}", new Object[]{guid, e});
     }
 
-    GNSConfig.getLogger().log(Level.INFO,
+    GNSConfig.getLogger().log(Level.FINE,
             "XXXXXXXXXXXXXXXXXXXXX GUID_INFO NOT FOUND for {0}", guid);
     if (allowRemoteLookup) {
-      GNSConfig.getLogger().log(Level.INFO,
+      GNSConfig.getLogger().log(Level.FINE,
               "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for GUID_INFO for {0}", guid);
       String value = null;
       try {
