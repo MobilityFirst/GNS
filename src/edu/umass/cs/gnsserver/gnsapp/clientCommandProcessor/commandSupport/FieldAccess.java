@@ -574,7 +574,8 @@ public class FieldAccess {
   public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey,
           int interval,
           ClientRequestHandlerInterface handler) {
-    String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
+    String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
+    //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
     if (lookupGuidInfo(guid, handler, true) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.

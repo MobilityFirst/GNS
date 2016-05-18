@@ -109,16 +109,16 @@ public class BatchCreateTest {
         result = client.guidBatchCreate(masterGuid, aliases, true);
         System.out.println("result = " + result);
 
-        //make one non batch for comparison
-        client.guidCreate(masterGuid, "NOTBATCHALIAS");
+//        //make one non batch for comparison
+//        client.guidCreate(masterGuid, "NOTBATCHALIAS");
 
         // Store all the created aliases so we can remove them later
         for (String createdAlias : aliases) {
           createdSubGuids.add(GuidUtils.lookupGuidEntryFromDatabase(client, createdAlias));
         }
         
-        //make one non batch for comparison
-        createdSubGuids.add(GuidUtils.lookupGuidEntryFromDatabase(client, "NOTBATCHALIAS"));
+//        //make one non batch for comparison
+//        createdSubGuids.add(GuidUtils.lookupGuidEntryFromDatabase(client, "NOTBATCHALIAS"));
 
         guidCnt -= MAX_BATCH_SIZE;
         if (numberToCreate > MAX_BATCH_SIZE && guidCnt > 0) {
@@ -141,16 +141,20 @@ public class BatchCreateTest {
     } catch (ClientException | IOException | JSONException e) {
       System.out.println("Problem looking up account record: " + e);
     }
-
+    
+    String prefix = "";
     for (GuidEntry guidEntry : createdSubGuids) {
       try {
-        System.out.println("Looking up: " + guidEntry.getGuid());
+        //System.out.println("Looking up: " + guidEntry.getGuid());
         JSONObject guidRecord = client.lookupGuidRecord(guidEntry.getGuid());
-        System.out.println(guidRecord.toString());
-      } catch (IOException | ClientException e) {
+        System.out.print(prefix);
+        System.out.print(guidRecord.getString(GUID_RECORD_GUID));
+        prefix = ", ";
+      } catch (IOException | ClientException | JSONException e) {
         System.out.println("Problem looking up guid: " + e);
       }
     }
+    System.out.println();
 
     JSONObject command = null;
     JSONArray randomGuids = null;
@@ -173,7 +177,6 @@ public class BatchCreateTest {
           for (int i = 0; i < randomGuids.length(); i++) {
             client.fieldUpdate(randomGuids.getString(i), "environment", 8675309, masterGuid);
             result = client.fieldRead(randomGuids.getString(i), "environment", masterGuid);
-            //System.out.println("Read " + result);
           }
         }
       } catch (Exception e) {
@@ -181,18 +184,18 @@ public class BatchCreateTest {
       }
     }
 
-//    for (GuidEntry guidEntryToRemove : guidsToRemove) {
-//      try {
-//        client.guidRemove(masterGuid, guidEntryToRemove.getGuid());
-//      } catch (Exception e) {
-//        System.out.println("Problem removing guid: " + e);
-//      }
-//    }
-//    try {
-//      client.accountGuidRemove(masterGuid);
-//    } catch (Exception e) {
-//      System.out.println("Problem removing account guid: " + e);
-//    }
+    for (GuidEntry guidEntryToRemove : createdSubGuids) {
+      try {
+        client.guidRemove(masterGuid, guidEntryToRemove.getGuid());
+      } catch (Exception e) {
+        System.out.println("Problem removing guid: " + e);
+      }
+    }
+    try {
+      client.accountGuidRemove(masterGuid);
+    } catch (Exception e) {
+      System.out.println("Problem removing account guid: " + e);
+    }
   }
 
   /**

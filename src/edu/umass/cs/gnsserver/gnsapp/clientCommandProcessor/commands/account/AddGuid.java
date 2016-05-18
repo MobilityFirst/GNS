@@ -80,9 +80,9 @@ public class AddGuid extends BasicCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
 
-    byte[] publicKeyBytes = Base64.decode(publicKey);
-    String newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
-
+    String newGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
+//    byte[] publicKeyBytes = Base64.decode(publicKey);
+//    String newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);

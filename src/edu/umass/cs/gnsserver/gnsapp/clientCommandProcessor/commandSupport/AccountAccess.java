@@ -723,7 +723,7 @@ public class AccountAccess {
       for (int i = 0; i < names.size(); i++) {
         String name = names.get(i);
         String publicKey = publicKeys.get(i);
-        String guid = SharedGuidUtils.createGuidStringFromPublicKey(publicKey.getBytes());
+        String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
         accountInfo.addGuid(guid);
         guids.add(guid);
         // HRN records
