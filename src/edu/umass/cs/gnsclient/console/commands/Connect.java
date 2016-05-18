@@ -42,8 +42,7 @@ public class Connect extends ConsoleCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Connects to the GNS; third argument should be true if the server"
-            + " isn't using SSL (AKA SSL mode = CLEAR)";
+    return "Connects to the GNS";
   }
 
   @Override
@@ -54,7 +53,6 @@ public class Connect extends ConsoleCommand {
   @Override
   public String getCommandParameters() {
     return "";
-    //return "GnsHostName [GnsPortNumber] [disableSSL]";
   }
 
   /**
@@ -72,33 +70,22 @@ public class Connect extends ConsoleCommand {
     try {
       StringTokenizer st = new StringTokenizer(commandText);
       if (st.countTokens() > 0) {
-        console.printString("THE USE OF host, port and disableSSL HAS BEEN DEPRECATED AND WILL"
-                + " GO AWAY IN A FUTURE RELEASE! See instead gigapaxos.properties.\n");
+        console.printString("THE USE OF host, port and disableSSL is obsolete.\n"
+                + "   See instead gigapaxos.properties.\n");
       }
 
       GNSClientCommands gnsClient;
       gnsClient = new GNSClientCommands();
       if (!module.isSilent()) {
-        console.printString("Checking GNS connectivity.\n");
-      }
-      gnsClient.checkConnectivity();
-      if (!module.isSilent()) {
-        console.printString("Connected to GNS.");
+        console.printString("Connected to GNS.\n");
       }
       // Set the global variable for other activities
       module.setPromptString(ConsoleModule.CONSOLE_PROMPT + "Connected to GNS>");
       module.setGnsClient(gnsClient);
-
-//      // If no default GNS has been defined yet, use this GNS as the default
-//      if (KeyPairUtils.getDefaultGns() == null) {
-//        module.setUseGnsDefaults(true);
-//        KeyPairUtils.setDefaultGns(gnsHost + ":" + gnsPort + ":" + Boolean.toString(disableSSL));
-//        module.printString(gnsHost + ":" + gnsPort + " saved as default GNS.\n");
-//      }
     } catch (Exception e) {
       console.printString("Failed to connect to GNS ( " + e + ")\n");
       module.setGnsClient(null);
-      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + "not connected to GNS>");
+      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + "not connected>");
     }
   }
 }

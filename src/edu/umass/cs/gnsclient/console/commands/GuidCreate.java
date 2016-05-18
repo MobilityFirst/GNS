@@ -139,7 +139,7 @@ public class GuidCreate extends ConsoleCommand
       if (module.getCurrentGuid() == null)
       {
         module.setCurrentGuidAndCheckForVerified(myGuid);
-        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
+        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + aliasName + ">");
       }
     }
     catch (Exception e)

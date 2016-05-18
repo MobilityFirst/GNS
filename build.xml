@@ -68,14 +68,14 @@
   </target>
   
   <fileset id="client.includes" dir="${build.classes.dir}"
-               includes="**/*.class"/>
-<!--           includes="edu/umass/cs/gnsclient/**/*.class,
-                     edu/umass/cs/gnscommon/**/*.class,
-                     edu/umass/cs/gnsserver/**/*.class, 
-                     org/**/*.class"-->
+           includes="**/*.class"/>
+  <!--           includes="edu/umass/cs/gnsclient/**/*.class,
+  edu/umass/cs/gnscommon/**/*.class,
+  edu/umass/cs/gnsserver/**/*.class, 
+  org/**/*.class"-->
                      
   <fileset id="console.properties" dir="${src.dir}">
-        <include name="edu/umass/cs/gnsclient/console/console.properties" />
+    <include name="edu/umass/cs/gnsclient/console/console.properties" />
   </fileset>
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
@@ -128,7 +128,7 @@
       <fileset refid="client.keystore" />
       <fileset refid="console.properties" />
       <zipgroupfileset refid="client.lib" />
-<!--      <fileset dir="${src.dir}">
+      <!--      <fileset dir="${src.dir}">
         <include name="edu/umass/cs/gnsclient/console/console.properties" />
       </fileset>-->
     </jar>
