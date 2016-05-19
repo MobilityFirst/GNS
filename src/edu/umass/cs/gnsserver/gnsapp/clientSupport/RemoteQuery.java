@@ -309,7 +309,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * Deletes a record at the appropriate reconfigurators.
    *
    * @param name
-   * @return
+   * @return an NSResponseCode
    */
   public NSResponseCode deleteRecord(String name) {
     try {

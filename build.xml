@@ -145,9 +145,19 @@
     <javadoc packagenames="edu.umass.cs.*" 
              sourcepath="${src.dir}" 
              destdir="${build.dir}/doc"
-             additionalparam="-Xdoclint:none">
+             additionalparam="-Xdoclint:none"
+             author="true"
+             version="true"
+             use="true"
+             public="true"
+             windowtitle="GNS API (specification ${VERSION}-${RELEASE})">
+      <doctitle>
+       <![CDATA[<h1>GNS API (specification ${VERSION}-${RELEASE})</h1>]]>
+      </doctitle>
+      <bottom>
+      <![CDATA[<i>Copyright &#169; 2014-2016 University of Massachusetts - All Rights Reserved.</i>]]>
+      </bottom>
       <classpath refid="classpath.base"/>
-      <!--      <link href="http://java.sun.com/javase/6/docs/api/"/>-->
     </javadoc>
     <mkdir dir="${dist.dir}/doc"/>
     <copy todir="${dist.dir}/doc">

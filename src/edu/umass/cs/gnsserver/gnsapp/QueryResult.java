@@ -81,7 +81,7 @@ public class QueryResult<NodeIDType> implements Serializable {
   /**
    * Gets the ValuesMap of this QueryResult.
    *
-   * @return
+   * @return the ValuesMap
    */
   public ValuesMap getValuesMap() {
     return valuesMap;
@@ -90,7 +90,7 @@ public class QueryResult<NodeIDType> implements Serializable {
   /**
    * Gets the ValuesMap, but scrubs any internal fields first.
    *
-   * @return
+   * @return the ValuesMap
    */
   public ValuesMap getValuesMapSansInternalFields() {
     ValuesMap copy = new ValuesMap(valuesMap);
@@ -102,7 +102,7 @@ public class QueryResult<NodeIDType> implements Serializable {
    * Gets one ResultValue from the ValuesMap.
    *
    * @param key
-   * @return
+   * @return the ResultValue
    */
   public ResultValue getArray(String key) {
     if (valuesMap != null) {
@@ -151,7 +151,7 @@ public class QueryResult<NodeIDType> implements Serializable {
    * Instrumentation - holds the time between the LNS sending the request to the NS and the return message
    * being received.
    *
-   * @return
+   * @return the round trip time
    */
   public long getRoundTripTime() {
     return roundTripTime;

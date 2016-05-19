@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (c) 2015 University of Massachusetts
+ *  Copyright (c) 2016 University of Massachusetts
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you
  *  may not use this file except in compliance with the License. You
@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy, Emmanuel Cecchet
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsclient.examples;

@@ -86,7 +86,7 @@ public enum NSResponseCode implements Serializable{
    * The integer response codes are used to encode the response code when there are sent in JSON encoded packets.
    * 
    * @param codeValue
-   * @return 
+   * @return the NSResponseCode
    */
   public static NSResponseCode getResponseCode(int codeValue) {
     return responseCodes[codeValue];

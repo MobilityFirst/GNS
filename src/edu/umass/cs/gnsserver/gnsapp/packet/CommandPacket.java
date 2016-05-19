@@ -24,7 +24,6 @@ import java.net.InetSocketAddress;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.MessageNIOTransport;
@@ -144,7 +143,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   /**
    * Converts the command object into a JSONObject.
    *
-   * @return
+   * @return the JSONObject
    * @throws org.json.JSONException
    */
   @Override
@@ -190,7 +189,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   /**
    * For ClientRequest.
    *
-   * @return
+   * @return the response
    */
   @Override
   public ClientRequest getResponse() {

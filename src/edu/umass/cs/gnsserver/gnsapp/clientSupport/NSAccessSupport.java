@@ -300,7 +300,7 @@ public class NSAccessSupport {
    *
    * @param messageStringWithSignatureParts
    * @param signatureParts
-   * @return
+   * @return the string without the signature
    */
   public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
     ClientSupportConfig.getLogger().log(Level.FINER, "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});
