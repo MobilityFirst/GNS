@@ -142,7 +142,7 @@ public class ConsoleModule {
     return console.getHistory().getHistoryList();
   }
 
-  private final static int NUMBER_OF_HISTORY_ITEMS_TO_STORE = 100;
+  private final static int NUMBER_OF_HISTORY_ITEMS_TO_STORE = 20;
 
   /**
    * Store the current command history

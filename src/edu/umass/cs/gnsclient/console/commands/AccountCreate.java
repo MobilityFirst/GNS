@@ -121,7 +121,7 @@ public class AccountCreate extends ConsoleCommand
 
       if (!module.isSilent())
       {
-        printString("Created an account with GUID " + myGuid.getGuid() + ". "
+        printString("Created an account with GUID " + myGuid.getGuid() + ".\n"
 //                + "An email might have been sent to "
 //            + myGuid.getEntityName() + " with instructions on how to verify the new account.\n"
         );
