@@ -55,16 +55,16 @@ public class ActiveCodeQueryHelper {
 
 	/**
 	 * Reads a local guid/field from the GNS
-	 * @param guid the guid
+	 * @param quieriedGuid the guid
 	 * @param field the field
 	 * @return the ValuesMap object encapsulated in a ActiveCodeQueryResponse object
 	 */
-	private ActiveCodeQueryResponse readLocalGuid(String guid, String field) {
+	private ActiveCodeQueryResponse readLocalGuid(String quieriedGuid, String field) {
 		String valuesMapString = null;
 		boolean success = false;
 		
 		try {
-			NameRecord nameRecord = null; //NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
+			NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), quieriedGuid, ColumnFieldType.USER_JSON, field);
 			if(nameRecord.containsUserKey(field)) {
 				ValuesMap vm = nameRecord.getValuesMap();
 				valuesMapString = vm.toString();
@@ -80,17 +80,17 @@ public class ActiveCodeQueryHelper {
 	
 	/**
 	 * Writes a values map to a field for a given local guid
-	 * @param guid the guid
+	 * @param queriedGuid the guid
 	 * @param field the field
 	 * @param valuesMapString the values map object
 	 * @return an ActiveCodeQueryResponse object indicating the status of the write
 	 */
-	private ActiveCodeQueryResponse writeLocalGuid(String guid, String field, String valuesMapString) {
+	private ActiveCodeQueryResponse writeLocalGuid(String queriedGuid, String field, String valuesMapString) {
 		boolean success = false;
 		
 		try {
 			ValuesMap userJSON = new ValuesMap(new JSONObject(valuesMapString));
-			NameRecord nameRecord = null; //NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
+			NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), queriedGuid, ColumnFieldType.USER_JSON, field);
 			nameRecord.updateNameRecord(field, null, null, 0, userJSON,
 		              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 			success = true;
@@ -226,6 +226,7 @@ public class ActiveCodeQueryHelper {
  						NameRecord codeRecord = app.read(currentGuid, targetGuid, ActiveCode.ON_WRITE);
 				                  
 						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
+						
 						start = System.nanoTime();
 						if (codeRecord != null && ActiveCodeHandler.hasCode(codeRecord, "write")) {
 							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_WRITE);

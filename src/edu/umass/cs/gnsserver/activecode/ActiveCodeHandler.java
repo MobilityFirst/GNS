@@ -36,9 +36,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
@@ -97,8 +95,7 @@ public class ActiveCodeHandler {
 			public NameRecord read(String querierGuid, String queriedGuid, String field) {
 				NameRecord record = null;
 				try {
-					//NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), queriedGuid, null, 
-					//	  ColumnFieldType.USER_JSON, field);
+					record = NameRecord.getNameRecordMultiUserFields(getDB(), queriedGuid, ColumnFieldType.USER_JSON, field);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -108,9 +105,10 @@ public class ActiveCodeHandler {
 			@Override
 			public boolean write(String querierGuid, String queriedGuid, String field, ValuesMap valuesMap) {
 				try {
-					//NameRecord nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), queriedGuid, null, ColumnFieldType.USER_JSON, field);
-					//nameRecord.updateNameRecord(field, null, null, 0, valuesMap,
-					//         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
+					NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), 
+							queriedGuid, ColumnFieldType.USER_JSON, field);
+					nameRecord.updateNameRecord(field, null, null, 0, valuesMap,
+					         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

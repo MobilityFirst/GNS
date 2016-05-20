@@ -61,10 +61,12 @@ public class CreateMultiGuidClient {
       try {
         guidAccount = lookupOrCreateAccountGuid(client, name, "password");
       } catch (VerificationException e) {
+    	  e.printStackTrace();
         // ignore verification exceptions
       } catch (Exception e) {
-        System.out.println("Exception during accountGuid creation: " + e);
-        System.exit(1);
+    	  e.printStackTrace();
+    	  System.out.println("Exception during accountGuid creation: " + e);
+    	  System.exit(1);
       }
 
       System.out.println(name + ":" + guidAccount.getGuid());
