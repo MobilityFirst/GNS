@@ -20,7 +20,9 @@
 package edu.umass.cs.gnscommon;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
@@ -303,11 +305,12 @@ public class GNSCommandProtocol {
   }
 
   /**
+   * arun: converted to HashSet.
    * The list of command types that are updated commands.
    */
   // FIXME: hang this off the individual commands
-  public final static List<String> UPDATE_COMMANDS
-          = Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
+  public final static Set<String> UPDATE_COMMANDS
+          = new HashSet<String>(Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
                   APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
                   APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
                   SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
@@ -316,22 +319,23 @@ public class GNSCommandProtocol {
                   ACL_ADD, ACL_REMOVE,
                   //
                   ADD_TAG, REMOVE_TAG
-          );
+          ));
 
   /**
+   * arun: converted to HashSet.
    * The list of command types that create and delete records.
    */
-  public final static List<String> CREATE_DELETE_COMMANDS
-          = Arrays.asList(REGISTER_ACCOUNT, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
+  public final static Set<String> CREATE_DELETE_COMMANDS
+          = new HashSet<String>(Arrays.asList(REGISTER_ACCOUNT, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
                   REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS//,
           //                ADD_TO_GROUP, REMOVE_FROM_GROUP
-          );
+          ));
 
   /**
    * The list of command types that are read commands.
    */
-  public final static List<String> READ_COMMANDS
-          = Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE);
+  public final static Set<String> READ_COMMANDS
+          = new HashSet<String>(Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE));
   //
 
   public final static String NEWLINE = System.getProperty("line.separator");

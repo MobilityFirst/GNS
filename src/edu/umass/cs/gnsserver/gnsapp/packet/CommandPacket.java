@@ -29,9 +29,14 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
+
 import java.util.logging.Level;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
@@ -130,10 +135,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       this.LNSRequestId = json.getLong(CLIENTREQUESTID);//-1;
     }
     this.senderAddress = json.optString(SENDERADDRESS, null);
-    this.senderPort = json.optInt(SENDERPORT, -1);
+    this.senderPort = json.has(SENDERPORT) ? json.getInt(SENDERPORT) : -1;
     this.command = json.getJSONObject(COMMAND);
 
-    this.myListeningAddress = MessageNIOTransport.getReceiverAddress(command);
+    this.myListeningAddress = null;//MessageNIOTransport.getReceiverAddress(json);
 
   }
 
@@ -299,12 +304,18 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return "unknown";
   }
 
-  public boolean getCommandCoordinateReads() {
-    if (command != null) {
-      return command.optBoolean(GNSCommandProtocol.COORDINATE_READS, false);
-    }
-    return false;
-  }
+	public boolean getCommandCoordinateReads() {
+		try {
+			// arun: optBoolean is inefficient (~6us)
+			return command != null
+					&& command.has(GNSCommandProtocol.COORDINATE_READS)
+					&& command.getBoolean(GNSCommandProtocol.COORDINATE_READS);
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
 
   public int getCommandInteger() {
     if (command != null) {
@@ -325,8 +336,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     } else {
       // Cache it.
       needsCoordinationExplicitlySet = true;
-      needsCoordination = GNSCommandProtocol.UPDATE_COMMANDS.contains(getCommandName())
-              || (getCommandCoordinateReads() && GNSCommandProtocol.READ_COMMANDS.contains(getCommandName()));
+      String cmdName = getCommandName();
+      needsCoordination = (GNSCommandProtocol.READ_COMMANDS.contains(cmdName) && getCommandCoordinateReads() )
+    		  || GNSCommandProtocol.UPDATE_COMMANDS.contains(cmdName)
+              ;
       if (needsCoordination) {
         GNSConfig.getLogger().log(Level.FINE, "{0} needs coordination", this);
       }

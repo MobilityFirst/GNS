@@ -357,7 +357,8 @@ public class RemoteQuery extends ClientAsynchBase {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} {1} got from {2} this: {3}",
                 new Object[]{this, packet.getServiceName(),
-                  packet.getResponder(), returnValue});
+                  "unknown"//packet.getResponder()
+        		, returnValue});
         // FIX ME: Tidy up all these error reponses for updates
         return checkResponse(returnValue);
       }

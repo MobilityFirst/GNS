@@ -172,6 +172,7 @@ public abstract class AbstractGNSClient {
           Object... keysAndValues)
           throws ClientException {
     try {
+    	long t = System.nanoTime();
       JSONObject result = new JSONObject();
       String key;
       Object value;
@@ -185,6 +186,7 @@ public abstract class AbstractGNSClient {
       if (forceCoordinatedReads) {
         result.put(COORDINATE_READS, true);
       }
+      DelayProfiler.updateDelayNano("createCommand", t);
       return result;
     } catch (JSONException e) {
       throw new ClientException("Error encoding message", e);
@@ -241,18 +243,27 @@ public abstract class AbstractGNSClient {
    * @return result of command as a string
    * @throws IOException if an error occurs
    */
+  private ConcurrentHashMap<Long, Object> monitorMap = new ConcurrentHashMap<Long, Object>();
   private String desktopSendCommmandAndWait(JSONObject command) throws IOException {
-    long id = desktopSendCommmandNoWait(command);
+      Object myMonitor = new Object();
+      long id;
+      monitorMap.put(id=this.generateNextRequestID(), myMonitor);
+
+    desktopSendCommmandNoWait(command, id);
     // now we wait until the correct packet comes back
     try {
       GNSClientConfig.getLogger().log(Level.FINE,
               "{0} waiting for query {1}",
               new Object[]{this, id + ""});
-      synchronized (monitor) {
+      
+      
+      synchronized (myMonitor) {
         long monitorStartTime = System.currentTimeMillis();
-        while (!resultMap.containsKey(id) && (readTimeout == 0 || System.currentTimeMillis() - monitorStartTime < readTimeout)) {
-          monitor.wait(readTimeout);
-        }
+        while(monitorMap.containsKey(id))
+        	myMonitor.wait();
+//        while (!resultMap.containsKey(id) && (readTimeout == 0 || System.currentTimeMillis() - monitorStartTime < readTimeout)) {
+//          monitor.wait(readTimeout);
+//        }
         if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
           GNSClientConfig.getLogger().log(Level.FINE,
                   "{0} timed out after {1}ms on {2}: {3}",
@@ -275,7 +286,8 @@ public abstract class AbstractGNSClient {
             new Object[]{command.optString(COMMANDNAME, "Unknown"),
               command.optString(GUID, ""),
               command.optString(NAME, ""), id,
-              result.getResponder()});
+              "unknown"//result.getResponder()
+              });
     return result.getResult();
   }
 
@@ -290,6 +302,16 @@ public abstract class AbstractGNSClient {
     DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
     return id;
   }
+  private long desktopSendCommmandNoWait(JSONObject command,long id) throws IOException {
+	    long startTime = System.currentTimeMillis();
+	    CommandPacket packet = new CommandPacket(id, command);
+	    GNSClientConfig.getLogger().log(Level.FINE, "{0} sending {1}:{2}",
+	            new Object[]{this, id + "", packet.getSummary()});
+	    queryTimeStamp.put(id, startTime);
+	    sendCommandPacket(packet);
+	    DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
+	    return id;
+	  }
 
   private String androidSendCommandAndWait(JSONObject command) throws IOException {
     final AndroidNIOTask sendTask = androidSendCommandNoWait(command);
@@ -381,7 +403,9 @@ public abstract class AbstractGNSClient {
             Level.FINE,
             "{0} received response {1}:{2} from {3}",
             new Object[]{this, id + "", response.getSummary(),
-              packet != null ? packet.getResponder() : error.getSender()});
+              packet != null ? 
+            		  "unknown"//packet.getResponder() 
+            		  : error.getSender()});
     long queryStartTime = queryTimeStamp.remove(id);
     long latency = receivedTime - queryStartTime;
     movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
@@ -396,10 +420,16 @@ public abstract class AbstractGNSClient {
 
     // differentiates between synchronusly and asynchronusly sent
     if (!pendingAsynchPackets.containsKey(id)) {
+    	Object myMonitor = monitorMap.remove(id);
+    	assert(myMonitor!=null) : "No monitor entry found for request " + id;
+    	if(myMonitor!=null)
+    		synchronized(myMonitor) {
+    			myMonitor.notify();
+    		}
       // for synchronus sends we notify waiting threads
-      synchronized (monitor) {
-        monitor.notifyAll();
-      }
+//      synchronized (monitor) {
+//        monitor.notifyAll();
+//      }
     } else {
       // Handle the asynchronus packets
       // note that we have recieved the reponse

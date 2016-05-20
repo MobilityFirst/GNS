@@ -1,5 +1,7 @@
 #!/bin/bash
 #echo $PWD
+#DIRNAME="`dirname \"$0\"`"
+IDE_PATH=build/classes:build/test/classes:lib/*
 
 # should use matching gigapaxos properties with servers
 java -ea -DgigapaxosConfig=conf/gigapaxos.client.singleNode.local.properties \
@@ -8,4 +10,4 @@ java -ea -DgigapaxosConfig=conf/gigapaxos.client.singleNode.local.properties \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
 -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp \
-.:build/classes:build/test/classes:jars/GNSClient.jar $*
+$IDE_PATH:jars/GNSClient.jar $*

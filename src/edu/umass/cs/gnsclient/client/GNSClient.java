@@ -6,11 +6,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
@@ -18,6 +22,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
@@ -69,7 +74,8 @@ public class GNSClient extends AbstractGNSClient {
               "Unable to find any reconfigurator addresses; "
               + "at least one needed to initialize client");
     }
-    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(), ReconfigurationConfig.getClientPortSSLOffset());
+    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(), 
+    		ReconfigurationConfig.getClientPortOffset());
     this.checkConnectivity();
   }
 
@@ -212,7 +218,7 @@ public class GNSClient extends AbstractGNSClient {
    * Straightforward async client implementation that expects only one packet
    * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
    */
-  static class AsyncClient extends ReconfigurableAppClientAsync {
+  static class AsyncClient extends ReconfigurableAppClientAsync implements AppRequestParserBytes {
 
     private static Stringifiable<String> unstringer = new StringifiableDefault<>(
             "");
@@ -263,6 +269,11 @@ public class GNSClient extends AbstractGNSClient {
     public Set<IntegerPacketType> getRequestTypes() {
       return clientPacketTypes;
     }
+
+	@Override
+	public Request getRequest(byte[] bytes, NIOHeader header) {
+		return GNSApp.getRequestStatic(bytes, header, unstringer);
+	}
   }
 
   public static void main(String[] args) throws IOException {

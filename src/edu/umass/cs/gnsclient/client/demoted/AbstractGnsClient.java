@@ -374,7 +374,8 @@ public class AbstractGnsClient {
             new Object[]{command.optString(COMMANDNAME, "Unknown"),
               command.optString(GUID, ""),
               command.optString(NAME, ""), id,
-              result.getResponder()});
+              "unknwon"//result.getResponder()
+              });
     return result.getResult();
   }
 
@@ -479,7 +480,9 @@ public class AbstractGnsClient {
             Level.FINE,
             "{0} received response {1}:{2} from {3}",
             new Object[]{this, id + "", response.getSummary(),
-              packet != null ? packet.getResponder() : error.getSender()});
+              packet != null ? 
+            		  "unknown"//packet.getResponder() 
+            		  : error.getSender()});
     long queryStartTime = queryTimeStamp.remove(id);
     long latency = receivedTime - queryStartTime;
     movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);

@@ -21,11 +21,14 @@ package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
+import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -38,11 +41,14 @@ import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
@@ -65,17 +71,25 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GNSAdminHttpServer;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.nio.MessageExtractor;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
 import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
@@ -89,7 +103,7 @@ import java.util.logging.Level;
  */
 public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         implements GNSApplicationInterface<String>, Replicable, Reconfigurable,
-        ClientMessenger {
+        ClientMessenger, AppRequestParserBytes {
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private String nodeID;
@@ -265,11 +279,58 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     PacketType.COMMAND,
     PacketType.COMMAND_RETURN_VALUE};
 
+	/**
+	 * arun: The code below {@link #incrResponseCount(ClientRequest)} and
+	 * {@link #executeNoop(Request)} is for instrumentation only and will go
+	 * away soon.
+	 */
+  
+  private static final int RESPONSE_COUNT_THRESHOLD=100;
+  private static boolean doneOnce = false;
+
+	private synchronized void incrResponseCount(ClientRequest response) {
+		if (responseCount++ > RESPONSE_COUNT_THRESHOLD
+				&& response instanceof CommandValueReturnPacket
+				&& (!doneOnce && (doneOnce = true)))
+			try {
+				this.cachedResponse = ((CommandValueReturnPacket) response)
+						.toJSONObject();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+
+	private static final boolean EXECUTE_NOOP_ENABLED = Config.getGlobalBoolean(GNSTC.EXECUTE_NOOP_ENABLED);
+	private int responseCount = 0;
+	private JSONObject cachedResponse = null;
+
+	private boolean executeNoop(Request request) {
+		if(!EXECUTE_NOOP_ENABLED) return false;
+		if (cachedResponse != null
+				&& request instanceof CommandPacket
+				&& ((CommandPacket) request).getCommandName().equals(
+						GNSCommandProtocol.READ)) {
+			try {
+				((BasicPacketWithClientAddress) request)
+						.setResponse(new CommandValueReturnPacket(cachedResponse)
+								.setClientRequestAndLNSIds(((ClientRequest) request)
+										.getRequestID()));
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return true;
+		}
+		return false;
+	}
+  
   @SuppressWarnings("unchecked")
   // we explicitly check type
   @Override
   public boolean execute(Request request, boolean doNotReplyToClient) {
     boolean executed = false;
+    if(executeNoop(request)) return true;
     try {
       Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType
               ? (Packet.PacketType) request.getRequestType()
@@ -356,13 +417,50 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       return new NoopPacket();
     }
     try {
+    	long t = System.nanoTime();
       JSONObject json = new JSONObject(string);
+      if(Util.oneIn(1000)) DelayProfiler.updateDelayNano("jsonificationApp", t);
       Request request = (Request) Packet.createInstance(json, nodeConfig);
       return request;
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }
   }
+  
+	/**
+	 * This method avoids an unnecessary restringification (as is the case with
+	 * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
+	 * the sender information, and then creating a packet out of it.
+	 * 
+	 * @param msgBytes
+	 * @param header
+	 * @param unstringer
+	 * @return Request constructed from msgBytes.
+	 */
+	public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
+			Stringifiable<String> unstringer) {
+		Request request = null;
+		try {
+	    	long t = System.nanoTime();
+			JSONObject json = new JSONObject(
+					JSONPacket.couldBeJSON(msgBytes) ? new String(msgBytes,
+							NIOHeader.CHARSET) : new String(msgBytes,
+							Integer.BYTES, msgBytes.length - Integer.BYTES,
+							NIOHeader.CHARSET));
+			MessageExtractor.stampAddressIntoJSONObject(header.sndr,
+					header.rcvr, json);
+			request = (Request) Packet.createInstance(json, unstringer);
+	        if(Util.oneIn(100)) DelayProfiler.updateDelayNano("getRequest."+request.getClass().getSimpleName(), t);
+		} catch (JSONException | UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		return request;
+	}
+	
+	@Override
+	public Request getRequest(byte[] msgBytes, NIOHeader header) {
+		return getRequestStatic(msgBytes, header, nodeConfig);
+	}
 
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
@@ -524,6 +622,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       if (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) {
         ((BasicPacketWithClientAddress) originalRequest)
                 .setResponse((ClientRequest) response);
+        incrResponseCount((ClientRequest) response);
       }
       GNSConfig.getLogger().log(Level.FINE,
               "{0} set response {1} for requesting client {2} for request {3}",

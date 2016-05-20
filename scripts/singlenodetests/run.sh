@@ -23,6 +23,6 @@ java -ea -DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
--Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp jars/GNS.jar \
+-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp $IDE_PATH:jars/GNS.jar \
 edu.umass.cs.gnsserver.localnameserver.LocalNameServer -configFile \
 $SCRIPTS/lns.properties  &

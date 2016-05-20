@@ -91,6 +91,13 @@ public class GNSTestingConfig {
 		 * Use only account GUIDs, no sub-GUIDs.
 		 */
 		ACCOUNT_GUIDS_ONLY(false),
+		
+		/**
+		 * If enabled, the GNS will cache and return the same value for reads. 
+		 * 
+		 * Code-breaking if enabled. Meant only for instrumentation.
+		 */
+		EXECUTE_NOOP_ENABLED (false),
 
 		;
 
