@@ -58,15 +58,15 @@ public class GNSConfig {
 			return this.defaultValue;
 		}
 
+		// FIXME: a better default name? 
 		@Override
 		public String getConfigFileKey() {
 			return "gigapaxosConfig";
 		}
 
-		// FIXME: a better default name?
 		@Override
 		public String getDefaultConfigFile() {
-			return "gigapaxos.properties";
+			return "gns.server.properties";
 		}
 	}
 	

@@ -288,6 +288,7 @@
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>

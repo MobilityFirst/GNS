@@ -25,6 +25,8 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
+import edu.umass.cs.utils.Config;
+
 /**
  * Contains logging and other main utilities for the GNS client.
  * 
@@ -43,6 +45,39 @@ public class GNSClientConfig {
   public static final Logger getLogger() {
     return LOG;
   }
+  
+	/**
+	 *
+	 */
+	public static enum GNSCC implements Config.ConfigurableEnum {
+		/**
+		 * Used by AbstractGNSClient to use a single global monitor (bad old style) for all requests.
+		 */
+		USE_GLOBAL_MONITOR(false),
+		;
+
+		final Object defaultValue;
+
+		GNSCC(Object defaultValue) {
+			this.defaultValue = defaultValue;
+		}
+
+		@Override
+		public Object getDefaultValue() {
+			return this.defaultValue;
+		}
+
+		@Override
+		public String getConfigFileKey() {
+			return "gigapaxosConfig";
+		}
+
+		@Override
+		public String getDefaultConfigFile() {
+			return "gns.client.properties";
+		}
+	}
+
   
   /**
    * @return Try to figure out the build version.

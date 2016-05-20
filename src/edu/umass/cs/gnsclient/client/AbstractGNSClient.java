@@ -24,23 +24,28 @@ import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.utils.Util;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.android.AndroidNIOTask;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.gnsclient.client.util.Util;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -235,6 +240,7 @@ public abstract class AbstractGNSClient {
     }
   }
 
+  private static final boolean USE_GLOBAL_MONITOR=Config.getGlobalBoolean(GNSCC.USE_GLOBAL_MONITOR);
   /**
    * Sends a command to the server.
    * Waits for the response packet to come back.
@@ -256,14 +262,23 @@ public abstract class AbstractGNSClient {
               "{0} waiting for query {1}",
               new Object[]{this, id + ""});
       
-      
-      synchronized (myMonitor) {
-        long monitorStartTime = System.currentTimeMillis();
-        while(monitorMap.containsKey(id))
-        	myMonitor.wait();
-//        while (!resultMap.containsKey(id) && (readTimeout == 0 || System.currentTimeMillis() - monitorStartTime < readTimeout)) {
-//          monitor.wait(readTimeout);
-//        }
+      long monitorStartTime = System.currentTimeMillis();
+			if (!USE_GLOBAL_MONITOR) {
+				synchronized (myMonitor) {
+					while (monitorMap.containsKey(id) && (readTimeout == 0 || System.currentTimeMillis()
+							- monitorStartTime < readTimeout))
+						myMonitor.wait(readTimeout);
+				}
+			} else {
+				synchronized (monitor) {
+					while (!resultMap.containsKey(id)
+							&& (readTimeout == 0 || System.currentTimeMillis()
+									- monitorStartTime < readTimeout)) {
+						monitor.wait(readTimeout);
+					}
+				}
+			}
+			
         if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
           GNSClientConfig.getLogger().log(Level.FINE,
                   "{0} timed out after {1}ms on {2}: {3}",
@@ -274,7 +289,6 @@ public abstract class AbstractGNSClient {
            */
           return BAD_RESPONSE + " " + TIMEOUT;
         }
-      }
       GNSClientConfig.getLogger().log(Level.FINE,
               "Response received for query {0}", new Object[]{id + ""});
     } catch (InterruptedException x) {
@@ -336,51 +350,6 @@ public abstract class AbstractGNSClient {
   }
 
   /**
-   * Called when a command value return packet is received.
-   *
-   * @param json
-   * @param receivedTime
-   * @throws JSONException
-   */
-  public void handleCommandValueReturnPacket(JSONObject json, long receivedTime) throws JSONException {
-    long methodStartTime = System.currentTimeMillis();
-    CommandValueReturnPacket packet = new CommandValueReturnPacket(json);
-    long id = packet.getClientRequestId();
-    // *INSTRUMENTATION*
-    GNSClientConfig.getLogger().log(Level.FINE, "{0} received response {1}",
-            new Object[]{this, packet.getSummary()});
-    long queryStartTime = queryTimeStamp.remove(id);
-    long latency = receivedTime - queryStartTime;
-    movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
-    // *END OF INSTRUMENTATION*
-    GNSClientConfig.getLogger().log(Level.FINE,
-            "Handling return packet: {0}", new Object[]{json});
-    // store the response away
-    resultMap.put(id, new CommandResult(packet, receivedTime, latency));
-    // This differentiates between packets sent synchronusly and asynchronusly
-    if (!pendingAsynchPackets.containsKey(id)) {
-      // for synchronus sends we notify waiting threads
-      synchronized (monitor) {
-        monitor.notifyAll();
-      }
-    } else {
-      // Handle the asynchronus packets
-      // note that we have recieved the reponse
-      GNSClientConfig.getLogger().log(Level.FINE, "Removing async return packet: {0}",
-              new Object[]{json});
-
-      pendingAsynchPackets.remove(id);
-      // * INSTRUMENTATION *
-      // Record errors 
-      if (packet.getErrorCode().isAnError()) {
-        totalAsynchErrors++;
-      }
-    }
-    DelayProfiler.updateCount("handleCommandValueReturnPacket", 1);
-    DelayProfiler.updateDelay("handleCommandValueReturnPacket", methodStartTime);
-  }
-
-  /**
    * arun: Handles both command return values and active replica error
    * messages.
    *
@@ -421,15 +390,17 @@ public abstract class AbstractGNSClient {
     // differentiates between synchronusly and asynchronusly sent
     if (!pendingAsynchPackets.containsKey(id)) {
     	Object myMonitor = monitorMap.remove(id);
-    	assert(myMonitor!=null) : "No monitor entry found for request " + id;
-    	if(myMonitor!=null)
+    	assert(myMonitor!=null) : Util.suicide("No monitor entry found for request " + id);
+    	if(!USE_GLOBAL_MONITOR && myMonitor!=null)
     		synchronized(myMonitor) {
     			myMonitor.notify();
     		}
-      // for synchronus sends we notify waiting threads
-//      synchronized (monitor) {
-//        monitor.notifyAll();
-//      }
+      /* for synchronous sends we notify waiting threads.
+       * arun: Needed now only for Android if at all.
+       */
+      synchronized (monitor) {
+        monitor.notifyAll();
+      }
     } else {
       // Handle the asynchronus packets
       // note that we have recieved the reponse

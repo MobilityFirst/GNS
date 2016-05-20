@@ -24,8 +24,6 @@ while [[ $i -lt $RUNS ]]; do
   # the actual command
   $1
 
-  i=`expr $i + 1`; 
-
   if [[ $? == 0 ]]; then
     successes=`expr $successes + 1`
   else 
@@ -33,6 +31,7 @@ while [[ $i -lt $RUNS ]]; do
   fi
   echo "===================successes=$successes, failures=$failures=================="
 
+  i=`expr $i + 1`; 
   if [[ ! -z $SLEEP ]]; then
     sleep $SLEEP
   fi

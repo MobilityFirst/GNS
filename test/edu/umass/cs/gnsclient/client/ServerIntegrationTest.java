@@ -79,13 +79,23 @@ public class ServerIntegrationTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  private static String SERVER_COMMAND="scripts/3nodeslocal/reset_and_restart.sh";
+  private static String OUTPUT_REDIRECTION=" 2>/tmp/log";
+  
+  public static void setServerCommand(String cmd) {
+	  SERVER_COMMAND=cmd;
+  }
+  public static void setOutputRedirection(String cmd) {
+	  OUTPUT_REDIRECTION=cmd;
+  }
+  
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Run the server.
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
       ArrayList<String> output = RunServer.command(
-              "scripts/3nodeslocal/reset_and_restart.sh 2>/tmp/log", ".");
+    		  SERVER_COMMAND + OUTPUT_REDIRECTION, ".");
       System.out.println("output=" + output);
       if (output != null) {
         for (String line : output) {
