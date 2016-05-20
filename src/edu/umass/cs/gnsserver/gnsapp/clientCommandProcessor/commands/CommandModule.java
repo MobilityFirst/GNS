@@ -171,7 +171,7 @@ public class CommandModule {
               "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
       return null;
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
+    ClientCommandProcessorConfig.getLogger().log(Level.FINE,
             "Linear search of {0} commands:", commands.size());
     // for now a linear search is fine
     for (BasicCommand lookupCommand : commands) {

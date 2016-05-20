@@ -265,7 +265,7 @@ public class KeyPairUtils {
    * @param privateKey private key to save
    * @param filename file to save the key to
    */
-  public static void writePrivateKeyToPKCS8File(PrivateKey privateKey, String filename) {
+  public static boolean writePrivateKeyToPKCS8File(PrivateKey privateKey, String filename) {
     byte[] keyBytes = privateKey.getEncoded();
     FileOutputStream fos = null;
     DataOutputStream dos = null;
@@ -274,9 +274,11 @@ public class KeyPairUtils {
       dos = new DataOutputStream(fos);
       dos.write(keyBytes);
     } catch (FileNotFoundException e) {
-      System.out.println("File not found" + e);
+      System.out.println("File not found: " + e);
+      return false;
     } catch (IOException ioe) {
-      System.out.println("Error while writing to file" + ioe);
+      System.out.println("Error while writing to file: " + ioe);
+      return false;
     } finally {
       try {
         if (dos != null) {
@@ -286,9 +288,10 @@ public class KeyPairUtils {
           fos.close();
         }
       } catch (Exception e) {
-        System.out.println("Error while closing streams" + e);
+        System.out.println("Error while closing streams: " + e);
       }
     }
+    return true;
   }
 
   /**

@@ -57,7 +57,7 @@ public class NSUpdateSupport {
    * @param userJSON
    * @param app
    * @param doNotReplyToClient
-   * @return
+   * @return an NSResponseCode
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    * @throws InvalidKeyException

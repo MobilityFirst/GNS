@@ -137,7 +137,7 @@ public class SubGuidDeletesFail extends DefaultTest {
 					try {
 						// batch create
 						clients[0].guidBatchCreate(accountGuidEntries[i
-								/ numGuidsPerAccount], subGuids, true);
+								/ numGuidsPerAccount], subGuids);
 					} catch (Exception e) {
 						for (String subGuid : subGuids) {
 							try {

@@ -45,7 +45,7 @@ public class Read extends ConsoleCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Read the entire JOSN Object record of target GUID (defaults to the current GUID/alias)";
+    return "Read the entire JSON Object record of target GUID (defaults to the current GUID/alias)";
   }
 
   @Override

@@ -74,7 +74,7 @@ public class SelectAutoGroupTest {
       JSONArray result = client.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         System.out.println("Removing from " + guidEntry.getEntityName());
         client.fieldRemove(guidEntry, groupTestFieldName);
       }
@@ -210,7 +210,7 @@ public class SelectAutoGroupTest {
 //      // change ALL BUT ONE to be ZERO
 //      for (int i = 0; i < result.length() - 1; i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
 //        JSONArray array = new JSONArray(Arrays.asList(0));
 //        client.fieldReplaceOrCreateList(entry, fieldName, array);
 //      }
@@ -230,7 +230,7 @@ public class SelectAutoGroupTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
 //        String value = client.fieldReadArrayFirstElement(entry, fieldName);
 //        assertEquals("25", value);
 //      }
@@ -251,7 +251,7 @@ public class SelectAutoGroupTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
 //        String value = client.fieldReadArrayFirstElement(entry, fieldName);
 //        assertEquals("0", value);
 //      }
@@ -269,7 +269,7 @@ public class SelectAutoGroupTest {
     // look up the individual values
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
       assertEquals("25", value);
     }

@@ -105,7 +105,7 @@ public class GuidUse extends ConsoleCommand
       module.setCurrentGuidAndCheckForVerified(myGuid);
       console.printString("Current GUID set to " + myGuid);
       console.printNewline();
-      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
+      module.setPromptString(ConsoleModule.CONSOLE_PROMPT + aliasName + ">");
     }
     catch (Exception e)
     {

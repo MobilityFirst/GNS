@@ -31,7 +31,7 @@ import org.json.JSONObject;
 /**
  * Provides the basics for Packets including a type field.
  * Includes support for maintaining a clientAddress field
- * using {@link MessageNIOTransport.getSenderAddress}.
+ * using MessageNIOTransport.getSenderAddress.
  *
  * @author westy
  */
@@ -81,7 +81,7 @@ public BasicPacketWithClientAddress setResponse(ClientRequest response) {
   /**
    * Returns the address from which this packet originated.
    * 
-   * @return 
+   * @return the client address
    */
   public InetSocketAddress getClientAddress() {
     return clientAddress;

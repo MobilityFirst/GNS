@@ -1712,7 +1712,7 @@ public class ServerIntegrationTest {
     int oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForBatch, aliases, true);
+      result = client.guidBatchCreate(accountGuidForBatch, aliases);
       client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
@@ -1731,91 +1731,91 @@ public class ServerIntegrationTest {
     }
   }
 
-  private static GuidEntry accountGuidForWithoutPublicKeys = null;
-
-  @Test
-  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
-    try {
-      String batchAccountAlias = "batchTest"
-              + RandomString.randomString(6) + "@gns.name";
-      accountGuidForWithoutPublicKeys = GuidUtils
-              .lookupOrCreateAccountGuid(client, batchAccountAlias,
-                      "password", true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
-
-  @Test
-  public void test_521_CreateBatchWithoutPublicKeys() {
-    Set<String> aliases = new HashSet<>();
-    for (int i = 0; i < numberTocreate; i++) {
-      aliases.add("testGUID" + RandomString.randomString(6));
-    }
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForWithoutPublicKeys,
-              aliases, false);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
-  }
-
-  @Test
-  public void test_522_CheckBatchForWithoutPublicKeys() {
-    try {
-      JSONObject accountRecord = client
-              .lookupAccountRecord(accountGuidForWithoutPublicKeys
-                      .getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | ClientException | IOException e) {
-      fail("Exception while fetching account record: " + e);
-    }
-  }
-
-  private static GuidEntry accountGuidForFastest = null;
-
-  @Test
-  public void test_530_CreateBatchAccountGuidForForFastest() {
-    try {
-      String batchAccountAlias = "batchTest"
-              + RandomString.randomString(6) + "@gns.name";
-      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client,
-              batchAccountAlias, "password", true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
-
-  @Test
-  public void test_531_CreateBatchFastest() {
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreateFast(accountGuidForFastest,
-              numberTocreate);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
-  }
-
-  @Test
-  public void test_532_CheckBatchForFastest() {
-    try {
-      JSONObject accountRecord = client
-              .lookupAccountRecord(accountGuidForFastest.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | ClientException | IOException e) {
-      fail("Exception while fetching account record: " + e);
-    }
-  }
+//  private static GuidEntry accountGuidForWithoutPublicKeys = null;
+//
+//  @Test
+//  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
+//    try {
+//      String batchAccountAlias = "batchTest"
+//              + RandomString.randomString(6) + "@gns.name";
+//      accountGuidForWithoutPublicKeys = GuidUtils
+//              .lookupOrCreateAccountGuid(client, batchAccountAlias,
+//                      "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
+//
+//  @Test
+//  public void test_521_CreateBatchWithoutPublicKeys() {
+//    Set<String> aliases = new HashSet<>();
+//    for (int i = 0; i < numberTocreate; i++) {
+//      aliases.add("testGUID" + RandomString.randomString(6));
+//    }
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(15 * 1000); // 30 seconds
+//      result = client.guidBatchCreate(accountGuidForWithoutPublicKeys,
+//              aliases, false);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
+//  }
+//
+//  @Test
+//  public void test_522_CheckBatchForWithoutPublicKeys() {
+//    try {
+//      JSONObject accountRecord = client
+//              .lookupAccountRecord(accountGuidForWithoutPublicKeys
+//                      .getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | ClientException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
+//
+//  private static GuidEntry accountGuidForFastest = null;
+//
+//  @Test
+//  public void test_530_CreateBatchAccountGuidForForFastest() {
+//    try {
+//      String batchAccountAlias = "batchTest"
+//              + RandomString.randomString(6) + "@gns.name";
+//      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client,
+//              batchAccountAlias, "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
+//
+//  @Test
+//  public void test_531_CreateBatchFastest() {
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(15 * 1000); // 30 seconds
+//      result = client.guidBatchCreateFast(accountGuidForFastest,
+//              numberTocreate);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
+//  }
+//
+//  @Test
+//  public void test_532_CheckBatchForFastest() {
+//    try {
+//      JSONObject accountRecord = client
+//              .lookupAccountRecord(accountGuidForFastest.getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | ClientException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
 
   private static String createIndexTestField;
 

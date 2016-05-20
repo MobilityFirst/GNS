@@ -67,7 +67,7 @@ public class NSSelectInfo<NodeIDType> {
 
   /**
    * 
-   * @return 
+   * @return the id
    */
   public int getId() {
     return id;
@@ -82,7 +82,7 @@ public class NSSelectInfo<NodeIDType> {
   }
   /**
    * 
-   * @return 
+   * @return the set of servers
    */
   public Set<NodeIDType> serversYetToRespond() {
     return serversToBeProcessed;
@@ -90,7 +90,7 @@ public class NSSelectInfo<NodeIDType> {
   /**
    * Returns true if all the names servers have responded.
    * 
-   * @return 
+   * @return true if all the names servers have responded
    */
   public boolean allServersResponded() {
     return serversToBeProcessed.isEmpty();
@@ -101,7 +101,7 @@ public class NSSelectInfo<NodeIDType> {
    * 
    * @param name
    * @param json
-   * @return 
+   * @return true if the response was not seen yet, false otherwise
    */
   public boolean addResponseIfNotSeenYet(String name, JSONObject json) {
     if (!responses.containsKey(name)) {
@@ -133,7 +133,7 @@ public class NSSelectInfo<NodeIDType> {
   /**
    * Return the behavior.
    * 
-   * @return a {@link GroupBehavior}
+   * @return a GroupBehavior
    */
   public SelectGroupBehavior getGroupBehavior() {
     return groupBehavior;

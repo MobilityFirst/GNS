@@ -68,14 +68,14 @@
   </target>
   
   <fileset id="client.includes" dir="${build.classes.dir}"
-               includes="**/*.class"/>
-<!--           includes="edu/umass/cs/gnsclient/**/*.class,
-                     edu/umass/cs/gnscommon/**/*.class,
-                     edu/umass/cs/gnsserver/**/*.class, 
-                     org/**/*.class"-->
+           includes="**/*.class"/>
+  <!--           includes="edu/umass/cs/gnsclient/**/*.class,
+  edu/umass/cs/gnscommon/**/*.class,
+  edu/umass/cs/gnsserver/**/*.class, 
+  org/**/*.class"-->
                      
   <fileset id="console.properties" dir="${src.dir}">
-        <include name="edu/umass/cs/gnsclient/console/console.properties" />
+    <include name="edu/umass/cs/gnsclient/console/console.properties" />
   </fileset>
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
@@ -128,7 +128,7 @@
       <fileset refid="client.keystore" />
       <fileset refid="console.properties" />
       <zipgroupfileset refid="client.lib" />
-<!--      <fileset dir="${src.dir}">
+      <!--      <fileset dir="${src.dir}">
         <include name="edu/umass/cs/gnsclient/console/console.properties" />
       </fileset>-->
     </jar>
@@ -145,9 +145,19 @@
     <javadoc packagenames="edu.umass.cs.*" 
              sourcepath="${src.dir}" 
              destdir="${build.dir}/doc"
-             additionalparam="-Xdoclint:none">
+             additionalparam="-Xdoclint:none"
+             author="true"
+             version="true"
+             use="true"
+             public="true"
+             windowtitle="GNS API (specification ${VERSION}-${RELEASE})">
+      <doctitle>
+       <![CDATA[<h1>GNS API (specification ${VERSION}-${RELEASE})</h1>]]>
+      </doctitle>
+      <bottom>
+      <![CDATA[<i>Copyright &#169; 2014-2016 University of Massachusetts - All Rights Reserved.</i>]]>
+      </bottom>
       <classpath refid="classpath.base"/>
-      <!--      <link href="http://java.sun.com/javase/6/docs/api/"/>-->
     </javadoc>
     <mkdir dir="${dist.dir}/doc"/>
     <copy todir="${dist.dir}/doc">

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
@@ -677,9 +678,9 @@ public class AccountAccess {
       jsonHRN.put(HRN_GUID, guid);
       handler.getRemoteQuery().createRecord(name, jsonHRN);
       GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-      JSONObject json = new JSONObject();
-      json.put(GUID_INFO, guidInfo.toJSONObject());
-      json.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
+      JSONObject jsonGuid = new JSONObject();
+      jsonGuid.put(GUID_INFO, guidInfo.toJSONObject());
+      jsonGuid.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
       // set up ACL to look like this
       //"_GNS_ACL": {
       //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
@@ -687,8 +688,8 @@ public class AccountAccess {
       JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
               ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
       // prefix is the same for all acls so just pick one to use here
-      json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
-      handler.getRemoteQuery().createRecord(guid, json);
+      jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
+      handler.getRemoteQuery().createRecord(guid, jsonGuid);
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
       updateAccountInfoNoAuthentication(accountInfo, handler, true);
@@ -722,7 +723,7 @@ public class AccountAccess {
       for (int i = 0; i < names.size(); i++) {
         String name = names.get(i);
         String publicKey = publicKeys.get(i);
-        String guid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
+        String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
         accountInfo.addGuid(guid);
         guids.add(guid);
         // HRN records
@@ -740,8 +741,8 @@ public class AccountAccess {
         //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
         JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
                 ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
-        jsonGuid.put("_GNS_ACL", acl);
-        jsonGuid.put("environment", 8675309); // test value
+        // prefix is the same for all acls so just pick one to use here
+        jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         guidInfoMap.put(guid, jsonGuid);
       }
       DelayProfiler.updateDelay("addMultipleGuidsSetup", startTime);
@@ -752,11 +753,9 @@ public class AccountAccess {
       // First try to create the HRNS to insure that that name does not already exist
       if (!(returnCode = handler.getRemoteQuery().
               createRecordBatch(new HashSet<>(names), hrnMap, handler)).isAnError()) {
-        //if (!(returnCode = handler.getIntercessor().sendAddBatchRecord(new HashSet<String>(names), hrnMap)).isAnError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids, guidInfoMap, handler);
-          //handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
           GNSConfig.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse<>(OK_RESPONSE);
         }

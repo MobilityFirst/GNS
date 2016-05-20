@@ -166,10 +166,9 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   }
 
   /**
-   * ******************************************
-   * GETTER methods for each field in name record
-   * *****************************************
-   * @return
+   * Return the name.
+   *
+   * @return the name
    * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    */
   public String getName() throws FieldNotFoundException {
@@ -327,10 +326,10 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
 //
   /**
    * Returns true if the database contains a name record with the given name.
-   * 
+   *
    * @param recordMap
    * @param name
-   * @return
+   * @return true if the database contains a name record
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static boolean containsRecord(BasicRecordMap recordMap, String name)

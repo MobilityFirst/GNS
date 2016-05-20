@@ -37,7 +37,7 @@ import org.json.JSONObject;
  * plus instrumentation.
  *
  * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent
- * insofar as the fields in the JOSN Object is concerned.
+ * insofar as the fields in the JSON Object is concerned.
  *
  */
 public class CommandValueReturnPacket extends BasicPacketWithClientAddress implements ClientRequest {

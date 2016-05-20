@@ -88,7 +88,7 @@ public class CreateGuidBatchTestWithPublicKeys {
     int oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(masterGuid, aliases, true);
+      result = client.guidBatchCreate(masterGuid, aliases);
       client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);

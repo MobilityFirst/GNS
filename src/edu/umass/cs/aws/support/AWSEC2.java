@@ -517,7 +517,7 @@ public class AWSEC2 {
 
   /**
    * Creates a volume and attaches and mounts it on the instance at the default secondary mount point
-   * {@link DEFAULTSECONDMOUNTPOINT}. SO DON'T CALL THIS TWICE ON THE SAME INSTANCE!!
+   * DEFAULTSECONDMOUNTPOINT. SO DON'T CALL THIS TWICE ON THE SAME INSTANCE!!
    *
    * @param ec2
    * @param instanceId

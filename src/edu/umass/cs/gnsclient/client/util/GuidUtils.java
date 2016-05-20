@@ -24,6 +24,7 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.utils.DelayProfiler;
@@ -79,7 +80,9 @@ public class GuidUtils {
 
   public static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client, String name, String password,
           boolean verbose) throws Exception {
-    GuidEntry guid = lookupGuidEntryFromPreferences(client, name);
+    GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
+    // If we didn't find the guid or the entry in the database is obsolete we
+    // create a new guid.
     if (guid == null || !guidExists(client, guid)) {
       if (verbose) {
         if (guid == null) {
@@ -101,15 +104,13 @@ public class GuidUtils {
           // that error message
           if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
             if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
-              continue;
+              // do nothing
             } else {
               e.printStackTrace();
               throw e;
             }
           } else {
-            System.out
-                    .println("Caught and ignored \"Account already verified\" error for "
-                            + name);
+            System.out.println("Caught and ignored \"Account already verified\" error for " + name);
             break;
           }
         }
@@ -154,7 +155,9 @@ public class GuidUtils {
    * @throws Exception
    */
   public static GuidEntry lookupOrCreateGuid(GNSClientInterface client, GuidEntry accountGuid, String name, boolean verbose) throws Exception {
-    GuidEntry guid = lookupGuidEntryFromPreferences(client, name);
+    GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
+    // If we didn't find the guid or the entry in the database is obsolete we
+    // create a new guid.
     if (guid == null || !guidExists(client, guid)) {
       if (verbose) {
         if (guid == null) {
@@ -191,11 +194,11 @@ public class GuidUtils {
    * @param name
    * @return
    */
-  public static GuidEntry lookupGuidEntryFromPreferences(GNSClientInterface client, String name) {
-    return lookupGuidEntryFromPreferences(client.getGNSInstance(), name);
+  public static GuidEntry lookupGuidEntryFromDatabase(GNSClientInterface client, String name) {
+    return GuidUtils.lookupGuidEntryFromDatabase(client.getGNSInstance(), name);
   }
 
-  public static GuidEntry lookupGuidEntryFromPreferences(String gnsInstance, String name) {
+  public static GuidEntry lookupGuidEntryFromDatabase(String gnsInstance, String name) {
     return KeyPairUtils.getGuidEntry(gnsInstance, name);
   }
 
@@ -212,7 +215,7 @@ public class GuidUtils {
     long keyPairStart = System.currentTimeMillis();
     KeyPair keyPair = KeyPairGenerator.getInstance(GNSCommandProtocol.RSA_ALGORITHM).generateKeyPair();
     DelayProfiler.updateDelay("createKeyPair", keyPairStart);
-    String guid = GuidUtils.createGuidFromPublicKey(keyPair.getPublic().getEncoded());
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     long saveStart = System.currentTimeMillis();
     KeyPairUtils.saveKeyPair(hostport, alias, guid, keyPair);
     DelayProfiler.updateDelay("saveKeyPair", saveStart);
@@ -229,24 +232,23 @@ public class GuidUtils {
    */
   public static GuidEntry lookupOrCreateGuidEntry(String alias, String gnsInstance) throws NoSuchAlgorithmException {
     GuidEntry entry;
-    if ((entry = lookupGuidEntryFromPreferences(gnsInstance, alias)) != null) {
+    if ((entry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias)) != null) {
       return entry;
     } else {
       return createAndSaveGuidEntry(alias, gnsInstance);
     }
   }
 
-  /**
-   * Uses a hash function to generate a GUID from a public key.
-   * This code is duplicated in server so if you
-   * change it you should change it there as well.
-   *
-   * @param keyBytes
-   * @return
-   */
-  public static String createGuidFromPublicKey(byte[] keyBytes) {
-    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(keyBytes);
-    return ByteUtils.toHex(publicKeyDigest);
-  }
-
+//  /**
+//   * Uses a hash function to generate a GUID from a public key.
+//   * This code is duplicated in server so if you
+//   * change it you should change it there as well.
+//   *
+//   * @param keyBytes
+//   * @return
+//   */
+//  public static String createGuidFromPublicKey(byte[] keyBytes) {
+//    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(keyBytes);
+//    return ByteUtils.toHex(publicKeyDigest);
+//  }
 }

@@ -27,7 +27,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import java.io.UnsupportedEncodingException;
@@ -210,7 +210,7 @@ public class NSAuthentication {
           throws FailedDBOperationException {
     String publicKey;
     Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp.getDB());
-    publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
+    publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
     ClientSupportConfig.getLogger().log(Level.FINE,
             "================> {0} lookup for {1} returned: {2} public keys={3}",
             new Object[]{access.toString(), field, publicKey,
@@ -218,7 +218,7 @@ public class NSAuthentication {
     if (publicKey == null) {
       // also catch all the keys that are stored in the +ALL+ record
       publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALL_FIELDS, gnsApp.getDB()));
-      publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
+      publicKey = SharedGuidUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
       GNSConfig.getLogger().log(Level.FINE,
               "================> {0} lookup with +ALL+ returned: {1} public keys={2}",
               new Object[]{access.toString(), publicKey, publicKeys});

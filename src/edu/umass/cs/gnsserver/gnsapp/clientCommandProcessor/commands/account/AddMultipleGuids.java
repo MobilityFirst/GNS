@@ -96,7 +96,7 @@ public class AddMultipleGuids extends BasicCommand {
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else if (names != null && publicKeys != null) {
-        //GNS.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
+        GNSConfig.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
         return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
                 JSONUtils.JSONArrayToArrayListString(publicKeys),
                 accountInfo, accountGuidInfo, handler);

@@ -23,11 +23,8 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import java.awt.HeadlessException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -41,47 +38,42 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Simple guid creation test.
  *
- * Note that TWO methods for batch creating guids exist. This one uses the "fast" method which
- * uses bogus aliases and public keys and generates random guids that have to be accessed through the
- * account guid.
+ * Creates one account guid and uses that to batch create some number of subguids.
+ * Writes to a random sample of the created guids and then deletes everything.
+ *
  *
  * Usage:
- * ./scripts/client/runClient edu.umass.cs.gnsclient.client.testing.BatchCreateTest -host kittens.name -port 24398 -guidCnt 100
+ * ./scripts/client/runClientSingleNode edu.umass.cs.gnsclient.client.testing.BatchCreateTest -guidCnt 100
  */
 public class BatchCreateTest {
 
   private static final int MAX_BATCH_SIZE = 4000;
-  private static final String ACCOUNT_ALIAS = "batch@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
+  private static final String DEFAULT_ACCOUNT_ALIAS = "batch@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client;
   /**
    * The address of the GNS server we will contact
    */
-  private static InetSocketAddress address = null;
+  //private static InetSocketAddress address = null;
   private static GuidEntry masterGuid;
 
-  private static boolean disableSSL = false;
-
+  //private static boolean disableSSL = false;
   /**
    * Creates a SimpleLatencyTest with the given arguments.
    *
-   * @param alias
-   * @param host
-   * @param portString
+   * @param accountGuidAlias
+   * @param numberToCreate
+   * @param writeTo
    */
-  public BatchCreateTest(String alias, String host, String portString, int numberToCreate, int writeTo) {
-    if (address == null) {
-      if (host != null && portString != null) {
-        address = new InetSocketAddress(host, Integer.parseInt(portString));
-      } else {
-        address = ServerSelectDialog.selectServer();
-      }
-    }
+  public BatchCreateTest(String accountGuidAlias, int numberToCreate, int writeTo) {
     try {
       client = new GNSClientCommands(null);
     } catch (IOException e) {
@@ -91,14 +83,15 @@ public class BatchCreateTest {
     }
 
     try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, alias, PASSWORD, true);
+      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountGuidAlias, PASSWORD, true);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);
       e.printStackTrace();
       System.exit(1);
     }
-    JSONObject command = null;
-    String result = null;
+
+    Set<GuidEntry> createdSubGuids = new HashSet<>();
+    String result;
     long startTime = System.currentTimeMillis();
     int guidCnt = numberToCreate;
     int oldTimeout = client.getReadTimeout();
@@ -106,26 +99,36 @@ public class BatchCreateTest {
       client.setReadTimeout(2 * 60 * 1000); // set the timeout to 2 minutes
 
       while (guidCnt > 0) {
-        System.out.print("Creating " + Math.min(guidCnt, MAX_BATCH_SIZE));
-        command = createAndSignCommand(masterGuid.getPrivateKey(),
-                GNSCommandProtocol.ADD_MULTIPLE_GUIDS,
-                GNSCommandProtocol.GUID, masterGuid.getGuid(),
-                GNSCommandProtocol.GUIDCNT, Math.min(guidCnt, MAX_BATCH_SIZE));
-        result = checkResponse(command, client.sendCommandAndWait(command));
-        if (!result.equals(GNSCommandProtocol.OK_RESPONSE)) {
-          System.out.println();
-          System.out.println("Batch test command saw bad reponse " + result);
-          return;
+        int numberTocreate = Math.min(guidCnt, MAX_BATCH_SIZE);
+        System.out.println("Creating " + numberTocreate);
+        Set<String> aliases = new HashSet<>();
+        for (int i = 0; i < numberTocreate; i++) {
+          aliases.add("testGUID" + RandomString.randomString(6));
         }
-        guidCnt = guidCnt - MAX_BATCH_SIZE;
+        //Actually create them on the server
+        result = client.guidBatchCreate(masterGuid, aliases);
+        System.out.println("result = " + result);
+
+//        //make one non batch for comparison
+//        client.guidCreate(masterGuid, "NOTBATCHALIAS");
+
+        // Store all the created aliases so we can remove them later
+        for (String createdAlias : aliases) {
+          createdSubGuids.add(GuidUtils.lookupGuidEntryFromDatabase(client, createdAlias));
+        }
+        
+//        //make one non batch for comparison
+//        createdSubGuids.add(GuidUtils.lookupGuidEntryFromDatabase(client, "NOTBATCHALIAS"));
+
+        guidCnt -= MAX_BATCH_SIZE;
         if (numberToCreate > MAX_BATCH_SIZE && guidCnt > 0) {
           System.out.println("... " + guidCnt + " left to create");
         } else {
           System.out.println();
         }
       }
-    } catch (ClientException | IOException e) {
-      System.out.println("Problem sending command " + command + e);
+    } catch (Exception e) {
+      System.out.println("Problem creating batch: " + e);
     } finally {
       client.setReadTimeout(oldTimeout);
     }
@@ -133,11 +136,27 @@ public class BatchCreateTest {
             + ((System.currentTimeMillis() - startTime) / 1000) + " seconds");
 
     try {
-      System.out.println("Account record: " + client.lookupAccountRecord(masterGuid.getGuid()));
-    } catch (ClientException | IOException e) {
+      JSONObject accountRecord = client.lookupAccountRecord(masterGuid.getGuid());
+      System.out.println("# guids in account guid = " + accountRecord.getString("guidCnt"));
+    } catch (ClientException | IOException | JSONException e) {
       System.out.println("Problem looking up account record: " + e);
     }
+    
+    String prefix = "";
+    for (GuidEntry guidEntry : createdSubGuids) {
+      try {
+        //System.out.println("Looking up: " + guidEntry.getGuid());
+        JSONObject guidRecord = client.lookupGuidRecord(guidEntry.getGuid());
+        System.out.print(prefix);
+        System.out.print(guidRecord.getString(GUID_RECORD_GUID));
+        prefix = ", ";
+      } catch (IOException | ClientException | JSONException e) {
+        System.out.println("Problem looking up guid: " + e);
+      }
+    }
+    System.out.println();
 
+    JSONObject command = null;
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
@@ -158,12 +177,24 @@ public class BatchCreateTest {
           for (int i = 0; i < randomGuids.length(); i++) {
             client.fieldUpdate(randomGuids.getString(i), "environment", 8675309, masterGuid);
             result = client.fieldRead(randomGuids.getString(i), "environment", masterGuid);
-            //System.out.println("Read " + result);
           }
         }
       } catch (Exception e) {
         System.out.println("Problem reading / writing to guids " + command + e);
       }
+    }
+
+    for (GuidEntry guidEntryToRemove : createdSubGuids) {
+      try {
+        client.guidRemove(masterGuid, guidEntryToRemove.getGuid());
+      } catch (Exception e) {
+        System.out.println("Problem removing guid: " + e);
+      }
+    }
+    try {
+      client.accountGuidRemove(masterGuid);
+    } catch (Exception e) {
+      System.out.println("Problem removing account guid: " + e);
     }
   }
 
@@ -174,28 +205,16 @@ public class BatchCreateTest {
    * @throws Exception
    */
   public static void main(String args[]) throws Exception {
-    try {
-      CommandLine parser = initializeOptions(args);
-      if (parser.hasOption("help") //|| args.length == 0
-              //|| !parser.hasOption("host")
-              //|| !parser.hasOption("port")
-              ) {
-        printUsage();
-        //System.out.println("-host and -port are required!");
-        System.exit(1);
-      }
-      String alias = parser.getOptionValue("alias");
-      String host = parser.getOptionValue("host");
-      String portString = parser.getOptionValue("port");
-      int guidCnt = Integer.parseInt(parser.getOptionValue("guidCnt", "10000"));
-      int writeTo = Integer.parseInt(parser.getOptionValue("writeTo", "0"));
-      new BatchCreateTest(alias != null ? alias : ACCOUNT_ALIAS, host, portString, guidCnt, writeTo);
-      System.exit(0);
-    } catch (HeadlessException e) {
-      System.out.println("When running headless you'll need to specify the host and port on the command line");
+    CommandLine parser = initializeOptions(args);
+    if (parser.hasOption("help")) {
       printUsage();
       System.exit(1);
     }
+    String alias = parser.getOptionValue("alias");
+    int guidCnt = Integer.parseInt(parser.getOptionValue("guidCnt", "10000"));
+    int writeTo = Integer.parseInt(parser.getOptionValue("writeTo", "0"));
+    new BatchCreateTest(alias != null ? alias : DEFAULT_ACCOUNT_ALIAS, guidCnt, writeTo);
+    System.exit(0);
   }
 
   // command line arguments
@@ -208,12 +227,6 @@ public class BatchCreateTest {
     Option alias = OptionBuilder.withArgName("alias").hasArg()
             .withDescription("the alias (HRN) to use for the account")
             .create("alias");
-    Option host = OptionBuilder.withArgName("host").hasArg()
-            .withDescription("the GNS host")
-            .create("host");
-    Option port = OptionBuilder.withArgName("port").hasArg()
-            .withDescription("the GNS port")
-            .create("port");
     Option guidCnt = OptionBuilder.withArgName("guidCnt").hasArg()
             .withDescription("number of guids to create (default 10000)")
             .create("guidCnt");
@@ -223,8 +236,6 @@ public class BatchCreateTest {
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(alias);
-    commandLineOptions.addOption(host);
-    commandLineOptions.addOption(port);
     commandLineOptions.addOption(guidCnt);
     commandLineOptions.addOption(writeTo);
     commandLineOptions.addOption(help);
