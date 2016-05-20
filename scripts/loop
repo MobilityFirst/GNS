@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# default number of runs
+RUNS=20
+if [[ ! -z $2 ]]; then
+  RUNS=$2
+fi
+
+# sleep seconds between each iteration
+SLEEP=1
+
+if [[ -z $1 ]]; then
+  echo "Usage: loop \"COMMAND\" [num_runs]"
+  echo "  COMMAND is necessary; num_runs defaults to $RUNS"
+  exit
+fi
+
+i=0 
+successes=0
+failures=0
+while [[ $i -lt $RUNS ]]; do  
+  echo =========================run$i=============================;
+
+  # the actual command
+  $1
+
+  i=`expr $i + 1`; 
+
+  if [[ $? == 0 ]]; then
+    successes=`expr $successes + 1`
+  else 
+    failures=`expr $failures + 1`
+  fi
+  echo "===================successes=$successes, failures=$failures=================="
+
+  if [[ ! -z $SLEEP ]]; then
+    sleep $SLEEP
+  fi
+done
+

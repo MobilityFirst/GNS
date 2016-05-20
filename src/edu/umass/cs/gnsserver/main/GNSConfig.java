@@ -26,15 +26,53 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
+import edu.umass.cs.utils.Config;
+
 /**
+ * @author arun, westy
+ * 
  * Contains config parameters for the nameservers and logging functionality.
  */
 public class GNSConfig {
+	
+	/**
+	 *
+	 */
+	public static enum GNSC implements Config.ConfigurableEnum {
+		/**
+		 * If enabled, the GNS will cache and return the same value for reads. 
+		 * 
+		 * Code-breaking if enabled. Meant only for instrumentation.
+		 */
+		EXECUTE_NOOP_ENABLED (false),
+		;
 
-  /**
-   * The default TTL.
-   */
-  public static final int DEFAULT_TTL_SECONDS = 0;
+		final Object defaultValue;
+
+		GNSC(Object defaultValue) {
+			this.defaultValue = defaultValue;
+		}
+
+		@Override
+		public Object getDefaultValue() {
+			return this.defaultValue;
+		}
+
+		@Override
+		public String getConfigFileKey() {
+			return "gigapaxosConfig";
+		}
+
+		// FIXME: a better default name?
+		@Override
+		public String getDefaultConfigFile() {
+			return "gigapaxos.properties";
+		}
+	}
+	
+	/* FIXME: arun: some parameters below are not relevant any more and need to
+	 * go. I removed the ones not being using static analysis. */
+
 
   /**
    * The default starting port.
@@ -46,10 +84,6 @@ public class GNSConfig {
   public static final String GNS_URL_PATH = "GNS";
   // Useful for testing with resources in conf/testCodeResources if using 
   // "import from build file in IDE". Better way to do this?
-  /**
-   * Hack.
-   */
-  public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/";
   /**
    * Hack.
    */
@@ -137,15 +171,6 @@ public class GNSConfig {
    */
   public static boolean enableSignatureAuthentication = true;
   /**
-   * Number of primary nameservers. Default is 3 *
-   */
-  public static final int DEFAULT_NUM_PRIMARY_REPLICAS = 3;
-
-  /**
-   * The current number of primary replicas that should be created for a name.
-   */
-  public static int numPrimaryReplicas = DEFAULT_NUM_PRIMARY_REPLICAS;
-  /**
    * Default query timeout in ms. How long we wait before retransmitting a query.
    */
   public static int DEFAULT_QUERY_TIMEOUT = 2000;
@@ -194,21 +219,4 @@ public class GNSConfig {
     }
     return result;
   }
-
-//    String result = null;
-//    try {
-//      Class<?> clazz = GNSConfig.class;
-//      String className = clazz.getSimpleName() + ".class";
-//      String classPath = clazz.getResource(className).toString();
-//      if (classPath.startsWith("jar")) {
-//        String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1)
-//                + "/META-INF/MANIFEST.MF";
-//        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-//        Attributes attr = manifest.getMainAttributes();
-//        result = attr.getValue("Build-Version");
-//      }
-//    } catch (IOException e) {
-//    }
-//    return result;
-// }
 }

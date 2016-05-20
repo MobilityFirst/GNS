@@ -1,7 +1,7 @@
 #!/bin/bash
 #echo $PWD
 #DIRNAME="`dirname \"$0\"`"
-IDE_PATH=build/classes:build/test/classes:lib/*
+IDE_PATH=. #build/classes:build/test/classes:lib/*
 
 # should use matching gigapaxos properties with servers
 java -ea -DgigapaxosConfig=conf/gigapaxos.client.singleNode.local.properties \
