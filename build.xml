@@ -314,7 +314,7 @@
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
-      <jvmarg value="-Dserver.command=scripts/singlenodetests/run.sh"/>
+      <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
