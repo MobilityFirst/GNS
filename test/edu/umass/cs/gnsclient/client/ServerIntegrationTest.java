@@ -91,6 +91,12 @@ public class ServerIntegrationTest {
   
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+	  String serverCommand = System.getProperty("server.command");
+	  if(serverCommand!=null) {
+		  System.out.println("Running test using server command \""+serverCommand+"\"");
+		  setServerCommand(serverCommand);
+	  }
+	  
     // Run the server.
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
@@ -105,7 +111,7 @@ public class ServerIntegrationTest {
         fail("Server command failure: ; aborting all tests.");
       }
     }
-
+    
     client = new GNSClientCommands();
     // Make all the reads be coordinated
     client.setForceCoordinatedReads(true);
