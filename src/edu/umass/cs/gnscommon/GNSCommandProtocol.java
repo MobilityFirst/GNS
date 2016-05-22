@@ -32,12 +32,12 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
  * it defines a bunch of constants that define the protocol
  * support for communicating between the client and the local name server.
  *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>, arun
+ * @author  arun, emmanuel 
  * @version 1.17
  */
 public class GNSCommandProtocol {
 
-  /* FIXME: Convert to using enums. 
+  /** FIXME: Convert to using enums. 
   See edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType */
   public final static String REGISTER_ACCOUNT = "registerAccount";
   public final static String VERIFY_ACCOUNT = "verifyAccount";
@@ -176,6 +176,9 @@ public class GNSCommandProtocol {
   //
   public static final String RSA_ALGORITHM = "RSA";
   public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
+  public static final String DIGEST_ALGORITHM = "SHA1";
+  public static final String SECRET_KEY_ALGORITHM = "DESede";
+  public static final String CHARSET = "ISO-8859-1";
   //
   public final static String NAME = "name";
   public final static String NAMES = "names";
@@ -202,6 +205,10 @@ public class GNSCommandProtocol {
   public final static String PASSWORD = "password";
   public final static String CODE = "code";
   public final static String SIGNATURE = "signature";
+  
+  public final static String SK_CERTIFICATE = "sk_certificate";
+
+  
   public final static String TIMESTAMP = "timestamp";
   public final static String SEQUENCE_NUMBER = "seqnum";
   public final static String PASSKEY = "passkey";
@@ -339,4 +346,6 @@ public class GNSCommandProtocol {
   //
 
   public final static String NEWLINE = System.getProperty("line.separator");
+
+  public static final boolean USE_SECRET_KEY = false;
 }

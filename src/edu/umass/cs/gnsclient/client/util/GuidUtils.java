@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
+import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
@@ -166,6 +167,7 @@ public class GuidUtils {
           System.out.println("Old guid for " + name + " is invalid. Creating a new one.");
         }
       }
+      Util.suicide("here");
       guid = client.guidCreate(accountGuid, name);
       return guid;
     } else {

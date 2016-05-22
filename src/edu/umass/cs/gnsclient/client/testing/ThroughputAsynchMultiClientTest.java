@@ -338,7 +338,7 @@ public class ThroughputAsynchMultiClientTest {
           }
         }
         try {
-          JSONObject command = createCommand(CommandType.LookupRandomGuids,
+          JSONObject command = createCommandDeprecated(CommandType.LookupRandomGuids,
                   LOOKUP_RANDOM_GUIDS, GUID,
                   masterGuid.getGuid(), GUIDCNT, numberOfGuids);
           String result = checkResponse(command, clients[0].sendCommandAndWait(command));
@@ -501,10 +501,10 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createReadCommandPacket(AbstractGNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(CommandType.ReadUnsigned,
+      command = createCommandDeprecated(CommandType.ReadUnsigned,
               READ, GUID, targetGuid, FIELD, field);
     } else {
-      command = createAndSignCommand(CommandType.Read,
+      command = createAndSignCommandDeprecated(CommandType.Read,
               reader.getPrivateKey(), READ,
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
@@ -514,7 +514,7 @@ public class ThroughputAsynchMultiClientTest {
 
   private static CommandPacket createUpdateCommandPacket(AbstractGNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
-    command = createAndSignCommand(CommandType.ReplaceUserJSON,
+    command = createAndSignCommandDeprecated(CommandType.ReplaceUserJSON,
             writer.getPrivateKey(), REPLACE_USER_JSON,
             GUID, targetGuid, USER_JSON, json.toString(),
             WRITER, writer.getGuid());

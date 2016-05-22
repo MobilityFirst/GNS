@@ -160,7 +160,7 @@ public class BatchCreateTest {
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
-        command = createCommand(CommandType.LookupRandomGuids,
+        command = createCommandDeprecated(CommandType.LookupRandomGuids,
                 LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
         result = checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {

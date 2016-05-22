@@ -20,13 +20,14 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
@@ -123,8 +124,10 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFY_ACCOUNT;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WITHIN;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
@@ -132,6 +135,8 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
+
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -144,6 +149,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+
 import org.json.JSONException;
 
 /**
@@ -192,7 +198,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -226,11 +232,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     JSONObject json = new JSONObject();
     json.put(field, value);
     JSONObject command = createAndSignCommand(CommandType.ReplaceUserJSON,
-            writer.getPrivateKey(), REPLACE_USER_JSON,
+            writer//.getPrivateKey()
+            , REPLACE_USER_JSON,
             GUID, targetGuid, USER_JSON, json.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -251,7 +258,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             GUID, guid.getGuid(), FIELD, field, VALUE, index, WRITER, guid.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -296,7 +303,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    return new JSONObject(checkResponse(command, response));
+    return new JSONObject(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -337,7 +344,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     }
     String response = sendCommandAndWait(command);
     try {
-      checkResponse(command, response);
+      CommandUtils.checkResponse(command, response);
       return true;
     } catch (FieldNotFoundException e) {
       return false;
@@ -380,7 +387,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
               READ, GUID, targetGuid, FIELD, field);
     } else {
       command = createAndSignCommand(CommandType.Read,
-              reader.getPrivateKey(), READ, GUID, targetGuid, FIELD, field,
+              reader//.getPrivateKey()
+              , READ, GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
 
@@ -389,7 +397,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     DelayProfiler.updateDelay("fieldRead", t);
     GNSClientConfig.getLogger().fine(DelayProfiler.getStats());
 
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -435,7 +443,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -474,7 +482,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             writer.getPrivateKey(), REMOVE_FIELD, GUID, targetGuid,
             FIELD, field, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   // SELECT COMMANDS
@@ -500,7 +508,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             SELECT, QUERY, query);
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -528,7 +536,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             INTERVAL, interval);
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -545,7 +553,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             SELECT_GROUP, GUID, guid);
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   // ACCOUNT COMMANDS
@@ -563,7 +571,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             LOOKUP_GUID, NAME, alias);
     String response = sendCommandAndWait(command);
 
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -580,7 +588,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             LOOKUP_PRIMARY_GUID, GUID, guid);
     String response = sendCommandAndWait(command);
 
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -599,7 +607,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     JSONObject command = createCommand(CommandType.LookupGuidRecord,
             LOOKUP_GUID_RECORD, GUID, guid);
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
     try {
       return new JSONObject(response);
     } catch (JSONException e) {
@@ -624,7 +632,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     JSONObject command = createCommand(CommandType.LookupAccountRecord,
             LOOKUP_ACCOUNT_RECORD, GUID, accountGuid);
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
     try {
       return new JSONObject(response);
     } catch (JSONException e) {
@@ -716,7 +724,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             guid.getPrivateKey(), VERIFY_ACCOUNT, GUID, guid.getGuid(),
             CODE, code);
     String response = sendCommandAndWait(command);
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -727,12 +735,13 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void accountGuidRemove(GuidEntry guid) throws Exception {
     JSONObject command = createAndSignCommand(CommandType.RemoveAccount,
-            guid.getPrivateKey(),
+            guid//.getPrivateKey()
+            ,
             REMOVE_ACCOUNT,
             GUID, guid.getGuid(),
             NAME, guid.getEntityName());
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -806,7 +815,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 //              GUID, accountGuid.getGuid(),
 //              NAMES, new JSONArray(aliasList));
 //    }
-    String result = checkResponse(command, sendCommandAndWait(command));
+    String result = CommandUtils.checkResponse(command, sendCommandAndWait(command));
     return result;
   }
 
@@ -826,7 +835,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 //            accountGuid.getPrivateKey(), ADD_MULTIPLE_GUIDS,
 //            GUID, accountGuid.getGuid(),
 //            GUIDCNT, guidCnt);
-//    String result = checkResponse(command, sendCommandAndWait(command));
+//    String result = CommandUtils.checkResponse(command, sendCommandAndWait(command));
 //    return result;
 //  }
 
@@ -838,11 +847,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void guidRemove(GuidEntry guid) throws Exception {
     JSONObject command = createAndSignCommand(CommandType.RemoveGuidNoAccount,
-            guid.getPrivateKey(),
+            guid//.getPrivateKey()
+            ,
             REMOVE_GUID, GUID, guid.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -860,7 +870,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             GUID, guidToRemove);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   // GROUP COMMANDS
@@ -884,7 +894,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     String response = sendCommandAndWait(command);
 
     try {
-      return new JSONArray(checkResponse(command, response));
+      return new JSONArray(CommandUtils.checkResponse(command, response));
     } catch (JSONException e) {
       throw new ClientException("Invalid member list", e);
     }
@@ -910,7 +920,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     String response = sendCommandAndWait(command);
 
     try {
-      return new JSONArray(checkResponse(command, response));
+      return new JSONArray(CommandUtils.checkResponse(command, response));
     } catch (JSONException e) {
       throw new ClientException("Invalid member list", e);
     }
@@ -934,7 +944,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             MEMBER, guidToAdd, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -957,7 +967,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             MEMBERS, members.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -979,7 +989,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1003,7 +1013,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1146,7 +1156,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             NAME, name);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1162,7 +1172,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             NAME, name);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1178,7 +1188,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
     try {
-      return new JSONArray(checkResponse(command, response));
+      return new JSONArray(CommandUtils.checkResponse(command, response));
     } catch (JSONException e) {
       throw new ClientException("Invalid alias list", e);
     }
@@ -1199,7 +1209,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             GUID, guid.getGuid(), NAME, tag);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1215,7 +1225,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             GUID, guid.getGuid(), NAME, tag);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1230,7 +1240,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             DUMP, NAME, tag);
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -1246,7 +1256,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             CLEAR_TAGGED, NAME, tag);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   // ///////////////////////////////
@@ -1270,7 +1280,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             GUID, accountGuid.getGuid(),
             NAME, name,
             PUBLIC_KEY, publicKeyString);
-    String result = checkResponse(command, sendCommandAndWait(command));
+    String result = CommandUtils.checkResponse(command, sendCommandAndWait(command));
     DelayProfiler.updateDelay("guidCreate", startTime);
     return result;
   }
@@ -1293,17 +1303,17 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     long startTime = System.currentTimeMillis();
     if (password != null) {
       command = createAndSignCommand(CommandType.RegisterAccount,
-              privateKey, REGISTER_ACCOUNT,
+              privateKey, publicKey, REGISTER_ACCOUNT,
               NAME, alias,
               PUBLIC_KEY, Base64.encodeToString(publicKey.getEncoded(), false),
               PASSWORD, Base64.encodeToString(Password.encryptPassword(password, alias), false));
     } else {
       command = createAndSignCommand(CommandType.RegisterAccountSansPassword,
-              privateKey, REGISTER_ACCOUNT,
+              privateKey, publicKey, REGISTER_ACCOUNT,
               NAME, alias,
               PUBLIC_KEY, Base64.encodeToString(publicKey.getEncoded(), false));
     }
-    String result = checkResponse(command, sendCommandAndWait(command));
+    String result = CommandUtils.checkResponse(command, sendCommandAndWait(command));
     DelayProfiler.updateDelay("accountGuidCreate", startTime);
     return result;
   }
@@ -1315,7 +1325,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             ACCESSER, accesserGuid == null ? ALL_USERS : accesserGuid);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   private void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
@@ -1325,7 +1335,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             ACCESSER, accesserGuid == null ? ALL_USERS : accesserGuid);
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   private JSONArray aclGet(String accessType, GuidEntry guid, String field, String readerGuid) throws Exception {
@@ -1335,7 +1345,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             READER, readerGuid == null ? ALL_USERS : readerGuid);
     String response = sendCommandAndWait(command);
     try {
-      return new JSONArray(checkResponse(command, response));
+      return new JSONArray(CommandUtils.checkResponse(command, response));
     } catch (JSONException e) {
       throw new ClientException("Invalid ACL list", e);
     }
@@ -1360,7 +1370,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             writer.getPrivateKey(), CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1381,7 +1391,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1401,7 +1411,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             writer.getPrivateKey(), REPLACE_OR_CREATE_LIST, GUID, targetGuid,
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1421,7 +1431,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             targetGuid, FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1441,7 +1451,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1461,7 +1471,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1479,7 +1489,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1507,7 +1517,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -1530,7 +1540,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1553,7 +1563,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   //
@@ -1573,7 +1583,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             SELECT, FIELD, field, VALUE, value);
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -1592,7 +1602,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             value.toString());
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -1612,7 +1622,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             value.toString(), MAX_DISTANCE, Double.toString(maxDistance));
     String response = sendCommandAndWait(command);
 
-    return new JSONArray(checkResponse(command, response));
+    return new JSONArray(CommandUtils.checkResponse(command, response));
   }
 
   /**
@@ -1672,7 +1682,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             WRITER, writerGuid.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   public void activeCodeSet(String guid, String action, byte[] code, GuidEntry writerGuid)
@@ -1684,7 +1694,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             AC_CODE, code64, WRITER, writerGuid.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   public byte[] activeCodeGet(String guid, String action, GuidEntry readerGuid) throws Exception {
@@ -1694,7 +1704,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             READER, readerGuid.getGuid());
     String response = sendCommandAndWait(command);
 
-    String code64String = checkResponse(command, response);
+    String code64String = CommandUtils.checkResponse(command, response);
     if (code64String != null) {
       return Base64.decode(code64String);
     } else {
@@ -1738,7 +1748,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
       String response = sendCommandAndWait(command);
 
-      checkResponse(command, response);
+      CommandUtils.checkResponse(command, response);
     } catch (NullPointerException ne) {
       GNSConfig.getLogger().severe("NPE in field create");
       ne.printStackTrace();
@@ -1779,7 +1789,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             writer.getPrivateKey(), APPEND_OR_CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1801,7 +1811,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             writer.getPrivateKey(), REPLACE_OR_CREATE, GUID, targetGuid,
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1853,7 +1863,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1903,7 +1913,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, VALUE, value, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1939,7 +1949,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -1975,7 +1985,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -2019,7 +2029,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     }
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -2057,7 +2067,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             OLD_VALUE, oldValue, WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -2097,7 +2107,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             OLD_VALUE, oldValue.toString(), WRITER, writer.getGuid());
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -2140,7 +2150,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   /**
@@ -2179,7 +2189,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   public void parameterSet(String name, Object value) throws Exception {
@@ -2188,7 +2198,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    checkResponse(command, response);
+    CommandUtils.checkResponse(command, response);
   }
 
   public String parameterGet(String name) throws Exception {
@@ -2197,7 +2207,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
     String response = sendCommandAndWait(command);
 
-    return checkResponse(command, response);
+    return CommandUtils.checkResponse(command, response);
   }
 
   @Override

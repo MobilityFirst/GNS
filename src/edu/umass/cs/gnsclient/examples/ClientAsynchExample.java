@@ -95,12 +95,12 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = createAndSignCommand(CommandType.ReplaceUserJSON,
+      command = createAndSignCommandDeprecated(CommandType.ReplaceUserJSON,
               accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
               GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(),
               WRITER, accountGuidEntry.getGuid());
     } else {
-      command = createAndSignCommand(CommandType.Read,
+      command = createAndSignCommandDeprecated(CommandType.Read,
               accountGuidEntry.getPrivateKey(), READ,
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
