@@ -24,7 +24,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicComman
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
@@ -32,12 +31,17 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -277,7 +281,7 @@ public class CommandHandler {
       }
 
       // shows us stats every 100 commands, but not more than once every 5 seconds
-      if (commandCount++ % 100 == 0) {
+      if (commandCount++ % 100 == 0 && Config.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION)) {
         if (System.currentTimeMillis() - lastStatsTime > 5000) {
           ClientCommandProcessorConfig.getLogger().log(Level.INFO, "{0}",
                   new Object[]{DelayProfiler.getStats()});

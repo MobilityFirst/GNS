@@ -378,7 +378,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 			throws Exception {
 		long t = System.currentTimeMillis();
 		String response = checkResponse(createAndSignCommand(
-				CommandType.Read,
+				// FIXME: arun: such constructs should go with use of enums
+				reader != null ? CommandType.Read : CommandType.ReadUnsigned,
 				reader// .getPrivateKey()
 				, READ, GUID, targetGuid, FIELD, field, READER,
 				reader != null ? reader.getGuid() : null));
@@ -706,8 +707,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public String accountGuidVerify(GuidEntry guid, String code)
 			throws Exception {
 		return checkResponse(createAndSignCommand(CommandType.VerifyAccount,
-				guid.getPrivateKey(), xyz_VERIFY_ACCOUNT_xyz, GUID, guid.getGuid(),
-				CODE, code));
+				guid.getPrivateKey(), xyz_VERIFY_ACCOUNT_xyz, GUID,
+				guid.getGuid(), CODE, code));
 	}
 
 	/**
@@ -1275,8 +1276,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 				Base64.encodeToString(
 						Password.encryptPassword(password, alias), false))
 				: createAndSignCommand(CommandType.RegisterAccountSansPassword,
-						privateKey, publicKey, xyz_REGISTER_ACCOUNT_xyz, NAME, alias,
-						PUBLIC_KEY,
+						privateKey, publicKey, xyz_REGISTER_ACCOUNT_xyz, NAME,
+						alias, PUBLIC_KEY,
 						Base64.encodeToString(publicKey.getEncoded(), false)));
 		DelayProfiler.updateDelay("accountGuidCreate", startTime);
 		return result;
@@ -1700,7 +1701,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		} catch (NullPointerException ne) { // why this atrocity?
 			GNSConfig.getLogger().severe("NPE in field create");
 			ne.printStackTrace();
-			// arun: why exit here??? 
+			// arun: why exit here???
 			System.exit(1);
 		}
 	}
