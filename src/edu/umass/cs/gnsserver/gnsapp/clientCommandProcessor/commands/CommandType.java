@@ -219,6 +219,7 @@ public enum CommandType {
 		this.testing = testing;
 		this.alias = alias;
 	}
+	
 
   public int getInt() {
     return number;
