@@ -207,7 +207,9 @@ public enum CommandType {
   }
 
 	private CommandType(int number, boolean coordinated, boolean testing) {
-		this(number, true, false, CommandType.getCommandType(number).toString());
+		this(number, true, false, 
+				number+"" // default alias is just number
+				);
 	}
 
 	private CommandType(int number, boolean coordinated, boolean testing,

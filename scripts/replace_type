@@ -5,11 +5,18 @@
 # CommandType should not be prefixed. The script will automatically
 # check in case type2 does not exist in CommandType. It is important
 # to first refactor type1 to be really unique, e.g., "xyz_SET_xyz"
-# instead of just "SET", otherwise bad transformations can happen.
+# instead of just "SET", otherwise bad transformations can happen. The
+# directory tmp/ must exist in the local directory. 
 
 if [[ -z $1 || -z $2 ]]; then 
   echo "Usage: replace_type type1 type2 "
+  exit
 fi
+
+if [[ ! -e $moddir ]]; then
+  echo "tmp/ subdirectory must exist"
+  exit
+fi 
 
 prefix="GNSCommandProtocol."
 old=$1
