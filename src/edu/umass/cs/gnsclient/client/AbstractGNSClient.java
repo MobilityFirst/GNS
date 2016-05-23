@@ -167,7 +167,16 @@ public abstract class AbstractGNSClient {
   }
   
 
-  public JSONObject createAndSignCommand(CommandType commandType,
+  /**
+ * @param commandType
+ * @param privateKey
+ * @param publicKey
+ * @param action
+ * @param keysAndValues
+ * @return Signed command.
+ * @throws ClientException
+ */
+public JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, PublicKey publicKey, String action, Object... keysAndValues)
           throws ClientException {
     try {
@@ -192,10 +201,19 @@ public abstract class AbstractGNSClient {
       throw new ClientException("Error encoding message", e);
     }
   }
-  public JSONObject createAndSignCommand(CommandType commandType,
+  /**
+ * @param commandType
+ * @param querier
+ * @param action
+ * @param keysAndValues
+ * @return 
+ * @throws ClientException
+ */
+public JSONObject createAndSignCommand(CommandType commandType,
           GuidEntry querier, String action, Object... keysAndValues)
           throws ClientException {
-	  return this.createAndSignCommand(commandType, querier.getPrivateKey(), querier.getPublicKey(), action, keysAndValues);
+	return querier!=null ? this.createAndSignCommand(commandType, querier.getPrivateKey(), querier.getPublicKey(), action, keysAndValues)
+			: createCommand(commandType, action, keysAndValues);
   }
 
   /**

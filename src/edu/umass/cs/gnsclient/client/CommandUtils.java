@@ -137,7 +137,7 @@ public class CommandUtils {
   @Deprecated
   // This is deprecated because the method below will be the one we end up using once the
   // transtion to using enums is finished.
-  private static JSONObject createAndSignCommand(PrivateKey privateKey, CommandType commandType, String action,
+  private static JSONObject createAndSignCommandInternal(CommandType commandType, PrivateKey privateKey, String action,
           Object... keysAndValues) throws ClientException {
     try {
       JSONObject result = createCommand(action, keysAndValues);
@@ -180,7 +180,7 @@ public class CommandUtils {
     	
     	if(Math.random() > 0) throw new RuntimeException("Deprecated");
     	
-      JSONObject result = createAndSignCommand(privateKey, commandType, action, keysAndValues);
+      JSONObject result = createAndSignCommandInternal(commandType, privateKey, action, keysAndValues);
 //      result.remove(GNSCommandProtocol.SIGNATURE);
 //      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
 //      String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
