@@ -337,7 +337,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public String accountGuidVerify(GuidEntry guid, String code) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.VERIFY_ACCOUNT, GNSCommandProtocol.GUID, guid.getGuid(),
+    String command = createAndSignQuery(guid, GNSCommandProtocol.xyz_VERIFY_ACCOUNT_xyz, GNSCommandProtocol.GUID, guid.getGuid(),
             GNSCommandProtocol.CODE, code);
     String response = sendGetCommand(command);
     return checkResponse(command, response);
@@ -351,7 +351,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void accountGuidRemove(GuidEntry guid) throws Exception {
     String command = createAndSignQuery(guid,
-            GNSCommandProtocol.REMOVE_ACCOUNT,
+            GNSCommandProtocol.xyz_REMOVE_ACCOUNT_xyz,
             GNSCommandProtocol.GUID, guid.getGuid(),
             GNSCommandProtocol.NAME, guid.getEntityName());
     String response = sendGetCommand(command);
@@ -1143,11 +1143,11 @@ public class UniversalHttpClient implements GNSClientInterface {
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command;
     if (password != null) {
-      command = createQuery(GNSCommandProtocol.REGISTER_ACCOUNT, GNSCommandProtocol.NAME,
+      command = createQuery(GNSCommandProtocol.xyz_REGISTER_ACCOUNT_xyz, GNSCommandProtocol.NAME,
               URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString,
               GNSCommandProtocol.PASSWORD, Base64.encodeToString(Password.encryptPassword(password, alias), false));
     } else {
-      command = createQuery(GNSCommandProtocol.REGISTER_ACCOUNT, GNSCommandProtocol.NAME,
+      command = createQuery(GNSCommandProtocol.xyz_REGISTER_ACCOUNT_xyz, GNSCommandProtocol.NAME,
               URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString);
     }
     return checkResponse(command, sendGetCommand(command));

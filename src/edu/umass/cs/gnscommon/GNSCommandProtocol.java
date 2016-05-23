@@ -39,9 +39,9 @@ public class GNSCommandProtocol {
 
   /** FIXME: Convert to using enums. 
   See edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType */
-  public final static String REGISTER_ACCOUNT = "registerAccount";
-  public final static String VERIFY_ACCOUNT = "verifyAccount";
-  public final static String REMOVE_ACCOUNT = "removeAccount";
+  public final static String xyz_REGISTER_ACCOUNT_xyz = "registerAccount";
+  public final static String xyz_VERIFY_ACCOUNT_xyz = "verifyAccount";
+  public final static String xyz_REMOVE_ACCOUNT_xyz = "removeAccount";
   public final static String LOOKUP_GUID = "lookupGuid";
   public final static String LOOKUP_PRIMARY_GUID = "lookupPrimaryGuid";
   public final static String LOOKUP_GUID_RECORD = "lookupGuidRecord";
@@ -321,7 +321,7 @@ public class GNSCommandProtocol {
                   APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
                   APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
                   SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
-                  VERIFY_ACCOUNT, SET_PASSWORD, RESET_KEY,
+                  xyz_VERIFY_ACCOUNT_xyz, SET_PASSWORD, RESET_KEY,
                   //
                   ACL_ADD, ACL_REMOVE,
                   //
@@ -333,8 +333,8 @@ public class GNSCommandProtocol {
    * The list of command types that create and delete records.
    */
   public final static Set<String> CREATE_DELETE_COMMANDS
-          = new HashSet<String>(Arrays.asList(REGISTER_ACCOUNT, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
-                  REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS//,
+          = new HashSet<String>(Arrays.asList(xyz_REGISTER_ACCOUNT_xyz, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
+                  xyz_REMOVE_ACCOUNT_xyz, REMOVE_GUID, ADD_MULTIPLE_GUIDS//,
           //                ADD_TO_GROUP, REMOVE_FROM_GROUP
           ));
 

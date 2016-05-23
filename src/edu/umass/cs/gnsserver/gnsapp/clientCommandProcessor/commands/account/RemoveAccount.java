@@ -66,7 +66,7 @@ public class RemoveAccount extends BasicCommand {
 
   @Override
   public String getCommandName() {
-    return REMOVE_ACCOUNT;
+    return xyz_REMOVE_ACCOUNT_xyz;
   }
 
   @Override

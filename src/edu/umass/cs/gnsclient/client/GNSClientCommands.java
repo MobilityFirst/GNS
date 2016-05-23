@@ -92,8 +92,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ_ARRAY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ_ARRAY_ONE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.REGISTER_ACCOUNT;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.REMOVE_ACCOUNT;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.xyz_REGISTER_ACCOUNT_xyz;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.xyz_REMOVE_ACCOUNT_xyz;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.REMOVE_ALIAS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.REMOVE_FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.REMOVE_FROM_GROUP;
@@ -116,7 +116,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SUBSTITUTE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SUBSTITUTE_LIST;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFY_ACCOUNT;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.xyz_VERIFY_ACCOUNT_xyz;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WITHIN;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -706,7 +706,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public String accountGuidVerify(GuidEntry guid, String code)
 			throws Exception {
 		return checkResponse(createAndSignCommand(CommandType.VerifyAccount,
-				guid.getPrivateKey(), VERIFY_ACCOUNT, GUID, guid.getGuid(),
+				guid.getPrivateKey(), xyz_VERIFY_ACCOUNT_xyz, GUID, guid.getGuid(),
 				CODE, code));
 	}
 
@@ -720,7 +720,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public void accountGuidRemove(GuidEntry guid) throws Exception {
 		checkResponse(createAndSignCommand(CommandType.RemoveAccount,
 				guid// .getPrivateKey()
-				, REMOVE_ACCOUNT, GUID, guid.getGuid(), NAME,
+				, xyz_REMOVE_ACCOUNT_xyz, GUID, guid.getGuid(), NAME,
 				guid.getEntityName()));
 	}
 
@@ -1270,12 +1270,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		String result = checkResponse(password != null ?
 		//
 		createAndSignCommand(CommandType.RegisterAccount, privateKey,
-				publicKey, REGISTER_ACCOUNT, NAME, alias, PUBLIC_KEY,
+				publicKey, xyz_REGISTER_ACCOUNT_xyz, NAME, alias, PUBLIC_KEY,
 				Base64.encodeToString(publicKey.getEncoded(), false), PASSWORD,
 				Base64.encodeToString(
 						Password.encryptPassword(password, alias), false))
 				: createAndSignCommand(CommandType.RegisterAccountSansPassword,
-						privateKey, publicKey, REGISTER_ACCOUNT, NAME, alias,
+						privateKey, publicKey, xyz_REGISTER_ACCOUNT_xyz, NAME, alias,
 						PUBLIC_KEY,
 						Base64.encodeToString(publicKey.getEncoded(), false)));
 		DelayProfiler.updateDelay("accountGuidCreate", startTime);

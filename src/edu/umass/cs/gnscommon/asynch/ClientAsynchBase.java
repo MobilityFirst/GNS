@@ -235,7 +235,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws Exception
    */
   public long accountGuidVerify(GuidEntry guid, String code, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount, guid.getPrivateKey(), VERIFY_ACCOUNT, GUID, guid.getGuid(),
+    return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount, guid.getPrivateKey(), xyz_VERIFY_ACCOUNT_xyz, GUID, guid.getGuid(),
             CODE, code), callback);
   }
 
@@ -249,7 +249,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(CommandType.RemoveAccount, guid.getPrivateKey(),
-            REMOVE_ACCOUNT,
+            xyz_REMOVE_ACCOUNT_xyz,
             GUID, guid.getGuid(),
             NAME, guid.getEntityName()), callback);
   }

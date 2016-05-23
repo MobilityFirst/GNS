@@ -60,7 +60,7 @@ public class VerifyAccount extends BasicCommand {
 
   @Override
   public String getCommandName() {
-    return VERIFY_ACCOUNT;
+    return xyz_VERIFY_ACCOUNT_xyz;
   }
 
   @Override

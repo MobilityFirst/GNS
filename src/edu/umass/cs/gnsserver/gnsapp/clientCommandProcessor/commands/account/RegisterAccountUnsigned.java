@@ -51,7 +51,7 @@ public class RegisterAccountUnsigned extends RegisterAccount {
 
   @Override
   public String getCommandName() {
-    return REGISTER_ACCOUNT;
+    return xyz_REGISTER_ACCOUNT_xyz;
   }
 
   @Override

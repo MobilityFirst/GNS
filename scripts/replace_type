@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# The first argument must be a GNSCommandProtocol type and the second
+# must be a CommandType type. The words GNSCommandProtocol and
+# CommandType should not be prefixed. The script will automatically
+# check in case type2 does not exist in CommandType. It is important
+# to first refactor type1 to be really unique, e.g., "xyz_SET_xyz"
+# instead of just "SET", otherwise bad transformations can happen.
+
+if [[ -z $1 || -z $2 ]]; then 
+  echo "Usage: replace_type type1 type2 "
+fi
+
+prefix="GNSCommandProtocol."
+old=$1
+new="CommandType.$2"
+moddir=tmp
+
+present=`cat src/edu/umass/cs/gnsserver/gnsapp/clientCommandProcessor/commands/CommandType.java \
+|grep "[^a-zA-Z]$2("`
+if [[ -z $present ]]; then
+  echo "$new not present in CommandType"
+  exit
+fi
+
+for i in `grep -R $old src/edu/umass/cs|sed s/:.*//g| \
+grep -v GNSCommandProtocol.java`; 
+do 
+echo "working on $i"
+cat $i|grep -v "import static.*.$prefix$old;"| \
+grep -v "String *$old *="| \
+sed s/"$prefix$old"/"$new.toString\(\)"/g | \
+sed s/"$old"/"$new.toString\(\)"/g > $moddir/$i;
+
+echo "modified $i and stored it in $moddir/$i"
+cp $moddir/$i $i; 
+done

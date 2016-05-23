@@ -198,10 +198,25 @@ public enum CommandType {
   GetActiveCode(812);
 
   private int number;
+  private final boolean coordinated;
+  private final boolean testing;
+  private final String alias; // must also be unique
 
   private CommandType(int number) {
-    this.number = number;
+      this(number, true, false);
   }
+
+	private CommandType(int number, boolean coordinated, boolean testing) {
+		this(number, true, false, CommandType.getCommandType(number).toString());
+	}
+
+	private CommandType(int number, boolean coordinated, boolean testing,
+			String alias) {
+		this.number = number;
+		this.coordinated = coordinated;
+		this.testing = testing;
+		this.alias = alias;
+	}
 
   public int getInt() {
     return number;
