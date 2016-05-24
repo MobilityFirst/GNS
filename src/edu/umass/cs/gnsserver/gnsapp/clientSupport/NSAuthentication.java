@@ -26,7 +26,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
@@ -45,9 +45,9 @@ final class AclResult {
 
   private final String publicKey;
   private final boolean aclCheckPassed;
-  private final NSResponseCode responseCode;
+  private final GNSResponseCode responseCode;
 
-  public AclResult(String publicKey, boolean aclCheckPassed, NSResponseCode responseCode) {
+  public AclResult(String publicKey, boolean aclCheckPassed, GNSResponseCode responseCode) {
     this.publicKey = publicKey;
     this.aclCheckPassed = aclCheckPassed;
     this.responseCode = responseCode;
@@ -61,7 +61,7 @@ final class AclResult {
     return aclCheckPassed;
   }
 
-  public NSResponseCode getResponseCode() {
+  public GNSResponseCode getResponseCode() {
     return responseCode;
   }
 
@@ -87,7 +87,7 @@ public class NSAuthentication {
       // The simple case where we're accessing our own guid
       publicKey = lookupPublicKeyFromGuidLocallyWithCacheing(guid, gnsApp);
       if (publicKey == null) {
-        return new AclResult("", false, NSResponseCode.BAD_GUID_ERROR);
+        return new AclResult("", false, GNSResponseCode.BAD_GUID_ERROR);
       }
       aclCheckPassed = true;
     } else {
@@ -111,13 +111,13 @@ public class NSAuthentication {
     }
     if (publicKey == null) {
       // If we haven't found the publicKey of the accessorGuid yet it's not allowed access
-      return new AclResult("", false, NSResponseCode.BAD_ACCESSOR_ERROR);
+      return new AclResult("", false, GNSResponseCode.BAD_ACCESSOR_ERROR);
     } else if (!aclCheckPassed) {
       // Otherwise, we need to find out if this accessorGuid is in a group guid that
       // is in the acl of the field
       aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp);
     }
-    return new AclResult(publicKey, aclCheckPassed, NSResponseCode.NO_ERROR);
+    return new AclResult(publicKey, aclCheckPassed, GNSResponseCode.NO_ERROR);
   }
 
   /**
@@ -131,7 +131,7 @@ public class NSAuthentication {
    * @param message
    * @param access - the type of access
    * @param gnsApp
-   * @return an {@link NSResponseCode}
+   * @return an {@link GNSResponseCode}
    * @throws InvalidKeyException
    * @throws InvalidKeySpecException
    * @throws SignatureException
@@ -139,7 +139,7 @@ public class NSAuthentication {
    * @throws FailedDBOperationException
    * @throws UnsupportedEncodingException
    */
-  public static NSResponseCode signatureAndACLCheck(String guid,
+  public static GNSResponseCode signatureAndACLCheck(String guid,
           String field, List<String> fields,
           String accessorGuid, String signature,
           String message, MetaDataTypeName access,
@@ -151,14 +151,14 @@ public class NSAuthentication {
     AclResult aclResult = null;
     if (field != null) {
       aclResult = aclCheck(guid, field, accessorGuid, access, gnsApp);
-      if (aclResult.getResponseCode().isAnError()) {
+      if (aclResult.getResponseCode().isError()) {
         return aclResult.getResponseCode();
       }
     } else if (fields != null) {
       // Check each field individually.
       for (String aField : fields) {
         aclResult = aclCheck(guid, aField, accessorGuid, access, gnsApp);
-        if (aclResult.getResponseCode().isAnError()) {
+        if (aclResult.getResponseCode().isError()) {
           return aclResult.getResponseCode();
         }
       }
@@ -167,7 +167,7 @@ public class NSAuthentication {
       // Something went wrong above, but we shouldn't really get here.
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-      return NSResponseCode.ACCESS_ERROR;
+      return GNSResponseCode.ACCESS_ERROR;
     }
 
     String publicKey = aclResult.getPublicKey();
@@ -177,19 +177,19 @@ public class NSAuthentication {
       if (!NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-        return NSResponseCode.ACCESS_ERROR;
+        return GNSResponseCode.ACCESS_ERROR;
       }
     } else if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Name {0} key={1} : SIGNATURE_ERROR", new Object[]{guid, field});
-      return NSResponseCode.SIGNATURE_ERROR;
+      return GNSResponseCode.SIGNATURE_ERROR;
     } else if (!aclCheckPassed) {
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-      return NSResponseCode.ACCESS_ERROR;
+      return GNSResponseCode.ACCESS_ERROR;
     }
 
-    return NSResponseCode.NO_ERROR;
+    return GNSResponseCode.NO_ERROR;
   }
 
   /**

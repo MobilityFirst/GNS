@@ -29,13 +29,14 @@ import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+
 import java.text.ParseException;
 import java.util.Date;
 
@@ -82,10 +83,10 @@ public class Set extends BasicCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    NSResponseCode response = ActiveCode.setCode(accountGuid, action,
+    GNSResponseCode response = ActiveCode.setCode(accountGuid, action,
             code, writer, signature, message, timestamp, handler);
 
-    if (response.isAnError()) {
+    if (response.isError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
       return new CommandResponse<>(OK_RESPONSE);

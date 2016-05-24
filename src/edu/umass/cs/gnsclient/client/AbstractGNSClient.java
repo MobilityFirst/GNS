@@ -463,7 +463,7 @@ public abstract class AbstractGNSClient {
       // note that we have recieved the reponse
       pendingAsynchPackets.remove(id);
       // Record errors
-      if (packet.getErrorCode().isAnError()) {
+      if (packet.getErrorCode().isError()) {
         totalAsynchErrors++;
       }
     }

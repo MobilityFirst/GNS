@@ -22,7 +22,6 @@ package edu.umass.cs.gnsclient.examples;
 import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.CommandResult;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
@@ -34,6 +33,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -43,8 +43,11 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
+
 import org.json.JSONObject;
 
 /**
@@ -134,7 +137,7 @@ public class ClientAsynchExample {
           pendingIds.remove(id);
           CommandResult commandResult = client.removeAsynchResponse(id);
           System.out.println("commandResult for  " + id + " is "
-                  + (commandResult.getErrorCode().equals(NSResponseCode.NO_ERROR)
+                  + (commandResult.getErrorCode().equals(GNSResponseCode.NO_ERROR)
                   ? commandResult.getResult()
                   : commandResult.getErrorCode().toString())
                   + "\n"

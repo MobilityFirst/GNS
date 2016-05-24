@@ -19,10 +19,11 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -57,9 +58,9 @@ public class FieldMetaData {
    * @param message
    * @param timestamp
    * @param handler
-   * @return a {@link NSResponseCode}
+   * @return a {@link GNSResponseCode}
    */
-  public static NSResponseCode add(MetaDataTypeName type, String guid, 
+  public static GNSResponseCode add(MetaDataTypeName type, String guid, 
           String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
     return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
@@ -90,9 +91,9 @@ public class FieldMetaData {
           String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null, 
+    GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null, 
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isAnError()) {
+    if (errorCode.isError()) {
       return new HashSet<>();
     }
     ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field,
@@ -137,9 +138,9 @@ public class FieldMetaData {
    * @param message
    * @param timestamp
    * @param handler
-   * @return a {@link NSResponseCode}
+   * @return a {@link GNSResponseCode}
    */
-  public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
+  public static GNSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
      return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);

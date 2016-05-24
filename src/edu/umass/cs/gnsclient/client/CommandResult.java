@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 
@@ -46,7 +46,7 @@ public class CommandResult implements Serializable /* does it */ {
   /**
    * Indicates if the response is an error. Partially implemented.
    */
-  private final NSResponseCode errorCode;
+  private final GNSResponseCode errorCode;
   
   /* arun: Putting instrumentation fields like this in every packet is
    * poor and unnecessary.
@@ -94,7 +94,7 @@ public class CommandResult implements Serializable /* does it */ {
           long clientLatency) {
     this.result = packet.getResponseMessage();
     this.receivedTime = receivedTime;
-    this.errorCode = NSResponseCode.BAD_GUID_ERROR;
+    this.errorCode = GNSResponseCode.BAD_GUID_ERROR;
 //    this.CCPRoundTripTime = 0;
 //    this.CCPProcessingTime = 0;
 //    this.responder = packet.getSender() != null ? packet.getSender().toString() : null;
@@ -126,7 +126,7 @@ public class CommandResult implements Serializable /* does it */ {
    *
    * @return the code
    */
-  public NSResponseCode getErrorCode() {
+  public GNSResponseCode getErrorCode() {
     return errorCode;
   }
 

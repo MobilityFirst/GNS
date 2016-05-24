@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
@@ -73,7 +73,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * Indicates if the response is an error.
    */
-  private final NSResponseCode errorCode;
+  private final GNSResponseCode errorCode;
   /**
    * Instrumentation - The RTT as measured from the LNS out and back.
    */
@@ -139,9 +139,9 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.serviceName = json.getString(SERVICENAME);
     this.returnValue = json.getString(RETURNVALUE);
     if (json.has(ERRORCODE)) {
-      this.errorCode = NSResponseCode.getResponseCode(json.getInt(ERRORCODE));
+      this.errorCode = GNSResponseCode.getResponseCode(json.getInt(ERRORCODE));
     } else {
-      this.errorCode = NSResponseCode.NO_ERROR;
+      this.errorCode = GNSResponseCode.NO_ERROR;
     }
     // instrumentation
 //    this.requestRate = json.getInt(REQUESTRATE);
@@ -224,7 +224,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    *
    * @return the error code
    */
-  public NSResponseCode getErrorCode() {
+  public GNSResponseCode getErrorCode() {
     return errorCode;
   }
 

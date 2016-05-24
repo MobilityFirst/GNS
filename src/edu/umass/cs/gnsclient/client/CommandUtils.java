@@ -8,6 +8,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.AclException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -22,6 +23,7 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
@@ -308,6 +310,60 @@ public class CommandUtils {
       return response;
     }
   }
+  
+  /**
+   * arun: This checkResponse method will replace the old one. There is no
+   * reason to not directly use the received CommandValeReturnPacket.
+   * 
+   * @param command
+   * @param packet
+   * @return Response as a string.
+   * @throws ClientException
+   */
+  public static String checkResponse(JSONObject command,
+          CommandValueReturnPacket packet) throws ClientException {
+      GNSResponseCode code = packet.getErrorCode();
+      String response = packet.getReturnValue();
+      if (!code.isError() && !code.isException()) {
+          return (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
+                  : response;
+      }
+      // else error
+      String errorSummary = code + ": " + response + ":"
+              + packet.getSummary().toString();
+      switch (code) {
+      case SIGNATURE_ERROR:
+          throw new EncryptionException(errorSummary);
+
+      case BAD_GUID_ERROR:
+      case BAD_ACCESSOR_ERROR:
+      case BAD_ACCOUNT_ERROR:
+          throw new InvalidGuidException(errorSummary);
+
+      case FIELD_NOT_FOUND_ERROR:
+          throw new FieldNotFoundException(errorSummary);
+      case ACCESS_ERROR:
+          throw new AclException(errorSummary);
+      case VERIFICATION_ERROR:
+          throw new VerificationException(errorSummary);
+      case DUPLICATE_ID_EXCEPTION:
+          throw new DuplicateNameException(errorSummary);
+
+      case DUPLICATE_FIELD_EXCEPTION:
+          throw new InvalidFieldException(errorSummary);
+
+      case ACTIVE_REPLICA_EXCEPTION:
+          throw new InvalidGuidException(errorSummary);
+      case NONEXISTENT_NAME_EXCEPTION:
+          throw new InvalidGuidException(errorSummary);
+
+      default:
+          throw new ClientException(
+                  "Error received with an unknown response code: "
+                          + errorSummary);
+      }
+  }
+
 
   public static long getRandomRequestId() {
     return random.nextLong();
