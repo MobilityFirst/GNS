@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
+import edu.umass.cs.gnscommon.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.lang.reflect.Constructor;
@@ -109,7 +110,8 @@ public class CommandModule {
       BasicCommand command = (BasicCommand) constructor.newInstance(new Object[]{this});
       ClientCommandProcessorConfig.getLogger().log(Level.FINER,
               "Creating command {0}: {1} with {2}: {3}",
-              new Object[]{command.getCommandType().getInt(), clazz.getCanonicalName(), command.getCommandName(),
+              new Object[]{command.getCommandType().getInt(), clazz.getCanonicalName(),
+                command.getCommandType().toString(),
                 command.getCommandParametersString()});
       return command;
     } catch (SecurityException | NoSuchMethodException |
@@ -122,6 +124,10 @@ public class CommandModule {
     return null;
   }
 
+  public BasicCommand lookupCommand(CommandType commandType) {
+    return commandLookupTable.get(commandType);
+  }
+
   /**
    * Finds the command that corresponds to the JSONObject which was received command packet.
    *
@@ -132,14 +138,15 @@ public class CommandModule {
     BasicCommand command = null;
     if (json.has(COMMAND_INT)) {
       try {
-        command = commandLookupTable.get(CommandType.getCommandType(json.getInt(COMMAND_INT)));
+        command = lookupCommand(CommandType.getCommandType(json.getInt(COMMAND_INT)));
         // Some sanity checks
         String commandName = json.optString(COMMANDNAME, null);
         // Check to see if command name
-        if (command != null && commandName != null && !commandName.equals(command.getCommandName())) {
+        if (command != null && commandName != null
+                && !commandName.equals(command.getCommandType().toString())) {
           ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
                   "Command name {0} in json does not match {1}",
-                  new Object[]{commandName, command.getCommandName()});
+                  new Object[]{commandName, command.getCommandType().toString()});
           command = null;
         }
         if (command != null && !JSONContains(json, command.getCommandParameters())) {
@@ -176,7 +183,7 @@ public class CommandModule {
     // for now a linear search is fine
     for (BasicCommand lookupCommand : commands) {
       //GNS.getLogger().info("Search: " + command.toString());
-      if (lookupCommand.getCommandName().equals(action)) {
+      if (lookupCommand.getCommandType().toString().equals(action)) {
         //GNS.getLogger().info("Found action: " + action);
         if (JSONContains(json, lookupCommand.getCommandParameters())) {
           //GNS.getLogger().info("Matched parameters: " + json);
@@ -297,8 +304,8 @@ public class CommandModule {
     @Override
     public int compare(BasicCommand command1, BasicCommand command2) {
 
-      String commandName1 = command1.getCommandName();
-      String commandName2 = command2.getCommandName();
+      String commandName1 = command1.getCommandType().toString();
+      String commandName2 = command2.getCommandType().toString();
 
       //ascending order
       return commandName1.compareTo(commandName2);

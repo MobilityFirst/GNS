@@ -22,14 +22,13 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 import java.net.InetSocketAddress;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
-import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.Util;
 
 import java.util.logging.Level;
 
@@ -291,36 +290,38 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return BOGUS_SERVICE_NAME;
   }
 
-  /**
-   * Return the command name.
-   *
-   * @return the command name
-   */
-  public String getCommandName() {
-    if (command != null) {
-      return command.optString(GNSCommandProtocol.COMMANDNAME, "unknown");
+//  /**
+//   * Return the command name.
+//   *
+//   * @return the command name
+//   */
+//  @Deprecated
+//  public String getCommandName() {
+//    if (command != null) {
+//      return command.optString(GNSCommandProtocol.COMMANDNAME, "unknown");
+//    }
+//    return "unknown";
+//  }
+
+  public boolean getCommandCoordinateReads() {
+    try {
+      // arun: optBoolean is inefficient (~6us)
+      return command != null
+              && command.has(GNSCommandProtocol.COORDINATE_READS)
+              && command.getBoolean(GNSCommandProtocol.COORDINATE_READS);
+    } catch (JSONException e) {;
     }
-    return "unknown";
+    return false;
   }
 
-	public boolean getCommandCoordinateReads() {
-		try {
-			// arun: optBoolean is inefficient (~6us)
-			return command != null
-					&& command.has(GNSCommandProtocol.COORDINATE_READS)
-					&& command.getBoolean(GNSCommandProtocol.COORDINATE_READS);
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return false;
-	}
-
   public int getCommandInteger() {
-    if (command != null) {
-      if (command.has(GNSCommandProtocol.COMMAND_INT)) {
-        return command.optInt(GNSCommandProtocol.COMMAND_INT, -1);
+    try {
+      if (command != null) {
+        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
+          return command.getInt(GNSCommandProtocol.COMMAND_INT);
+        }
       }
+    } catch (JSONException e) {
     }
     return -1;
   }
@@ -335,10 +336,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     } else {
       // Cache it.
       needsCoordinationExplicitlySet = true;
-      String cmdName = getCommandName();
-      needsCoordination = (GNSCommandProtocol.READ_COMMANDS.contains(cmdName) && getCommandCoordinateReads() )
-    		  || GNSCommandProtocol.UPDATE_COMMANDS.contains(cmdName)
-              ;
+      CommandType commandType = CommandType.getCommandType(getCommandInteger());
+      needsCoordination = (commandType.isRead() && getCommandCoordinateReads())
+              || commandType.isUpdate();
+//      String cmdName = getCommandName();
+//      needsCoordination = (GNSCommandProtocol.READ_COMMANDS.contains(cmdName) && getCommandCoordinateReads() )
+//    		  || GNSCommandProtocol.UPDATE_COMMANDS.contains(cmdName);
       if (needsCoordination) {
         GNSConfig.getLogger().log(Level.FINE, "{0} needs coordination", this);
       }
@@ -367,7 +370,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       public String toString() {
         return getRequestType() + ":"
                 + getCommandInteger() + ":"
-                + getCommandName() + ":"
+                //+ getCommandName() + ":"
                 + getServiceName() + ":"
                 + getRequestID() + "["
                 + getClientAddress() + "]";

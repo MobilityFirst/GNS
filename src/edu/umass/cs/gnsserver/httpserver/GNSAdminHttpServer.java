@@ -27,6 +27,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -72,7 +73,7 @@ public class GNSAdminHttpServer {
   private final CommandModule commandModule;
   private final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
-  
+
   private final static Logger LOG = Logger.getLogger(GNSAdminHttpServer.class.getName());
 
   public GNSAdminHttpServer(ClientRequestHandlerInterface requestHandler) {
@@ -179,14 +180,12 @@ public class GNSAdminHttpServer {
    * executes the matching command.
    */
   private String processQuery(String host, String action, String queryString) {
-    // Set the host field. Used by the help command. Find a better way to to do this?
-    //commandModule.setHTTPHost(host);
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     String fullString = action + QUERYPREFIX + queryString; // for signature check
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
     //new command processing
-    queryMap.put(COMMANDNAME, action);
+    //queryMap.put(COMMANDNAME, action);
     if (queryMap.keySet().contains(SIGNATURE)) {
       String signature = queryMap.get(SIGNATURE);
       String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
@@ -194,8 +193,9 @@ public class GNSAdminHttpServer {
     }
     JSONObject jsonFormattedCommand = new JSONObject(queryMap);
 
+    BasicCommand command = commandModule.lookupCommand(CommandType.valueOf(action));
     // Now we execute the command
-    BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+    //BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler).getReturnValue();
   }
 
@@ -283,7 +283,7 @@ public class GNSAdminHttpServer {
         responseBody.write("<br>".getBytes());
         responseBody.write(serverUpTimeString.getBytes());
         responseBody.write("<br>".getBytes());
-         responseBody.write(numberOfNameServers.getBytes());
+        responseBody.write(numberOfNameServers.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(reconAddresses.getBytes());
         responseBody.write("<br>".getBytes());
@@ -291,7 +291,7 @@ public class GNSAdminHttpServer {
         responseBody.write("<br>".getBytes());
         responseBody.write(clientSSLMode.getBytes());
         responseBody.write("<br>".getBytes());
-       
+
 //        responseBody.write(nodeAddressesString.getBytes());
 //        responseBody.write("<br>".getBytes());
 //        responseBody.write(reconfiguratorsString.getBytes());

@@ -7,5 +7,5 @@ java -DgigapaxosConfig=conf/gigapaxos.client.local.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
--Djavax.net.ssl.keyStore=conf/keyStore/node100.jks -cp \
-jars/GNSClient.jar $*
+-Djavax.net.ssl.keyStore=conf/keyStore/node100.jks \
+-cp jars/GNSClient.jar $*

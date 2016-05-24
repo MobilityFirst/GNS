@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
@@ -116,9 +117,10 @@ public class GNSClient extends AbstractGNSClient {
         }
       }
     };
-    if (GNSCommandProtocol.CREATE_DELETE_COMMANDS
-            .contains(packet.getCommandName())
-            || packet.getCommandName().equals(GNSCommandProtocol.SELECT)) {
+    if (CommandType.getCommandType(packet.getCommandInteger()).isCreateDelete()
+            || CommandType.getCommandType(packet.getCommandInteger()).isSelect()) {
+//    if (GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(packet.getCommandName())
+//            || packet.getCommandName().equals(GNSCommandProtocol.SELECT)) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
       this.asyncClient.sendRequest(packet, callback);
@@ -151,7 +153,9 @@ public class GNSClient extends AbstractGNSClient {
           throws JSONException, IOException {
     if (packet.getServiceName().equals(
             Config.getGlobalString(RC.SPECIAL_NAME))
-            || packet.getCommandName().equals(GNSCommandProtocol.SELECT)) {
+            || CommandType.getCommandType(packet.getCommandInteger()).isSelect()
+            //packet.getCommandName().equals(GNSCommandProtocol.SELECT)
+            ) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
       this.asyncClient.sendRequest(packet, callback);

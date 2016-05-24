@@ -28,7 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -64,10 +64,10 @@ public class RegisterAccount extends BasicCommand {
     return new String[]{NAME, PUBLIC_KEY, PASSWORD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return xyz_REGISTER_ACCOUNT_xyz;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REGISTER_ACCOUNT;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,

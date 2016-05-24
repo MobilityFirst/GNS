@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  * THIS EXISTS FOR BACKWARDS COMPATIBILITY.
@@ -49,10 +49,10 @@ public class RegisterAccountUnsigned extends RegisterAccount {
     return new String[]{NAME, PUBLIC_KEY, PASSWORD};
   }
 
-  @Override
-  public String getCommandName() {
-    return xyz_REGISTER_ACCOUNT_xyz;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REGISTER_ACCOUNT;
+//  }
 
   @Override
   public String getCommandDescription() {

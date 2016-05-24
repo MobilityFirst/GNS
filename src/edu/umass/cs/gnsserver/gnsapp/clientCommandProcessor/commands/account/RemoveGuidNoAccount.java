@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  * Creates a RemoveGuidNoAccount instance.
@@ -48,10 +48,10 @@ public class RemoveGuidNoAccount extends RemoveGuid {
     return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return REMOVE_GUID;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REMOVE_GUID;
+//  }
 
   @Override
   public String getCommandDescription() {

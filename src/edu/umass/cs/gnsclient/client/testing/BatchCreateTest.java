@@ -39,7 +39,7 @@ import org.json.JSONObject;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -160,8 +160,8 @@ public class BatchCreateTest {
     JSONArray randomGuids = null;
     if (writeTo > 0) {
       try {
-        command = createCommandDeprecated(CommandType.LookupRandomGuids,
-                LOOKUP_RANDOM_GUIDS, GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
+        command = createCommand(CommandType.LookupRandomGuids,
+                GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
         result = checkResponse(command, client.sendCommandAndWait(command));
         if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);

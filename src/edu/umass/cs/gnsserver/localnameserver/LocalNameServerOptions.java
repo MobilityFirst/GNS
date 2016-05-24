@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
+//import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
@@ -81,7 +81,7 @@ public class LocalNameServerOptions {
    * @return the command line options
    */
   public static Options getAllOptions() {
-    Option help = new Option(HELP, "Prints usage");
+    Option help = new Option("help", "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
     Option port = new Option(PORT, true, "Port");

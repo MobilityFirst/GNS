@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -42,10 +42,10 @@ public class ReadArrayOne extends ReadArray {
     return CommandType.ReadArrayOne;
   }
 
-  @Override
-  public String getCommandName() {
-    return READ_ARRAY_ONE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return READ_ARRAY_ONE;
+//  }
 
   @Override
   public String[] getCommandParameters() {

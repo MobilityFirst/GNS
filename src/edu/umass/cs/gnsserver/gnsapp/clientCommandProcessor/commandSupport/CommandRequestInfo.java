@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.CommandType;
 import java.net.InetSocketAddress;
 
 //
@@ -22,7 +23,7 @@ public class CommandRequestInfo {
   private final String host;
   private final int port;
   // For debugging
-  private final String command;
+  private final CommandType commandType;
   private final String guid;
   // arun: Need this for correct receiver messaging
   final InetSocketAddress myListeningAddress;
@@ -31,13 +32,16 @@ public class CommandRequestInfo {
    *
    * @param host
    * @param port
-   * @param command
+   * @param commandType
    * @param guid
+   * @param myListeningAddress
    */
-  public CommandRequestInfo(String host, int port, String command, String guid, InetSocketAddress myListeningAddress) {
+  public CommandRequestInfo(String host, int port,
+          CommandType commandType,
+          String guid, InetSocketAddress myListeningAddress) {
     this.host = host;
     this.port = port;
-    this.command = command;
+    this.commandType = commandType;
     this.guid = guid;
     this.myListeningAddress = myListeningAddress;
   }
@@ -61,12 +65,10 @@ public class CommandRequestInfo {
   }
 
   /**
-   * Returns the command.
-   *
-   * @return a string
+   * @return the command type
    */
-  public String getCommand() {
-    return command;
+  public CommandType getCommandType() {
+    return commandType;
   }
 
   /**

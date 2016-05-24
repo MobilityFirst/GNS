@@ -29,9 +29,7 @@ import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.REPLACE_USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -46,7 +44,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import org.json.JSONObject;
 
 /**
@@ -95,13 +93,13 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = createAndSignCommandDeprecated(CommandType.ReplaceUserJSON,
-              accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
+      command = createAndSignCommand(CommandType.ReplaceUserJSON,
+              accountGuidEntry.getPrivateKey(),
               GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(),
               WRITER, accountGuidEntry.getGuid());
     } else {
-      command = createAndSignCommandDeprecated(CommandType.Read,
-              accountGuidEntry.getPrivateKey(), READ,
+      command = createAndSignCommand(CommandType.Read,
+              accountGuidEntry.getPrivateKey(),
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }

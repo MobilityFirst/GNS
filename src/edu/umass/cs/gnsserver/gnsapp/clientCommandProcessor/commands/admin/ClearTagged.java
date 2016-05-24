@@ -26,7 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -63,10 +63,10 @@ public class ClearTagged extends BasicCommand {
     return new String[]{NAME};
   }
 
-  @Override
-  public String getCommandName() {
-    return CLEAR_TAGGED;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CLEAR_TAGGED;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")

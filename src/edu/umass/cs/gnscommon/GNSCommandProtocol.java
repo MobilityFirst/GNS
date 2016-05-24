@@ -19,11 +19,6 @@
  */
 package edu.umass.cs.gnscommon;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
@@ -32,100 +27,100 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
  * it defines a bunch of constants that define the protocol
  * support for communicating between the client and the local name server.
  *
- * @author  arun, emmanuel 
- * @version 1.17
+ * @author  arun, Westy
+ * @version 1.18
  */
 public class GNSCommandProtocol {
 
   /** FIXME: Convert to using enums. 
   See edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType */
-  public final static String xyz_REGISTER_ACCOUNT_xyz = "registerAccount";
-  public final static String xyz_VERIFY_ACCOUNT_xyz = "verifyAccount";
-  public final static String xyz_REMOVE_ACCOUNT_xyz = "removeAccount";
-  public final static String LOOKUP_GUID = "lookupGuid";
-  public final static String LOOKUP_PRIMARY_GUID = "lookupPrimaryGuid";
-  public final static String LOOKUP_GUID_RECORD = "lookupGuidRecord";
-  public final static String LOOKUP_ACCOUNT_RECORD = "lookupAccountRecord";
-  public final static String LOOKUP_RANDOM_GUIDS = "lookupAccountRecordGuids"; // mostly for testing
-  public final static String RESET_KEY = "resetKey";
-  public final static String ADD_ALIAS = "addAlias";
-  public final static String REMOVE_ALIAS = "removeAlias";
-  public final static String RETRIEVE_ALIASES = "retrieveAliases";
-  public final static String ADD_GUID = "addGuid";
-  public final static String ADD_MULTIPLE_GUIDS = "addMultipleGuids";
-  public final static String REMOVE_GUID = "removeGuid";
-  public final static String SET_PASSWORD = "setPassword";
+//  public final static String REGISTER_ACCOUNT = "registerAccount";
+//  public final static String VERIFY_ACCOUNT = "verifyAccount";
+//  public final static String REMOVE_ACCOUNT = "removeAccount";
+//  public final static String LOOKUP_GUID = "lookupGuid";
+//  public final static String LOOKUP_PRIMARY_GUID = "lookupPrimaryGuid";
+//  public final static String LOOKUP_GUID_RECORD = "lookupGuidRecord";
+//  public final static String LOOKUP_ACCOUNT_RECORD = "lookupAccountRecord";
+//  public final static String LOOKUP_RANDOM_GUIDS = "lookupAccountRecordGuids"; // mostly for testing
+//  public final static String RESET_KEY = "resetKey";
+//  public final static String ADD_ALIAS = "addAlias";
+//  public final static String REMOVE_ALIAS = "removeAlias";
+//  public final static String RETRIEVE_ALIASES = "retrieveAliases";
+//  public final static String ADD_GUID = "addGuid";
+//  public final static String ADD_MULTIPLE_GUIDS = "addMultipleGuids";
+//  public final static String REMOVE_GUID = "removeGuid";
+//  public final static String SET_PASSWORD = "setPassword";
   //
   // new
-  public final static String CREATE = "create";
-  public final static String REMOVE_FIELD = "removeField";
-  public final static String APPEND_OR_CREATE = "appendOrCreate";
-  public final static String REPLACE = "replace";
-  public final static String REPLACE_OR_CREATE = "replaceOrCreate";
-  public final static String APPEND_WITH_DUPLICATION = "appendDup";
-  public final static String APPEND = "append";
-  public final static String REMOVE = "remove";
-  public final static String CREATE_LIST = "createList";
-  public final static String APPEND_OR_CREATE_LIST = "appendOrCreateList";
-  public final static String REPLACE_OR_CREATE_LIST = "replaceOrCreateList";
-  public final static String REPLACE_LIST = "replaceList";
-  public final static String APPEND_LIST_WITH_DUPLICATION = "appendListDup";
-  public final static String APPEND_LIST = "appendList";
-  public final static String REMOVE_LIST = "removeList";
-  public final static String SUBSTITUTE = "substitute";
-  public final static String SUBSTITUTE_LIST = "substituteList";
-  public final static String SET = "set";
-  public final static String SET_FIELD_NULL = "setFieldNull";
-  public final static String CLEAR = "clear";
-  public final static String READ = "newRead";
-  public final static String READ_ARRAY = "readArray";
-  public final static String READ_ARRAY_ONE = "readArrayOne";
-  public final static String SELECT = "select";
-  public final static String SELECT_GROUP = "selectGroup";
+//  public final static String CREATE = "create";
+//  public final static String REMOVE_FIELD = "removeField";
+//  public final static String APPEND_OR_CREATE = "appendOrCreate";
+//  public final static String REPLACE = "replace";
+//  public final static String REPLACE_OR_CREATE = "replaceOrCreate";
+//  public final static String APPEND_WITH_DUPLICATION = "appendDup";
+//  public final static String APPEND = "append";
+//  public final static String REMOVE = "remove";
+//  public final static String CREATE_LIST = "createList";
+//  public final static String APPEND_OR_CREATE_LIST = "appendOrCreateList";
+//  public final static String REPLACE_OR_CREATE_LIST = "replaceOrCreateList";
+//  public final static String REPLACE_LIST = "replaceList";
+//  public final static String APPEND_LIST_WITH_DUPLICATION = "appendListDup";
+//  public final static String APPEND_LIST = "appendList";
+//  public final static String REMOVE_LIST = "removeList";
+//  public final static String SUBSTITUTE = "substitute";
+//  public final static String SUBSTITUTE_LIST = "substituteList";
+//  public final static String SET = "set";
+//  public final static String SET_FIELD_NULL = "setFieldNull";
+//  public final static String CLEAR = "clear";
+//  public final static String READ = "newRead";
+//  public final static String READ_ARRAY = "readArray";
+//  public final static String READ_ARRAY_ONE = "readArrayOne";
+//  public final static String SELECT = "select";
+//  public final static String SELECT_GROUP = "selectGroup";
   public final static String WITHIN = "within";
   public final static String NEAR = "near";
   public final static String QUERY = "query";
   public final static String INTERVAL = "interval";
-  public final static String REPLACE_USER_JSON = "replaceUserJSON";
-  public final static String CREATE_INDEX = "createIndex";
+//  public final static String REPLACE_USER_JSON = "replaceUserJSON";
+//  public final static String CREATE_INDEX = "createIndex";
   public final static String MAX_DISTANCE = "maxDistance";
   //
-  public final static String ACL_ADD = "aclAdd";
-  public final static String ACL_REMOVE = "aclRemove";
-  public final static String ACL_RETRIEVE = "aclRetrieve";
+//  public final static String ACL_ADD = "aclAdd";
+//  public final static String ACL_REMOVE = "aclRemove";
+//  public final static String ACL_RETRIEVE = "aclRetrieve";
   // tagss
-  public final static String ADD_TAG = "addTag";
-  public final static String REMOVE_TAG = "removeTag";
-  public final static String CLEAR_TAGGED = "clearTagged";
-  public final static String GET_TAGGED = "getTagged";
-  public final static String CREATE_GROUP = "createGroup";
-  public final static String LOOKUP_GROUP = "lookupGroup";
-  public final static String ADD_TO_GROUP = "addToGroup";
-  public final static String REMOVE_FROM_GROUP = "removeFromGroup";
-  public final static String GET_GROUP_MEMBERS = "getGroupMembers";
-  public final static String GET_GROUPS = "getGroups";
+//  public final static String ADD_TAG = "addTag";
+//  public final static String REMOVE_TAG = "removeTag";
+//  public final static String CLEAR_TAGGED = "clearTagged";
+//  public final static String GET_TAGGED = "getTagged";
+//  public final static String CREATE_GROUP = "createGroup";
+//  public final static String LOOKUP_GROUP = "lookupGroup";
+//  public final static String ADD_TO_GROUP = "addToGroup";
+//  public final static String REMOVE_FROM_GROUP = "removeFromGroup";
+//  public final static String GET_GROUP_MEMBERS = "getGroupMembers";
+//  public final static String GET_GROUPS = "getGroups";
   //
-  public final static String HELP = "help";
+//  public final static String HELP = "help";
   // Admin commands (some not accesible in unless the server is in "admin mode")
-  public final static String ADMIN = "admin";
-  @Deprecated
-  public final static String DELETE_ALL_RECORDS = "deleteAllRecords";
-  @Deprecated
-  public final static String RESET_DATABASE = "resetDatabase";
-  @Deprecated
-  public final static String CLEAR_CACHE = "clearCache";
-  public final static String DUMPCACHE = "dumpCache";
-  @Deprecated
-  public final static String DELETE_ALL_GUID_RECORDS = "deleteAllGuidRecords";
-  public final static String DUMP = "dump";
+//  public final static String ADMIN = "admin";
+//  @Deprecated
+//  public final static String DELETE_ALL_RECORDS = "deleteAllRecords";
+//  @Deprecated
+//  public final static String RESET_DATABASE = "resetDatabase";
+//  @Deprecated
+//  public final static String CLEAR_CACHE = "clearCache";
+//  public final static String DUMPCACHE = "dumpCache";
+//  @Deprecated
+//  public final static String DELETE_ALL_GUID_RECORDS = "deleteAllGuidRecords";
+//  public final static String DUMP = "dump";
   //
-  public final static String CONNECTION_CHECK = "connectionCheck";
-  public final static String CHANGE_LOG_LEVEL = "changeLogLevel";
-  public final static String SET_PARAMETER = "setParameter";
-  public final static String GET_PARAMETER = "getParameter";
-  public final static String LIST_PARAMETERS = "listParameters";
-  public final static String BATCH_TEST = "batchTest";
-  public final static String RTT_TEST = "rttTest";
+//  public final static String CONNECTION_CHECK = "connectionCheck";
+//  public final static String CHANGE_LOG_LEVEL = "changeLogLevel";
+//  public final static String SET_PARAMETER = "setParameter";
+//  public final static String GET_PARAMETER = "getParameter";
+//  public final static String LIST_PARAMETERS = "listParameters";
+//  public final static String BATCH_TEST = "batchTest";
+//  public final static String RTT_TEST = "rttTest";
   public final static String LEVEL = "level";
   public final static String GUIDCNT = "guidCnt";
   //
@@ -241,14 +236,15 @@ public class GNSCommandProtocol {
   public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   // This one is special, used for the action part of the command
+  @Deprecated
   public final static String COMMANDNAME = "COMMANDNAME";
   public final static String COMMAND_INT = "COMMANDINT";
   public final static String COORDINATE_READS = "COORDREAD";
 
   // Active code actions and fields
-  public final static String AC_SET = "acSet";
-  public final static String AC_GET = "acGet";
-  public final static String AC_CLEAR = "acClear";
+//  public final static String AC_SET = "acSet";
+//  public final static String AC_GET = "acGet";
+//  public final static String AC_CLEAR = "acClear";
   public final static String AC_ACTION = "acAction";
   public final static String AC_CODE = "acCode";
   //
@@ -315,35 +311,35 @@ public class GNSCommandProtocol {
    * arun: converted to HashSet.
    * The list of command types that are updated commands.
    */
-  // FIXME: hang this off the individual commands
-  public final static Set<String> UPDATE_COMMANDS
-          = new HashSet<String>(Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
-                  APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
-                  APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
-                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
-                  xyz_VERIFY_ACCOUNT_xyz, SET_PASSWORD, RESET_KEY,
-                  //
-                  ACL_ADD, ACL_REMOVE,
-                  //
-                  ADD_TAG, REMOVE_TAG
-          ));
+//  // FIXME: hang this off the individual commands
+//  public final static Set<String> UPDATE_COMMANDS
+//          = new HashSet<String>(Arrays.asList(CREATE, APPEND_OR_CREATE, REPLACE, REPLACE_OR_CREATE, APPEND_WITH_DUPLICATION,
+//                  APPEND, REMOVE, CREATE_LIST, APPEND_OR_CREATE_LIST, REPLACE_OR_CREATE_LIST, REPLACE_LIST,
+//                  APPEND_LIST_WITH_DUPLICATION, APPEND_LIST, REMOVE_LIST, SUBSTITUTE, SUBSTITUTE_LIST,
+//                  SET, SET_FIELD_NULL, CLEAR, REMOVE_FIELD, REPLACE_USER_JSON, CREATE_INDEX,
+//                  VERIFY_ACCOUNT, SET_PASSWORD, RESET_KEY,
+//                  //
+//                  ACL_ADD, ACL_REMOVE,
+//                  //
+//                  ADD_TAG, REMOVE_TAG
+//          ));
 
-  /**
-   * arun: converted to HashSet.
-   * The list of command types that create and delete records.
-   */
-  public final static Set<String> CREATE_DELETE_COMMANDS
-          = new HashSet<String>(Arrays.asList(xyz_REGISTER_ACCOUNT_xyz, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
-                  xyz_REMOVE_ACCOUNT_xyz, REMOVE_GUID, ADD_MULTIPLE_GUIDS//,
-          //                ADD_TO_GROUP, REMOVE_FROM_GROUP
-          ));
+//  /**
+//   * arun: converted to HashSet.
+//   * The list of command types that create and delete records.
+//   */
+//  public final static Set<String> CREATE_DELETE_COMMANDS
+//          = new HashSet<String>(Arrays.asList(REGISTER_ACCOUNT, ADD_GUID, ADD_ALIAS, REMOVE_ALIAS,
+//                  REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS//,
+//          //                ADD_TO_GROUP, REMOVE_FROM_GROUP
+//          ));
 
-  /**
-   * The list of command types that are read commands.
-   */
-  public final static Set<String> READ_COMMANDS
-          = new HashSet<String>(Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE));
-  //
+//  /**
+//   * The list of command types that are read commands.
+//   */
+//  public final static Set<String> READ_COMMANDS
+//          = new HashSet<String>(Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE));
+//  //
 
   public final static String NEWLINE = System.getProperty("line.separator");
 

@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;import edu.umass.cs.gnscommon.CommandType;
 ;
 
 /**
@@ -47,10 +47,10 @@ public class HelpTcpWiki extends Help {
     return new String[]{"tcpwiki"};
   }
 
-  @Override
-  public String getCommandName() {
-    return HELP;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return HELP;
+//  }
 
   @Override
   public String getCommandDescription() {

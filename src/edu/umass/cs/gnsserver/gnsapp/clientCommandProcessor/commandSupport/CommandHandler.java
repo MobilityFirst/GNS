@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
@@ -97,7 +98,7 @@ public class CommandHandler {
       DelayProfiler.updateDelay("executeCommand", executeCommandStart);
       if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
         DelayProfiler.updateDelay(packet.getRequestType() + "."
-                + command.getCommandName(), executeCommandStart);
+                + command.getCommandType().toString(), executeCommandStart);
       }
       if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
         ClientCommandProcessorConfig.getLogger().log(Level.FINE,
@@ -237,16 +238,16 @@ public class CommandHandler {
     // Squirrel away the host and port so we know where to send the command return value
     // A little unnecessary hair for debugging... also peek inside the command.
     JSONObject command;
-    String commandString = null;
+    CommandType commandType = null;
     String guid = null;
     if ((command = packet.getCommand()) != null) {
-      commandString = command.optString(COMMANDNAME, null);
+      commandType = CommandType.getCommandType(command.getInt(COMMAND_INT));
       guid = command.optString(GUID, command.optString(NAME, null));
     }
     //GNSConfig.getLogger().info("FROM: " + packet.getSenderAddress());
     app.outStandingQueries.put(packet.getClientRequestId(),
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
-                    commandString, guid, packet.getMyListeningAddress()));
+                    commandType, guid, packet.getMyListeningAddress()));
     handlePacketCommandRequest(packet, doNotReplyToClient, app);
   }
 
@@ -271,13 +272,15 @@ public class CommandHandler {
               .log(Level.FINE,
                       "{0}:{1} => {2} -> {3}",
                       new Object[]{
-                        sentInfo.getCommand(),
+                        sentInfo.getCommandType().toString(),
                         sentInfo.getGuid(),
                         returnPacket.getSummary(),
                         sentInfo.getHost() + "/"
                         + sentInfo.getPort()});
       if (!doNotReplyToClient) {
-        app.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), returnPacket, returnPacket.toJSONObject(), sentInfo.myListeningAddress);
+        app.sendToClient(new InetSocketAddress(sentInfo.getHost(), 
+                sentInfo.getPort()), returnPacket, returnPacket.toJSONObject(), 
+                sentInfo.myListeningAddress);
       }
 
       // shows us stats every 100 commands, but not more than once every 5 seconds

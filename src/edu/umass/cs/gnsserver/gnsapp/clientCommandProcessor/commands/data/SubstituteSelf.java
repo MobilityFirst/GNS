@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -53,10 +53,10 @@ public class SubstituteSelf extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_SUBSTITUTE;
   }
 
-  @Override
-  public String getCommandName() {
-    return SUBSTITUTE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return SUBSTITUTE;
+//  }
 
   @Override
   public String[] getCommandParameters() {

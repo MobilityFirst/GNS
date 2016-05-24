@@ -44,7 +44,7 @@ public class AclTest {
 
   private static final String ACCOUNT_ALIAS = "test@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static  GNSClientCommands client = null;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry westyEntry;
   private static GuidEntry samEntry;

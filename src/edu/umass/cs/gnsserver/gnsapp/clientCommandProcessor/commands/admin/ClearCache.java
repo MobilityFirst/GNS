@@ -23,7 +23,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -56,10 +56,10 @@ public class ClearCache extends BasicCommand {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return CLEAR_CACHE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CLEAR_CACHE;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
@@ -67,12 +67,13 @@ public class ClearCache extends BasicCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
       if (handler.getAdmintercessor().sendClearCache(handler)) {
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse<>(OK_RESPONSE);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE);
+        return new CommandResponse<>(BAD_RESPONSE);
       }
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

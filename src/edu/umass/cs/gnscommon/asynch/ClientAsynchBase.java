@@ -22,10 +22,8 @@ package edu.umass.cs.gnscommon.asynch;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
@@ -63,7 +61,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -77,6 +75,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
@@ -196,7 +195,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public GuidEntry accountGuidCreate(String alias, String password, RequestCallback callback) throws Exception {
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
-    String guid =  SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(keyPairHostIndex.getHostString() + ":" + keyPairHostIndex.getPort(), alias, guid, keyPair);
     JSONObject jsonHRN = new JSONObject();
@@ -235,7 +234,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws Exception
    */
   public long accountGuidVerify(GuidEntry guid, String code, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount, guid.getPrivateKey(), xyz_VERIFY_ACCOUNT_xyz, GUID, guid.getGuid(),
+    return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount, 
+            guid.getPrivateKey(), GUID, guid.getGuid(),
             CODE, code), callback);
   }
 
@@ -248,9 +248,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws Exception
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(CommandType.RemoveAccount, guid.getPrivateKey(),
-            xyz_REMOVE_ACCOUNT_xyz,
-            GUID, guid.getGuid(),
+    return sendCommandAsynch(createAndSignCommand(CommandType.RemoveAccount, 
+            guid.getPrivateKey(), GUID, guid.getGuid(),
             NAME, guid.getEntityName()), callback);
   }
 
@@ -266,7 +265,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias, RequestCallback callback) throws Exception {
 
     KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM).generateKeyPair();
-    String guid =  SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
+    String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair.getPublic().getEncoded());
     // Squirrel this away now just in case the call below times out.
     KeyPairUtils.saveKeyPair(keyPairHostIndex.getHostString() + ":" + keyPairHostIndex.getPort(), alias, guid, keyPair);
     JSONObject jsonHRN = new JSONObject();
@@ -347,7 +346,6 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long guidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(CommandType.RemoveGuid, guid.getPrivateKey(),
-            REMOVE_GUID,
             GUID, guid.getGuid()), callback);
   }
 
@@ -362,10 +360,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long guidRemove(GuidEntry accountGuid, String guidToRemove, RequestCallback callback) throws Exception {
     return sendCommandAsynch(createAndSignCommand(CommandType.RemoveGuid, accountGuid.getPrivateKey(),
-            REMOVE_GUID,
             ACCOUNT_GUID, accountGuid.getGuid(),
-            GUID, guidToRemove
-    ), callback);
+            GUID, guidToRemove), callback);
   }
 
   /**
@@ -380,8 +376,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws ClientException
    */
   public long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, ClientException {
-    return sendCommandAsynch(createCommand(CommandType.LookupGuid,
-            LOOKUP_GUID, NAME, alias), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuid, NAME, alias), callback);
   }
 
   /**
@@ -397,8 +392,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long lookupPrimaryGuid(String guid, RequestCallback callback)
           throws UnsupportedEncodingException, IOException, ClientException, JSONException {
-    return sendCommandAsynch(createCommand(CommandType.LookupPrimaryGuid,
-            LOOKUP_PRIMARY_GUID, GUID, guid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupPrimaryGuid, GUID, guid), callback);
   }
 
   /**
@@ -416,8 +410,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long lookupGuidRecord(String guid, RequestCallback callback)
           throws IOException, ClientException, JSONException {
-    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord,
-            LOOKUP_GUID_RECORD, GUID, guid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, GUID, guid), callback);
   }
 
   /**
@@ -438,8 +431,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public long lookupAccountRecord(String accountGuid, RequestCallback callback)
           throws IOException, ClientException, JSONException {
-    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, 
-            LOOKUP_ACCOUNT_RECORD, GUID, accountGuid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, GUID, accountGuid), callback);
   }
 
   /**
@@ -454,31 +446,29 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws UnsupportedEncodingException
    * @throws ClientException
    */
-  public long fieldRead(String guid, String field, RequestCallback callback) 
+  public long fieldRead(String guid, String field, RequestCallback callback)
           throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
-    return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, 
-            READ, GUID, guid, FIELD, field), callback);
+    return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, GUID, guid, FIELD, field), callback);
   }
 
   /**
    * Read a field that is an array from a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param callback
    * @return a request id
    * @throws IOException
    * @throws JSONException
-   * @throws ClientException 
+   * @throws ClientException
    */
-  public long fieldReadArray(String guid, String field, RequestCallback callback) 
+  public long fieldReadArray(String guid, String field, RequestCallback callback)
           throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     // FIXME: MAGIC_STRING stuff is currently on the server.
-    return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned,
-            READ_ARRAY, GUID, guid, FIELD, field), callback);
+    return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned, GUID, guid, FIELD, field), callback);
   }
 
   /**
@@ -498,7 +488,6 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     JSONObject json = new JSONObject();
     json.put(field, value);
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
-            REPLACE_USER_JSON,
             GUID, guid,
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
@@ -506,7 +495,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
   /**
    * Updates or replaces a field that is an array at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
@@ -514,12 +503,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws ClientException 
+   * @throws ClientException
    */
   public long fieldReplaceOrCreateArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReplaceOrCreateListUnsigned,
-            REPLACE_OR_CREATE_LIST,
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
@@ -528,7 +516,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
   /**
    * Appends a value to a field that is an array at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
@@ -536,12 +524,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws ClientException 
+   * @throws ClientException
    */
   public long fieldAppendToArray(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.AppendListUnsigned,
-            APPEND_LIST,
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
@@ -550,7 +537,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
 
   /**
    * Removes a value from field at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
@@ -558,21 +545,21 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws ClientException 
+   * @throws ClientException
    */
   public long fieldRemove(String guid, String field, Object value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
     return sendCommandAsynch(createCommand(CommandType.RemoveUnsigned,
-            REMOVE, GUID, guid,
+            GUID, guid,
             FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 
   /**
    * Removes all the values from from field that is an array at a remote replica.
-   * 
+   *
    * @param guid
    * @param field
    * @param value
@@ -580,20 +567,21 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws ClientException 
+   * @throws ClientException
    */
   public long fieldRemoveMultiple(String guid, String field, ResultValue value, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a remove command that doesn't need authentication.
     JSONObject json = new JSONObject();
     json.put(field, value);
     return sendCommandAsynch(createCommand(CommandType.RemoveListUnsigned,
-            REMOVE_LIST, GUID, guid,
+            GUID, guid,
             FIELD, field, VALUE, value.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 
   /**
    * Updates all the fields in the given JSON in a field at a remote replica.
+   *
    * @param guid
    * @param field
    * @param json
@@ -601,23 +589,23 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @return the request id
    * @throws IOException
    * @throws JSONException
-   * @throws ClientException 
+   * @throws ClientException
    */
   public long update(String guid, String field, JSONObject json, RequestCallback callback) throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
-            REPLACE_USER_JSON, GUID, guid,
+            GUID, guid,
             USER_JSON, json.toString(),
             WRITER, MAGIC_STRING), callback);
   }
 
   /**
    * Sends a select packet to a remote replica.
-   * 
+   *
    * @param packet
    * @param callback
    * @return the request id
-   * @throws IOException 
+   * @throws IOException
    */
   public long sendSelectPacket(SelectRequestPacket<String> packet, RequestCallback callback) throws IOException {
     long id = generateNextRequestID();
@@ -626,7 +614,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             new Object[]{this, packet.getSummary()});
     return sendRequest(packet, callback);
   }
-  
+
   /**
    * Creates a command object from the given CommandType and a variable
    * number of key and value pairs with a signature parameter. The signature is
@@ -641,10 +629,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   // Same as the version on CommandUtils but it forces coordinated reads (see createCommand)
   public JSONObject createAndSignCommand(CommandType commandType,
-          PrivateKey privateKey, String action, Object... keysAndValues)
+          PrivateKey privateKey, Object... keysAndValues)
           throws ClientException {
     try {
-      JSONObject result = createCommand(commandType, action, keysAndValues);
+      JSONObject result = createCommand(commandType, keysAndValues);
       result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
       result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
 
@@ -662,20 +650,18 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * number of key and value pairs.
    *
    * @param commandType
-   * @param action
    * @param keysAndValues
    * @return the query string
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
- // Same as the version on CommandUtils but it forces coordinated reads
-  public JSONObject createCommand(CommandType commandType, String action,
+  // Same as the version on CommandUtils but it forces coordinated reads
+  public JSONObject createCommand(CommandType commandType,
           Object... keysAndValues) throws ClientException {
     try {
       JSONObject result = new JSONObject();
       String key;
       Object value;
       result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
-      result.put(GNSCommandProtocol.COMMANDNAME, action);
       for (int i = 0; i < keysAndValues.length; i = i + 2) {
         key = (String) keysAndValues[i];
         value = keysAndValues[i + 1];

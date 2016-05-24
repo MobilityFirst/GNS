@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
+import edu.umass.cs.gnscommon.CommandType;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -67,7 +68,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   // 
   @Override
   public int compareTo(BasicCommand otherCommand) {
-    int alphaResult = getCommandName().compareTo(otherCommand.getCommandName());
+    int alphaResult = getCommandType().toString().compareTo(otherCommand.getCommandType().toString());
     // sort by number of arguments putting the longer ones first because we need to do longest match first.
     if (alphaResult == 0) {
       int lengthDifference = getCommandParameters().length - otherCommand.getCommandParameters().length;
@@ -89,7 +90,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    * @return the command type
    */
   public abstract CommandType getCommandType();
-
+  
   /**
    * Returns a string array with names of the argument parameters to the command.
    *
@@ -98,13 +99,13 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   // FIXME: This could be reimplemented using the CommandType enum
   public abstract String[] getCommandParameters();
 
-  /**
-   * Returns the name of the command as a string.
-   *
-   * @return
-   */
-  // FIXME: This can go away once we rewrite all the old clients
-  public abstract String getCommandName();
+//  /**
+//   * Returns the name of the command as a string. This is 
+//   * currently maintained for backward compatibility with older clients.
+//   *
+//   * @return
+//   */
+//  public abstract String getCommandName();
 
   /**
    * Executes the command. Arguments are passed in the JSONObject.
@@ -159,7 +160,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    */
   private String getHTMLForm() {
     StringBuilder result = new StringBuilder();
-    result.append(getCommandName());
+    result.append(getCommandType().toString());
     String[] parameters = getCommandParameters();
     String prefix = QUERYPREFIX;
     for (int i = 0; i < parameters.length; i++) {
@@ -183,7 +184,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   private String getTCPForm() {
     StringBuilder result = new StringBuilder();
     result.append("Command: ");
-    result.append(getCommandName());
+    result.append(getCommandType().toString());
     String[] parameters = getCommandParameters();
     result.append(" Parameters: ");
     String prefix = "";
@@ -207,7 +208,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
     result.append("|- "); // start row
     result.append(NEWLINE);
     result.append("|");
-    result.append(getCommandName());
+    result.append(getCommandType().toString());
     String[] parameters = getCommandParameters();
     result.append(" || ");
     String prefix = "";
@@ -241,7 +242,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   @Override
   public String toString() {
     return this.getClass().getSimpleName()
-            + ":" + getCommandName()
+            + ":" + getCommandType().toString()
             +":" + getCommandType().getInt() + " ["
             + getCommandParametersString() + "]";
   }

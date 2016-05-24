@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
+//import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
@@ -211,7 +211,7 @@ public class AppReconfigurableNodeOptions {
    * @return all the options
    */
   public static Options getAllOptions() {
-    Option help = new Option(HELP, "Prints usage");
+    Option help = new Option("help", "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nodeId = new Option(ID, true, "Node ID");
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");

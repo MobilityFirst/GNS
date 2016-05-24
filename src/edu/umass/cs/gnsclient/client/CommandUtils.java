@@ -21,7 +21,7 @@ import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
@@ -55,24 +55,26 @@ import org.json.JSONObject;
  */
 public class CommandUtils {
 
-	/* arun: at least as many instances as cores for parallelism. */
+  /* arun: at least as many instances as cores for parallelism. */
   private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()];
   private static Random random;
 
   static {
     try {
-    	for(int i=0;i<signatureInstances.length; i++)
-    		signatureInstances[i] = Signature.getInstance(GNSCommandProtocol.SIGNATURE_ALGORITHM);
+      for (int i = 0; i < signatureInstances.length; i++) {
+        signatureInstances[i] = Signature.getInstance(GNSCommandProtocol.SIGNATURE_ALGORITHM);
+      }
       random = new Random();
     } catch (NoSuchAlgorithmException e) {
       GNSConfig.getLogger().log(Level.SEVERE,
               "Unable to initialize for authentication:{0}", e);
     }
   }
-  
+
   private static int sigIndex = 0;
+
   private static synchronized Signature getSignatureInstance() {
-	  return signatureInstances[sigIndex++%signatureInstances.length];
+    return signatureInstances[sigIndex++ % signatureInstances.length];
   }
 
   /**
@@ -84,13 +86,14 @@ public class CommandUtils {
    * @return the query string
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
-  private static JSONObject createCommand(String action, Object... keysAndValues) throws ClientException {
+  public static JSONObject createCommand(CommandType commandType, Object... keysAndValues)
+          throws ClientException {
     long startTime = System.currentTimeMillis();
     try {
       JSONObject result = new JSONObject();
       String key;
       Object value;
-      result.put(GNSCommandProtocol.COMMANDNAME, action);
+      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
       for (int i = 0; i < keysAndValues.length; i = i + 2) {
         key = (String) keysAndValues[i];
         value = keysAndValues[i + 1];
@@ -104,51 +107,29 @@ public class CommandUtils {
   }
 
   /**
- * @param commandType
- * @param action
- * @param keysAndValues
- * @return
- * @throws ClientException
- */
-@Deprecated
-  public static JSONObject createCommandDeprecated(CommandType commandType, String action,
-          Object... keysAndValues)
-          throws ClientException {
-    try {
-      JSONObject result = createCommand(action, keysAndValues);
-      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
-      return result;
-    } catch (JSONException e) {
-      throw new ClientException("Error encoding message", e);
-    }
-  }
-
-  /**
    * Creates a command object from the given action string and a variable
    * number of key and value pairs with a signature parameter. The signature is
    * generated from the query signed by the given guid.
    *
+   * @param commandType
    * @param privateKey
-   * @param action
    * @param keysAndValues
    * @return the query string
    * @throws ClientException
    */
-  @Deprecated
-  // This is deprecated because the method below will be the one we end up using once the
-  // transtion to using enums is finished.
-  private static JSONObject createAndSignCommandInternal(CommandType commandType, PrivateKey privateKey, String action,
+  public static JSONObject createAndSignCommand(CommandType commandType, PrivateKey privateKey,
           Object... keysAndValues) throws ClientException {
     try {
-      JSONObject result = createCommand(action, keysAndValues);
-      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
+      JSONObject result = createCommand(commandType, keysAndValues);
       result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
       result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       long t = System.nanoTime();
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
-      if(edu.umass.cs.utils.Util.oneIn(10)) DelayProfiler.updateDelayNano("signing", t);
+      if (edu.umass.cs.utils.Util.oneIn(10)) {
+        DelayProfiler.updateDelayNano("signing", t);
+      }
 
       return result;
     } catch (ClientException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | JSONException | UnsupportedEncodingException e) {
@@ -157,138 +138,108 @@ public class CommandUtils {
   }
 
   /**
-   * Creates a command object from the given CommandType and a variable
-   * number of key and value pairs with a signature parameter. The signature is
-   * generated from the query signed by the given guid.
+   * Signs a digest of a message using private key of the given guid.
    *
-   * @param commandType
    * @param privateKey
-   * @param action
-   * @param keysAndValues
-   * @return the query string
-   * @throws ClientException
+   * @param message
+   * @return a signed digest of the message string
+   * @throws InvalidKeyException
+   * @throws NoSuchAlgorithmException
+   * @throws SignatureException
+   * @throws java.io.UnsupportedEncodingException
+   *
+   * arun: This method need to be synchronized over the signature
+   * instance, otherwise it will result in corrupted signatures.
    */
-  // FIXME: Temporarily hacked version for adding new command type integer. Will clean up once
-  // transition is done.
-  // The action argument will be going away and be ultimately replaced by the
-  // enum string.
-  @Deprecated
-  public static JSONObject createAndSignCommandDeprecated(CommandType commandType,
-          PrivateKey privateKey, String action, Object... keysAndValues)
-          throws ClientException {
-    try {
-    	
-    	if(Math.random() > 0) throw new RuntimeException("Deprecated");
-    	
-      JSONObject result = createAndSignCommandInternal(commandType, privateKey, action, keysAndValues);
-//      result.remove(GNSCommandProtocol.SIGNATURE);
-//      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-//      String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
-//      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
-      return result;
-    } catch (Exception e) {
-      throw new ClientException("Error encoding message", e);
-    }
-  }
-  
-
-  	/**
-	 * Signs a digest of a message using private key of the given guid.
-	 *
-	 * @param privateKey
-	 * @param message
-	 * @return a signed digest of the message string
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws SignatureException
-	 * @throws java.io.UnsupportedEncodingException
-	 * 
-	 *             arun: This method need to be synchronized over the signature
-	 *             instance, otherwise it will result in corrupted signatures.
-	 */
   public static String signDigestOfMessage(PrivateKey privateKey, String message)
           throws NoSuchAlgorithmException, InvalidKeyException,
           SignatureException, UnsupportedEncodingException {
-		Signature signatureInstance = getSignatureInstance();
-		synchronized (signatureInstance) {
-			signatureInstance.initSign(privateKey);
-			signatureInstance.update(message.getBytes("UTF-8"));
-			byte[] signedString = signatureInstance.sign();
-			// FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
-			// IOS CLIENT IS UPDATED AS WELL
-			String result = ByteUtils.toHex(signedString);
-			// String result = Base64.encodeToString(signedString, false);
-			return result;
-		}
+    Signature signatureInstance = getSignatureInstance();
+    synchronized (signatureInstance) {
+      signatureInstance.initSign(privateKey);
+      signatureInstance.update(message.getBytes("UTF-8"));
+      byte[] signedString = signatureInstance.sign();
+      // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
+      // IOS CLIENT IS UPDATED AS WELL
+      String result = ByteUtils.toHex(signedString);
+      // String result = Base64.encodeToString(signedString, false);
+      return result;
+    }
   }
   private static final MessageDigest[] mds = new MessageDigest[Runtime.getRuntime().availableProcessors()];
+
   static {
-	  for(int i=0; i<mds.length; i++)
-		try {
-			mds[i] = MessageDigest.getInstance(GNSCommandProtocol.DIGEST_ALGORITHM);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+    for (int i = 0; i < mds.length; i++) {
+      try {
+        mds[i] = MessageDigest.getInstance(GNSCommandProtocol.DIGEST_ALGORITHM);
+      } catch (NoSuchAlgorithmException e) {
+        e.printStackTrace();
+        System.exit(1);
+      }
+    }
   }
   private static int mdIndex = 0;
+
   private static MessageDigest getMessageDigestInstance() {
-	  return mds[mdIndex++ % mds.length];
+    return mds[mdIndex++ % mds.length];
   }
-  
+
   private static final Cipher[] ciphers = new Cipher[Runtime.getRuntime().availableProcessors()];
+
   static {
-	  for(int i=0; i<ciphers.length; i++)
-		try {
-			ciphers[i] = Cipher.getInstance(GNSCommandProtocol.SECRET_KEY_ALGORITHM);
-		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+    for (int i = 0; i < ciphers.length; i++) {
+      try {
+        ciphers[i] = Cipher.getInstance(GNSCommandProtocol.SECRET_KEY_ALGORITHM);
+      } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+        e.printStackTrace();
+        System.exit(1);
+      }
+    }
   }
 
   private static int cipherIndex = 0;
-  private static Cipher getCipherInstance() {
-	  return ciphers[cipherIndex++ % ciphers.length];
-  }
-		  
-	public static String signDigestOfMessage(PrivateKey privateKey, PublicKey publicKey, String message)
-			throws NoSuchAlgorithmException, InvalidKeyException,
-			SignatureException, UnsupportedEncodingException,
-			IllegalBlockSizeException, BadPaddingException,
-			NoSuchPaddingException {
-		SecretKey secretKey = SessionKeys.getOrGenerateSecretKey(
-				publicKey, privateKey);
-		MessageDigest md = getMessageDigestInstance();
-		byte[] digest = null;
-		byte[] body = message.getBytes(GNSCommandProtocol.CHARSET);
-		synchronized (md) {
-			digest = md.digest(body);
-		}
-		assert (digest != null);
-		Cipher cipher = getCipherInstance();
-		byte[] signature = null;
-		synchronized(cipher) {
-			cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-			signature = cipher.doFinal(digest);
-		}
-		
-	   	  SecretKeyCertificate skCert = SessionKeys.getSecretKeyCertificate(publicKey);
-    	  byte[] encodedSKCert = skCert.getEncoded(false);
 
-    	  /* arun: Combining them like this because the rest of the GNS code seems poorly organized
+  private static Cipher getCipherInstance() {
+    return ciphers[cipherIndex++ % ciphers.length];
+  }
+
+  public static String signDigestOfMessage(PrivateKey privateKey, PublicKey publicKey, String message)
+          throws NoSuchAlgorithmException, InvalidKeyException,
+          SignatureException, UnsupportedEncodingException,
+          IllegalBlockSizeException, BadPaddingException,
+          NoSuchPaddingException {
+    SecretKey secretKey = SessionKeys.getOrGenerateSecretKey(
+            publicKey, privateKey);
+    MessageDigest md = getMessageDigestInstance();
+    byte[] digest = null;
+    byte[] body = message.getBytes(GNSCommandProtocol.CHARSET);
+    synchronized (md) {
+      digest = md.digest(body);
+    }
+    assert (digest != null);
+    Cipher cipher = getCipherInstance();
+    byte[] signature = null;
+    synchronized (cipher) {
+      cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+      signature = cipher.doFinal(digest);
+    }
+
+    SecretKeyCertificate skCert = SessionKeys.getSecretKeyCertificate(publicKey);
+    byte[] encodedSKCert = skCert.getEncoded(false);
+
+    /* arun: Combining them like this because the rest of the GNS code seems poorly organized
     	   * to add more signature related fields in a systematic manner.
-    	   */
-    	  byte[] combined = new byte[Short.BYTES + signature.length + Short.BYTES + encodedSKCert.length];
-    	  ByteBuffer.wrap(combined)
-    	  // signature
-    	  .putShort((short)signature.length).put(signature)
-    	  // certificate
-    	  .putShort((short)encodedSKCert.length).put(encodedSKCert);
-    	  
-		return new String(combined, GNSCommandProtocol.CHARSET);
-	}
-	
+     */
+    byte[] combined = new byte[Short.BYTES + signature.length + Short.BYTES + encodedSKCert.length];
+    ByteBuffer.wrap(combined)
+            // signature
+            .putShort((short) signature.length).put(signature)
+            // certificate
+            .putShort((short) encodedSKCert.length).put(encodedSKCert);
+
+    return new String(combined, GNSCommandProtocol.CHARSET);
+  }
+
   /**
    * Checks the response from a command request for proper syntax as well as
    * converting error responses into the appropriate thrown GNS exceptions.
@@ -357,7 +308,7 @@ public class CommandUtils {
       return response;
     }
   }
-  
+
   public static long getRandomRequestId() {
     return random.nextLong();
   }

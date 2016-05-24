@@ -35,7 +35,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.text.ParseException;
 import java.util.Date;
@@ -65,10 +65,10 @@ public class Clear extends BasicCommand {
     return new String[]{GUID, WRITER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return AC_CLEAR;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return AC_CLEAR;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json,

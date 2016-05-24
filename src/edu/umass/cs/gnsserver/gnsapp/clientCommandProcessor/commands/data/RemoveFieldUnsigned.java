@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -53,10 +53,10 @@ public class RemoveFieldUnsigned extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_REMOVE_FIELD;
   }
 
-  @Override
-  public String getCommandName() {
-    return REMOVE_FIELD;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REMOVE_FIELD;
+//  }
 
   @Override
   public String[] getCommandParameters() {

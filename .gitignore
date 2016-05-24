@@ -52,3 +52,5 @@ build.number
 /jars/
 /paxos_logs/
 !/.travis.yml
+/nbproject/
+/nbbuild.xml

@@ -24,7 +24,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,10 +52,10 @@ public class ConnectionCheck extends BasicCommand {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return CONNECTION_CHECK;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CONNECTION_CHECK;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

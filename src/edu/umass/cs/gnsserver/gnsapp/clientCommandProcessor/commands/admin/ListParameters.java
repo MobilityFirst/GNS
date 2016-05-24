@@ -24,7 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SystemParameter;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONObject;
 
@@ -52,17 +52,18 @@ public class ListParameters extends BasicCommand {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return LIST_PARAMETERS;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return LIST_PARAMETERS;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) {
     if (module.isAdminMode()) {
       return new CommandResponse<String>(SystemParameter.listParameters());
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + LIST_PARAMETERS);
+    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED +
+            " Don't understand " + CommandType.ListParameters.toString());
   }
 
   @Override

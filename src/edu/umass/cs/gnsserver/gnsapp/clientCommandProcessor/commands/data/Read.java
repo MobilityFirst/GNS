@@ -25,7 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 
@@ -64,10 +64,10 @@ public class Read extends BasicCommand {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return READ;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return READ;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -75,7 +75,8 @@ public class Read extends BasicCommand {
     String guid = json.getString(GUID);
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(FIELD, null);
-    ArrayList<String> fields = json.has(FIELDS) ? JSONUtils.JSONArrayToArrayListString(json.getJSONArray(FIELDS)) : null;
+    ArrayList<String> fields = json.has(FIELDS) ? 
+            JSONUtils.JSONArrayToArrayListString(json.getJSONArray(FIELDS)) : null;
     // reader might be same as guid
     String reader = json.optString(READER, guid);
     // signature and message can be empty for unsigned cases
@@ -83,7 +84,8 @@ public class Read extends BasicCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp;
     if (json.has(TIMESTAMP)) {
-      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+      timestamp = json.has(TIMESTAMP) ? 
+              Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     } else {
       timestamp = null;
     }

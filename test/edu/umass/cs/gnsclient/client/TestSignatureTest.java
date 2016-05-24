@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import java.io.IOException;
 
 /**
@@ -48,7 +48,7 @@ public class TestSignatureTest {
     if (client == null) {
        try {
         client = new GNSClientCommands();
-        client.setForceCoordinatedReads(true);
+        //client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
@@ -91,7 +91,8 @@ public class TestSignatureTest {
   @Test
   public void test_01() {
     try {
-      JSONObject command = CommandUtils.createAndSignCommandDeprecated(CommandType.ReadArrayUnsigned, guid.getPrivateKey(), GNSCommandProtocol.READ_ARRAY,
+      JSONObject command = CommandUtils.createAndSignCommand(
+              CommandType.ReadArrayUnsigned, guid.getPrivateKey(),
               GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, "joe");
       System.out.println(command);
     } catch (Exception e) {

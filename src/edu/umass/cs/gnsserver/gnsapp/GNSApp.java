@@ -27,6 +27,7 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
@@ -171,8 +172,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
       noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, AppReconfigurableNodeOptions.mongoPort);
       GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException 
-            | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
       // fallback plan
       GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
       noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
@@ -254,7 +254,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 //            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
 //    constructed = true;
 //  }
-
   @Override
   @SuppressWarnings("unchecked")
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
@@ -279,58 +278,63 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     PacketType.COMMAND,
     PacketType.COMMAND_RETURN_VALUE};
 
-	/**
-	 * arun: The code below {@link #incrResponseCount(ClientRequest)} and
-	 * {@link #executeNoop(Request)} is for instrumentation only and will go
-	 * away soon.
-	 */
-  
-  private static final int RESPONSE_COUNT_THRESHOLD=100;
+  /**
+   * arun: The code below {@link #incrResponseCount(ClientRequest)} and
+   * {@link #executeNoop(Request)} is for instrumentation only and will go
+   * away soon.
+   */
+  private static final int RESPONSE_COUNT_THRESHOLD = 100;
   private static boolean doneOnce = false;
 
-	private synchronized void incrResponseCount(ClientRequest response) {
-		if (responseCount++ > RESPONSE_COUNT_THRESHOLD
-				&& response instanceof CommandValueReturnPacket
-				&& (!doneOnce && (doneOnce = true)))
-			try {
-				this.cachedResponse = ((CommandValueReturnPacket) response)
-						.toJSONObject();
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	}
+  private synchronized void incrResponseCount(ClientRequest response) {
+    if (responseCount++ > RESPONSE_COUNT_THRESHOLD
+            && response instanceof CommandValueReturnPacket
+            && (!doneOnce && (doneOnce = true))) {
+      try {
+        this.cachedResponse = ((CommandValueReturnPacket) response)
+                .toJSONObject();
+      } catch (JSONException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+  }
 
-	private static final boolean EXECUTE_NOOP_ENABLED = Config.getGlobalBoolean(GNSC.EXECUTE_NOOP_ENABLED);
-	private int responseCount = 0;
-	private JSONObject cachedResponse = null;
+  private static final boolean EXECUTE_NOOP_ENABLED = Config.getGlobalBoolean(GNSC.EXECUTE_NOOP_ENABLED);
+  private int responseCount = 0;
+  private JSONObject cachedResponse = null;
 
-	private boolean executeNoop(Request request) {
-		if(!EXECUTE_NOOP_ENABLED) return false;
-		if (cachedResponse != null
-				&& request instanceof CommandPacket
-				&& ((CommandPacket) request).getCommandName().equals(
-						GNSCommandProtocol.READ)) {
-			try {
-				((BasicPacketWithClientAddress) request)
-						.setResponse(new CommandValueReturnPacket(cachedResponse)
-								.setClientRequestAndLNSIds(((ClientRequest) request)
-										.getRequestID()));
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return true;
-		}
-		return false;
-	}
-  
+  private boolean executeNoop(Request request) {
+    if (!EXECUTE_NOOP_ENABLED) {
+      return false;
+    }
+    if (cachedResponse != null
+            && request instanceof CommandPacket
+            && CommandType.getCommandType(((CommandPacket) request).getCommandInteger()).isRead() 
+            //&& ((CommandPacket) request).getCommandName().equals(GNSCommandProtocol.READ)
+            ) {
+      try {
+        ((BasicPacketWithClientAddress) request)
+                .setResponse(new CommandValueReturnPacket(cachedResponse)
+                        .setClientRequestAndLNSIds(((ClientRequest) request)
+                                .getRequestID()));
+      } catch (JSONException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      return true;
+    }
+    return false;
+  }
+
   @SuppressWarnings("unchecked")
   // we explicitly check type
   @Override
   public boolean execute(Request request, boolean doNotReplyToClient) {
     boolean executed = false;
-    if(executeNoop(request)) return true;
+    if (executeNoop(request)) {
+      return true;
+    }
     try {
       Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType
               ? (Packet.PacketType) request.getRequestType()
@@ -417,50 +421,54 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       return new NoopPacket();
     }
     try {
-    	long t = System.nanoTime();
+      long t = System.nanoTime();
       JSONObject json = new JSONObject(string);
-      if(Util.oneIn(1000)) DelayProfiler.updateDelayNano("jsonificationApp", t);
+      if (Util.oneIn(1000)) {
+        DelayProfiler.updateDelayNano("jsonificationApp", t);
+      }
       Request request = (Request) Packet.createInstance(json, nodeConfig);
       return request;
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }
   }
-  
-	/**
-	 * This method avoids an unnecessary restringification (as is the case with
-	 * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
-	 * the sender information, and then creating a packet out of it.
-	 * 
-	 * @param msgBytes
-	 * @param header
-	 * @param unstringer
-	 * @return Request constructed from msgBytes.
-	 */
-	public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
-			Stringifiable<String> unstringer) {
-		Request request = null;
-		try {
-	    	long t = System.nanoTime();
-			JSONObject json = new JSONObject(
-					JSONPacket.couldBeJSON(msgBytes) ? new String(msgBytes,
-							NIOHeader.CHARSET) : new String(msgBytes,
-							Integer.BYTES, msgBytes.length - Integer.BYTES,
-							NIOHeader.CHARSET));
-			MessageExtractor.stampAddressIntoJSONObject(header.sndr,
-					header.rcvr, json);
-			request = (Request) Packet.createInstance(json, unstringer);
-	        if(Util.oneIn(100)) DelayProfiler.updateDelayNano("getRequest."+request.getClass().getSimpleName(), t);
-		} catch (JSONException | UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		return request;
-	}
-	
-	@Override
-	public Request getRequest(byte[] msgBytes, NIOHeader header) {
-		return getRequestStatic(msgBytes, header, nodeConfig);
-	}
+
+  /**
+   * This method avoids an unnecessary restringification (as is the case with
+   * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
+   * the sender information, and then creating a packet out of it.
+   *
+   * @param msgBytes
+   * @param header
+   * @param unstringer
+   * @return Request constructed from msgBytes.
+   */
+  public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
+          Stringifiable<String> unstringer) {
+    Request request = null;
+    try {
+      long t = System.nanoTime();
+      JSONObject json = new JSONObject(
+              JSONPacket.couldBeJSON(msgBytes) ? new String(msgBytes,
+              NIOHeader.CHARSET) : new String(msgBytes,
+              Integer.BYTES, msgBytes.length - Integer.BYTES,
+              NIOHeader.CHARSET));
+      MessageExtractor.stampAddressIntoJSONObject(header.sndr,
+              header.rcvr, json);
+      request = (Request) Packet.createInstance(json, unstringer);
+      if (Util.oneIn(100)) {
+        DelayProfiler.updateDelayNano("getRequest." + request.getClass().getSimpleName(), t);
+      }
+    } catch (JSONException | UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    return request;
+  }
+
+  @Override
+  public Request getRequest(byte[] msgBytes, NIOHeader header) {
+    return getRequestStatic(msgBytes, header, nodeConfig);
+  }
 
   @Override
   public Set<IntegerPacketType> getRequestTypes() {

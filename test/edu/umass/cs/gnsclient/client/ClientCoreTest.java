@@ -263,6 +263,7 @@ public class ClientCoreTest {
       } catch (ClientException e) {
       }
     } catch (Exception e) {
+       e.printStackTrace();
       fail("Exception when we were not expecting it in create fields: " + e);
     }
   }

@@ -58,6 +58,7 @@ import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnscommon.CommandType;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -203,7 +204,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws ClientException
    */
   public String lookupGuid(String alias) throws UnsupportedEncodingException, IOException, ClientException {
-    String command = createQuery(GNSCommandProtocol.LOOKUP_GUID, GNSCommandProtocol.NAME, URIEncoderDecoder.quoteIllegal(alias, ""));
+    String command = createQuery(
+            CommandType.LookupGuid,
+            GNSCommandProtocol.NAME, URIEncoderDecoder.quoteIllegal(alias, ""));
     String response = sendGetCommand(command);
 
     return checkResponse(command, response);
@@ -219,7 +222,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws ClientException
    */
   public String lookupPrimaryGuid(String guid) throws UnsupportedEncodingException, IOException, ClientException {
-    String command = createQuery(GNSCommandProtocol.LOOKUP_PRIMARY_GUID, GNSCommandProtocol.GUID, guid);
+    String command = createQuery(
+            CommandType.LookupPrimaryGuid, GNSCommandProtocol.GUID, guid);
     String response = sendGetCommand(command);
 
     return checkResponse(command, response);
@@ -235,7 +239,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   @Override
   public JSONObject lookupGuidRecord(String guid) throws IOException, ClientException {
-    String command = createQuery(GNSCommandProtocol.LOOKUP_GUID_RECORD, GNSCommandProtocol.GUID, guid);
+    String command = createQuery(
+            CommandType.LookupGuidRecord, GNSCommandProtocol.GUID, guid);
     String response = sendGetCommand(command);
     checkResponse(command, response);
     try {
@@ -255,7 +260,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws ClientException
    */
   public JSONObject lookupAccountRecord(String gaccountGuid) throws IOException, ClientException {
-    String command = createQuery(GNSCommandProtocol.LOOKUP_ACCOUNT_RECORD, GNSCommandProtocol.GUID, gaccountGuid);
+    String command = createQuery(
+            CommandType.LookupAccountRecord, GNSCommandProtocol.GUID, gaccountGuid);
     String response = sendGetCommand(command);
     checkResponse(command, response);
     try {
@@ -336,8 +342,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return ?
    * @throws Exception
    */
+  @Override
   public String accountGuidVerify(GuidEntry guid, String code) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.xyz_VERIFY_ACCOUNT_xyz, GNSCommandProtocol.GUID, guid.getGuid(),
+    String command = createAndSignQuery(guid, CommandType.VerifyAccount, GNSCommandProtocol.GUID, guid.getGuid(),
             GNSCommandProtocol.CODE, code);
     String response = sendGetCommand(command);
     return checkResponse(command, response);
@@ -351,7 +358,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void accountGuidRemove(GuidEntry guid) throws Exception {
     String command = createAndSignQuery(guid,
-            GNSCommandProtocol.xyz_REMOVE_ACCOUNT_xyz,
+            CommandType.RemoveAccount,
             GNSCommandProtocol.GUID, guid.getGuid(),
             GNSCommandProtocol.NAME, guid.getEntityName());
     String response = sendGetCommand(command);
@@ -387,7 +394,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void guidRemove(GuidEntry guid) throws Exception {
     String command = createAndSignQuery(guid,
-            GNSCommandProtocol.REMOVE_GUID,
+            CommandType.RemoveGuid,
             GNSCommandProtocol.GUID, guid.getGuid());
     String response = sendGetCommand(command);
 
@@ -403,7 +410,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void guidRemove(GuidEntry accountGuid, String guidToRemove) throws Exception {
     String command = createAndSignQuery(accountGuid,
-            GNSCommandProtocol.REMOVE_GUID,
+            CommandType.RemoveGuid,
             GNSCommandProtocol.ACCOUNT_GUID, accountGuid.getGuid(),
             GNSCommandProtocol.GUID, guidToRemove);
     String response = sendGetCommand(command);
@@ -425,7 +432,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public JSONArray guidGetGroups(String groupGuid, GuidEntry reader) throws IOException, ClientException,
           InvalidGuidException {
-    String command = createAndSignQuery(reader, GNSCommandProtocol.GET_GROUPS, GNSCommandProtocol.GUID, groupGuid,
+    String command = createAndSignQuery(reader,
+            CommandType.GetGroups, GNSCommandProtocol.GUID, groupGuid,
             GNSCommandProtocol.READER, reader.getGuid());
     String response = sendGetCommand(command);
 
@@ -449,7 +457,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void groupAddGuid(String groupGuid, String guidToAdd, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.ADD_TO_GROUP, GNSCommandProtocol.GUID, groupGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.AddToGroup, GNSCommandProtocol.GUID, groupGuid,
             GNSCommandProtocol.MEMBER, guidToAdd, GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -471,7 +480,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void groupAddGuids(String groupGuid, JSONArray members, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.ADD_TO_GROUP, GNSCommandProtocol.GUID, groupGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.AddToGroup,
+            GNSCommandProtocol.GUID, groupGuid,
             GNSCommandProtocol.MEMBERS, members.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -491,7 +502,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void groupRemoveGuid(String guid, String guidToRemove, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.REMOVE_FROM_GROUP, GNSCommandProtocol.GUID, guid,
+    String command = createAndSignQuery(writer,
+            CommandType.RemoveFromGroup, GNSCommandProtocol.GUID, guid,
             GNSCommandProtocol.MEMBER, guidToRemove, GNSCommandProtocol.WRITER, writer.getGuid());
 
     String response = sendGetCommand(command);
@@ -514,7 +526,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void groupRemoveGuids(String guid, JSONArray members, GuidEntry writer) throws IOException,
           InvalidGuidException, ClientException, InvalidKeyException, NoSuchAlgorithmException, SignatureException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.REMOVE_FROM_GROUP, GNSCommandProtocol.GUID, guid,
+    String command = createAndSignQuery(writer,
+            CommandType.RemoveFromGroup, GNSCommandProtocol.GUID, guid,
             GNSCommandProtocol.MEMBERS, members.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
 
     String response = sendGetCommand(command);
@@ -536,7 +549,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public JSONArray groupGetMembers(String groupGuid, GuidEntry reader) throws IOException, ClientException,
           InvalidGuidException {
-    String command = createAndSignQuery(reader, GNSCommandProtocol.GET_GROUP_MEMBERS, GNSCommandProtocol.GUID, groupGuid,
+    String command = createAndSignQuery(reader,
+            CommandType.GetGroupMembers, GNSCommandProtocol.GUID, groupGuid,
             GNSCommandProtocol.READER, reader.getGuid());
     String response = sendGetCommand(command);
 
@@ -685,7 +699,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldCreate(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.CREATE_LIST, GNSCommandProtocol.GUID, targetGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.CreateIndex, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -706,7 +721,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldRemove(String targetGuid, String field, GuidEntry writer) throws IOException, InvalidKeyException,
           NoSuchAlgorithmException, SignatureException, ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.REMOVE_FIELD, GNSCommandProtocol.GUID, targetGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.RemoveField, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -726,7 +742,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldAppendOrCreate(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.APPEND_OR_CREATE_LIST, GNSCommandProtocol.GUID, targetGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.AppendOrCreateList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
     checkResponse(command, response);
@@ -745,7 +762,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldReplaceOrCreate(String targetGuid, String field, JSONArray value, GuidEntry writer)
           throws IOException, ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.REPLACE_OR_CREATE_LIST, GNSCommandProtocol.GUID, targetGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.ReplaceOrCreateList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
     checkResponse(command, response);
@@ -763,7 +781,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldAppend(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.APPEND_LIST_WITH_DUPLICATION, GNSCommandProtocol.GUID, targetGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.AppendListWithDuplication, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -782,7 +801,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldReplace(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.REPLACE_LIST, GNSCommandProtocol.GUID, targetGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.ReplaceList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -801,7 +821,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldClear(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.REMOVE_LIST, GNSCommandProtocol.GUID, targetGuid,
+    String command = createAndSignQuery(writer,
+            CommandType.RemoveList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -818,7 +839,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws ClientException
    */
   public void fieldClear(String targetGuid, String field, GuidEntry writer) throws IOException, ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.CLEAR, GNSCommandProtocol.GUID, targetGuid, GNSCommandProtocol.FIELD,
+    String command = createAndSignQuery(writer,
+            CommandType.Clear, GNSCommandProtocol.GUID, targetGuid, GNSCommandProtocol.FIELD,
             field, GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
@@ -840,9 +862,11 @@ public class UniversalHttpClient implements GNSClientInterface {
   public JSONArray fieldRead(String guid, String field, GuidEntry reader) throws Exception {
     String command;
     if (reader == null) {
-      command = createQuery(GNSCommandProtocol.READ_ARRAY, GNSCommandProtocol.GUID, guid, GNSCommandProtocol.FIELD, field);
+      command = createQuery(
+              CommandType.ReadArrayUnsigned, GNSCommandProtocol.GUID, guid, GNSCommandProtocol.FIELD, field);
     } else {
-      command = createAndSignQuery(reader, GNSCommandProtocol.READ_ARRAY, GNSCommandProtocol.GUID, guid, GNSCommandProtocol.FIELD, field,
+      command = createAndSignQuery(reader,
+              CommandType.ReadArray, GNSCommandProtocol.GUID, guid, GNSCommandProtocol.FIELD, field,
               GNSCommandProtocol.READER, reader.getGuid());
     }
 
@@ -865,7 +889,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   public void fieldSetElement(String targetGuid, String field, String newValue, int index, GuidEntry writer)
           throws IOException, ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.SET, GNSCommandProtocol.GUID, targetGuid, GNSCommandProtocol.FIELD,
+    String command = createAndSignQuery(writer,
+            CommandType.Set, GNSCommandProtocol.GUID, targetGuid, GNSCommandProtocol.FIELD,
             field, GNSCommandProtocol.VALUE, newValue, GNSCommandProtocol.N, Integer.toString(index), GNSCommandProtocol.WRITER,
             writer.getGuid());
     String response = sendGetCommand(command);
@@ -888,7 +913,8 @@ public class UniversalHttpClient implements GNSClientInterface {
   public void fieldSetNull(String targetGuid, String field, GuidEntry writer) throws IOException,
           InvalidKeyException, NoSuchAlgorithmException, SignatureException,
           ClientException {
-    String command = createAndSignQuery(writer, GNSCommandProtocol.SET_FIELD_NULL,
+    String command = createAndSignQuery(writer,
+            CommandType.SetFieldNull,
             GNSCommandProtocol.GUID, targetGuid, GNSCommandProtocol.FIELD, field,
             GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -911,7 +937,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray select(String field, String value) throws Exception {
-    String command = createQuery(GNSCommandProtocol.SELECT, GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value);
+    String command = createQuery(
+            CommandType.Select, GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value);
     String response = sendGetCommand(command);
 
     return new JSONArray(checkResponse(command, response));
@@ -928,7 +955,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectWithin(String field, JSONArray value) throws Exception {
-    String command = createQuery(GNSCommandProtocol.SELECT, GNSCommandProtocol.FIELD, field, GNSCommandProtocol.WITHIN, value.toString());
+    String command = createQuery(
+            CommandType.SelectWithin, GNSCommandProtocol.FIELD, field,
+            GNSCommandProtocol.WITHIN, value.toString());
     String response = sendGetCommand(command);
 
     return new JSONArray(checkResponse(command, response));
@@ -946,9 +975,10 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectNear(String field, JSONArray value, Double maxDistance) throws Exception {
-    String command = createQuery(GNSCommandProtocol.SELECT, GNSCommandProtocol.FIELD, field, GNSCommandProtocol.NEAR, value.toString(),
+    String command = createQuery(
+            CommandType.SelectNear, GNSCommandProtocol.FIELD, field,
+            GNSCommandProtocol.NEAR, value.toString(),
             GNSCommandProtocol.MAX_DISTANCE, Double.toString(maxDistance));
-    // System.out.println(command);
     String response = sendGetCommand(command);
 
     return new JSONArray(checkResponse(command, response));
@@ -962,8 +992,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectQuery(String query) throws Exception {
-    String command = createQuery(GNSCommandProtocol.SELECT, GNSCommandProtocol.QUERY, query);
-    // System.out.println(command);
+    String command = createQuery(
+            CommandType.SelectQuery, GNSCommandProtocol.QUERY, query);
     String response = sendGetCommand(command);
 
     return new JSONArray(checkResponse(command, response));
@@ -978,9 +1008,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectSetupGroupQuery(String guid, String query) throws Exception {
-    String command = createQuery(GNSCommandProtocol.SELECT_GROUP, GNSCommandProtocol.GUID, guid,
+    String command = createQuery(
+            CommandType.SelectGroupSetupQuery, GNSCommandProtocol.GUID, guid,
             GNSCommandProtocol.QUERY, query);
-    // System.out.println(command);
     String response = sendGetCommand(command);
 
     return new JSONArray(checkResponse(command, response));
@@ -994,8 +1024,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray selectLookupGroupQuery(String guid) throws Exception {
-    String command = createQuery(GNSCommandProtocol.SELECT_GROUP, GNSCommandProtocol.GUID, guid);
-    // System.out.println(command);
+    String command = createQuery(
+            CommandType.SelectGroupLookupQuery, GNSCommandProtocol.GUID, guid);
     String response = sendGetCommand(command);
 
     return new JSONArray(checkResponse(command, response));
@@ -1035,7 +1065,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void addAlias(GuidEntry guid, String name) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.ADD_ALIAS,
+    String command = createAndSignQuery(guid,
+            CommandType.AddAlias,
             GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.NAME, name);
     String response = sendGetCommand(command);
 
@@ -1050,7 +1081,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void removeAlias(GuidEntry guid, String name) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.REMOVE_ALIAS,
+    String command = createAndSignQuery(guid,
+            CommandType.RemoveAlias,
             GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.NAME, name);
     String response = sendGetCommand(command);
 
@@ -1065,7 +1097,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public JSONArray getAliases(GuidEntry guid) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.RETRIEVE_ALIASES,
+    String command = createAndSignQuery(guid,
+            CommandType.RetrieveAliases,
             GNSCommandProtocol.GUID, guid.getGuid());
 
     String response = sendGetCommand(command);
@@ -1117,7 +1150,8 @@ public class UniversalHttpClient implements GNSClientInterface {
   private String guidCreate(GuidEntry accountGuid, String name, PublicKey publicKey) throws Exception {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
-    String command = createAndSignQuery(accountGuid, GNSCommandProtocol.ADD_GUID,
+    String command = createAndSignQuery(accountGuid,
+            CommandType.AddGuid,
             GNSCommandProtocol.GUID, accountGuid.getGuid(),
             GNSCommandProtocol.NAME, URIEncoderDecoder.quoteIllegal(name, ""),
             GNSCommandProtocol.PUBLIC_KEY, publicKeyString);
@@ -1143,11 +1177,13 @@ public class UniversalHttpClient implements GNSClientInterface {
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command;
     if (password != null) {
-      command = createQuery(GNSCommandProtocol.xyz_REGISTER_ACCOUNT_xyz, GNSCommandProtocol.NAME,
+      command = createQuery(
+              CommandType.RegisterAccount, GNSCommandProtocol.NAME,
               URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString,
               GNSCommandProtocol.PASSWORD, Base64.encodeToString(Password.encryptPassword(password, alias), false));
     } else {
-      command = createQuery(GNSCommandProtocol.xyz_REGISTER_ACCOUNT_xyz, GNSCommandProtocol.NAME,
+      command = createQuery(
+              CommandType.RegisterAccountSansPassword, GNSCommandProtocol.NAME,
               URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString);
     }
     return checkResponse(command, sendGetCommand(command));
@@ -1158,7 +1194,9 @@ public class UniversalHttpClient implements GNSClientInterface {
   // // PRIVATE METHODS BELOW /////
   // /////////////////////////////
   protected void aclAdd(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.ACL_ADD, GNSCommandProtocol.ACL_TYPE, accessType, GNSCommandProtocol.GUID,
+    String command = createAndSignQuery(guid,
+            accesserGuid == null ? CommandType.AclAdd : CommandType.AclAddSelf,
+            GNSCommandProtocol.ACL_TYPE, accessType, GNSCommandProtocol.GUID,
             guid.getGuid(), GNSCommandProtocol.FIELD, field, GNSCommandProtocol.ACCESSER, accesserGuid == null
                     ? GNSCommandProtocol.ALL_USERS
                     : accesserGuid);
@@ -1168,8 +1206,11 @@ public class UniversalHttpClient implements GNSClientInterface {
   }
 
   protected void aclRemove(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.ACL_REMOVE, GNSCommandProtocol.ACL_TYPE, accessType,
-            GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, field, GNSCommandProtocol.ACCESSER, accesserGuid == null
+    String command = createAndSignQuery(guid,
+            accesserGuid == null ? CommandType.AclRemove : CommandType.AclRemoveSelf,
+            GNSCommandProtocol.ACL_TYPE, accessType,
+            GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, field,
+            GNSCommandProtocol.ACCESSER, accesserGuid == null
                     ? GNSCommandProtocol.ALL_USERS
                     : accesserGuid);
     String response = sendGetCommand(command);
@@ -1178,8 +1219,11 @@ public class UniversalHttpClient implements GNSClientInterface {
   }
 
   protected JSONArray aclGet(String accessType, GuidEntry guid, String field, String accesserGuid) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.ACL_RETRIEVE, GNSCommandProtocol.ACL_TYPE, accessType,
-            GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, field, GNSCommandProtocol.ACCESSER, accesserGuid == null
+    String command = createAndSignQuery(guid,
+            accesserGuid == null ? CommandType.AclRetrieve : CommandType.AclRetrieveSelf,
+            GNSCommandProtocol.ACL_TYPE, accessType,
+            GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, field,
+            GNSCommandProtocol.ACCESSER, accesserGuid == null
                     ? GNSCommandProtocol.ALL_USERS
                     : accesserGuid);
     String response = sendGetCommand(command);
@@ -1251,15 +1295,15 @@ public class UniversalHttpClient implements GNSClientInterface {
    * Creates a http query string from the given action string and a variable
    * number of key and value pairs.
    *
-   * @param action
+   * @param commandType
    * @param keysAndValues
    * @return the query string
    * @throws IOException
    */
-  protected String createQuery(String action, String... keysAndValues) throws IOException {
+  protected String createQuery(CommandType commandType, String... keysAndValues) throws IOException {
     String key;
     String value;
-    StringBuilder result = new StringBuilder(action + QUERYPREFIX);
+    StringBuilder result = new StringBuilder(commandType.name() + QUERYPREFIX);
 
     for (int i = 0; i < keysAndValues.length; i = i + 2) {
       key = keysAndValues[i];
@@ -1277,16 +1321,16 @@ public class UniversalHttpClient implements GNSClientInterface {
    * generated from the query signed by the given guid.
    *
    * @param guid
-   * @param action
+   * @param commandType
    * @param keysAndValues
    * @return the query string
    * @throws ClientException
    */
-  protected String createAndSignQuery(GuidEntry guid, String action, String... keysAndValues) throws ClientException {
+  protected String createAndSignQuery(GuidEntry guid, CommandType commandType, String... keysAndValues) throws ClientException {
     String key;
     String value;
-    StringBuilder encodedString = new StringBuilder(action + QUERYPREFIX);
-    StringBuilder unencodedString = new StringBuilder(action + QUERYPREFIX);
+    StringBuilder encodedString = new StringBuilder(commandType.name() + QUERYPREFIX);
+    StringBuilder unencodedString = new StringBuilder(commandType.name() + QUERYPREFIX);
 
     try {
       // map over the leys and values to produce the query
@@ -1310,37 +1354,11 @@ public class UniversalHttpClient implements GNSClientInterface {
       String signature = signDigestOfMessage(privateKey, unencodedString.toString());
       // return the encoded query with the signature appended
       return encodedString.toString() + KEYSEP + GNSCommandProtocol.SIGNATURE + VALSEP + signature;
-    } catch (UnsupportedEncodingException | NoSuchAlgorithmException 
-            | InvalidKeyException | SignatureException e) {
+    } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
       throw new ClientException("Error encoding message", e);
     }
   }
 
-//  /**
-//   * Signs a digest of a message using private key of the given guid.
-//   *
-//   * @param guid
-//   * @param message
-//   * @return a signed digest of the message string
-//   * @throws InvalidKeyException
-//   * @throws NoSuchAlgorithmException
-//   * @throws SignatureException
-//   */
-//  private String signDigestOfMessage(GuidEntry guid, String message) throws NoSuchAlgorithmException,
-//          InvalidKeyException, SignatureException, UnsupportedEncodingException {
-//
-//    KeyPair keypair;
-//    keypair = new KeyPair(guid.getPublicKey(), guid.getPrivateKey());
-//
-//    PrivateKey privateKey = keypair.getPrivate();
-//    Signature instance = Signature.getInstance(GNSCommandProtocol.SIGNATURE_ALGORITHM);
-//
-//    instance.initSign(privateKey);
-//    instance.update(message.getBytes("UTF-8"));
-//    byte[] signature = instance.sign();
-//
-//    return ByteUtils.toHex(signature);
-//  }
   // /////////////////////////////////////////
   // // PLATFORM DEPENDENT METHODS BELOW /////
   // /////////////////////////////////////////
@@ -1401,7 +1419,7 @@ public class UniversalHttpClient implements GNSClientInterface {
           // sent
           break;
         } catch (java.net.SocketTimeoutException e) {
-          GNSClientConfig.getLogger().log(Level.INFO, 
+          GNSClientConfig.getLogger().log(Level.INFO,
                   "Get Response timed out. Trying {0} more times. Query is {1}", new Object[]{cnt, queryString});
         }
       } while (cnt-- > 0);
@@ -1459,7 +1477,8 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   @Override
   public void addTag(GuidEntry guid, String tag) throws Exception {
-    String command = createAndSignQuery(guid, GNSCommandProtocol.ADD_TAG,
+    String command = createAndSignQuery(guid,
+            CommandType.AddTag,
             GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.NAME, tag);
     String response = sendGetCommand(command);
 

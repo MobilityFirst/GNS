@@ -31,18 +31,13 @@ import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.LOOKUP_RANDOM_GUIDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.REPLACE_USER_JSON;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -338,9 +333,8 @@ public class ThroughputAsynchMultiClientTest {
           }
         }
         try {
-          JSONObject command = createCommandDeprecated(CommandType.LookupRandomGuids,
-                  LOOKUP_RANDOM_GUIDS, GUID,
-                  masterGuid.getGuid(), GUIDCNT, numberOfGuids);
+          JSONObject command = createCommand(CommandType.LookupRandomGuids,
+                  GUID, masterGuid.getGuid(), GUIDCNT, numberOfGuids);
           String result = checkResponse(command, clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
             existingGuids = new JSONArray(result);
@@ -501,11 +495,10 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createReadCommandPacket(AbstractGNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommandDeprecated(CommandType.ReadUnsigned,
-              READ, GUID, targetGuid, FIELD, field);
+      command = createCommand(CommandType.ReadUnsigned, GUID, targetGuid, FIELD, field);
     } else {
-      command = createAndSignCommandDeprecated(CommandType.Read,
-              reader.getPrivateKey(), READ,
+      command = createAndSignCommand(CommandType.Read,
+              reader.getPrivateKey(),
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
@@ -514,9 +507,9 @@ public class ThroughputAsynchMultiClientTest {
 
   private static CommandPacket createUpdateCommandPacket(AbstractGNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
-    command = createAndSignCommandDeprecated(CommandType.ReplaceUserJSON,
-            writer.getPrivateKey(), REPLACE_USER_JSON,
-            GUID, targetGuid, USER_JSON, json.toString(),
+    command = createAndSignCommand(CommandType.ReplaceUserJSON,
+            writer.getPrivateKey(),
+            GUID, targetGuid, json.toString(),
             WRITER, writer.getGuid());
     return new CommandPacket(-1, command);
   }
