@@ -30,7 +30,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcess
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -128,6 +127,10 @@ public class CommandModule {
     return commandLookupTable.get(commandType);
   }
 
+  public BasicCommand lookupCommand(String commandName) {
+    return lookupCommand(CommandType.valueOf(commandName));
+  }
+
   /**
    * Finds the command that corresponds to the JSONObject which was received command packet.
    *
@@ -141,7 +144,7 @@ public class CommandModule {
         command = lookupCommand(CommandType.getCommandType(json.getInt(COMMAND_INT)));
         // Some sanity checks
         String commandName = json.optString(COMMANDNAME, null);
-        // Check to see if command name
+        // Check to see if command name is the same
         if (command != null && commandName != null
                 && !commandName.equals(command.getCommandType().toString())) {
           ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
@@ -166,10 +169,23 @@ public class CommandModule {
     }
     // Keep the old method for backward compatibility with older clients that
     // aren't using the COMMAND_INT field
-    return lookupCommandLinearSearch(json);
+    return lookupCommandFromCommandName(json);
   }
 
-  public BasicCommand lookupCommandLinearSearch(JSONObject json) {
+  public BasicCommand lookupCommandFromCommandName(JSONObject json) {
+    String action;
+    try {
+      action = json.getString(COMMANDNAME);
+    } catch (JSONException e) {
+      ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
+              "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
+      return null;
+    }
+    return lookupCommand(action);
+  }
+
+  @Deprecated
+  private BasicCommand lookupCommandLinearSearch(JSONObject json) {
     String action;
     try {
       action = json.getString(COMMANDNAME);
@@ -310,8 +326,6 @@ public class CommandModule {
       //ascending order
       return commandName1.compareTo(commandName2);
 
-      //descending order
-      //return fruitName2.compareTo(fruitName1);
     }
 
   };

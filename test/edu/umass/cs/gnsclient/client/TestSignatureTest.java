@@ -48,7 +48,7 @@ public class TestSignatureTest {
     if (client == null) {
        try {
         client = new GNSClientCommands();
-        //client.setForceCoordinatedReads(true);
+        client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }

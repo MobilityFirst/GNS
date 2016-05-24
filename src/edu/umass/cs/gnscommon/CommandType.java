@@ -193,8 +193,6 @@ public enum CommandType {
   RemoveTag(732, Coordination.OTHER),
   ClearTagged(733, Coordination.OTHER),
   GetTagged(734, Coordination.OTHER),
-  PingTable(735, Coordination.OTHER),
-  PingValue(736, Coordination.OTHER),
   ConnectionCheck(737, Coordination.OTHER),
   // Active code
   SetActiveCode(810, Coordination.OTHER),
@@ -204,7 +202,7 @@ public enum CommandType {
   private int number;
   private Coordination coordination;
   private final String alias; // must also be unique
-  
+
   public enum Coordination {
     READ, UPDATE, CREATE_DELETE, SELECT, OTHER
   }
@@ -223,19 +221,19 @@ public enum CommandType {
   public int getInt() {
     return number;
   }
-  
+
   public boolean isRead() {
     return coordination.equals(Coordination.READ);
   }
-  
+
   public boolean isUpdate() {
     return coordination.equals(Coordination.UPDATE);
   }
-  
+
   public boolean isCreateDelete() {
     return coordination.equals(Coordination.CREATE_DELETE);
   }
-  
+
   public boolean isSelect() {
     return coordination.equals(Coordination.SELECT);
   }
@@ -253,6 +251,38 @@ public enum CommandType {
 
   public static CommandType getCommandType(int number) {
     return map.get(number);
+  }
+
+  private static String insertUnderScoresBeforeCapitals(String str) {
+    StringBuilder result = new StringBuilder();
+    // SKIP THE FIRST CAPITAL
+    result.append(str.charAt(0));
+    // START AT ONE SO WE SKIP THE FIRST CAPITAL
+    for (int i = 1; i < str.length(); i++) {
+      if (Character.isUpperCase(str.charAt(i))) {
+        result.append("_");
+      }
+      result.append(str.charAt(i));
+    }
+    return result.toString();
+  }
+
+  private static String generateSwiftConstants() {
+    StringBuilder result = new StringBuilder();
+    for (CommandType commandType : CommandType.values()) {
+      result.append("    public static let ");
+      result.append(insertUnderScoresBeforeCapitals(commandType.toString()).toUpperCase());
+      result.append("\t\t\t\t = ");
+      result.append("\"");
+      result.append(commandType.toString());
+      result.append("\"\n");
+    }
+    return result.toString();
+  }
+
+  public static void main(String args[]) {
+    System.out.println(generateSwiftConstants());
+
   }
 
 }

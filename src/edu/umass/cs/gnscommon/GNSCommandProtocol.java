@@ -27,13 +27,15 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
  * it defines a bunch of constants that define the protocol
  * support for communicating between the client and the local name server.
  *
- * @author  arun, Westy
+ * @author arun, Westy
  * @version 1.18
  */
 public class GNSCommandProtocol {
 
-  /** FIXME: Convert to using enums. 
-  See edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType */
+  /**
+   * FIXME: Convert to using enums.
+   * See edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType
+   */
 //  public final static String REGISTER_ACCOUNT = "registerAccount";
 //  public final static String VERIFY_ACCOUNT = "verifyAccount";
 //  public final static String REMOVE_ACCOUNT = "removeAccount";
@@ -166,7 +168,8 @@ public class GNSCommandProtocol {
   public final static String ALL_USERS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
 
-  public final static String NO_ACTIVE_REPLICAS = ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR.toString();
+  public final static String NO_ACTIVE_REPLICAS 
+          = ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR.toString();
 
   //
   public static final String RSA_ALGORITHM = "RSA";
@@ -200,10 +203,9 @@ public class GNSCommandProtocol {
   public final static String PASSWORD = "password";
   public final static String CODE = "code";
   public final static String SIGNATURE = "signature";
-  
+
   public final static String SK_CERTIFICATE = "sk_certificate";
 
-  
   public final static String TIMESTAMP = "timestamp";
   public final static String SEQUENCE_NUMBER = "seqnum";
   public final static String PASSKEY = "passkey";
@@ -235,10 +237,15 @@ public class GNSCommandProtocol {
   public static final String LOCATION_FIELD_NAME = "geoLocation";
   public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
-  // This one is special, used for the action part of the command
-  @Deprecated
-  public final static String COMMANDNAME = "COMMANDNAME";
+  /**
+   * The preferred way to indicate the command type in a command packet.
+   */
   public final static String COMMAND_INT = "COMMANDINT";
+  /**
+   * Can be used by clients to indicate the command type in a command packet.
+   */
+  public final static String COMMANDNAME = "COMMANDNAME";
+  
   public final static String COORDINATE_READS = "COORDREAD";
 
   // Active code actions and fields
@@ -323,7 +330,6 @@ public class GNSCommandProtocol {
 //                  //
 //                  ADD_TAG, REMOVE_TAG
 //          ));
-
 //  /**
 //   * arun: converted to HashSet.
 //   * The list of command types that create and delete records.
@@ -333,14 +339,12 @@ public class GNSCommandProtocol {
 //                  REMOVE_ACCOUNT, REMOVE_GUID, ADD_MULTIPLE_GUIDS//,
 //          //                ADD_TO_GROUP, REMOVE_FROM_GROUP
 //          ));
-
 //  /**
 //   * The list of command types that are read commands.
 //   */
 //  public final static Set<String> READ_COMMANDS
 //          = new HashSet<String>(Arrays.asList(READ_ARRAY, READ, READ_ARRAY_ONE));
 //  //
-
   public final static String NEWLINE = System.getProperty("line.separator");
 
   public static final boolean USE_SECRET_KEY = false;
