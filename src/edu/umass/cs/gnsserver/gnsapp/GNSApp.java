@@ -310,8 +310,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     }
     if (cachedResponse != null
             && request instanceof CommandPacket
-            && CommandType.getCommandType(((CommandPacket) request).getCommandInteger()).isRead() 
-            //&& ((CommandPacket) request).getCommandName().equals(GNSCommandProtocol.READ)
+            && ((CommandPacket) request).getCommandType().isRead() 
+          //&& ((CommandPacket) request).getCommandName().equals(GNSCommandProtocol.READ)
             ) {
       try {
         ((BasicPacketWithClientAddress) request)
@@ -527,7 +527,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else //state does not equal null so we either create a new record or update the existing one
-       if (!NameRecord.containsRecord(nameRecordDB, name)) {
+      {
+        if (!NameRecord.containsRecord(nameRecordDB, name)) {
           // create a new record
           try {
             ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
@@ -544,6 +545,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         }
+      }
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Failed update exception: {0}", e.getMessage());

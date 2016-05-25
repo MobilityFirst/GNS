@@ -75,8 +75,8 @@ public class GNSClient extends AbstractGNSClient {
               "Unable to find any reconfigurator addresses; "
               + "at least one needed to initialize client");
     }
-    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(), 
-    		ReconfigurationConfig.getClientPortOffset());
+    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(),
+            ReconfigurationConfig.getClientPortOffset());
     this.checkConnectivity();
   }
 
@@ -117,8 +117,8 @@ public class GNSClient extends AbstractGNSClient {
         }
       }
     };
-    if (CommandType.getCommandType(packet.getCommandInteger()).isCreateDelete()
-            || CommandType.getCommandType(packet.getCommandInteger()).isSelect()) {
+    if (packet.getCommandType().isCreateDelete()
+            || packet.getCommandType().isSelect()) {
 //    if (GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(packet.getCommandName())
 //            || packet.getCommandName().equals(GNSCommandProtocol.SELECT)) {
       this.asyncClient.sendRequestAnycast(packet, callback);
@@ -153,7 +153,7 @@ public class GNSClient extends AbstractGNSClient {
           throws JSONException, IOException {
     if (packet.getServiceName().equals(
             Config.getGlobalString(RC.SPECIAL_NAME))
-            || CommandType.getCommandType(packet.getCommandInteger()).isSelect()
+            || packet.getCommandType().isSelect() 
             //packet.getCommandName().equals(GNSCommandProtocol.SELECT)
             ) {
       this.asyncClient.sendRequestAnycast(packet, callback);
@@ -274,10 +274,10 @@ public class GNSClient extends AbstractGNSClient {
       return clientPacketTypes;
     }
 
-	@Override
-	public Request getRequest(byte[] bytes, NIOHeader header) {
-		return GNSApp.getRequestStatic(bytes, header, unstringer);
-	}
+    @Override
+    public Request getRequest(byte[] bytes, NIOHeader header) {
+      return GNSApp.getRequestStatic(bytes, header, unstringer);
+    }
   }
 
   public static void main(String[] args) throws IOException {

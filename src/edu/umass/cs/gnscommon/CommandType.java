@@ -197,8 +197,10 @@ public enum CommandType {
   // Active code
   SetActiveCode(810, Coordination.OTHER),
   ClearActiveCode(811, Coordination.OTHER),
-  GetActiveCode(812, Coordination.OTHER);
+  GetActiveCode(812, Coordination.OTHER),
 
+  // Catch all for parsing errors
+  Unknown(999, Coordination.OTHER);
   private int number;
   private Coordination coordination;
   private final String alias; // must also be unique

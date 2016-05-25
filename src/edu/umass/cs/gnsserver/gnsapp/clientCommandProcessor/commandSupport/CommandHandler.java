@@ -238,10 +238,9 @@ public class CommandHandler {
     // Squirrel away the host and port so we know where to send the command return value
     // A little unnecessary hair for debugging... also peek inside the command.
     JSONObject command;
-    CommandType commandType = null;
     String guid = null;
+     CommandType commandType = packet.getCommandType();
     if ((command = packet.getCommand()) != null) {
-      commandType = CommandType.getCommandType(command.getInt(COMMAND_INT));
       guid = command.optString(GUID, command.optString(NAME, null));
     }
     //GNSConfig.getLogger().info("FROM: " + packet.getSenderAddress());

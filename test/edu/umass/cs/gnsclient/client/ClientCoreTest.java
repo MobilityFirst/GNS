@@ -83,7 +83,7 @@ public class ClientCoreTest {
     if (client == null) {
       try {
         client = new GNSClientCommands(null);
-        client.setForceCoordinatedReads(true);
+        //client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
