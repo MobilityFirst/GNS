@@ -329,7 +329,7 @@ public class CommandUtils {
                   : response;
       }
       // else error
-      String errorSummary = code + ": " + response + ":"
+      String errorSummary = code + ": " + response + ": "
               + packet.getSummary().toString();
       switch (code) {
       case SIGNATURE_ERROR:
