@@ -1,5 +1,7 @@
 package edu.umass.cs.gnsclient.client.testing;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -218,9 +220,14 @@ public class GNSClientAddFieldTest extends DefaultTest {
 		for (int i = 0; i < numAdds; i++) {
 			clients[0].update(guid, new JSONObject("{\"testField#"+ Integer.toString(i)+"\":\"" + Integer.toString(i) + "\"}"));
 		}
-		System.out.print("sequential_field_add_rate="
+		System.out.println("sequential_field_add_rate="
 				+ Util.df(numAdds * 1.0 / (System.currentTimeMillis() - t))
 				+ "K/s averaged over " + numAdds + " additions.");
+		System.out.println("Checking field values...");
+		for (int i = 0; i < numAdds; i++) {
+			String response = clients[0].fieldRead(guid, "testField#"+ Integer.toString(i));
+			assertTrue("Failed to read the correct value of testField#" + Integer.toString(i) +". Expected: " + Integer.toString(i) + ", but got: " + response, response.equals(Integer.toString(i)));;
+		}
 	}
 	
 	
