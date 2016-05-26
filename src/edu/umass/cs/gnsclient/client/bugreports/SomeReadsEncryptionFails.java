@@ -40,6 +40,11 @@ import edu.umass.cs.utils.Util;
 /**
  * @author arun
  * 
+ *         Fixed. The bug was a concurrency bug in using signature instances at
+ *         the client as well as the server. The fix was to pre-create multiple
+ *         signature instances (for parallelism) and synchronize upon the
+ *         instance when using it.
+ * 
  *         Tests the capacity of the GNS using a configurable number of async
  *         clients.
  *
@@ -219,7 +224,8 @@ public class SomeReadsEncryptionFails extends DefaultTest {
 		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			clients[(int)(Math.random()*numClients)].fieldRead(guidEntries[0], someField);
+			clients[(int) (Math.random() * numClients)].fieldRead(
+					guidEntries[0], someField);
 		}
 		System.out.print("sequential_read_rate="
 				+ Util.df(numReads * 1.0 / (System.currentTimeMillis() - t))

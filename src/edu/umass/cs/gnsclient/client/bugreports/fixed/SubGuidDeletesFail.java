@@ -34,8 +34,11 @@ import edu.umass.cs.utils.Util;
  * @author arun
  * 
  * 
- *         Fixed.
- *         
+ *         Fixed. The bug was related to removing reconfiguration records in
+ *         SQLReconfigurationDB with DiskMap that was causing the record to not
+ *         actually get removed. Fixed in commit
+ *         b79e98508094369a603d1848414c3ba56d40dac7.
+ * 
  *         This single-node test shows that creating one sub-GUID per account
  *         for many accounts, e.g., 50, fails to subsequently be able to delete
  *         sub-GUIDs. With lower number of account GUIDs, it doesn't seem to
@@ -56,10 +59,12 @@ public class SubGuidDeletesFail extends DefaultTest {
 	private static GuidEntry[] accountGuidEntries;
 	private static GuidEntry[] guidEntries;
 	private static GNSClientCommands[] clients;
-	private static ScheduledThreadPoolExecutor executor;
 
 	private static Logger log = GNSClientConfig.getLogger();
 
+	/**
+	 * @throws Exception
+	 */
 	public SubGuidDeletesFail() throws Exception {
 		initParameters();
 		setupClientsAndGuids();
@@ -72,8 +77,6 @@ public class SubGuidDeletesFail extends DefaultTest {
 		numGuids = Config.getGlobalInt(TC.NUM_GROUPS);
 		numAccountGuids = accountGuidsOnly ? numGuids : Math.max(numGuids
 				/ numGuidsPerAccount, 1);
-		executor = (ScheduledThreadPoolExecutor) Executors
-				.newScheduledThreadPool(numClients);
 		accountGuidEntries = new GuidEntry[numClients];
 	}
 
@@ -167,6 +170,9 @@ public class SubGuidDeletesFail extends DefaultTest {
 				+ " pre-existing sub-guids " + Arrays.asList(guidEntries));
 	}
 
+	/**
+	 * @throws Exception
+	 */
 	@After
 	public void cleanup() throws Exception {
 		Thread.sleep(2000); // sleep doesn't seem to help
@@ -211,6 +217,10 @@ public class SubGuidDeletesFail extends DefaultTest {
 				TESTPaxosConfig.DEFAULT_TESTING_CONFIG_FILE);
 	}
 
+	/**
+	 * @param args
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 		Util.assertAssertionsEnabled();
 		processArgs(args);
