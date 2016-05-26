@@ -439,7 +439,7 @@ public class AccountAccess {
 
   private static String createVerificationCode(String name) {
     // Take the first N bytes of the array for our code
-    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
+    return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
   }
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;

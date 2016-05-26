@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
@@ -97,11 +97,11 @@ public class AclAdd extends ConsoleCommand
       String guid = st.nextToken();
 
       // Set ACL
-      gnsClient.aclAdd(isWrite ? AccessType.WRITE_WHITELIST : AccessType.READ_WHITELIST, module.getCurrentGuid(),
+      gnsClient.aclAdd(isWrite ? AclAccessType.WRITE_WHITELIST : AclAccessType.READ_WHITELIST, module.getCurrentGuid(),
           field, "+ALL+".equals(guid) ? null : guid);
 
       // Then read ACLs
-      JSONArray write = gnsClient.aclGet(isWrite ? AccessType.WRITE_WHITELIST : AccessType.READ_WHITELIST,
+      JSONArray write = gnsClient.aclGet(isWrite ? AclAccessType.WRITE_WHITELIST : AclAccessType.READ_WHITELIST,
           module.getCurrentGuid(), field, module.getCurrentGuid().getGuid());
       console.printString("New ACL is: " + write.toString());
       console.printNewline();

@@ -41,8 +41,8 @@ import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -194,7 +194,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             nodeID, this,
             gnsNodeConfig);
     // Finish admin setup
-    CCPListenerAdmin ccpListenerAdmin = new CCPListenerAdmin(requestHandler);
+    ListenerAdmin ccpListenerAdmin = new ListenerAdmin(requestHandler);
     ccpListenerAdmin.start();
     admintercessor.setListenerAdmin(ccpListenerAdmin);
     new AppAdmin(this, gnsNodeConfig).start();

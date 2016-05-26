@@ -32,7 +32,7 @@ import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -128,7 +128,7 @@ public class ApproveGuid extends ConsoleCommand
             + " and moving it to the inactive service list. Make sure a watchdog is running to detect its activity.\n");
         gnsClient.fieldAppend(groupGuid.getGuid(), Constants.INACTIVE_LOCATION_FIELD, new JSONArray().put(guid),
             groupGuid);
-        gnsClient.aclAdd(AccessType.READ_WHITELIST, groupGuid, Constants.ACTIVE_PROXY_FIELD, guid);
+        gnsClient.aclAdd(AclAccessType.READ_WHITELIST, groupGuid, Constants.ACTIVE_PROXY_FIELD, guid);
       }
       else if (Constants.WATCHDOG_SERVICE.equals(service))
       {
@@ -162,7 +162,7 @@ public class ApproveGuid extends ConsoleCommand
   private void setReadWriteAccess(String guid, final GuidEntry myGuid, GNSClientCommands gnsClient, String field)
       throws Exception
   {
-    gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, field, guid);
-    gnsClient.aclAdd(AccessType.WRITE_WHITELIST, myGuid, field, guid);
+    gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, field, guid);
+    gnsClient.aclAdd(AclAccessType.WRITE_WHITELIST, myGuid, field, guid);
   }
 }

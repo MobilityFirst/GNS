@@ -44,7 +44,7 @@ import java.util.logging.Level;
  *
  * @author Westy
  */
-public class CCPListenerAdmin extends Thread implements Shutdownable {
+public class ListenerAdmin extends Thread implements Shutdownable {
 
   /**
    * Socket over which active name server request arrive. *
@@ -64,7 +64,7 @@ public class CCPListenerAdmin extends Thread implements Shutdownable {
    * @param handler
    * @throws IOException
    */
-  public CCPListenerAdmin(ClientRequestHandlerInterface handler) throws IOException {
+  public ListenerAdmin(ClientRequestHandlerInterface handler) throws IOException {
     super("ListenerAdmin");
     this.serverSocket
             = new ServerSocket(handler.getGnsNodeConfig().

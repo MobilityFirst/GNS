@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.client;
 
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -82,7 +82,7 @@ public class ReadTest {
     }
     try {
       // remove default read acces for this test
-      client.aclRemove(AccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
@@ -120,7 +120,7 @@ public class ReadTest {
       System.out.println("Using:" + westyEntry);
       System.out.println("Using:" + samEntry);
       try {
-        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "environment",
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment",
                 samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's readlist: " + e);

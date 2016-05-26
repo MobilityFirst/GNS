@@ -28,11 +28,11 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author westy
  */
-public class SHA1HashFunction extends AbstractHashFunction {
+public class ShaOneHashFunction extends AbstractHashFunction {
 
   private MessageDigest messageDigest;
 
-  private SHA1HashFunction() {
+  private ShaOneHashFunction() {
 
     try {
       messageDigest = MessageDigest.getInstance("SHA1");
@@ -70,16 +70,16 @@ public class SHA1HashFunction extends AbstractHashFunction {
   }
 
   /**
-   * Returns the single instance of the SHA1HashFunction.
+   * Returns the single instance of the ShaOneHashFunction.
    *
-   * @return a SHA1HashFunction instance
+   * @return a ShaOneHashFunction instance
    */
-  public static SHA1HashFunction getInstance() {
+  public static ShaOneHashFunction getInstance() {
     return SHA1HashFunctionHolder.INSTANCE;
   }
 
   private static class SHA1HashFunctionHolder {
 
-    private static final SHA1HashFunction INSTANCE = new SHA1HashFunction();
+    private static final ShaOneHashFunction INSTANCE = new ShaOneHashFunction();
   }
 }

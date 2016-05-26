@@ -21,7 +21,7 @@ package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SHA1HashFunction;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONArray;
@@ -42,7 +42,7 @@ public class SharedGuidUtils {
    * @return a guid string
    */
   public static String createGuidStringFromPublicKey(byte[] keyBytes) {
-    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(keyBytes);
+    byte[] publicKeyDigest = ShaOneHashFunction.getInstance().hash(keyBytes);
     return ByteUtils.toHex(publicKeyDigest);
   }
 

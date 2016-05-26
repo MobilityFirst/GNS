@@ -38,7 +38,7 @@ import java.net.InetSocketAddress;
  *
  * @author westy
  */
-public class CreateSomeDNSRecords {
+public class CreateSomeRecordsForDns {
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static GNSClientCommands client;
   private static GuidEntry accountGuid;

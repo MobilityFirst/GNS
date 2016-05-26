@@ -33,8 +33,9 @@ import org.json.JSONArray;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -128,7 +129,7 @@ public class ProxyGroupCreate extends ConsoleCommand
       createField(gnsClient, myGuid, Constants.ACTIVE_LOCATION_FIELD, false);
       // Open the field in READ to everyone so that mSocket clients can look it
       // up
-      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.ACTIVE_LOCATION_FIELD, null);
+      gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.ACTIVE_LOCATION_FIELD, null);
       createField(gnsClient, myGuid, Constants.SUSPICIOUS_LOCATION_FIELD, false);
       createField(gnsClient, myGuid, Constants.INACTIVE_PROXY_FIELD, false);
 
@@ -155,8 +156,8 @@ public class ProxyGroupCreate extends ConsoleCommand
     {
       gnsClient.fieldCreateList(myGuid.getGuid(), field, new JSONArray(), myGuid);
     }
-    gnsClient.aclAdd(GNSCommandProtocol.AccessType.READ_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
+    gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
     if (writeAll)
-      gnsClient.aclAdd(GNSCommandProtocol.AccessType.WRITE_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
+      gnsClient.aclAdd(AclAccessType.WRITE_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
   }
 }

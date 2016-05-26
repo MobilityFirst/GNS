@@ -35,7 +35,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType> implements ClientRequest {
+public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddressAndNs<NodeIDType> implements ClientRequest {
 
   //
   private final static String ID = "id";
