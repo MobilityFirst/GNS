@@ -30,6 +30,7 @@ import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author arun
@@ -119,11 +120,9 @@ public class GNSClient extends AbstractGNSClient {
     };
     if (CommandType.getCommandType(packet.getCommandInteger()).isCreateDelete()
             || CommandType.getCommandType(packet.getCommandInteger()).isSelect()) {
-//    if (GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(packet.getCommandName())
-//            || packet.getCommandName().equals(GNSCommandProtocol.SELECT)) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
-      this.asyncClient.sendRequest(packet, callback);
+      assert(this.asyncClient.sendRequest(packet, callback)!=null);
     }
   }
 
