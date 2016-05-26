@@ -91,7 +91,7 @@ public class LNSRequestInfo {
    * @return the command type
    */
   public CommandType getCommandType() {
-    return CommandType.getCommandType(commandPacket.getCommandInteger());
+    return commandPacket.getCommandType();
   }
 
   /**

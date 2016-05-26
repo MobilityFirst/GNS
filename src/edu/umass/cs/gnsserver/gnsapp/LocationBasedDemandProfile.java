@@ -204,8 +204,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
     // else
     CommandPacket command = (CommandPacket) request;
-    return CommandType.getCommandType(command.getCommandInteger()).isCreateDelete()
-            || CommandType.getCommandType(command.getCommandInteger()).isSelect();
+    return command.getCommandType().isCreateDelete()
+            || command.getCommandType().isSelect();
 //    return GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(command.getCommandName())
 //            || GNSCommandProtocol.SELECT.equals(command.getCommandName());
   }

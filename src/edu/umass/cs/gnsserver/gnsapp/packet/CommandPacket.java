@@ -325,6 +325,21 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     }
     return -1;
   }
+  
+  public CommandType getCommandType() {
+    try {
+      if (command != null) {
+        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
+          return CommandType.getCommandType(command.getInt(GNSCommandProtocol.COMMAND_INT));
+        }
+        if (command.has(GNSCommandProtocol.COMMANDNAME)) {
+          return CommandType.valueOf(command.getString(GNSCommandProtocol.COMMANDNAME));
+        }
+      }
+    } catch (IllegalArgumentException | JSONException e) {
+    }
+    return CommandType.Unknown;
+  }
 
   @Override
   public boolean needsCoordination() {
@@ -336,7 +351,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     } else {
       // Cache it.
       needsCoordinationExplicitlySet = true;
-      CommandType commandType = CommandType.getCommandType(getCommandInteger());
+      CommandType commandType = getCommandType();
       needsCoordination = (commandType.isRead() && getCommandCoordinateReads())
               || commandType.isUpdate();
 //      String cmdName = getCommandName();
