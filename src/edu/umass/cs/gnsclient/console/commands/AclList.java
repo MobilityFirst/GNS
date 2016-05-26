@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import org.json.JSONArray;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
@@ -86,13 +86,13 @@ public class AclList extends ConsoleCommand
 
       // Read ACLs first (we just do the white lists are black lists are not
       // implemented yet)
-      JSONArray read = gnsClient.aclGet(AccessType.READ_WHITELIST, module.getCurrentGuid(), field, module
+      JSONArray read = gnsClient.aclGet(AclAccessType.READ_WHITELIST, module.getCurrentGuid(), field, module
           .getCurrentGuid().getGuid());
       console.printString("Read ACL: " + read.toString());
       console.printNewline();
 
       // Then write ACLs
-      JSONArray write = gnsClient.aclGet(AccessType.WRITE_WHITELIST, module.getCurrentGuid(), field, module
+      JSONArray write = gnsClient.aclGet(AclAccessType.WRITE_WHITELIST, module.getCurrentGuid(), field, module
           .getCurrentGuid().getGuid());
       console.printString("Write ACL: " + write.toString());
       console.printNewline();

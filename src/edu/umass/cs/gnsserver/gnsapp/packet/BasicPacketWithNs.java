@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.nio.interfaces.Stringifiable;
-import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -31,7 +30,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public abstract class BasicPacketWithReturnNSAndCCP<NodeIDType> extends BasicPacketWithReturnAddress {
+public abstract class BasicPacketWithNs<NodeIDType> extends BasicPacketWithClientAddress {
 
   /** ns_ID */
   private final static String NAMESERVER_ID = "ns_ID";
@@ -49,7 +48,7 @@ public abstract class BasicPacketWithReturnNSAndCCP<NodeIDType> extends BasicPac
    * @param unstringer
    * @throws JSONException 
    */
-  public BasicPacketWithReturnNSAndCCP(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+  public BasicPacketWithNs(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json);
     this.nameServerID = json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null;
   }
@@ -58,14 +57,8 @@ public abstract class BasicPacketWithReturnNSAndCCP<NodeIDType> extends BasicPac
    * Creates an instance of BasicPacketWithNSAndLnsAddress.
    *
    * @param nameServerID
-   * @param address
    */
-  public BasicPacketWithReturnNSAndCCP(NodeIDType nameServerID, InetSocketAddress address) {
-    super(address);
-    this.nameServerID = nameServerID;
-  }
-  
-  public BasicPacketWithReturnNSAndCCP(NodeIDType nameServerID) {
+  public BasicPacketWithNs(NodeIDType nameServerID) {
     super();
     this.nameServerID = nameServerID;
   }

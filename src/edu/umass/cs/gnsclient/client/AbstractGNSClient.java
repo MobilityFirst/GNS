@@ -36,8 +36,6 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.SessionKeys;
-import edu.umass.cs.utils.SessionKeys.SecretKeyCertificate;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;

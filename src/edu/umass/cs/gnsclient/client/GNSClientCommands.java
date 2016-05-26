@@ -15,7 +15,6 @@
  * Initial developer(s): Westy, Arun, Emmanuel */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -25,6 +24,7 @@ import java.util.Arrays;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESSER;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
@@ -919,7 +919,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void groupAddMembershipUpdatePermission(GuidEntry groupGuid,
           String guidToAuthorize) throws Exception {
-    aclAdd(GNSCommandProtocol.AccessType.WRITE_WHITELIST, groupGuid,
+    aclAdd(AclAccessType.WRITE_WHITELIST, groupGuid,
             GROUP_ACL, guidToAuthorize);
   }
 
@@ -939,7 +939,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void groupRemoveMembershipUpdatePermission(GuidEntry groupGuid,
           String guidToUnauthorize) throws Exception {
-    aclRemove(GNSCommandProtocol.AccessType.WRITE_WHITELIST, groupGuid,
+    aclRemove(AclAccessType.WRITE_WHITELIST, groupGuid,
             GROUP_ACL, guidToUnauthorize);
   }
 
@@ -959,7 +959,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void groupAddMembershipReadPermission(GuidEntry groupGuid,
           String guidToAuthorize) throws Exception {
-    aclAdd(GNSCommandProtocol.AccessType.READ_WHITELIST, groupGuid,
+    aclAdd(AclAccessType.READ_WHITELIST, groupGuid,
             GROUP_ACL, guidToAuthorize);
   }
 
@@ -979,7 +979,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void groupRemoveMembershipReadPermission(GuidEntry groupGuid,
           String guidToUnauthorize) throws Exception {
-    aclRemove(GNSCommandProtocol.AccessType.READ_WHITELIST, groupGuid,
+    aclRemove(AclAccessType.READ_WHITELIST, groupGuid,
             GROUP_ACL, guidToUnauthorize);
   }
 
@@ -992,7 +992,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * associated with the guid.
    *
    * @param accessType
-   * a value from GnrsProtocol.AccessType
+   * a value from GnrsProtocol.AclAccessType
    * @param targetGuid
    * guid of the field to be modified
    * @param field
@@ -1003,7 +1003,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @throws ClientException
    * if the query is not accepted by the server.
    */
-  public void aclAdd(GNSCommandProtocol.AccessType accessType,
+  public void aclAdd(AclAccessType accessType,
           GuidEntry targetGuid, String field, String accesserGuid)
           throws Exception {
     aclAdd(accessType.name(), targetGuid, field, accesserGuid);
@@ -1025,7 +1025,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @throws ClientException
    * if the query is not accepted by the server.
    */
-  public void aclRemove(GNSCommandProtocol.AccessType accessType,
+  public void aclRemove(AclAccessType accessType,
           GuidEntry guid, String field, String accesserGuid) throws Exception {
     aclRemove(accessType.name(), guid, field, accesserGuid);
   }
@@ -1047,7 +1047,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @throws ClientException
    * if the query is not accepted by the server.
    */
-  public JSONArray aclGet(GNSCommandProtocol.AccessType accessType,
+  public JSONArray aclGet(AclAccessType accessType,
           GuidEntry guid, String field, String accesserGuid) throws Exception {
     return aclGet(accessType.name(), guid, field, accesserGuid);
   }

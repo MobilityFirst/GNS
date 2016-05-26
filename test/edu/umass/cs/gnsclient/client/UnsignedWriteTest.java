@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.client;
 
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -76,10 +76,10 @@ public class UnsignedWriteTest {
     String standardReadFieldName = "standardreadaccess";
     try {
       // remove default access
-      client.aclRemove(AccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSCommandProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSCommandProtocol.ALL_USERS);
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
@@ -102,7 +102,7 @@ public class UnsignedWriteTest {
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSCommandProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSCommandProtocol.ALL_USERS);
       client.fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 

@@ -47,6 +47,7 @@ import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.AclException;
@@ -574,7 +575,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void groupAddMembershipUpdatePermission(GuidEntry groupGuid, String guidToAuthorize) throws Exception {
-    aclAdd(GNSCommandProtocol.AccessType.WRITE_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToAuthorize);
+    aclAdd(AclAccessType.WRITE_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToAuthorize);
   }
 
   /**
@@ -590,7 +591,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void groupRemoveMembershipUpdatePermission(GuidEntry groupGuid, String guidToUnauthorize) throws Exception {
-    aclRemove(GNSCommandProtocol.AccessType.WRITE_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToUnauthorize);
+    aclRemove(AclAccessType.WRITE_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToUnauthorize);
   }
 
   /**
@@ -606,7 +607,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void groupAddMembershipReadPermission(GuidEntry groupGuid, String guidToAuthorize) throws Exception {
-    aclAdd(GNSCommandProtocol.AccessType.READ_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToAuthorize);
+    aclAdd(AclAccessType.READ_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToAuthorize);
   }
 
   /**
@@ -622,7 +623,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    */
   public void groupRemoveMembershipReadPermission(GuidEntry groupGuid, String guidToUnauthorize) throws Exception {
-    aclRemove(GNSCommandProtocol.AccessType.READ_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToUnauthorize);
+    aclRemove(AclAccessType.READ_WHITELIST, groupGuid, GNSCommandProtocol.GROUP_ACL, guidToUnauthorize);
   }
 
   /**
@@ -632,14 +633,14 @@ public class UniversalHttpClient implements GNSClientInterface {
    * the reader. Signs the query using the private key of the user associated
    * with the guid.
    *
-   * @param accessType a value from GnrsProtocol.AccessType
+   * @param accessType a value from GnrsProtocol.AclAccessType
    * @param targetGuid guid of the field to be modified
    * @param field field name
    * @param accesserGuid guid to add to the ACL
    * @throws Exception
    * @throws ClientException if the query is not accepted by the server.
    */
-  public void aclAdd(GNSCommandProtocol.AccessType accessType, GuidEntry targetGuid, String field, String accesserGuid)
+  public void aclAdd(AclAccessType accessType, GuidEntry targetGuid, String field, String accesserGuid)
           throws Exception {
     aclAdd(accessType.name(), targetGuid, field, accesserGuid);
   }
@@ -659,7 +660,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    * @throws ClientException if the query is not accepted by the server.
    */
-  public void aclRemove(GNSCommandProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
+  public void aclRemove(AclAccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
     aclRemove(accessType.name(), guid, field, accesserGuid);
   }
@@ -680,7 +681,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws Exception
    * @throws ClientException if the query is not accepted by the server.
    */
-  public JSONArray aclGet(GNSCommandProtocol.AccessType accessType, GuidEntry guid, String field, String accesserGuid)
+  public JSONArray aclGet(AclAccessType accessType, GuidEntry guid, String field, String accesserGuid)
           throws Exception {
     return aclGet(accessType.name(), guid, field, accesserGuid);
   }
