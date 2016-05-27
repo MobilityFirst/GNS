@@ -42,10 +42,10 @@ import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
 /**
- * @author arun
+ * @author Brendan
+ * 			Based on GNSClientCapcityTest
  * 
- *         Tests the capacity of the GNS using a configurable number of async
- *         clients.
+ *         Tests the capacity of the GNS for sequential field additions and updates.
  *
  */
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
@@ -208,7 +208,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	}
 	
 	/**
-	 * Tests that NUM_REQUESTS different fields are successfully added. (Does not try to read the fields that have been added!)
+	 * Tests that NUM_REQUESTS different fields are successfully added by first adding all of the fields and then reading their values back.
 	 * @throws Exception
 	 * 
 	 */
@@ -232,6 +232,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	
 	
 	/**
+	 * Performs NUM_REQUESTS sequential field updates to test write capacity.
 	 * @throws Exception
 	 * 
 	 */
