@@ -71,6 +71,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	private static GuidEntry[] guidEntries;
 	private static GNSClientCommands[] clients;
 	private static ScheduledThreadPoolExecutor executor;
+	private static int numFieldsToAdd = 1000;
 
 	private static Logger log = GNSClientConfig.getLogger();
 
@@ -92,6 +93,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	private static void initStaticParams() {
 		numGuidsPerAccount = Config.getGlobalInt(GNSTC.NUM_GUIDS_PER_ACCOUNT);
 		accountGuidsOnly = Config.getGlobalBoolean(GNSTC.ACCOUNT_GUIDS_ONLY);
+		numFieldsToAdd = Config.getGlobalInt(GNSTC.NUM_FIELDS);
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		numGuids = Config.getGlobalInt(TC.NUM_GROUPS);
 		numAccountGuids = accountGuidsOnly ? numGuids : Math.max(
@@ -222,7 +224,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	@Test
 	public void test_02_AddManyFieldsSequentially() throws Exception {
 		GuidEntry guid = guidEntries[0];
-		int numAdds = Config.getGlobalInt(TC.NUM_REQUESTS);
+		int numAdds = Config.getGlobalInt(GNSTC.NUM_FIELDS);
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numAdds; i++) {
 			clients[0].update(guid, new JSONObject("{\"testField#"+ Integer.toString(i)+"\":\"" + Integer.toString(i) + "\"}"));

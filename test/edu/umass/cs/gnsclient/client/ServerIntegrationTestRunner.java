@@ -119,11 +119,12 @@ public class ServerIntegrationTestRunner {
 			System.out.println("Running test: " + method.getName() + " in parallel.");
 			//Run the current method numRuns times.
 			Thread threads[] = new Thread[numRuns];
+			ServerIntegrationTest threadSITest = siTest;
 			for (int i = 0; i < numRuns; i++){
 				//Each thread should have a unique account alias for its test.
-				ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
+				//ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
 				//ServerIntegrationTest.setUpBeforeClass();
-				final ServerIntegrationTest threadSITest = new ServerIntegrationTest();
+				//final ServerIntegrationTest threadSITest = new ServerIntegrationTest();
 				threads[i] = new Thread(){ 
 					public void run(){
 						try {

@@ -99,6 +99,8 @@ public class GNSTestingConfig {
 		 */
 		EXECUTE_NOOP_ENABLED (false),
 
+		NUM_FIELDS (10), 
+		
 		;
 
 		final Object defaultValue;
