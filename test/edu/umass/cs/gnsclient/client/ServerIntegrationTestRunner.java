@@ -55,12 +55,14 @@ public class ServerIntegrationTestRunner {
 		Class<?> siClass = siTest.getClass();
 		Method[] allMethods = siClass.getDeclaredMethods();
 		TreeMap<String, Method> methodTree = new TreeMap<String, Method>();
+		TreeMap<String, Method> dontRepeatMethodTree = new TreeMap<String, Method>();
 		for (Method method : allMethods){
 			String methodName = method.getName();
 			if (!methodName.startsWith("test_")){
 				//Ignore non test methods
 				continue;
 			}
+			//Exclude tests that don't work sequentially here.
 			if (	methodName.equals("test_180_DBUpserts") ||
 					methodName.contains("Remove") ||
 					methodName.equals("test_232_AliasCheck") ||
@@ -68,22 +70,30 @@ public class ServerIntegrationTestRunner {
 					methodName.equals("test_420_NewRead") ||
 					methodName.equals("test_430_NewUpdate") ||
 					methodName.equals("test_512_CheckBatch")){
-					continue;
+					dontRepeatMethodTree.put(methodName,method);
+					//continue;
 			}
 
 			
 			methodTree.put(methodName,method);
 		}
 		for (Method method : methodTree.values()){
-		System.out.println("Running test: " + method.getName() + " " + numRuns + " times sequentially.");
-			//Run the current method numRuns times.
+			
+			//Run these tests only once.
+			if (dontRepeatMethodTree.containsKey(method.getName())){
+				System.out.println("Running test: " + method.getName() + " once.");
+				method.invoke(siTest);
+				continue;
+			}
+			//Run all other tests repeatedly.
+			System.out.println("Running test: " + method.getName() + " " + numRuns + " times sequentially.");
 			for (int i = 0; i < numRuns; i++){
+				
 				method.invoke(siTest);
 			}
 		}
 	}
 	
-	private String someAlias = "support@GNS.NAME";
 	/**
 	 * Runs each of the ServerIntegrationTest tests numThreads times in parallel for numRuns time sequentially.
 	 * Only uses one ServerIntegrationTest object and client. amongst all threads, and excludes tests that cannot be run in parallel.
@@ -111,6 +121,8 @@ public class ServerIntegrationTestRunner {
 		Class<?> siClass = siTest.getClass();
 		Method[] allMethods = siClass.getDeclaredMethods();
 		TreeMap<String, Method> methodTree = new TreeMap<String, Method>();
+		TreeMap<String, Method> nonparallelMethodTree = new TreeMap<String, Method>();
+		TreeMap<String, Method> dontRepeatMethodTree = new TreeMap<String, Method>();
 		for (Method method : allMethods){
 			String methodName = method.getName();
 			if (!methodName.startsWith("test_")){
@@ -125,20 +137,41 @@ public class ServerIntegrationTestRunner {
 					methodName.equals("test_420_NewRead") ||
 					methodName.equals("test_430_NewUpdate") ||
 					methodName.equals("test_512_CheckBatch")){
-					continue;
+					dontRepeatMethodTree.put(methodName,method);
+					//continue;
 			}
-			//Exclude tests that don't work in parallel here.
-
+			//Exclude tests that don't work in parallel here, and instead run them invididually.
+			//test_220_GroupAndACLCreateGuids()
+			if (	methodName.equals("test_220_GroupAndACLCreateGuids()")){
+				//Add this test to the list of things to run single threaded.
+					nonparallelMethodTree.put(methodName, method);
+					//continue;
+			}
 			
 			methodTree.put(methodName,method);
 		}
 		//TODO: numThreads and numRuns
 		for (Method method : methodTree.values()){
-			//String methodName = method.getName();
-			System.out.println("Running test: " + method.getName() + " in " + numThreads + " threads with " + numRuns + " runs per thread.");
+			//String methodName = method.getName();		
 			//Create numThreads threads.
 			Thread threads[] = new Thread[numThreads];
 			//ServerIntegrationTest threadSITest = siTest;
+			if (dontRepeatMethodTree.containsKey(method.getName())){
+				//Run these tests only once then move on.
+				System.out.println("Running test: " + method.getName() + " once.");
+				method.invoke(siTest);
+				continue;
+			}
+			else if (nonparallelMethodTree.containsKey(method.getName())){
+				//Run these test single threaded.
+				System.out.println("Running test: " + method.getName() + " " + numRuns + " times sequentially.");
+				for (int j = 0; j < numRuns; j++){
+					method.invoke(siTest);
+					continue;
+				}
+			}
+			//These tests are threadable.
+			System.out.println("Running test: " + method.getName() + " in " + numThreads + " threads with " + numRuns + " runs per thread.");
 			for (int i = 0; i < numThreads; i++){
 				threads[i] = new Thread(){ 
 					public void run(){
