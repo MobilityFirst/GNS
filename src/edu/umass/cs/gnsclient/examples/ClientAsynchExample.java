@@ -26,7 +26,6 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsclient.client.deprecated.CommandResult;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
@@ -41,7 +40,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,8 +75,6 @@ public class ClientAsynchExample {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
-    // Bring up the server selection dialog
-    InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
     GNSClientCommands client = new GNSClientCommands(null);
     GuidEntry accountGuidEntry = null;
@@ -90,7 +86,7 @@ public class ClientAsynchExample {
       e.printStackTrace();
       System.exit(1);
     }
-    System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
+    System.out.println("Client connected to GNS");
 
     JSONObject command;
     if (args.length > 0 && args[0].equals("-write")) {

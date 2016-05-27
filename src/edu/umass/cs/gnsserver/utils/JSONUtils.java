@@ -21,10 +21,7 @@ package edu.umass.cs.gnsserver.utils;
 
 import com.google.common.collect.ImmutableSet;
 
-import edu.umass.cs.gnsserver.database.ColumnField;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,8 +34,23 @@ import org.json.JSONObject;
 /**
  * Utilities to help convert to and from JSON.
  */
-// FIXME: Clean these up and remove redundant ones.
 public class JSONUtils {
+
+  /**
+   * Make a copy of a JSON Object.
+   * Much better than new JSONObject(record.toString()).
+   *
+   * @param record
+   * @return
+   * @throws JSONException
+   */
+  public static JSONObject copyJsonObject(JSONObject record) throws JSONException {
+    JSONObject copy = new JSONObject();
+    for (String key : JSONObject.getNames(record)) {
+      copy.put(key, record.get(key));
+    }
+    return copy;
+  }
 
   /**
    * Converts a JSON array to an ArrayList of Objects.
@@ -181,25 +193,6 @@ public class JSONUtils {
   }
 
   /**
-   * Converts a JSONArray to an set of NodeIds.
-   *
-   * @param json JSONArray
-   * @return ArrayList with the content of JSONArray.
-   * @throws JSONException
-   */
-  public static Set<Object> JSONArrayToSetNodeIdString(JSONArray json) throws JSONException {
-    Set<Object> set = new HashSet<>();
-    if (json == null) {
-      return set;
-    }
-    for (int i = 0; i < json.length(); i++) {
-      set.add(json.get(i));
-    }
-
-    return set;
-  }
-
-  /**
    * Converts a JSONObject to a map of strings to {@link ResultValue}.
    *
    * @param json
@@ -212,19 +205,6 @@ public class JSONUtils {
     while (keyIter.hasNext()) {
       String key = (String) keyIter.next();
       result.put(key, new ResultValue(JSONUtils.JSONArrayToResultValue(json.getJSONArray(key))));
-    }
-    return result;
-  }
-
-  /**
-   *
-   * @param set
-   * @return a set of strings
-   */
-  public static Set<String> nodeIdSetToStringSet(Set<String> set) {
-    Set<String> result = new HashSet<>();
-    for (Object id : set) {
-      result.add(id.toString());
     }
     return result;
   }

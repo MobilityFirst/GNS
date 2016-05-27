@@ -21,6 +21,7 @@ package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
@@ -75,6 +76,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 
 /**
@@ -622,12 +626,12 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    *
    * @param commandType
    * @param privateKey
-   * @param action
    * @param keysAndValues
    * @return the query string
    * @throws ClientException
    */
   // Same as the version on CommandUtils but it forces coordinated reads (see createCommand)
+  // FIXME: Consolidate these separate versions.
   public JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, Object... keysAndValues)
           throws ClientException {
@@ -648,25 +652,17 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
   /**
    * Creates a command object from the given action string and a variable
    * number of key and value pairs.
-   *
+   * 
+   * Note: Same as the version in CommandUtils but it forces coordinated reads.
    * @param commandType
    * @param keysAndValues
    * @return the query string
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
-  // Same as the version on CommandUtils but it forces coordinated reads
   public JSONObject createCommand(CommandType commandType,
           Object... keysAndValues) throws ClientException {
     try {
-      JSONObject result = new JSONObject();
-      String key;
-      Object value;
-      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
-      for (int i = 0; i < keysAndValues.length; i = i + 2) {
-        key = (String) keysAndValues[i];
-        value = keysAndValues[i + 1];
-        result.put(key, value);
-      }
+      JSONObject result = CommandUtils.createCommand(commandType, keysAndValues);
       result.put(COORDINATE_READS, true);
       return result;
     } catch (JSONException e) {

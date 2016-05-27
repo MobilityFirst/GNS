@@ -73,7 +73,7 @@ public class NSAccessSupport {
 
   private static KeyFactory keyFactory;
   // arun: at least as many instances as cores for parallelism.
-  private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()];
+  private static Signature[] signatureInstances = new Signature[2*Runtime.getRuntime().availableProcessors()];
 
   static {
     try {
@@ -174,7 +174,7 @@ public class NSAccessSupport {
 	  return mds[mdIndex++ % mds.length];
   }
   
-  private static final Cipher[] ciphers = new Cipher[Runtime.getRuntime().availableProcessors()];
+  private static final Cipher[] ciphers = new Cipher[2*Runtime.getRuntime().availableProcessors()];
   static {
 	  for(int i=0; i<ciphers.length; i++)
 		try {
