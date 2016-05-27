@@ -58,6 +58,12 @@ public class GNSClientConfig {
 		 * Used by AbstractGNSClient to use a single global monitor (bad old style) for all requests.
 		 */
 		USE_GLOBAL_MONITOR(false),
+		
+		/**
+		 * Uses secret keys for signatures that are ~180x faster at signing at
+		 * the client.
+		 */
+		ENABLE_SECRET_KEY (false),
 		;
 
 		final Object defaultValue;

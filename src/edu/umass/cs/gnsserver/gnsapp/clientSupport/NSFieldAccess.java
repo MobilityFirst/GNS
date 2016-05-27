@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
@@ -33,6 +34,8 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
 import java.util.List;
@@ -108,9 +111,12 @@ public class NSFieldAccess {
       } else if (field != null) {
         ClientSupportConfig.getLogger().log(Level.FINE, "Field={0} Format={1}",
                 new Object[]{field, returnFormat});
+        long t = System.nanoTime();
         // otherwise grab the field the user wanted
         nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
                 returnFormat, field);
+        if(Util.oneIn(100))
+        	DelayProfiler.updateDelayNano("getNameRecordMultiUserFields", t);
       }
       if (nameRecord != null) {
         return nameRecord.getValuesMap();
@@ -289,6 +295,8 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
+	  if(!AppReconfigurableNodeOptions.enableActiveCode) return originalValues;
+	  
     ValuesMap newResult = originalValues;
     // Only do this for user fields.
     if (field == null || !InternalField.isInternalField(field)) {

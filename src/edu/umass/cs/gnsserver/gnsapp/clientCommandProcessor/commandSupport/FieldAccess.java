@@ -241,7 +241,7 @@ public class FieldAccess {
   public static CommandResponse<String> lookupSingleField(String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-    ClientSupportConfig.getLogger().log(Level.FINER, "Lookup: " + guid + "/" + field);
+//    ClientSupportConfig.getLogger().log(Level.FINER, "Lookup: " + guid + "/" + field);
     GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isError()) {
