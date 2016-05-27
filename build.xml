@@ -314,7 +314,6 @@
     </junit>
   </target>
 
-<<<<<<< HEAD
   <target name="testCapacity" description="Runs the default integration test" 
           depends="jar, compiletest">
     <property name="integrationTestRuns" value="5"/>
