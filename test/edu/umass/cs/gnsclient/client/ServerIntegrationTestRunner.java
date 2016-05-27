@@ -8,15 +8,21 @@ import static org.junit.Assert.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.TreeMap;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  * @author Brendan
+ * 
+ * Runs each test in ServerIntegrationTest a number of times sequentially, then in parallel.
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTestRunner {
 
 	/**
@@ -39,18 +45,33 @@ public class ServerIntegrationTestRunner {
 	@Test
 	public void test_01_SequentialServerIntegrationTest() throws Exception{
 		//TODO: Eventually take this as a commandline option...
-		int numRuns = 100;
+		int numRuns = 2;
+		ServerIntegrationTest.setUpBeforeClass();
 		ServerIntegrationTest siTest = new ServerIntegrationTest();
 		Class<?> siClass = siTest.getClass();
 		Method[] allMethods = siClass.getDeclaredMethods();
+		TreeMap<String, Method> methodTree = new TreeMap<String, Method>();
 		for (Method method : allMethods){
 			String methodName = method.getName();
 			if (!methodName.startsWith("test_")){
 				//Ignore non test methods
 				continue;
 			}
-			//TODO: Check for some tests that we should not run here since they are not repeatable
+			if (	methodName.equals("test_180_DBUpserts") ||
+					methodName.contains("Remove") ||
+					methodName.equals("test_232_AliasCheck") ||
+					methodName.equals("test_410_JSONUpdate") ||
+					methodName.equals("test_420_NewRead") ||
+					methodName.equals("test_430_NewUpdate") ||
+					methodName.equals("test_512_CheckBatch")){
+					continue;
+			}
+
 			
+			methodTree.put(methodName,method);
+		}
+		for (Method method : methodTree.values()){
+		System.out.println("Running test: " + method.getName() + " sequentially.");
 			//Run the current method numRuns times.
 			for (int i = 0; i < numRuns; i++){
 				method.invoke(siTest);
@@ -65,18 +86,37 @@ public class ServerIntegrationTestRunner {
 	@Test
 	public void test_02_ParallelServerIntegrationTest() throws Exception{
 		//TODO: Eventually take this as a commandline option...
-		int numRuns = 100;
+		int numRuns = 2;
+		
+		//System.out.println("*** Beginning parallel tests. ***");
 		ServerIntegrationTest siTest = new ServerIntegrationTest();
 		Class<?> siClass = siTest.getClass();
 		Method[] allMethods = siClass.getDeclaredMethods();
+		TreeMap<String, Method> methodTree = new TreeMap<String, Method>();
 		for (Method method : allMethods){
 			String methodName = method.getName();
 			if (!methodName.startsWith("test_")){
 				//Ignore non test methods
 				continue;
 			}
-			//TODO: Check for some tests that we should not run here since they are not repeatable
+			if (	methodName.equals("test_180_DBUpserts") ||
+					methodName.contains("Remove") ||
+					methodName.equals("test_232_AliasCheck") ||
+					methodName.equals("test_410_JSONUpdate") ||
+					methodName.equals("test_420_NewRead") ||
+					methodName.equals("test_430_NewUpdate") ||
+					methodName.equals("test_512_CheckBatch")){
+					continue;
+			}
+
 			
+			methodTree.put(methodName,method);
+		}
+		ServerIntegrationTest.setUpBeforeClass();
+		for (Method method : methodTree.values()){
+			//String methodName = method.getName();
+			
+			System.out.println("Running test: " + method.getName() + " in parallel.");
 			//Run the current method numRuns times.
 			Thread threads[] = new Thread[numRuns];
 			for (int i = 0; i < numRuns; i++){
