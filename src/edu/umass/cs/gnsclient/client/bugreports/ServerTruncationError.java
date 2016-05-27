@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsclient.client.testing;
+package edu.umass.cs.gnsclient.client.bugreports;
 
 import static org.junit.Assert.assertTrue;
 
@@ -43,20 +43,20 @@ import edu.umass.cs.utils.Util;
 
 /**
  * @author Brendan
- * 			Based on GNSClientCapcityTest
- * 
- *         Tests the capacity of the GNS for sequential field additions and updates.
+ *         
+ *         This test creates a large number of fields and works fine on the client side (the tests will pass),
+ *         but causes the server to throw an exception saying "java.sql.SQLDataException: A truncation error was encountered trying to shrink VARCHAR..."
  *         
  *         The test can be run by starting the GNS server using
  *          ./scripts/singlenodetest/reset_and_restart.sh
  *         and then in another terminal using ./scripts/loop "./scripts/client/runClientSingleNode \
 -DtestingConfig=testing_conf/ServerTruncationError.properties \
-edu.umass.cs.gnsclient.client.testing.GNSClientAddFieldTest \
+edu.umass.cs.gnsclient.client.bugreports.ServerTruncationError \
 NUM_CLIENTS=1 NUM_REQUESTS=50000"
  *
  */
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
-public class GNSClientAddFieldTest extends DefaultTest {
+public class ServerTruncationError extends DefaultTest {
 
 	private static final String ACCOUNT_GUID_PREFIX = "ACCOUNT_GUID";
 	private static final String PASSWORD = "some_password";
@@ -77,7 +77,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	public GNSClientAddFieldTest() throws Exception {
+	public ServerTruncationError() throws Exception {
 	}
 
 	/**
@@ -197,22 +197,6 @@ public class GNSClientAddFieldTest extends DefaultTest {
 
 	private static final String someField = "ipv6";
 	private static final String someValue = "2001:0db8:3c4d:0015::1a2f:1a2b";
-
-	/**
-	 * Verifies that a single field can be successfully added.
-	 * @throws Exception 
-	 */
-	@Test
-	public void test_01_SingleAddField() throws Exception {
-		GuidEntry guid = guidEntries[0];
-			clients[0].update(guid, new JSONObject("{\"" + someField + "\":\"" + someValue + "\"}"));
-			// verify written value
-			Assert.assertEquals(clients[0].fieldRead(guid, someField),
-					(someValue));
-			Assert.assertEquals(
-					clients[numClients > 1 ? 1 : 0].fieldRead(guid, someField),
-					(someValue));
-	}
 	
 	/**
 	 * Tests that NUM_REQUESTS different fields are successfully added by first adding all of the fields and then reading their values back.
@@ -220,7 +204,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	 * 
 	 */
 	@Test
-	public void test_02_AddManyFieldsSequentially() throws Exception {
+	public void test_01_AddManyFieldsSequentially() throws Exception {
 		GuidEntry guid = guidEntries[0];
 		int numAdds = Config.getGlobalInt(TC.NUM_REQUESTS);
 		long t = System.currentTimeMillis();
@@ -237,24 +221,6 @@ public class GNSClientAddFieldTest extends DefaultTest {
 		}
 	}
 	
-	
-	/**
-	 * Performs NUM_REQUESTS sequential field updates to test write capacity.
-	 * @throws Exception
-	 * 
-	 */
-	@Test
-	public void test_03_SequentialWrites() throws Exception {
-		GuidEntry guid = guidEntries[0];
-		int numAdds = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
-		long t = System.currentTimeMillis();
-		for (int i = 0; i < numAdds; i++) {
-			clients[0].fieldUpdate(guid, someField, someValue);
-		}
-		System.out.print("sequential_write_rate="
-				+ Util.df(numAdds * 1.0 / (System.currentTimeMillis() - t))
-				+ "K/s averaged over " + numAdds + " additions.");
-	}
 
 	/**
 	 * Removes all account and sub-guids created during the test.
@@ -316,7 +282,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	public static void main(String[] args) throws IOException {
 		Util.assertAssertionsEnabled();
 		processArgs(args);
-		Result result = JUnitCore.runClasses(GNSClientAddFieldTest.class);
+		Result result = JUnitCore.runClasses(ServerTruncationError.class);
 		for (Failure failure : result.getFailures()) {
 			System.out.println(failure.getMessage());
 			failure.getException().printStackTrace();
