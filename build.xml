@@ -305,6 +305,7 @@
 
   <target name="testCapacity" description="Runs the default integration test" 
           depends="jar, compiletest">
+    <property name="integrationTestRuns" value="5"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTestRunner"/>
       <formatter type="plain" usefile="false"/>
@@ -312,6 +313,7 @@
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
       <jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>

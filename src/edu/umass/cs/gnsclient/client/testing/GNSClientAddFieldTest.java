@@ -248,7 +248,7 @@ public class GNSClientAddFieldTest extends DefaultTest {
 	@Test
 	public void test_03_SequentialWrites() throws Exception {
 		GuidEntry guid = guidEntries[0];
-		int numAdds = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numAdds = Math.min(1000, Config.getGlobalInt(GNSTC.NUM_FIELDS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numAdds; i++) {
 			clients[0].fieldUpdate(guid, someField, someValue);

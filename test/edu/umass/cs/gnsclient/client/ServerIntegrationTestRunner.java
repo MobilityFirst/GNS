@@ -44,8 +44,12 @@ public class ServerIntegrationTestRunner {
 	 */
 	@Test
 	public void test_01_SequentialServerIntegrationTest() throws Exception{
-		//TODO: Eventually take this as a commandline option...
-		int numRuns = 2;
+		String runsString = System.getProperty("integrationTest.runs");
+		int numRuns = 10;
+		 if (runsString != null){
+			 numRuns=Integer.parseInt(runsString);
+		 }
+		
 		ServerIntegrationTest.setUpBeforeClass();
 		ServerIntegrationTest siTest = new ServerIntegrationTest();
 		Class<?> siClass = siTest.getClass();
@@ -71,7 +75,7 @@ public class ServerIntegrationTestRunner {
 			methodTree.put(methodName,method);
 		}
 		for (Method method : methodTree.values()){
-		System.out.println("Running test: " + method.getName() + " sequentially.");
+		System.out.println("Running test: " + method.getName() + " " + numRuns + " times sequentially.");
 			//Run the current method numRuns times.
 			for (int i = 0; i < numRuns; i++){
 				method.invoke(siTest);
@@ -85,8 +89,12 @@ public class ServerIntegrationTestRunner {
 	 */
 	@Test
 	public void test_02_ParallelServerIntegrationTest() throws Exception{
-		//TODO: Eventually take this as a commandline option...
-		int numRuns = 2;
+		String runsString = System.getProperty("integrationTest.runs");
+		int numRuns = 10;
+		 if (runsString != null){
+			 numRuns=Integer.parseInt(runsString);
+		 }
+		
 		
 		//System.out.println("*** Beginning parallel tests. ***");
 		ServerIntegrationTest siTest = new ServerIntegrationTest();
@@ -116,15 +124,15 @@ public class ServerIntegrationTestRunner {
 		for (Method method : methodTree.values()){
 			//String methodName = method.getName();
 			
-			System.out.println("Running test: " + method.getName() + " in parallel.");
+			System.out.println("Running test: " + method.getName() + " " + numRuns+ " times in parallel.");
 			//Run the current method numRuns times.
 			Thread threads[] = new Thread[numRuns];
-			ServerIntegrationTest threadSITest = siTest;
+			//ServerIntegrationTest threadSITest = siTest;
 			for (int i = 0; i < numRuns; i++){
 				//Each thread should have a unique account alias for its test.
-				//ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
-				//ServerIntegrationTest.setUpBeforeClass();
-				//final ServerIntegrationTest threadSITest = new ServerIntegrationTest();
+				ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
+				ServerIntegrationTest.setUpBeforeClass();
+				final ServerIntegrationTest threadSITest = new ServerIntegrationTest();
 				threads[i] = new Thread(){ 
 					public void run(){
 						try {
