@@ -85,7 +85,8 @@ public class ServerIntegrationTestRunner {
 	
 	private String someAlias = "support@GNS.NAME";
 	/**
-	 * Runs each of the ServerIntegrationTest tests numRuns in parallel.
+	 * Runs each of the ServerIntegrationTest tests numThreads times in parallel for numRuns time sequentially.
+	 * Only uses one ServerIntegrationTest object and client. amongst all threads, and excludes tests that cannot be run in parallel.
 	 */
 	@Test
 	public void test_02_ParallelServerIntegrationTest() throws Exception{
@@ -121,6 +122,7 @@ public class ServerIntegrationTestRunner {
 			methodTree.put(methodName,method);
 		}
 		ServerIntegrationTest.setUpBeforeClass();
+		//TODO: numThreads and numRuns
 		for (Method method : methodTree.values()){
 			//String methodName = method.getName();
 			
@@ -130,13 +132,13 @@ public class ServerIntegrationTestRunner {
 			//ServerIntegrationTest threadSITest = siTest;
 			for (int i = 0; i < numRuns; i++){
 				//Each thread should have a unique account alias for its test.
-				ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
+				//ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
 				ServerIntegrationTest.setUpBeforeClass();
 				final ServerIntegrationTest threadSITest = new ServerIntegrationTest();
 				threads[i] = new Thread(){ 
 					public void run(){
 						try {
-							
+							//TODO: multiple sequential runs per thread
 							method.invoke(threadSITest);
 							//System.out.println(threadSITest.accountAlias);
 						} catch (Exception e) {
