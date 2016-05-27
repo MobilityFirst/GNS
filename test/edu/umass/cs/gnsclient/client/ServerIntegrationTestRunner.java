@@ -136,7 +136,9 @@ public class ServerIntegrationTestRunner {
 				threads[i] = new Thread(){ 
 					public void run(){
 						try {
+							
 							method.invoke(threadSITest);
+							//System.out.println(threadSITest.accountAlias);
 						} catch (Exception e) {
 							StringWriter printException = new StringWriter();
 							e.printStackTrace(new PrintWriter(printException));
