@@ -18,6 +18,8 @@ package edu.umass.cs.gnsclient.client;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -25,8 +27,8 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
-
 import edu.umass.cs.gnscommon.utils.Base64;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -35,12 +37,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
 import static org.hamcrest.Matchers.*;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.*;
+
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -53,10 +60,13 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
+
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+
 import java.awt.geom.Point2D;
 import java.util.Set;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONException;
 
@@ -184,7 +194,8 @@ public class ServerIntegrationTest {
   }
 
   private static final int RETRANSMISSION_INTERVAL = 100;
-  private static final int COORDINATION_WAIT = 100;
+  // arun: this should be zero
+  private static final int COORDINATION_WAIT = 00;
 
   /**
    * arun: Coordinated operations generally need some settling time before
@@ -203,7 +214,8 @@ public class ServerIntegrationTest {
    */
   private static void waitSettle() {
     try {
-      Thread.sleep(COORDINATION_WAIT);
+    	if(COORDINATION_WAIT > 0)
+    		Thread.sleep(COORDINATION_WAIT);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -1257,8 +1269,11 @@ public class ServerIntegrationTest {
         GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client,
                 masterGuid, "geoTest-" + RandomString.randomString(6));
         client.setLocation(testEntry, 0.0, 0.0);
+        // arun: added this but unclear why we should need this at all
+        JSONArray location = client.getLocation(testEntry.getGuid(), testEntry);
+        assert(location.getDouble(0)==0.0 && location.getDouble(1)==0.0);
       }
-      Thread.sleep(2000); // wait a bit to make sure everything is updated
+      //Thread.sleep(2000); // wait a bit to make sure everything is updated
     } catch (Exception e) {
       fail("Exception while writing fields for GeoSpatialSelect: " + e);
     }

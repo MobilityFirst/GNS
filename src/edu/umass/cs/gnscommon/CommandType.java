@@ -28,193 +28,193 @@ import java.util.Map;
 // We could probably despense with the CommandDefs array (see above) and just put the classes in the enum
 // once we upgrade older clients to not use the old command strings.
 public enum CommandType {
-  Append(110, Coordination.UPDATE),
-  AppendList(111, Coordination.UPDATE),
-  AppendListSelf(112, Coordination.UPDATE),
-  AppendListUnsigned(113, Coordination.UPDATE),
-  AppendListWithDuplication(114, Coordination.UPDATE),
-  AppendListWithDuplicationSelf(115, Coordination.UPDATE),
-  AppendListWithDuplicationUnsigned(116, Coordination.UPDATE),
+  Append(110, Type.UPDATE),
+  AppendList(111, Type.UPDATE),
+  AppendListSelf(112, Type.UPDATE),
+  AppendListUnsigned(113, Type.UPDATE),
+  AppendListWithDuplication(114, Type.UPDATE),
+  AppendListWithDuplicationSelf(115, Type.UPDATE),
+  AppendListWithDuplicationUnsigned(116, Type.UPDATE),
   //
-  AppendOrCreate(120, Coordination.UPDATE),
-  AppendOrCreateList(121, Coordination.UPDATE),
-  AppendOrCreateListSelf(122, Coordination.UPDATE),
-  AppendOrCreateListUnsigned(123, Coordination.UPDATE),
-  AppendOrCreateSelf(124, Coordination.UPDATE),
-  AppendOrCreateUnsigned(125, Coordination.UPDATE),
+  AppendOrCreate(120, Type.UPDATE),
+  AppendOrCreateList(121, Type.UPDATE),
+  AppendOrCreateListSelf(122, Type.UPDATE),
+  AppendOrCreateListUnsigned(123, Type.UPDATE),
+  AppendOrCreateSelf(124, Type.UPDATE),
+  AppendOrCreateUnsigned(125, Type.UPDATE),
   //
-  AppendSelf(130, Coordination.UPDATE),
-  AppendUnsigned(131, Coordination.UPDATE),
-  AppendWithDuplication(132, Coordination.UPDATE),
-  AppendWithDuplicationSelf(133, Coordination.UPDATE),
-  AppendWithDuplicationUnsigned(134, Coordination.UPDATE),
+  AppendSelf(130, Type.UPDATE),
+  AppendUnsigned(131, Type.UPDATE),
+  AppendWithDuplication(132, Type.UPDATE),
+  AppendWithDuplicationSelf(133, Type.UPDATE),
+  AppendWithDuplicationUnsigned(134, Type.UPDATE),
   //
-  Clear(140, Coordination.UPDATE),
-  ClearSelf(141, Coordination.UPDATE),
-  ClearUnsigned(142, Coordination.UPDATE),
+  Clear(140, Type.UPDATE),
+  ClearSelf(141, Type.UPDATE),
+  ClearUnsigned(142, Type.UPDATE),
   //
-  Create(150, Coordination.UPDATE),
-  CreateEmpty(151, Coordination.UPDATE),
-  CreateEmptySelf(152, Coordination.UPDATE),
-  CreateList(153, Coordination.UPDATE),
-  CreateListSelf(154, Coordination.UPDATE),
-  CreateSelf(155, Coordination.UPDATE),
+  Create(150, Type.UPDATE),
+  CreateEmpty(151, Type.UPDATE),
+  CreateEmptySelf(152, Type.UPDATE),
+  CreateList(153, Type.UPDATE),
+  CreateListSelf(154, Type.UPDATE),
+  CreateSelf(155, Type.UPDATE),
   //
-  Read(160, Coordination.READ),
-  ReadSelf(161, Coordination.READ),
-  ReadUnsigned(162, Coordination.READ),
-  ReadMultiField(163, Coordination.READ),
-  ReadMultiFieldUnsigned(164, Coordination.READ),
+  Read(160, Type.READ),
+  ReadSelf(161, Type.READ),
+  ReadUnsigned(162, Type.READ),
+  ReadMultiField(163, Type.READ),
+  ReadMultiFieldUnsigned(164, Type.READ),
   //
-  ReadArray(170, Coordination.READ),
-  ReadArrayOne(171, Coordination.READ),
-  ReadArrayOneSelf(172, Coordination.READ),
-  ReadArrayOneUnsigned(173, Coordination.READ),
-  ReadArraySelf(174, Coordination.READ),
-  ReadArrayUnsigned(175, Coordination.READ),
+  ReadArray(170, Type.READ),
+  ReadArrayOne(171, Type.READ),
+  ReadArrayOneSelf(172, Type.READ),
+  ReadArrayOneUnsigned(173, Type.READ),
+  ReadArraySelf(174, Type.READ),
+  ReadArrayUnsigned(175, Type.READ),
   //
-  Remove(180, Coordination.UPDATE),
-  RemoveList(181, Coordination.UPDATE),
-  RemoveListSelf(182, Coordination.UPDATE),
-  RemoveListUnsigned(183, Coordination.UPDATE),
-  RemoveSelf(184, Coordination.UPDATE),
-  RemoveUnsigned(185, Coordination.UPDATE),
+  Remove(180, Type.UPDATE),
+  RemoveList(181, Type.UPDATE),
+  RemoveListSelf(182, Type.UPDATE),
+  RemoveListUnsigned(183, Type.UPDATE),
+  RemoveSelf(184, Type.UPDATE),
+  RemoveUnsigned(185, Type.UPDATE),
   //
-  Replace(190, Coordination.UPDATE),
-  ReplaceList(191, Coordination.UPDATE),
-  ReplaceListSelf(192, Coordination.UPDATE),
-  ReplaceListUnsigned(193, Coordination.UPDATE),
+  Replace(190, Type.UPDATE),
+  ReplaceList(191, Type.UPDATE),
+  ReplaceListSelf(192, Type.UPDATE),
+  ReplaceListUnsigned(193, Type.UPDATE),
   //
-  ReplaceOrCreate(210, Coordination.UPDATE),
-  ReplaceOrCreateList(211, Coordination.UPDATE),
-  ReplaceOrCreateListSelf(212, Coordination.UPDATE),
-  ReplaceOrCreateListUnsigned(213, Coordination.UPDATE),
-  ReplaceOrCreateSelf(214, Coordination.UPDATE),
-  ReplaceOrCreateUnsigned(215, Coordination.UPDATE),
-  ReplaceSelf(216, Coordination.UPDATE),
-  ReplaceUnsigned(217, Coordination.UPDATE),
+  ReplaceOrCreate(210, Type.UPDATE),
+  ReplaceOrCreateList(211, Type.UPDATE),
+  ReplaceOrCreateListSelf(212, Type.UPDATE),
+  ReplaceOrCreateListUnsigned(213, Type.UPDATE),
+  ReplaceOrCreateSelf(214, Type.UPDATE),
+  ReplaceOrCreateUnsigned(215, Type.UPDATE),
+  ReplaceSelf(216, Type.UPDATE),
+  ReplaceUnsigned(217, Type.UPDATE),
   //
-  ReplaceUserJSON(220, Coordination.UPDATE),
-  ReplaceUserJSONUnsigned(221, Coordination.UPDATE),
+  ReplaceUserJSON(220, Type.UPDATE),
+  ReplaceUserJSONUnsigned(221, Type.UPDATE),
   //
-  CreateIndex(230, Coordination.OTHER),
+  CreateIndex(230, Type.OTHER),
   //
-  Substitute(231, Coordination.UPDATE),
-  SubstituteList(232, Coordination.UPDATE),
-  SubstituteListSelf(233, Coordination.UPDATE),
-  SubstituteListUnsigned(234, Coordination.UPDATE),
-  SubstituteSelf(235, Coordination.UPDATE),
-  SubstituteUnsigned(236, Coordination.UPDATE),
+  Substitute(231, Type.UPDATE),
+  SubstituteList(232, Type.UPDATE),
+  SubstituteListSelf(233, Type.UPDATE),
+  SubstituteListUnsigned(234, Type.UPDATE),
+  SubstituteSelf(235, Type.UPDATE),
+  SubstituteUnsigned(236, Type.UPDATE),
   //
-  RemoveField(240, Coordination.UPDATE),
-  RemoveFieldSelf(241, Coordination.UPDATE),
-  RemoveFieldUnsigned(242, Coordination.UPDATE),
+  RemoveField(240, Type.UPDATE),
+  RemoveFieldSelf(241, Type.UPDATE),
+  RemoveFieldUnsigned(242, Type.UPDATE),
   //
-  Set(250, Coordination.UPDATE),
-  SetSelf(251, Coordination.UPDATE),
-  SetFieldNull(252, Coordination.UPDATE),
-  SetFieldNullSelf(253, Coordination.UPDATE),
+  Set(250, Type.UPDATE),
+  SetSelf(251, Type.UPDATE),
+  SetFieldNull(252, Type.UPDATE),
+  SetFieldNullSelf(253, Type.UPDATE),
   // Select
-  Select(310, Coordination.SELECT),
-  SelectGroupLookupQuery(311, Coordination.SELECT),
-  SelectGroupSetupQuery(312, Coordination.SELECT),
-  SelectGroupSetupQueryWithGuid(313, Coordination.SELECT),
-  SelectGroupSetupQueryWithGuidAndInterval(314, Coordination.SELECT),
-  SelectGroupSetupQueryWithInterval(315, Coordination.SELECT),
+  Select(310, Type.SELECT),
+  SelectGroupLookupQuery(311, Type.SELECT),
+  SelectGroupSetupQuery(312, Type.SELECT),
+  SelectGroupSetupQueryWithGuid(313, Type.SELECT),
+  SelectGroupSetupQueryWithGuidAndInterval(314, Type.SELECT),
+  SelectGroupSetupQueryWithInterval(315, Type.SELECT),
   //
-  SelectNear(320, Coordination.SELECT),
-  SelectWithin(321, Coordination.SELECT),
-  SelectQuery(322, Coordination.SELECT),
+  SelectNear(320, Type.SELECT),
+  SelectWithin(321, Type.SELECT),
+  SelectQuery(322, Type.SELECT),
   // Account
-  AddAlias(410, Coordination.CREATE_DELETE),
-  AddGuid(411, Coordination.CREATE_DELETE),
-  AddMultipleGuids(412, Coordination.CREATE_DELETE),
-  AddMultipleGuidsFast(413, Coordination.CREATE_DELETE),
-  AddMultipleGuidsFastRandom(414, Coordination.CREATE_DELETE),
+  AddAlias(410, Type.CREATE_DELETE),
+  AddGuid(411, Type.CREATE_DELETE),
+  AddMultipleGuids(412, Type.CREATE_DELETE),
+  AddMultipleGuidsFast(413, Type.CREATE_DELETE),
+  AddMultipleGuidsFastRandom(414, Type.CREATE_DELETE),
   //
-  LookupAccountRecord(420, Coordination.OTHER),
-  LookupRandomGuids(421, Coordination.OTHER), // for testing
-  LookupGuid(422, Coordination.OTHER),
-  LookupPrimaryGuid(423, Coordination.OTHER),
-  LookupGuidRecord(424, Coordination.OTHER),
+  LookupAccountRecord(420, Type.OTHER),
+  LookupRandomGuids(421, Type.OTHER), // for testing
+  LookupGuid(422, Type.OTHER),
+  LookupPrimaryGuid(423, Type.OTHER),
+  LookupGuidRecord(424, Type.OTHER),
   //
-  RegisterAccount(430, Coordination.CREATE_DELETE),
-  RegisterAccountSansPassword(431, Coordination.CREATE_DELETE),
-  RegisterAccountUnsigned(432, Coordination.CREATE_DELETE),
+  RegisterAccount(430, Type.CREATE_DELETE),
+  RegisterAccountSansPassword(431, Type.CREATE_DELETE),
+  RegisterAccountUnsigned(432, Type.CREATE_DELETE),
   //
-  RemoveAccount(440, Coordination.CREATE_DELETE),
-  RemoveAlias(441, Coordination.CREATE_DELETE),
-  RemoveGuid(442, Coordination.CREATE_DELETE),
-  RemoveGuidNoAccount(443, Coordination.CREATE_DELETE),
-  RetrieveAliases(444, Coordination.OTHER),
+  RemoveAccount(440, Type.CREATE_DELETE),
+  RemoveAlias(441, Type.CREATE_DELETE),
+  RemoveGuid(442, Type.CREATE_DELETE),
+  RemoveGuidNoAccount(443, Type.CREATE_DELETE),
+  RetrieveAliases(444, Type.OTHER),
   //
-  SetPassword(450, Coordination.UPDATE),
-  VerifyAccount(451, Coordination.OTHER),
+  SetPassword(450, Type.UPDATE),
+  VerifyAccount(451, Type.OTHER),
   //
-  ResetKey(460, Coordination.UPDATE),
+  ResetKey(460, Type.UPDATE),
   // ACL
-  AclAdd(510, Coordination.UPDATE),
-  AclAddSelf(511, Coordination.UPDATE),
-  AclRemove(512, Coordination.UPDATE),
-  AclRemoveSelf(513, Coordination.UPDATE),
-  AclRetrieve(514, Coordination.UPDATE),
-  AclRetrieveSelf(515, Coordination.UPDATE),
+  AclAdd(510, Type.UPDATE),
+  AclAddSelf(511, Type.UPDATE),
+  AclRemove(512, Type.UPDATE),
+  AclRemoveSelf(513, Type.UPDATE),
+  AclRetrieve(514, Type.UPDATE),
+  AclRetrieveSelf(515, Type.UPDATE),
   // Group
-  AddMembersToGroup(610, Coordination.OTHER),
-  AddMembersToGroupSelf(611, Coordination.OTHER),
-  AddToGroup(612, Coordination.OTHER),
-  AddToGroupSelf(613, Coordination.OTHER),
-  GetGroupMembers(614, Coordination.OTHER),
-  GetGroupMembersSelf(615, Coordination.OTHER),
-  GetGroups(616, Coordination.OTHER),
-  GetGroupsSelf(617, Coordination.OTHER),
+  AddMembersToGroup(610, Type.OTHER),
+  AddMembersToGroupSelf(611, Type.OTHER),
+  AddToGroup(612, Type.OTHER),
+  AddToGroupSelf(613, Type.OTHER),
+  GetGroupMembers(614, Type.OTHER),
+  GetGroupMembersSelf(615, Type.OTHER),
+  GetGroups(616, Type.OTHER),
+  GetGroupsSelf(617, Type.OTHER),
   //
-  RemoveFromGroup(620, Coordination.OTHER),
-  RemoveFromGroupSelf(621, Coordination.OTHER),
-  RemoveMembersFromGroup(622, Coordination.OTHER),
-  RemoveMembersFromGroupSelf(623, Coordination.OTHER),
+  RemoveFromGroup(620, Type.OTHER),
+  RemoveFromGroupSelf(621, Type.OTHER),
+  RemoveMembersFromGroup(622, Type.OTHER),
+  RemoveMembersFromGroupSelf(623, Type.OTHER),
   // Admin
-  Help(710, Coordination.OTHER),
-  HelpTcp(711, Coordination.OTHER),
-  HelpTcpWiki(712, Coordination.OTHER),
-  Admin(715, Coordination.OTHER),
-  Dump(716, Coordination.OTHER),
+  Help(710, Type.OTHER),
+  HelpTcp(711, Type.OTHER),
+  HelpTcpWiki(712, Type.OTHER),
+  Admin(715, Type.OTHER),
+  Dump(716, Type.OTHER),
   //
-  GetParameter(720, Coordination.OTHER),
-  SetParameter(721, Coordination.OTHER),
-  ListParameters(722, Coordination.OTHER),
-  DeleteAllRecords(723, Coordination.OTHER),
-  ResetDatabase(724, Coordination.OTHER),
-  ClearCache(725, Coordination.OTHER),
-  DumpCache(726, Coordination.OTHER),
+  GetParameter(720, Type.OTHER),
+  SetParameter(721, Type.OTHER),
+  ListParameters(722, Type.OTHER),
+  DeleteAllRecords(723, Type.OTHER),
+  ResetDatabase(724, Type.OTHER),
+  ClearCache(725, Type.OTHER),
+  DumpCache(726, Type.OTHER),
   //
-  ChangeLogLevel(730, Coordination.OTHER),
-  AddTag(731, Coordination.OTHER),
-  RemoveTag(732, Coordination.OTHER),
-  ClearTagged(733, Coordination.OTHER),
-  GetTagged(734, Coordination.OTHER),
-  ConnectionCheck(737, Coordination.OTHER),
+  ChangeLogLevel(730, Type.OTHER),
+  AddTag(731, Type.OTHER),
+  RemoveTag(732, Type.OTHER),
+  ClearTagged(733, Type.OTHER),
+  GetTagged(734, Type.OTHER),
+  ConnectionCheck(737, Type.OTHER),
   // Active code
-  SetActiveCode(810, Coordination.OTHER),
-  ClearActiveCode(811, Coordination.OTHER),
-  GetActiveCode(812, Coordination.OTHER),
+  SetActiveCode(810, Type.OTHER),
+  ClearActiveCode(811, Type.OTHER),
+  GetActiveCode(812, Type.OTHER),
 
   // Catch all for parsing errors
-  Unknown(999, Coordination.OTHER);
+  Unknown(999, Type.OTHER);
   private int number;
-  private Coordination coordination;
+  private Type coordination;
   private final String alias; // must also be unique
 
-  public enum Coordination {
+  public enum Type {
     READ, UPDATE, CREATE_DELETE, SELECT, OTHER
   }
 
-  private CommandType(int number, Coordination coordination) {
+  private CommandType(int number, Type coordination) {
     this(number, coordination, number + "" // default alias is just number
     );
   }
 
-  private CommandType(int number, Coordination readUpdateCreateDelete, String alias) {
+  private CommandType(int number, Type readUpdateCreateDelete, String alias) {
     this.number = number;
     this.coordination = readUpdateCreateDelete;
     this.alias = alias;
@@ -225,19 +225,19 @@ public enum CommandType {
   }
 
   public boolean isRead() {
-    return coordination.equals(Coordination.READ);
+    return coordination.equals(Type.READ);
   }
 
   public boolean isUpdate() {
-    return coordination.equals(Coordination.UPDATE);
+    return coordination.equals(Type.UPDATE);
   }
 
   public boolean isCreateDelete() {
-    return coordination.equals(Coordination.CREATE_DELETE);
+    return coordination.equals(Type.CREATE_DELETE);
   }
 
   public boolean isSelect() {
-    return coordination.equals(Coordination.SELECT);
+    return coordination.equals(Type.SELECT);
   }
 
   private static final Map<Integer, CommandType> map = new HashMap<Integer, CommandType>();
@@ -286,5 +286,4 @@ public enum CommandType {
     System.out.println(generateSwiftConstants());
 
   }
-
 }

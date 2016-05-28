@@ -50,7 +50,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnsserver.utils.Util;
+import edu.umass.cs.utils.Util;
 
 import java.net.InetSocketAddress;
 import java.util.Date;
@@ -130,7 +130,8 @@ public class Select {
    * @throws UnknownHostException
    * @throws FailedDBOperationException
    */
-  private static void handleSelectRequestFromClient(SelectRequestPacket<String> packet,
+  @SuppressWarnings("unchecked")
+private static void handleSelectRequestFromClient(SelectRequestPacket<String> packet,
           GNSApplicationInterface<String> app) throws JSONException, UnknownHostException, FailedDBOperationException {
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
@@ -179,14 +180,13 @@ public class Select {
             Level.FINE,
             "NS {0} sending select {1} to {2}",
             new Object[]{app.getNodeID(), packet.getSummary(),
-              Util.setOfNodeIdToString(serverIds)});
+              Util.getOtherThan(serverIds, app.getNodeID())});
     try {
-      for (String serverId : serverIds) {
-        if (!serverId.equals(app.getNodeID())) // all but self
-        {
+    	// forward to all but self
+      for (String serverId : (Set<String>)Util.getOtherThan(serverIds, app.getNodeID())) 
+//        if (!serverId.equals(app.getNodeID())) 
           app.sendToID(serverId, outgoingJSON);
-        }
-      }
+      
       // arun: locally get self-select records
       handleSelectResponse(getMySelectedRecords(packet, app), app);
       /* FIXED: arun: need to synchronously wait for responses. Otherwise

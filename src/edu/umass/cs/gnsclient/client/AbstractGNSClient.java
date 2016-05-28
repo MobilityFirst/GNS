@@ -239,7 +239,7 @@ public abstract class AbstractGNSClient {
         result.put(key, value);
       }
       if (forceCoordinatedReads) {
-        //result.put(GNSCommandProtocol.COORDINATE_READS, true);
+        result.put(GNSCommandProtocol.COORDINATE_READS, true);
       }
       DelayProfiler.updateDelayNano("createCommand", t);
       return result;
