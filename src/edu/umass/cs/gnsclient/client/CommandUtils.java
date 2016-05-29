@@ -361,7 +361,6 @@ public class CommandUtils {
           throw new VerificationException(errorSummary);
       case DUPLICATE_ID_EXCEPTION:
           throw new DuplicateNameException(errorSummary);
-
       case DUPLICATE_FIELD_EXCEPTION:
           throw new InvalidFieldException(errorSummary);
 
