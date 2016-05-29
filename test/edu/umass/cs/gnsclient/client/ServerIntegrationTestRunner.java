@@ -81,11 +81,12 @@ public class ServerIntegrationTestRunner {
 			//Run the current method numRuns times.
 			Thread threads[] = new Thread[numRuns];
 			for (int i = 0; i < numRuns; i++){
-				siTest.setAccountAlias(someAlias+Integer.toString(i));
+				//Each thread will have a unique account alias for its test.
+				ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
 				threads[i] = new Thread(){ 
 					public void run(){
 						try {
-							method.invoke(siTest);
+							method.invoke(new ServerIntegrationTest());
 						} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 							// TODO Auto-generated catch block
 							StringWriter printException = new StringWriter();
