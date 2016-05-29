@@ -351,10 +351,13 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     InetSocketAddress iDontKnowMyListeningAddress = null;
+
+		// arun: remove must be before the notify in sendReponsePacketToCaller
+		// we're done processing this select query
+		QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
+
     // Pull the records out of the info structure and send a response back to the caller
     sendReponsePacketToCaller(packet.getId(), packet.getLnsQueryId(), packet.getReturnAddress(), guids, replica, iDontKnowMyListeningAddress);
-    // we're done processing this select query
-    QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
     // Now we update any group guid stuff
     if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP)) {
       GNSConfig.getLogger().log(Level.FINE,
