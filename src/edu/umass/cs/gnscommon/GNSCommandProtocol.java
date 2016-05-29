@@ -85,8 +85,9 @@ public class GNSCommandProtocol {
   public final static String ALL_USERS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
 
-  public final static String NO_ACTIVE_REPLICAS 
-          = ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR.toString();
+  public final static String ACTIVE_REPLICA_EXCEPTION =
+  ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION.toString()
+  ;
 
   //
   public static final String RSA_ALGORITHM = "RSA";

@@ -121,6 +121,13 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 //    this.requestCnt = requestCnt;
 //    this.requestRate = requestRate;
   }
+  public CommandValueReturnPacket(long requestId, GNSResponseCode code, String returnValue) {
+	    this.setType(PacketType.COMMAND_RETURN_VALUE);
+	    this.clientRequestId = requestId;
+	    this.serviceName = null;
+	    this.returnValue = returnValue;
+	    this.errorCode = code;
+  }
 
   /**
    * Creates a CommandValueReturnPacket from a JSONObject.

@@ -21,6 +21,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
+
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
@@ -61,16 +62,20 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WITHIN;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
+
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -83,6 +88,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+
 import org.json.JSONException;
 
 /**
@@ -122,10 +128,11 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
   private String checkAndReturnResponse(JSONObject command)
           throws ClientException, IOException {
-    String response;
+    Object response;
     CommandUtils.checkResponse(command,
             response = sendCommandAndWait(command));
-    return response;
+		return response instanceof String ? (String) response
+				: ((CommandValueReturnPacket) response).getReturnValue();
   }
 
   // READ AND WRITE COMMANDS
@@ -714,14 +721,10 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     }
     DelayProfiler.updateDelay("batchCreatePublicKeys", publicKeyStartTime);
 
-    JSONObject command;
-    String result = CommandUtils.checkResponse(
-            command = createAndSignCommand(CommandType.AddMultipleGuids,
-                    accountGuid.getPrivateKey(), GUID,
-                    accountGuid.getGuid(), NAMES, new JSONArray(aliasList),
-                    PUBLIC_KEYS, new JSONArray(publicKeys)),
-            sendCommandAndWait(command));
-    return result;
+		return checkResponse(createAndSignCommand(CommandType.AddMultipleGuids,
+				accountGuid.getPrivateKey(), GUID, accountGuid.getGuid(),
+				NAMES, new JSONArray(aliasList), PUBLIC_KEYS, new JSONArray(
+						publicKeys)));
   }
 
   /**
