@@ -25,16 +25,20 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 
 /**
- * Contains logging and other main utilities for the GNS client.
+ * Contains logging and other main utilities for the GNS client. This file
+ * should be used only for client properties. Server properties are in
+ * {@link GNSConfig}.
  * 
- * @author westy
+ * @author westy, arun
  */
 public class GNSClientConfig {
   
   public static final int LNS_PORT = 24398;
+	// arun: It is almost never okay to use a hard-coded active replica port.
   public static final int ACTIVE_REPLICA_PORT = 24403;
   
   private final static Logger LOG = Logger.getLogger(GNSClientConfig.class.getName());

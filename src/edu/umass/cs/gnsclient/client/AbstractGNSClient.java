@@ -39,10 +39,11 @@ import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-
 import edu.umass.cs.gnscommon.CommandType;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -90,7 +91,7 @@ public abstract class AbstractGNSClient {
   private int readTimeout = 20000; // 20 seconds... was 40 seconds
 
   /* Keeps track of requests that are sent out and the reponses to them */
-  private final ConcurrentMap<Long, CommandResult> resultMap = new ConcurrentHashMap<Long, CommandResult>(
+  private final ConcurrentMap<Long, Request> resultMap = new ConcurrentHashMap<Long, Request>(
           10, 0.75f, 3);
   /* Instrumentation: Keeps track of transmission start times */
   private final ConcurrentMap<Long, Long> queryTimeStamp = new ConcurrentHashMap<Long, Long>(10,
@@ -239,7 +240,7 @@ public abstract class AbstractGNSClient {
         result.put(key, value);
       }
       if (forceCoordinatedReads) {
-        //result.put(GNSCommandProtocol.COORDINATE_READS, true);
+        result.put(GNSCommandProtocol.COORDINATE_READS, true);
       }
       DelayProfiler.updateDelayNano("createCommand", t);
       return result;
@@ -264,10 +265,10 @@ public abstract class AbstractGNSClient {
    * Sends a command to the server and returns a response.
    *
    * @param command
-   * @return result of command as a string
+   * @return Result as CommandValueReturnPacket; or String if Android (FIXME)
    * @throws IOException if an error occurs
    */
-  public String sendCommandAndWait(JSONObject command) throws IOException {
+  public Object sendCommandAndWait(JSONObject command) throws IOException {
     if (IS_ANDROID) {
       return androidSendCommandAndWait(command);
     } else {
@@ -301,7 +302,8 @@ public abstract class AbstractGNSClient {
    */
   private ConcurrentHashMap<Long, Object> monitorMap = new ConcurrentHashMap<Long, Object>();
 
-  private String desktopSendCommmandAndWait(JSONObject command) throws IOException {
+  // arun: changed this to return CommandValueReturnPacket
+  private CommandValueReturnPacket desktopSendCommmandAndWait(JSONObject command) throws IOException {
     Object myMonitor = new Object();
     long id;
     monitorMap.put(id = this.generateNextRequestID(), myMonitor);
@@ -339,14 +341,17 @@ public abstract class AbstractGNSClient {
            * have error codes and systematic methods to automatically generate
            * error responses and be able to refactor them as needed easily.
          */
-        return GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT;
+        return 
+//        		GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT;
+        		new CommandValueReturnPacket(id, GNSResponseCode.TIMEOUT, GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
       }
       GNSClientConfig.getLogger().log(Level.FINE,
               "Response received for query {0}", new Object[]{id + ""});
     } catch (InterruptedException x) {
       GNSClientConfig.getLogger().severe("Wait for return packet was interrupted " + x);
     }
-    CommandResult result = resultMap.remove(id);
+    //CommandResult 
+    Request result = resultMap.remove(id);
     GNSClientConfig.getLogger().log(Level.FINE,
             "Command name: {0} {1} {2} id: {3} " + "NS: {4} ",
             new Object[]{
@@ -355,7 +360,14 @@ public abstract class AbstractGNSClient {
               command.optString(GNSCommandProtocol.NAME, ""), id,
               "unknown"//result.getResponder()
             });
-    return result.getResult();
+    
+    return // result.getResult()
+    		result instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket)result)
+//    				.getReturnValue() 
+    		: 
+//    			((ActiveReplicaError)result).getResponseMessage()
+    			new CommandValueReturnPacket(id, GNSResponseCode.ACTIVE_REPLICA_EXCEPTION, ((ActiveReplicaError)result).getResponseMessage())
+    		;
   }
 
   private long desktopSendCommmandNoWait(JSONObject command) throws IOException {
@@ -436,9 +448,13 @@ public abstract class AbstractGNSClient {
             "Handling return packet: {0}", new Object[]{response.getSummary()});
     // store the response away
     if (packet != null) {
-      resultMap.put(id, new CommandResult(packet, receivedTime, latency));
+      resultMap.put(id, packet
+    		  //new CommandResult(packet, receivedTime, latency)
+    		  );
     } else {
-      resultMap.put(id, new CommandResult(error, receivedTime, latency));
+      resultMap.put(id, error
+    		 // new CommandResult(error, receivedTime, latency)
+      );
     }
 
     // differentiates between synchronusly and asynchronusly sent
@@ -495,7 +511,7 @@ public abstract class AbstractGNSClient {
    * @param id
    * @return
    */
-  public CommandResult removeAsynchResponse(long id) {
+  public Request removeAsynchResponse(long id) {
     return resultMap.remove(id);
   }
 

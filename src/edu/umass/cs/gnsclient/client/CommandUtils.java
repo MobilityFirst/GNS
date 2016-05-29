@@ -304,11 +304,20 @@ public class CommandUtils {
     }
     if (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) {
       return null;
-    } else if (response.startsWith(GNSCommandProtocol.NO_ACTIVE_REPLICAS)) {
+    } else if (response.startsWith(
+    		GNSCommandProtocol.ACTIVE_REPLICA_EXCEPTION.toString()
+//    		GNSResponseCode.ACTIVE_REPLICA_EXCEPTION.toString()
+    		)) {
       throw new InvalidGuidException(response);
     } else {
       return response;
     }
+  }
+  
+  // bridging hack 
+  public static String checkResponse(JSONObject command, Object response) throws ClientException {
+	  return response instanceof String ? checkResponse(command, (String)response)
+			  : checkResponse(command, ((CommandValueReturnPacket)response));
   }
   
   /**
@@ -322,6 +331,10 @@ public class CommandUtils {
    */
   public static String checkResponse(JSONObject command,
           CommandValueReturnPacket packet) throws ClientException {
+	  // FIXME: arun: The line below disables this method
+		if (true)
+			return checkResponse(command, packet.getReturnValue());
+	  
       GNSResponseCode code = packet.getErrorCode();
       String response = packet.getReturnValue();
       if (!code.isError() && !code.isException()) {
@@ -348,7 +361,6 @@ public class CommandUtils {
           throw new VerificationException(errorSummary);
       case DUPLICATE_ID_EXCEPTION:
           throw new DuplicateNameException(errorSummary);
-
       case DUPLICATE_FIELD_EXCEPTION:
           throw new InvalidFieldException(errorSummary);
 
@@ -357,6 +369,21 @@ public class CommandUtils {
       case NONEXISTENT_NAME_EXCEPTION:
           throw new InvalidGuidException(errorSummary);
 
+			/* FIXME: arun: NO_ERROR currently seems to conflate both "all ok"
+			 * and "something not ok". This type should not be used.*/
+      case NO_ERROR:
+    	  return packet.getReturnValue();
+    	  
+    	  /** FIXME: arun: All responses containing the BAD_RESPONSE string and NO_ERROR should 
+    	   * return this error code instead. 
+    	   */
+      case BAD_RESPONSE: 
+			// FIXME: unclear if returning the value is the right action here.
+    	  return packet.getReturnValue(); 
+    	  
+      case OK:
+    	  return packet.getReturnValue();
+    	  
       default:
           throw new ClientException(
                   "Error received with an unknown response code: "

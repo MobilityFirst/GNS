@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.deprecated;
 
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
@@ -31,6 +31,7 @@ import java.io.Serializable;
  *
  * @author westy
  */
+@Deprecated
 public class CommandResult implements Serializable /* does it */ {
 
   private static final long serialVersionUID = 2326392043474125897L;

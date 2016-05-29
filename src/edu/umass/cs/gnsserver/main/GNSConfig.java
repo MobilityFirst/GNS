@@ -26,12 +26,14 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.utils.Config;
 
 /**
  * @author arun, westy
  * 
- * Contains config parameters for the nameservers and logging functionality.
+ * Contains config parameters for the nameservers and logging functionality. This file should be 
+ * used for server-only properties. Client properties are {@link GNSClientConfig}. 
  */
 public class GNSConfig {
 	

@@ -17,6 +17,7 @@ package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsserver.gnsapp.QueryResult;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -36,8 +37,12 @@ import java.util.Map;
  */
 public enum GNSResponseCode implements Serializable {
 
-	/** No error. */
-	NO_ERROR(0, "", TYPE.NORMAL),
+	/** All ok */
+	OK(200, GNSCommandProtocol.OK_RESPONSE, TYPE.NORMAL),
+	
+	@Deprecated
+	/** Something not ok, but no "error"? */
+	NO_ERROR(0, GNSCommandProtocol.OK_RESPONSE, TYPE.NORMAL),
 	/**
 	 * Error. This should be used sparingly, if at all because it doesn't convey
 	 * enough information.
@@ -62,6 +67,12 @@ public enum GNSResponseCode implements Serializable {
 
 	/** Account does not exist. */
 	BAD_ACCOUNT_ERROR(11, GNSCommandProtocol.BAD_ACCOUNT, TYPE.ERROR),
+
+	/**
+	 * 
+	 */
+	OPERATION_NOT_SUPPORTED(404, GNSCommandProtocol.OPERATION_NOT_SUPPORTED,
+			TYPE.ERROR),
 
 	/* Errors above, exceptions below. The distinction is that the former is
 	 * more serious and irrecoverable for that operation, but the latter may
@@ -104,7 +115,33 @@ public enum GNSResponseCode implements Serializable {
 	 */
 	ACTIVE_REPLICA_EXCEPTION(17,
 			ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION
-					.toString(), TYPE.EXCEPTION), ;
+					.toString(), TYPE.EXCEPTION),
+
+	/**
+	 * Null responses are not exception cases.
+	 */
+	NULL_RESPONSE(300, GNSCommandProtocol.NULL_RESPONSE, TYPE.NORMAL),
+	
+	/**
+	 * arun: Unclear what all exactly this is meant for. It is "bad" but normal.
+	 */
+	BAD_RESPONSE(400, GNSCommandProtocol.BAD_RESPONSE, TYPE.NORMAL),
+
+	/**
+	 * 
+	 */
+	QUERY_PROCESSING_ERROR(405, GNSCommandProtocol.QUERY_PROCESSING_ERROR,
+			TYPE.ERROR),
+			
+			/**
+			 * 
+			 */
+	NO_ACTION_FOUND(407, GNSCommandProtocol.NO_ACTION_FOUND, TYPE.EXCEPTION), 
+	
+	/**
+	 * 
+	 */
+	TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION), ;
 
 	// stash the codes in a lookup table
 	private static final Map<Integer, GNSResponseCode> responseCodes = new HashMap<Integer, GNSResponseCode>();

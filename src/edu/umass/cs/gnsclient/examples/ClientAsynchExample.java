@@ -19,10 +19,12 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.CommandResult;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsclient.client.deprecated.CommandResult;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -135,14 +137,17 @@ public class ClientAsynchExample {
       for (Long id : pendingIds) {
         if (client.isAsynchResponseReceived(id)) {
           pendingIds.remove(id);
-          CommandResult commandResult = client.removeAsynchResponse(id);
+          Request removed = client.removeAsynchResponse(id);
+          if(removed instanceof CommandValueReturnPacket) {
+        	  CommandValueReturnPacket commandResult = ((CommandValueReturnPacket)removed);
           System.out.println("commandResult for  " + id + " is "
                   + (commandResult.getErrorCode().equals(GNSResponseCode.NO_ERROR)
-                  ? commandResult.getResult()
+                  ? commandResult.getReturnValue()
                   : commandResult.getErrorCode().toString())
-                  + "\n"
-                  + "Latency is " + commandResult.getClientLatency()
+//                  + "\n"
+//                  + "Latency is " + commandResult.getClientLatency()
           );
+          }
         }
       }
     }
