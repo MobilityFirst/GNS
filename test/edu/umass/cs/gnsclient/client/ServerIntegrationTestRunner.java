@@ -7,7 +7,6 @@ import static org.junit.Assert.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.junit.AfterClass;
@@ -81,14 +80,15 @@ public class ServerIntegrationTestRunner {
 			//Run the current method numRuns times.
 			Thread threads[] = new Thread[numRuns];
 			for (int i = 0; i < numRuns; i++){
-				//Each thread will have a unique account alias for its test.
+				//Each thread should have a unique account alias for its test.
 				ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
+				ServerIntegrationTest.setUpBeforeClass();
+				final ServerIntegrationTest threadSITest = new ServerIntegrationTest();
 				threads[i] = new Thread(){ 
 					public void run(){
 						try {
-							method.invoke(new ServerIntegrationTest());
-						} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-							// TODO Auto-generated catch block
+							method.invoke(threadSITest);
+						} catch (Exception e) {
 							StringWriter printException = new StringWriter();
 							e.printStackTrace(new PrintWriter(printException));
 							fail("Thread threw an exception: \n" + printException.toString());
@@ -101,6 +101,7 @@ public class ServerIntegrationTestRunner {
 			for (int i = 0; i < numRuns; i++){
 				threads[i].join();
 			}
+			ServerIntegrationTest.tearDownAfterClass();
 		}
 	}
 
