@@ -77,8 +77,9 @@ import org.json.JSONException;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTest {
+	  private static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
 
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE																// ALIAS
+  private static String accountAlias = DEFAULT_ACCOUNT_ALIAS; // REPLACE																// ALIAS
   private static final String PASSWORD = "password";
   private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
@@ -89,6 +90,9 @@ public class ServerIntegrationTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  public static void setAccountAlias(String alias) {
+	  accountAlias = alias;
+  }
   private static String SERVER_COMMAND="scripts/3nodeslocal/reset_and_restart.sh";
   private static String OUTPUT_REDIRECTION=" 2>/tmp/log";
   
@@ -159,7 +163,7 @@ public class ServerIntegrationTest {
         System.out.println("Creating account guid: " + (tries - 1)
                 + " attempt remaining.");
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
-                ACCOUNT_ALIAS, PASSWORD, true);
+                accountAlias, PASSWORD, true);
         accountCreated = true;
       } catch (Exception e) {
         ThreadUtils.sleep((5 - tries) * 5000);
