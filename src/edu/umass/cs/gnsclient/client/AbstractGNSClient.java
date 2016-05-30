@@ -185,7 +185,7 @@ public abstract class AbstractGNSClient {
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = null;
       long t = System.nanoTime();
-      if (!GNSCommandProtocol.USE_SECRET_KEY) {
+      if (!Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY)) {
         signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
       } else {
         signatureString = CommandUtils.signDigestOfMessage(privateKey, publicKey, canonicalJSON);

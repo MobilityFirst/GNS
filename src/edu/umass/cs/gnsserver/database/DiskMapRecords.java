@@ -83,7 +83,12 @@ public class DiskMapRecords implements NoSQLRecords {
     }
     try {
       // Make a new object to make sure there aren't any DBObjects lurking in here
-      return new JSONObject(record.toString());
+    	// arun: Parsing from string is *much* worse than copying as follows
+    	JSONObject copy = new JSONObject();
+    	for(String key : JSONObject.getNames(record))
+    		copy.put(key, record.get(key));
+      return copy; 
+      //new JSONObject(record.toString());
     } catch (JSONException e) {
       throw new FailedDBOperationException(collection, name, "Unable to parse json record");
     }
@@ -95,18 +100,18 @@ public class DiskMapRecords implements NoSQLRecords {
           throws RecordNotFoundException, FailedDBOperationException {
 
     JSONObject record = lookupEntireRecord(collection, name);
-    DatabaseConfig.getLogger().log(Level.FINE, "Full record " + record.toString());
+//    DatabaseConfig.getLogger().log(Level.FINE, "Full record " + record.toString());
     HashMap<ColumnField, Object> hashMap = new HashMap<>();
     hashMap.put(nameField, name);
     if (valuesMapField != null && valuesMapKeys != null) {
       try {
         JSONObject readValuesMap = record.getJSONObject(valuesMapField.getName());
-        DatabaseConfig.getLogger().log(Level.FINE, "Read valuesMap " + readValuesMap.toString());
+//        DatabaseConfig.getLogger().log(Level.FINE, "Read valuesMap " + readValuesMap.toString());
         ValuesMap valuesMapOut = new ValuesMap();
         for (int i = 0; i < valuesMapKeys.size(); i++) {
           String userKey = valuesMapKeys.get(i).getName();
           if (JSONDotNotation.containsFieldDotNotation(userKey, readValuesMap) == false) {
-            DatabaseConfig.getLogger().fine("valuesMap doesn't contain " + userKey);
+//            DatabaseConfig.getLogger().fine("valuesMap doesn't contain " + userKey);
             continue;
           }
           try {

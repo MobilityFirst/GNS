@@ -25,10 +25,12 @@ import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosMain;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig;
@@ -273,9 +275,11 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-//	@Test
+	@Test
 	public void test_03_ParallelSignedReadCapacity() throws Exception {
-		int numReads = Math.min(10000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Math.min(
+				Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY) ? Integer.MAX_VALUE : 10000,
+				Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			blockingRead(numReads % numClients, guidEntries[0], true);
@@ -306,6 +310,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_04_ParallelUnsignedReadCapacity() throws Exception {
+		for(int k=0; k<5; k++) {
 		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
 		reset();
 		long t = System.currentTimeMillis();
@@ -325,6 +330,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		System.out.print("parallel_unsigned_read_rate="
 				+ Util.df(numReads * 1.0 / (lastReadFinishedTime - t))
 				+ "K/s");
+		}
 	}
 
 	/**

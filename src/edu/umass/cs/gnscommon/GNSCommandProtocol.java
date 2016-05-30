@@ -194,5 +194,5 @@ public class GNSCommandProtocol {
 
   public final static String NEWLINE = System.getProperty("line.separator");
 
-  public static final boolean USE_SECRET_KEY = false;
+  //public static final boolean USE_SECRET_KEY = false;
 }
