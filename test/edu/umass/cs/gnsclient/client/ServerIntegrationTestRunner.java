@@ -82,7 +82,7 @@ public class ServerIntegrationTestRunner {
 			for (int i = 0; i < numRuns; i++){
 				//Each thread should have a unique account alias for its test.
 				ServerIntegrationTest.setAccountAlias(someAlias+Integer.toString(i));
-				ServerIntegrationTest.setUpBeforeClass();
+				//ServerIntegrationTest.setUpBeforeClass();
 				final ServerIntegrationTest threadSITest = new ServerIntegrationTest();
 				threads[i] = new Thread(){ 
 					public void run(){
