@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsclient.client.bugreports;
+package edu.umass.cs.gnsclient.client.bugreports.fixed;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,8 +41,15 @@ import edu.umass.cs.utils.Util;
 /**
  * @author arun
  * 
- *         Tests the capacity of the GNS using a configurable number of async
- *         clients.
+ *         Fixed. The fix involved two bugs in reconfiguration: (1) Fixed a bug
+ *         in NIO related to SelectionKey.interestOps(.) that makes concurrent
+ *         use of the method seemingly not thread-safe in contrast to the
+ *         documentation. (2) Fixed a concurrency bug in
+ *         ReconfigurableAppClientAsync that caused some requests to get stuck
+ *         in the queue waiting for active replicas.
+ * 
+ *         Symptom: Some reads fail under high concurrency. Sometimes a single
+ *         write fails as well.
  *
  */
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
@@ -255,9 +262,10 @@ public class HighConcurrencyReadsFail extends DefaultTest {
 			public void run() {
 				try {
 					if (signed)
-						assert(clients[clientIndex].fieldRead(guid, someField).equals(someValue));
+						assert (clients[clientIndex].fieldRead(guid, someField)
+								.equals(someValue));
 					else
-						assert(clients[clientIndex].fieldRead(guid.getGuid(),
+						assert (clients[clientIndex].fieldRead(guid.getGuid(),
 								someField, null).equals(someValue));
 
 					incrFinishedReads();
@@ -273,17 +281,17 @@ public class HighConcurrencyReadsFail extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-//	@Test
+	// @Test
 	public void test_03_ParallelSignedReadCapacity() throws Exception {
 		int numReads = Math.min(10000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			blockingRead(numReads % numClients, guidEntries[0], true);
 		}
-		System.out.print("[total_reads=" + numReads+": ");
+		System.out.print("[total_reads=" + numReads + ": ");
 		int lastCount = 0;
 		while (numFinishedReads < numReads) {
-			if(numFinishedReads>lastCount)  {
+			if (numFinishedReads > lastCount) {
 				lastCount = numFinishedReads;
 				System.out.print(numFinishedReads + " ");
 			}
@@ -292,8 +300,7 @@ public class HighConcurrencyReadsFail extends DefaultTest {
 		System.out.print("] ");
 
 		System.out.print("parallel_signed_read_rate="
-				+ Util.df(numReads * 1.0 / (lastReadFinishedTime - t))
-				+ "K/s");
+				+ Util.df(numReads * 1.0 / (lastReadFinishedTime - t)) + "K/s");
 	}
 
 	private void reset() {
@@ -313,7 +320,7 @@ public class HighConcurrencyReadsFail extends DefaultTest {
 			blockingRead(numReads % numClients, guidEntries[0], false);
 		}
 		int j = 1;
-		System.out.print("[total_reads=" + numReads+": ");
+		System.out.print("[total_reads=" + numReads + ": ");
 		while (numFinishedReads < numReads) {
 			if (numFinishedReads >= j) {
 				j *= 2;
@@ -323,8 +330,7 @@ public class HighConcurrencyReadsFail extends DefaultTest {
 		}
 		System.out.print("] ");
 		System.out.print("parallel_unsigned_read_rate="
-				+ Util.df(numReads * 1.0 / (lastReadFinishedTime - t))
-				+ "K/s");
+				+ Util.df(numReads * 1.0 / (lastReadFinishedTime - t)) + "K/s");
 	}
 
 	/**

@@ -276,7 +276,11 @@ public class GNSClient extends AbstractGNSClient {
     }
   }
 
-  public static void main(String[] args) throws IOException {
+  /**
+ * @param args
+ * @throws IOException
+ */
+public static void main(String[] args) throws IOException {
     GNSClient client = new GNSClient(null);
     client.close();
     System.out.println("Client created, successfully checked connectivity, and closing");

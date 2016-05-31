@@ -121,9 +121,16 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   private ClientRequestHandlerInterface requestHandler;
 
   // Keep track of commands that are coming in
-  /**
-   *
-   */
+  	/**
+	 * arun: I am not sure {@link #outStandingQueries} is really needed. It is
+	 * only being used in CommandHandler.handleCommandReturnValuePacketForApp
+	 * that invokes sendClient, but sendClient internally uses
+	 * {@link #outstanding} below that only needs the response, nothing else. If
+	 * you need to preserve the !DELEGATE_CLIENT_MESSAGING options, you could
+	 * read from {@link #outstanding} instead; it is designed to
+	 * auto-garbage-collect.
+	 */
+  @Deprecated
   public final ConcurrentMap<Long, CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 

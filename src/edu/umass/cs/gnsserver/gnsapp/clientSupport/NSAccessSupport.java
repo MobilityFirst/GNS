@@ -25,6 +25,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.gnscommon.utils.Base64;
 
 import java.nio.ByteBuffer;
@@ -42,6 +43,7 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
 import edu.umass.cs.utils.SessionKeys.SecretKeyCertificate;
@@ -71,7 +73,7 @@ public class NSAccessSupport {
 
   private static KeyFactory keyFactory;
   // arun: at least as many instances as cores for parallelism.
-  private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()];
+  private static Signature[] signatureInstances = new Signature[2*Runtime.getRuntime().availableProcessors()];
 
   static {
     try {
@@ -127,18 +129,17 @@ public class NSAccessSupport {
 	  return signatureInstances[sigIndex++%signatureInstances.length];
   }
 
-  
   private static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
           throws InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
 	  
-	  if(GNSCommandProtocol.USE_SECRET_KEY)
+	  if(Config.getGlobalBoolean(GNSC.ENABLE_SECRET_KEY))
 		try {
 			return verifySignatureInternalSecretKey(publickeyBytes, signature, message);
-		} catch (NoSuchAlgorithmException | NoSuchPaddingException
-				| IllegalBlockSizeException | BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
+		} catch (Exception e) {
+			// don't print anything
+			//e.printStackTrace();
+				// don't return false, public key anyway
+			//return false;
 		}
 
     //KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
@@ -173,7 +174,7 @@ public class NSAccessSupport {
 	  return mds[mdIndex++ % mds.length];
   }
   
-  private static final Cipher[] ciphers = new Cipher[Runtime.getRuntime().availableProcessors()];
+  private static final Cipher[] ciphers = new Cipher[2*Runtime.getRuntime().availableProcessors()];
   static {
 	  for(int i=0; i<ciphers.length; i++)
 		try {
