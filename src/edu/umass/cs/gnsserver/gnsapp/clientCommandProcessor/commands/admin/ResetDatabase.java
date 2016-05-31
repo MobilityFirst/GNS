@@ -19,17 +19,16 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +36,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ResetDatabase extends GnsCommand {
+public class ResetDatabase extends BasicCommand {
 
   /**
    *
@@ -48,14 +47,19 @@ public class ResetDatabase extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.ResetDatabase;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return RESET_DATABASE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return RESET_DATABASE;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
@@ -69,7 +73,8 @@ public class ResetDatabase extends GnsCommand {
 //        return new CommandResponse<String>(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

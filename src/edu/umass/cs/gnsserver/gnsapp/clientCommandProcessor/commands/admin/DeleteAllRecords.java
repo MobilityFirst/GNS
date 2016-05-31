@@ -20,10 +20,11 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.CommandType;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -35,7 +36,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class DeleteAllRecords extends GnsCommand {
+public class DeleteAllRecords extends BasicCommand {
 
   /**
    *
@@ -46,14 +47,19 @@ public class DeleteAllRecords extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.DeleteAllRecords;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return DELETE_ALL_RECORDS;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return DELETE_ALL_RECORDS;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
@@ -67,7 +73,8 @@ public class DeleteAllRecords extends GnsCommand {
 //        return new CommandResponse<String>(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

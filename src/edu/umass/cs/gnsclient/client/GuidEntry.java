@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -37,7 +37,6 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.net.InetSocketAddress;
 
 /**
  * This class defines a GuidEntry which contains the alias, guid, public and private key.
@@ -157,7 +156,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     byte[] encodedPrivateKey = Base64.decode(encodedPrivate);
 
     try {
-      KeyFactory keyFactory = KeyFactory.getInstance(GnsProtocol.RSA_ALGORITHM);
+      KeyFactory keyFactory = KeyFactory.getInstance(GNSCommandProtocol.RSA_ALGORITHM);
       X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
               encodedPublicKey);
       PublicKey thePublicKey = keyFactory.generatePublic(publicKeySpec);
@@ -178,8 +177,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
     String password = "123";
     String file_name = "guid";
 
-    GNSClient client = new GNSClient((InetSocketAddress) null, 
-            new InetSocketAddress(address, GNSClientConfig.LNS_PORT), true);
+    GNSClientCommands client = new GNSClientCommands();
 
     GuidEntry guidEntry = client.accountGuidCreate(name, password);
 
@@ -190,11 +188,9 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
 
     FileInputStream fis = new FileInputStream(file_name);
     ObjectInputStream ois = new ObjectInputStream(fis);
-    
 
     GuidEntry newEntry = new GuidEntry(ois);
     System.out.println(newEntry);
   }
 
 }
-

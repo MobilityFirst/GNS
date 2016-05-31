@@ -25,40 +25,61 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.gnscommon.utils.Base64;
+
+import java.nio.ByteBuffer;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.SessionKeys;
+import edu.umass.cs.utils.SessionKeys.SecretKeyCertificate;
 import edu.umass.cs.utils.Util;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
 /**
  * Provides signing and ACL checks for commands.
  *
- * @author westy
+ * @author westy, arun
  */
 public class NSAccessSupport {
 
   private static KeyFactory keyFactory;
-  private static Signature sig;
+  // arun: at least as many instances as cores for parallelism.
+  private static Signature[] signatureInstances = new Signature[2*Runtime.getRuntime().availableProcessors()];
 
   static {
     try {
       keyFactory = KeyFactory.getInstance(RSA_ALGORITHM);
-      sig = Signature.getInstance(SIGNATURE_ALGORITHM);
+      for(int i=0; i<signatureInstances.length; i++)
+    	  signatureInstances[i] = Signature.getInstance(SIGNATURE_ALGORITHM);
     } catch (NoSuchAlgorithmException e) {
       ClientSupportConfig.getLogger().severe("Unable to initialize for authentication:" + e);
     }
@@ -91,7 +112,10 @@ public class NSAccessSupport {
             new Object[]{Util.truncate(accessorPublicKey, 16, 16),
               Util.truncate(signature, 16, 16),
               Util.truncate(message, 16, 16)});
+    long t= System.nanoTime();
     boolean result = verifySignatureInternal(publickeyBytes, signature, message);
+    if(Util.oneIn(100)) DelayProfiler.updateDelayNano("verification", t);
+    
     ClientSupportConfig.getLogger().log(Level.FINE,
             "public_key:{0} {1} as author of message:{2}",
             new Object[]{Util.truncate(accessorPublicKey, 16, 16),
@@ -99,18 +123,98 @@ public class NSAccessSupport {
               Util.truncate(message, 16, 16)});
     return result;
   }
+  
+  private static int sigIndex=0;
+  private synchronized static Signature getSignatureInstance() {
+	  return signatureInstances[sigIndex++%signatureInstances.length];
+  }
 
   private static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
           throws InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
+	  
+	  if(Config.getGlobalBoolean(GNSC.ENABLE_SECRET_KEY))
+		try {
+			return verifySignatureInternalSecretKey(publickeyBytes, signature, message);
+		} catch (Exception e) {
+			// don't print anything
+			//e.printStackTrace();
+				// don't return false, public key anyway
+			//return false;
+		}
 
     //KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
-    //Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
-    sig.initVerify(publicKey);
-    sig.update(message.getBytes("UTF-8"));
-    return sig.verify(Base64.decode(signature));
+    Signature sigInstance = getSignatureInstance();
+    synchronized(sigInstance) {
+			// Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
+    	sigInstance.initVerify(publicKey);
+    	sigInstance.update(message.getBytes("UTF-8"));
+			// FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
+			// IOS CLIENT IS UPDATED AS WELL
+			return sigInstance.verify(ByteUtils
+					.hexStringToByteArray(signature));
+			//return sig.verify(Base64.decode(signature));
+    }
+  }
+  
+  private static final MessageDigest[] mds = new MessageDigest[Runtime.getRuntime().availableProcessors()];
+  static {
+	  for(int i=0; i<mds.length; i++)
+		try {
+			mds[i] = MessageDigest.getInstance(GNSCommandProtocol.DIGEST_ALGORITHM);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+  }
+  private static int mdIndex = 0;
+  private static MessageDigest getMessageDigestInstance() {
+	  return mds[mdIndex++ % mds.length];
+  }
+  
+  private static final Cipher[] ciphers = new Cipher[2*Runtime.getRuntime().availableProcessors()];
+  static {
+	  for(int i=0; i<ciphers.length; i++)
+		try {
+			ciphers[i] = Cipher.getInstance(GNSCommandProtocol.SECRET_KEY_ALGORITHM);
+		} catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+  }
+
+  private static int cipherIndex = 0;
+  private static Cipher getCipherInstance() {
+	  return ciphers[cipherIndex++ % ciphers.length];
+  }
+  private static synchronized boolean verifySignatureInternalSecretKey(byte[] publickeyBytes, String signature, String message)
+          throws InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+
+	  
+    PublicKey publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(publickeyBytes));
+
+    byte[] sigBytes = signature.getBytes(GNSCommandProtocol.CHARSET);
+    byte[] bytes = message.getBytes(GNSCommandProtocol.CHARSET);
+
+    ByteBuffer bbuf = ByteBuffer.wrap(sigBytes);
+    byte[] sign = new byte[bbuf.getShort()];
+    bbuf.get(sign);
+    byte[] skCertEncoded = new byte[bbuf.getShort()];
+    bbuf.get(skCertEncoded);
+    SecretKey secretKey = SessionKeys.getSecretKeyFromCertificate(skCertEncoded, publicKey);
+
+    MessageDigest md = getMessageDigestInstance();
+    byte[] digest=null;
+    synchronized(md) {
+    	digest = md.digest(bytes);
+    }
+    Cipher cipher = getCipherInstance();
+    synchronized(cipher) {
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);   
+        return Arrays.equals(sign, cipher.doFinal(digest));
+    }
   }
 
   /**
@@ -128,7 +232,7 @@ public class NSAccessSupport {
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    //String accessorGuid = ClientUtils.createGuidStringFromBase64PublicKey(accessorPublicKey);
+    //String accessorGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(accessorPublicKey);
     ClientSupportConfig.getLogger().log(Level.FINE,
             "User: {0} Reader: {1} Field: {2}",
             new Object[]{guid, accessorGuid, field});
@@ -203,7 +307,7 @@ public class NSAccessSupport {
 
   private static boolean checkAllowedUsers(String accessorGuid,
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    if (ClientUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
+    if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
       //if (allowedUsers.contains(accessorPublicKey)) {
       return true;
     } else if (allowedUsers.contains(EVERYONE)) {
@@ -214,8 +318,8 @@ public class NSAccessSupport {
       // guid is a member of (which is stored with this guid)
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Looking up groups for {0} and check against {1}",
-              new Object[]{accessorGuid, ClientUtils.convertPublicKeysToGuids(allowedUsers)});
-      return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers),
+              new Object[]{accessorGuid, SharedGuidUtils.convertPublicKeysToGuids(allowedUsers)});
+      return !Sets.intersection(SharedGuidUtils.convertPublicKeysToGuids(allowedUsers),
               NSGroupAccess.lookupGroups(accessorGuid, activeReplica.getRequestHandler())).isEmpty();
     }
   }
@@ -285,7 +389,7 @@ public class NSAccessSupport {
    *
    * @param messageStringWithSignatureParts
    * @param signatureParts
-   * @return
+   * @return the string without the signature
    */
   public static String removeSignature(String messageStringWithSignatureParts, String signatureParts) {
     ClientSupportConfig.getLogger().log(Level.FINER, "fullstring = {0} fullSignatureField = {1}", new Object[]{messageStringWithSignatureParts, signatureParts});

@@ -33,6 +33,7 @@ public class ExecuteBash {
   /**
    * Write a script file and execute it.
    *
+   * @param username
    * @param host
    * @param keyFile
    * @param withSudo
@@ -81,8 +82,12 @@ public class ExecuteBash {
   /**
    * Write a script file and execute it.
    *
+   * @param username
    * @param host
    * @param keyFile
+   * @param scriptName
+   * @param command
+   * @param arguments
    */
   public static void executeBashScript(String username, String host, File keyFile, String scriptName, String command, Object... arguments) {
     executeBashScript(username, host, keyFile, false, scriptName, command, arguments);

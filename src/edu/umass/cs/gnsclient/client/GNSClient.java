@@ -10,9 +10,10 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
@@ -20,6 +21,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
@@ -32,34 +34,25 @@ import edu.umass.cs.utils.Config;
  *
  * Cleaner implementation of a GNS client using gigapaxos' async client.
  */
-public class GNSClient extends UniversalTcpClientExtended {
+public class GNSClient extends AbstractGNSClient {
 
   // initialized from properties file
-  private static final Set<InetSocketAddress> staticReconfigurators = ReconfigurationConfig
+  private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
           .getReconfiguratorAddresses();
 
   // initialized upon contsruction
   private final Set<InetSocketAddress> reconfigurators;
   private final AsyncClient asyncClient;
 
-  private static final java.util.logging.Logger log = GNSConfig.getLogger();
+  private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
 
   /**
    * @throws IOException
-   *
    */
   public GNSClient() throws IOException {
-    this(false);
-  }
-
-  /**
-   * @param useSSL
-   * @throws IOException
-   */
-  public GNSClient(boolean useSSL) throws IOException {
-    this(staticReconfigurators != null
-            && !staticReconfigurators.isEmpty() ? staticReconfigurators
-                    .iterator().next() : null, !useSSL);
+    this(STATIC_RECONFIGURATORS != null
+            && !STATIC_RECONFIGURATORS.isEmpty() ? STATIC_RECONFIGURATORS
+                    .iterator().next() : null);
   }
 
   /**
@@ -69,44 +62,20 @@ public class GNSClient extends UniversalTcpClientExtended {
    * IOException.
    *
    * @param anyReconfigurator
-   * @param localNameServer
-   * @param useSSL
    * @throws IOException
    */
-  public GNSClient(InetSocketAddress anyReconfigurator,
-          InetSocketAddress localNameServer, boolean useSSL)
+  public GNSClient(InetSocketAddress anyReconfigurator)
           throws IOException {
-    super(anyReconfigurator, localNameServer != null ? localNameServer
-            .getAddress().toString() : null,
-            localNameServer != null ? localNameServer.getPort() : -1,
-            !useSSL);
+    super(anyReconfigurator);
     this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
     if (this.reconfigurators == null || this.reconfigurators.isEmpty()) {
       throw new IOException(
               "Unable to find any reconfigurator addresses; "
               + "at least one needed to initialize client");
     }
-    this.asyncClient = new AsyncClient(reconfigurators,
-            useSSL ? ReconfigurationConfig.getClientSSLMode()
-                    : SSL_MODES.CLEAR,
-            useSSL ? ReconfigurationConfig.getClientPortSSLOffset()
-                    : ReconfigurationConfig.getClientPortClearOffset());
+    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(),
+            ReconfigurationConfig.getClientPortOffset());
     this.checkConnectivity();
-  }
-
-  /**
-   * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
-   * The client can enquire and know of other reconfigurator addresses from
-   * this reconfigurator. If it is unable to do so, it will throw an
-   * IOException.
-   *
-   * @param anyReconfigurator
-   * @param useSSL
-   * @throws IOException
-   */
-  public GNSClient(InetSocketAddress anyReconfigurator, boolean useSSL)
-          throws IOException {
-    this(anyReconfigurator, null, !useSSL);
   }
 
   /**
@@ -116,10 +85,11 @@ public class GNSClient extends UniversalTcpClientExtended {
    */
   private Set<InetSocketAddress> knowOtherReconfigurators(
           InetSocketAddress anyReconfigurator) throws IOException {
-    return anyReconfigurator != null ? new HashSet<InetSocketAddress>(
-            Arrays.asList(anyReconfigurator)) : staticReconfigurators;
+    return anyReconfigurator != null ? new HashSet<>(
+            Arrays.asList(anyReconfigurator)) : STATIC_RECONFIGURATORS;
   }
 
+  @Override
   public String toString() {
     return this.asyncClient.toString();
   }
@@ -145,12 +115,11 @@ public class GNSClient extends UniversalTcpClientExtended {
         }
       }
     };
-    if (GnsProtocol.CREATE_DELETE_COMMANDS
-            .contains(packet.getCommandName())
-            || packet.getCommandName().equals(GnsProtocol.SELECT)) {
+    if (packet.getCommandType().isCreateDelete()
+            || packet.getCommandType().isSelect()) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
-      this.asyncClient.sendRequest(packet, callback);
+      assert(this.asyncClient.sendRequest(packet, callback)!=null);
     }
   }
 
@@ -171,15 +140,6 @@ public class GNSClient extends UniversalTcpClientExtended {
   }
 
   /**
-   * Sets an optional local name server address.
-   *
-   * @param lnsAddr
-   */
-  public void setLNSAddress(InetSocketAddress lnsAddr) {
-    this.localNameServerAddress = lnsAddr;
-  }
-
-  /**
    * @param packet
    * @param callback
    * @throws JSONException
@@ -189,7 +149,9 @@ public class GNSClient extends UniversalTcpClientExtended {
           throws JSONException, IOException {
     if (packet.getServiceName().equals(
             Config.getGlobalString(RC.SPECIAL_NAME))
-            || packet.getCommandName().equals(GnsProtocol.SELECT)) {
+            || packet.getCommandType().isSelect() 
+            //packet.getCommandName().equals(GNSCommandProtocol.SELECT)
+            ) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
       this.asyncClient.sendRequest(packet, callback);
@@ -256,12 +218,12 @@ public class GNSClient extends UniversalTcpClientExtended {
    * Straightforward async client implementation that expects only one packet
    * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
    */
-  static class AsyncClient extends ReconfigurableAppClientAsync {
+  static class AsyncClient extends ReconfigurableAppClientAsync implements AppRequestParserBytes {
 
-    private static Stringifiable<String> unstringer = new StringifiableDefault<String>(
+    private static Stringifiable<String> unstringer = new StringifiableDefault<>(
             "");
 
-    static final Set<IntegerPacketType> clientPacketTypes = new HashSet<IntegerPacketType>(
+    static final Set<IntegerPacketType> clientPacketTypes = new HashSet<>(
             Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
     public AsyncClient(Set<InetSocketAddress> reconfigurators,
@@ -277,7 +239,7 @@ public class GNSClient extends UniversalTcpClientExtended {
       try {
         return this.getRequestFromJSON(new JSONObject(msg));
       } catch (JSONException e) {
-        log.warning("Problem parsing packet from " + json + ": " + e);
+        LOG.log(Level.WARNING, "Problem parsing packet from {0}: {1}", new Object[]{json, e});
       }
       return response;
     }
@@ -288,7 +250,7 @@ public class GNSClient extends UniversalTcpClientExtended {
       try {
         Packet.PacketType type = Packet.getPacketType(json);
         if (type != null) {
-          log.log(Level.FINER,
+          LOG.log(Level.FINER,
                   "{0} retrieving packet from received json {1}",
                   new Object[]{this, json});
           if (clientPacketTypes.contains(Packet.getPacketType(json))) {
@@ -298,7 +260,7 @@ public class GNSClient extends UniversalTcpClientExtended {
           assert (response == null || response.getRequestType() == Packet.PacketType.COMMAND_RETURN_VALUE);
         }
       } catch (JSONException e) {
-        log.warning("Problem parsing packet from " + json + ": " + e);
+        LOG.log(Level.WARNING, "Problem parsing packet from {0}: {1}", new Object[]{json, e});
       }
       return response;
     }
@@ -307,13 +269,20 @@ public class GNSClient extends UniversalTcpClientExtended {
     public Set<IntegerPacketType> getRequestTypes() {
       return clientPacketTypes;
     }
+
+    @Override
+    public Request getRequest(byte[] bytes, NIOHeader header) {
+      return GNSApp.getRequestStatic(bytes, header, unstringer);
+    }
   }
 
-  public static void main(String[] args) throws IOException {
-    GNSClient client = new GNSClient((InetSocketAddress) null, null,
-            ReconfigurationConfig.getClientSSLMode() != SSL_MODES.CLEAR);
+  /**
+ * @param args
+ * @throws IOException
+ */
+public static void main(String[] args) throws IOException {
+    GNSClient client = new GNSClient(null);
     client.close();
-    System.out
-            .println("Client created, successfully checked connectivity, and closing");
+    System.out.println("Client created, successfully checked connectivity, and closing");
   }
 }

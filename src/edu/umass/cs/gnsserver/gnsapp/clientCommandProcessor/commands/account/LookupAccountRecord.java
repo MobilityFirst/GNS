@@ -22,10 +22,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -33,7 +34,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupAccountRecord extends GnsCommand {
+public class LookupAccountRecord extends BasicCommand {
 
   /**
    * Creates a LookupAccountRecord instance.
@@ -45,14 +46,19 @@ public class LookupAccountRecord extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.LookupAccountRecord;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID};
   }
 
-  @Override
-  public String getCommandName() {
-    return LOOKUP_ACCOUNT_RECORD;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return LOOKUP_ACCOUNT_RECORD;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

@@ -7,23 +7,22 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -44,7 +43,7 @@ public class NSUpdateSupport {
   private static final int OLD_COMMAND_TIME = -30; // how far back is old?
 
   /**
-   * Executes a local update operation.
+   * Executes a local updateEntireValuesMap operation.
    *
    * @param guid
    * @param field
@@ -59,7 +58,7 @@ public class NSUpdateSupport {
    * @param userJSON
    * @param app
    * @param doNotReplyToClient
-   * @return
+   * @return an NSResponseCode
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    * @throws InvalidKeyException
@@ -70,20 +69,17 @@ public class NSUpdateSupport {
    * @throws RecordNotFoundException
    * @throws FieldNotFoundException
    */
-  public static NSResponseCode executeUpdateLocal(String guid, String field,
+  public static GNSResponseCode executeUpdateLocal(String guid, String field,
           String writer, String signature, String message, Date timestamp,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, GNSApplicationInterface<String> app, boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException,
           SignatureException, JSONException, IOException, FailedDBOperationException,
           RecordNotFoundException, FieldNotFoundException {
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO,
-              "Processing local update {0} / {1} {2} {3}",
-              new Object[]{guid, field, operation, updateValue});
-    }
-    NSResponseCode errorCode = NSResponseCode.NO_ERROR;
-    // FIXME : handle ACL checks for full JSON user updates
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "Processing local update {0} / {1} {2} {3}",
+            new Object[]{guid, field, operation, updateValue});
+    GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
     if (writer != null) {
       if (field != null) {
         // writer will be null for internal system reads
@@ -97,17 +93,17 @@ public class NSUpdateSupport {
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-        return NSResponseCode.ACCESS_ERROR;
+        return GNSResponseCode.ACCESS_ERROR;
       }
     }
     // Check for stale commands.
     if (timestamp != null) {
       if (timestamp.before(DateUtils.addMinutes(new Date(), OLD_COMMAND_TIME))) {
-        errorCode = NSResponseCode.STALE_COMMAND_VALUE;
+        errorCode = GNSResponseCode.STALE_COMMAND_VALUE;
       }
     }
     // return an error packet if one of the checks doesn't pass
-    if (errorCode.isAnError()) {
+    if (errorCode.isError()) {
       return errorCode;
     }
     if (!operation.equals(UpdateOperation.CREATE_INDEX)) {
@@ -115,23 +111,18 @@ public class NSUpdateSupport {
       NameRecord nameRecord = getNameRecord(guid, field, operation, app.getDB());
       updateNameRecord(nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON,
               app.getDB(), app.getActiveCodeHandler());
-      return NSResponseCode.NO_ERROR;
+      return GNSResponseCode.NO_ERROR;
     } else // Handle special case of a create index
-    {
-      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().info("Creating index for " + field + " " + updateValue);
-        }
+     if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
+        ClientSupportConfig.getLogger().log(Level.FINE,
+                "Creating index for {0} {1}", new Object[]{field, updateValue});
         app.getDB().createIndex(field, (String) updateValue.get(0));
 
-        return NSResponseCode.NO_ERROR;
+        return GNSResponseCode.NO_ERROR;
       } else {
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().severe("Invalid index value:" + updateValue);
-        }
-        return NSResponseCode.ERROR;
+        ClientSupportConfig.getLogger().log(Level.SEVERE, "Invalid index value:{0}", updateValue);
+        return GNSResponseCode.GENERIC_ERROR;
       }
-    }
   }
 
   private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation, BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
@@ -139,13 +130,12 @@ public class NSUpdateSupport {
       // some operations don't require a read first
       return new NameRecord(db, guid);
     } else //try {
-    {
-      if (field == null) {
+     if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
-        return NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.LIST_STRING, field);
+        return NameRecord.getNameRecordMultiUserFields(db, guid, 
+                ColumnFieldType.LIST_STRING, field);
       }
-    }
   }
 
   private static void updateNameRecord(NameRecord nameRecord, String guid, String field,
@@ -156,22 +146,21 @@ public class NSUpdateSupport {
       try {
         newValue = handleActiveCode(guid, field, userJSON, db, activeCodeHandler);
       } catch (JSONException e) {
-        GNSConfig.getLogger().severe("JSON problem while handling active code: " + e);
+        ClientSupportConfig.getLogger().log(Level.SEVERE,
+                "JSON problem while handling active code: {0}", e);
       }
     }
     if (newValue == null) {
       newValue = userJSON;
     }
     // END ACTIVE CODE HANDLING
-    if (AppReconfigurableNodeOptions.debuggingEnabled && field != null) {
-      GNSConfig
-              .getLogger()
-              .log(Level.INFO,
-                      "field={0}, operation={1}, value={2}, name_record={3}",
-                      new Object[]{field, operation, updateValue,
-                        nameRecord.getSummary()});
+    if (field != null) {
+      ClientSupportConfig.getLogger().log(Level.FINE,
+              "field={0}, operation={1}, value={2}, name_record={3}",
+              new Object[]{field, operation, updateValue,
+                nameRecord.getSummary()});
     }
-    // Apply update to record in the database
+    // Apply updateEntireValuesMap to record in the database
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
   }
 
@@ -180,20 +169,19 @@ public class NSUpdateSupport {
     if (field == null || !InternalField.isInternalField(field)) {
       NameRecord activeCodeNameRecord = null;
       try {
-        activeCodeNameRecord = NameRecord.getNameRecordMultiField(db, guid, null, ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
+        activeCodeNameRecord = NameRecord.getNameRecordMultiUserFields(db, guid,
+                ColumnFieldType.USER_JSON, ActiveCode.ON_WRITE);
       } catch (RecordNotFoundException e) {
       }
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().info("AC--->>> " + activeCodeNameRecord.toString());
+      if (activeCodeNameRecord != null) {
+        ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
       }
       int hopLimit = 1;
       if (activeCodeNameRecord != null
               && activeCodeHandler.hasCode(activeCodeNameRecord, ActiveCode.WRITE_ACTION)) {
         String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
         ValuesMap packetValuesMap = userJSON;
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNSConfig.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toReasonableString());
-        }
+        ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}", new Object[]{guid, field, packetValuesMap.toReasonableString()});
         return activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
       }
     }

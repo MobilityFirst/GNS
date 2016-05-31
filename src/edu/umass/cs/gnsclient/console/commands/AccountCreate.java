@@ -22,10 +22,10 @@ package edu.umass.cs.gnsclient.console.commands;
 import java.security.PublicKey;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import java.util.StringTokenizer;
 
 /**
@@ -79,7 +79,7 @@ public class AccountCreate extends ConsoleCommand
 
     try
     {
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
 
       try
       {
@@ -112,7 +112,7 @@ public class AccountCreate extends ConsoleCommand
             KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
           }
         }
-        catch (GnsInvalidGuidException e)
+        catch (InvalidGuidException e)
         {
           KeyPairUtils.removeKeyPair(module.getGnsInstance(), aliasName);
         }
@@ -121,9 +121,10 @@ public class AccountCreate extends ConsoleCommand
 
       if (!module.isSilent())
       {
-        printString("Created an account with GUID " + myGuid.getGuid() + ". "
-                + "An email might have been sent to "
-            + myGuid.getEntityName() + " with instructions on how to verify the new account.\n");
+        printString("Created an account with GUID " + myGuid.getGuid() + ".\n"
+//                + "An email might have been sent to "
+//            + myGuid.getEntityName() + " with instructions on how to verify the new account.\n"
+        );
       }
       if (module.getCurrentGuid() == null)
       {
@@ -131,9 +132,9 @@ public class AccountCreate extends ConsoleCommand
         if (KeyPairUtils.getDefaultGuidEntry(module.getGnsInstance()) == null)
         {
           KeyPairUtils.setDefaultGuidEntry(module.getGnsInstance(), aliasName);
-          module.printString(aliasName + " saved as default GUID for GNS " + module.getGnsInstance() + "\n");
+          module.printString(aliasName + " saved as default GUID \n");
         }
-        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
+        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + aliasName + ">");
       }
     }
     catch (Exception e)

@@ -32,8 +32,8 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnscommon.exceptions.client.GnsInvalidGuidException;
-import edu.umass.cs.msocket.common.GnsConstants;
+import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 
 /**
@@ -76,14 +76,14 @@ public class ProxyStatusThread extends Thread
    */
   protected void populateProxyList() throws Exception
   {
-    //final UniversalTcpClient gnsClient = gnsCredentials.getGnsClient();
+    //final GNSClientCommands gnsClient = gnsCredentials.getGnsClient();
     //final GuidEntry guidEntry = gnsCredentials.getGuidEntry();
     JSONArray guids;
     try
     {
-      guids = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGroupName, GnsConstants.ACTIVE_PROXY_FIELD, DefaultGNSClient.getMyGuidEntry());
+      guids = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGroupName, Constants.ACTIVE_PROXY_FIELD, DefaultGNSClient.getMyGuidEntry());
     }
-    catch (GnsInvalidGuidException e)
+    catch (InvalidGuidException e)
     {
       logger
           .info("Cannot read the list of active proxies, this location service is probably still not approved in the proxy group (using GUID "
@@ -96,8 +96,8 @@ public class ProxyStatusThread extends Thread
     for (int i = 0; i < guids.length(); i++)
     {
       String proxyGuid = guids.getString(i);
-      String proxyIP = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, GnsConstants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
-      JSONArray proxyLoad = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, GnsConstants.PROXY_LOAD, DefaultGNSClient.getMyGuidEntry());
+      String proxyIP = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, Constants.PROXY_EXTERNAL_IP_FIELD, DefaultGNSClient.getMyGuidEntry()).getString(0);
+      JSONArray proxyLoad = DefaultGNSClient.getGnsClient().fieldReadArray(proxyGuid, Constants.PROXY_LOAD, DefaultGNSClient.getMyGuidEntry());
       JSONArray proxyLocation = DefaultGNSClient.getGnsClient().getLocation(proxyGuid, DefaultGNSClient.getMyGuidEntry());
       double lontitude = Double.parseDouble(proxyLocation.getString(0));
       double latitude = Double.parseDouble(proxyLocation.getString(1));

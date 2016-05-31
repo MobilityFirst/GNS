@@ -27,14 +27,16 @@ import java.security.spec.InvalidKeySpecException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+
 import java.text.ParseException;
 import java.util.Date;
 
@@ -42,15 +44,20 @@ import java.util.Date;
  * The command to retrieve the active code for the specified GUID and action.
  *
  */
-public class Set extends GnsCommand {
+public class Set extends BasicCommand {
 
   /**
    * Create the set instance.
-   * 
-   * @param module 
+   *
+   * @param module
    */
   public Set(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.SetActiveCode;
   }
 
   @Override
@@ -59,10 +66,10 @@ public class Set extends GnsCommand {
     return new String[]{GUID, WRITER, AC_ACTION, AC_CODE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return AC_SET;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return AC_SET;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json,
@@ -75,11 +82,11 @@ public class Set extends GnsCommand {
     String code = json.getString(AC_CODE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
-    NSResponseCode response = ActiveCode.setCode(accountGuid, action, 
+    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    GNSResponseCode response = ActiveCode.setCode(accountGuid, action,
             code, writer, signature, message, timestamp, handler);
 
-    if (response.isAnError()) {
+    if (response.isError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
       return new CommandResponse<>(OK_RESPONSE);

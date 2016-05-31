@@ -19,23 +19,23 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
+import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.tcp.CommandResult;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsclient.client.deprecated.CommandResult;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
-import static edu.umass.cs.gnscommon.GnsProtocol.READ;
-import static edu.umass.cs.gnscommon.GnsProtocol.READER;
-import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -45,16 +45,19 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 
 import org.json.JSONObject;
 
 /**
- * In this example we demonstrate the asynchronous client. 
- * 
- * It sends read or update requests for one field in a guid. 
+ * In this example we demonstrate the asynchronous client.
+ *
+ * It sends read or update requests for one field in a guid.
  * If you supply the -write arg it updates otherwise reads.
- * You’ll want to run it once with the -write arg before running 
+ * You’ll want to run it once with the -write arg before running
  * it with read to actually put a value in the field.
  * It runs forever so hit CTRL-C to stop it.
  * <p>
@@ -71,13 +74,13 @@ public class ClientAsynchExample {
   private static final String ACCOUNT_ALIAS = "gnstest@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
+          InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
-    BasicTcpClientV1 client = new BasicTcpClientV1(address.getHostName(), address.getPort());
+    GNSClientCommands client = new GNSClientCommands(null);
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
@@ -95,15 +98,18 @@ public class ClientAsynchExample {
               + "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
-      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
-              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), WRITER, accountGuidEntry.getGuid());
+      command = createAndSignCommand(CommandType.ReplaceUserJSON,
+              accountGuidEntry.getPrivateKey(),
+              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(),
+              WRITER, accountGuidEntry.getGuid());
     } else {
-      command = createAndSignCommand(accountGuidEntry.getPrivateKey(), READ,
+      command = createAndSignCommand(CommandType.Read,
+              accountGuidEntry.getPrivateKey(),
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }
     // Create the command packet with a bogus id
-    CommandPacket commandPacket = new CommandPacket(-1, null, -1, command);
+    CommandPacket commandPacket = new CommandPacket(-1, command);
     // Keep track of what we've sent for the other thread to look at.
     Set<Long> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     // Create and run another thread to pick up the responses
@@ -124,21 +130,24 @@ public class ClientAsynchExample {
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(BasicTcpClientV1 client, Set<Long> pendingIds) {
+  private static void lookForResponses(AbstractGNSClient client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent
       for (Long id : pendingIds) {
         if (client.isAsynchResponseReceived(id)) {
           pendingIds.remove(id);
-          CommandResult commandResult = client.removeAsynchResponse(id);
+          Request removed = client.removeAsynchResponse(id);
+          if(removed instanceof CommandValueReturnPacket) {
+        	  CommandValueReturnPacket commandResult = ((CommandValueReturnPacket)removed);
           System.out.println("commandResult for  " + id + " is "
-                  + (commandResult.getErrorCode().equals(NSResponseCode.NO_ERROR)
-                          ? commandResult.getResult()
-                          : commandResult.getErrorCode().toString())
-                  + "\n"
-                  + "Latency is " + commandResult.getClientLatency()
+                  + (commandResult.getErrorCode().equals(GNSResponseCode.NO_ERROR)
+                  ? commandResult.getReturnValue()
+                  : commandResult.getErrorCode().toString())
+//                  + "\n"
+//                  + "Latency is " + commandResult.getClientLatency()
           );
+          }
         }
       }
     }

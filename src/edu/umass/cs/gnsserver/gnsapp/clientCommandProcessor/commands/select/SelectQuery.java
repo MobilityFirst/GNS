@@ -19,22 +19,23 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * A query that returns all guids that satisfy the given query.
- * 
+ *
  * @author westy
  */
-public class SelectQuery extends GnsCommand {
+public class SelectQuery extends BasicCommand {
 
   /**
    *
@@ -45,14 +46,19 @@ public class SelectQuery extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.SelectQuery;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{QUERY};
   }
 
-  @Override
-  public String getCommandName() {
-    return SELECT;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return SELECT;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

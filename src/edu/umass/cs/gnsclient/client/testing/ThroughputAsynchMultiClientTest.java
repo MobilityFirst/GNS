@@ -19,27 +19,25 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
-import edu.umass.cs.gnscommon.GnsProtocol;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUIDCNT;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsclient.client.util.Format;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import static edu.umass.cs.gnscommon.GnsProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GnsProtocol.GUID;
-import static edu.umass.cs.gnscommon.GnsProtocol.LOOKUP_RANDOM_GUIDS;
-import static edu.umass.cs.gnscommon.GnsProtocol.READ;
-import static edu.umass.cs.gnscommon.GnsProtocol.READER;
-import static edu.umass.cs.gnscommon.GnsProtocol.REPLACE_USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.USER_JSON;
-import static edu.umass.cs.gnscommon.GnsProtocol.WRITER;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnscommon.CommandType;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -144,7 +142,7 @@ public class ThroughputAsynchMultiClientTest {
   /**
    * Stores the clients we are using.
    */
-  private static BasicTcpClientV1 clients[];
+  private static GNSClientCommands clients[];
   /**
    * The account guid we are using.
    */
@@ -205,13 +203,19 @@ public class ThroughputAsynchMultiClientTest {
     } else {
       address = ServerSelectDialog.selectServer();
     }
-    clients = new BasicTcpClientV1[numberOfClients];
+    clients = new GNSClientCommands[numberOfClients];
     subGuids = new String[numberOfGuids];
     commmandPackets = new CommandPacket[numberOfGuids][numberOfClients];
     execPool = Executors.newFixedThreadPool(numberOfClients);
     chosen = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
-    for (int i = 0; i < numberOfClients; i++) {
-      clients[i] = new BasicTcpClientV1(address.getHostName(), address.getPort(), disableSSL);
+    try {
+      for (int i = 0; i < numberOfClients; i++) {
+        clients[i] = new GNSClientCommands(null);
+      }
+    } catch (IOException e) {
+      System.out.println("Unable to create client: " + e);
+      e.printStackTrace();
+      System.exit(1);
     }
     try {
       masterGuid = GuidUtils.lookupOrCreateAccountGuid(clients[0], accountAlias, "password", true);
@@ -269,15 +273,15 @@ public class ThroughputAsynchMultiClientTest {
 
       // prebuild a packet for each client
       for (int clientIndex = 0; clientIndex < numberOfClients; clientIndex++) {
-      for (int i = 0; i < numberOfGuids; i++) {
-        if (doingReads) {
-          commmandPackets[i][clientIndex] = createReadCommandPacket(clients[clientIndex], subGuids[i], updateField, masterGuid);
-        } else {
-          JSONObject json = new JSONObject();
-          json.put(updateField, updateValue);
-          commmandPackets[i][clientIndex] = createUpdateCommandPacket(clients[clientIndex], subGuids[i], json, masterGuid);
+        for (int i = 0; i < numberOfGuids; i++) {
+          if (doingReads) {
+            commmandPackets[i][clientIndex] = createReadCommandPacket(clients[clientIndex], subGuids[i], updateField, masterGuid);
+          } else {
+            JSONObject json = new JSONObject();
+            json.put(updateField, updateValue);
+            commmandPackets[i][clientIndex] = createUpdateCommandPacket(clients[clientIndex], subGuids[i], json, masterGuid);
+          }
         }
-      }
       }
       if (parser.hasOption("inc")) {
         test.ramp(rate, increment, requestsPerClient);
@@ -329,16 +333,16 @@ public class ThroughputAsynchMultiClientTest {
           }
         }
         try {
-          JSONObject command = createCommand(LOOKUP_RANDOM_GUIDS, GUID,
-                  masterGuid.getGuid(), GUIDCNT, numberOfGuids);
+          JSONObject command = createCommand(CommandType.LookupRandomGuids,
+                  GUID, masterGuid.getGuid(), GUIDCNT, numberOfGuids);
           String result = checkResponse(command, clients[0].sendCommandAndWait(command));
-          if (!result.startsWith(GnsProtocol.BAD_RESPONSE)) {
+          if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
             existingGuids = new JSONArray(result);
           } else {
             System.out.println("Problem reading random guids " + result);
             System.exit(-1);
           }
-        } catch (JSONException | IOException | GnsClientException e) {
+        } catch (JSONException | IOException | ClientException e) {
           System.out.println("Problem reading random guids " + e);
           System.exit(-1);
         }
@@ -488,25 +492,25 @@ public class ThroughputAsynchMultiClientTest {
   //
   // Stuff below here is mostly currently for testing only
   //
-  private static CommandPacket createReadCommandPacket(BasicTcpClientV1 client, String targetGuid, String field, GuidEntry reader) throws Exception {
+  private static CommandPacket createReadCommandPacket(AbstractGNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(READ, GUID, targetGuid, FIELD, field);
+      command = createCommand(CommandType.ReadUnsigned, GUID, targetGuid, FIELD, field);
     } else {
-      command = createAndSignCommand(reader.getPrivateKey(), READ, 
+      command = createAndSignCommand(CommandType.Read,
+              reader.getPrivateKey(),
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
-    //int id = client.generateNextRequestID();
     return new CommandPacket(-1, command);
   }
 
-  private static CommandPacket createUpdateCommandPacket(BasicTcpClientV1 client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
+  private static CommandPacket createUpdateCommandPacket(AbstractGNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
-    command = createAndSignCommand(writer.getPrivateKey(), REPLACE_USER_JSON, 
-            GUID, targetGuid, USER_JSON, json.toString(), 
+    command = createAndSignCommand(CommandType.ReplaceUserJSON,
+            writer.getPrivateKey(),
+            GUID, targetGuid, json.toString(),
             WRITER, writer.getGuid());
-    //int id = client.generateNextRequestID();
     return new CommandPacket(-1, command);
   }
 

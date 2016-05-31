@@ -17,6 +17,8 @@
   <property name="jars.dir" value="jars"/>
   <property name="conf.dir" value="conf"/>
   <property name="scripts.dir" value="scripts"/>
+  <property name="db-props-file" location="edu/umass/cs/gnsclient/console/console.properties" />
+
     
   <!-- Properties -->
   <property file="build.properties" />
@@ -66,12 +68,15 @@
   </target>
   
   <fileset id="client.includes" dir="${build.classes.dir}"
-               includes="**/*.class"/>
-<!--           includes="edu/umass/cs/gnsclient/**/*.class,
-                     edu/umass/cs/gnscommon/**/*.class,
-                     edu/umass/cs/gnsserver/**/*.class, 
-                     org/**/*.class"-->
-  
+           includes="**/*.class"/>
+  <!--           includes="edu/umass/cs/gnsclient/**/*.class,
+  edu/umass/cs/gnscommon/**/*.class,
+  edu/umass/cs/gnsserver/**/*.class, 
+  org/**/*.class"-->
+                     
+  <fileset id="console.properties" dir="${src.dir}">
+    <include name="edu/umass/cs/gnsclient/console/console.properties" />
+  </fileset>
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
   
@@ -115,16 +120,17 @@
         <attribute name="Implementation-Title" value="GNS CLI" />
         <attribute name="Implementation-Version"
                    value="${VERSION}-${RELEASE}" />
-        <attribute name="Main-Class" value="edu.umass.cs.gnsclient.console.GnsCli" />
+        <attribute name="Main-Class" value="edu.umass.cs.gnsclient.console.CommandLineInterface" />
         <!--       <attribute name="Class-Path" value="${jar.classpath}" />-->
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
       <fileset refid="client.includes"/>
       <fileset refid="client.keystore" />
+      <fileset refid="console.properties" />
       <zipgroupfileset refid="client.lib" />
-      <fileset dir="${src.dir}">
+      <!--      <fileset dir="${src.dir}">
         <include name="edu/umass/cs/gnsclient/console/console.properties" />
-      </fileset>
+      </fileset>-->
     </jar>
   </target>
 
@@ -139,9 +145,19 @@
     <javadoc packagenames="edu.umass.cs.*" 
              sourcepath="${src.dir}" 
              destdir="${build.dir}/doc"
-             additionalparam="-Xdoclint:none">
+             additionalparam="-Xdoclint:none"
+             author="true"
+             version="true"
+             use="true"
+             public="true"
+             windowtitle="GNS API (specification ${VERSION}-${RELEASE})">
+      <doctitle>
+       <![CDATA[<h1>GNS API (specification ${VERSION}-${RELEASE})</h1>]]>
+      </doctitle>
+      <bottom>
+      <![CDATA[<i>Copyright &#169; 2014-2016 University of Massachusetts - All Rights Reserved.</i>]]>
+      </bottom>
       <classpath refid="classpath.base"/>
-      <!--      <link href="http://java.sun.com/javase/6/docs/api/"/>-->
     </javadoc>
     <mkdir dir="${dist.dir}/doc"/>
     <copy todir="${dist.dir}/doc">
@@ -210,8 +226,10 @@
     <pathelement location="${lib.dir}/derby.jar"/>
     <pathelement location="${lib.dir}/log4j-1.2.16.jar"/>
     <pathelement location="${lib.dir}/gigapaxos-1.0.jar"/>
-  	<pathelement location="${lib.dir}/context-client-GNS.jar"/>
+    <pathelement location="${lib.dir}/context-client-GNS.jar"/>
+    <pathelement location="${lib.dir}/mongo-java-driver-2.12.1.jar"/>
     <pathelement location="${conf.dir}"/>
+    <pathelement location="${db-props-file}" />
   </path>
   
   <target name="ensure-test-name" unless="test">
@@ -249,8 +267,7 @@
       <jvmarg value="-Dcount=${count}"/>
       <jvmarg value="-DdisableSSL=${disableSSL}"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
-      <!-- Setting this didn't work... in fact it made things worse by totally turning of all logs -->
-      <!-- <jvmarg value="-Djava.util.logging.config.file=logging.properties"/> -->
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -271,12 +288,33 @@
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.local.properties"/>
-       <!-- Setting this didn't work... in fact it made things worse by totally turning of all logs -->
-      <!-- <jvmarg value="-Djava.util.logging.config.file=logging.properties"/> -->
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+    </junit>
+  </target>
+
+  <target name="test1" description="Runs the default integration test" 
+          depends="jar, compiletest">
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
+      <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
+      <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=true"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>

@@ -19,8 +19,6 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
-
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -34,6 +32,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Sends create and delete requests to a reconfigurator with retransmission.
@@ -53,7 +52,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
   /**
    * The logger.
    */
-  public static final Logger log = Logger.getLogger(SendCreateDelete.class.getName());
+  public static final Logger LOG = Logger.getLogger(SendCreateDelete.class.getName());
 
   /**
    * Create a SendCreateDelete instance.
@@ -66,11 +65,11 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
 
     this.lnsRequestInfo = lnsRequestInfo;
     this.handler = handler;
-    reconfigurators = new ArrayList<InetSocketAddress>(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
+    reconfigurators = new ArrayList<>(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
     this.key = this.refreshKey();
-    if (handler.isDebugMode()) {
-      GNSConfig.getLogger().fine("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
-    }
+    LOG.log(Level.FINE,
+            "~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: {0}", key);
+
   }
 
   @Override
@@ -78,9 +77,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     if (this.amObviated()) {
       ProtocolExecutor.cancel(this);
     }
-    if (handler.isDebugMode()) {
-      log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " re-sending ");
-    }
+    LOG.log(Level.FINE, "~~~~~~~~~~~~~~~~~~~~~~~~{0} re-sending ", this.refreshKey());
     return start();
   }
 
@@ -88,9 +85,8 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
     if (handler.getActivesIfValid(lnsRequestInfo.getServiceName()) != null) {
       return true;
     } else if (requestCount >= reconfigurators.size()) {
-      if (handler.isDebugMode()) {
-        log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " No answer, using defaults");
-      }
+      LOG.log(Level.FINE,
+              "~~~~~~~~~~~~~~~~~~~~~~~~{0} No answer, using defaults", this.refreshKey());
       return true;
     } else {
       return false;
@@ -103,11 +99,8 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
             lnsRequestInfo.getServiceName(), 0);
 
     int reconfigIndex = requestCount % reconfigurators.size();
-    if (handler.isDebugMode()) {
-      log.fine("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey()
-              + " Sending to " + reconfigurators.get(reconfigIndex)
-              + " " + packet);
-    }
+    LOG.log(Level.FINE, "~~~~~~~~~~~~~~~~~~~~~~~~{0} Sending to {1} {2}",
+            new Object[]{this.refreshKey(), reconfigurators.get(reconfigIndex), packet});
     GenericMessagingTask<InetSocketAddress, ?> mtasks[]
             = new GenericMessagingTask<>(reconfigurators.get(reconfigIndex), packet).toArray();
     requestCount++;

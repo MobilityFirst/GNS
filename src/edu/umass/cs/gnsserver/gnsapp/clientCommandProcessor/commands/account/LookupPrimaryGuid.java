@@ -21,10 +21,11 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,7 +33,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupPrimaryGuid extends GnsCommand {
+public class LookupPrimaryGuid extends BasicCommand {
 
   /**
    *
@@ -43,14 +44,19 @@ public class LookupPrimaryGuid extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.LookupPrimaryGuid;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID};
   }
 
-  @Override
-  public String getCommandName() {
-    return LOOKUP_PRIMARY_GUID;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return LOOKUP_PRIMARY_GUID;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

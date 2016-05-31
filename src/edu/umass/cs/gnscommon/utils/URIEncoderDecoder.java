@@ -43,14 +43,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 
 /**
- * Provides encoding and decoding of URI strings.
+ * Provides ENCODING and decoding of URI strings.
  * 
  */
 public class URIEncoderDecoder {
 
-    static final String digits = "0123456789ABCDEF";
+    private static final String DIGITS = "0123456789ABCDEF";
 
-    static final String encoding = "UTF8";
+    private static final String ENCODING = "UTF8";
 
     /**
      * Validate a string by checking if it contains any characters other than:
@@ -136,11 +136,11 @@ public class URIEncoderDecoder {
                     || legal.indexOf(ch) > -1) {
                 buf.append(ch);
             } else {
-                byte[] bytes = new String(new char[]{ch}).getBytes(encoding);
+                byte[] bytes = new String(new char[]{ch}).getBytes(ENCODING);
                 for (int j = 0; j < bytes.length; j++) {
                     buf.append('%');
-                    buf.append(digits.charAt((bytes[j] & 0xf0) >> 4));
-                    buf.append(digits.charAt(bytes[j] & 0xf));
+                    buf.append(DIGITS.charAt((bytes[j] & 0xf0) >> 4));
+                    buf.append(DIGITS.charAt(bytes[j] & 0xf));
                 }
             }
         }
@@ -167,11 +167,11 @@ public class URIEncoderDecoder {
             if (ch <= 127) {
                 buf.append(ch);
             } else {
-                byte[] bytes = new String(new char[]{ch}).getBytes(encoding);
+                byte[] bytes = new String(new char[]{ch}).getBytes(ENCODING);
                 for (int j = 0; j < bytes.length; j++) {
                     buf.append('%');
-                    buf.append(digits.charAt((bytes[j] & 0xf0) >> 4));
-                    buf.append(digits.charAt(bytes[j] & 0xf));
+                    buf.append(DIGITS.charAt((bytes[j] & 0xf0) >> 4));
+                    buf.append(DIGITS.charAt(bytes[j] & 0xf));
                 }
             }
         }
@@ -181,7 +181,7 @@ public class URIEncoderDecoder {
     /**
      * Decodes the string argument which is assumed to be encoded in the
      * <code>x-www-form-urlencoded</code> MIME content type using the UTF-8
-     * encoding scheme.
+ ENCODING scheme.
      * <br>
      * '%' and two following hex digit characters are converted to the
      * equivalent byte value. All other characters are passed through
@@ -219,7 +219,7 @@ public class URIEncoderDecoder {
                     out.write((byte) ((d1 << 4) + d2));
                     i += 3;
                 } while (i < s.length() && s.charAt(i) == '%');
-                result.append(out.toString(encoding));
+                result.append(out.toString(ENCODING));
                 continue;
             }
             result.append(c);

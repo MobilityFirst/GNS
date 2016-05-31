@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
@@ -45,7 +45,7 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
    * ID that is requested to be stopped.
    */
   private final int version;
-  
+
   private final long requestID;
 
   /**
@@ -63,7 +63,7 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     this.type = Packet.PacketType.STOP;
     this.name = name;
     this.version = version;
-    this.requestID = (long)(Math.random()*Long.MAX_VALUE);
+    this.requestID = (long) (Math.random() * Long.MAX_VALUE);
   }
 
   /**
@@ -115,7 +115,7 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
 
   /**
    * Returns true if the packet needs coordination.
-   * 
+   *
    * If your app is using PaxosReplicaCoordinator, its stop request
    * (as returned by getStopRequest) must implement InterfaceReplicableRequest
    * and the stop requests needsCoordination method must return true by default
@@ -138,8 +138,9 @@ public class StopPacket extends BasicPacketWithClientAddress implements Reconfig
     this.needsCoordination = needsCoordination;
   }
 
-public long getRequestID() {
-	return this.requestID;
-}
+  @Override
+  public long getRequestID() {
+    return this.requestID;
+  }
 
 }

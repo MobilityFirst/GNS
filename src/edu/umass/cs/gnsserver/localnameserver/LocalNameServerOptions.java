@@ -21,17 +21,11 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-
-import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
-import static edu.umass.cs.gnsserver.utils.Logging.DEFAULTCONSOLELEVEL;
+//import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
-import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * The command line options for LocalNameServer.
@@ -51,15 +45,15 @@ public class LocalNameServerOptions {
    */
   public static final String PORT = "port";
 
-  /**
-   *
-   */
-  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
-
-  /**
-   *
-   */
-  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
+//  /**
+//   *
+//   */
+//  public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
+//
+//  /**
+//   *
+//   */
+//  public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
 
   /**
    *
@@ -87,12 +81,12 @@ public class LocalNameServerOptions {
    * @return the command line options
    */
   public static Options getAllOptions() {
-    Option help = new Option(HELP, "Prints usage");
+    Option help = new Option("help", "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
     Option port = new Option(PORT, true, "Port");
-    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
-    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+//    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+//    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
     Option debug = new Option(DEBUG, "Enables debugging output");
     Option debugPing = new Option(DEBUG_PING, "Enables debugging output for PingManager");
     Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for miscellaneous subsystems");
@@ -106,8 +100,8 @@ public class LocalNameServerOptions {
     commandLineOptions.addOption(debug);
     commandLineOptions.addOption(debugPing);
     commandLineOptions.addOption(debugMisc);
-    commandLineOptions.addOption(fileLoggingLevel);
-    commandLineOptions.addOption(consoleOutputLevel);
+//    commandLineOptions.addOption(fileLoggingLevel);
+//    commandLineOptions.addOption(consoleOutputLevel);
     commandLineOptions.addOption(disableSSL);
 
     return commandLineOptions;
@@ -144,31 +138,6 @@ public class LocalNameServerOptions {
       disableSSL = true;
     }
     System.out.println("LNS: SSL is " + (disableSSL ? "disabled" : "enabled"));
-
-    if (isOptionTrue(DEBUG, allValues)) {
-      LocalNameServer.debuggingEnabled = true;
-      System.out.println("******** DEBUGGING IS ENABLED IN LocalNameServer *********");
-    }
-
-    if (isOptionTrue(DEBUG_MISC, allValues)) {
-      System.out.println("******** DEBUGGING IS ENABLED IN ProtocolExecutor *********");
-      ProtocolExecutor.getLogger().setLevel(Level.INFO);
-    } else {
-      ProtocolExecutor.getLogger().setLevel(Level.WARNING);
-    }
-
-    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
-      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
-      try {
-        Level level = Level.parse(levelString);
-        // until a better way comes along
-        LocalNameServer.LOG.setLevel(level);
-      } catch (Exception e) {
-        LocalNameServer.LOG.setLevel(DEFAULTCONSOLELEVEL);
-        System.out.println("Could not parse " + levelString
-                + "; set LocalNameServer log level to default level " + DEFAULTCONSOLELEVEL);
-      }
-    }
   }
 
 }

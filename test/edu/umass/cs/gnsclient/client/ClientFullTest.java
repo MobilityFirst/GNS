@@ -19,17 +19,17 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -54,11 +54,7 @@ public class ClientFullTest {
 
   private static String accountAlias = "westy@cs.umass.edu"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
-  private static UniversalTcpClientExtended client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -69,18 +65,12 @@ public class ClientFullTest {
 
   public ClientFullTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+      try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
       if (System.getProperty("alias") != null
               && !System.getProperty("alias").isEmpty()) {
         accountAlias = System.getProperty("alias");
@@ -139,12 +129,12 @@ public class ClientFullTest {
         ThreadUtils.sleep(10);
       } while (true);
       // the lookup should fail and throw to here
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     }
 //    try {
 //      client.lookupGuidRecord(testGuid.getGuid());
 //      fail("Lookup testGuid should have throw an exception.");
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //
 //    } catch (IOException e) {
 //      fail("Exception while doing Lookup testGuid: " + e);
@@ -168,7 +158,7 @@ public class ClientFullTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -206,7 +196,7 @@ public class ClientFullTest {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
-    } catch (GnsFieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
       System.out.println("Exception when we were not expecting it: " + e);
@@ -253,7 +243,7 @@ public class ClientFullTest {
     }
     try {
       // remove default read acces for this test
-      client.aclRemove(AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
@@ -271,7 +261,7 @@ public class ClientFullTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -286,7 +276,7 @@ public class ClientFullTest {
       System.out.println("Using:" + westyEntry);
       System.out.println("Using:" + samEntry);
       try {
-        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "environment",
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment",
                 samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's readlist: " + e);
@@ -312,21 +302,21 @@ public class ClientFullTest {
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
       barneyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, barneyName);
       // remove default read access for this test
-      client.aclRemove(AccessType.READ_WHITELIST, barneyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
-        client.aclAdd(AccessType.READ_WHITELIST, barneyEntry, "cell",
-                GnsProtocol.ALL_USERS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
+                GNSCommandProtocol.ALL_USERS);
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
@@ -353,7 +343,7 @@ public class ClientFullTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -373,13 +363,13 @@ public class ClientFullTest {
       try {
         client.lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AccessType.READ_WHITELIST, barneyEntry, GnsProtocol.ALL_FIELDS, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -425,14 +415,14 @@ public class ClientFullTest {
 //      try {
 //        client.fieldCreateOneElementList(westyEntry, "cats", "maya");
 //        fail("Should have got an exception when trying to create the field westy / cats.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       //this one always fails... check it out
 //      try {
 //        client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs", "freddybub",
 //                westyEntry);
 //        fail("Should have got an exception when trying to create the field westy / frogs.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
       expected = new HashSet<String>(Arrays.asList("maya", "fred"));
@@ -599,7 +589,7 @@ public class ClientFullTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
@@ -629,7 +619,7 @@ public class ClientFullTest {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -655,7 +645,7 @@ public class ClientFullTest {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -665,7 +655,7 @@ public class ClientFullTest {
     try {
       groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupAccessUserName);
       // remove all fields read by all
-      client.aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
       return;
@@ -680,7 +670,7 @@ public class ClientFullTest {
       return;
     }
     try {
-      client.aclAdd(AccessType.READ_WHITELIST, groupAccessUserEntry, "hometown", mygroupEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, groupAccessUserEntry, "hometown", mygroupEntry.getGuid());
     } catch (Exception e) {
       fail("Exception adding mygroup to acl for group user hometown field: " + e);
       return;
@@ -690,7 +680,7 @@ public class ClientFullTest {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
@@ -751,7 +741,7 @@ public class ClientFullTest {
     try {
       client.lookupGuid(alias);
       System.out.println(alias + " should not exist");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (IOException e) {
       fail("Exception while looking up alias: " + e);
     }
@@ -773,7 +763,7 @@ public class ClientFullTest {
 //        ThreadUtils.sleep(10);
 //      } while (true);
 //      // the lookup should fail and throw to here
-//    } catch (GnsClientException e) {
+//    } catch (ClientException e) {
 //    }
   }
 
@@ -804,7 +794,7 @@ public class ClientFullTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -822,7 +812,7 @@ public class ClientFullTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -866,7 +856,7 @@ public class ClientFullTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -879,7 +869,7 @@ public class ClientFullTest {
     String fieldName = "whereAmI";
     try {
       try {
-        client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry, fieldName, samEntry.getGuid());
+        client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, fieldName, samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's writelist: " + e);
         e.printStackTrace();
@@ -906,7 +896,7 @@ public class ClientFullTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName + " by sam: " + e);
@@ -923,17 +913,17 @@ public class ClientFullTest {
     String standardReadFieldName = "standardreadaccess";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GnsProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSCommandProtocol.ALL_USERS);
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
-      //client.removeFromACL(AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      //client.removeFromACL(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       try {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -947,15 +937,15 @@ public class ClientFullTest {
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GnsProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSCommandProtocol.ALL_USERS);
       client.fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardWriteFieldName, "bummer", westyEntry);
       try {
-        client.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
+        client.fieldReplaceFirstElementTest(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -986,7 +976,7 @@ public class ClientFullTest {
       String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), fieldToDelete, westyEntry);
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }
@@ -1035,7 +1025,7 @@ public class ClientFullTest {
       JSONArray result = client.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         System.out.println("Removing from " + guidEntry.getEntityName());
         client.fieldRemove(guidEntry, groupTestFieldName);
       }
@@ -1165,7 +1155,7 @@ public class ClientFullTest {
     // look up the individual values
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
       assertEquals("25", value);
     }
@@ -1179,7 +1169,7 @@ public class ClientFullTest {
       // change ALL BUT ONE to be ZERO
       for (int i = 0; i < result.length() - 1; i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-        GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         JSONArray array = new JSONArray(Arrays.asList(0));
         client.fieldReplaceOrCreateList(entry, groupTestFieldName, array);
       }
@@ -1198,7 +1188,7 @@ public class ClientFullTest {
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-        GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
         assertEquals("25", value);
       }
@@ -1218,7 +1208,7 @@ public class ClientFullTest {
       // look up the individual values
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-        GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
         assertEquals("0", value);
       }

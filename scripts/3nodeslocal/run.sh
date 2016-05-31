@@ -3,13 +3,9 @@ SCRIPTS="`dirname \"$0\"`"
 # to use IDE auto-build instead of ant
 IDE_PATH=.:build/classes:build/test/classes:lib/* 
 
-# deprecated bad way to start
-#java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar -Dlog4j.configuration=log4j.properties -DgigapaxosConfig=conf/gigapaxos.server.properties -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNode  -test -configFile $SCRIPTS/ns.properties &
-
-# new good way to start
 java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
 -DgigapaxosConfig=conf/gigapaxos.server.local.properties \
--Djava.util.logging.config.file=logging.properties \
+-Djava.util.logging.config.file=conf/logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
@@ -30,6 +26,7 @@ START_ALL &
 # are more like clients and hardly like servers.
 java -ea -cp $IDE_PATH:jars/GNS.jar \
 -DgigapaxosConfig=conf/gigapaxos.server.local.properties \
+-Djava.util.logging.config.file=conf/logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \

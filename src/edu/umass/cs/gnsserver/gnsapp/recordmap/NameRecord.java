@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy
+ *  Initial developer(s): Abhigyan Sharma, Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.recordmap;
@@ -33,58 +33,33 @@ import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.Util;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * The name record.
  * It specifies what is store in the database for system and user fields.
  * This is also the in memory version of what is store in the database.
- * 
+ *
  * Probably could just be a JSON Object.
  *
  *
  * @author abhigyan
  */
-
 public class NameRecord implements Comparable<NameRecord>, Summarizable {
-
-  /**
-   * null value for the ACTIVE_VERSION and OLD_ACTIVE_VERSION field.
-   */
-  public static final int NULL_VALUE_ACTIVE_VERSION = -1;
 
   /**
    * NAME
    */
   public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
   /**
-   * PRIMARY_NAMESERVERS
-   */
-  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_NODE_ID_STRING);
-  /**
-   * ACTIVE_VERSION
-   */
-  public final static ColumnField ACTIVE_VERSION = new ColumnField("nr_version", ColumnFieldType.INTEGER);
-  /**
-   * TIME_TO_LIVE
-   */
-  public final static ColumnField TIME_TO_LIVE = new ColumnField("nr_ttl", ColumnFieldType.INTEGER);
-  /**
    * VALUES_MAP
    */
   public final static ColumnField VALUES_MAP = new ColumnField("nr_valuesMap", ColumnFieldType.VALUES_MAP);
-  /**
-   * LOOKUP_TIME - instrumentation
-   */
-  public final static ColumnField LOOKUP_TIME = new ColumnField("lookup_time", ColumnFieldType.INTEGER);
-
   /**
    * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
    */
@@ -99,22 +74,14 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    *
    * @param recordMap
    * @param name
-   * @param activeVersion
    * @param values
-   * @param ttl
-   * @param replicaControllers
    */
-  public NameRecord(BasicRecordMap recordMap, String name, int activeVersion, ValuesMap values, int ttl,
-          Set<String> replicaControllers) {
+  public NameRecord(BasicRecordMap recordMap, String name, ValuesMap values) {
     this.recordMap = recordMap;
 
-    hashMap = new HashMap<ColumnField, Object>();
+    hashMap = new HashMap<>();
     hashMap.put(NAME, name);
-    hashMap.put(PRIMARY_NAMESERVERS, replicaControllers);
-    hashMap.put(ACTIVE_VERSION, activeVersion);
-    hashMap.put(TIME_TO_LIVE, ttl);
     hashMap.put(VALUES_MAP, values);
-    hashMap.put(LOOKUP_TIME, -1);
 
   }
 
@@ -127,30 +94,12 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    */
   public NameRecord(BasicRecordMap recordMap, JSONObject jsonObject) throws JSONException {
     this.recordMap = recordMap;
-
-    hashMap = new HashMap<ColumnField, Object>();
+    hashMap = new HashMap<>();
     if (jsonObject.has(NAME.getName())) {
-      hashMap.put(NAME, JSONUtils.getObject(NAME, jsonObject));
+      hashMap.put(NAME, jsonObject.getString(NAME.getName()));
     }
-
-    if (jsonObject.has(PRIMARY_NAMESERVERS.getName())) {
-      hashMap.put(PRIMARY_NAMESERVERS, JSONUtils.getObject(PRIMARY_NAMESERVERS, jsonObject));
-    }
-
-    if (jsonObject.has(ACTIVE_VERSION.getName())) {
-      hashMap.put(ACTIVE_VERSION, JSONUtils.getObject(ACTIVE_VERSION, jsonObject));
-    }
-
-    if (jsonObject.has(TIME_TO_LIVE.getName())) {
-      hashMap.put(TIME_TO_LIVE, JSONUtils.getObject(TIME_TO_LIVE, jsonObject));
-    }
-
     if (jsonObject.has(VALUES_MAP.getName())) {
-      hashMap.put(VALUES_MAP, JSONUtils.getObject(VALUES_MAP, jsonObject));
-    }
-
-    if (jsonObject.has(LOOKUP_TIME.getName())) {
-      hashMap.put(LOOKUP_TIME, JSONUtils.getObject(LOOKUP_TIME, jsonObject));
+      hashMap.put(VALUES_MAP, new ValuesMap(jsonObject.getJSONObject(VALUES_MAP.getName())));
     }
   }
 
@@ -173,7 +122,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    */
   public NameRecord(BasicRecordMap recordMap, String name) {
     this.recordMap = recordMap;
-    hashMap = new HashMap<ColumnField, Object>();
+    hashMap = new HashMap<>();
     hashMap.put(NAME, name);
   }
 
@@ -211,16 +160,15 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject jsonObject = new JSONObject();
     for (ColumnField f : hashMap.keySet()) {
-      JSONUtils.putFieldInJsonObject(f, hashMap.get(f), jsonObject);
+      jsonObject.put(f.getName(), hashMap.get(f));
     }
     return jsonObject;
   }
 
   /**
-   * ******************************************
-   * GETTER methods for each field in name record
-   * *****************************************
-   * @return
+   * Return the name.
+   *
+   * @return the name
    * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    */
   public String getName() throws FieldNotFoundException {
@@ -228,46 +176,6 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
       return (String) hashMap.get(NAME);
     }
     throw new FieldNotFoundException(NAME);
-  }
-
-  /**
-   * Returns the primary name server.
-   *
-   * @return the primary name server
-   * @throws FieldNotFoundException
-   */
-  @SuppressWarnings("unchecked")
-  public Set<String> getPrimaryNameservers() throws FieldNotFoundException {
-    if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
-      return (Set<String>) hashMap.get(PRIMARY_NAMESERVERS);
-    }
-    throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
-  }
-
-  /**
-   * Returns the active version.
-   *
-   * @return the active version
-   * @throws FieldNotFoundException
-   */
-  public int getActiveVersion() throws FieldNotFoundException {
-    if (hashMap.containsKey(ACTIVE_VERSION)) {
-      return (Integer) hashMap.get(ACTIVE_VERSION);
-    }
-    throw new FieldNotFoundException(ACTIVE_VERSION);
-  }
-
-  /**
-   * Return the TTL.
-   *
-   * @return the TTL
-   * @throws FieldNotFoundException
-   */
-  public int getTimeToLive() throws FieldNotFoundException {
-    if (hashMap.containsKey(TIME_TO_LIVE)) {
-      return (Integer) hashMap.get(TIME_TO_LIVE);
-    }
-    throw new FieldNotFoundException(TIME_TO_LIVE);
   }
 
   /**
@@ -291,7 +199,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
   /**
    * Checks whether the key exists in the values map for this name record.
    *
-   * Call this method after reading this key from the database. 
+   * Call this method after reading this key from the database.
    * If the key is not found, then field does not exist.
    *
    * @param key
@@ -336,7 +244,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    * @param argument
    * @param operation
    * @param userJSON
-   * @return True if the update does anything, false otherwise.
+   * @return True if the updateEntireValuesMap does anything, false otherwise.
    * @throws edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
@@ -347,14 +255,14 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     // whose purpose is to remove the field with name = key from values map.
     if (operation.equals(UpdateOperation.SINGLE_FIELD_REMOVE_FIELD)) {
 
-      ArrayList<ColumnField> keys = new ArrayList<ColumnField>();
+      ArrayList<ColumnField> keys = new ArrayList<>();
       keys.add(new ColumnField(recordKey, ColumnFieldType.LIST_STRING));
       recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
       return true;
     }
 
     /*
-     * Some update operations require that record is first read from DB, modified, and then written.
+     * Some updateEntireValuesMap operations require that record is first read from DB, modified, and then written.
      * That is 1 DB read + 1 DB write. Others do not require record to be read, but we can directly do a write.
      * This saves us a database read.
      *
@@ -376,11 +284,11 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
             ? true
             : UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
     if (updated) {
-      // commit update to database
-      ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();
-      ArrayList<Object> updatedValues = new ArrayList<Object>();
+      // commit updateEntireValuesMap to database
+      ArrayList<ColumnField> updatedFields = new ArrayList<>();
+      ArrayList<Object> updatedValues = new ArrayList<>();
       if (userJSON != null) {
-        // full userJSON (new style) update
+        // full userJSON (new style) updateEntireValuesMap
         Iterator<?> keyIter = userJSON.keys();
         while (keyIter.hasNext()) {
           String key = (String) keyIter.next();
@@ -388,46 +296,47 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
             updatedFields.add(new ColumnField(key, ColumnFieldType.USER_JSON));
             updatedValues.add(userJSON.get(key));
           } catch (JSONException e) {
-            GNSConfig.getLogger().severe("Unable to get " + key + " from userJSON:" + e);
+            GNSConfig.getLogger().log(Level.SEVERE,
+                    "Unable to get {0} from userJSON:{1}", new Object[]{key, e});
           }
         }
       } else {
-        // single field update
+        // single field updateEntireValuesMap
         updatedFields.add(new ColumnField(recordKey, ColumnFieldType.LIST_STRING));
         updatedValues.add(valuesMap.getAsArray(recordKey));
       }
 
-      recordMap.update(getName(), NAME, null, null, VALUES_MAP, updatedFields, updatedValues);
+      recordMap.updateIndividualFields(getName(), updatedFields, updatedValues);
     }
     return updated;
   }
 
   /**
    *
-   * @param currentValue
-   * @param ttl
+   * @param valuesMap
    * @throws FieldNotFoundException
    * @throws FailedDBOperationException
    */
-  public void updateState(ValuesMap currentValue, int ttl) throws FieldNotFoundException, FailedDBOperationException {
-
-    ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
-    updateFields.add(VALUES_MAP);
-    updateFields.add(TIME_TO_LIVE);
-    ArrayList<Object> updateValues = new ArrayList<Object>();
-    updateValues.add(currentValue);
-    updateValues.add(ttl);
-
-    recordMap.update(getName(), NAME, updateFields, updateValues);
-
-    hashMap.put(VALUES_MAP, currentValue);
-    hashMap.put(TIME_TO_LIVE, ttl);
-
+  public void updateState(ValuesMap valuesMap) throws FieldNotFoundException, FailedDBOperationException {
+    recordMap.updateEntireValuesMap(getName(), valuesMap);
+    hashMap.put(VALUES_MAP, valuesMap);
   }
 
+//BEGIN: static methods for reading/writing to database and iterating over records
+//
   /**
-   * BEGIN: static methods for reading/writing to database and iterating over records
+   * Returns true if the database contains a name record with the given name.
+   *
+   * @param recordMap
+   * @param name
+   * @return true if the database contains a name record
+   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
+  public static boolean containsRecord(BasicRecordMap recordMap, String name)
+          throws FailedDBOperationException {
+    return recordMap.containsName(name);
+  }
+
   /**
    * Load a name record from the backing database and retrieve all the fields.
    *
@@ -439,7 +348,16 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    */
   public static NameRecord getNameRecord(BasicRecordMap recordMap, String name)
           throws RecordNotFoundException, FailedDBOperationException {
-    return recordMap.getNameRecord(name);
+    try {
+      JSONObject json = recordMap.lookupEntireRecord(name);
+      if (json != null) {
+        return new NameRecord(recordMap, json);
+      }
+    } catch (JSONException e) {
+      GNSConfig.getLogger().log(Level.SEVERE, "Error getting name record {0}: {1}", new Object[]{name, e});
+    }
+    return null;
+
   }
 
   /**
@@ -447,59 +365,22 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    *
    * @param recordMap
    * @param name
-   * @param systemFields - a list of Field structures representing "system" fields to retrieve
-   * @return a NameRecord
-   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name,
-          ArrayList<ColumnField> systemFields)
-          throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name,
-            NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, null));
-  }
-
-  /**
-   * Load a name record from the backing database and retrieve certain fields as well.
-   *
-   * @param recordMap
-   * @param name
-   * @param systemFields - a list of Field structures representing "system" fields to retrieve
-   * @param userFields - a list of Field structures representing user fields to retrieve
-   * @return a NameRecord
-   * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name,
-          ArrayList<ColumnField> systemFields, ArrayList<ColumnField> userFields)
-          throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name,
-            NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, userFields));
-  }
-
-  /**
-   * Load a name record from the backing database and retrieve certain fields as well.
-   *
-   * @param recordMap
-   * @param name
-   * @param systemFields
    * @param returnType - the format which the returned data should be in
    * @param userFieldNames - strings which name the user fields to return
    * @return a NameRecord
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name,
-          ArrayList<ColumnField> systemFields,
+  public static NameRecord getNameRecordMultiUserFields(BasicRecordMap recordMap, String name,
           ColumnFieldType returnType, String... userFieldNames)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name,
-            NameRecord.NAME, systemFields, NameRecord.VALUES_MAP,
+    return new NameRecord(recordMap, recordMap.lookupUserFields(name,
+            NameRecord.NAME, NameRecord.VALUES_MAP,
             userFieldList(returnType, userFieldNames)));
   }
 
   private static ArrayList<ColumnField> userFieldList(ColumnFieldType returnType, String... fieldNames) {
-    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
+    ArrayList<ColumnField> result = new ArrayList<>();
     for (String fieldName : fieldNames) {
       result.add(new ColumnField(fieldName, returnType));
     }
@@ -514,19 +395,8 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    * @throws edu.umass.cs.gnscommon.exceptions.server.RecordExistsException
    */
-  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException, RecordExistsException {
-    recordMap.addNameRecord(record);
-  }
-
-  /**
-   * Replace the name record in DB with this copy of name record
-   *
-   * @param recordMap
-   * @param record
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public static void updateNameRecord(BasicRecordMap recordMap, NameRecord record) throws FailedDBOperationException {
-    recordMap.updateNameRecord(record);
+  public static void addNameRecord(BasicRecordMap recordMap, NameRecord record) throws JSONException, FailedDBOperationException, RecordExistsException {
+    recordMap.addRecord(record.toJSONObject());
   }
 
   /**
@@ -537,7 +407,7 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static void removeNameRecord(BasicRecordMap recordMap, String name) throws FailedDBOperationException {
-    recordMap.removeNameRecord(name);
+    recordMap.removeRecord(name);
   }
 
   /**
@@ -622,9 +492,9 @@ public class NameRecord implements Comparable<NameRecord>, Summarizable {
     return result;
   }
 
-	@Override
-	public Object getSummary() {
-		return Util.truncate(NameRecord.this, 64, 64);
-	}
-  
+  @Override
+  public Object getSummary() {
+    return Util.truncate(NameRecord.this, 64, 64);
+  }
+
 }

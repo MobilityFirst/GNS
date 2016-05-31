@@ -1,49 +1,16 @@
-configFile => ./scripts/example/lns_hazard.properties
+configFile => ./scripts/singlenodetests/lns_hazard.properties
 consoleOutputLevel => INFO
+debug => true
+disableSSL => true
 fileLoggingLevel => INFO
 nsfile => conf/single-server-info.txt
-Feb 23, 2016 10:50:42 PM edu.umass.cs.utils.Config register
-WARNING: Config unable to find file testing.properties; using default values for type class edu.umass.cs.gigapaxos.testing.TESTPaxosConfig$TC
-Feb 23, 2016 10:50:42 PM edu.umass.cs.utils.Config register
-WARNING: Config unable to find file testing.properties; using default values for type class edu.umass.cs.gigapaxos.testing.TESTPaxosConfig$TC
-LNS: SSL is enabled
-Setting Logger console level to INFO and file level to INFO
-Tue Feb 23 22:50:42 EST 2016 INFO LNSNodeConfig.<init>: For LNS  Id: frank Host:/10.0.1.50 Start Port:24400
-Tue Feb 23 22:50:42 EST 2016 INFO LNSNodeConfig.startCheckingForUpdates: Checking for hosts updates every 60 seconds
-LNS: SSL Mode is SERVER_AUTH
-Feb 23, 2016 10:50:42 PM edu.umass.cs.nio.NIOTransport initSelector
-INFO: JSONNIOTransport/10.0.1.50:24498 listening on channel sun.nio.ch.ServerSocketChannelImpl[/10.0.1.50:24498]
-Feb 23, 2016 10:50:42 PM edu.umass.cs.gnsserver.localnameserver.LocalNameServer <init>
-INFO: Started LNS listener on /10.0.1.50:24498
-Tue Feb 23 22:50:42 EST 2016 INFO LocalNameServer.<init>: LNS running at 10.0.1.50 started Ping manager.
-Tue Feb 23 22:50:42 EST 2016 INFO PingManager$1.run: Waiting for a bit before we start pinging.
-javax.net.ssl.SSLHandshakeException: no cipher suites in common
-	at sun.security.ssl.Handshaker.checkThrown(Handshaker.java:1431)
-	at sun.security.ssl.SSLEngineImpl.checkTaskThrown(SSLEngineImpl.java:535)
-	at sun.security.ssl.SSLEngineImpl.writeAppRecord(SSLEngineImpl.java:1214)
-	at sun.security.ssl.SSLEngineImpl.wrap(SSLEngineImpl.java:1186)
-	at javax.net.ssl.SSLEngine.wrap(SSLEngine.java:469)
-	at edu.umass.cs.nio.AbstractNIOSSL.wrap(AbstractNIOSSL.java:220)
-	at edu.umass.cs.nio.AbstractNIOSSL.step(AbstractNIOSSL.java:168)
-	at edu.umass.cs.nio.AbstractNIOSSL.run(AbstractNIOSSL.java:150)
-	at edu.umass.cs.nio.AbstractNIOSSL$1.run(AbstractNIOSSL.java:194)
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
-	at java.lang.Thread.run(Thread.java:745)
-Caused by: javax.net.ssl.SSLHandshakeException: no cipher suites in common
-	at sun.security.ssl.Alerts.getSSLException(Alerts.java:192)
-	at sun.security.ssl.SSLEngineImpl.fatal(SSLEngineImpl.java:1666)
-	at sun.security.ssl.Handshaker.fatalSE(Handshaker.java:304)
-	at sun.security.ssl.Handshaker.fatalSE(Handshaker.java:292)
-	at sun.security.ssl.ServerHandshaker.chooseCipherSuite(ServerHandshaker.java:1035)
-	at sun.security.ssl.ServerHandshaker.clientHello(ServerHandshaker.java:738)
-	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:221)
-	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:979)
-	at sun.security.ssl.Handshaker$1.run(Handshaker.java:919)
-	at sun.security.ssl.Handshaker$1.run(Handshaker.java:916)
-	at java.security.AccessController.doPrivileged(Native Method)
-	at sun.security.ssl.Handshaker$DelegatedTask.run(Handshaker.java:1369)
-	at edu.umass.cs.nio.AbstractNIOSSL$1.run(AbstractNIOSSL.java:188)
-	... 3 more
-Feb 23, 2016 10:50:56 PM edu.umass.cs.nio.SSLDataProcessingWorker$NonBlockingSSLImpl onHandshakeFailure
-WARNING: NonBlockingSSLImpl/10.0.1.50:24498 encountered SSL handshake failure; cleaning up channel java.nio.channels.SocketChannel[connected local=/10.0.1.50:24498 remote=/10.0.1.50:63671]
+LNS: SSL is disabled
+******** DEBUGGING IS ENABLED IN LocalNameServer *********
+Thu Apr 14 16:53:49 EDT 2016 INFO LNSNodeConfig.<init>: LNS mapping = {/127.0.0.1:24404=HostInfo{id=/127.0.0.1:24404, ipAddress=/127.0.0.1, startingPortNumber=24404, pingLatency=0, latitude=0.0, longitude=0.0}}
+Thu Apr 14 16:53:49 EDT 2016 INFO LocalNameServer.<init>: LNS: SSL Mode is CLEAR; listening on /127.0.0.1:24498
+Thu Apr 14 16:53:49 EDT 2016 INFO AbstractPacketDemultiplexer.register: Registering types [CREATE_SERVICE_NAME, ECHO_REQUEST, DELETE_SERVICE_NAME, REQUEST_ACTIVE_REPLICAS, ACTIVE_REPLICA_ERROR] for AsyncLNSClient
+Thu Apr 14 16:53:49 EDT 2016 INFO AbstractPacketDemultiplexer.register: Registering types [RECONFIGURE_RC_NODE_CONFIG, RECONFIGURE_ACTIVE_NODE_CONFIG] for AsyncLNSClient
+Thu Apr 14 16:53:49 EDT 2016 INFO AbstractPacketDemultiplexer.register: AsyncLNSClient registering types [COMMAND_RETURN_VALUE] for AsyncLNSClient
+Thu Apr 14 16:53:49 EDT 2016 INFO NIOTransport.initSelector: MessageNIOTransport:null:0 listening on channel sun.nio.ch.ServerSocketChannelImpl[/0:0:0:0:0:0:0:0:49707] with ssl mode CLEAR
+Thu Apr 14 16:53:49 EDT 2016 INFO NIOTransport.initSelector: JSONNIOTransport:/127.0.0.1:24498:0 listening on channel sun.nio.ch.ServerSocketChannelImpl[/127.0.0.1:24498] with ssl mode CLEAR
+Thu Apr 14 16:53:49 EDT 2016 INFO LocalNameServer.<init>: Started LNS listener on /127.0.0.1:24498

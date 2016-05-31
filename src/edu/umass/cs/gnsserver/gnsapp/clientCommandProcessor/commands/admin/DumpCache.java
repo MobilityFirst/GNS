@@ -19,17 +19,16 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +36,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class DumpCache extends GnsCommand {
+public class DumpCache extends BasicCommand {
 
   /**
    *
@@ -48,23 +47,29 @@ public class DumpCache extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.DumpCache;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return DUMPCACHE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return DUMPCACHE;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
-      return new CommandResponse<String>(handler.getAdmintercessor().sendDumpCache(handler));
+      return new CommandResponse<>(handler.getAdmintercessor().sendDumpCache(handler));
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

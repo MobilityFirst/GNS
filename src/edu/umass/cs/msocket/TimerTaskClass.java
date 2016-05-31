@@ -31,7 +31,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 
 import edu.umass.cs.msocket.common.CommonMethods;
-import edu.umass.cs.msocket.gns.GnsIntegration;
+import edu.umass.cs.msocket.gns.Integration;
 
 class TimerTaskClass
 {
@@ -127,7 +127,7 @@ class TimerTaskClass
     InetSocketAddress sockAdd = null;
     try
     {
-      List<InetSocketAddress> socketAddressFromGNS = GnsIntegration.getSocketAddressFromGNS(
+      List<InetSocketAddress> socketAddressFromGNS = Integration.getSocketAddressFromGNS(
           mSocket.cinfo.getServerAlias());
 
       sockAdd = socketAddressFromGNS.get(rand.nextInt(socketAddressFromGNS.size()));

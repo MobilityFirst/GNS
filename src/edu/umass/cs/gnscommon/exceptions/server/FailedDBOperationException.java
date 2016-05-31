@@ -24,28 +24,40 @@ package edu.umass.cs.gnscommon.exceptions.server;
  * Probably because the database server is crashed.
  *
  * This exception does not tell much about the cause of the error. Therefore, if this exception
- * is seen, one can only attempt to retry the operation hoping that the database 
- * unavailability is transient. If indeed the database is permanently crashed, 
+ * is seen, one can only attempt to retry the operation hoping that the database
+ * unavailability is transient. If indeed the database is permanently crashed,
  * an external mechanism would be needed to restart the database.
- * 
+ *
  */
-public class FailedDBOperationException extends GnsServerException {
-  String collection;
-  String name;
+public class FailedDBOperationException extends ServerException {
+
+  private static final long serialVersionUID = 6627620787610127842L;
+
+  private final String collection;
+  private final String name;
+  private final String message;
 
   /**
    * Create a FailedDBOperationException instance.
-   * 
+   *
    * @param collection
    * @param name
    */
   public FailedDBOperationException(String collection, String name) {
     this.collection = collection;
     this.name = name;
+    this.message = null;
+  }
+  
+  public FailedDBOperationException(String collection, String name, String message) {
+    this.collection = collection;
+    this.name = name;
+    this.message = message;
   }
 
   @Override
   public String getMessage() {
-    return "FailedDBOperationException: " + " Collection = " + collection + " Insert = " + name;
+    return "FailedDBOperationException: " + " collection = " + collection + " name = " + name
+            + (message != null ? "message = " + message : "");
   }
 }

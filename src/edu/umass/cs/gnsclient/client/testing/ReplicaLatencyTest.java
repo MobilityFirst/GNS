@@ -19,14 +19,17 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
+import java.io.IOException;
 import java.util.Random;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -73,7 +76,7 @@ import org.apache.commons.cli.ParseException;
 public class ReplicaLatencyTest {
 
   private static String accountAlias = "boo@hoo.com";
-  private static BasicTcpClientV1 client = null;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
 
@@ -96,7 +99,13 @@ public class ReplicaLatencyTest {
       } else {
         address = ServerSelectDialog.selectServer();
       }
-      client = new BasicTcpClientV1(address.getHostName(), address.getPort());
+      try {
+        client = new GNSClientCommands(null);
+      } catch (IOException e) {
+        System.out.println("Unable to create client: " + e);
+        e.printStackTrace();
+        System.exit(1);
+      }
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, accountAlias, "password", true);
       } catch (Exception e) {
@@ -129,8 +138,6 @@ public class ReplicaLatencyTest {
       // Need this on to read the which replica is responding
       //client.setEnableInstrumentation(true);
       test.findSlowGuid(closeActiveReplica);
-//      // Now maybe turn on output
-//      client.setDebuggingEnabled(debug);
       // send the reads and writes
       test.readsAndWrites(closeActiveReplica);
       //test.removeSubGuid();
@@ -201,7 +208,7 @@ public class ReplicaLatencyTest {
       performRead();
       //FIXME
       if (!successLatch && closeActiveReplica.equals(null)) {
-      //if (!successLatch && closeActiveReplica.equals(client.getLastResponder())) {
+        //if (!successLatch && closeActiveReplica.equals(client.getLastResponder())) {
         System.out.println("SUCCESS!");
         successLatch = true;
       }

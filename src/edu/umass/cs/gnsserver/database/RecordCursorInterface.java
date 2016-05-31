@@ -22,7 +22,6 @@ package edu.umass.cs.gnsserver.database;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 /**
  * A cursor that can be used to iterate through a collection of GNS served records as 
  * JSONObjects or HashMaps.
@@ -39,14 +38,6 @@ public interface RecordCursorInterface {
    */
   public JSONObject nextJSONObject() throws FailedDBOperationException;
   
-  /**
-   * Returns the next row as a HashMap.
-   * 
-   * @return the next row as a HashMap
-   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
-   */
-  public HashMap<ColumnField, Object> nextHashMap() throws FailedDBOperationException;
-
   /**
    * Returns true if the collection has more records. 
    * @return true if the collection has more records

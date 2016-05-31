@@ -25,13 +25,14 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import org.json.JSONException;
 import org.json.JSONObject;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -39,7 +40,7 @@ import java.util.Date;
  * The command to retrieve the active code for the specified GUID and action.
  *
  */
-public class Get extends GnsCommand {
+public class Get extends BasicCommand {
 
   /**
    * Creates a Get instance.
@@ -51,14 +52,19 @@ public class Get extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.GetActiveCode;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, READER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return AC_GET;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return AC_GET;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json,
@@ -70,9 +76,9 @@ public class Get extends GnsCommand {
     String action = json.getString(AC_ACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
-    
-    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action, 
+    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+
+    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action,
             reader, signature, message, timestamp, handler));
   }
 

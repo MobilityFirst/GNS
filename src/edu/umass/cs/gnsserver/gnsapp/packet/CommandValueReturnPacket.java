@@ -20,10 +20,12 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +37,7 @@ import org.json.JSONObject;
  * plus instrumentation.
  *
  * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent
- * insofar as the fields in the JOSN Object is concerned.
+ * insofar as the fields in the JSON Object is concerned.
  *
  */
 public class CommandValueReturnPacket extends BasicPacketWithClientAddress implements ClientRequest {
@@ -55,7 +57,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * Identifier of the request.
    */
-  private final long clientRequestId;
+  private /*final*/ long clientRequestId;
   /**
    * The service name from the request. Usually the guid or HRN.
    */
@@ -63,7 +65,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * LNS identifier used by the LNS.
    */
-  private final long LNSRequestId;
+  private /*final*/ long LNSRequestId;
   /**
    * The returned value.
    */
@@ -71,27 +73,27 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * Indicates if the response is an error.
    */
-  private final NSResponseCode errorCode;
+  private final GNSResponseCode errorCode;
   /**
    * Instrumentation - The RTT as measured from the LNS out and back.
    */
-  private final long CPPRoundTripTime; // how long this query took from the CCP out and back
+//  private final long CPPRoundTripTime; // how long this query took from the CCP out and back
   /**
    * Instrumentation - Total command processing time at the LNS.
    */
-  private final long CPPProcessingTime; // how long this query took inside the CCP
+//  private final long CPPProcessingTime; // how long this query took inside the CCP
   /**
    * Instrumentation - what nameserver responded to this query.
    */
-  private final String responder;
+//  private final String responder;
   /**
    * Instrumentation - the request counter from the LNS.
    */
-  private final long requestCnt;
+//  private final long requestCnt;
   /**
    * Instrumentation - the current requests per second from the LNS (can be used to tell how busy LNS is).
    */
-  private final int requestRate;
+//  private final int requestRate;
 
   /**
    * Creates a CommandValueReturnPacket from a CommandResponse.
@@ -113,11 +115,18 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.serviceName = serviceName;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
-    this.CPPRoundTripTime = response.getCCPRoundTripTime();
-    this.CPPProcessingTime = cppProccessingTime;
-    this.responder = response.getResponder();
-    this.requestCnt = requestCnt;
-    this.requestRate = requestRate;
+//    this.CPPRoundTripTime = response.getCCPRoundTripTime();
+//    this.CPPProcessingTime = cppProccessingTime;
+//    this.responder = response.getResponder();
+//    this.requestCnt = requestCnt;
+//    this.requestRate = requestRate;
+  }
+  public CommandValueReturnPacket(long requestId, GNSResponseCode code, String returnValue) {
+	    this.setType(PacketType.COMMAND_RETURN_VALUE);
+	    this.clientRequestId = requestId;
+	    this.serviceName = null;
+	    this.returnValue = returnValue;
+	    this.errorCode = code;
   }
 
   /**
@@ -137,18 +146,17 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.serviceName = json.getString(SERVICENAME);
     this.returnValue = json.getString(RETURNVALUE);
     if (json.has(ERRORCODE)) {
-      this.errorCode = NSResponseCode.getResponseCode(json.getInt(ERRORCODE));
+      this.errorCode = GNSResponseCode.getResponseCode(json.getInt(ERRORCODE));
     } else {
-      this.errorCode = NSResponseCode.NO_ERROR;
+      this.errorCode = GNSResponseCode.NO_ERROR;
     }
     // instrumentation
-    this.requestRate = json.getInt(REQUESTRATE);
-    this.requestCnt = json.getLong(REQUESTCNT);
+//    this.requestRate = json.getInt(REQUESTRATE);
+//    this.requestCnt = json.getLong(REQUESTCNT);
     //
-    this.CPPRoundTripTime = json.optLong(CPPROUNDTRIPTIME, -1);
-    this.CPPProcessingTime = json.optLong(CPPPROCESSINGTIME, -1);
-    this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : json.has(MessageNIOTransport.SNDR_IP_FIELD)
-            ? MessageNIOTransport.getSenderAddress(json).toString() : null;
+//    this.CPPRoundTripTime = json.has(CPPROUNDTRIPTIME) ? json.getLong(CPPROUNDTRIPTIME) : -1;
+//    this.CPPProcessingTime = json.has(CPPPROCESSINGTIME) ? json.getLong(CPPPROCESSINGTIME) : -1;
+//    this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : MessageNIOTransport.getSenderAddressAsString(json);
   }
 
   /**
@@ -170,19 +178,19 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     if (errorCode != null) {
       json.put(ERRORCODE, errorCode.getCodeValue());
     }
-    json.put(REQUESTRATE, requestRate); // instrumentation
-    json.put(REQUESTCNT, requestCnt); // instrumentation
+//    json.put(REQUESTRATE, requestRate); // instrumentation
+//    json.put(REQUESTCNT, requestCnt); // instrumentation
     // instrumentation
-    if (CPPRoundTripTime != -1) {
-      json.put(CPPROUNDTRIPTIME, CPPRoundTripTime);
-    }
-    if (CPPProcessingTime != -1) {
-      json.put(CPPPROCESSINGTIME, CPPProcessingTime);
-    }
+//    if (CPPRoundTripTime != -1) {
+//      json.put(CPPROUNDTRIPTIME, CPPRoundTripTime);
+//    }
+//    if (CPPProcessingTime != -1) {
+//      json.put(CPPPROCESSINGTIME, CPPProcessingTime);
+//    }
     // instrumentation
-    if (responder != null) {
-      json.put(RESPONDER, responder);
-    }
+//    if (responder != null) {
+//      json.put(RESPONDER, responder);
+//    }
     return json;
   }
 
@@ -223,7 +231,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    *
    * @return the error code
    */
-  public NSResponseCode getErrorCode() {
+  public GNSResponseCode getErrorCode() {
     return errorCode;
   }
 
@@ -232,45 +240,45 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    *
    * @return the LNS round trip time
    */
-  public long getCPPRoundTripTime() {
-    return CPPRoundTripTime;
-  }
+//  public long getCPPRoundTripTime() {
+//    return CPPRoundTripTime;
+//  }
 
   /**
    * Get the LNS processing time (instrumentation).
    *
    * @return the LNS processing time
    */
-  public long getCPPProcessingTime() {
-    return CPPProcessingTime;
-  }
+//  public long getCPPProcessingTime() {
+//    return CPPProcessingTime;
+//  }
 
   /**
    * Get the responder host id (instrumentation).
    *
    * @return the responder
    */
-  public String getResponder() {
-    return responder;
-  }
+//  public String getResponder() {
+//    return responder;
+//  }
 
   /**
    * Get the request count (instrumentation).'
    *
    * @return the request count
    */
-  public long getRequestCnt() {
-    return requestCnt;
-  }
+//  public long getRequestCnt() {
+//    return requestCnt;
+//  }
 
   /**
    * Get the request rate (instrumentation).
    *
    * @return the request rate
    */
-  public int getRequestRate() {
-    return requestRate;
-  }
+//  public int getRequestRate() {
+//    return requestRate;
+//  }
 
   @Override
   public ClientRequest getResponse() {
@@ -282,13 +290,13 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     return clientRequestId;
   }
 
+  @Override
   public Object getSummary() {
     return new Object() {
+      @Override
       public String toString() {
-        return (CommandValueReturnPacket.this.responder != null ? CommandValueReturnPacket.this.responder
-                + "->"
-                : "")
-                + CommandValueReturnPacket.this.getRequestType()
+        return 
+                CommandValueReturnPacket.this.getRequestType()
                 + ":"
                 + CommandValueReturnPacket.this.getServiceName()
                 + ":"
@@ -298,4 +306,10 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
       }
     };
   }
+
+public ClientRequest setClientRequestAndLNSIds(long requestID) {
+	this.clientRequestId = requestID;
+	this.LNSRequestId = requestID;
+	return this;
+}
 }

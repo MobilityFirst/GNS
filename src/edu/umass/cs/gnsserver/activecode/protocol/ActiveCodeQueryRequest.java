@@ -23,28 +23,31 @@ import java.io.Serializable;
 
 /**
  * This is the data structure for active code request
- * 
+ *
  * @author Zhaoyu Gao
  */
 public class ActiveCodeQueryRequest implements Serializable {
-	public String guid;
-	public String field;
-	public String valuesMapString;
-	public String action;
-	
-	public ActiveCodeQueryRequest(String guid, String field, String valuesMapString, String action) {
-		this.guid = guid;
-		this.field = field;
-		this.valuesMapString = valuesMapString;
-		this.action = action;
-	}
-	
-	public ActiveCodeQueryRequest() {
-		this.guid = null;
-		this.field = null;
-		this.valuesMapString = null;
-		this.action = null;
-	}
+
+  private static final long serialVersionUID = 2326392043474125897L;
+
+  private String guid;
+  private String field;
+  private String valuesMapString;
+  private String action;
+
+  public ActiveCodeQueryRequest(String guid, String field, String valuesMapString, String action) {
+    this.guid = guid;
+    this.field = field;
+    this.valuesMapString = valuesMapString;
+    this.action = action;
+  }
+
+  public ActiveCodeQueryRequest() {
+    this.guid = null;
+    this.field = null;
+    this.valuesMapString = null;
+    this.action = null;
+  }
 
   public String getGuid() {
     return guid;
@@ -77,6 +80,5 @@ public class ActiveCodeQueryRequest implements Serializable {
   public void setAction(String action) {
     this.action = action;
   }
-        
-        
+
 }

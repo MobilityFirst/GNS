@@ -41,7 +41,6 @@ import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
-import com.amazonaws.services.ec2.model.DomainType;
 import com.amazonaws.services.ec2.model.ImportKeyPairRequest;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
@@ -94,7 +93,7 @@ public class AWSEC2 {
   public static final String DEFAULT_SECURITY_GROUP_NAME = "aws";
 
   private static String currentTab = "";
-  private static final List<String> IPRANGESALL = new ArrayList<String>(Arrays.asList("0.0.0.0/0"));
+  private static final List<String> IPRANGESALL = new ArrayList<>(Arrays.asList("0.0.0.0/0"));
   private static final int HTTPPORT = 80;
   private static final int HTTPSPORT = 443;
   private static final int HTTPNONROOTPORT = 8080;
@@ -146,7 +145,7 @@ public class AWSEC2 {
    * @return a list of zone strings
    */
   public static List<String> getAvailabilityZones(AmazonEC2 ec2) {
-    ArrayList<String> result = new ArrayList<String>();
+    ArrayList<String> result = new ArrayList<>();
     DescribeAvailabilityZonesResult availabilityZonesResult = ec2.describeAvailabilityZones();
     for (AvailabilityZone zone : availabilityZonesResult.getAvailabilityZones()) {
       result.add(zone.getZoneName());
@@ -222,6 +221,7 @@ public class AWSEC2 {
    * Create a New Security Group with our standard permissions
    *
    * @param ec2
+   * @param name
    * @return the name of the new group
    */
   public static String createSecurityGroup(AmazonEC2 ec2, String name) {
@@ -230,7 +230,7 @@ public class AWSEC2 {
     AuthorizeSecurityGroupIngressRequest ingressRequest = new AuthorizeSecurityGroupIngressRequest();
     ingressRequest.setGroupName(name);
 
-    List<IpPermission> permissions = new ArrayList<IpPermission>();
+    List<IpPermission> permissions = new ArrayList<>();
 
     // open up ping (echo request)
     permissions.add(new IpPermission()
@@ -317,6 +317,7 @@ public class AWSEC2 {
    * Create a New Key Pair
    *
    * @param ec2
+   * @param name
    * @return the keypair
    */
   public static KeyPair createKeyPair(AmazonEC2 ec2, String name) {
@@ -463,7 +464,9 @@ public class AWSEC2 {
    * Create an Instance
    *
    * @param ec2
-   * @param securityGroups
+   * @param amiRecord
+   * @param key
+   * @param securityGroup
    * @return the instanceID string
    */
   public static String createInstanceAndWait(AmazonEC2 ec2, AMIRecord amiRecord, String key, SecurityGroup securityGroup) {
@@ -482,7 +485,7 @@ public class AWSEC2 {
     } else {
       runInstancesRequest = new RunInstancesRequest(amiRecord.getName(), 1, 1);
       runInstancesRequest.setInstanceType(amiRecord.getInstanceType());
-      runInstancesRequest.setSecurityGroups(new ArrayList<String>(Arrays.asList(securityGroup.getGroupName())));
+      runInstancesRequest.setSecurityGroups(new ArrayList<>(Arrays.asList(securityGroup.getGroupName())));
       runInstancesRequest.setKeyName(key);
     }
 
@@ -514,7 +517,7 @@ public class AWSEC2 {
 
   /**
    * Creates a volume and attaches and mounts it on the instance at the default secondary mount point
-   * {@link DEFAULTSECONDMOUNTPOINT}. SO DON'T CALL THIS TWICE ON THE SAME INSTANCE!!
+   * DEFAULTSECONDMOUNTPOINT. SO DON'T CALL THIS TWICE ON THE SAME INSTANCE!!
    *
    * @param ec2
    * @param instanceId
@@ -563,7 +566,7 @@ public class AWSEC2 {
   public static Instance findInstance(AmazonEC2 ec2, String createdInstanceId) {
     DescribeInstancesResult describeInstancesResult = ec2.describeInstances();
     List<Reservation> reservations = describeInstancesResult.getReservations();
-    Set<Instance> instances = new HashSet<Instance>();
+    Set<Instance> instances = new HashSet<>();
     // add all instances to a Set.
     for (Reservation reservation : reservations) {
       instances.addAll(reservation.getInstances());
@@ -583,7 +586,7 @@ public class AWSEC2 {
    * @return a set of instance instances
    */
   public static Set<Instance> getInstances(AmazonEC2 ec2) {
-    Set<Instance> instances = new HashSet<Instance>();
+    Set<Instance> instances = new HashSet<>();
     DescribeInstancesResult describeInstancesResult = ec2.describeInstances();
     List<Reservation> reservations = describeInstancesResult.getReservations();
 
@@ -604,11 +607,11 @@ public class AWSEC2 {
     Instance instance = findInstance(ec2, createdInstanceId);
     if (instance != null) {
       StringBuilder output = new StringBuilder();
-      output.append("The public DNS is: " + instance.getPublicDnsName());
+      output.append("The public DNS is: ").append(instance.getPublicDnsName());
       output.append(NEWLINE);
-      output.append("The private IP is: " + instance.getPrivateIpAddress());
+      output.append("The private IP is: ").append(instance.getPrivateIpAddress());
       output.append(NEWLINE);
-      output.append("The public IP is: " + instance.getPublicIpAddress());
+      output.append("The public IP is: ").append(instance.getPublicIpAddress());
       GNSConfig.getLogger().info(output.toString());
     }
   }
@@ -618,12 +621,14 @@ public class AWSEC2 {
    *
    * @param ec2
    * @param createdInstanceId
+   * @param key
+   * @param value
    */
   public static void addInstanceTag(AmazonEC2 ec2, String createdInstanceId, String key, String value) {
-    List<String> resources = new LinkedList<String>();
+    List<String> resources = new LinkedList<>();
     resources.add(createdInstanceId);
 
-    List<Tag> tags = new LinkedList<Tag>();
+    List<Tag> tags = new LinkedList<>();
     Tag nameTag = new Tag(key, value);
     tags.add(nameTag);
 
@@ -639,10 +644,10 @@ public class AWSEC2 {
    * @param tagmap
    */
   public static void addInstanceTags(AmazonEC2 ec2, String createdInstanceId, Map<String, String> tagmap) {
-    List<String> resources = new LinkedList<String>();
+    List<String> resources = new LinkedList<>();
     resources.add(createdInstanceId);
 
-    List<Tag> tags = new LinkedList<Tag>();
+    List<Tag> tags = new LinkedList<>();
     for (Entry<String, String> entry : tagmap.entrySet()) {
       Tag nameTag = new Tag(entry.getKey(), entry.getValue());
       tags.add(nameTag);
@@ -659,7 +664,7 @@ public class AWSEC2 {
    */
   public static void stopInstance(AmazonEC2 ec2, String createdInstanceId) {
     System.out.println("Stopping Instance:" + createdInstanceId);
-    List<String> instanceIds = new LinkedList<String>();
+    List<String> instanceIds = new LinkedList<>();
     instanceIds.add(createdInstanceId);
 
     StopInstancesRequest stopIR = new StopInstancesRequest(instanceIds);
@@ -674,7 +679,7 @@ public class AWSEC2 {
    */
   public static void startInstance(AmazonEC2 ec2, String createdInstanceId) {
     System.out.println("Starting Instance:" + createdInstanceId);
-    List<String> instanceIds = new LinkedList<String>();
+    List<String> instanceIds = new LinkedList<>();
     instanceIds.add(createdInstanceId);
     StartInstancesRequest startIR = new StartInstancesRequest(instanceIds);
     ec2.startInstances(startIR);
@@ -688,7 +693,7 @@ public class AWSEC2 {
    */
   public static void terminateInstance(AmazonEC2 ec2, String createdInstanceId) {
     System.out.println("Terminating Instance:" + createdInstanceId);
-    List<String> instanceIds = new LinkedList<String>();
+    List<String> instanceIds = new LinkedList<>();
     instanceIds.add(createdInstanceId);
     TerminateInstancesRequest tir = new TerminateInstancesRequest(instanceIds);
     ec2.terminateInstances(tir);
@@ -718,6 +723,7 @@ public class AWSEC2 {
    * @param ami
    * @param instanceName
    * @param keyName
+   * @param securityGroupName
    * @param script
    * @param tags
    * @param elasticIP - an IP string or null to indicate that we're just using the address assigned by AWS
@@ -736,6 +742,7 @@ public class AWSEC2 {
    * @param amiRecord
    * @param instanceName
    * @param keyName
+   * @param securityGroupName
    * @param script
    * @param tags
    * @param elasticIP

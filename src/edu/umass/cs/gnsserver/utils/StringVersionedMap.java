@@ -50,8 +50,8 @@ public class StringVersionedMap<KeyType, ValueType> {
    * Create a StringVersionedMap instance.
    */
   public StringVersionedMap() {
-    map = new HashMap<String, ValueType>();
-    keyVersions = new HashMap<KeyType, ArrayList<Integer>>();
+    map = new HashMap<>();
+    keyVersions = new HashMap<>();
   }
 
 	// Inserts [key = keyPrefix.toString()+version, value]
@@ -65,7 +65,7 @@ public class StringVersionedMap<KeyType, ValueType> {
     this.map.put(this.combineIDVersion(keyPrefix.toString(), version), value);
     ArrayList<Integer> versions = this.keyVersions.get(keyPrefix);
     if (versions == null) {
-      versions = new ArrayList<Integer>();
+      versions = new ArrayList<>();
     }
     if (!versions.contains(version)) {
       versions.add(version);
@@ -230,7 +230,7 @@ public class StringVersionedMap<KeyType, ValueType> {
    * @param args
    */
   public static void main(String[] args) {
-    StringVersionedMap<String, Integer> svmap = new StringVersionedMap<String, Integer>();
+    StringVersionedMap<String, Integer> svmap = new StringVersionedMap<>();
     String key1 = "key1";
     int value1 = 24;
     svmap.put(key1, 0, value1);
@@ -257,7 +257,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
     /* Space testing */
     int million = 1000000;
-    int size = (int) (22 * million);
+    int size = 22 * million;
 		//StringVersionedMap<String,String>[] svmarray = new StringVersionedMap[size];
     //HashMap<String,String>[] hmaparray = new HashMap[size];
     byte[][] bytearray = new byte[size][20];
@@ -268,7 +268,7 @@ public class StringVersionedMap<KeyType, ValueType> {
       //hmaparray[i] = new HashMap<String, String>();
       //hmaparray[i].put("key"+i, "value"+i);
       //strarray[i] = new String("str"+i);
-      bytearray[i] = new String("str" + i).getBytes();
+      bytearray[i] = ("str" + i).getBytes();
       if (i % j == 0 || i % (million / 10) == 0) {
         System.out.println(i + " ");
         if (j < million / 2) {

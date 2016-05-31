@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
@@ -35,7 +35,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAndCCP<NodeIDType> implements ClientRequest {
+public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddressAndNs<NodeIDType> implements ClientRequest {
 
   //
   private final static String ID = "id";
@@ -86,9 +86,11 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress, long lnsQueryId,
+  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress,
+          long lnsQueryId,
           int nsQueryId, Object nameServerID, JSONArray records) {
-    return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, records, null, ResponseCode.NOERROR, null);
+    return new SelectResponsePacket<>(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, records, null,
+            ResponseCode.NOERROR, null);
   }
 
   /**
@@ -103,9 +105,11 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
-  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(long id, InetSocketAddress lnsAddress, long lnsQueryId,
+  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(long id,
+          InetSocketAddress lnsAddress, long lnsQueryId,
           int nsQueryId, Object nameServerID, JSONArray guids) {
-    return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, null, guids, ResponseCode.NOERROR, null);
+    return new SelectResponsePacket<>(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID,
+            null, guids, ResponseCode.NOERROR, null);
   }
 
   /**
@@ -122,7 +126,8 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
   @SuppressWarnings("unchecked")
   public static SelectResponsePacket makeFailPacket(long id, InetSocketAddress lnsAddress,
           long lnsQueryId, int nsQueryId, Object nameServer, String errorMessage) {
-    return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServer, null, null, ResponseCode.ERROR, errorMessage);
+    return new SelectResponsePacket<>(id, lnsAddress, lnsQueryId, nsQueryId, nameServer,
+            null, null, ResponseCode.ERROR, errorMessage);
   }
 
   /**
@@ -134,9 +139,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
    */
   public SelectResponsePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json, unstringer);
-//    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-//            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
-    if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {;
+    if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
@@ -184,7 +187,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
 
   /**
    * Return the requestId.
-   * 
+   *
    * @return the requestId
    */
   public long getId() {
@@ -193,16 +196,16 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
 
   /**
    * Return the records.
-   * 
+   *
    * @return the records
    */
-    public JSONArray getRecords() {
+  public JSONArray getRecords() {
     return records;
   }
 
   /**
    * Return the guids.
-   * 
+   *
    * @return the guids
    */
   public JSONArray getGuids() {
@@ -211,7 +214,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
 
   /**
    * Return the LNS query requestId.
-   * 
+   *
    * @return the LNS query requestId
    */
   public long getLnsQueryId() {
@@ -220,7 +223,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
 
   /**
    * Return the NS query requestId.
-   * 
+   *
    * @return the NS query requestId
    */
   public int getNsQueryId() {
@@ -229,16 +232,16 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
 
   /**
    * Return the response code.
-   * 
+   *
    * @return the response code
    */
-    public ResponseCode getResponseCode() {
+  public ResponseCode getResponseCode() {
     return responseCode;
   }
 
   /**
    * Return the error message.
-   * 
+   *
    * @return the error message
    */
   public String getErrorMessage() {
@@ -251,9 +254,9 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnNSAnd
     return "SelectResponse";
   }
 
-   @Override
+  @Override
   public ClientRequest getResponse() {
-   return this.response;
+    return this.response;
   }
 
   @Override

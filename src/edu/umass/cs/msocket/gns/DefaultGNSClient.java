@@ -22,7 +22,7 @@
 package edu.umass.cs.msocket.gns;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 
 
@@ -43,7 +43,7 @@ public class DefaultGNSClient
 	private static final Object lockObj 	      	= new Object();
 	
 	private static String 	gnsHostPort					    = null;
-	private static UniversalTcpClient gnsClient    	= null;
+	private static GNSClientCommands gnsClient    	= null;
 	
 	private static GuidEntry myGuidEntry 	      	= null;
 	
@@ -52,11 +52,14 @@ public class DefaultGNSClient
 	{
 		try
 		{
+                  System.out.println("USING HOST AND PORT WITH A CLIENT IS NOW OBSOLETE!! "
+                          + "See the gigapaxos.properties file.");
 			String gnsString = KeyPairUtils.getDefaultGns();
 			String[] parsed = gnsString.split(":");
 			gnsHostPort = parsed[0]+":"+parsed[1];
 			System.out.println("gnsHostPort "+gnsHostPort);
-			gnsClient = new UniversalTcpClient(parsed[0], Integer.parseInt(parsed[1]), Boolean.parseBoolean(parsed[2]));
+                        
+			gnsClient = new GNSClientCommands();
 			myGuidEntry = KeyPairUtils.getDefaultGuidEntry(gnsHostPort);
 			System.out.println("myGuidEntry "+myGuidEntry.getEntityName()+ " "+myGuidEntry.getGuid());
 		}
@@ -75,7 +78,7 @@ public class DefaultGNSClient
 		return gnsHostPort;
 	}
 	
-	public static UniversalTcpClient getGnsClient()
+	public static GNSClientCommands getGnsClient()
 	{
 		if(defualtObj == null)
 		{

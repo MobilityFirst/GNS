@@ -21,7 +21,8 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class AppendWithDuplicationUnsigned extends AbstractUpdate {
     super(module);
   }
 
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AppendWithDuplicationUnsigned;
+  }
+
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -47,10 +53,10 @@ public class AppendWithDuplicationUnsigned extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION;
   }
 
-  @Override
-  public String getCommandName() {
-    return APPEND_WITH_DUPLICATION;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return APPEND_WITH_DUPLICATION;
+//  }
 
   @Override
   public String[] getCommandParameters() {
@@ -59,7 +65,7 @@ public class AppendWithDuplicationUnsigned extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return  "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates."
+    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates."
             + " Field must be world writeable as this command does not specify the writer and is not signed.";
   }
 }

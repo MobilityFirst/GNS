@@ -19,18 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -38,11 +37,11 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ResetKey extends GnsCommand {
+public class ResetKey extends BasicCommand {
 
   /**
    * Creates a ResetKey instance.
-   * 
+   *
    * @param module
    */
   public ResetKey(CommandModule module) {
@@ -50,22 +49,27 @@ public class ResetKey extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.ResetKey;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, PUBLIC_KEY, PASSWORD};
   }
 
-  @Override
-  public String getCommandName() {
-    return RESET_KEY;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return RESET_KEY;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-      String guid = json.getString(GUID);
-      String publicKey = json.getString(PUBLIC_KEY);
-      String password = json.getString(PASSWORD);
-      return AccountAccess.resetPublicKey(guid, password, publicKey, handler);
+    String guid = json.getString(GUID);
+    String publicKey = json.getString(PUBLIC_KEY);
+    String password = json.getString(PASSWORD);
+    return AccountAccess.resetPublicKey(guid, password, publicKey, handler);
   }
 
   @Override

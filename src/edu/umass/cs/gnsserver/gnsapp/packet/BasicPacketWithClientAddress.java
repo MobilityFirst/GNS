@@ -14,13 +14,12 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.utils.Util;
 
@@ -32,7 +31,7 @@ import org.json.JSONObject;
 /**
  * Provides the basics for Packets including a type field.
  * Includes support for maintaining a clientAddress field
- * using {@link MessageNIOTransport.getSenderAddress}.
+ * using MessageNIOTransport.getSenderAddress.
  *
  * @author westy
  */
@@ -82,7 +81,7 @@ public BasicPacketWithClientAddress setResponse(ClientRequest response) {
   /**
    * Returns the address from which this packet originated.
    * 
-   * @return 
+   * @return the client address
    */
   public InetSocketAddress getClientAddress() {
     return clientAddress;

@@ -19,12 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnamed;
 
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.utils.DelayProfiler;
-
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
@@ -34,6 +32,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 
 /**
  * This class defines a DnsTranslator that serves DNS requests through UDP.
@@ -45,10 +44,10 @@ import java.util.concurrent.Executors;
  */
 public class DnsTranslator extends Thread implements Shutdownable {
 
-  private int port;
-  private DatagramSocket sock;
+  private final int port;
+  private final DatagramSocket sock;
   private ExecutorService executor = null;
-  private ClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface handler;
 
   /**
    * Creates a new <code>DnsTranslator</code> object bound to the given IP/port
@@ -69,10 +68,8 @@ public class DnsTranslator extends Thread implements Shutdownable {
 
   @Override
   public void run() {
-    GNSConfig.getLogger().info("CCP Node starting local DNS Translator server on port " + port);
-    if (NameResolution.debuggingEnabled) {
-      GNSConfig.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gnsserver.localnameserver.gnamed.NameResolution *********");
-    }
+    NameResolution.getLogger().log(Level.INFO,
+            "CCP Node starting local DNS Translator server on port {0}", port);
     while (true) {
       try {
         final short udpLength = 512;
@@ -87,12 +84,11 @@ public class DnsTranslator extends Thread implements Shutdownable {
             continue;
           }
           executor.execute(new LookupWorker(sock, incomingPacket, incomingData, null, null, null, handler));
-          if (NameResolution.debuggingEnabled) {
-            GNSConfig.getLogger().info(DelayProfiler.getStats());
-          }
+          NameResolution.getLogger().fine(DelayProfiler.getStats());
         }
       } catch (IOException e) {
-        GNSConfig.getLogger().severe("Error in DNS Translator Server (will sleep for 3 seconds and try again): " + e);
+        NameResolution.getLogger().log(Level.SEVERE, 
+                "Error in DNS Translator Server (will sleep for 3 seconds and try again): {0}", e);
         ThreadUtils.sleep(3000);
       }
     }

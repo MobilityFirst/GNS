@@ -19,15 +19,16 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  * A test routine that batch creates guids.
  * This one creates the public keys on the server so the resulting
  * guids must be accessed using the account guid.
  * See also account.AddMultipleGuids for the real version.
- * 
+ *
  * @author westy
  */
 public class AddMultipleGuidsFastRandom extends AddMultipleGuids {
@@ -38,6 +39,11 @@ public class AddMultipleGuidsFastRandom extends AddMultipleGuids {
    */
   public AddMultipleGuidsFastRandom(CommandModule module) {
     super(module);
+  }
+
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.AddMultipleGuidsFastRandom;
   }
 
   @Override

@@ -19,13 +19,14 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 
 import java.security.InvalidKeyException;
@@ -43,7 +44,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Read extends GnsCommand {
+public class Read extends BasicCommand {
 
   /**
    *
@@ -52,16 +53,21 @@ public class Read extends GnsCommand {
   public Read(CommandModule module) {
     super(module);
   }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.Read;
+  }
 
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return READ;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return READ;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -69,7 +75,8 @@ public class Read extends GnsCommand {
     String guid = json.getString(GUID);
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(FIELD, null);
-    ArrayList<String> fields = json.has(FIELDS) ? JSONUtils.JSONArrayToArrayListString(json.getJSONArray(FIELDS)) : null;
+    ArrayList<String> fields = json.has(FIELDS) ? 
+            JSONUtils.JSONArrayToArrayListString(json.getJSONArray(FIELDS)) : null;
     // reader might be same as guid
     String reader = json.optString(READER, guid);
     // signature and message can be empty for unsigned cases
@@ -77,7 +84,8 @@ public class Read extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp;
     if (json.has(TIMESTAMP)) {
-      timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+      timestamp = json.has(TIMESTAMP) ? 
+              Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     } else {
       timestamp = null;
     }

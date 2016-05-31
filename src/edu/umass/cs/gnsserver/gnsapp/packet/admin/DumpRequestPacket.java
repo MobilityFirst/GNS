@@ -55,7 +55,7 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithReturnAddress 
   private NodeIDType primaryNameServer;
 
   /**
-   * JOSNObject where the results are kept *
+   * Place where the results are kept *
    */
   private JSONArray jsonArray;
   private String argument;

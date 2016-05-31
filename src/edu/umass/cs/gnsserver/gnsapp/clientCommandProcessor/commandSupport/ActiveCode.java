@@ -19,14 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -79,9 +80,9 @@ public class ActiveCode {
    * @param message
    * @param timestamp
    * @param handler
-   * @return a {@link NSResponseCode}
+   * @return a {@link GNSResponseCode}
    */
-  public static NSResponseCode setCode(String guid, String action, String code, String writer,
+  public static GNSResponseCode setCode(String guid, String action, String code, String writer,
           String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     JSONObject json;
@@ -89,9 +90,9 @@ public class ActiveCode {
       json = new JSONObject();
       json.put(getCodeField(action), code);
     } catch (JSONException e) {
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.GENERIC_ERROR;
     }
-    NSResponseCode response = FieldAccess.updateUserJSON(guid, json,
+    GNSResponseCode response = FieldAccess.updateUserJSON(guid, json,
             writer, signature, message, timestamp, handler);
     return response;
   }
@@ -106,14 +107,14 @@ public class ActiveCode {
    * @param message
    * @param timestamp
    * @param handler
-   * @return a {@link NSResponseCode}
+   * @return a {@link GNSResponseCode}
    */
-  public static NSResponseCode clearCode(String guid, String action,
+  public static GNSResponseCode clearCode(String guid, String action,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     String field = getCodeField(action);
 
-    NSResponseCode response = FieldAccess.update(guid, field, "", null, -1,
+    GNSResponseCode response = FieldAccess.update(guid, field, "", null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, 
             message, timestamp, handler);
     return response;
@@ -127,6 +128,7 @@ public class ActiveCode {
    * @param reader
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return a string
    */
@@ -134,17 +136,17 @@ public class ActiveCode {
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = getCodeField(action);
-    NSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
+    GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isAnError()) {
-      return GnsProtocol.NULL_RESPONSE;
+    if (errorCode.isError()) {
+      return GNSCommandProtocol.NULL_RESPONSE;
     }
     try {
       ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, field,
               handler.getApp(), false);
       return result.getString(field);
     } catch (FailedDBOperationException | JSONException e) {
-      return GnsProtocol.NULL_RESPONSE;
+      return GNSCommandProtocol.NULL_RESPONSE;
     }
   }
 }

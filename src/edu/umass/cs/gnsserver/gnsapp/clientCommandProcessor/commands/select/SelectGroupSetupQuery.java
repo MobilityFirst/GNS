@@ -20,20 +20,21 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnscommon.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Initializes a new group guid to automatically update and maintain all records that satisfy the query.
- * 
+ *
  * @author westy
  */
-public class SelectGroupSetupQuery extends GnsCommand {
+public class SelectGroupSetupQuery extends BasicCommand {
 
   /**
    *
@@ -44,14 +45,19 @@ public class SelectGroupSetupQuery extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.SelectGroupSetupQuery;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, QUERY};
   }
 
-  @Override
-  public String getCommandName() {
-    return SELECT_GROUP;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return SELECT_GROUP;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
@@ -59,7 +65,7 @@ public class SelectGroupSetupQuery extends GnsCommand {
     String query = json.getString(QUERY);
     String publicKey = json.getString(PUBLIC_KEY);
     int interval = json.optInt(INTERVAL, -1);
-    
+
     return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKey, interval, handler);
   }
 

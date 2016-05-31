@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import java.util.StringTokenizer;
 
 import org.json.JSONArray;
@@ -92,7 +92,7 @@ public class FieldCreateList extends ConsoleCommand
       if (st.hasMoreTokens())
         value = st.nextToken();
 
-      UniversalTcpClient gnsClient = module.getGnsClient();
+      GNSClientCommands gnsClient = module.getGnsClient();
       gnsClient.fieldCreateList(module.getCurrentGuid().getGuid(), field, new JSONArray().put(value),
           module.getCurrentGuid());
       console.printString("New field " + field + " created with value '" + value + "'");

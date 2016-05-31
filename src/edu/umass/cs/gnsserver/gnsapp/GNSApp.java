@@ -21,12 +21,15 @@ package edu.umass.cs.gnsserver.gnsapp;
 
 import edu.umass.cs.contextservice.integration.ContextServiceGNSClient;
 import edu.umass.cs.contextservice.integration.ContextServiceGNSInterface;
+import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.ClientMessenger;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.MongoRecords;
@@ -34,10 +37,12 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.CCPListenerAdmin;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -64,20 +69,30 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.httpserver.GnsHttpServer;
+import edu.umass.cs.gnsserver.httpserver.GNSAdminHttpServer;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.nio.MessageExtractor;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
+import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
 import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -89,7 +104,7 @@ import java.util.logging.Level;
  */
 public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         implements GNSApplicationInterface<String>, Replicable, Reconfigurable,
-        ClientMessenger {
+        ClientMessenger, AppRequestParserBytes {
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private String nodeID;
@@ -106,19 +121,26 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   private ClientRequestHandlerInterface requestHandler;
 
   // Keep track of commands that are coming in
-  /**
-   *
-   */
+  	/**
+	 * arun: I am not sure {@link #outStandingQueries} is really needed. It is
+	 * only being used in CommandHandler.handleCommandReturnValuePacketForApp
+	 * that invokes sendClient, but sendClient internally uses
+	 * {@link #outstanding} below that only needs the response, nothing else. If
+	 * you need to preserve the !DELEGATE_CLIENT_MESSAGING options, you could
+	 * read from {@link #outstanding} instead; it is designed to
+	 * auto-garbage-collect.
+	 */
+  @Deprecated
   public final ConcurrentMap<Long, CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
-	private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
-	private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<Long, Request>(
-			new GCConcurrentHashMapCallback() {
-				@Override
-				public void callbackGC(Object key, Object value) {
-				}
-			}, DEFAULT_REQUEST_TIMEOUT);
+  private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
+  private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<>(
+          new GCConcurrentHashMapCallback() {
+    @Override
+    public void callbackGC(Object key, Object value) {
+    }
+  }, DEFAULT_REQUEST_TIMEOUT);
   /**
    * Active code handler
    */
@@ -128,7 +150,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    * context service interface
    */
   private ContextServiceGNSInterface contextServiceGNSClient;
-  
+
   /**
    * Constructor invoked via reflection by gigapaxos.
    *
@@ -150,9 +172,23 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     this.nodeID = messenger.getMyID();
     GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>();
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
-    MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
-    GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}", 
+
+    NoSQLRecords noSqlRecords;
+    try {
+      Class<?> clazz = AppReconfigurableNodeOptions.getNoSqlRecordsClass();
+      Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
+      noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, AppReconfigurableNodeOptions.mongoPort);
+      GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
+      // fallback plan
+      GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
+      noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    }
+    // Switch these two to enable DiskMapRecords
+    //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    //NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
+    GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
             new Object[]{nodeID, nameRecordDB});
     this.messenger = messenger;
     // Create the admin object
@@ -163,70 +199,68 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID),
                     this.nodeConfig.getCcpPort(this.nodeID)),
             nodeID, this,
-            gnsNodeConfig,
-            AppReconfigurableNodeOptions.debuggingEnabled);
+            gnsNodeConfig);
     // Finish admin setup
-    CCPListenerAdmin ccpListenerAdmin = new CCPListenerAdmin(requestHandler);
+    ListenerAdmin ccpListenerAdmin = new ListenerAdmin(requestHandler);
     ccpListenerAdmin.start();
     admintercessor.setListenerAdmin(ccpListenerAdmin);
     new AppAdmin(this, gnsNodeConfig).start();
-    GNSConfig.getLogger().log(Level.INFO, 
+    GNSConfig.getLogger().log(Level.INFO,
             "{0} Admin thread initialized", nodeID);
     // Should add this to the shutdown method - do we have a shutdown method?
-    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
+    GNSAdminHttpServer httpServer = new GNSAdminHttpServer(requestHandler);
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
-    
+
     // context service init
-    if(AppReconfigurableNodeOptions.enableContextService)
-    {
-    	String[] parsed = AppReconfigurableNodeOptions.contextServiceIpPort.split(":");
-    	String host = parsed[0];
-    	int port = Integer.parseInt(parsed[1]);
-    	GNSConfig.getLogger().fine("ContextServiceGNSClient initialization started");
-    	contextServiceGNSClient = new ContextServiceGNSClient(host, port);
-    	GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
+    if (AppReconfigurableNodeOptions.enableContextService) {
+      String[] parsed = AppReconfigurableNodeOptions.contextServiceIpPort.split(":");
+      String host = parsed[0];
+      int port = Integer.parseInt(parsed[1]);
+      GNSConfig.getLogger().fine("ContextServiceGNSClient initialization started");
+      contextServiceGNSClient = new ContextServiceGNSClient(host, port);
+      GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
     }
-    
+
     constructed = true;
   }
 
-  /**
-   * Creates the application.
-   *
-   * @param id
-   * @param nodeConfig
-   * @param messenger
-   * @throws java.io.IOException
-   */
-  @Deprecated
-  public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
-    this.nodeID = id;
-    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-    MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    this.nameRecordDB = new GNSRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
-    GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}", 
-            new Object[]{nodeID, nameRecordDB});
-    this.messenger = messenger;
-    this.requestHandler = new ClientRequestHandler(
-            new Admintercessor(),
-            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
-            nodeID, this,
-            ((GNSNodeConfig<String>) messenger.getNodeConfig()),
-            AppReconfigurableNodeOptions.debuggingEnabled);
-    // Should add this to the shutdown method - do we have a shutdown method?
-    GnsHttpServer httpServer = new GnsHttpServer(requestHandler);
-    // start the NSListenerAdmin thread
-    new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
-    GNSConfig.getLogger().log(Level.INFO, 
-            "{0} Admin thread initialized", nodeID);
-    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
-            AppReconfigurableNodeOptions.activeCodeWorkerCount,
-            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
-    constructed = true;
-  }
-
+//  /**
+//   * Creates the application.
+//   *
+//   * @param id
+//   * @param nodeConfig
+//   * @param messenger
+//   * @throws java.io.IOException
+//   */
+//  @Deprecated
+//  public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
+//    this.nodeID = id;
+//    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
+//    // Switch these two to enable DiskMapRecords
+//    //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+//    NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+//    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
+//    GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}",
+//            new Object[]{nodeID, nameRecordDB});
+//    this.messenger = messenger;
+//    this.requestHandler = new ClientRequestHandler(
+//            new Admintercessor(),
+//            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
+//            nodeID, this,
+//            ((GNSNodeConfig<String>) messenger.getNodeConfig()));
+//    // Should add this to the shutdown method - do we have a shutdown method?
+//    GNSAdminHttpServer httpServer = new GNSAdminHttpServer(requestHandler);
+//    // start the NSListenerAdmin thread
+//    new AppAdmin(this, nodeConfig).start();
+//    GNSConfig.getLogger().log(Level.INFO,
+//            "{0} Admin thread initialized", nodeID);
+//    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
+//            AppReconfigurableNodeOptions.activeCodeWorkerCount,
+//            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
+//    constructed = true;
+//  }
   @Override
   @SuppressWarnings("unchecked")
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
@@ -251,33 +285,83 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     PacketType.COMMAND,
     PacketType.COMMAND_RETURN_VALUE};
 
+  /**
+   * arun: The code below {@link #incrResponseCount(ClientRequest)} and
+   * {@link #executeNoop(Request)} is for instrumentation only and will go
+   * away soon.
+   */
+  private static final int RESPONSE_COUNT_THRESHOLD = 100;
+  private static boolean doneOnce = false;
+
+  private synchronized void incrResponseCount(ClientRequest response) {
+    if (responseCount++ > RESPONSE_COUNT_THRESHOLD
+            && response instanceof CommandValueReturnPacket
+            && (!doneOnce && (doneOnce = true))) {
+      try {
+        this.cachedResponse = ((CommandValueReturnPacket) response)
+                .toJSONObject();
+      } catch (JSONException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+  }
+
+  private static final boolean EXECUTE_NOOP_ENABLED = Config.getGlobalBoolean(GNSC.EXECUTE_NOOP_ENABLED);
+  private int responseCount = 0;
+  private JSONObject cachedResponse = null;
+
+  private boolean executeNoop(Request request) {
+    if (!EXECUTE_NOOP_ENABLED) {
+      return false;
+    }
+    if (cachedResponse != null
+            && request instanceof CommandPacket
+            && ((CommandPacket) request).getCommandType().isRead() 
+          //&& ((CommandPacket) request).getCommandName().equals(GNSCommandProtocol.READ)
+            ) {
+      try {
+        ((BasicPacketWithClientAddress) request)
+                .setResponse(new CommandValueReturnPacket(cachedResponse)
+                        .setClientRequestAndLNSIds(((ClientRequest) request)
+                                .getRequestID()));
+      } catch (JSONException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      return true;
+    }
+    return false;
+  }
+
   @SuppressWarnings("unchecked")
   // we explicitly check type
   @Override
   public boolean execute(Request request, boolean doNotReplyToClient) {
     boolean executed = false;
+    if (executeNoop(request)) {
+      return true;
+    }
     try {
-      Packet.PacketType packetType = request.getRequestType() 
-              instanceof Packet.PacketType 
-              ? (Packet.PacketType) request.getRequestType() 
+      Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType
+              ? (Packet.PacketType) request.getRequestType()
               : null;
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO, "{0} &&&&&&& handling {1} ",
-                new Object[]{this, request.getSummary()});
-      }
-      
+      GNSConfig.getLogger().log(Level.FINE, "{0} &&&&&&& handling {1} ",
+              new Object[]{this, request.getSummary()});
       Request prev = null;
       // arun: enqueue request, dequeue before returning
-      if(request instanceof RequestIdentifier)
-        prev = this.outstanding.putIfAbsent(((RequestIdentifier)request).getRequestID(),
-            request);
-      else assert(false);
-      
+      if (request instanceof RequestIdentifier) {
+        prev = this.outstanding.putIfAbsent(((RequestIdentifier) request).getRequestID(),
+                request);
+      } else {
+        assert (false);
+      }
+
       switch (packetType) {
         case SELECT_REQUEST:
-        	/* FIXED: arun: this needs to be a blocking call, otherwise you are violating
+          /* FIXED: arun: this needs to be a blocking call, otherwise you are violating
         	 * execute(.)'s semantics.
-        	 */
+           */
           Select.handleSelectRequest(
                   (SelectRequestPacket<String>) request, this);
           break;
@@ -285,9 +369,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
           Select.handleSelectResponse(
                   (SelectResponsePacket<String>) request, this);
           break;
-        /* TODO: arun: I assume the GNS doesn't need STOP and NOOP
-				 * anymore; if so, remove them. 
-         */
+        // Keeping STOP and NOOP here because we have to return true below
+        // because returning false might cause reexecution
         case STOP:
           break;
         case NOOP:
@@ -308,14 +391,14 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       executed = true;
 
       // arun: always clean up all created state upon exiting
-			if (request instanceof RequestIdentifier && prev == null) {
-				GNSConfig.getLogger().log(Level.INFO,
-						"{0} dequeueing request {1}",
-						new Object[] { this, request.getSummary() });
-				this.outstanding.remove(((RequestIdentifier) request));
-			}
+      if (request instanceof RequestIdentifier && prev == null) {
+        GNSConfig.getLogger().log(Level.FINE,
+                "{0} dequeueing request {1}",
+                new Object[]{this, request.getSummary()});
+        this.outstanding.remove(request);
+      }
 
-    } catch (JSONException | IOException | GnsClientException e) {
+    } catch (JSONException | IOException | ClientException e) {
       e.printStackTrace();
     } catch (FailedDBOperationException e) {
       // all database operations throw this exception, therefore we keep
@@ -330,8 +413,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               "Error handling request: {0}", request.toString());
       e.printStackTrace();
     }
-    
-    
+
     return executed;
   }
 
@@ -339,21 +421,60 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   @Override
   public Request getRequest(String string)
           throws RequestParseException {
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.FINE, 
-              ">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            ">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
     // Special case handling of NoopPacket packets
     if (Request.NO_OP.equals(string)) {
       return new NoopPacket();
     }
     try {
+      long t = System.nanoTime();
       JSONObject json = new JSONObject(string);
+      if (Util.oneIn(1000)) {
+        DelayProfiler.updateDelayNano("jsonificationApp", t);
+      }
       Request request = (Request) Packet.createInstance(json, nodeConfig);
       return request;
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }
+  }
+
+  /**
+   * This method avoids an unnecessary restringification (as is the case with
+   * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
+   * the sender information, and then creating a packet out of it.
+   *
+   * @param msgBytes
+   * @param header
+   * @param unstringer
+   * @return Request constructed from msgBytes.
+   */
+  public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
+          Stringifiable<String> unstringer) {
+    Request request = null;
+    try {
+      long t = System.nanoTime();
+      JSONObject json = new JSONObject(
+              JSONPacket.couldBeJSON(msgBytes) ? new String(msgBytes,
+              NIOHeader.CHARSET) : new String(msgBytes,
+              Integer.BYTES, msgBytes.length - Integer.BYTES,
+              NIOHeader.CHARSET));
+      MessageExtractor.stampAddressIntoJSONObject(header.sndr,
+              header.rcvr, json);
+      request = (Request) Packet.createInstance(json, unstringer);
+      if (Util.oneIn(100)) {
+        DelayProfiler.updateDelayNano("getRequest." + request.getClass().getSimpleName(), t);
+      }
+    } catch (JSONException | UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    return request;
+  }
+
+  @Override
+  public Request getRequest(byte[] msgBytes, NIOHeader header) {
+    return getRequestStatic(msgBytes, header, nodeConfig);
   }
 
   @Override
@@ -370,20 +491,19 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
   static {
     curValueRequestFields.add(NameRecord.VALUES_MAP);
-    curValueRequestFields.add(NameRecord.TIME_TO_LIVE);
+    //curValueRequestFields.add(NameRecord.TIME_TO_LIVE);
   }
 
   @Override
   public String checkpoint(String name) {
     try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-      NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNSConfig.getLogger().log(Level.INFO,
-                "&&&&&&& {0} getting state {1} ",
-                new Object[]{this, state.getSummary()});
-      }
-      return state.toString();
+      NameRecord nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
+      //NameRecord nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
+      //NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
+      GNSConfig.getLogger().log(Level.FINE,
+              "&&&&&&& {0} getting state {1} ",
+              new Object[]{this, nameRecord.getValuesMap().getSummary()});
+      return nameRecord.getValuesMap().toString();
     } catch (RecordNotFoundException e) {
       // normal result
     } catch (FieldNotFoundException e) {
@@ -401,53 +521,38 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    *
    * @param name
    * @param state
-   * @return true if we were able to update the state
+   * @return true if we were able to updateEntireRecord the state
    */
   @Override
   public boolean restore(String name, String state) {
-    long startTime = System.currentTimeMillis();
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNSConfig.getLogger().log(Level.INFO,
-              "&&&&&&& {0} updating {1} with state [{2}]",
-              new Object[]{this, name, Util.truncate(state, 32, 32)});
-    }
+    GNSConfig.getLogger().log(Level.FINE,
+            "&&&&&&& {0} updating {1} with state [{2}]",
+            new Object[]{this, name, Util.truncate(state, 32, 32)});
     try {
       if (state == null) {
         // If state is null the only thing it means is that we need to delete 
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
-      } else { //state does not equal null so we either create a new record or update the existing one
-        NameRecord nameRecord = null;
-        try {
-          nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-        } catch (RecordNotFoundException e) {
-          // normal result if the field does not exist
-        }
-        if (nameRecord == null) { // create a new record
+      } else //state does not equal null so we either create a new record or update the existing one
+      {
+        if (!NameRecord.containsRecord(nameRecordDB, name)) {
+          // create a new record
           try {
-            NRState nrState = new NRState(state); // parse the new state
-            nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
-                    nrState.valuesMap, nrState.ttl,
-                    nodeConfig.getReplicatedReconfigurators(name));
+            ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
+            NameRecord nameRecord = new NameRecord(nameRecordDB, name, valuesMap);
             NameRecord.addNameRecord(nameRecordDB, nameRecord);
-          } catch (RecordExistsException e) {
-            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state, record already exists: {0}", 
-                    e.getMessage());
-          } catch (JSONException e) {
-            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}",
-                    e.getMessage());
+          } catch (RecordExistsException | JSONException e) {
+            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         } else { // update the existing record
           try {
-            NRState nrState = new NRState(state); // parse the new state
-            nameRecord.updateState(nrState.valuesMap, nrState.ttl);
-          } catch (JSONException | FieldNotFoundException e) {
-            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", 
-                    e.getMessage());
+            NameRecord nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
+            nameRecord.updateState(new ValuesMap(new JSONObject(state)));
+          } catch (JSONException | FieldNotFoundException | RecordNotFoundException | FailedDBOperationException e) {
+            GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         }
       }
-      //DelayProfiler.updateDelay("restore", startTime);
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Failed update exception: {0}", e.getMessage());
@@ -517,35 +622,35 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    * Doing it like below works but requires all client requests to use the
    * same mode (ssl or clear), otherwise JSONMessenger has no through which
    * socket the request came in.
+   *
    * @param responseJSON
    * @throws java.io.IOException
    */
   @Override
-  public void sendToClient(InetSocketAddress isa, Request response, 
-          JSONObject responseJSON, InetSocketAddress myListeningAddress) 
+  public void sendToClient(InetSocketAddress isa, Request response,
+          JSONObject responseJSON, InetSocketAddress myListeningAddress)
           throws IOException {
 
-		if (DELEGATE_CLIENT_MESSAGING) {
-			assert (response instanceof ClientRequest);
-			Request originalRequest = this.outstanding
-					.remove(((ClientRequest) response).getRequestID());
-			assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response)
-					.getSummary();
-			if(originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) 
-				((BasicPacketWithClientAddress) originalRequest)
-						.setResponse((ClientRequest) response);
-				GNSConfig
-						.getLogger()
-						.log(Level.INFO,
-								"{0} set response {1} for requesting client {2} for request {3}",
-								new Object[] {
-										this,
-										response.getSummary(),
-										((BasicPacketWithClientAddress) originalRequest)
-						.getClientAddress() , originalRequest.getSummary()});
-			return;
-		} // else
-	     
+    if (DELEGATE_CLIENT_MESSAGING) {
+      assert (response instanceof ClientRequest);
+      Request originalRequest = this.outstanding
+              .remove(((RequestIdentifier) response).getRequestID());
+      assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response).getSummary();
+      if (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) {
+        ((BasicPacketWithClientAddress) originalRequest)
+                .setResponse((ClientRequest) response);
+        incrResponseCount((ClientRequest) response);
+      }
+      GNSConfig.getLogger().log(Level.FINE,
+              "{0} set response {1} for requesting client {2} for request {3}",
+              new Object[]{
+                this,
+                response.getSummary(),
+                ((BasicPacketWithClientAddress) originalRequest)
+                .getClientAddress(), originalRequest.getSummary()});
+      return;
+    } // else
+
     /* arun: FIXED: You have just ignored the doNotReplyToClient flag
 		 * here, which is against the spec of the implementation of the
 		 * Replicable.execute(.) method. Alternatively, you could just delegate 
@@ -569,7 +674,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 		 * For that we need the corresponding request here so that we can invoke
 		 * request.setResponse(response) here. */
     if (!disableSSL) {
-      GNSConfig.getLogger().log(Level.INFO,
+      GNSConfig.getLogger().log(Level.FINE,
               "{0} sending back response to client {1} -> {2}",
               new Object[]{this, response.getSummary(), isa});
       messenger.getSSLClientMessenger().sendToAddress(isa, responseJSON);
@@ -598,21 +703,14 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }
-  
-  public ContextServiceGNSInterface getContextServiceGNSClient()
-  {
-	  if( contextServiceGNSClient != null )
-	  {
-		  GNSConfig.getLogger().fine("getContextServiceClient non null ");
-	  }
-	  else
-	  {
-		  if( AppReconfigurableNodeOptions.enableContextService )
-		  {
-			  GNSConfig.getLogger().fine("getContextServiceClient NULL ");
-			  assert(false);
-		  }
-  	  }
-  	  return contextServiceGNSClient;
+
+  public ContextServiceGNSInterface getContextServiceGNSClient() {
+    if (contextServiceGNSClient != null) {
+      GNSConfig.getLogger().fine("getContextServiceClient non null ");
+    } else if (AppReconfigurableNodeOptions.enableContextService) {
+      GNSConfig.getLogger().fine("getContextServiceClient NULL ");
+      assert (false);
+    }
+    return contextServiceGNSClient;
   }
 }

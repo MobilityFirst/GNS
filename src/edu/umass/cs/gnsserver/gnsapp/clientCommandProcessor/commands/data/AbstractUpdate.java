@@ -19,15 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
 import java.security.InvalidKeyException;
@@ -36,8 +36,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Arrays;
-
 import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class AbstractUpdate extends GnsCommand {
+public abstract class AbstractUpdate extends BasicCommand {
 
   /**
    *
@@ -75,21 +75,17 @@ public abstract class AbstractUpdate extends GnsCommand {
     String writer = json.optString(WRITER, guid);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    Date timestamp;
-    if (json.has(TIMESTAMP)) {
-      timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
-    } else {
-      timestamp = null;
-    }
+    Date timestamp = json.has(TIMESTAMP) ? 
+            Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (writer.equals(MAGIC_STRING)) {
       writer = null;
     }
 
-    NSResponseCode responseCode;
+    GNSResponseCode responseCode;
     if (field == null) {
       responseCode = FieldAccess.updateUserJSON(guid, userJSON, 
               writer, signature, message, timestamp, handler);
-      if (!responseCode.isAnError()) {
+      if (!responseCode.isError()) {
         return new CommandResponse<>(OK_RESPONSE);
       } else {
         return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
@@ -103,7 +99,7 @@ public abstract class AbstractUpdate extends GnsCommand {
               index,
               getUpdateOperation(),
               writer, signature, message, timestamp,
-              handler)).isAnError()) {
+              handler)).isError()) {
         return new CommandResponse<>(OK_RESPONSE);
       } else {
         return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

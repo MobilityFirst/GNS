@@ -15,23 +15,23 @@
  * Initial developer(s): Westy, arun */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
-import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
+import edu.umass.cs.gnscommon.utils.Base64;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,6 +47,7 @@ import org.junit.AfterClass;
 import static org.junit.Assert.*;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -59,14 +60,14 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
+
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
-import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 
 import java.awt.geom.Point2D;
 import java.util.Set;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONException;
 
 /**
@@ -76,28 +77,11 @@ import org.json.JSONException;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ServerIntegrationTest {
+	  private static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
 
-	private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE
-																	// THIS WITH
-																	// YOUR
-																	// ACCOUNT
-																	// ALIAS
-	private static final String PASSWORD = "password";
-	private static UniversalTcpClientExtended client = null;
-
-	/* arun: Coordinated operations generally need some settling time before
-=======
-  private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE
-  // THIS WITH
-  // YOUR
-  // ACCOUNT
-  // ALIAS
+  private static String accountAlias = DEFAULT_ACCOUNT_ALIAS; // REPLACE																// ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -106,13 +90,32 @@ public class ServerIntegrationTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  public static void setAccountAlias(String alias) {
+	  accountAlias = alias;
+  }
+  private static String SERVER_COMMAND="scripts/3nodeslocal/reset_and_restart.sh";
+  private static String OUTPUT_REDIRECTION=" 2>/tmp/log";
+  
+  public static void setServerCommand(String cmd) {
+	  SERVER_COMMAND=cmd;
+  }
+  public static void setOutputRedirection(String cmd) {
+	  OUTPUT_REDIRECTION=cmd;
+  }
+  
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
+	  String serverCommand = System.getProperty("server.command");
+	  if(serverCommand!=null) {
+		  System.out.println("Running test using server command \""+serverCommand+"\"");
+		  setServerCommand(serverCommand);
+	  }
+	  
     // Run the server.
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
       ArrayList<String> output = RunServer.command(
-              "scripts/3nodeslocal/reset_and_restart.sh 2>/tmp/log", ".");
+    		  SERVER_COMMAND + OUTPUT_REDIRECTION, ".");
       System.out.println("output=" + output);
       if (output != null) {
         for (String line : output) {
@@ -123,44 +126,16 @@ public class ServerIntegrationTest {
       }
     }
     
- // aditya: FIXME: just added a bit of delay, as client was trying to connect before the GNS was getting started.
- 		// need a better way for GNS to start and then start tests
- 		Thread.sleep(50000);
-    if (System.getProperty("host") != null
-            && !System.getProperty("host").isEmpty()
-            && System.getProperty("port") != null
-            && !System.getProperty("port").isEmpty()) {
-      address = new InetSocketAddress(System.getProperty("host"),
-              Integer.parseInt(System.getProperty("port")));
-    } else {
-      address = new InetSocketAddress("127.0.0.1", GNSClientConfig.LNS_PORT);
-    }
-    boolean ssl = (System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null
-            || !System.getProperty(
-                    AppReconfigurableNodeOptions.DISABLE_SSL)
-            .equals("true") ? ReconfigurationConfig
-            .getClientSSLMode() != SSL_MODES.CLEAR : false);
-    System.out.print("Connecting to " + address.getHostName() + ":"
-            + address.getPort() + (ssl ? " [ssl]" : ""));
-    client = new GNSClient(
-            (InetSocketAddress) null,
-            address,
-            // arun: FIXME: System property not shared with server script above 
-            ssl = (System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL) == null
-            || !System.getProperty(
-                    AppReconfigurableNodeOptions.DISABLE_SSL)
-            .equals("true") ? ReconfigurationConfig
-            .getClientSSLMode() != SSL_MODES.CLEAR : false));
-    //new UniversalTcpClientExtended(address.getHostName(),
-    //address.getPort(), System.getProperty(AppReconfigurableNodeOptions.DISABLE_SSL)!=null);
-
+    client = new GNSClientCommands();
+    // Make all the reads be coordinated
+    client.setForceCoordinatedReads(true);
     // arun: connectivity check embedded in GNSClient constructor
     boolean connected = client instanceof GNSClient;
     if (connected) {
-      System.out.println("successful" + (ssl ? " [ssl]" : ""));
+      System.out.println("successful");
     }
 
-    // Now we try to actualy connect to the server we created further above
+    // Now we try to actually connect to the server we created further above
     // using the client.
     int tries = 10;
     if (!connected) {
@@ -188,7 +163,7 @@ public class ServerIntegrationTest {
         System.out.println("Creating account guid: " + (tries - 1)
                 + " attempt remaining.");
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
-                ACCOUNT_ALIAS, PASSWORD, true);
+                accountAlias, PASSWORD, true);
         accountCreated = true;
       } catch (Exception e) {
         ThreadUtils.sleep((5 - tries) * 5000);
@@ -223,26 +198,28 @@ public class ServerIntegrationTest {
   }
 
   private static final int RETRANSMISSION_INTERVAL = 100;
-  private static final int COORDINATION_WAIT = 100;
+  // arun: this should be zero
+  private static final int COORDINATION_WAIT = 00;
 
-  /* arun: Coordinated operations generally need some settling time before
->>>>>>> a2b94a7fd7b3ec3fc2860320d84297a00ebbe8a4
-	 * they can be tested at "any" replica. That is, read-your-writes
-	 * consistency is not ensured if a read following a write happens to go to a
-	 * different replica. Thus, we either need to wait for a long enough
-	 * duration and/or retransmit upon failure.
-	 * 
-	 * I have inserted waitSettle() haphazardly at places. These tests need to
-	 * be systematically fixed by retrying if the expected answer is not found.
-	 * Simply using the async client to resend the request should suffice as
-	 * ReconfigurableAppClientAsync is designed to automatically pick "good"
-	 * active replicas, i.e., it will forget crashed ones for some time; clear
-	 * its cache, re-query, and pick randomly upon an active replica error; and
-	 * pick the replica closest by distance and load otherwise. */
-
-	private static void waitSettle() {
+  /**
+   * arun: Coordinated operations generally need some settling time before
+   * they can be tested at "any" replica. That is, read-your-writes
+   * consistency is not ensured if a read following a write happens to go to a
+   * different replica. Thus, we either need to wait for a long enough
+   * duration and/or retransmit upon failure.
+   *
+   * I have inserted waitSettle() haphazardly at places. These tests need to
+   * be systematically fixed by retrying if the expected answer is not found.
+   * Simply using the async client to resend the request should suffice as
+   * ReconfigurableAppClientAsync is designed to automatically pick "good"
+   * active replicas, i.e., it will forget crashed ones for some time; clear
+   * its cache, re-query, and pick randomly upon an active replica error; and
+   * pick the replica closest by distance and load otherwise.
+   */
+  private static void waitSettle() {
     try {
-      Thread.sleep(COORDINATION_WAIT);
+    	if(COORDINATION_WAIT > 0)
+    		Thread.sleep(COORDINATION_WAIT);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -282,7 +259,7 @@ public class ServerIntegrationTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -309,7 +286,7 @@ public class ServerIntegrationTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -380,7 +357,7 @@ public class ServerIntegrationTest {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(),
               "environment", subGuidEntry);
       fail("Should have thrown an exception.");
-    } catch (GnsFieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       System.out.print("This was expected: " + e);
     } catch (Exception e) {
       System.out.println("Exception testing field not found: " + e);
@@ -392,7 +369,7 @@ public class ServerIntegrationTest {
     try {
       assertFalse(client.fieldExists(subGuidEntry.getGuid(),
               "environment", subGuidEntry));
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
       // System.out.println("This was expected: " + e);
     } catch (Exception e) {
       System.out.println("Exception testing field exists false: " + e);
@@ -436,8 +413,8 @@ public class ServerIntegrationTest {
     waitSettle();
     try {
       // remove default read acces for this test
-      client.aclRemove(AccessType.READ_WHITELIST, westyEntry,
-              GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn",
@@ -461,7 +438,7 @@ public class ServerIntegrationTest {
         fail("Result of read of westy's environment by sam is "
                 + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it in create fields: "
@@ -477,7 +454,7 @@ public class ServerIntegrationTest {
       System.out.print("Using:" + westyEntry);
       System.out.print("; Using:" + samEntry);
       try {
-        client.aclAdd(AccessType.READ_WHITELIST, westyEntry,
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
                 "environment", samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's readlist: " + e);
@@ -505,7 +482,7 @@ public class ServerIntegrationTest {
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
@@ -514,8 +491,8 @@ public class ServerIntegrationTest {
               barneyName);
       waitSettle();
       // remove default read access for this test
-      client.aclRemove(AccessType.READ_WHITELIST, barneyEntry,
-              GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell",
               "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address",
@@ -523,8 +500,8 @@ public class ServerIntegrationTest {
 
       try {
         // let anybody read barney's cell field
-        client.aclAdd(AccessType.READ_WHITELIST, barneyEntry, "cell",
-                GnsProtocol.ALL_USERS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
+                GNSCommandProtocol.ALL_USERS);
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: "
                 + e);
@@ -554,7 +531,7 @@ public class ServerIntegrationTest {
         fail("Result of read of barney's address by sam is "
                 + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -575,15 +552,15 @@ public class ServerIntegrationTest {
       try {
         client.lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(
               client, masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AccessType.READ_WHITELIST, barneyEntry,
-              GnsProtocol.ALL_FIELDS, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry,
+              GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
 
       assertEquals("413-555-1234", client.fieldReadArrayFirstElement(
               barneyEntry.getGuid(), "cell", superuserEntry));
@@ -607,17 +584,17 @@ public class ServerIntegrationTest {
       }
       waitSettle();
       try {
-        client.aclAdd(AccessType.READ_WHITELIST, westyEntry,
-                "test.deeper.field", GnsProtocol.ALL_FIELDS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
+                "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
       } catch (Exception e) {
         fail("Problem adding acl: " + e);
       }
       waitSettle();
       try {
-        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST,
+        JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST,
                 westyEntry, "test.deeper.field", westyEntry.getGuid());
         JSONArray expected = new JSONArray(new ArrayList(
-                Arrays.asList(GnsProtocol.ALL_FIELDS)));
+                Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
@@ -670,7 +647,7 @@ public class ServerIntegrationTest {
       // try {
       // client.fieldCreateOneElementList(westyEntry, "cats", "maya");
       // fail("Should have got an exception when trying to create the field westy / cats.");
-      // } catch (GnsClientException e) {
+      // } catch (ClientException e) {
       // }
       // this one always fails... check it out
       // try {
@@ -678,7 +655,7 @@ public class ServerIntegrationTest {
       // "freddybub",
       // westyEntry);
       // fail("Should have got an exception when trying to create the field westy / frogs.");
-      // } catch (GnsClientException e) {
+      // } catch (ClientException e) {
       // }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats",
               "fred", westyEntry);
@@ -881,7 +858,7 @@ public class ServerIntegrationTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client,
               masterGuid, "deleteMe" + RandomString.randomString(6));
@@ -935,7 +912,7 @@ public class ServerIntegrationTest {
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -953,7 +930,7 @@ public class ServerIntegrationTest {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -963,8 +940,8 @@ public class ServerIntegrationTest {
       groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(client,
               masterGuid, groupAccessUserName);
       // remove all fields read by all
-      client.aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry,
-              GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
     }
@@ -980,7 +957,7 @@ public class ServerIntegrationTest {
       fail("Exception creating group user fields: " + e);
     }
     try {
-      client.aclAdd(AccessType.READ_WHITELIST, groupAccessUserEntry,
+      client.aclAdd(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
               "hometown", mygroupEntry.getGuid());
     } catch (Exception e) {
       fail("Exception adding mygroup to acl for group user hometown field: "
@@ -997,7 +974,7 @@ public class ServerIntegrationTest {
         fail("Result of read of groupAccessUser's age by sam is "
                 + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: "
@@ -1075,7 +1052,7 @@ public class ServerIntegrationTest {
       try {
         client.lookupGuid(alias);
         fail(alias + " should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while checking alias: " + e);
@@ -1087,7 +1064,7 @@ public class ServerIntegrationTest {
     String fieldName = "whereAmI";
     try {
       try {
-        client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry,
+        client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry,
                 fieldName, samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's writelist: " + e);
@@ -1123,7 +1100,7 @@ public class ServerIntegrationTest {
         client.fieldReplaceFirstElement(westyEntry.getGuid(),
                 fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName
@@ -1142,16 +1119,16 @@ public class ServerIntegrationTest {
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AccessType.READ_WHITELIST, westyEntry,
-              unsignedReadFieldName, GnsProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
+              unsignedReadFieldName, GNSCommandProtocol.ALL_USERS);
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), unsignedReadFieldName, null));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
-      // client.removeFromACL(AccessType.READ_WHITELIST, westyEntry,
-      // GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      // client.removeFromACL(AclAccessType.READ_WHITELIST, westyEntry,
+      // GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       try {
         String result = client.fieldReadArrayFirstElement(
                 westyEntry.getGuid(), standardReadFieldName, null);
@@ -1160,7 +1137,7 @@ public class ServerIntegrationTest {
                 + " as world readable was "
                 + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -1175,8 +1152,8 @@ public class ServerIntegrationTest {
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry,
-              unsignedWriteFieldName, GnsProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry,
+              unsignedWriteFieldName, GNSCommandProtocol.ALL_USERS);
       client.fieldReplaceFirstElement(westyEntry.getGuid(),
               unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(
@@ -1189,7 +1166,7 @@ public class ServerIntegrationTest {
                 standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName
                 + " as world readable should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -1225,7 +1202,7 @@ public class ServerIntegrationTest {
 
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }
@@ -1278,18 +1255,17 @@ public class ServerIntegrationTest {
     }
   }
 
-  @Test
-  public void test_310_BasicSelect() {
-    try {
-      JSONArray result = client.select("cats", "fred");
-      // best we can do since there will be one, but possibly more objects
-      // in results
-      assertThat(result.length(), greaterThanOrEqualTo(1));
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
-
+//  @Test
+//  public void test_310_BasicSelect() {
+//    try {
+//      JSONArray result = client.select("cats", "fred");
+//      // best we can do since there will be one, but possibly more objects
+//      // in results
+//      assertThat(result.length(), greaterThanOrEqualTo(1));
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
   @Test
   public void test_320_GeoSpatialSelect() {
     try {
@@ -1297,9 +1273,13 @@ public class ServerIntegrationTest {
         GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client,
                 masterGuid, "geoTest-" + RandomString.randomString(6));
         client.setLocation(testEntry, 0.0, 0.0);
+        // arun: added this but unclear why we should need this at all
+        JSONArray location = client.getLocation(testEntry.getGuid(), testEntry);
+        assert(location.getDouble(0)==0.0 && location.getDouble(1)==0.0);
       }
+      //Thread.sleep(2000); // wait a bit to make sure everything is updated
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while writing fields for GeoSpatialSelect: " + e);
     }
 
     try {
@@ -1307,8 +1287,7 @@ public class ServerIntegrationTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(
-              GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1327,8 +1306,7 @@ public class ServerIntegrationTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(
-              GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1377,8 +1355,7 @@ public class ServerIntegrationTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(
-              GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
@@ -1714,6 +1691,32 @@ public class ServerIntegrationTest {
     }
   }
 
+  private static final String BYTE_TEST_FIELD = "testBytes";
+  private static byte[] byteTestValue;
+
+  @Test
+  public void test_440_CreateBytesField() {
+    try {
+      byteTestValue = RandomUtils.nextBytes(16000);
+      String encodedValue = Base64.encodeToString(byteTestValue, true);
+      //System.out.println("Encoded string: " + encodedValue);
+      client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
+    } catch (IOException | ClientException | JSONException e) {
+      fail("Exception during create field: " + e);
+    }
+  }
+
+  @Test
+  public void test_441_ReadBytesField() {
+    try {
+      String string = client.fieldRead(masterGuid, BYTE_TEST_FIELD);
+      //System.out.println("Read string: " + string);
+      assertArrayEquals(byteTestValue, Base64.decode(string));
+    } catch (Exception e) {
+      fail("Exception while reading field: " + e);
+    }
+  }
+
   private static int numberTocreate = 100;
   private static GuidEntry accountGuidForBatch = null;
 
@@ -1744,12 +1747,12 @@ public class ServerIntegrationTest {
     int oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForBatch, aliases, true);
+      result = client.guidBatchCreate(accountGuidForBatch, aliases);
       client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -1758,96 +1761,96 @@ public class ServerIntegrationTest {
       JSONObject accountRecord = client
               .lookupAccountRecord(accountGuidForBatch.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
 
-  private static GuidEntry accountGuidForWithoutPublicKeys = null;
-
-  @Test
-  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
-    try {
-      String batchAccountAlias = "batchTest"
-              + RandomString.randomString(6) + "@gns.name";
-      accountGuidForWithoutPublicKeys = GuidUtils
-              .lookupOrCreateAccountGuid(client, batchAccountAlias,
-                      "password", true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
-
-  @Test
-  public void test_521_CreateBatchWithoutPublicKeys() {
-    Set<String> aliases = new HashSet<>();
-    for (int i = 0; i < numberTocreate; i++) {
-      aliases.add("testGUID" + RandomString.randomString(6));
-    }
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForWithoutPublicKeys,
-              aliases, false);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
-  }
-
-  @Test
-  public void test_522_CheckBatchForWithoutPublicKeys() {
-    try {
-      JSONObject accountRecord = client
-              .lookupAccountRecord(accountGuidForWithoutPublicKeys
-                      .getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
-      fail("Exception while fetching account record: " + e);
-    }
-  }
-
-  private static GuidEntry accountGuidForFastest = null;
-
-  @Test
-  public void test_530_CreateBatchAccountGuidForForFastest() {
-    try {
-      String batchAccountAlias = "batchTest"
-              + RandomString.randomString(6) + "@gns.name";
-      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client,
-              batchAccountAlias, "password", true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
-
-  @Test
-  public void test_531_CreateBatchFastest() {
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreateFast(accountGuidForFastest,
-              numberTocreate);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
-  }
-
-  @Test
-  public void test_532_CheckBatchForFastest() {
-    try {
-      JSONObject accountRecord = client
-              .lookupAccountRecord(accountGuidForFastest.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
-      fail("Exception while fetching account record: " + e);
-    }
-  }
+//  private static GuidEntry accountGuidForWithoutPublicKeys = null;
+//
+//  @Test
+//  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
+//    try {
+//      String batchAccountAlias = "batchTest"
+//              + RandomString.randomString(6) + "@gns.name";
+//      accountGuidForWithoutPublicKeys = GuidUtils
+//              .lookupOrCreateAccountGuid(client, batchAccountAlias,
+//                      "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
+//
+//  @Test
+//  public void test_521_CreateBatchWithoutPublicKeys() {
+//    Set<String> aliases = new HashSet<>();
+//    for (int i = 0; i < numberTocreate; i++) {
+//      aliases.add("testGUID" + RandomString.randomString(6));
+//    }
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(15 * 1000); // 30 seconds
+//      result = client.guidBatchCreate(accountGuidForWithoutPublicKeys,
+//              aliases, false);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
+//  }
+//
+//  @Test
+//  public void test_522_CheckBatchForWithoutPublicKeys() {
+//    try {
+//      JSONObject accountRecord = client
+//              .lookupAccountRecord(accountGuidForWithoutPublicKeys
+//                      .getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | ClientException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
+//
+//  private static GuidEntry accountGuidForFastest = null;
+//
+//  @Test
+//  public void test_530_CreateBatchAccountGuidForForFastest() {
+//    try {
+//      String batchAccountAlias = "batchTest"
+//              + RandomString.randomString(6) + "@gns.name";
+//      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client,
+//              batchAccountAlias, "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
+//
+//  @Test
+//  public void test_531_CreateBatchFastest() {
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(15 * 1000); // 30 seconds
+//      result = client.guidBatchCreateFast(accountGuidForFastest,
+//              numberTocreate);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
+//  }
+//
+//  @Test
+//  public void test_532_CheckBatchForFastest() {
+//    try {
+//      JSONObject accountRecord = client
+//              .lookupAccountRecord(accountGuidForFastest.getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | ClientException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
 
   private static String createIndexTestField;
 
@@ -1888,95 +1891,88 @@ public class ServerIntegrationTest {
       fail("Exception executing second selectNear: " + e);
     }
   }
-  
-	// test to check context service triggers.
-	// these two attributes right now are supported by CS
-	@Test
-	public void test_811_contextServiceTest() {
-		// run it only when CS is enabled
-		//FIXME: right now options are not shared, so just reading the ns.properties file
-		// to check if context service is enabled.
-		HashMap<String, String> propMap = readingOptionsFromNSProperties();
-		boolean enableContextService = false;
-		String csIPPort = "";
-		if( propMap.containsKey(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE) )
-		{
-			enableContextService = 
-			Boolean.parseBoolean(propMap.get(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE));
-			
-			csIPPort = propMap.get(AppReconfigurableNodeOptions.CONTEXT_SERVICE_IP_PORT);
-		}
-				
-		if( enableContextService )
-		{
-			try {
-				JSONObject attrValJSON = new JSONObject();
-				attrValJSON.put("geoLocationCurrentLat", 42.466);
-				attrValJSON.put("geoLocationCurrentLong", -72.58);
-				
-				client.update(masterGuid, attrValJSON);
-				// just wait for 2 sec before sending search
-				Thread.sleep(2000);
-				
-				String[] parsed = csIPPort.split(":");
-				String csIP = parsed[0];
-				int csPort = Integer.parseInt(parsed[1]);
-				
-				ContextServiceClient<Integer> csClient 
-					= new ContextServiceClient<Integer>(csIP, csPort);
-				
-				// context service query format
-				String query = 
-						"SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE geoLocationCurrentLat >= 40 "
-						+ "AND geoLocationCurrentLat <= 50 AND "
-						+ "geoLocationCurrentLong >= -80 AND "
-						+ "geoLocationCurrentLong <= -70";
-				JSONArray resultArray = new JSONArray();
-				// third argument is arbitrary expiry time, not used now
-				int resultSize = csClient.sendSearchQuery(query, resultArray, 300000);
-				assertThat(resultSize, greaterThanOrEqualTo(1));
-				
-			} catch (Exception e) {
-				e.printStackTrace();
-				fail("Exception during contextServiceTest: " + e);
-			}
-		}
-	}
-	
-	private HashMap<String, String> readingOptionsFromNSProperties()
-	{
-		HashMap<String, String> propMap = new HashMap<String, String>();
-		
-		BufferedReader br = null;
-		try 
-		{
-			String sCurrentLine;
-			
-			br = new BufferedReader(new FileReader("scripts/3nodeslocal/ns.properties"));
-			
-			
-			while ((sCurrentLine = br.readLine()) != null) 
-			{
-				String[] parsed = sCurrentLine.split("=");
-				
-				if(parsed.length ==2 )
-				{
-					propMap.put(parsed[0].trim(), parsed[1].trim());
-				}
-			}
-		} catch (IOException e) 
-		{
-			e.printStackTrace();
-		} finally 
-		{
-			try {
-				if (br != null)br.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
-		return propMap;
-	}
+
+  // test to check context service triggers.
+  // these two attributes right now are supported by CS
+  @Test
+  public void test_811_contextServiceTest() {
+    // run it only when CS is enabled
+    //FIXME: right now options are not shared, so just reading the ns.properties file
+    // to check if context service is enabled.
+    HashMap<String, String> propMap = readingOptionsFromNSProperties();
+    boolean enableContextService = false;
+    String csIPPort = "";
+    if (propMap.containsKey(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE)) {
+      enableContextService
+              = Boolean.parseBoolean(propMap.get(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE));
+
+      csIPPort = propMap.get(AppReconfigurableNodeOptions.CONTEXT_SERVICE_IP_PORT);
+    }
+
+    if (enableContextService) {
+      try {
+        JSONObject attrValJSON = new JSONObject();
+        attrValJSON.put("geoLocationCurrentLat", 42.466);
+        attrValJSON.put("geoLocationCurrentLong", -72.58);
+
+        client.update(masterGuid, attrValJSON);
+        // just wait for 2 sec before sending search
+        Thread.sleep(2000);
+
+        String[] parsed = csIPPort.split(":");
+        String csIP = parsed[0];
+        int csPort = Integer.parseInt(parsed[1]);
+
+        ContextServiceClient<Integer> csClient
+                = new ContextServiceClient<Integer>(csIP, csPort);
+
+        // context service query format
+        String query
+                = "SELECT GUID_TABLE.guid FROM GUID_TABLE WHERE geoLocationCurrentLat >= 40 "
+                + "AND geoLocationCurrentLat <= 50 AND "
+                + "geoLocationCurrentLong >= -80 AND "
+                + "geoLocationCurrentLong <= -70";
+        JSONArray resultArray = new JSONArray();
+        // third argument is arbitrary expiry time, not used now
+        int resultSize = csClient.sendSearchQuery(query, resultArray, 300000);
+        assertThat(resultSize, greaterThanOrEqualTo(1));
+
+      } catch (Exception e) {
+        e.printStackTrace();
+        fail("Exception during contextServiceTest: " + e);
+      }
+    }
+  }
+
+  private HashMap<String, String> readingOptionsFromNSProperties() {
+    HashMap<String, String> propMap = new HashMap<String, String>();
+
+    BufferedReader br = null;
+    try {
+      String sCurrentLine;
+
+      br = new BufferedReader(new FileReader("scripts/3nodeslocal/ns.properties"));
+
+      while ((sCurrentLine = br.readLine()) != null) {
+        String[] parsed = sCurrentLine.split("=");
+
+        if (parsed.length == 2) {
+          propMap.put(parsed[0].trim(), parsed[1].trim());
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      try {
+        if (br != null) {
+          br.close();
+        }
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
+    return propMap;
+  }
 
   // HELPER STUFF
   private static final String POLYGON = "Polygon";

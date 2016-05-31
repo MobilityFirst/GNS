@@ -19,9 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class SubstituteList extends AbstractUpdateList {
     super(module);
   }
 
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.SubstituteList;
+  }
+
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -47,10 +53,10 @@ public class SubstituteList extends AbstractUpdateList {
     return UpdateOperation.SINGLE_FIELD_SUBSTITUTE;
   }
 
-  @Override
-  public String getCommandName() {
-    return SUBSTITUTE_LIST;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return SUBSTITUTE_LIST;
+//  }
 
   @Override
   public String[] getCommandParameters() {

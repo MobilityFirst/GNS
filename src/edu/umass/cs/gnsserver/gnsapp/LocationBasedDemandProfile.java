@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy, arun
+ *  Initial developer(s): Westy, arun
  *
  */
 package edu.umass.cs.gnsserver.gnsapp;
@@ -23,25 +23,25 @@ import com.google.common.net.InetAddresses;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 
+import edu.umass.cs.gnscommon.CommandType;
 import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 import edu.umass.cs.utils.DefaultTest;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -62,22 +62,37 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    */
   public enum Keys {
 
-    
-    /** SERVICE_NAME */ 
-    SERVICE_NAME, 
-    /** STATS */ 
-    STATS, 
-    /** RATE */ 
-    RATE, 
-    /** NUM_REQUESTS */ 
+    /**
+     * SERVICE_NAME
+     */
+    SERVICE_NAME,
+    /**
+     * STATS
+     */
+    STATS,
+    /**
+     * RATE
+     */
+    RATE,
+    /**
+     * NUM_REQUESTS
+     */
     NUM_REQUESTS,
-    /** NUM_TOTAL_REQUESTS */ 
-    NUM_TOTAL_REQUESTS, 
-    /** VOTES_MAP */ 
-    VOTES_MAP, 
-    /** LOOKUP_COUNT */ 
-    LOOKUP_COUNT, 
-    /** UPDATE_COUNT */ 
+    /**
+     * NUM_TOTAL_REQUESTS
+     */
+    NUM_TOTAL_REQUESTS,
+    /**
+     * VOTES_MAP
+     */
+    VOTES_MAP,
+    /**
+     * LOOKUP_COUNT
+     */
+    LOOKUP_COUNT,
+    /**
+     * UPDATE_COUNT
+     */
     UPDATE_COUNT
   };
 
@@ -102,13 +117,11 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   private VotesMap votesMap = new VotesMap();
   private int lookupCount = 0;
   private int updateCount = 0;
-  
-  private boolean debuggingEnabled = false;
 
   /**
    * Create a LocationBasedDemandProfile instance.
-   * 
-   * @param name 
+   *
+   * @param name
    */
   public LocationBasedDemandProfile(String name) {
     super(name);
@@ -116,8 +129,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   /**
    * Create a LocationBasedDemandProfile instance by making a deep copy of another instance.
-   * 
-   * @param dp 
+   *
+   * @param dp
    */
   public LocationBasedDemandProfile(LocationBasedDemandProfile dp) {
     super(dp.name);
@@ -131,8 +144,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   /**
-   * Create a LocationBasedDemandProfile instance from a JSON packet. 
-   * 
+   * Create a LocationBasedDemandProfile instance from a JSON packet.
+   *
    * @param json
    * @throws org.json.JSONException
    */
@@ -144,16 +157,12 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.votesMap = new VotesMap(json.getJSONObject(Keys.VOTES_MAP.toString()));
     this.lookupCount = json.getInt(Keys.LOOKUP_COUNT.toString());
     this.updateCount = json.getInt(Keys.UPDATE_COUNT.toString());
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP AFTER READ: " + this.votesMap);
-    }
+    LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} VOTES MAP AFTER READ: {1}", new Object[]{this.name, this.votesMap});
   }
 
   @Override
   public JSONObject getStats() {
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP BEFORE GET STATS: " + this.votesMap);
-    }
+    LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} VOTES MAP BEFORE GET STATS: {1}", new Object[]{this.name, this.votesMap});
     JSONObject json = new JSONObject();
     try {
       json.put(Keys.SERVICE_NAME.toString(), this.name);
@@ -166,49 +175,51 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     } catch (JSONException je) {
       je.printStackTrace();
     }
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " GET STATS: " + json);
-    }
+    LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} GET STATS: {1}", new Object[]{this.name, json});
     return json;
   }
 
   /**
-   * Create an empty LocationBasedDemandProfile instance for a name. 
+   * Create an empty LocationBasedDemandProfile instance for a name.
+   *
    * @param name
    * @return New demand profile for {@code name}.
    */
   public static LocationBasedDemandProfile createDemandProfile(String name) {
     return new LocationBasedDemandProfile(name);
   }
-  
-	/**
-	 * arun: ignore create, delete, and select commands. We only want to
-	 * consider typical read/write commands. Note that select commands are not
-	 * expected to have any locality, so they are unlikely to benefit from any
-	 * locality based placement.
-	 * 
-	 * @param request
-	 * @return
-	 */
-	private static boolean shouldIgnore(Request request) {
-		if (!(request instanceof CommandPacket))
-			return true;
-		// else
-		CommandPacket command = (CommandPacket) request;
-		if (GnsProtocol.CREATE_DELETE_COMMANDS.contains(command
-				.getCommandName())
-				|| GnsProtocol.SELECT.equals(command.getCommandName()))
-			return true;
-		return false;
-	}
+
+  /**
+   * arun: ignore create, delete, and select commands. We only want to
+   * consider typical read/write commands. Note that select commands are not
+   * expected to have any locality, so they are unlikely to benefit from any
+   * locality based placement.
+   *
+   * @param request
+   * @return
+   */
+  private static boolean shouldIgnore(Request request) {
+    if (!(request instanceof CommandPacket)) {
+      return true;
+    }
+    // else
+    CommandPacket command = (CommandPacket) request;
+    return command.getCommandType().isCreateDelete()
+            || command.getCommandType().isSelect();
+//    return GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(command.getCommandName())
+//            || GNSCommandProtocol.SELECT.equals(command.getCommandName());
+  }
 
   @Override
   public void register(Request request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
-    if (!request.getServiceName().equals(this.name)) 
+    if (!request.getServiceName().equals(this.name)) {
       return;
-    
-    if(shouldIgnore(request)) return;
-    
+    }
+
+    if (shouldIgnore(request)) {
+      return;
+    }
+
     // This happens when called from a reconfigurator
     if (nodeConfig == null) {
       return;
@@ -233,9 +244,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     } else {
       lookupCount++;
     }
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER REGISTER:" + this.toString());
-    }
+    LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER REGISTER:{0}", this.toString());
   }
 
   private InetAddress findActiveReplicaClosestToSender(InetAddress sender, List<InetAddress> allActives) {
@@ -254,16 +263,16 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   // TODO: arun: should use better IP-to-geo techniques here.
   private int distanceBetween(InetAddress one, InetAddress two) {
-		int result;
-		try {
-			// Probably a stupid matcher but it gets close.
-			result = InetAddresses.coerceToInteger(one)
-					^ InetAddresses.coerceToInteger(two);
-		} catch (Exception e) {
-			result = Integer.MAX_VALUE;
-		}
-		return result;
-	}
+    int result;
+    try {
+      // Probably a stupid matcher but it gets close.
+      result = InetAddresses.coerceToInteger(one)
+              ^ InetAddresses.coerceToInteger(two);
+    } catch (Exception e) {
+      result = Integer.MAX_VALUE;
+    }
+    return result;
+  }
 
   @Override
   public void reset() {
@@ -292,25 +301,19 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.updateCount += update.updateCount;
     this.lookupCount += update.lookupCount;
     this.votesMap.combine(update.getVotesMap());
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER COMBINE:" + this.toString());
-    }
+    LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER COMBINE:{0}", this.toString());
   }
 
   @Override
   public boolean shouldReport() {
-    if (getNumRequests() >= NUMBER_OF_REQUESTS_BETWEEN_REPORTS) {
-      return true;
-    }
-    return false;
+    return getNumRequests() >= NUMBER_OF_REQUESTS_BETWEEN_REPORTS;
   }
 
   @Override
   public void justReconfigured() {
     this.lastReconfiguredProfile = this.clone();
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER CLONE:" + this.lastReconfiguredProfile.toString());
-    }
+    LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER CLONE:{0}",
+            this.lastReconfiguredProfile.toString());
   }
 
   @Override
@@ -320,31 +323,27 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
       return null;
     }
     if (this.lastReconfiguredProfile != null) {
-      if (debuggingEnabled) {
-        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: " + this.lastReconfiguredProfile.toString());
-        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> CURRENT: " + this.toString());
-        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> interval: "
-                + (System.currentTimeMillis() - this.lastReconfiguredProfile.lastRequestTime));
-      }
+      LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: {0}", this.lastReconfiguredProfile.toString());
+      LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> CURRENT: {0}", this.toString());
+      LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> interval: {0}",
+              (System.currentTimeMillis() - this.lastReconfiguredProfile.lastRequestTime));
       if (System.currentTimeMillis()
               - this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL) {
         return null;
       }
-      if (debuggingEnabled) {
-        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> request diff: "
-                + (this.numTotalRequests - this.lastReconfiguredProfile.numTotalRequests));
-      }
+      LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> request diff: {0}",
+              (this.numTotalRequests - this.lastReconfiguredProfile.numTotalRequests));
+
       if (this.numTotalRequests
               - this.lastReconfiguredProfile.numTotalRequests < NUMBER_OF_REQUESTS_BETWEEN_RECONFIGURATIONS) {
         return null;
       }
     }
     int numberOfReplicas = computeNumberOfReplicas(lookupCount, updateCount, nodeConfig.getActiveIPs().size());
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP: " + this.votesMap
-              + " TOP: " + this.votesMap.getTopN(numberOfReplicas) + " Lookup: " + lookupCount
-              + " Update: " + updateCount + " ReplicaCount: " + numberOfReplicas);
-    }
+    LOG.log(Level.INFO, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> {0} "
+            + "VOTES MAP: {1} TOP: {2} Lookup: {3} Update: {4} ReplicaCount: {5}",
+            new Object[]{this.name, this.votesMap, this.votesMap.getTopN(numberOfReplicas),
+              lookupCount, updateCount, numberOfReplicas});
 
     return pickNewActiveReplicas(numberOfReplicas, curActives,
             this.votesMap.getTopN(numberOfReplicas),
@@ -368,23 +367,19 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
     // If we need more replicas than we have just return them all
     if (numReplica >= allActives.size()) {
-      if (debuggingEnabled) {
-        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> RETURNING ALL");
-      }
+      LOG.fine("%%%%%%%%%%%%%%%%%%%%%%%%%>>> RETURNING ALL");
       return allActives;
     }
 
     // Otherwise get the topN from the votes list
-    ArrayList<InetAddress> newActives = new ArrayList<InetAddress>(topN);
-    if (debuggingEnabled) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> TOP N: " + newActives);
-    }
+    ArrayList<InetAddress> newActives = new ArrayList<>(topN);
+    LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> TOP N: {0}", newActives);
 
     // If we have too many in top N then remove some from the end and return this list.
     // BTW: This is the only case that could maybe use some work because it 
     // totally ignores the current active set.
     if (numReplica < newActives.size()) {
-      return new ArrayList<InetAddress>(newActives.subList(0, numReplica));
+      return new ArrayList<>(newActives.subList(0, numReplica));
     }
 
     // Otherwise we need more than is contained in the top n.
@@ -398,9 +393,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
           newActives.add(current);
         }
       }
-      if (debuggingEnabled) {
-        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH CURRENT ADDED: " + newActives);
-      }
+      LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH CURRENT ADDED: {0}", newActives);
     }
 
     // If we still need more add some random ones from the active replicas list
@@ -417,9 +410,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
           newActives.add(ip);
         }
       }
-      if (debuggingEnabled) {
-        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH RANDOM ADDED: " + newActives);
-      }
+      LOG.log(Level.FINE, "%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH RANDOM ADDED: {0}", newActives);
     }
 
     return newActives;
@@ -445,14 +436,14 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
       return Math.min(Math.min(actualReplicasCount, AppReconfigurableNodeOptions.maxReplica),
               // Or smaller than the min configured amount
               Math.max(AppReconfigurableNodeOptions.minReplica,
-                      (int) StrictMath.round(((double) lookupCount
-                              / ((double) updateCount * AppReconfigurableNodeOptions.normalizingConstant)))));
+                      (int) StrictMath.round((lookupCount
+                              / (updateCount * AppReconfigurableNodeOptions.normalizingConstant)))));
     }
   }
 
   /**
    * Returns the request rate.
-   * 
+   *
    * @return the request rate
    */
   public double getRequestRate() {
@@ -462,7 +453,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   /**
    * Return the number of requests.
-   * 
+   *
    * @return the number of requests
    */
   public double getNumRequests() {
@@ -471,24 +462,29 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   /**
    * Return the total number of requests.
-   * 
+   *
    * @return the total number of requests
    */
   public double getNumTotalRequests() {
     return this.numTotalRequests;
   }
-/**
- * Return the votes map.
- * 
- * @return the votes map
- */
+
+  /**
+   * Return the votes map.
+   *
+   * @return the votes map
+   */
   public VotesMap getVotesMap() {
     return votesMap;
   }
 
   @Override
   public String toString() {
-    return "LocationBasedDemandProfile{" + "interArrivalTime=" + interArrivalTime + ", lastRequestTime=" + lastRequestTime + ", numRequests=" + numRequests + ", numTotalRequests=" + numTotalRequests + ", lastReconfiguredProfile=" + lastReconfiguredProfile + ", votesMap=" + votesMap + ", lookupCount=" + lookupCount + ", updateCount=" + updateCount + '}';
+    return "LocationBasedDemandProfile{" + "interArrivalTime="
+            + interArrivalTime + ", lastRequestTime=" + lastRequestTime
+            + ", numRequests=" + numRequests + ", numTotalRequests=" + numTotalRequests
+            + ", lastReconfiguredProfile=" + lastReconfiguredProfile + ", votesMap="
+            + votesMap + ", lookupCount=" + lookupCount + ", updateCount=" + updateCount + '}';
   }
 
   /**
@@ -508,9 +504,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   /**
    * Main routine. Only for testing.
-   * 
+   *
    * @param args
-   * @throws UnknownHostException 
+   * @throws UnknownHostException
    */
   public static void main(String[] args) throws UnknownHostException {
     LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
@@ -518,29 +514,30 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.info(dp.clone().toString());
     testThings(dp);
   }
-  
-	static class LocationBasedDemandProfileTest extends DefaultTest{
-		@Test
-		public void testShouldReconfigure() {
-		    LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
-		    
-		}
-	}
+
+  private static class LocationBasedDemandProfileTest extends DefaultTest {
+
+    @Test
+    public void testShouldReconfigure() {
+      LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
+
+    }
+  }
 
   private static void testThings(LocationBasedDemandProfile dp) throws UnknownHostException {
-    LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
-    LOG.info("20,0,3 = " + dp.computeNumberOfReplicas(20, 0, 3));
-    LOG.info("0,20,3 = " + dp.computeNumberOfReplicas(0, 20, 3));
-    LOG.info("20,20,3 = " + dp.computeNumberOfReplicas(20, 20, 3));
-    LOG.info("2000,100,3 = " + dp.computeNumberOfReplicas(2000, 100, 3));
-    LOG.info("100,200,3 = " + dp.computeNumberOfReplicas(100, 2000, 3));
-    LOG.info("0,0,200 = " + dp.computeNumberOfReplicas(0, 0, 200));
-    LOG.info("20,0,200 = " + dp.computeNumberOfReplicas(20, 0, 200));
-    LOG.info("0,20,200 = " + dp.computeNumberOfReplicas(0, 20, 200));
-    LOG.info("20,20,200 = " + dp.computeNumberOfReplicas(20, 20, 200));
-    LOG.info("2000,100,200 = " + dp.computeNumberOfReplicas(2000, 100, 200));
-    LOG.info("100,200,200 = " + dp.computeNumberOfReplicas(100, 2000, 200));
-    LOG.info("10000,200,200 = " + dp.computeNumberOfReplicas(10000, 200, 200));
+    LOG.log(Level.INFO, "0,0,3 = {0}", dp.computeNumberOfReplicas(0, 0, 3));
+    LOG.log(Level.INFO, "20,0,3 = {0}", dp.computeNumberOfReplicas(20, 0, 3));
+    LOG.log(Level.INFO, "0,20,3 = {0}", dp.computeNumberOfReplicas(0, 20, 3));
+    LOG.log(Level.INFO, "20,20,3 = {0}", dp.computeNumberOfReplicas(20, 20, 3));
+    LOG.log(Level.INFO, "2000,100,3 = {0}", dp.computeNumberOfReplicas(2000, 100, 3));
+    LOG.log(Level.INFO, "100,200,3 = {0}", dp.computeNumberOfReplicas(100, 2000, 3));
+    LOG.log(Level.INFO, "0,0,200 = {0}", dp.computeNumberOfReplicas(0, 0, 200));
+    LOG.log(Level.INFO, "20,0,200 = {0}", dp.computeNumberOfReplicas(20, 0, 200));
+    LOG.log(Level.INFO, "0,20,200 = {0}", dp.computeNumberOfReplicas(0, 20, 200));
+    LOG.log(Level.INFO, "20,20,200 = {0}", dp.computeNumberOfReplicas(20, 20, 200));
+    LOG.log(Level.INFO, "2000,100,200 = {0}", dp.computeNumberOfReplicas(2000, 100, 200));
+    LOG.log(Level.INFO, "100,200,200 = {0}", dp.computeNumberOfReplicas(100, 2000, 200));
+    LOG.log(Level.INFO, "10000,200,200 = {0}", dp.computeNumberOfReplicas(10000, 200, 200));
 
     // All the actives
     ArrayList<InetAddress> allActives = new ArrayList<>(Arrays.asList(
@@ -569,19 +566,21 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
             InetAddress.getByName("128.119.1.4"),
             InetAddress.getByName("128.119.1.5")));
 
-    LOG.info("closest to 128.119.1.1 " + dp.findActiveReplicaClosestToSender(InetAddress.getByName("128.119.1.1"), allActives));
-    LOG.info("closest to 128.119.10.1 " + dp.findActiveReplicaClosestToSender(InetAddress.getByName("128.119.10.1"), allActives));
+    LOG.log(Level.INFO, "closest to 128.119.1.1 {0}", 
+            dp.findActiveReplicaClosestToSender(InetAddress.getByName("128.119.1.1"), allActives));
+    LOG.log(Level.INFO, "closest to 128.119.10.1 {0}", 
+            dp.findActiveReplicaClosestToSender(InetAddress.getByName("128.119.10.1"), allActives));
 
     // Try it with various numbers of active replicas needed
-    LOG.info("need 3: " + dp.pickNewActiveReplicas(3, curActives, topN, allActives));
+    LOG.log(Level.INFO, "need 3: {0}", dp.pickNewActiveReplicas(3, curActives, topN, allActives));
 
-    LOG.info("need 4: " + dp.pickNewActiveReplicas(4, curActives, topN, allActives));
+    LOG.log(Level.INFO, "need 4: {0}", dp.pickNewActiveReplicas(4, curActives, topN, allActives));
 
-    LOG.info("need 5: " + dp.pickNewActiveReplicas(5, curActives, topN, allActives));
+    LOG.log(Level.INFO, "need 5: {0}", dp.pickNewActiveReplicas(5, curActives, topN, allActives));
 
-    LOG.info("need 6: " + dp.pickNewActiveReplicas(6, curActives, topN, allActives));
+    LOG.log(Level.INFO, "need 6: {0}", dp.pickNewActiveReplicas(6, curActives, topN, allActives));
 
-    LOG.info("need 7: " + dp.pickNewActiveReplicas(7, curActives, topN, allActives));
+    LOG.log(Level.INFO, "need 7: {0}", dp.pickNewActiveReplicas(7, curActives, topN, allActives));
 
   }
 }

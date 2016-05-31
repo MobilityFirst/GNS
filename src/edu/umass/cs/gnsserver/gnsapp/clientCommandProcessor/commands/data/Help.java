@@ -19,20 +19,21 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDescriptionFormat;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONObject;
 
 /**
  *
  * @author westy
  */
-public class Help extends GnsCommand {
+public class Help extends BasicCommand {
 
   /**
    *
@@ -41,16 +42,21 @@ public class Help extends GnsCommand {
   public Help(CommandModule module) {
     super(module);
   }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.Help;
+  }
 
   @Override
   public String[] getCommandParameters() {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return HELP;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return HELP;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) {

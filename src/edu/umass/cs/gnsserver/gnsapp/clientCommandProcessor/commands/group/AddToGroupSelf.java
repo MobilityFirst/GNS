@@ -19,8 +19,9 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -37,14 +38,19 @@ public class AddToGroupSelf extends AddToGroup {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.AddToGroupSelf;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, MEMBER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return ADD_TO_GROUP;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return ADD_TO_GROUP;
+//  }
 
   @Override
   public String getCommandDescription() {

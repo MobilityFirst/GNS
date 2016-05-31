@@ -21,7 +21,8 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class RemoveListUnsigned extends AbstractUpdateList {
     super(module);
   }
 
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.RemoveListUnsigned;
+  }
+
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -47,10 +53,10 @@ public class RemoveListUnsigned extends AbstractUpdateList {
     return UpdateOperation.SINGLE_FIELD_REMOVE;
   }
 
-  @Override
-  public String getCommandName() {
-    return REMOVE_LIST;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REMOVE_LIST;
+//  }
 
   @Override
   public String[] getCommandParameters() {

@@ -1,8 +1,9 @@
 #!/bin/bash
 #echo $PWD
 java -DgigapaxosConfig=conf/gigapaxos.client.local.properties \
+-Djava.util.logging.config.file=logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty  \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks  \
 -Djavax.net.ssl.keyStorePassword=qwerty  \
 -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks  \
--jar jars/GNS-CLI.jar $*
+-cp jars/GNS-CLI.jar $* edu.umass.cs.gnsclient.console.CommandLineInterface

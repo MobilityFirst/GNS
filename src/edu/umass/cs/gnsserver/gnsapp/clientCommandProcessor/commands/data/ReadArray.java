@@ -19,14 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -44,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ReadArray extends GnsCommand {
+public class ReadArray extends BasicCommand {
 
   /**
    *
@@ -55,15 +56,19 @@ public class ReadArray extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.ReadArray;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return READ_ARRAY;
-  }
-
+//  @Override
+//  public String getCommandName() {
+//    return READ_ARRAY;
+//  }
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -77,7 +82,7 @@ public class ReadArray extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp;
     if (json.has(TIMESTAMP)) {
-      timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     } else {
       timestamp = null;
     }
@@ -85,7 +90,9 @@ public class ReadArray extends GnsCommand {
       reader = null;
     }
 
-    if (getCommandName().equals(READ_ARRAY_ONE)) {
+    if (getCommandType().equals(CommandType.ReadArrayOne)
+            || getCommandType().equals(CommandType.ReadArrayOneUnsigned)
+            || getCommandType().equals(CommandType.ReadArrayOneSelf)) {
       if (ALL_FIELDS.equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {

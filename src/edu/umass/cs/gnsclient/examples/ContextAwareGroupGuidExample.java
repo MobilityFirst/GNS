@@ -20,14 +20,17 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.BasicGuidEntry;
-import edu.umass.cs.gnsclient.client.BasicTcpClientV1;
+import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -53,7 +56,7 @@ import org.json.JSONArray;
  * field in question to be zero. Then we will show how the two different context aware
  * group guids will retrieve the guids that correspond to their differeing queries.
  * <p>
- * The <code>BasicTcpClientV1</code> class contains two methods for creating and
+ * The <code>AbstractGNSClient</code> class contains two methods for creating and
  * looking up the value of a context aware group guid:
  * <p>
  * <code>JSONArray selectSetupGroupQuery(String guid, String query, int interval)</code>  - given
@@ -76,21 +79,21 @@ import org.json.JSONArray;
 public class ContextAwareGroupGuidExample {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
-  private static BasicTcpClientV1 client;
+  private static GNSClientCommands client;
   private static GuidEntry masterGuid;
   private static final String fieldName = "contextAwareExampleField";
   private static GuidEntry groupOneGuidEntry;
   private static GuidEntry groupTwoGuidEntry;
 
   public static void main(String[] args) throws IOException,
-          InvalidKeySpecException, NoSuchAlgorithmException, GnsClientException,
+          InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
     // BOILER PLATE FOR RUNNING AN EXAMPLE
     // Bring up the server selection dialog
     InetSocketAddress address = ServerSelectDialog.selectServer();
     // Start the client
-    client = new BasicTcpClientV1(address.getHostName(), address.getPort());
+    client = new GNSClientCommands(null);
     try {
       // Create the account guid using your email address and password = "password"
       masterGuid = lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password");
@@ -143,7 +146,7 @@ public class ContextAwareGroupGuidExample {
     System.out.println("Changing 4 of the 5 guids to have a their " + fieldName + " field's value be 0");
     for (int i = 0; i < result.length() - 1; i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       System.out.println("Changing value of " + fieldName + " field in " + entry.getEntityName() + " to 0");
       client.fieldUpdate(entry, fieldName, 0);
     }
@@ -177,7 +180,7 @@ public class ContextAwareGroupGuidExample {
   private static void showFieldValuesInGuids(JSONArray guids, String field) throws Exception {
     for (int i = 0; i < guids.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(guids.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldRead(entry, field);
       System.out.println(guids.get(i).toString() + ": " + field + " -> " + value);
     }
@@ -197,7 +200,7 @@ public class ContextAwareGroupGuidExample {
     JSONArray result = client.selectQuery(query);
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-      GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       client.guidRemove(masterGuid, guidEntry.getGuid());
     }
   }
@@ -211,7 +214,7 @@ public class ContextAwareGroupGuidExample {
    * @return
    * @throws Exception
    */
-  private static GuidEntry lookupOrCreateAccountGuid(BasicTcpClientV1 client,
+  private static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client,
           String name, String password) throws Exception {
     GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSInstance(), name);
     if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
@@ -223,11 +226,11 @@ public class ContextAwareGroupGuidExample {
     }
   }
 
-  private static boolean guidExists(BasicTcpClientV1 client, GuidEntry guidEntry)
+  private static boolean guidExists(GNSClientInterface client, GuidEntry guidEntry)
           throws IOException {
     try {
       client.lookupGuidRecord(guidEntry.getGuid());
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
       return false;
     }
     return true;

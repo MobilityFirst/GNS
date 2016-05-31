@@ -22,16 +22,12 @@ package edu.umass.cs.gnsserver.localnameserver;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
-import static edu.umass.cs.gnscommon.GnsProtocol.HELP;
+//import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import static edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig.INVALID_PING_LATENCY;
 import static edu.umass.cs.gnsserver.localnameserver.LocalNameServerOptions.PORT;
 import static edu.umass.cs.gnsserver.localnameserver.LocalNameServerOptions.disableSSL;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
@@ -100,7 +96,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    */
   public final static int DEFAULT_LNS_TCP_PORT = 24398;
 
-  private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests 
+  private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   private final Cache<String, CacheEntry> cache;
@@ -111,11 +107,6 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress address;
   private final AbstractJSONPacketDemultiplexer demultiplexer;
-
-  /**
-   * Determines if additional debugging information is output.
-   */
-  public static boolean debuggingEnabled = false;
 
   /**
    * Create a LocalNameServer instance.
@@ -145,12 +136,12 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     }
 
     this.address = convertedNodeAddress;
-    LOG.log(Level.INFO, "LNS: SSL Mode is {0}; listening on {1}", 
+    LOG.log(Level.INFO, "LNS: SSL Mode is {0}; listening on {1}",
             new Object[]{sslMode.name(), address});
 
     this.nodeConfig = nodeConfig;
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
-    AsyncLNSClient asyncClient = null;
+    AsyncLNSClient asyncClient;
     this.demultiplexer = new LNSPacketDemultiplexer<>(this, asyncClient = new AsyncLNSClient(
             ReconfigurationConfig.getReconfiguratorAddresses(),
             !LocalNameServerOptions.disableSSL ? ReconfigurationConfig
@@ -206,7 +197,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
             = ParametersAndOptions.getParametersAsHashMap(LocalNameServer.class.getCanonicalName(),
                     LocalNameServerOptions.getAllOptions(), args);
 
-    if (options.containsKey(HELP)) {
+    if (options.containsKey("help")) {
       ParametersAndOptions.printUsage(LocalNameServer.class.getCanonicalName(),
               LocalNameServerOptions.getAllOptions());
 
@@ -271,16 +262,6 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   /**
-   * Are we in debug mode?
-   *
-   * @return true if we are in debug mode
-   */
-  @Override
-  public boolean isDebugMode() {
-    return debuggingEnabled;
-  }
-
-  /**
    * Adds the request info.
    *
    * @param id
@@ -295,6 +276,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     assert (outstandingRequests.get(id) != null);
   }
 
+  @Override
   public String toString() {
     return this.getClass().getSimpleName();
   }
@@ -335,7 +317,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   @Override
   public Set<InetSocketAddress> getReplicatedActives(String name) {
     // arun
-    LOG.warning(LNS_BAD_HACKY + "name = " + name);
+    LOG.log(Level.WARNING,LNS_BAD_HACKY + "name = {0}", name);
     // FIXME: this needs work
     if (!disableSSL) {
       Set<InetSocketAddress> result = new HashSet<>();
@@ -435,10 +417,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
         serverAddress = serverId;
       }
     }
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      LOG.log(Level.INFO, "Closest server is {0}", 
-              serverAddress);
-    }
+    LOG.log(Level.FINE, "Closest server is {0}", serverAddress);
     return serverAddress;
   }
 
@@ -557,16 +536,14 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    */
   @Override
   public void sendToClosestReplica(Set<InetSocketAddress> servers, JSONObject packet) throws IOException {
-    InetSocketAddress address = LocalNameServer.this.getClosestReplica(servers);
+    InetSocketAddress replicaAddress = LocalNameServer.this.getClosestReplica(servers);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
     // FIXME: arun: why not just not include them in toJSONObject()?
     packet.remove(MessageNIOTransport.SNDR_IP_FIELD);
     packet.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     // Don't get a client facing port for these because they are returned as already translated.
-    if (debuggingEnabled) {
-      LOG.info("Sending to " + address + ": " + packet);
-    }
-    messenger.sendToAddress(address, packet);
+    LOG.log(Level.INFO, "Sending to {0}: {1}", new Object[]{replicaAddress, packet});
+    messenger.sendToAddress(replicaAddress, packet);
   }
 
   /**
@@ -601,7 +578,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       cacheString.append(entry.getValue());
       cacheString.append("\n");
     }
-    LOG.info("Cache Test: \n" + cacheString.toString());
+    LOG.log(Level.INFO, "Cache Test: \n{0}", cacheString.toString());
   }
 
 }

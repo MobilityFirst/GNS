@@ -19,12 +19,9 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnsclient.client.UniversalTcpClientExtended;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
-import java.net.InetSocketAddress;
+import java.io.IOException;
 import org.json.JSONArray;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -33,23 +30,17 @@ public class WriteSizeTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client;
+  private static GNSClientCommands client;
   private static GuidEntry masterGuid;
 
   public WriteSizeTest() {
     if (client == null) {
-      InetSocketAddress address;
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+      try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {

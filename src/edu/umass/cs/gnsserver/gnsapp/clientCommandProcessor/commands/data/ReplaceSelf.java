@@ -19,9 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -37,9 +38,14 @@ public class ReplaceSelf extends AbstractUpdate {
     super(module);
   }
 
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.ReplaceSelf;
+  }
+
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   @Override
@@ -47,10 +53,10 @@ public class ReplaceSelf extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;
   }
 
-  @Override
-  public String getCommandName() {
-    return REPLACE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REPLACE;
+//  }
 
   @Override
   public String[] getCommandParameters() {

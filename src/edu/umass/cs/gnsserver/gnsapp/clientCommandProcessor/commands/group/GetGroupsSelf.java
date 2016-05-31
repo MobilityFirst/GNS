@@ -19,12 +19,13 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  * Command to return the groups that a GUID is a member of formatted as a JSON Array.
- * 
+ *
  * @author westy
  */
 public class GetGroupsSelf extends GetGroups {
@@ -38,14 +39,19 @@ public class GetGroupsSelf extends GetGroups {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.GetGroupsSelf;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return GET_GROUPS;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return GET_GROUPS;
+//  }
 
   @Override
   public String getCommandDescription() {

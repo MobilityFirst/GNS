@@ -19,12 +19,13 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
 
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
@@ -32,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
+import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,7 +41,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Admin extends GnsCommand {
+public class Admin extends BasicCommand {
 
   /**
    *
@@ -50,31 +52,37 @@ public class Admin extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.Admin;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{PASSKEY};
   }
 
-  @Override
-  public String getCommandName() {
-    return ADMIN;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return ADMIN;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
     try {
-      GNSConfig.getLogger().info("Http host:port = " + handler.getHTTPServerHostPortString());
+      GNSConfig.getLogger().log(Level.INFO, "Http host:port = {0}", handler.getHTTPServerHostPortString());
       if (handler.getHTTPServerHostPortString().equals(passkey) || "shabiz".equals(passkey)) {
         module.setAdminMode(true);
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse<>(OK_RESPONSE);
       } else if ("off".equals(passkey)) {
         module.setAdminMode(false);
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse<>(OK_RESPONSE);
       }
-      return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName() + " " + passkey);
+      return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + 
+              " Don't understand " + getCommandType().toString() + " " + passkey);
     } catch (UnknownHostException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " Unable to determine host address");
+      return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " Unable to determine host address");
     }
   }
 

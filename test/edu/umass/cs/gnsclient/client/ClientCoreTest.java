@@ -19,24 +19,27 @@
  */
 package edu.umass.cs.gnsclient.client;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.GnsProtocol.AccessType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
-import edu.umass.cs.gnscommon.exceptions.client.GnsFieldNotFoundException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
+import edu.umass.cs.gnscommon.utils.Base64;
 import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.RandomUtils;
 import static org.hamcrest.Matchers.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,7 +51,7 @@ import org.junit.runners.MethodSorters;
 
 /**
  * THIS HAS BEEN REPLACED WITH ServerIntegrationTest class
- * 
+ *
  * Functionality test for core elements in the client using the UniversalGnsClientFull.
  *
  */
@@ -57,11 +60,7 @@ public class ClientCoreTest {
 
   private static String accountAlias = "test@cgns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static String password = "password";
-  private static UniversalTcpClientExtended client = null;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address;
+  private static  GNSClientCommands client = null;
   private static GuidEntry masterGuid;
   private static GuidEntry subGuidEntry;
   private static GuidEntry westyEntry;
@@ -70,20 +69,24 @@ public class ClientCoreTest {
   private static GuidEntry mygroupEntry;
   private static GuidEntry guidToDeleteEntry;
 
+  private static final int COORDINATION_WAIT = 100;
+
+  private static void waitSettle() {
+    try {
+      Thread.sleep(COORDINATION_WAIT);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
   public ClientCoreTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+      try {
+        client = new GNSClientCommands(null);
+        //client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      System.out.println("Connecting to " + address.getHostName() + ":" + address.getPort());
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
       if (System.getProperty("alias") != null
               && !System.getProperty("alias").isEmpty()) {
         accountAlias = System.getProperty("alias");
@@ -102,15 +105,15 @@ public class ClientCoreTest {
 
   @Test
   public void test_010_CreateEntity() {
-    String alias = "testGUID" + RandomString.randomString(6);
+    String localAlias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
-      guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);
+      guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, localAlias);
     } catch (Exception e) {
       fail("Exception while creating guid: " + e);
     }
     assertNotNull(guidEntry);
-    assertEquals(alias, guidEntry.getEntityName());
+    assertEquals(localAlias, guidEntry.getEntityName());
   }
 
   @Test
@@ -130,7 +133,7 @@ public class ClientCoreTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -154,7 +157,7 @@ public class ClientCoreTest {
     try {
       client.lookupGuidRecord(testGuid.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -172,7 +175,7 @@ public class ClientCoreTest {
     }
     try {
       assertEquals(masterGuid.getGuid(), client.lookupPrimaryGuid(testGuid.getGuid()));
-    } catch (Exception e) {
+    } catch (IOException | ClientException e) {
       fail("Exception while looking up primary guid for testGuid: " + e);
     }
   }
@@ -192,7 +195,7 @@ public class ClientCoreTest {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(), "environment", subGuidEntry);
       fail("Should have thrown an exception.");
-    } catch (GnsFieldNotFoundException e) {
+    } catch (FieldNotFoundException e) {
       System.out.println("This was expected: " + e);
     } catch (Exception e) {
       System.out.println("Exception testing field not found: " + e);
@@ -212,7 +215,7 @@ public class ClientCoreTest {
   public void test_080_CreateFieldForFieldExists() {
     try {
       client.fieldCreateOneElementList(subGuidEntry.getGuid(), "environment", "work", subGuidEntry);
-    } catch (Exception e) {
+    } catch (IOException | ClientException e) {
       e.printStackTrace();
       fail("Exception during create field: " + e);
     }
@@ -239,7 +242,7 @@ public class ClientCoreTest {
     }
     try {
       // remove default read acces for this test
-      client.aclRemove(AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
@@ -257,9 +260,10 @@ public class ClientCoreTest {
                 samEntry);
         fail("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
+       e.printStackTrace();
       fail("Exception when we were not expecting it in create fields: " + e);
     }
   }
@@ -272,7 +276,7 @@ public class ClientCoreTest {
       System.out.println("Using:" + westyEntry);
       System.out.println("Using:" + samEntry);
       try {
-        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "environment",
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment",
                 samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's readlist: " + e);
@@ -298,21 +302,21 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(barneyName);
         fail(barneyName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
       barneyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, barneyName);
       // remove default read access for this test
-      client.aclRemove(AccessType.READ_WHITELIST, barneyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
-        client.aclAdd(AccessType.READ_WHITELIST, barneyEntry, "cell",
-                GnsProtocol.ALL_USERS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
+                GNSCommandProtocol.ALL_USERS);
       } catch (Exception e) {
         fail("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
@@ -339,7 +343,7 @@ public class ClientCoreTest {
                 samEntry);
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
@@ -359,13 +363,13 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(superUserName);
         fail(superUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
 
       GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AccessType.READ_WHITELIST, barneyEntry, GnsProtocol.ALL_FIELDS, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
 
       assertEquals("413-555-1234",
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
@@ -386,14 +390,14 @@ public class ClientCoreTest {
         fail("Problem updating field: " + e);
       }
       try {
-        client.aclAdd(AccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GnsProtocol.ALL_FIELDS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
       } catch (Exception e) {
         fail("Problem adding acl: " + e);
       }
       try {
-        JSONArray actual = client.aclGet(AccessType.READ_WHITELIST, westyEntry,
+        JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GnsProtocol.ALL_FIELDS)));
+        JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
@@ -416,7 +420,7 @@ public class ClientCoreTest {
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("hooch", "maya", "red", "sox", "toby")), westyEntry);
 
-      HashSet<String> expected = new HashSet<String>(Arrays.asList("hooch",
+      HashSet<String> expected = new HashSet<>(Arrays.asList("hooch",
               "maya", "red", "sox", "toby", "whacky"));
       HashSet<String> actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(westyEntry.getGuid(), "cats", westyEntry));
@@ -424,7 +428,7 @@ public class ClientCoreTest {
 
       client.fieldClear(westyEntry.getGuid(), "cats", new JSONArray(
               Arrays.asList("maya", "toby")), westyEntry);
-      expected = new HashSet<String>(Arrays.asList("hooch", "red", "sox",
+      expected = new HashSet<>(Arrays.asList("hooch", "red", "sox",
               "whacky"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
@@ -437,23 +441,23 @@ public class ClientCoreTest {
 //      try {
 //        client.fieldCreateOneElementList(westyEntry, "cats", "maya");
 //        fail("Should have got an exception when trying to create the field westy / cats.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       //this one always fails... check it out
 //      try {
 //        client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "frogs", "freddybub",
 //                westyEntry);
 //        fail("Should have got an exception when trying to create the field westy / frogs.");
-//      } catch (GnsClientException e) {
+//      } catch (ClientException e) {
 //      }
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
       assertEquals(expected, actual);
 
       client.fieldAppendWithSetSemantics(westyEntry.getGuid(), "cats", "fred", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("maya", "fred"));
+      expected = new HashSet<>(Arrays.asList("maya", "fred"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "cats", westyEntry));
       assertEquals(expected, actual);
@@ -469,7 +473,7 @@ public class ClientCoreTest {
     try {
 
       client.fieldAppendOrCreate(westyEntry.getGuid(), "dogs", "bear", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("bear"));
+      expected = new HashSet<>(Arrays.asList("bear"));
       actual = JSONUtils.JSONArrayToHashSet(client
               .fieldReadArray(westyEntry.getGuid(), "dogs", westyEntry));
       assertEquals(expected, actual);
@@ -480,7 +484,7 @@ public class ClientCoreTest {
     try {
       client.fieldAppendOrCreateList(westyEntry.getGuid(), "dogs",
               new JSONArray(Arrays.asList("wags", "tucker")), westyEntry);
-      expected = new HashSet<String>(Arrays.asList("bear", "wags", "tucker"));
+      expected = new HashSet<>(Arrays.asList("bear", "wags", "tucker"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "dogs", westyEntry));
       assertEquals(expected, actual);
@@ -489,7 +493,7 @@ public class ClientCoreTest {
     }
     try {
       client.fieldReplaceOrCreate(westyEntry.getGuid(), "goats", "sue", westyEntry);
-      expected = new HashSet<String>(Arrays.asList("sue"));
+      expected = new HashSet<>(Arrays.asList("sue"));
       actual = JSONUtils.JSONArrayToHashSet(client.fieldReadArray(
               westyEntry.getGuid(), "goats", westyEntry));
       assertEquals(expected, actual);
@@ -611,7 +615,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(mygroupName);
         fail(mygroupName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
@@ -651,10 +655,11 @@ public class ClientCoreTest {
     } catch (Exception e) {
       fail("Exception while removing testGuid: " + e);
     }
+    waitSettle();
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
       fail("Lookup testGuid should have throw an exception.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
 
     } catch (IOException e) {
       fail("Exception while doing Lookup testGuid: " + e);
@@ -671,7 +676,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(groupAccessUserName);
         fail(groupAccessUserName + " entity should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Checking for existence of group user: " + e);
@@ -680,7 +685,7 @@ public class ClientCoreTest {
     try {
       groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupAccessUserName);
       // remove all fields read by all
-      client.aclRemove(AccessType.READ_WHITELIST, groupAccessUserEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
     } catch (Exception e) {
       fail("Exception creating group user: " + e);
     }
@@ -693,7 +698,7 @@ public class ClientCoreTest {
       fail("Exception creating group user fields: " + e);
     }
     try {
-      client.aclAdd(AccessType.READ_WHITELIST, groupAccessUserEntry, "hometown", mygroupEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, groupAccessUserEntry, "hometown", mygroupEntry.getGuid());
     } catch (Exception e) {
       fail("Exception adding mygroup to acl for group user hometown field: " + e);
     }
@@ -706,7 +711,7 @@ public class ClientCoreTest {
         String result = client.fieldReadArrayFirstElement(groupAccessUserEntry.getGuid(), "address", westyEntry);
         fail("Result of read of groupAccessUser's age by sam is " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while attempting a failing read of groupAccessUser's age by sam: " + e);
@@ -776,7 +781,7 @@ public class ClientCoreTest {
       try {
         client.lookupGuid(alias);
         fail(alias + " should not exist");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception while checking alias: " + e);
@@ -788,7 +793,7 @@ public class ClientCoreTest {
     String fieldName = "whereAmI";
     try {
       try {
-        client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry, fieldName, samEntry.getGuid());
+        client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, fieldName, samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's writelist: " + e);
         e.printStackTrace();
@@ -815,7 +820,7 @@ public class ClientCoreTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(), fieldName, "driving", barneyEntry);
         fail("Write by barney should have failed!");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
         fail("Exception during read of westy's " + fieldName + " by sam: " + e);
@@ -832,17 +837,17 @@ public class ClientCoreTest {
     String standardReadFieldName = "standardreadaccess";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GnsProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, unsignedReadFieldName, GNSCommandProtocol.ALL_USERS);
       assertEquals("funkadelicread", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedReadFieldName, null));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardReadFieldName, "bummer", westyEntry);
       // already did this above... doing it again gives us a paxos error
-      //client.removeFromACL(AccessType.READ_WHITELIST, westyEntry, GnsProtocol.ALL_FIELDS, GnsProtocol.ALL_USERS);
+      //client.removeFromACL(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_USERS);
       try {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), standardReadFieldName, null);
         fail("Result of read of westy's " + standardReadFieldName + " as world readable was " + result
                 + " which is wrong because it should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -856,15 +861,15 @@ public class ClientCoreTest {
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), unsignedWriteFieldName, "default", westyEntry);
       // make it writeable by everyone
-      client.aclAdd(AccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GnsProtocol.ALL_USERS);
+      client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry, unsignedWriteFieldName, GNSCommandProtocol.ALL_USERS);
       client.fieldReplaceFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, "funkadelicwrite", westyEntry);
       assertEquals("funkadelicwrite", client.fieldReadArrayFirstElement(westyEntry.getGuid(), unsignedWriteFieldName, westyEntry));
 
       client.fieldCreateOneElementList(westyEntry.getGuid(), standardWriteFieldName, "bummer", westyEntry);
       try {
-        client.fieldReplaceFirstElement(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
+        client.fieldReplaceFirstElementTest(westyEntry.getGuid(), standardWriteFieldName, "funkadelicwrite", null);
         fail("Write of westy's field " + standardWriteFieldName + " as world readable should have been rejected.");
-      } catch (GnsClientException e) {
+      } catch (ClientException e) {
       }
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -876,7 +881,7 @@ public class ClientCoreTest {
     String fieldToDelete = "fieldToDelete";
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), fieldToDelete, "work", westyEntry);
-    } catch (Exception e) {
+    } catch (IOException | ClientException e) {
       fail("Exception while creating the field: " + e);
     }
     try {
@@ -887,7 +892,7 @@ public class ClientCoreTest {
     }
     try {
       client.fieldRemove(westyEntry.getGuid(), fieldToDelete, westyEntry);
-    } catch (Exception e) {
+    } catch (IOException | InvalidKeyException | NoSuchAlgorithmException | SignatureException | ClientException e) {
       fail("Exception while removing field: " + e);
     }
 
@@ -896,7 +901,7 @@ public class ClientCoreTest {
 
       fail("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
-    } catch (GnsClientException e) {
+    } catch (ClientException e) {
     } catch (Exception e) {
       fail("Exception while removing field: " + e);
     }
@@ -921,13 +926,13 @@ public class ClientCoreTest {
       client.fieldAppend(westyEntry.getGuid(), "numbers", "four", westyEntry);
       client.fieldAppend(westyEntry.getGuid(), "numbers", "five", westyEntry);
 
-      List<String> expected = new ArrayList<String>(Arrays.asList("one", "two", "three", "four", "five"));
+      List<String> expected = new ArrayList<>(Arrays.asList("one", "two", "three", "four", "five"));
       ArrayList<String> actual = JSONUtils.JSONArrayToArrayList(client.fieldReadArray(westyEntry.getGuid(), "numbers", westyEntry));
       assertEquals(expected, actual);
 
       client.fieldSetElement(westyEntry.getGuid(), "numbers", "frank", 2, westyEntry);
 
-      expected = new ArrayList<String>(Arrays.asList("one", "two", "frank", "four", "five"));
+      expected = new ArrayList<>(Arrays.asList("one", "two", "frank", "four", "five"));
       actual = JSONUtils.JSONArrayToArrayList(client.fieldReadArray(westyEntry.getGuid(), "numbers", westyEntry));
       assertEquals(expected, actual);
 
@@ -946,7 +951,7 @@ public class ClientCoreTest {
       fail("Exception when we were not expecting it: " + e);
     }
   }
-
+  
   @Test
   public void test_320_GeoSpatialSelect() {
     try {
@@ -963,7 +968,7 @@ public class ClientCoreTest {
       JSONArray loc = new JSONArray();
       loc.put(1.0);
       loc.put(1.0);
-      JSONArray result = client.selectNear(GnsProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
+      JSONArray result = client.selectNear(GNSCommandProtocol.LOCATION_FIELD_NAME, loc, 2000000.0);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -981,7 +986,7 @@ public class ClientCoreTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -1025,7 +1030,7 @@ public class ClientCoreTest {
       lowerRight.put(-1.0);
       rect.put(upperLeft);
       rect.put(lowerRight);
-      JSONArray result = client.selectWithin(GnsProtocol.LOCATION_FIELD_NAME, rect);
+      JSONArray result = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME, rect);
       // best we can do should be at least 5, but possibly more objects in results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
@@ -1079,7 +1084,7 @@ public class ClientCoreTest {
       json.put("name", "frank");
       json.put("occupation", "busboy");
       json.put("location", "work");
-      json.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      json.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1094,7 +1099,7 @@ public class ClientCoreTest {
       expected.put("name", "frank");
       expected.put("occupation", "busboy");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1119,7 +1124,7 @@ public class ClientCoreTest {
       expected.put("name", "frank");
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1145,7 +1150,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1169,7 +1174,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject actual = client.read(westyEntry);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
@@ -1201,7 +1206,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1251,7 +1256,7 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1266,7 +1271,7 @@ public class ClientCoreTest {
       fail("Exception while reading JSON: " + e);
     }
     try {
-      client.fieldUpdate(westyEntry.getGuid(), "flapjack.sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")), westyEntry);
+      client.fieldUpdate(westyEntry.getGuid(), "flapjack.sammy", new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")), westyEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack.sammy\": " + e);
     }
@@ -1276,9 +1281,9 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
-      subJson.put("sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")));
+      subJson.put("sammy", new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")));
       JSONObject subsubJson = new JSONObject();
       subsubJson.put("right", "crank");
       subsubJson.put("left", "eight");
@@ -1294,7 +1299,7 @@ public class ClientCoreTest {
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       client.fieldUpdate(westyEntry.getGuid(), "flapjack", moreJson, westyEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack\": " + e);
@@ -1305,11 +1310,11 @@ public class ClientCoreTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
-      expected.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+      expected.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
-      moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+      moreJson.put("crash", new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       expected.put("flapjack", moreJson);
       JSONObject actual = client.read(westyEntry);
       JSONAssert.assertEquals(expected, actual, JSONCompareMode.NON_EXTENSIBLE);
@@ -1319,16 +1324,42 @@ public class ClientCoreTest {
     }
   }
 
+  private static final String BYTE_TEST_FIELD = "testBytes";
+  private static byte[] byteTestValue;
+
+  @Test
+  public void test_440_CreateBytesField() {
+    try {
+      byteTestValue = RandomUtils.nextBytes(16000);
+      String encodedValue = Base64.encodeToString(byteTestValue, true);
+      //System.out.println("Encoded string: " + encodedValue);
+      client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
+    } catch (IOException | ClientException | JSONException e) {
+      fail("Exception during create field: " + e);
+    }
+  }
+
+  @Test
+  public void test_441_ReadBytesField() {
+    try {
+      String string = client.fieldRead(masterGuid, BYTE_TEST_FIELD);
+      //System.out.println("Read string: " + string);
+      assertArrayEquals(byteTestValue, Base64.decode(string));
+    } catch (Exception e) {
+      fail("Exception while reading field: " + e);
+    }
+  }
+
   private static int numberTocreate = 100;
- private static GuidEntry accountGuidForBatch = null;
+  private static GuidEntry accountGuidForBatch = null;
 
   @Test
   public void test_510_CreateBatchAccountGuid() {
     // can change the number to create on the command line
-     if (System.getProperty("count") != null
-              && !System.getProperty("count").isEmpty()) {
-        numberTocreate = Integer.parseInt(System.getProperty("count"));
-      }
+    if (System.getProperty("count") != null
+            && !System.getProperty("count").isEmpty()) {
+      numberTocreate = Integer.parseInt(System.getProperty("count"));
+    }
     try {
       String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
       accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
@@ -1347,12 +1378,12 @@ public class ClientCoreTest {
     int oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForBatch, aliases, true);
+      result = client.guidBatchCreate(accountGuidForBatch, aliases);
       client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
+    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
 
   @Test
@@ -1360,86 +1391,86 @@ public class ClientCoreTest {
     try {
       JSONObject accountRecord = client.lookupAccountRecord(accountGuidForBatch.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
+    } catch (JSONException | ClientException | IOException e) {
       fail("Exception while fetching account record: " + e);
     }
   }
 
-  private static GuidEntry accountGuidForWithoutPublicKeys = null;
+//  private static GuidEntry accountGuidForWithoutPublicKeys = null;
+//
+//  @Test
+//  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
+//    try {
+//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+//      accountGuidForWithoutPublicKeys = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
+//
+//  @Test
+//  public void test_521_CreateBatchWithoutPublicKeys() {
+//    Set<String> aliases = new HashSet<>();
+//    for (int i = 0; i < numberTocreate; i++) {
+//      aliases.add("testGUID" + RandomString.randomString(6));
+//    }
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(15 * 1000); // 30 seconds
+//      result = client.guidBatchCreate(accountGuidForWithoutPublicKeys, aliases, false);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
+//  }
+//
+//  @Test
+//  public void test_522_CheckBatchForWithoutPublicKeys() {
+//    try {
+//      JSONObject accountRecord = client.lookupAccountRecord(accountGuidForWithoutPublicKeys.getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | ClientException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
+//
+//  private static GuidEntry accountGuidForFastest = null;
+//
+//  @Test
+//  public void test_530_CreateBatchAccountGuidForForFastest() {
+//    try {
+//      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
+//      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
+//    } catch (Exception e) {
+//      fail("Exception when we were not expecting it: " + e);
+//    }
+//  }
 
-  @Test
-  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
-    try {
-      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-      accountGuidForWithoutPublicKeys = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
-
-  @Test
-  public void test_521_CreateBatchWithoutPublicKeys() {
-    Set<String> aliases = new HashSet<>();
-    for (int i = 0; i < numberTocreate; i++) {
-      aliases.add("testGUID" + RandomString.randomString(6));
-    }
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreate(accountGuidForWithoutPublicKeys, aliases, false);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
-  }
-
-  @Test
-  public void test_522_CheckBatchForWithoutPublicKeys() {
-    try {
-      JSONObject accountRecord = client.lookupAccountRecord(accountGuidForWithoutPublicKeys.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
-      fail("Exception while fetching account record: " + e);
-    }
-  }
-
-  private static GuidEntry accountGuidForFastest = null;
-
-  @Test
-  public void test_530_CreateBatchAccountGuidForForFastest() {
-    try {
-      String batchAccountAlias = "batchTest" + RandomString.randomString(6) + "@gns.name";
-      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client, batchAccountAlias, "password", true);
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
-  }
-
-  @Test
-  public void test_531_CreateBatchFastest() {
-    String result = null;
-    int oldTimeout = client.getReadTimeout();
-    try {
-      client.setReadTimeout(15 * 1000); // 30 seconds
-      result = client.guidBatchCreateFast(accountGuidForFastest, numberTocreate);
-      client.setReadTimeout(oldTimeout);
-    } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
-    }
-    assertEquals(GnsProtocol.OK_RESPONSE, result);
-  }
-
-  @Test
-  public void test_532_CheckBatchForFastest() {
-    try {
-      JSONObject accountRecord = client.lookupAccountRecord(accountGuidForFastest.getGuid());
-      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
-    } catch (JSONException | GnsClientException | IOException e) {
-      fail("Exception while fetching account record: " + e);
-    }
-  }
+//  @Test
+//  public void test_531_CreateBatchFastest() {
+//    String result = null;
+//    int oldTimeout = client.getReadTimeout();
+//    try {
+//      client.setReadTimeout(15 * 1000); // 30 seconds
+//      result = client.guidBatchCreateFast(accountGuidForFastest, numberTocreate);
+//      client.setReadTimeout(oldTimeout);
+//    } catch (Exception e) {
+//      fail("Exception while creating guids: " + e);
+//    }
+//    assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
+//  }
+//
+//  @Test
+//  public void test_532_CheckBatchForFastest() {
+//    try {
+//      JSONObject accountRecord = client.lookupAccountRecord(accountGuidForFastest.getGuid());
+//      assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
+//    } catch (JSONException | ClientException | IOException e) {
+//      fail("Exception while fetching account record: " + e);
+//    }
+//  }
 
   private static String createIndexTestField;
 

@@ -19,32 +19,46 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
+import edu.umass.cs.gnscommon.CommandType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
-import static edu.umass.cs.gnscommon.GnsProtocol.COMMANDNAME;
-import static edu.umass.cs.gnscommon.GnsProtocol.NEWLINE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
- * This class helps to implement a unified set of client support commands that translate between client support requests
- * and core GNS commands that are sent to the server. Specifically the CommandModule class maintains the list
- * of commands, mechanisms for looking up commands from the contents of JSONObject encoded command packets
+ * This class helps to implement a unified set of client support commands that translate
+ * between client support requests and core GNS commands that are sent to the server.
+ * Specifically the CommandModule class maintains the list of commands, mechanisms
+ * for looking up commands from the contents of JSONObject encoded command packets
  * as well as supporting generation of command documentation.
  *
  * @author westy
  */
 public class CommandModule {
 
-  private TreeSet<GnsCommand> commands;
+  private Map<CommandType, BasicCommand> commandLookupTable;
+
+  public void addCommand(CommandType commandType, BasicCommand command) {
+    if (commandLookupTable.get(commandType) != null) {
+      ClientSupportConfig.getLogger().log(Level.SEVERE,
+              "Duplicate command: {0}", commandType);
+    }
+    commandLookupTable.put(commandType, command);
+  }
+
+  private TreeSet<BasicCommand> commands;
   private boolean adminMode = false;
 
   /**
@@ -55,9 +69,11 @@ public class CommandModule {
   }
 
   private void initCommands() {
+    commandLookupTable = new HashMap<>();
+    // Legacy code
     this.commands = new TreeSet<>();
     addCommands(CommandDefs.getCommandDefs(), commands);
-    ClientCommandProcessorConfig.getLogger().log(Level.INFO, 
+    ClientCommandProcessorConfig.getLogger().log(Level.INFO,
             "{0} commands added.", commands.size());
   }
 
@@ -70,32 +86,49 @@ public class CommandModule {
    * to instantiate
    * @param commands Set where the commands are added
    */
-  protected void addCommands(Class<?>[] commandClasses, Set<GnsCommand> commands) {
+  protected void addCommands(Class<?>[] commandClasses, Set<BasicCommand> commands) {
     for (int i = 0; i < commandClasses.length; i++) {
       Class<?> clazz = commandClasses[i];
-      //String commandClassName = commandClasses[i].trim();
-      try {
-        //clazz = Class.forName(commandClassName);
-        Constructor<?> constructor;
-        try {
-          constructor = clazz.getConstructor(new Class<?>[]{this.getClass()});
-        } catch (NoSuchMethodException e) {
-          constructor = clazz.getConstructor(new Class<?>[]{CommandModule.class});
-        }
-        GnsCommand command = (GnsCommand) constructor.newInstance(new Object[]{this});
-        ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-                "Adding command {0}: {1} with {2}: {3}",
-                new Object[]{i + 1, clazz.getCanonicalName(), command.getCommandName(),
-                  command.getCommandParametersString()});
+      BasicCommand command = createCommandInstance(clazz);
+      if (command != null) {
+        commandLookupTable.put(command.getCommandType(), command);
+        // Legacy
         commands.add(command);
-      } catch (SecurityException | NoSuchMethodException | 
-              InstantiationException | IllegalAccessException | 
-              IllegalArgumentException | InvocationTargetException e) {
-        ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
-                "Unable to add command for class {0}: {1}",
-                new Object[]{clazz.getCanonicalName(), e});
       }
     }
+  }
+
+  private BasicCommand createCommandInstance(Class<?> clazz) {
+    try {
+      Constructor<?> constructor;
+      try {
+        constructor = clazz.getConstructor(new Class<?>[]{this.getClass()});
+      } catch (NoSuchMethodException e) {
+        constructor = clazz.getConstructor(new Class<?>[]{CommandModule.class});
+      }
+      BasicCommand command = (BasicCommand) constructor.newInstance(new Object[]{this});
+      ClientCommandProcessorConfig.getLogger().log(Level.FINER,
+              "Creating command {0}: {1} with {2}: {3}",
+              new Object[]{command.getCommandType().getInt(), clazz.getCanonicalName(),
+                command.getCommandType().toString(),
+                command.getCommandParametersString()});
+      return command;
+    } catch (SecurityException | NoSuchMethodException |
+            InstantiationException | IllegalAccessException |
+            IllegalArgumentException | InvocationTargetException e) {
+      ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
+              "Unable to create command for class {0}: {1}",
+              new Object[]{clazz.getCanonicalName(), e});
+    }
+    return null;
+  }
+
+  public BasicCommand lookupCommand(CommandType commandType) {
+    return commandLookupTable.get(commandType);
+  }
+
+  public BasicCommand lookupCommand(String commandName) {
+    return lookupCommand(CommandType.valueOf(commandName));
   }
 
   /**
@@ -104,7 +137,42 @@ public class CommandModule {
    * @param json
    * @return
    */
-  public GnsCommand lookupCommand(JSONObject json) {
+  public BasicCommand lookupCommand(JSONObject json) {
+    BasicCommand command = null;
+    if (json.has(COMMAND_INT)) {
+      try {
+        command = lookupCommand(CommandType.getCommandType(json.getInt(COMMAND_INT)));
+        // Some sanity checks
+        String commandName = json.optString(COMMANDNAME, null);
+        // Check to see if command name is the same
+        if (command != null && commandName != null
+                && !commandName.equals(command.getCommandType().toString())) {
+          ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
+                  "Command name {0} in json does not match {1}",
+                  new Object[]{commandName, command.getCommandType().toString()});
+          command = null;
+        }
+        if (command != null && !JSONContains(json, command.getCommandParameters())) {
+          ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
+                  "For {0} missing parameter {1}",
+                  new Object[]{commandName, JSONMissing(json, command.getCommandParameters())});
+          command = null;
+        }
+      } catch (JSONException e) {
+        // do nothing
+      }
+    }
+    if (command != null) {
+      ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+              "Found {0} using table lookup", command);
+      return command;
+    }
+    // Keep the old method for backward compatibility with older clients that
+    // aren't using the COMMAND_INT field
+    return lookupCommandFromCommandName(json);
+  }
+
+  public BasicCommand lookupCommandFromCommandName(JSONObject json) {
     String action;
     try {
       action = json.getString(COMMANDNAME);
@@ -113,20 +181,33 @@ public class CommandModule {
               "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
       return null;
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.FINE, 
-            "Searching {0} commands:", commands.size());
+    return lookupCommand(action);
+  }
+
+  @Deprecated
+  private BasicCommand lookupCommandLinearSearch(JSONObject json) {
+    String action;
+    try {
+      action = json.getString(COMMANDNAME);
+    } catch (JSONException e) {
+      ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
+              "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
+      return null;
+    }
+    ClientCommandProcessorConfig.getLogger().log(Level.FINE,
+            "Linear search of {0} commands:", commands.size());
     // for now a linear search is fine
-    for (GnsCommand command : commands) {
+    for (BasicCommand lookupCommand : commands) {
       //GNS.getLogger().info("Search: " + command.toString());
-      if (command.getCommandName().equals(action)) {
+      if (lookupCommand.getCommandType().toString().equals(action)) {
         //GNS.getLogger().info("Found action: " + action);
-        if (JSONContains(json, command.getCommandParameters())) {
+        if (JSONContains(json, lookupCommand.getCommandParameters())) {
           //GNS.getLogger().info("Matched parameters: " + json);
-          return command;
+          return lookupCommand;
         }
       }
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.WARNING, 
+    ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
             "***COMMAND SEARCH***: Unable to find {0}", json);
     return null;
   }
@@ -153,13 +234,13 @@ public class CommandModule {
    */
   public String allCommandDescriptions(CommandDescriptionFormat format) {
     StringBuilder result = new StringBuilder();
-    List<GnsCommand> commandList = new ArrayList<>(commands);
+    List<BasicCommand> commandList = new ArrayList<>(commands);
     // First sort by name
     Collections.sort(commandList, CommandNameComparator);
     // The sort them by package
     Collections.sort(commandList, CommandPackageComparator);
     String lastPackageName = null;
-    for (GnsCommand command : commandList) {
+    for (BasicCommand command : commandList) {
       String packageName = command.getClass().getPackage().getName();
       if (!packageName.equals(lastPackageName)) {
         if (format.equals(CommandDescriptionFormat.TCP_Wiki) && lastPackageName != null) {
@@ -181,13 +262,17 @@ public class CommandModule {
     return result.toString();
   }
 
-  private boolean JSONContains(JSONObject json, String[] parameters) {
+  private String JSONMissing(JSONObject json, String[] parameters) {
     for (int i = 0; i < parameters.length; i++) {
       if (json.optString(parameters[i], null) == null) {
-        return false;
+        return parameters[i];
       }
     }
-    return true;
+    return null;
+  }
+
+  private boolean JSONContains(JSONObject json, String[] parameters) {
+    return JSONMissing(json, parameters) == null;
   }
 
   /**
@@ -208,11 +293,11 @@ public class CommandModule {
     this.adminMode = adminMode;
   }
 
-  private static Comparator<GnsCommand> CommandPackageComparator
-          = new Comparator<GnsCommand>() {
+  private static Comparator<BasicCommand> CommandPackageComparator
+          = new Comparator<BasicCommand>() {
 
     @Override
-    public int compare(GnsCommand command1, GnsCommand command2) {
+    public int compare(BasicCommand command1, BasicCommand command2) {
 
       String packageName1 = command1.getClass().getPackage().getName();
       String packageName2 = command2.getClass().getPackage().getName();
@@ -229,20 +314,18 @@ public class CommandModule {
   /**
    *
    */
-  private static Comparator<GnsCommand> CommandNameComparator
-          = new Comparator<GnsCommand>() {
+  private static Comparator<BasicCommand> CommandNameComparator
+          = new Comparator<BasicCommand>() {
 
     @Override
-    public int compare(GnsCommand command1, GnsCommand command2) {
+    public int compare(BasicCommand command1, BasicCommand command2) {
 
-      String commandName1 = command1.getCommandName();
-      String commandName2 = command2.getCommandName();
+      String commandName1 = command1.getCommandType().toString();
+      String commandName2 = command2.getCommandType().toString();
 
       //ascending order
       return commandName1.compareTo(commandName2);
 
-      //descending order
-      //return fruitName2.compareTo(fruitName1);
     }
 
   };

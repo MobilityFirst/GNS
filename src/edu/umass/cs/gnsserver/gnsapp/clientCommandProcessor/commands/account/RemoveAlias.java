@@ -19,20 +19,19 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import java.text.ParseException;
 import java.util.Date;
 import org.json.JSONException;
@@ -42,7 +41,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class RemoveAlias extends GnsCommand {
+public class RemoveAlias extends BasicCommand {
 
   /**
    * Creates a RemoveAlias instance.
@@ -54,14 +53,19 @@ public class RemoveAlias extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.RemoveAlias;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return REMOVE_ALIAS;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REMOVE_ALIAS;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -70,7 +74,7 @@ public class RemoveAlias extends GnsCommand {
     String name = json.getString(NAME);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    Date timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (AccountAccess.lookupGuidInfo(guid, handler, true) == null) {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
@@ -79,7 +83,7 @@ public class RemoveAlias extends GnsCommand {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     } else if (!accountInfo.isVerified()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
-    } 
+    }
     return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, timestamp, handler);
   }
 

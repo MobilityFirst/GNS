@@ -322,6 +322,7 @@ public class AccountInfo {
     return toJSONObject(false);
   }
 
+  private static final int TOO_MANY_GUIDS = 50000;
   /**
    * Converts this instance into a JSONObject.
    * If forClient is true, we don't include information that
@@ -337,9 +338,10 @@ public class AccountInfo {
     json.put(GUID, primaryGuid);
     json.put(TYPE, type);
     json.put(ALIASES, new JSONArray(aliases));
-    if (forClient) {
+    if (forClient && guids.size() > TOO_MANY_GUIDS) {
       json.put("guidCnt", guids.size());
     } else {
+      json.put("guidCnt", guids.size());
       json.put(GUIDS, new JSONArray(guids));
     }
     json.put(CREATED, Format.formatDateUTC(created));

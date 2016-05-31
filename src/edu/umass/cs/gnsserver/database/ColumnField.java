@@ -14,13 +14,8 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Westy
- *
  */
 package edu.umass.cs.gnsserver.database;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Encapsulates the name and type of a column in the database.
@@ -63,7 +58,7 @@ public class ColumnField {
 
   @Override
   public String toString() {
-    return name + " " + type.toString();
+    return name + "/" + type.toString();
   }
 
 }

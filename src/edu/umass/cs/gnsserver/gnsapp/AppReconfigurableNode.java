@@ -31,13 +31,12 @@ import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.printOptions;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Instantiates the replicas and reconfigurators. Also parses
@@ -47,7 +46,7 @@ import java.util.Set;
  */
 public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
-  private final static List<AppReconfigurableNode> allNodes = new ArrayList<>();
+  private final static List<AppReconfigurableNode> ALL_NODES = new ArrayList<>();
 
   //private MongoRecords<String> mongoRecords = null;
   /**
@@ -62,63 +61,61 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     super(nodeID, nc);
   }
 
-  /**
-   * Create and returns an app coordinator.
-   *
-   * @return a coordinator or null if one can't be created
-   */
-  @Override
-  @Deprecated
-  protected AbstractReplicaCoordinator<String> createAppCoordinator() {
-    GNSApp app = null;
-    try {
-      app = new GNSApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
-              this.messenger);
-    } catch (IOException e) {
-      GNSConfig.getLogger().info("Unable to create app: " + e);
-      // not sure what to do here other than just return null
-      return null;
-    }
-
-    GNSAppCoordinator<String> appCoordinator = new GNSAppCoordinator<String>(app, this.nodeConfig, this.messenger);
-    return appCoordinator;
-
-  }
-
+//  /**
+//   * Create and returns an app coordinator.
+//   *
+//   * @return a coordinator or null if one can't be created
+//   */
+//  @Override
+//  @Deprecated
+//  protected AbstractReplicaCoordinator<String> createAppCoordinator() {
+//    GNSApp app = null;
+//    try {
+//      app = new GNSApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
+//              this.messenger);
+//    } catch (IOException e) {
+//      GNSConfig.getLogger().info("Unable to create app: " + e);
+//      // not sure what to do here other than just return null
+//      return null;
+//    }
+//
+//    GNSAppCoordinator<String> appCoordinator = new GNSAppCoordinator<String>(app, this.nodeConfig, this.messenger);
+//    return appCoordinator;
+//
+//  }
   private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
-    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, nodeID);
+    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, nodeID);
     System.out.println("********* Starting active replica. *********");
-    allNodes.add(new AppReconfigurableNode((String) nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig));
+    ALL_NODES.add(new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig));
     System.out.println("********* Starting reconfigurator. *********");
-    allNodes.add(new AppReconfigurableNode((String) nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig));
+    ALL_NODES.add(new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig));
     printRCConfig();
     System.out.println("********* Nodes have started. Server is ready. *********");
   }
 
   private static void startStandalone(String nodeConfigFilename) throws IOException {
-    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, true);
-    String nodeID = (String) nodeConfig.getActiveReplicas().iterator().next();
-    GNSConfig.getLogger().info("Starting standalone node " + nodeID);
-    allNodes.add(new AppReconfigurableNode(nodeID, nodeConfig));
+    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, true);
+    String nodeID = nodeConfig.getActiveReplicas().iterator().next();
+    GNSConfig.getLogger().log(Level.INFO, "Starting standalone node {0}", nodeID);
+    ALL_NODES.add(new AppReconfigurableNode(nodeID, nodeConfig));
   }
 
   private static void startTestNodes(String nodeConfigFilename) throws IOException {
-    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, true);
+    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, true);
     try {
-      for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {
+      for (String activeID : nodeConfig.getActiveReplicas()) {
         System.out.println("########### Multi-node test #############");
         System.out.println("###################################");
         System.out.println("############# Setting up active replica " + activeID);
-        allNodes.add(new AppReconfigurableNode(activeID, nodeConfig));
+        ALL_NODES.add(new AppReconfigurableNode(activeID, nodeConfig));
       }
-      for (String rcID : (Set<String>) nodeConfig.getReconfigurators()) {
+      for (String rcID : nodeConfig.getReconfigurators()) {
         System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         System.out.println("$$$$$$$$$$$$$$$$ Setting up reconfigurator " + rcID);
-        allNodes.add(new AppReconfigurableNode(rcID, nodeConfig));
+        ALL_NODES.add(new AppReconfigurableNode(rcID, nodeConfig));
       }
       printRCConfig();
       System.out.println("********* Nodes have started. Server is ready. *********");
-      
 
     } catch (IOException ioe) {
       ioe.printStackTrace();
@@ -135,7 +132,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     printOptions(options);
     return options;
   }
-  
+
   public static void printRCConfig() {
     StringBuilder result = new StringBuilder();
     for (ReconfigurationConfig.RC rc : ReconfigurationConfig.RC.values()) {
@@ -164,7 +161,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
-        for (AppReconfigurableNode node : allNodes) {
+        for (AppReconfigurableNode node : ALL_NODES) {
           System.out.println("Shutting down " + node.myID);
           node.close();
         }
@@ -185,5 +182,10 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
               AppReconfigurableNodeOptions.getAllOptions());
       System.exit(0);
     }
+  }
+
+  @Override
+  protected AbstractReplicaCoordinator<String> createAppCoordinator() {
+    throw new RuntimeException("This method should not have been called");
   }
 }

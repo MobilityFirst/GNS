@@ -19,10 +19,7 @@
  */
 package edu.umass.cs.gnsclient.console;
 
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
-import java.io.StringBufferInputStream;
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -33,67 +30,41 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.fail;
 
 /**
  * This class defines a ConsoleBasedTest
- * 
+ *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
-public class ConsoleBasedTest
-{
+public class ConsoleBasedTest {
+
   private static final String GNS_CLI_PROMPT = "GNS CLI";
-  private static final String ACCOUNT        = "test_account@localhost";
-  private static final String GROUP_GUID     = "test_group";
-  private static final String GUID1          = "test_guid1";
-  private static final String GUID2          = "test_guid2";
-  private static final String FIELD1         = "test_field1";
-  private static final String VALUE1         = "1234567890";
-  private static final String VALUE2         = "value2";
+  private static final String ACCOUNT = "test_account@localhost";
+  private static final String GROUP_GUID = "test_group";
+  private static final String GUID1 = "test_guid1";
+  private static final String GUID2 = "test_guid2";
+  private static final String FIELD1 = "test_field1";
+  private static final String VALUE1 = "1234567890";
+  private static final String VALUE2 = "value2";
 
   /**
    * Used to access the test method name in output messages
    */
   @Rule
-  public TestName             testName       = new TestName();
-
-  /**
-   * Reset the GNS database to start with a clean slate. Note GNS must be in
-   * admin mode: http://localhost:8081/GNS/admin?passkey=localhost:8081
-   */
-  @Test
-  public void testResetDB()
-  {
-    String inCommands;
-    String expectedOutput;
-
-    inCommands = "reset_db\n";
-
-    expectedOutput = "Database has been reset.\n";
-
-    // runCommandsInConsole(inCommands, expectedOutput, true, false);
-  }
+  public TestName testName = new TestName();
 
   /**
    * Test account GUID creation and deletion
    */
   @Test
-  public void testAccountGuidCreateDelete()
-  {
+  public void testAccountGuidCreateDelete() {
     String inCommands;
     String expectedOutput;
 
@@ -113,10 +84,8 @@ public class ConsoleBasedTest
    * Repeat testAccountGuidCreateDelete 5 times.
    */
   @Test
-  public void test5AccountGuidCreateDelete()
-  {
-    for (int i = 0; i < 5; i++)
-    {
+  public void test5AccountGuidCreateDelete() {
+    for (int i = 0; i < 5; i++) {
       testAccountGuidCreateDelete();
     }
   }
@@ -125,8 +94,7 @@ public class ConsoleBasedTest
    * Create an account GUID and set it as default using guid_use
    */
   @Test
-  public void testCreateAndSetDefaultGuid()
-  {
+  public void testCreateAndSetDefaultGuid() {
     String inCommands;
     String expectedOutput;
 
@@ -147,8 +115,7 @@ public class ConsoleBasedTest
    * Test GUID creation and deletion
    */
   @Test
-  public void testField()
-  {
+  public void testField() {
     String inCommands;
     String expectedOutput;
 
@@ -186,8 +153,8 @@ public class ConsoleBasedTest
     expectedOutput += Pattern.quote("[]") + ".*\n";
     expectedOutput += "Field " + FIELD1 + " removed from GUID .*\n";
     expectedOutput += Pattern
-        .quote("Failed to access GNS ( edu.umass.cs.gnsclient.exceptions.GnsException: General command failure: +GENERICEERROR+)")
-        + ".*\n";
+            .quote("Failed to access GNS ( edu.umass.cs.gnsclient.exceptions.GnsException: General command failure: +GENERICEERROR+)")
+            + ".*\n";
     expectedOutput += "Value '" + VALUE1 + "' written to field " + FIELD1 + " for GUID .*\n";
     expectedOutput += Pattern.quote("[\"" + VALUE1 + "\"]") + ".*\n";
     expectedOutput += "Value '" + VALUE2 + "' written to field " + FIELD1 + " for GUID .*\n";
@@ -201,8 +168,7 @@ public class ConsoleBasedTest
    * Test groups GUIDs and membership
    */
   @Test
-  public void testGroupGuid()
-  {
+  public void testGroupGuid() {
     String inCommands;
     String expectedOutput;
 
@@ -269,8 +235,7 @@ public class ConsoleBasedTest
    * Test GUID creation and deletion
    */
   @Test
-  public void testGuidCreateDelete()
-  {
+  public void testGuidCreateDelete() {
     String inCommands;
     String expectedOutput;
 
@@ -291,10 +256,8 @@ public class ConsoleBasedTest
    * Test GUID creation and deletion 5 times
    */
   @Test
-  public void test5GuidCreateDelete()
-  {
-    for (int i = 0; i < 5; i++)
-    {
+  public void test5GuidCreateDelete() {
+    for (int i = 0; i < 5; i++) {
       testGuidCreateDelete();
     }
   }
@@ -303,8 +266,7 @@ public class ConsoleBasedTest
    * Test account GUID creation and deletion
    */
   @Test
-  public void testAccountGuidDelete()
-  {
+  public void testAccountGuidDelete() {
     String inCommands;
     String expectedOutput;
 
@@ -318,23 +280,22 @@ public class ConsoleBasedTest
   /**
    * Run inCommands commands through the CLI and compare the output with
    * expectedOutput. Can also check if a default GNS and/or GUID have been set.
-   * 
+   *
    * @param inCommands list of console commands separated by '\n'
    * @param expectedOutput list of expected console output (can use Java regular
-   *          expressions, each line separated by '\n')
+   * expressions, each line separated by '\n')
    * @param requireDefaultGns check if a default GNS has been defined (will
-   *          error out if not)
+   * error out if not)
    * @param requireDefaultAccountGuid check if a default GUID has been defined
-   *          (will error out if not)
+   * (will error out if not)
    */
   protected void runCommandsInConsole(String inCommands, String expectedOutput, boolean requireDefaultGns,
-      boolean requireDefaultAccountGuid)
-  {
+          boolean requireDefaultAccountGuid) {
     boolean success = false;
     StringWriter output = new StringWriter();
-    try
-    {
-      ConsoleReader consoleReader = new ConsoleReader(new StringBufferInputStream(inCommands), output);
+    try {
+      ConsoleReader consoleReader
+              = new ConsoleReader(new ByteArrayInputStream(inCommands.getBytes("UTF-8")), output);
       ConsoleModule module = new ConsoleModule(consoleReader);
       module.printString("GNS Client Version: " + GNSClientConfig.readBuildVersion() + "\n");
 
@@ -345,152 +306,150 @@ public class ConsoleBasedTest
       StringTokenizer expected = new StringTokenizer(expectedOutput, "\n");
       StringTokenizer actual = new StringTokenizer(output.toString(), "\n");
 
-      if (!actual.hasMoreTokens())
+      if (!actual.hasMoreTokens()) {
         fail("No console output");
+      }
 
-      if (!actual.nextToken().startsWith("GNS Client Version"))
+      if (!actual.nextToken().startsWith("GNS Client Version")) {
         fail("Unexpected console output, should start with 'GNS Client Version'");
+      }
 
       // Check that default GNS defaults is set
-      if (requireDefaultGns)
-      {
-        if (!actual.hasMoreTokens())
+      if (requireDefaultGns) {
+        if (!actual.hasMoreTokens()) {
           fail("Default GNS not set");
+        }
         String defaultGns = actual.nextToken();
-        if ("Default GNS: null".equals(defaultGns))
+        if ("Default GNS: null".equals(defaultGns)) {
           fail("Default GNS not set");
-        if (!defaultGns.startsWith("Default GNS: "))
+        }
+        if (!defaultGns.startsWith("Default GNS: ")) {
           fail("Unexpected console output, should start with 'Default GNS: '");
+        }
 
         // Check GNS Connectivity .
-        if (!actual.hasMoreTokens())
+        if (!actual.hasMoreTokens()) {
           fail("No console output during GNS connectivity check");
+        }
 
-        if (!actual.nextToken().startsWith("Checking GNS connectivity"))
+        if (!actual.nextToken().startsWith("Checking GNS connectivity")) {
           fail("Unexpected console output during GNS connectivity check");
-        if (!actual.hasMoreTokens())
+        }
+        if (!actual.hasMoreTokens()) {
           fail("No console output during GNS connectivity check");
-        if (!actual.nextToken().startsWith("Connected to GNS"))
+        }
+        if (!actual.nextToken().startsWith("Connected to GNS")) {
           fail("Default GNS is not reachable");
-      }
-      else
-      { // Consume lines until we connected or not to a default GNS
-        while (actual.hasMoreTokens())
-        {
+        }
+      } else { // Consume lines until we connected or not to a default GNS
+        while (actual.hasMoreTokens()) {
           String line = actual.nextToken();
-          if (line.startsWith("Connected to GNS") || line.startsWith("Failed to connect to GNS")
-              || line.startsWith("Couldn't connect to default GNS"))
+          if (line.startsWith("Connected to GNS")
+                  || line.startsWith("Failed to connect to GNS")
+                  || line.startsWith("Couldn't connect to default GNS")) {
             break;
+          }
         }
       }
 
-      if (requireDefaultAccountGuid)
-      {
+      if (requireDefaultAccountGuid) {
         // Check default GUID
-        if (!actual.hasMoreTokens())
+        if (!actual.hasMoreTokens()) {
           fail("Default GUID not set");
+        }
         String defaultGuid = actual.nextToken();
-        if (defaultGuid.matches("Default GUID: null"))
+        if (defaultGuid.matches("Default GUID: null")) {
           fail("Default GUID not set");
-        if (!actual.hasMoreTokens())
+        }
+        if (!actual.hasMoreTokens()) {
           fail("Default GUID not set");
+        }
         defaultGuid = actual.nextToken();
-        if (!defaultGuid.matches("Looking up alias .*"))
+        if (!defaultGuid.matches("Looking up alias .*")) {
           fail("Unexpected console output, should start with 'Looking up alias'");
-        if (!actual.hasMoreTokens())
+        }
+        if (!actual.hasMoreTokens()) {
           fail("Default GUID not set");
-        if (!actual.nextToken().startsWith("Current GUID set to "))
+        }
+        if (!actual.nextToken().startsWith("Current GUID set to ")) {
           fail("Default GUID not set or not valid");
-        if (!actual.hasMoreTokens())
+        }
+        if (!actual.hasMoreTokens()) {
           fail("Default GUID not set or not valid");
+        }
 
         // Next should be the console prompt
-        if (!actual.nextToken().startsWith(GNS_CLI_PROMPT))
+        if (!actual.nextToken().startsWith(GNS_CLI_PROMPT)) {
           fail("Default GUID not properly set, expected console prompt");
-      }
-      else
-      {
+        }
+      } else {
         // Consume all input until first prompt
         while (actual.hasMoreTokens() && !actual.nextToken().startsWith(GNS_CLI_PROMPT))
           ;
       }
 
       // Diff outputs
-      while (expected.hasMoreTokens())
-      {
+      while (expected.hasMoreTokens()) {
         String nextExpected = expected.nextToken();
         String nextActual = null;
-        if (actual.hasMoreTokens())
-        { // Skip command line prompts to get real output
+        if (actual.hasMoreTokens()) { // Skip command line prompts to get real output
           nextActual = actual.nextToken();
-          while (nextActual.startsWith(GNS_CLI_PROMPT) && actual.hasMoreTokens())
+          while (nextActual.startsWith(GNS_CLI_PROMPT) && actual.hasMoreTokens()) {
             nextActual = actual.nextToken();
+          }
           // Treat expected as a regular expression
-          if (!nextActual.matches("(?s)" + nextExpected))
-          {
-            if (StringUtils.getLevenshteinDistance(nextActual, nextExpected) < 5)
-              for (int i = 0; i < nextActual.length(); i++)
-              {
+          if (!nextActual.matches("(?s)" + nextExpected)) {
+            if (StringUtils.getLevenshteinDistance(nextActual, nextExpected) < 5) {
+              for (int i = 0; i < nextActual.length(); i++) {
                 final char actualChar = nextActual.charAt(i);
-                if (i < expectedOutput.length())
-                {
+                if (i < expectedOutput.length()) {
                   final char expectedChar = nextExpected.charAt(i);
-                  if (actualChar != expectedChar)
+                  if (actualChar != expectedChar) {
                     System.out.println("Character " + i + " differs: " + ((int) actualChar) + " vs expected "
-                        + ((int) expectedChar) + " - " + actualChar + "<>" + expectedChar + "\n");
-                }
-                else
-                {
+                            + ((int) expectedChar) + " - " + actualChar + "<>" + expectedChar + "\n");
+                  }
+                } else {
                   System.out.println("Character " + i + " is extra: " + ((int) actualChar) + " - " + actualChar);
                 }
               }
+            }
             fail("Got     : '" + nextActual + "'\n" + "Expected: '" + nextExpected + "'\n");
           }
-        }
-        else
-        {
+        } else {
           fail("Missing expected output: " + nextExpected);
         }
       }
 
       // Check extra output
-      while (actual.hasMoreTokens())
-      {
+      while (actual.hasMoreTokens()) {
         String nextActual = actual.nextToken();
-        while (nextActual.startsWith(GNS_CLI_PROMPT) && actual.hasMoreTokens())
+        while (nextActual.startsWith(GNS_CLI_PROMPT) && actual.hasMoreTokens()) {
           nextActual = actual.nextToken();
-        if (!nextActual.startsWith(GNS_CLI_PROMPT))
-        {
+        }
+        if (!nextActual.startsWith(GNS_CLI_PROMPT)) {
           fail("Extra output: " + actual.nextToken());
         }
       }
 
       success = true;
-    }
-    catch (IOException e)
-    {
+    } catch (IOException e) {
       fail("Error during console execution " + e);
-    }
-    finally
-    {
-      if (!success)
-      {
+    } finally {
+      if (!success) {
         System.out.println("**** COMPLETE OUTPUT for " + testName.getMethodName() + " ****");
         System.out.println(output.toString());
       }
     }
   }
 
-  
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
   // this is so we can mimic the verification code the server is generting
   // AKA we're cheating... if the SECRET changes on the server side
   // you'll need to change it here as well
   private static final String SECRET = "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
-                                         + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
+          + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
 
-  private static String createVerificationCode(String name)
-  {
+  private static String createVerificationCode(String name) {
     return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
   }
 }

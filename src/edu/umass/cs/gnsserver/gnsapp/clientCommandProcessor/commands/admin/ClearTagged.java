@@ -19,22 +19,21 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
-
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Iterator;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,7 +43,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ClearTagged extends GnsCommand {
+public class ClearTagged extends BasicCommand {
 
   /**
    *
@@ -55,14 +54,19 @@ public class ClearTagged extends GnsCommand {
   }
 
   @Override
+  public CommandType getCommandType() {
+    return CommandType.ClearTagged;
+  }
+
+  @Override
   public String[] getCommandParameters() {
     return new String[]{NAME};
   }
 
-  @Override
-  public String getCommandName() {
-    return CLEAR_TAGGED;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CLEAR_TAGGED;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
@@ -78,7 +82,7 @@ public class ClearTagged extends GnsCommand {
         }
       }
       return new CommandResponse<String>(OK_RESPONSE);
-    } catch (GnsClientException | IOException e) {
+    } catch (ClientException | IOException e) {
       return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
     }
   }

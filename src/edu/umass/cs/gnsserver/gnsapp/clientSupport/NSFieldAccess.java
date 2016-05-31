@@ -19,12 +19,13 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
@@ -33,6 +34,8 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
 import java.util.List;
@@ -99,7 +102,7 @@ public class NSFieldAccess {
     // Try to look up the value in the database
     try {
       // Check for the case where we're returning all the fields the entire record.
-      if (GnsProtocol.ALL_FIELDS.equals(field)) {
+      if (GNSCommandProtocol.ALL_FIELDS.equals(field)) {
         ClientSupportConfig.getLogger().log(Level.FINE, "Field={0} Format={1}",
                 new Object[]{field, returnFormat});
         // need everything so just grab all the fields
@@ -108,9 +111,12 @@ public class NSFieldAccess {
       } else if (field != null) {
         ClientSupportConfig.getLogger().log(Level.FINE, "Field={0} Format={1}",
                 new Object[]{field, returnFormat});
-        // otherwise grab a few system fields we need plus the field the user wanted
-        nameRecord = NameRecord.getNameRecordMultiField(database, guid,
-                null, returnFormat, field);
+        long t = System.nanoTime();
+        // otherwise grab the field the user wanted
+        nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
+                returnFormat, field);
+        if(Util.oneIn(100))
+        	DelayProfiler.updateDelayNano("getNameRecordMultiUserFields", t);
       }
       if (nameRecord != null) {
         return nameRecord.getValuesMap();
@@ -135,9 +141,9 @@ public class NSFieldAccess {
               new Object[]{fields, returnFormat});
       String[] fieldArray = new String[fields.size()];
       fieldArray = fields.toArray(fieldArray);
-      // Grab a few system fields and the fields the user wanted
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid,
-              null, returnFormat, fieldArray);
+      // Grab the fields the user wanted
+      NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
+              returnFormat, fieldArray);
       if (nameRecord != null) {
         return nameRecord.getValuesMap();
       }
@@ -165,7 +171,7 @@ public class NSFieldAccess {
     ResultValue result = null;
     try {
       // arun: cleaned up logging
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(database, guid, null,
+      NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
               ColumnFieldType.LIST_STRING, field);
       ClientSupportConfig.getLogger().log(Level.FINE,
               "LOOKUPFIELDONTHISSERVER: {0} : {1} -> {2}",
@@ -273,7 +279,7 @@ public class NSFieldAccess {
           result = new ValuesMap();
           result.put(field, stringResult);
         }
-      } catch (IOException | JSONException | GnsClientException e) {
+      } catch (IOException | JSONException | ClientException e) {
         ClientSupportConfig.getLogger().log(Level.SEVERE,
                 "Problem getting record from remote server: {0}", e);
       }
@@ -289,6 +295,8 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
+	  if(!AppReconfigurableNodeOptions.enableActiveCode) return originalValues;
+	  
     ValuesMap newResult = originalValues;
     // Only do this for user fields.
     if (field == null || !InternalField.isInternalField(field)) {
@@ -296,7 +304,7 @@ public class NSFieldAccess {
       // Grab the code because it is of a different type
       NameRecord codeRecord = null;
       try {
-        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+        codeRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), guid,
                 ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());

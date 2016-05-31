@@ -21,7 +21,8 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -36,6 +37,11 @@ public class Remove extends AbstractUpdate {
   public Remove(CommandModule module) {
     super(module);
   }
+  
+   @Override
+  public CommandType getCommandType() {
+    return CommandType.Remove;
+  }
 
   /**
    * Return the update operation.
@@ -47,10 +53,10 @@ public class Remove extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_REMOVE;
   }
 
-  @Override
-  public String getCommandName() {
-    return REMOVE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REMOVE;
+//  }
 
   @Override
   public String[] getCommandParameters() {

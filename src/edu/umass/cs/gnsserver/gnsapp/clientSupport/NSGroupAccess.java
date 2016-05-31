@@ -19,12 +19,12 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
-import edu.umass.cs.gnscommon.GnsProtocol;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
-import edu.umass.cs.gnscommon.exceptions.client.GnsClientException;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
@@ -37,8 +37,8 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
-
 import java.util.logging.Level;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -75,13 +75,13 @@ public class NSGroupAccess {
    * @param members
    * @param handler
    * @param lnsAddress
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static void updateMembers(String guid, Set<String> members,
           ClientRequestHandlerInterface handler, InetSocketAddress lnsAddress)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     //ClientSupportConfig.getLogger().info("RQ: ");
 
     String response = handler.getRemoteQuery().fieldReplaceOrCreateArray(guid, GroupAccess.GROUP,
@@ -90,7 +90,7 @@ public class NSGroupAccess {
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about this when we get transactions working.
-    if (response.equals(GnsProtocol.OK_RESPONSE)) {
+    if (response.equals(GNSCommandProtocol.OK_RESPONSE)) {
       //if (!groupResponse.isAnError()) {
       // This is probably a bad idea to update every member
       for (String member : members) {
@@ -161,9 +161,9 @@ public class NSGroupAccess {
    * @param groupGuid
    * @param memberGuid
    * @param handler
-   * @return an {@link NSResponseCode}
+   * @return an {@link GNSResponseCode}
    */
-  public static NSResponseCode removeFromGroup(String groupGuid, String memberGuid,
+  public static GNSResponseCode removeFromGroup(String groupGuid, String memberGuid,
           ClientRequestHandlerInterface handler) {
     try {
       handler.getRemoteQuery().fieldRemove(groupGuid, GroupAccess.GROUP, memberGuid);
@@ -177,9 +177,9 @@ public class NSGroupAccess {
 //      LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(groupGuid)),
 //              UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
 //    }
-      return NSResponseCode.NO_ERROR;
-    } catch (IOException | JSONException | GnsClientException e) {
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.NO_ERROR;
+    } catch (IOException | JSONException | ClientException e) {
+      return GNSResponseCode.GENERIC_ERROR;
     }
 
   }
@@ -205,12 +205,12 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param lastUpdate
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static void updateLastUpdate(String guid, Date lastUpdate, ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     //ClientSupportConfig.getLogger().info("RQ: ");
 
     handler.getRemoteQuery().fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime());
@@ -224,12 +224,12 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param minRefresh
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static void updateMinRefresh(String guid, int minRefresh, ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     //ClientSupportConfig.getLogger().info("RQ: ");
 
     handler.getRemoteQuery().fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh);
@@ -243,12 +243,12 @@ public class NSGroupAccess {
    * @param guid
    * @param queryString
    * @param handler
-   * @throws edu.umass.cs.gnscommon.exceptions.client.GnsClientException
+   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
   public static void updateQueryString(String guid, String queryString, ClientRequestHandlerInterface handler)
-          throws GnsClientException, IOException, JSONException {
+          throws ClientException, IOException, JSONException {
     //ClientSupportConfig.getLogger().info("RQ: ");
 
     handler.getRemoteQuery().fieldUpdate(guid, GROUP_QUERY_STRING, queryString);

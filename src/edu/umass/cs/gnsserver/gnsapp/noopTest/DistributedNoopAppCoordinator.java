@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.noopTest;
@@ -161,8 +161,7 @@ public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<Strin
   @Override
   public ReconfigurableRequest getStopRequest(String name, int epoch) {
     if (this.app instanceof Reconfigurable) {
-      return ((Reconfigurable) this.app).getStopRequest(name,
-              epoch);
+      return this.app.getStopRequest(name, epoch);
     }
     throw new RuntimeException(
             "Can not get stop request for a non-reconfigurable app");

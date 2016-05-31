@@ -20,21 +20,23 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.GnsCommand;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Date;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class AbstractUpdateList extends GnsCommand {
+public abstract class AbstractUpdateList extends BasicCommand {
 
   /**
    *
@@ -73,11 +75,11 @@ public abstract class AbstractUpdateList extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp;
     if (json.has(TIMESTAMP)) {
-      timestamp = Format.parseDateISO8601UTC(json.getString(TIMESTAMP));
+      timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     } else {
       timestamp = null;
     }
-    NSResponseCode responseCode;
+    GNSResponseCode responseCode;
     if (writer.equals(MAGIC_STRING)) {
       writer = null;
     }
@@ -87,7 +89,7 @@ public abstract class AbstractUpdateList extends GnsCommand {
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
             argument,
             getUpdateOperation(),
-            writer, signature, message, timestamp, handler)).isAnError()) {
+            writer, signature, message, timestamp, handler)).isError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

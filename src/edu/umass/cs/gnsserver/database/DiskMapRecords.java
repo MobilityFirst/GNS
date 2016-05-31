@@ -1,0 +1,301 @@
+/*
+ * Copyright (C) 2016
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
+package edu.umass.cs.gnsserver.database;
+
+import com.mongodb.util.JSON;
+import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
+import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.utils.JSONDotNotation;
+import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.utils.JSONUtils;
+import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DiskMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+/**
+ * Uses a diskmap as the primary database with mongo as the
+ * backup for when we need more NoSQL databasey features.
+ *
+ * See DiskMapCollection for more details.
+ *
+ *
+ * @author westy
+ */
+public class DiskMapRecords implements NoSQLRecords {
+
+  private Map<String, DiskMapCollection> collections;
+  private String mongoNodeID;
+  private int mongoPort;
+
+  private DiskMapCollection getCollection(String name) {
+    DiskMapCollection collection = collections.get(name);
+    if (collection == null) {
+      collections.put(name, collection = new DiskMapCollection(mongoNodeID, mongoPort, name));
+    }
+    return collection;
+  }
+
+  public DiskMap<String, JSONObject> getMap(String name) {
+    return getCollection(name).getMap();
+  }
+
+  public MongoRecords getMongoRecords(String name) {
+    return getCollection(name).getMongoRecords();
+  }
+
+  public DiskMapRecords(String nodeID) {
+    this(nodeID, -1);
+  }
+
+  public DiskMapRecords(String nodeID, int port) {
+    this.collections = new ConcurrentHashMap<>();
+    this.mongoNodeID = nodeID;
+    this.mongoPort = port;
+  }
+
+  @Override
+  public void insert(String collection, String name, JSONObject value)
+          throws FailedDBOperationException, RecordExistsException {
+    getMap(collection).put(name, value);
+  }
+
+  @Override
+  public JSONObject lookupEntireRecord(String collection, String name)
+          throws FailedDBOperationException, RecordNotFoundException {
+    JSONObject record;
+    if ((record = getMap(collection).get(name)) == null) {
+
+      throw new RecordNotFoundException(name);
+    }
+    try {
+      // Make a new object to make sure there aren't any DBObjects lurking in here
+    	// arun: Parsing from string is *much* worse than copying as follows
+    	JSONObject copy = new JSONObject();
+    	for(String key : JSONObject.getNames(record))
+    		copy.put(key, record.get(key));
+      return copy; 
+      //new JSONObject(record.toString());
+    } catch (JSONException e) {
+      throw new FailedDBOperationException(collection, name, "Unable to parse json record");
+    }
+  }
+
+  @Override
+  public HashMap<ColumnField, Object> lookupSomeFields(String collection, String name,
+          ColumnField nameField, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
+          throws RecordNotFoundException, FailedDBOperationException {
+
+    JSONObject record = lookupEntireRecord(collection, name);
+//    DatabaseConfig.getLogger().log(Level.FINE, "Full record " + record.toString());
+    HashMap<ColumnField, Object> hashMap = new HashMap<>();
+    hashMap.put(nameField, name);
+    if (valuesMapField != null && valuesMapKeys != null) {
+      try {
+        JSONObject readValuesMap = record.getJSONObject(valuesMapField.getName());
+//        DatabaseConfig.getLogger().log(Level.FINE, "Read valuesMap " + readValuesMap.toString());
+        ValuesMap valuesMapOut = new ValuesMap();
+        for (int i = 0; i < valuesMapKeys.size(); i++) {
+          String userKey = valuesMapKeys.get(i).getName();
+          if (JSONDotNotation.containsFieldDotNotation(userKey, readValuesMap) == false) {
+//            DatabaseConfig.getLogger().fine("valuesMap doesn't contain " + userKey);
+            continue;
+          }
+          try {
+            switch (valuesMapKeys.get(i).type()) {
+              case USER_JSON:
+                Object value = JSONDotNotation.getWithDotNotation(userKey, readValuesMap);
+                DatabaseConfig.getLogger().log(Level.FINE,
+                        "Object is {0}", new Object[]{value.toString()});
+                valuesMapOut.put(userKey, value);
+                break;
+              case LIST_STRING:
+                valuesMapOut.putAsArray(userKey,
+                        JSONUtils.JSONArrayToResultValue(
+                                new JSONArray(JSONDotNotation.getWithDotNotation(userKey,
+                                        readValuesMap).toString())));
+                break;
+              default:
+                DatabaseConfig.getLogger().log(Level.SEVERE,
+                        "ERROR: Error: User keys field {0} is not a known type:{1}",
+                        new Object[]{userKey, valuesMapKeys.get(i).type()});
+                break;
+            }
+          } catch (JSONException e) {
+            DatabaseConfig.getLogger().log(Level.SEVERE, "Error parsing json: {0}", e.getMessage());
+            e.printStackTrace();
+          }
+        }
+        hashMap.put(valuesMapField, valuesMapOut);
+      } catch (JSONException e) {
+        DatabaseConfig.getLogger().severe("Problem getting values map: " + e);
+      }
+    }
+    return hashMap;
+  }
+
+  @Override
+  public boolean contains(String collection, String name) throws FailedDBOperationException {
+    return getMap(collection).containsKey(name);
+  }
+
+  @Override
+  public void removeEntireRecord(String collection, String name) throws FailedDBOperationException {
+    DatabaseConfig.getLogger().fine("Remove: " + name);
+    getMap(collection).remove(name);
+  }
+
+  @Override
+  public void updateEntireRecord(String collection, String name, ValuesMap valuesMap) throws FailedDBOperationException {
+    DatabaseConfig.getLogger().log(Level.FINE, "Update record " + name + "/" + valuesMap);
+    JSONObject json = new JSONObject();
+    try {
+      json.put(NameRecord.NAME.getName(), name);
+      json.put(NameRecord.VALUES_MAP.getName(), valuesMap);
+      getMap(collection).put(name, json);
+    } catch (JSONException e) {
+
+    }
+  }
+
+  @Override
+  public void updateIndividualFields(String collection, String name,
+          ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
+          ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
+    DatabaseConfig.getLogger().log(Level.FINE, "Update fields " + name + "/" + valuesMapKeys);
+    JSONObject record;
+    try {
+       record = lookupEntireRecord(collection, name);
+    } catch (RecordNotFoundException e) {
+      throw new FailedDBOperationException(collection, name, "Record not found.");
+    }
+    DatabaseConfig.getLogger().fine("Record before:" + record);
+    if (record == null) {
+      throw new FailedDBOperationException(collection, name);
+    }
+    if (valuesMapField != null && valuesMapKeys != null) {
+      try {
+        JSONObject json = record.getJSONObject(valuesMapField.getName());
+        for (int i = 0; i < valuesMapKeys.size(); i++) {
+          String fieldName = valuesMapKeys.get(i).getName();
+          switch (valuesMapKeys.get(i).type()) {
+            case LIST_STRING:
+              JSONDotNotation.putWithDotNotation(json, fieldName, valuesMapValues.get(i));
+              //json.put(fieldName, valuesMapValues.get(i));
+              break;
+            case USER_JSON:
+              JSONDotNotation.putWithDotNotation(json, fieldName, JSONParse(valuesMapValues.get(i)));
+              //json.put(fieldName, JSONParse(valuesMapValues.get(i)));
+              break;
+            default:
+              DatabaseConfig.getLogger().log(Level.WARNING,
+                      "Ignoring unknown format: {0}", valuesMapKeys.get(i).type());
+              break;
+          }
+        }
+        DatabaseConfig.getLogger().fine("Json after:" + json);
+        record.put(valuesMapField.getName(), json);
+        DatabaseConfig.getLogger().fine("Record after:" + record);
+      } catch (JSONException e) {
+        DatabaseConfig.getLogger().log(Level.SEVERE,
+                "Problem updating json: {0}", e.getMessage());
+      }
+    }
+    getMap(collection).put(name, record);
+  }
+  // not sure why the JSON.parse doesn't handle things this way but it doesn't
+
+  private Object JSONParse(Object object) {
+    if (object instanceof String || object instanceof Number) {
+      return object;
+    } else {
+      return JSON.parse(object.toString());
+    }
+  }
+
+  @Override
+  public void removeMapKeys(String collection, String name,
+          ColumnField mapField, ArrayList<ColumnField> mapKeys)
+          throws FailedDBOperationException {
+    JSONObject record = null;
+    try {
+       record = lookupEntireRecord(collection, name);
+    } catch (RecordNotFoundException e) {
+    }
+    DatabaseConfig.getLogger().fine("Record before:" + record);
+    if (record == null) {
+      throw new FailedDBOperationException(collection, name, "Record not found.");
+    }
+    if (mapField != null && mapKeys != null) {
+      try {
+        JSONObject json = record.getJSONObject(mapField.getName());
+        for (int i = 0; i < mapKeys.size(); i++) {
+          String fieldName = mapKeys.get(i).getName();
+          json.remove(fieldName);
+        }
+        DatabaseConfig.getLogger().fine("Json after:" + json);
+        record.put(mapField.getName(), json);
+        DatabaseConfig.getLogger().fine("Record after:" + record);
+      } catch (JSONException e) {
+        DatabaseConfig.getLogger().log(Level.SEVERE,
+                "Problem updating json: {0}", e.getMessage());
+      }
+    }
+    getMap(collection).put(name, record);
+  }
+
+  @Override
+  public AbstractRecordCursor getAllRowsIterator(String collection) throws FailedDBOperationException {
+    getMap(collection).commit();
+    return getMongoRecords(collection).getAllRowsIterator(DBNAMERECORD);
+  }
+
+  @Override
+  public AbstractRecordCursor selectRecords(String collection, ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException {
+    getMap(collection).commit();
+    return getMongoRecords(collection).selectRecords(DBNAMERECORD, valuesMapField, key, value);
+  }
+
+  @Override
+  public AbstractRecordCursor selectRecordsWithin(String collection, ColumnField valuesMapField, String key, String value) throws FailedDBOperationException {
+    getMap(collection).commit();
+    return getMongoRecords(collection).selectRecordsWithin(DBNAMERECORD, valuesMapField, key, value);
+  }
+
+  @Override
+  public AbstractRecordCursor selectRecordsNear(String collection, ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException {
+    getMap(collection).commit();
+    return getMongoRecords(collection).selectRecordsNear(DBNAMERECORD, valuesMapField, key, value, maxDistance);
+  }
+
+  @Override
+  public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) throws FailedDBOperationException {
+    getMap(collection).commit();
+    return getMongoRecords(collection).selectRecordsQuery(DBNAMERECORD, valuesMapField, query);
+  }
+
+  @Override
+  public void createIndex(String collection, String field, String index) {
+    getMap(collection).commit();
+    getMongoRecords(collection).createIndex(DBNAMERECORD, field, index);
+  }
+
+  @Override
+  public void printAllEntries(String collection) throws FailedDBOperationException {
+    getMap(collection).commit();
+    getMongoRecords(collection).printAllEntries(DBNAMERECORD);
+  }
+}

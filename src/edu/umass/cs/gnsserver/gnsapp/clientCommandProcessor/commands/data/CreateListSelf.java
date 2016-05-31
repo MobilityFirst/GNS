@@ -20,7 +20,8 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -35,16 +36,21 @@ public class CreateListSelf extends CreateList {
   public CreateListSelf(CommandModule module) {
     super(module);
   }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.CreateListSelf;
+  }
 
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return CREATE_LIST;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CREATE_LIST;
+//  }
   
   @Override
   public String getCommandDescription() {

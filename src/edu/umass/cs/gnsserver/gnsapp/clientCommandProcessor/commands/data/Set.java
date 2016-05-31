@@ -19,9 +19,10 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GnsProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -36,6 +37,11 @@ public class Set extends AbstractUpdate {
   public Set(CommandModule module) {
     super(module);
   }
+  
+  @Override
+  public CommandType getCommandType() {
+    return CommandType.Set;
+  }
 
   /**
    * Return the update operation.
@@ -47,10 +53,10 @@ public class Set extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_SET;
   }
 
-  @Override
-  public String getCommandName() {
-    return SET;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return SET;
+//  }
 
   @Override
   public String[] getCommandParameters() {

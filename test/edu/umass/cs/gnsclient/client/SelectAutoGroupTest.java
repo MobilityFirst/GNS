@@ -19,12 +19,12 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import java.net.InetSocketAddress;
+import java.io.IOException;
 import java.util.Arrays;
 import static org.hamcrest.Matchers.*;
 import org.json.JSONArray;
@@ -42,11 +42,7 @@ public class SelectAutoGroupTest {
 
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static UniversalTcpClientExtended client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
+  private static GNSClientCommands client;
   private static GuidEntry masterGuid;
   private static final String groupTestFieldName = "_SelectAutoGroupTestQueryField_";
   private static GuidEntry groupOneGuid;
@@ -56,17 +52,12 @@ public class SelectAutoGroupTest {
 
   public SelectAutoGroupTest() {
     if (client == null) {
-      if (System.getProperty("host") != null
-              && !System.getProperty("host").isEmpty()
-              && System.getProperty("port") != null
-              && !System.getProperty("port").isEmpty()) {
-        address = new InetSocketAddress(System.getProperty("host"),
-                Integer.parseInt(System.getProperty("port")));
-      } else {
-        address = ServerSelectDialog.selectServer();
+       try {
+        client = new GNSClientCommands();
+        client.setForceCoordinatedReads(true);
+      } catch (IOException e) {
+        fail("Exception creating client: " + e);
       }
-      client = new UniversalTcpClientExtended(address.getHostName(), address.getPort(),
-              System.getProperty("disableSSL").equals("true"));
       try {
         masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
       } catch (Exception e) {
@@ -83,7 +74,7 @@ public class SelectAutoGroupTest {
       JSONArray result = client.selectQuery(query);
       for (int i = 0; i < result.length(); i++) {
         BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
         System.out.println("Removing from " + guidEntry.getEntityName());
         client.fieldRemove(guidEntry, groupTestFieldName);
       }
@@ -219,7 +210,7 @@ public class SelectAutoGroupTest {
 //      // change ALL BUT ONE to be ZERO
 //      for (int i = 0; i < result.length() - 1; i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
 //        JSONArray array = new JSONArray(Arrays.asList(0));
 //        client.fieldReplaceOrCreateList(entry, fieldName, array);
 //      }
@@ -239,7 +230,7 @@ public class SelectAutoGroupTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
 //        String value = client.fieldReadArrayFirstElement(entry, fieldName);
 //        assertEquals("25", value);
 //      }
@@ -260,7 +251,7 @@ public class SelectAutoGroupTest {
 //      // look up the individual values
 //      for (int i = 0; i < result.length(); i++) {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
 //        String value = client.fieldReadArrayFirstElement(entry, fieldName);
 //        assertEquals("0", value);
 //      }
@@ -278,7 +269,7 @@ public class SelectAutoGroupTest {
     // look up the individual values
     for (int i = 0; i < result.length(); i++) {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-      GuidEntry entry = GuidUtils.lookupGuidEntryFromPreferences(client, guidInfo.getEntityName());
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
       assertEquals("25", value);
     }
