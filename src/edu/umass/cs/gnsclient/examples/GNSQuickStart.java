@@ -23,10 +23,8 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -75,11 +73,9 @@ public class GNSQuickStart {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
-    // A convenience function that pops up a GUI for picking which GNS server you want to use.
-    InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create a new client object
     GNSClientCommands client = new GNSClientCommands(null);
-    System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
+    System.out.println("Client connected to GNS");
 
     // Retrive the GUID using the account id
     String guid = client.lookupGuid(accountId);

@@ -223,6 +223,13 @@ public enum CommandType {
   public int getInt() {
     return number;
   }
+  
+  // add isCoordinated
+  
+  // add strictly local flag or remote flag
+  
+  // what are the set of commands that will be invoked by this command
+  // AKA multi-transactional commands
 
   public boolean isRead() {
     return coordination.equals(Coordination.READ);
