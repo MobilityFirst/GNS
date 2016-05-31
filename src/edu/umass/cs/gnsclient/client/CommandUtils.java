@@ -83,7 +83,6 @@ public class CommandUtils {
    * Creates a command object from the given action string and a variable
    * number of key and value pairs.
    *
-   * @param action
    * @param keysAndValues
    * @return the query string
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException

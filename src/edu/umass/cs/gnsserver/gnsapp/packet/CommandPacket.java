@@ -36,6 +36,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
  * @author westy, arun
@@ -266,12 +269,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   }
 
   /**
-   * The service name should be the name of the GUID that is being written to
-   * or read, not the account GUID. To address the HRN/GUID ambiguity, you should
-   * either (1) issue each as separate requests from the client; or (2) retransmit
-   * a request until the replica it happens to go to has caught up; or (3) accept
-   * that it is normal behavior for a read immediately following a write to not
-   * see the result of the seemingly "committed" write.
+   * The service name is the name of the GUID/HRN that is being written to
+   * or read.
    */
   @Override
   public String getServiceName() {
@@ -289,19 +288,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     }
     return BOGUS_SERVICE_NAME;
   }
-
-//  /**
-//   * Return the command name.
-//   *
-//   * @return the command name
-//   */
-//  @Deprecated
-//  public String getCommandName() {
-//    if (command != null) {
-//      return command.optString(GNSCommandProtocol.COMMANDNAME, "unknown");
-//    }
-//    return "unknown";
-//  }
 
   public boolean getCommandCoordinateReads() {
     try {
@@ -325,7 +311,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     }
     return -1;
   }
-  
+
   public CommandType getCommandType() {
     try {
       if (command != null) {
