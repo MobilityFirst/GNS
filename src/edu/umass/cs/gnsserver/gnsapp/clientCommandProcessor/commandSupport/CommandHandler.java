@@ -35,6 +35,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -266,7 +267,9 @@ public class CommandHandler {
           boolean doNotReplyToClient, GNSApp app) throws JSONException, IOException {
     long id = returnPacket.getClientRequestId();
     CommandRequestInfo sentInfo;
-    if ((sentInfo = app.outStandingQueries.get(id)) != null) {
+		// arun: changed get to remove as otherwise it seems to be never removed
+    if ((sentInfo = app.outStandingQueries.remove//get
+    (id)) != null) {
       ClientCommandProcessorConfig.getLogger()
               .log(Level.FINE,
                       "{0}:{1} => {2} -> {3}",

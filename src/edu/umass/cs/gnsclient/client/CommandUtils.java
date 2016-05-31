@@ -58,7 +58,7 @@ import org.json.JSONObject;
 public class CommandUtils {
 
   /* arun: at least as many instances as cores for parallelism. */
-  private static Signature[] signatureInstances = new Signature[Runtime.getRuntime().availableProcessors()];
+  private static Signature[] signatureInstances = new Signature[2*Runtime.getRuntime().availableProcessors()];
   private static Random random;
 
   static {
@@ -186,7 +186,7 @@ public class CommandUtils {
     return mds[mdIndex++ % mds.length];
   }
 
-  private static final Cipher[] ciphers = new Cipher[Runtime.getRuntime().availableProcessors()];
+  private static final Cipher[] ciphers = new Cipher[2*Runtime.getRuntime().availableProcessors()];
 
   static {
     for (int i = 0; i < ciphers.length; i++) {
