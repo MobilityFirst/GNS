@@ -15,6 +15,7 @@ import edu.umass.cs.gnscommon.utils.JSONDotNotation;
 import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
+import static edu.umass.cs.gnsserver.utils.JSONUtils.copyJsonObject;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DiskMap;
 import java.util.ArrayList;
@@ -78,17 +79,11 @@ public class DiskMapRecords implements NoSQLRecords {
           throws FailedDBOperationException, RecordNotFoundException {
     JSONObject record;
     if ((record = getMap(collection).get(name)) == null) {
-
       throw new RecordNotFoundException(name);
     }
     try {
       // Make a new object to make sure there aren't any DBObjects lurking in here
-    	// arun: Parsing from string is *much* worse than copying as follows
-    	JSONObject copy = new JSONObject();
-    	for(String key : JSONObject.getNames(record))
-    		copy.put(key, record.get(key));
-      return copy; 
-      //new JSONObject(record.toString());
+      return copyJsonObject(record);
     } catch (JSONException e) {
       throw new FailedDBOperationException(collection, name, "Unable to parse json record");
     }
@@ -136,12 +131,11 @@ public class DiskMapRecords implements NoSQLRecords {
             }
           } catch (JSONException e) {
             DatabaseConfig.getLogger().log(Level.SEVERE, "Error parsing json: {0}", e.getMessage());
-            e.printStackTrace();
           }
         }
         hashMap.put(valuesMapField, valuesMapOut);
       } catch (JSONException e) {
-        DatabaseConfig.getLogger().severe("Problem getting values map: " + e);
+        DatabaseConfig.getLogger().log(Level.SEVERE, "Problem getting values map: {0}", e.getMessage());
       }
     }
     return hashMap;
@@ -154,13 +148,13 @@ public class DiskMapRecords implements NoSQLRecords {
 
   @Override
   public void removeEntireRecord(String collection, String name) throws FailedDBOperationException {
-    DatabaseConfig.getLogger().fine("Remove: " + name);
+    DatabaseConfig.getLogger().log(Level.FINE, "Remove: {0}", name);
     getMap(collection).remove(name);
   }
 
   @Override
   public void updateEntireRecord(String collection, String name, ValuesMap valuesMap) throws FailedDBOperationException {
-    DatabaseConfig.getLogger().log(Level.FINE, "Update record " + name + "/" + valuesMap);
+    DatabaseConfig.getLogger().log(Level.FINE, "Update record {0}/{1}", new Object[]{name, valuesMap});
     JSONObject json = new JSONObject();
     try {
       json.put(NameRecord.NAME.getName(), name);
@@ -175,14 +169,14 @@ public class DiskMapRecords implements NoSQLRecords {
   public void updateIndividualFields(String collection, String name,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys,
           ArrayList<Object> valuesMapValues) throws FailedDBOperationException {
-    DatabaseConfig.getLogger().log(Level.FINE, "Update fields " + name + "/" + valuesMapKeys);
+    DatabaseConfig.getLogger().log(Level.FINE, "Update fields {0}/{1}", new Object[]{name, valuesMapKeys});
     JSONObject record;
     try {
-       record = lookupEntireRecord(collection, name);
+      record = lookupEntireRecord(collection, name);
     } catch (RecordNotFoundException e) {
       throw new FailedDBOperationException(collection, name, "Record not found.");
     }
-    DatabaseConfig.getLogger().fine("Record before:" + record);
+    DatabaseConfig.getLogger().log(Level.FINE, "Record before:{0}", record);
     if (record == null) {
       throw new FailedDBOperationException(collection, name);
     }
@@ -206,9 +200,9 @@ public class DiskMapRecords implements NoSQLRecords {
               break;
           }
         }
-        DatabaseConfig.getLogger().fine("Json after:" + json);
+        DatabaseConfig.getLogger().log(Level.FINE, "Json after:{0}", json);
         record.put(valuesMapField.getName(), json);
-        DatabaseConfig.getLogger().fine("Record after:" + record);
+        DatabaseConfig.getLogger().log(Level.FINE, "Record after:{0}", record);
       } catch (JSONException e) {
         DatabaseConfig.getLogger().log(Level.SEVERE,
                 "Problem updating json: {0}", e.getMessage());
@@ -232,10 +226,10 @@ public class DiskMapRecords implements NoSQLRecords {
           throws FailedDBOperationException {
     JSONObject record = null;
     try {
-       record = lookupEntireRecord(collection, name);
+      record = lookupEntireRecord(collection, name);
     } catch (RecordNotFoundException e) {
     }
-    DatabaseConfig.getLogger().fine("Record before:" + record);
+    DatabaseConfig.getLogger().log(Level.FINE, "Record before:{0}", record);
     if (record == null) {
       throw new FailedDBOperationException(collection, name, "Record not found.");
     }
@@ -246,9 +240,9 @@ public class DiskMapRecords implements NoSQLRecords {
           String fieldName = mapKeys.get(i).getName();
           json.remove(fieldName);
         }
-        DatabaseConfig.getLogger().fine("Json after:" + json);
+        DatabaseConfig.getLogger().log(Level.FINE, "Json after:{0}", json);
         record.put(mapField.getName(), json);
-        DatabaseConfig.getLogger().fine("Record after:" + record);
+        DatabaseConfig.getLogger().log(Level.FINE, "Record after:{0}", record);
       } catch (JSONException e) {
         DatabaseConfig.getLogger().log(Level.SEVERE,
                 "Problem updating json: {0}", e.getMessage());
