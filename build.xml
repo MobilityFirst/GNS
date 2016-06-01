@@ -259,8 +259,8 @@
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
-      <!-- <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/> -->
-      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <!-- <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/> -->
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
