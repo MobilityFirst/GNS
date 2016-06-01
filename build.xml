@@ -5,11 +5,10 @@
   default="jar" >
 
   <property name="src.dir" value="src"/>
-  <property name="testsrc.dir" location="test"/>
+  <property name="test.dir" value="test" />
   <property name="build.dir" value="build"/>
   <property name="build.classes.dir" value="${build.dir}/classes"/>
   <property name="build.test.classes.dir" value="${build.dir}/test/classes"/>
-  <property name="test.dir" value="test" />
   <property name="build.test.dir" value="${build.dir}/test"/>
   <property name="build.jar.dir" value="${build.dir}/jars"/>
   <property name="lib.dir" value="lib"/>
@@ -249,24 +248,19 @@
   
   <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
-    <!-- Allows use to pass in some standard args from command line using things like -Dhost=127.0.0.1/>-->
-    <property name="host" value=""/>
-    <property name="port" value=""/>
+    <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
     <property name="alias" value=""/>
     <property name="password" value=""/>
     <property name="count" value=""/>
-    <property name="disableSSL" value=""/>
     <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
     <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-Dhost=${host}"/>
-      <jvmarg value="-Dport=${port}"/>
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
-      <jvmarg value="-DdisableSSL=${disableSSL}"/>
-      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <!-- <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/> -->
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
@@ -283,10 +277,37 @@
     </junit>
   </target>
   
-  <target name="test" description="Runs the default integration test" 
+  <target name="batchTest" depends="compiletest">
+    <!-- Allows us to pass this in from the command line using -DgigapaxosConfig=filename/> -->
+    <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
+    <junit>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Dalias=${alias}"/>
+      <jvmarg value="-Dpassword=${password}"/>
+      <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />   
+      <batchtest>
+        <fileset dir="${test.dir}">
+          <include name="**/*Test*.java"/>
+          <exclude name="edu/umass/cs/gnsclient/client/integrationtests/**" />
+        </fileset>
+      </batchtest>
+      <formatter type="plain" usefile="false"/>
+      <!--<formatter type="brief" usefile="false"/> -->
+    </junit>
+  </target> 
+  
+  <target name="test" description="Runs the default integration test against a 3 node server" 
           depends="jar, compiletest">
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
-      <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
@@ -303,10 +324,10 @@
     </junit>
   </target>
 
-  <target name="test1" description="Runs the default integration test" 
+  <target name="test1" description="Runs the default integration test against a single node server" 
           depends="jar, compiletest">
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
-      <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
