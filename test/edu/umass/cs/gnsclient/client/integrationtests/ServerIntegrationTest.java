@@ -226,7 +226,7 @@ public class ServerIntegrationTest {
 
   @Test
   public void test_010_CreateEntity() {
-    String alias = "testGUID" + RandomString.randomString(6);
+    String alias = "testGUID" + RandomString.randomString(12);
     GuidEntry guidEntry = null;
     try {
       guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
@@ -240,7 +240,7 @@ public class ServerIntegrationTest {
 
   @Test
   public void test_020_RemoveGuid() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid,
@@ -267,7 +267,7 @@ public class ServerIntegrationTest {
 
   @Test
   public void test_030_RemoveGuidSansAccountInfo() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid,
@@ -294,7 +294,7 @@ public class ServerIntegrationTest {
 
   @Test
   public void test_040_LookupPrimaryGuid() {
-    String testGuidName = "testGUID" + RandomString.randomString(6);
+    String testGuidName = "testGUID" + RandomString.randomString(12);
     GuidEntry testGuid = null;
     try {
       testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid,
@@ -315,7 +315,7 @@ public class ServerIntegrationTest {
   public void test_050_CreateSubGuid() {
     try {
       subGuidEntry = GuidUtils.registerGuidWithTestTag(client,
-              masterGuid, "subGuid" + RandomString.randomString(6));
+              masterGuid, "subGuid" + RandomString.randomString(12));
       System.out.print("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception creating subguid: " + e);
@@ -373,9 +373,9 @@ public class ServerIntegrationTest {
   public void test_100_CreateFields() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
-              "westy" + RandomString.randomString(6));
+              "westy" + RandomString.randomString(12));
       samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
-              "sam" + RandomString.randomString(6));
+              "sam" + RandomString.randomString(12));
       System.out.print("Created: " + westyEntry);
       System.out.print("; Created: " + samEntry);
     } catch (Exception e) {
@@ -449,10 +449,10 @@ public class ServerIntegrationTest {
   @Test
   public void test_120_ACLPartTwo() {
     try {
-      String barneyName = "barney" + RandomString.randomString(6);
+      String barneyName = "barney" + RandomString.randomString(12);
       try {
-        client.lookupGuid(barneyName);
-        fail(barneyName + " entity should not exist");
+        String result = client.lookupGuid(barneyName);
+        fail(barneyName + " entity should not exist: " + result);
       } catch (ClientException e) {
       } catch (Exception e) {
         fail("Exception looking up Barney: " + e);
@@ -518,7 +518,7 @@ public class ServerIntegrationTest {
   @Test
   public void test_130_ACLALLFields() {
     // testACL();
-    String superUserName = "superuser" + RandomString.randomString(6);
+    String superUserName = "superuser" + RandomString.randomString(12);
     try {
       try {
         client.lookupGuid(superUserName);
@@ -715,7 +715,7 @@ public class ServerIntegrationTest {
   @Test
   public void test_190_Substitute() {
     String testSubstituteGuid = "testSubstituteGUID"
-            + RandomString.randomString(6);
+            + RandomString.randomString(12);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -769,7 +769,7 @@ public class ServerIntegrationTest {
   @Test
   public void test_200_SubstituteList() {
     String testSubstituteListGuid = "testSubstituteListGUID"
-            + RandomString.randomString(6);
+            + RandomString.randomString(12);
     String field = "people";
     GuidEntry testEntry = null;
     try {
@@ -824,7 +824,7 @@ public class ServerIntegrationTest {
 
   @Test
   public void test_210_GroupCreate() {
-    String mygroupName = "mygroup" + RandomString.randomString(6);
+    String mygroupName = "mygroup" + RandomString.randomString(12);
     try {
       try {
         client.lookupGuid(mygroupName);
@@ -832,7 +832,7 @@ public class ServerIntegrationTest {
       } catch (ClientException e) {
       }
       guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client,
-              masterGuid, "deleteMe" + RandomString.randomString(6));
+              masterGuid, "deleteMe" + RandomString.randomString(12));
       this.waitSettle();
       mygroupEntry = GuidUtils.registerGuidWithTestTag(client,
               masterGuid, mygroupName);
@@ -896,7 +896,7 @@ public class ServerIntegrationTest {
   public void test_220_GroupAndACLCreateGuids() {
     // testGroup();
     String groupAccessUserName = "groupAccessUser"
-            + RandomString.randomString(6);
+            + RandomString.randomString(12);
     try {
       try {
         client.lookupGuid(groupAccessUserName);
@@ -1184,7 +1184,7 @@ public class ServerIntegrationTest {
   public void test_280_ListOrderAndSetElement() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
-              "westy" + RandomString.randomString(6));
+              "westy" + RandomString.randomString(12));
     } catch (Exception e) {
       fail("Exception during creation of westyEntry: " + e);
     }
@@ -1242,7 +1242,7 @@ public class ServerIntegrationTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client,
-                masterGuid, "geoTest-" + RandomString.randomString(6));
+                masterGuid, "geoTest-" + RandomString.randomString(12));
         client.setLocation(testEntry, 0.0, 0.0);
         // arun: added this but unclear why we should need this at all
         JSONArray location = client.getLocation(testEntry.getGuid(), testEntry);
@@ -1293,7 +1293,7 @@ public class ServerIntegrationTest {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = GuidUtils
                 .registerGuidWithTestTag(client, masterGuid,
-                        "queryTest-" + RandomString.randomString(6));
+                        "queryTest-" + RandomString.randomString(12));
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName,
                 array, testEntry);
@@ -1340,7 +1340,7 @@ public class ServerIntegrationTest {
     String field = "fieldToSetToNull";
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
-              "westy" + RandomString.randomString(6));
+              "westy" + RandomString.randomString(12));
       System.out.print("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -1378,7 +1378,7 @@ public class ServerIntegrationTest {
   public void test_410_JSONUpdate() {
     try {
       westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
-              "westy" + RandomString.randomString(6));
+              "westy" + RandomString.randomString(12));
       System.out.print("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -1700,7 +1700,7 @@ public class ServerIntegrationTest {
     }
     try {
       String batchAccountAlias = "batchTest"
-              + RandomString.randomString(6) + "@gns.name";
+              + RandomString.randomString(12) + "@gns.name";
       accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(client,
               batchAccountAlias, "password", true);
     } catch (Exception e) {
@@ -1712,7 +1712,7 @@ public class ServerIntegrationTest {
   public void test_511_CreateBatch() {
     Set<String> aliases = new HashSet<>();
     for (int i = 0; i < numberTocreate; i++) {
-      aliases.add("testGUID" + RandomString.randomString(6));
+      aliases.add("testGUID" + RandomString.randomString(12));
     }
     String result = null;
     int oldTimeout = client.getReadTimeout();
@@ -1743,7 +1743,7 @@ public class ServerIntegrationTest {
 //  public void test_520_CreateBatchAccountGuidForWithoutPublicKeys() {
 //    try {
 //      String batchAccountAlias = "batchTest"
-//              + RandomString.randomString(6) + "@gns.name";
+//              + RandomString.randomString(12) + "@gns.name";
 //      accountGuidForWithoutPublicKeys = GuidUtils
 //              .lookupOrCreateAccountGuid(client, batchAccountAlias,
 //                      "password", true);
@@ -1756,7 +1756,7 @@ public class ServerIntegrationTest {
 //  public void test_521_CreateBatchWithoutPublicKeys() {
 //    Set<String> aliases = new HashSet<>();
 //    for (int i = 0; i < numberTocreate; i++) {
-//      aliases.add("testGUID" + RandomString.randomString(6));
+//      aliases.add("testGUID" + RandomString.randomString(12));
 //    }
 //    String result = null;
 //    int oldTimeout = client.getReadTimeout();
@@ -1789,7 +1789,7 @@ public class ServerIntegrationTest {
 //  public void test_530_CreateBatchAccountGuidForForFastest() {
 //    try {
 //      String batchAccountAlias = "batchTest"
-//              + RandomString.randomString(6) + "@gns.name";
+//              + RandomString.randomString(12) + "@gns.name";
 //      accountGuidForFastest = GuidUtils.lookupOrCreateAccountGuid(client,
 //              batchAccountAlias, "password", true);
 //    } catch (Exception e) {
@@ -1827,7 +1827,7 @@ public class ServerIntegrationTest {
 
   @Test
   public void test_810_CreateField() {
-    createIndexTestField = "testField" + RandomString.randomString(6);
+    createIndexTestField = "testField" + RandomString.randomString(12);
     try {
       client.fieldUpdate(masterGuid, createIndexTestField,
               createGeoJSONPolygon(AREA_EXTENT));
