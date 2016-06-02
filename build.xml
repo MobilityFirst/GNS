@@ -18,7 +18,6 @@
   <property name="scripts.dir" value="scripts"/>
   <property name="db-props-file" location="edu/umass/cs/gnsclient/console/console.properties" />
 
-    
   <!-- Properties -->
   <property file="build.properties" />
   
@@ -68,10 +67,6 @@
   
   <fileset id="client.includes" dir="${build.classes.dir}"
            includes="**/*.class"/>
-  <!--           includes="edu/umass/cs/gnsclient/**/*.class,
-  edu/umass/cs/gnscommon/**/*.class,
-  edu/umass/cs/gnsserver/**/*.class, 
-  org/**/*.class"-->
                      
   <fileset id="console.properties" dir="${src.dir}">
     <include name="edu/umass/cs/gnsclient/console/console.properties" />
@@ -83,9 +78,6 @@
   <zipfileset id="client.lib" dir="${lib.dir}" 
               includes="derby.jar, jline*.jar, commons-cli*.jar, commons-lang*.jar, gigapaxos*.jar"
   />
-  <!--                       excludes="android.jar, hamcrest*.jar, junit*.jar"-->
-      
-  <!--                       includes="jline*.jar,mail.jar,commons*.jar,nio*.jar" -->
 
   <target name="client_jarbuild" depends="compile" description="generate jar files">
     <mkdir dir="${build.jar.dir}"/>
@@ -120,16 +112,12 @@
         <attribute name="Implementation-Version"
                    value="${VERSION}-${RELEASE}" />
         <attribute name="Main-Class" value="edu.umass.cs.gnsclient.console.CommandLineInterface" />
-        <!--       <attribute name="Class-Path" value="${jar.classpath}" />-->
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
       <fileset refid="client.includes"/>
       <fileset refid="client.keystore" />
       <fileset refid="console.properties" />
       <zipgroupfileset refid="client.lib" />
-      <!--      <fileset dir="${src.dir}">
-        <include name="edu/umass/cs/gnsclient/console/console.properties" />
-      </fileset>-->
     </jar>
   </target>
 
@@ -254,6 +242,7 @@
     <property name="count" value=""/>
     <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
     <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
+      <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-Dalias=${alias}"/>
@@ -281,6 +270,7 @@
     <!-- Allows us to pass this in from the command line using -DgigapaxosConfig=filename/> -->
     <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
     <junit>
+      <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-Dalias=${alias}"/>

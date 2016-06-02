@@ -119,7 +119,11 @@ public class GNSClient extends AbstractGNSClient {
             || packet.getCommandType().isSelect()) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
-      assert(this.asyncClient.sendRequest(packet, callback)!=null);
+      Long requestID = this.asyncClient.sendRequest(packet, callback);
+      if (requestID == null) {
+        LOG.log(Level.SEVERE, "Request ID is null after send for {0}", new Object[]{packet.getSummary()});
+      }
+      //assert(this.asyncClient.sendRequest(packet, callback)!=null);
     }
   }
 

@@ -370,8 +370,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       @Override
       public String toString() {
         return getRequestType() + ":"
+                + getCommandType().toString() + ":"
                 + getCommandInteger() + ":"
-                //+ getCommandName() + ":"
                 + getServiceName() + ":"
                 + getRequestID() + "["
                 + getClientAddress() + "]";

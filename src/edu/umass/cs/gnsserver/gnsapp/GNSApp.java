@@ -106,7 +106,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         implements GNSApplicationInterface<String>, Replicable, Reconfigurable,
         ClientMessenger, AppRequestParserBytes {
 
-  private final static int INITIAL_RECORD_VERSION = 0;
   private String nodeID;
   private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
   private boolean constructed = false;
@@ -179,14 +178,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
       noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, AppReconfigurableNodeOptions.mongoPort);
       GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException 
+            | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
       // fallback plan
       GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
       noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
     }
-    // Switch these two to enable DiskMapRecords
-    //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
-    //NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
     this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
     GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
             new Object[]{nodeID, nameRecordDB});

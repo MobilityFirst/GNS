@@ -29,7 +29,6 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.text.ParseException;
@@ -67,8 +66,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
   public ListenerAdmin(ClientRequestHandlerInterface handler) throws IOException {
     super("ListenerAdmin");
     this.serverSocket
-            = new ServerSocket(handler.getGnsNodeConfig().
-                    getCcpAdminPort(handler.getActiveReplicaID()));
+            = new ServerSocket(handler.getGnsNodeConfig().getCcpAdminPort(handler.getActiveReplicaID()));
     replicationMap = new HashMap<>();
     this.handler = handler;
   }
