@@ -151,14 +151,14 @@ public class ServerIntegrationTestRunner {
 							//Since this is threaded we need to handle any exceptions.  In this case by failing the test.
 							StringWriter printException = new StringWriter();
 							e.printStackTrace(new PrintWriter(printException));
-							fail("A testing thread threw an exception: \n" + printException.toString());
+							fail("A testing thread threw an exception during test "+method.getName()+":\n" + printException.toString());
 						}
 					}
 				};
 				threads[i].run();
 			}
 			//Wait for all threads to finish before moving on to the next test.
-			for (int i = 0; i < numRuns; i++){
+			for (int i = 0; i < numThreads; i++){
 				threads[i].join();
 			}
 			
