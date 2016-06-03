@@ -308,9 +308,6 @@ public class CommandUtils {
     //    		GNSResponseCode.ACTIVE_REPLICA_EXCEPTION.toString()
     )) {
       throw new InvalidGuidException(response);
-    // until things stabalize
-    } else if (response.startsWith("ACTIVE_REPLICA_ERROR")) {
-      throw new InvalidGuidException(response);
     } else {
       return response;
     }
