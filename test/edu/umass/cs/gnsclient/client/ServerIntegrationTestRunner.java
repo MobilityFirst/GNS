@@ -65,13 +65,17 @@ public class ServerIntegrationTestRunner {
 				continue;
 			}
 			//Exclude tests that don't work sequentially here.
-			if (	methodName.equals("test_180_DBUpserts") ||
-					methodName.contains("Remove") ||
-					methodName.equals("test_232_AliasCheck") ||
-					methodName.equals("test_410_JSONUpdate") ||
-					methodName.equals("test_420_NewRead") ||
-					methodName.equals("test_430_NewUpdate") ||
-					methodName.equals("test_512_CheckBatch")){
+			if (	methodName.equals("test_180_DBUpserts") 
+					//methodName.contains("Remove") ||
+				||	methodName.equals("test_212_GroupRemoveGuid")  //Double remove would cause an error.
+				||	methodName.equals("test_223_GroupAndACLTestRemoveGuid")  //Same as above
+				|| 	methodName.equals("test_231_AliasRemove") //Same as above
+				//||	methodName.equals("test_232_AliasCheck") This test should work since it's deterministic based on test_231_AliasRemove.
+				||	methodName.equals("test_410_JSONUpdate") 
+				||	methodName.equals("test_420_NewRead") 
+				||	methodName.equals("test_430_NewUpdate") 
+				||	methodName.equals("test_512_CheckBatch")
+					){
 					dontRepeatMethodTree.put(methodName,method);
 					//continue;
 			}
@@ -134,9 +138,9 @@ public class ServerIntegrationTestRunner {
 			//Exclude tests that don't work sequentially here.
 			if (	methodName.equals("test_180_DBUpserts") 
 					//methodName.contains("Remove") ||
-				||	methodName.equals("test_212_GroupRemoveGuid()")  //Double remove would cause an error.
-				||	methodName.equals("test_223_GroupAndACLTestRemoveGuid()")  //Same as above
-				|| 	methodName.equals("test_231_AliasRemove()") //Same as above
+				||	methodName.equals("test_212_GroupRemoveGuid")  //Double remove would cause an error.
+				||	methodName.equals("test_223_GroupAndACLTestRemoveGuid")  //Same as above
+				|| 	methodName.equals("test_231_AliasRemove") //Same as above
 				//||	methodName.equals("test_232_AliasCheck") This test should work since it's deterministic based on test_231_AliasRemove.
 				||	methodName.equals("test_410_JSONUpdate") 
 				||	methodName.equals("test_420_NewRead") 
@@ -148,19 +152,19 @@ public class ServerIntegrationTestRunner {
 			}
 			//Exclude tests that don't work in parallel here, and instead run them single threaded.
 			//test_220_GroupAndACLCreateGuids()
-			if (	methodName.equals("test_020_RemoveGuid()") //Uses random names and checks state, so collisions would cause failures.
-				||	methodName.equals("test_030_RemoveGuidSansAccountInfo()") // Same as above
-				||	methodName.equals("test_130_ACLALLFields()") //Same as above
-				||	methodName.equals("test_210_GroupCreate()") //Same as above
-				||	methodName.equals("test_211_GroupAdd()")//Depends on test_210_GroupCreate for guidToDelete
-				||	methodName.equals("test_220_GroupAndACLCreateGuids()") //Uses random names and checks state, so collisions would cause failures.
-				|| 	methodName.equals("test_270_RemoveField()") //Race condition in test could cause failure
-				|| 	methodName.equals("test_280_ListOrderAndSetElement()") // Collisions in random strings could cause failures since it checks state.
-				||	methodName.equals("test_400_SetFieldNull()") //Race condition in test could cause failure
-				|| 	methodName.equals("test_410_JSONUpdate()")//Random string collisions would create race conditions that could cause test failure.
-				|| 	methodName.equals("test_420_NewRead()") //Race condition in test could cause failure
-				||	methodName.equals("test_430_NewUpdate()") //Same as above
-				||	methodName.equals("test_440_CreateBytesField()")//Race condition in this test could cause test_441_ReadBytesField() to fail if remembered test value and last written test value differ.
+			if (	methodName.equals("test_020_RemoveGuid") //Uses random names and checks state, so collisions would cause failures.
+				||	methodName.equals("test_030_RemoveGuidSansAccountInfo") // Same as above
+				||	methodName.equals("test_130_ACLALLFields") //Same as above
+				||	methodName.equals("test_210_GroupCreate") //Same as above
+				||	methodName.equals("test_211_GroupAdd")//Depends on test_210_GroupCreate for guidToDelete
+				||	methodName.equals("test_220_GroupAndACLCreateGuids") //Uses random names and checks state, so collisions would cause failures.
+				|| 	methodName.equals("test_270_RemoveField") //Race condition in test could cause failure
+				|| 	methodName.equals("test_280_ListOrderAndSetElement") // Collisions in random strings could cause failures since it checks state.
+				||	methodName.equals("test_400_SetFieldNull") //Race condition in test could cause failure
+				|| 	methodName.equals("test_410_JSONUpdate")//Random string collisions would create race conditions that could cause test failure.
+				|| 	methodName.equals("test_420_NewRead") //Race condition in test could cause failure
+				||	methodName.equals("test_430_NewUpdate") //Same as above
+				||	methodName.equals("test_440_CreateBytesField")//Race condition in this test could cause test_441_ReadBytesField() to fail if remembered test value and last written test value differ.
 				
 				//test_140_ACLCreateDeeperField() might need to be excluded as well
 				){
@@ -171,7 +175,6 @@ public class ServerIntegrationTestRunner {
 			
 			methodTree.put(methodName,method);
 		}
-		//TODO: numThreads and numRuns
 		for (Method method : methodTree.values()){
 			//String methodName = method.getName();		
 			//Create numThreads threads.
@@ -188,8 +191,8 @@ public class ServerIntegrationTestRunner {
 				System.out.println("Running test: " + method.getName() + " " + numRuns + " times sequentially.");
 				for (int j = 0; j < numRuns; j++){
 					method.invoke(siTest);
-					continue;
 				}
+				continue;
 			}
 			//These tests are threadable.
 			System.out.println("Running test: " + method.getName() + " in " + numThreads + " threads with " + numRuns + " runs per thread.");
