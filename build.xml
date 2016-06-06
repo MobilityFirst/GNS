@@ -241,6 +241,7 @@
     <property name="password" value=""/>
     <property name="count" value=""/>
     <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
     <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
@@ -249,8 +250,8 @@
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
-      <!-- <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/> -->
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
+      <!-- add this if you want SSL debugging enabled -->
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>

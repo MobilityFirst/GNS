@@ -60,14 +60,15 @@ import org.apache.commons.cli.ParseException;
  *
  * Typical use:
  *
- * java -cp GNS.jar edu.umass.cs.gnsserver.installer.EC2Runner -create dev
+ * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.EC2Runner -create dev
  *
  * @author westy
  */
 public class EC2Runner {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
-  private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
+  private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR
+          + ".aws" + FILESEPARATOR + "credentials";
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final AMIRecordType DEFAULT_AMI_RECORD_TYPE = AMIRecordType.Amazon_Linux_AMI_2013_03_1;
   private static final String DEFAULT_EC2_USERNAME = "ec2-user";
@@ -318,7 +319,7 @@ public class EC2Runner {
 
   /**
    * Terminates all the hosts in the named run set.
-   * 
+   *
    * @param name
    */
   public static void terminateRunSet(String name) {
@@ -527,7 +528,7 @@ public class EC2Runner {
 
   /**
    * The main routine.
-   * 
+   *
    * @param args
    */
   public static void main(String[] args) {

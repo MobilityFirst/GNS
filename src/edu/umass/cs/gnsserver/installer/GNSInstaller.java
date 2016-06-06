@@ -52,7 +52,7 @@ import org.apache.commons.cli.ParseException;
  * Typical uses:
  *
  * First time install:
- * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -scriptFile conf/ec2_mongo_java_install.bash -update kittens.name
+ * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -scriptFile conf/ec2_mongo_java8_install.bash -update kittens.name
  *
  * Later updates:
  * java -cp jars/GNS.jar edu.umass.cs.gnsserver.installer.GNSInstaller -update kittens.name
@@ -74,9 +74,10 @@ public class GNSInstaller {
   private static final String DEFAULT_KEYNAME = "id_rsa";
   private static final String DEFAULT_INSTALL_PATH = "gns";
   private static final String INSTALLER_CONFIG_FILENAME = "installer_config";
-  private static final String LNS_PROPERTIES_FILENAME = "lns.properties";
-  private static final String NS_PROPERTIES_FILENAME = "ns.properties";
-  private static final String PAXOS_PROPERTIES_FILENAME = "gigapaxos.server.local.properties";
+  //private static final String LNS_PROPERTIES_FILENAME = "lns.properties";
+  //private static final String NS_PROPERTIES_FILENAME = "ns.properties";
+  private static final String PAXOS_PROPERTIES_FILENAME = "gigapaxos.server.properties";
+  private static final String LOGGING_PROPERTIES_FILENAME = "logging.gns.properties";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
   private static final String DEFAULT_JAVA_COMMAND = "java -ea -Xms1024M";
@@ -108,16 +109,17 @@ public class GNSInstaller {
   private static String confFolderPath;
   // these are mostly for convienence; could compute them when needed
   private static String gnsJarFileName;
-  private static String nsConfFileLocation;
-  //private static String ccpConfFileLocation;
-  private static String lnsConfFileLocation;
+  //private static String nsConfFileLocation;
+  //private static String lnsConfFileLocation;
   private static String paxosConfFileLocation;
-  private static String nsConfFileName;
-  private static String lnsConfFileName;
+  private static String loggingConfFileLocation;
+  //private static String nsConfFileName;
+  //private static String lnsConfFileName;
   private static String paxosConfFileName;
+  private static String loggingConfFileName;
 
   private static final String StartLNSClass = "edu.umass.cs.gnsserver.localnameserver.LocalNameServer";
-  private static final String StartNSClass = "edu.umass.cs.gnsserver.gnsApp.AppReconfigurableNode";
+  private static final String StartNSClass = "edu.umass.cs.reconfiguration.ReconfigurableNode";
   private static final String StartNoopClass = "edu.umass.cs.gnsserver.gnsApp.noopTest.DistributedNoopReconfigurableNode";
 
   private static final String CHANGETOINSTALLDIR
@@ -230,10 +232,6 @@ public class GNSInstaller {
     } catch (InterruptedException e) {
       System.out.println("Problem joining threads: " + e);
     }
-//    if (action != InstallerAction.STOP) {
-//      updateNodeConfigAndSendOutServerInit();
-//    }
-
     System.out.println("Finished " + name + " " + action.name() + " at " + Format.formatDateTimeOnly(new Date()));
   }
 
@@ -355,8 +353,8 @@ public class GNSInstaller {
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
               + "-nsfile "
               + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
-              + "-configFile "
-              + "conf" + FILESEPARATOR + LNS_PROPERTIES_FILENAME + " "
+              //+ "-configFile "
+              //+ "conf" + FILESEPARATOR + LNS_PROPERTIES_FILENAME + " "
               + " > LNSlogfile 2>&1 &");
     }
     if (nsId != null) {
@@ -370,17 +368,21 @@ public class GNSInstaller {
               + ((runAsRoot) ? "sudo " : "")
               + "nohup " + javaCommand
               + " -DgigapaxosConfig=" + "conf" + FILESEPARATOR + PAXOS_PROPERTIES_FILENAME + " "
+              // FIX THIS
+              + "-Djava.util.logging.config.file=" + "conf" + FILESEPARATOR + LOGGING_PROPERTIES_FILENAME + " "
               + " -cp " + gnsJarFileName
               //+ " " + SSL_DEBUG
               + " " + TRUST_STORE_OPTION
               + " " + KEY_STORE_OPTION
               + " " + StartNSClass + " "
-              + "-id "
-              + nsId.toString() + " "
+//              + "-id "
+//              + nsId.toString() + " "
               + "-nsfile "
               + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
-              + "-configFile "
-              + "conf" + FILESEPARATOR + NS_PROPERTIES_FILENAME + " "
+              + "-disableEmailVerification" + " "
+              + nsId + " "
+              //+ "-configFile "
+              //+ "conf" + FILESEPARATOR + NS_PROPERTIES_FILENAME + " "
               //+ " -demandProfileClass edu.umass.cs.gnsserver.gnsApp.NullDemandProfile "
               + " > NSlogfile 2>&1 &");
     }
@@ -523,25 +525,29 @@ public class GNSInstaller {
       System.out.println("Creating conf, keystore and truststore directories");
       SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER);
 
-      SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER + FILESEPARATOR + KEYSTORE_FOLDER_NAME);
-      SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER + FILESEPARATOR + TRUSTSTORE_FOLDER_NAME);
+      SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath
+              + CONF_FOLDER + FILESEPARATOR + KEYSTORE_FOLDER_NAME);
+      SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath
+              + CONF_FOLDER + FILESEPARATOR + TRUSTSTORE_FOLDER_NAME);
 
 //      SSHClient.exec(userName, hostname, getKeyFile(), "rm " + installPath + FILESEPARATOR + "*.txt");
 //      SSHClient.exec(userName, hostname, getKeyFile(), "rm " + installPath + FILESEPARATOR + "*.properties");
       File keyFileName = getKeyFile();
       System.out.println("Copying jar and conf files");
       RSync.upload(userName, hostname, keyFileName, gnsJarFileLocation, buildInstallFilePath(gnsJarFileName));
-      if (createLNS && !noopTest) {
-        RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation,
-                buildInstallFilePath("conf" + FILESEPARATOR + lnsConfFileName));
-      }
-      if (!noopTest) {
-        RSync.upload(userName, hostname, keyFileName, nsConfFileLocation,
-                buildInstallFilePath("conf" + FILESEPARATOR + nsConfFileName));
-      }
+//      if (createLNS && !noopTest) {
+//        RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation,
+//                buildInstallFilePath("conf" + FILESEPARATOR + lnsConfFileName));
+//      }
+//      if (!noopTest) {
+//        RSync.upload(userName, hostname, keyFileName, nsConfFileLocation,
+//                buildInstallFilePath("conf" + FILESEPARATOR + nsConfFileName));
+//      }
       if (!noopTest) {
         RSync.upload(userName, hostname, keyFileName, paxosConfFileLocation,
                 buildInstallFilePath("conf" + FILESEPARATOR + paxosConfFileName));
+        RSync.upload(userName, hostname, keyFileName, loggingConfFileLocation,
+                buildInstallFilePath("conf" + FILESEPARATOR + loggingConfFileName));
       }
     }
   }
@@ -610,14 +616,17 @@ public class GNSInstaller {
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + INSTALLER_CONFIG_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + INSTALLER_CONFIG_FILENAME);
     }
-    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_PROPERTIES_FILENAME, confFolderPath)) {
-      System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_PROPERTIES_FILENAME);
-    }
-    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_PROPERTIES_FILENAME, confFolderPath)) {
-      System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_PROPERTIES_FILENAME);
-    }
+//    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_PROPERTIES_FILENAME, confFolderPath)) {
+//      System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_PROPERTIES_FILENAME);
+//    }
+//    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_PROPERTIES_FILENAME, confFolderPath)) {
+//      System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_PROPERTIES_FILENAME);
+//    }
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + PAXOS_PROPERTIES_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + PAXOS_PROPERTIES_FILENAME);
+    }
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LOGGING_PROPERTIES_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + LOGGING_PROPERTIES_FILENAME);
     }
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_HOSTS_FILENAME);
@@ -625,15 +634,18 @@ public class GNSInstaller {
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_HOSTS_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_HOSTS_FILENAME);
     }
-    lnsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + 
-            LNS_PROPERTIES_FILENAME, confFolderPath).toString();
-    nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + 
-            NS_PROPERTIES_FILENAME, confFolderPath).toString();
-    paxosConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + 
-            PAXOS_PROPERTIES_FILENAME, confFolderPath).toString();
-    lnsConfFileName = new File(lnsConfFileLocation).getName();
-    nsConfFileName = new File(nsConfFileLocation).getName();
+//    lnsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + 
+//            LNS_PROPERTIES_FILENAME, confFolderPath).toString();
+//    nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + 
+//            NS_PROPERTIES_FILENAME, confFolderPath).toString();
+    paxosConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR
+            + PAXOS_PROPERTIES_FILENAME, confFolderPath).toString();
+    loggingConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR
+            + LOGGING_PROPERTIES_FILENAME, confFolderPath).toString();
+    //lnsConfFileName = new File(lnsConfFileLocation).getName();
+    //nsConfFileName = new File(nsConfFileLocation).getName();
     paxosConfFileName = new File(paxosConfFileLocation).getName();
+    loggingConfFileName = new File(loggingConfFileLocation).getName();
 
     return true;
   }
@@ -691,7 +703,7 @@ public class GNSInstaller {
             .withDescription("data store type")
             .create("datastore");
     Option scriptFile = OptionBuilder.withArgName("install script file").hasArg()
-            .withDescription("specifies the location of a bash script file that will install MongoDB and Java 1.7")
+            .withDescription("specifies the location of a bash script file that will install MongoDB and Java")
             .create("scriptFile");
     Option stop = OptionBuilder.withArgName("installation name").hasArg()
             .withDescription("stops GNS servers in a installation")
