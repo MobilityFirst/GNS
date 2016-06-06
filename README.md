@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/bpteich/GNS.svg?branch=master)](https://travis-ci.org/bpteich/GNS)
 # GNS
 ### Overview
 The GNS (Global Name Service) is a logically centralized server that maintains the list of mappings from keys to
