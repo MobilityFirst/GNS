@@ -345,6 +345,8 @@ public class GNSInstaller {
               + "fi\n"
               //+ ((runAsRoot) ? "sudo " : "")
               + "nohup " + javaCommandForLNS
+              + " -DgigapaxosConfig=" + "conf" + FILESEPARATOR + PAXOS_PROPERTIES_FILENAME + " "
+              + "-Djava.util.logging.config.file=" + "conf" + FILESEPARATOR + LOGGING_PROPERTIES_FILENAME + " "
               + " -cp " + gnsJarFileName
               //+ " " + SSL_DEBUG
               + " " + TRUST_STORE_OPTION
@@ -368,7 +370,6 @@ public class GNSInstaller {
               + ((runAsRoot) ? "sudo " : "")
               + "nohup " + javaCommand
               + " -DgigapaxosConfig=" + "conf" + FILESEPARATOR + PAXOS_PROPERTIES_FILENAME + " "
-              // FIX THIS
               + "-Djava.util.logging.config.file=" + "conf" + FILESEPARATOR + LOGGING_PROPERTIES_FILENAME + " "
               + " -cp " + gnsJarFileName
               //+ " " + SSL_DEBUG

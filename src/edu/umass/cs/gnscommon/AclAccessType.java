@@ -18,11 +18,14 @@ public enum AclAccessType {
    */
   READ_WHITELIST, /**
    * Whitelist of GUIDs authorized to write/update a field
-   */ WRITE_WHITELIST, /**
+   */
+  WRITE_WHITELIST, /**
    * Black list of GUIDs not authorized to read a field
-   */ READ_BLACKLIST, /**
+   */
+  READ_BLACKLIST, /**
    * Black list of GUIDs not authorized to write/update a field
-   */ WRITE_BLACKLIST;
+   */
+  WRITE_BLACKLIST;
 
   public static String typesToString() {
     StringBuilder result = new StringBuilder();
@@ -34,5 +37,5 @@ public enum AclAccessType {
     }
     return result.toString();
   }
-  
+
 }
