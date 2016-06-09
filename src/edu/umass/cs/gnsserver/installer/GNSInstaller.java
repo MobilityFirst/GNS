@@ -249,6 +249,10 @@ public class GNSInstaller {
      */
     RESTART,
     /**
+     * Makes the installer just run the install script.
+     */
+    SCRIPT_ONLY,
+    /**
      * Makes the installer kill the servers.
      */
     STOP,
@@ -279,50 +283,63 @@ public class GNSInstaller {
           boolean removeLogs, boolean deleteDatabase,
           String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot,
           boolean noopTest) throws UnknownHostException {
-    if (!action.equals(InstallerAction.STOP)) {
-      if (!noopTest) {
-        System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
-      } else {
-        System.out.println("#### Noop test " + nsId + " on " + hostname + " starting update ****");
-      }
-      if (action == InstallerAction.UPDATE) {
+    switch (action) {
+      case STOP:
+        killAllServers(hostname, runAsRoot);
+        if (removeLogs) {
+          removeLogFiles(hostname, runAsRoot);
+        }
+        if (deleteDatabase) {
+          deleteDatabase(hostname);
+        }
+        System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " has been stopped ####");
+        break;
+      case SCRIPT_ONLY: 
         makeInstallDir(hostname);
-      }
-      killAllServers(hostname, runAsRoot);
-      if (scriptFile != null) {
-        executeScriptFile(hostname, scriptFile);
-      }
-      if (removeLogs) {
-        removeLogFiles(hostname, runAsRoot);
-      }
-      if (deleteDatabase) {
-        deleteDatabase(hostname);
-      }
-      switch (action) {
-        case UPDATE:
-          makeConfAndcopyJarAndConfFiles(hostname, createLNS, noopTest);
-          copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
-          copySSLFiles(hostname);
-          break;
-        case RESTART:
-          break;
-      }
-      if (!noopTest) {
-        startServers(nsId, createLNS, hostname, runAsRoot);
-        System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
-      } else {
-        startNoopServers(nsId, hostname, runAsRoot);
-        System.out.println("#### Noop test " + nsId + " on " + hostname + " finished update ####");
-      }
-    } else {
-      killAllServers(hostname, runAsRoot);
-      if (removeLogs) {
-        removeLogFiles(hostname, runAsRoot);
-      }
-      if (deleteDatabase) {
-        deleteDatabase(hostname);
-      }
-      System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " has been stopped ####");
+        if (scriptFile != null) {
+          executeScriptFile(hostname, scriptFile);
+        } else {
+          System.out.println("No script specified!");
+        }
+        break;
+      // otherwise UPDATE or RESTART
+      default:
+        // Starting things
+        if (!noopTest) {
+          System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
+        } else {
+          System.out.println("#### Noop test " + nsId + " on " + hostname + " starting update ****");
+        }
+        if (action == InstallerAction.UPDATE) {
+          makeInstallDir(hostname);
+        }
+        killAllServers(hostname, runAsRoot);
+        if (scriptFile != null) {
+          executeScriptFile(hostname, scriptFile);
+        }
+        if (removeLogs) {
+          removeLogFiles(hostname, runAsRoot);
+        }
+        if (deleteDatabase) {
+          deleteDatabase(hostname);
+        }
+        switch (action) {
+          case UPDATE:
+            makeConfAndcopyJarAndConfFiles(hostname, createLNS, noopTest);
+            copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
+            copySSLFiles(hostname);
+            break;
+          case RESTART:
+            break;
+        }
+        if (!noopTest) {
+          startServers(nsId, createLNS, hostname, runAsRoot);
+          System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
+        } else {
+          startNoopServers(nsId, hostname, runAsRoot);
+          System.out.println("#### Noop test " + nsId + " on " + hostname + " finished update ####");
+        }
+        break;
     }
   }
 
@@ -376,8 +393,8 @@ public class GNSInstaller {
               + " " + TRUST_STORE_OPTION
               + " " + KEY_STORE_OPTION
               + " " + StartNSClass + " "
-//              + "-id "
-//              + nsId.toString() + " "
+              //              + "-id "
+              //              + nsId.toString() + " "
               + "-nsfile "
               + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
               + "-disableEmailVerification" + " "
@@ -423,6 +440,24 @@ public class GNSInstaller {
    * @param hostname
    */
   private static void executeScriptFile(String hostname, String scriptFileLocation) {
+    File keyFileName = getKeyFile();
+    System.out.println("Copying script file");
+    // copy the file to remote host
+    String remoteFile = Paths.get(scriptFileLocation).getFileName().toString();
+    RSync.upload(userName, hostname, keyFileName, scriptFileLocation, buildInstallFilePath(remoteFile));
+    // make it executable
+    SSHClient.exec(userName, hostname, keyFileName, "chmod ugo+x" + " " + buildInstallFilePath(remoteFile));
+    //execute it
+    SSHClient.exec(userName, hostname, keyFileName, "." + FILESEPARATOR + buildInstallFilePath(remoteFile));
+  }
+  
+  /**
+   * Runs the script file on the remote host.
+   *
+   * @param id
+   * @param hostname
+   */
+  private static void executeScriptFileTopLevel(String hostname, String scriptFileLocation) {
     File keyFileName = getKeyFile();
     System.out.println("Copying script file");
     // copy the file to remote host
@@ -706,6 +741,9 @@ public class GNSInstaller {
     Option scriptFile = OptionBuilder.withArgName("install script file").hasArg()
             .withDescription("specifies the location of a bash script file that will install MongoDB and Java")
             .create("scriptFile");
+    Option runscript = OptionBuilder.withArgName("installation name").hasArg()
+            .withDescription("just runs the script file")
+            .create("runscript");
     Option stop = OptionBuilder.withArgName("installation name").hasArg()
             .withDescription("stops GNS servers in a installation")
             .create("stop");
@@ -720,6 +758,7 @@ public class GNSInstaller {
     commandLineOptions.addOption(deleteDatabase);
     commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(scriptFile);
+    commandLineOptions.addOption(runscript);
     commandLineOptions.addOption(root);
     commandLineOptions.addOption(noopTest);
     commandLineOptions.addOption(help);
@@ -746,6 +785,7 @@ public class GNSInstaller {
       }
       String runsetUpdate = parser.getOptionValue("update");
       String runsetRestart = parser.getOptionValue("restart");
+      String runsetScript = parser.getOptionValue("runscript");
       String runsetStop = parser.getOptionValue("stop");
       String dataStoreName = parser.getOptionValue("datastore");
       boolean removeLogs = parser.hasOption("removeLogs");
@@ -767,6 +807,9 @@ public class GNSInstaller {
               : runsetRestart != null ? runsetRestart
                       : runsetStop != null ? runsetStop
                               : null;
+      if (configName == null && runsetScript != null) {
+        configName = runsetScript;
+      }
 
       System.out.println("Config name: " + configName);
       System.out.println("Current directory: " + System.getProperty("user.dir"));
@@ -790,7 +833,10 @@ public class GNSInstaller {
       SSHClient.setVerbose(true);
       RSync.setVerbose(true);
 
-      if (runsetUpdate != null) {
+      if (runsetScript != null) {
+        updateRunSet(runsetUpdate, InstallerAction.SCRIPT_ONLY, removeLogs, deleteDatabase,
+                lnsHostFile, nsHostFile, scriptFile, runAsRoot, noopTest);
+      } else if (runsetUpdate != null) {
         updateRunSet(runsetUpdate, InstallerAction.UPDATE, removeLogs, deleteDatabase,
                 lnsHostFile, nsHostFile, scriptFile, runAsRoot, noopTest);
       } else if (runsetRestart != null) {

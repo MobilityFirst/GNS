@@ -26,6 +26,7 @@ package edu.umass.cs.aws.support;
  */
 public enum AMIRecordType {
   
+  Mongo_2016_6_16_micro,
   Mongo_2014_5_6_micro,
   Mongo_2014_5_6,
   Mongo_2015_6_25_vpc,

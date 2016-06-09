@@ -174,7 +174,8 @@ public class EC2Runner {
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
           + "yum --quiet --assumeyes install emacs\n" // for debugging
-          + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
+          + "yum --quiet --assumeyes install git\n"
+          + "yum --quiet --assumeyes install java-1.8.0-openjdk-devel\n"
           + "echo \\\"[MongoDB]\n" // crazy double escaping for JAVA and BASH going on here!!
           + "name=MongoDB Repository\n"
           + "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n"
@@ -186,19 +187,6 @@ public class EC2Runner {
           // fix the sudoers so ssh sudo works all the time
           + "chmod ug+rw /etc/sudoers\n"
           + "sed -i 's/requiretty/!requiretty/' /etc/sudoers\n";
-//  private static final String mongoInstallScript = "#!/bin/bash\n"
-//          + "cd /home/ec2-user\n"
-//          + "yum --quiet --assumeyes update\n"
-//          + "yum --quiet --assumeyes install emacs\n" // for debugging
-//          + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
-//          + "echo \\\"[10gen]\n" // crazy double escaping for JAVA and BASH going on here!!
-//          + "name=10gen Repository\n"
-//          + "baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64\n"
-//          + "gpgcheck=0\n"
-//          + "enabled=1\\\" > 10gen.repo\n" // crazy double escaping for JAVA and BASH going on here!!
-//          + "mv 10gen.repo /etc/yum.repos.d/10gen.repo\n"
-//          + "yum --quiet --assumeyes install mongo-10gen mongo-10gen-server\n"
-//          + "service mongod start";
   private static final String mongoShortInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
@@ -258,6 +246,9 @@ public class EC2Runner {
               installScript = null;
               break;
             case Mongo_2015_6_25_vpc:
+              installScript = null;
+              break;
+            case Mongo_2016_6_16_micro:
               installScript = null;
               break;
             default:
