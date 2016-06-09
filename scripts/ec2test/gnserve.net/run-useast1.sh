@@ -3,7 +3,7 @@ SCRIPTS="`dirname \"$0\"`"
 # to use IDE auto-build instead of ant
 IDE_PATH=.:build/classes:build/test/classes:lib/* 
 
-java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
+java -ea -cp $IDE_PATH:jars/GNS.jar \
 -DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.properties \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
@@ -18,7 +18,7 @@ useast1 &
 # explicitly specify nodes as trailing command-line args
 
 # comment to start optional LNS
-#exit
+exit
 
 java -ea  -cp $IDE_PATH:jars/GNS.jar \
 -DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.properties \
