@@ -11,5 +11,11 @@ notifications:
     on_failure: always # default: always
     
 script:
-  ant test
-  
+  ant testAlwaysFail
+
+after_failure:
+  HASH=$(git rev-parse HEAD)
+  git pull
+  git revert $HASH --no-edit
+  git push
+
