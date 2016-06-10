@@ -1,6 +1,6 @@
+[![Build Status](https://travis-ci.org/MobilityFirst/GNS.svg?branch=master)](https://travis-ci.org/MobilityFirst/GNS)
 # GNS
 ### Overview
-[![Build Status](https://travis-ci.org/MobilityFirst/GNS.svg?branch=master)](https://travis-ci.org/MobilityFirst/GNS)
 The GNS (Global Name Service) is a logically centralized server that maintains the list of mappings from keys to
 values.
 As a database, the GNS shares some semantics with a [NoSQL database](http://en.wikipedia.org/wiki/NoSQL) with 
