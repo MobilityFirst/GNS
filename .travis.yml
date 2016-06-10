@@ -14,8 +14,6 @@ script:
   - ant testAlwaysFail
 
 after_failure:
-  - echo "$TRAVIS_PULL_REQUEST";
-  - echo "$TRAVIS_COMMIT";
-  - git revert "$TRAVIS_COMMIT";
-  - git push;
+  - git revert "$TRAVIS_COMMIT"
+  - git push
 
