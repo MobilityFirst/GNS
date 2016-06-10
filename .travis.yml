@@ -1,19 +1,19 @@
 language: java
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 services:
-  - mongodb
-  
+- mongodb
 notifications:
   email:
-    on_success: always # default: change
-    on_failure: always # default: always
-    
+    on_success: always
+    on_failure: always
 script:
-  - ant testAlwaysFail
-
+- ant testAlwaysFail
 after_failure:
-  - git revert "$TRAVIS_COMMIT"
-  - git push
-
+- git revert "$TRAVIS_COMMIT"
+- git push "https://$GITUSER:$GITPASSWORDgithub.com/bpteich/GNS.git"
+env:
+  global:
+  - secure: q4QVH3jo2vkva5gy3KSb24NcmBc8lKzRx17adk0Rj0AUrEDOVniJ04GWfyRz9Xf5Y34GyEcLBePfbeyEKljCZkKFt15T2b90HHYhQtpeVjYg3CddGPzxRcCnRhN0UnJsEHVoJyHRDxs/Nm5Raz50neYQVNZSS+eJ63TWU/aN2XvlJccXF01gEUG5wkNXwdAtr6cN+vZyKJJnRmxLqFsTvlCTYdwaY637e90Cp+nEBDRvjOcLlrTBXzrSx36lPjqjqiuEIkNa87aaY20mpogcDOzW/0ygjEQNLAnQ65946Cwa+1CtbwBYrmfjTGmNrQe5O4cJcQGAob/KXMy8TaofP2GKZllEQ8FG+DTNZMRacHhWWr3dgEUh0xFCxn/DXl8yn/76lqxtFjP57DoeeyzyQWfduWD8OP2zfXnEzLe2bMsGqf2cLyKjx6+9ziEN1VOS1k0192omIitcrOMdU9btZlN9iVhZzA73/kNOEJOZP7r5YMVC0hWOJXb4/2e7qaMJVzYCD04pINLVaaanvo0B7I0DQZ0YaQPCRcDgZdHXcudfsyKXelQm+f+/3UTy97XmomrcQ3uaSKljeixqJW1oATpgbodHOAnLxx77RkGE5u9UhP/8OVtc0d8qqwepsR6pL/IYz8EA7nwf5Q717WOOu6bvSWiAy5dtOKRPU2br4Rg=
+  - secure: F6sA4N/dcJw5yNXhNCtBXDhUWI42I6EtDqBfIcE6bpCMPeaFNvaF5l4f4U3VTMmybpK1J2d3ZWYSzwLJlE4uVb3JgwqxLguPw63wscgtuXMxUsOAgSweZYwXAG1Ji5SARFaH/spCKfwIX5DiQO3CnhIeN6kvazQaH/SeWYYtx+PvhXzPAfDFL8FWHOFh7wYeL2krGrsDJpRVmR6R/3It9cdWDsUQ9IZDka3PMMkAGXtmkpbMh5vtlsRDfMFyLlrwWqUjzIpEm0pSr3VBLsfAYcxQKxaSPDTJaEu7mLJEiHW286VCyuzPoi197GH0eq/lZyUpa0Oicr4Rfz8QaamDVWca3bzvmTGH1ZWING6NWkKvlGQ9QhXawGqur++tu//qnHYzHPvK9c3m6RtEJkxvJ6pa3hVHlT2vYXmwzmnuqkWDU+sR7CLryy/OZDRDVZn4s1FtCplogEcRo/bqY0o92jgMjQWXU6dXbfTntJRtT6KkaziwFBd0A/b6uci0L5vdKMRz3Aq70ZPhjb9RQ0u5ebfqgE6PVZBFrcj90d5AqSo0haaRES4ZztGK1E2pKU9GXzVcjX0KWGIIUsZk+WEafvizXk7iL2CAGsG/wCe3IOfsSZL/3LJp61qc1vw7jFNIMb1OZF0NsBcmZnIJIUWSq5AwZmsbmvO4FcJlBq/bOtg=
+  - secure: Y4u4zgf37jxW7Cl/vmQDzJvHQQqwbMF9Q1AQGhBxVH9gA4gP+L8+m4p7ZaYVJvMBPitmdLtfp7SX3GuQILqDVykyR+keLuBEgDKeZCt+aKudtN16QvdqNHsKfPyWD7mDkUXcy7MS1qQnEGWY2ivmZZq50aCmm1ak+p4vvSpCU1TCCe6WqsvqYrjU0nYKGpEv7VBrQ1rfLCFHziC80tyjxZoRQh7XZTGmhRiQNg2VTZDI7AGAA9GjgadsZTWTqy2zgMa3z++KeJexPixWNSUafiR6Kdc1CBFj8htpP0WIOoEMk+VQ+ku/ki6t3Gv9sgJis5s1jz+gJYQI4Bl7QCTQDCM0aFDfij2E+IIFMLTER/RJwGxud36TcNrJOXYFY2aLaWVRozPN+MkBzqqREgdM2gy2zK5lvyhrqh9X0sd/CqBvxpHXQtsWiOXqM44Vd/iaYu2pUR98ajQtbgMV8RJx2n9lOjLDguHh/Vod0LwgAtriveOpnUHBaMz3dkWcyVSSGLV5b5AHQL/kW1yyFKCEIK1+oz+KVKqREAByQzafnuiRZunoo0nCC9bMALjoo4lZG0y3kX87vzQKKHGaAoV2Ei3ngue+CWg6JSeeJqykIqQ35S1tKa7f2V4xhzjX9YACoC5bP/RrfG/9MsFIpTqW0xvgWUcdHZZ40dMKxx85sYA=
