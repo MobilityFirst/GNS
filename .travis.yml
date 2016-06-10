@@ -11,17 +11,11 @@ notifications:
     on_failure: always # default: always
     
 script:
-   ant testAlwaysFail
+  - ant testAlwaysFail
 
 after_failure:
-  echo "$TRAVIS_PULL_REQUEST";
-  echo "$TRAVIS_COMMIT";
-  if ["$TRAVIS_PULL_REQUEST" == "false"];
-  then
-        echo "$TRAVIS_COMMIT";
-        git pull;
-        git revert "$TRAVIS_COMMIT";
-        git push;
-  fi
- 
+  - echo "$TRAVIS_PULL_REQUEST";
+  - echo "$TRAVIS_COMMIT";
+  - git revert "$TRAVIS_COMMIT";
+  - git push;
 
