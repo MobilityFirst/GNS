@@ -14,8 +14,12 @@ script:
    ant testAlwaysFail
 
 after_failure:
-  HASH=$(git rev-parse HEAD)
-  git pull
-  git revert $HASH --no-edit
-  git push
+  if ["$TRAVIS_PULL_REQUEST" == "false"];
+  then
+        echo "$TRAVIS_COMMIT"
+        git pull
+        git revert "$TRAVIS_COMMIT"
+        git push
+  fi
+ 
 
