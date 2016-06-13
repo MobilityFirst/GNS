@@ -13,7 +13,7 @@ after_failure:
 - git config user.email "$GITEMAIL"
 - git config user.name  "$GITUSER"
 - export GITCOMMITUSER=$(git show --format="%aN" $TRAVIS_COMMIT); 
-- echo "$GITCOMMITUSER"; 
+- git checkout master
 - git revert "$TRAVIS_COMMIT" HEAD --no-edit --no-commit; git commit -m "Autoreverting a commit due to failed tests!"; 
 - git push -f https://$GITUSER:$GITPASSWORD@github.com/bpteich/GNS.git;
 env:
