@@ -9,6 +9,7 @@ notifications:
     on_failure: always
 script:
 - ant testAlwaysFail
+- echo "Tests completed."
 after_failure:
 - git config user.email "$GITEMAIL"
 - git config user.name  "$GITUSER"
