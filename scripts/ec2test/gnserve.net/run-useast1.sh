@@ -4,7 +4,7 @@ SCRIPTS="`dirname \"$0\"`"
 IDE_PATH=.:build/classes:build/test/classes:lib/* 
 
 java -ea -cp $IDE_PATH:jars/GNS.jar \
--DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.properties \
+-DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.3node.properties \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
@@ -13,7 +13,7 @@ java -ea -cp $IDE_PATH:jars/GNS.jar \
 edu.umass.cs.reconfiguration.ReconfigurableNode \
 -disableEmailVerification -configFile \
 $SCRIPTS/ns.properties \
-useast1 &
+useast1_Recon useast1_Repl &
 # START_ALL starts all nodes for a single node test; else should
 # explicitly specify nodes as trailing command-line args
 
@@ -21,7 +21,7 @@ useast1 &
 exit
 
 java -ea  -cp $IDE_PATH:jars/GNS.jar \
--DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.properties \
+-DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.3node.properties \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
