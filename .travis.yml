@@ -12,7 +12,7 @@ script:
 after_failure:
 - git config user.email "$GITEMAIL"
 - git config user.name  "$GITUSER"
-- export GITCOMMITUSER=$(git show --format="%aN" $TRAVIS_COMMIT); 
+- export GITCOMMITUSER=$(git --no-pager show -s --format='%an' $TRAVIS_COMMIT); 
 - echo "$GITCOMMITUSER"; 
 - echo "$GITUSER";
 - git checkout master;
