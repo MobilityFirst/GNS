@@ -13,7 +13,7 @@ java -ea -cp $IDE_PATH:jars/GNS.jar \
 edu.umass.cs.reconfiguration.ReconfigurableNode \
 -disableEmailVerification -configFile \
 $SCRIPTS/ns.properties \
-uswest1_Recon uswest1_Repl &
+uswest1_recon uswest1_repl &
 # START_ALL starts all nodes for a single node test; else should
 # explicitly specify nodes as trailing command-line args
 
