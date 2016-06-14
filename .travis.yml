@@ -14,7 +14,7 @@ after_failure:
 - git config user.name  "$GITUSER"
 - export GITCOMMITUSER=$(git --no-pager show -s --format='%an' $TRAVIS_COMMIT); 
 - git checkout master;
-- if [ "$GITCOMMITUSER" == "$GITUSER" ]; then echo "Not reverting since this commit was issued automatically by travis.."; else git revert "$TRAVIS_COMMIT" HEAD --no-edit --no-commit; git commit -m "Autoreverting a commit due to failed tests!"; $(git push https://$GITUSER:$GITPASSWORD@github.com/bpteich/GNS.git); fi
+- if [ "$GITCOMMITUSER" == "$GITUSER" ]; then echo "Not reverting since this commit was issued automatically by travis..."; else git revert "$TRAVIS_COMMIT" HEAD --no-edit --no-commit; git commit -m "Autoreverting a commit due to failed tests!"; $(git push https://$GITUSER:$GITPASSWORD@github.com/bpteich/GNS.git); fi
 env:
   global:
   - secure: q4QVH3jo2vkva5gy3KSb24NcmBc8lKzRx17adk0Rj0AUrEDOVniJ04GWfyRz9Xf5Y34GyEcLBePfbeyEKljCZkKFt15T2b90HHYhQtpeVjYg3CddGPzxRcCnRhN0UnJsEHVoJyHRDxs/Nm5Raz50neYQVNZSS+eJ63TWU/aN2XvlJccXF01gEUG5wkNXwdAtr6cN+vZyKJJnRmxLqFsTvlCTYdwaY637e90Cp+nEBDRvjOcLlrTBXzrSx36lPjqjqiuEIkNa87aaY20mpogcDOzW/0ygjEQNLAnQ65946Cwa+1CtbwBYrmfjTGmNrQe5O4cJcQGAob/KXMy8TaofP2GKZllEQ8FG+DTNZMRacHhWWr3dgEUh0xFCxn/DXl8yn/76lqxtFjP57DoeeyzyQWfduWD8OP2zfXnEzLe2bMsGqf2cLyKjx6+9ziEN1VOS1k0192omIitcrOMdU9btZlN9iVhZzA73/kNOEJOZP7r5YMVC0hWOJXb4/2e7qaMJVzYCD04pINLVaaanvo0B7I0DQZ0YaQPCRcDgZdHXcudfsyKXelQm+f+/3UTy97XmomrcQ3uaSKljeixqJW1oATpgbodHOAnLxx77RkGE5u9UhP/8OVtc0d8qqwepsR6pL/IYz8EA7nwf5Q717WOOu6bvSWiAy5dtOKRPU2br4Rg=
