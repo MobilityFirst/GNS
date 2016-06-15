@@ -398,7 +398,9 @@ public class GNSInstaller {
               + "-nsfile "
               + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
               + "-disableEmailVerification" + " "
-              + nsId + " "
+              // Nodes to start (FIXME: hacked node names)
+              + nsId + "_recon" + " " 
+              + nsId + "_repl" + " "
               //+ "-configFile "
               //+ "conf" + FILESEPARATOR + NS_PROPERTIES_FILENAME + " "
               //+ " -demandProfileClass edu.umass.cs.gnsserver.gnsApp.NullDemandProfile "
@@ -486,7 +488,8 @@ public class GNSInstaller {
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("deleteDatabase.sh"),
             "#!/bin/bash\n"
             + CHANGETOINSTALLDIR
-            + "java -cp " + gnsJarFileName + " " + MongoRecordsClass + " -clear");
+            + "java -cp " + gnsJarFileName + " " + MongoRecordsClass + " -clear"
+    );
   }
 
   /**
@@ -536,7 +539,10 @@ public class GNSInstaller {
             + ((runAsRoot) ? "sudo " : "")
             + "rm -rf paxos_large_checkpoints\n"
             + ((runAsRoot) ? "sudo " : "")
-            + "rm -rf paxoslog");
+            + "rm -rf paxoslog\n"
+            + ((runAsRoot) ? "sudo " : "")
+            + "echo \"DROP DATABASE paxos_logs;\" | mysql --password=gnsRoot -u root 2>/dev/null"
+    );
   }
 
   private static void copyHostsFiles(String hostname, String lnsHostsFile, String nsHostsFile) {
