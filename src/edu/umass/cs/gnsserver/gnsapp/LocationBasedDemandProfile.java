@@ -23,6 +23,7 @@ import com.google.common.net.InetAddresses;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 
+import edu.umass.cs.gnscommon.CommandType;
 import java.util.ArrayList;
 
 import org.json.JSONException;
@@ -203,8 +204,10 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
     // else
     CommandPacket command = (CommandPacket) request;
-    return GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(command.getCommandName())
-            || GNSCommandProtocol.SELECT.equals(command.getCommandName());
+    return command.getCommandType().isCreateDelete()
+            || command.getCommandType().isSelect();
+//    return GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(command.getCommandName())
+//            || GNSCommandProtocol.SELECT.equals(command.getCommandName());
   }
 
   @Override

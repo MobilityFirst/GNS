@@ -41,7 +41,7 @@ import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.forwarder.ProxyLoadStatistics;
@@ -216,12 +216,12 @@ public class ProxyPublisher extends Thread
     // by everyone
     DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVICE_TYPE_FIELD,
         new JSONArray().put(Constants.PROXY_SERVICE), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.SERVICE_TYPE_FIELD, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.SERVICE_TYPE_FIELD, null);
     // Publish external IP (readable by everyone)
     InetSocketAddress externalIP = (InetSocketAddress) proxySocketAddres;
     DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.PROXY_EXTERNAL_IP_FIELD,
         new JSONArray().put(externalIP.getAddress().getHostAddress() + ":" + externalIP.getPort()), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.PROXY_EXTERNAL_IP_FIELD, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.PROXY_EXTERNAL_IP_FIELD, null);
 
     // Update our location if geolocation resolution worked
     if (proxyInfo.getLatLong() != null)

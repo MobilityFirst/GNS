@@ -23,7 +23,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,10 +52,10 @@ public class Dump extends BasicCommand {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return DUMP;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return DUMP;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
@@ -63,7 +63,8 @@ public class Dump extends BasicCommand {
     if (module.isAdminMode()) {
       return handler.getAdmintercessor().sendDump(handler);
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

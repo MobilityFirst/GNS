@@ -47,7 +47,7 @@ public class AdminResponsePacket extends BasicPacketWithClientAddress {
   public final static String TIME = "time";
   private int id;
   private Date time;
-  /** JOSNObject where the results are kept **/
+  /** Place where the results are kept **/
   private JSONObject jsonObject;
 
   /**

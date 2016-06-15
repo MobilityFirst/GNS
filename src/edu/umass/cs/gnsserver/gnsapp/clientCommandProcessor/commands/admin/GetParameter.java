@@ -24,7 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SystemParameter;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -57,10 +57,10 @@ public class GetParameter extends BasicCommand {
     return new String[]{NAME};
   }
 
-  @Override
-  public String getCommandName() {
-    return GET_PARAMETER;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return GET_PARAMETER;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -73,7 +73,8 @@ public class GetParameter extends BasicCommand {
         System.out.println("Problem getting parameter: " + e);
       }
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + GET_PARAMETER + " " + parameterString);
+    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED +
+            " Don't understand " + CommandType.GetParameter.toString() + " " + parameterString);
   }
 
   @Override

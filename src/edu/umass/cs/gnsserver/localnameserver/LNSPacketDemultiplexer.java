@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.localnameserver;
 import edu.umass.cs.gigapaxos.interfaces.NearestServerSelector;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
@@ -164,9 +165,10 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     handler.addRequestInfo(packet.getRequestID(), requestInfo);
     packet = packet.removeSenderInfo();
 
-    if (GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(requestInfo
-            .getCommandName())
-            || requestInfo.getCommandName().equals(GNSCommandProtocol.SELECT)) {
+    if (requestInfo.getCommandType().isCreateDelete()
+            || requestInfo.getCommandType().isSelect()) {
+//      if (GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(requestInfo.getCommandName())
+//            || requestInfo.getCommandName().equals(GNSCommandProtocol.SELECT)) {
       this.asyncLNSClient.sendRequestAnycast(packet, callback);
     } else {
       this.asyncLNSClient.sendRequest(packet, callback, redirector);
@@ -271,7 +273,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         // FIXME: THIS ISN'T GOING TO WORK WITHOUT MORE INFO ABOUT THE
         // REQUEST
         if (!CommandPacket.BOGUS_SERVICE_NAME.equals(serviceName)
-                && sentInfo.getCommandType().equals(GNSCommandProtocol.READ)
+                && sentInfo.getCommandType().isRead()
+                //&& sentInfo.getCommandName().equals(GNSCommandProtocol.READ)
                 && returnPacket != null) {
           handler.updateCacheEntry(serviceName,
                   returnPacket.getReturnValue());

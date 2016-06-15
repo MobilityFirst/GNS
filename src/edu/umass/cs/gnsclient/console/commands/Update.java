@@ -104,7 +104,7 @@ public class Update extends ConsoleCommand {
     } catch (ClientException e) {
       console.printString("Failed to access GNS ( " + e + ")\n");
     } catch (JSONException e) {
-      console.printString("Unable to parse JSON string:" + e + "\n");
+      console.printString("Unable to parse JSON string: " + e + "\n");
     }
   }
 }

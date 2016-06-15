@@ -24,25 +24,19 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsclient.client.util.Format;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.LOOKUP_RANDOM_GUIDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.REPLACE_USER_JSON;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.utils.DelayProfiler;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -197,17 +191,12 @@ public class ThroughputAsynchMultiClientTest {
    * @param host
    * @param port
    */
-  public ThroughputAsynchMultiClientTest(String alias, String host, String port, boolean disableSSL) {
+  public ThroughputAsynchMultiClientTest(String alias) {
     InetSocketAddress address;
     if (alias != null) {
       accountAlias = alias;
     }
 
-    if (host != null && port != null) {
-      address = new InetSocketAddress(host, Integer.parseInt(port));
-    } else {
-      address = ServerSelectDialog.selectServer();
-    }
     clients = new GNSClientCommands[numberOfClients];
     subGuids = new String[numberOfGuids];
     commmandPackets = new CommandPacket[numberOfGuids][numberOfClients];
@@ -272,7 +261,7 @@ public class ThroughputAsynchMultiClientTest {
       updateField = parser.hasOption("updateField") ? parser.getOptionValue("updateField") : DEFAULT_FIELD;
       updateValue = parser.hasOption("updateValue") ? parser.getOptionValue("updateValue") : DEFAULT_VALUE;
 
-      ThroughputAsynchMultiClientTest test = new ThroughputAsynchMultiClientTest(alias, host, port, disableSSL);
+      ThroughputAsynchMultiClientTest test = new ThroughputAsynchMultiClientTest(alias);
 
       test.createSubGuidsAndWriteValue(parser.hasOption("useExistingGuids"));
 
@@ -339,8 +328,7 @@ public class ThroughputAsynchMultiClientTest {
         }
         try {
           JSONObject command = createCommand(CommandType.LookupRandomGuids,
-                  LOOKUP_RANDOM_GUIDS, GUID,
-                  masterGuid.getGuid(), GUIDCNT, numberOfGuids);
+                  GUID, masterGuid.getGuid(), GUIDCNT, numberOfGuids);
           String result = checkResponse(command, clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
             existingGuids = new JSONArray(result);
@@ -501,11 +489,10 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createReadCommandPacket(AbstractGNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(CommandType.ReadUnsigned,
-              READ, GUID, targetGuid, FIELD, field);
+      command = createCommand(CommandType.ReadUnsigned, GUID, targetGuid, FIELD, field);
     } else {
       command = createAndSignCommand(CommandType.Read,
-              reader.getPrivateKey(), READ,
+              reader.getPrivateKey(),
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
@@ -515,8 +502,8 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createUpdateCommandPacket(AbstractGNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
     command = createAndSignCommand(CommandType.ReplaceUserJSON,
-            writer.getPrivateKey(), REPLACE_USER_JSON,
-            GUID, targetGuid, USER_JSON, json.toString(),
+            writer.getPrivateKey(),
+            GUID, targetGuid, json.toString(),
             WRITER, writer.getGuid());
     return new CommandPacket(-1, command);
   }
@@ -565,12 +552,6 @@ public class ThroughputAsynchMultiClientTest {
     Option aliasOption = OptionBuilder.withArgName("alias").hasArg()
             .withDescription("the alias (HRN) to use")
             .create("alias");
-    Option hostOption = OptionBuilder.withArgName("host").hasArg()
-            .withDescription("the host")
-            .create("host");
-    Option portOption = OptionBuilder.withArgName("port").hasArg()
-            .withDescription("the port")
-            .create("port");
     Option operationOption = OptionBuilder.withArgName("op").hasArg()
             .withDescription("the operation to perform (read or update - default is read)")
             .create("op");
@@ -591,15 +572,12 @@ public class ThroughputAsynchMultiClientTest {
             .create("guids");
     Option useExistingGuidsOption = new Option("useExistingGuids", "use guids in account Guid instead of creating new ones");
 
-    Option disableSSLOption = new Option("disableSSL", "disables SSL");
     Option updateAliasOption = new Option("updateAlias", true, "Alias of guid to update/read");
     Option updateFieldOption = new Option("updateField", true, "Field to read/update");
     Option updateValueOption = new Option("updateValue", true, "Value to use in read/update");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(aliasOption);
-    commandLineOptions.addOption(hostOption);
-    commandLineOptions.addOption(portOption);
     commandLineOptions.addOption(operationOption);
     commandLineOptions.addOption(rateOption);
     commandLineOptions.addOption(incOption);
@@ -610,7 +588,6 @@ public class ThroughputAsynchMultiClientTest {
     commandLineOptions.addOption(updateAliasOption);
     commandLineOptions.addOption(updateFieldOption);
     commandLineOptions.addOption(updateValueOption);
-    commandLineOptions.addOption(disableSSLOption);
     commandLineOptions.addOption(useExistingGuidsOption);
 
     CommandLineParser parser = new GnuParser();

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 
 /**
  * Encapsulates the response values and instrumentation that we pass back to the client.
@@ -34,7 +34,7 @@ public class CommandResponse<NodeIDType> {
   /**
    * Indicates if the response is an error. Can be null.
    */
-  private NSResponseCode errorCode;
+  private GNSResponseCode errorCode;
   
   // instrumentation
   /**
@@ -58,7 +58,7 @@ public class CommandResponse<NodeIDType> {
    * @param CCPRoundTripTime
    * @param responder
    */
-  public CommandResponse(String returnValue, NSResponseCode errorCode, 
+  public CommandResponse(String returnValue, GNSResponseCode errorCode, 
           long CCPRoundTripTime, NodeIDType responder) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
@@ -73,7 +73,7 @@ public class CommandResponse<NodeIDType> {
    * @param returnValue
    */
   public CommandResponse(String returnValue) {
-    this(returnValue, NSResponseCode.NO_ERROR, -1, null);
+    this(returnValue, GNSResponseCode.NO_ERROR, -1, null);
   }
   
   /**
@@ -83,7 +83,7 @@ public class CommandResponse<NodeIDType> {
    * @param responder
    */
   public CommandResponse(String returnValue, NodeIDType responder) {
-    this(returnValue, NSResponseCode.NO_ERROR, -1, responder);
+    this(returnValue, GNSResponseCode.NO_ERROR, -1, responder);
   }
 
   /**
@@ -98,9 +98,9 @@ public class CommandResponse<NodeIDType> {
   /**
    * Gets the error code.
    * 
-   * @return a {@link NSResponseCode}
+   * @return a {@link GNSResponseCode}
    */
-  public NSResponseCode getErrorCode() {
+  public GNSResponseCode getErrorCode() {
     return errorCode;
   }
   

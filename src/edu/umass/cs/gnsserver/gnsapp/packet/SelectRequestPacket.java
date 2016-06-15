@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SHA1HashFunction;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ShaOneHashFunction;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 
@@ -35,7 +35,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements ClientRequest {
+public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDType> implements ClientRequest {
 
   private final static String ID = "id";
   private final static String KEY = "key";
@@ -345,7 +345,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
   public String getServiceName() {
     if (query != null) {
       // FIXME: maybe cache this
-      return Base64.encodeToString(SHA1HashFunction.getInstance().hash(this.query), false);
+      return Base64.encodeToString(ShaOneHashFunction.getInstance().hash(this.query), false);
     } else {
       // FIXME:
       return "_SelectRequest_";

@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -53,10 +53,10 @@ public class ClearUnsigned extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_CLEAR;
   }
 
-  @Override
-  public String getCommandName() {
-    return CLEAR;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CLEAR;
+//  }
 
   @Override
   public String[] getCommandParameters() {

@@ -23,7 +23,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -56,19 +56,20 @@ public class DumpCache extends BasicCommand {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return DUMPCACHE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return DUMPCACHE;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
-      return new CommandResponse<String>(handler.getAdmintercessor().sendDumpCache(handler));
+      return new CommandResponse<>(handler.getAdmintercessor().sendDumpCache(handler));
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

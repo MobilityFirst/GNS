@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ClientUtils;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -28,7 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -64,10 +64,10 @@ public class RegisterAccount extends BasicCommand {
     return new String[]{NAME, PUBLIC_KEY, PASSWORD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return REGISTER_ACCOUNT;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REGISTER_ACCOUNT;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -77,8 +77,10 @@ public class RegisterAccount extends BasicCommand {
     String password = json.getString(PASSWORD);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    byte[] publicKeyBytes = Base64.decode(publicKey);
-    String guid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
+    
+    String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
+//    byte[] publicKeyBytes = Base64.decode(publicKey);
+//    String guid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
 
     // FIXME: this lacking signature check is for temporary backward compatability... remove it.
     // See RegisterAccountUnsigned

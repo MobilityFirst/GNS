@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  * Command that adds an empty field to the GNS for the given GUID.
@@ -48,10 +48,10 @@ public class CreateEmpty extends Create {
     return new String[]{GUID, FIELD, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return CREATE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CREATE;
+//  }
   
   @Override
   public String getCommandDescription() {

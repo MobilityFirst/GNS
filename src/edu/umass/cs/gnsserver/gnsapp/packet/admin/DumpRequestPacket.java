@@ -55,7 +55,7 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithReturnAddress 
   private NodeIDType primaryNameServer;
 
   /**
-   * JOSNObject where the results are kept *
+   * Place where the results are kept *
    */
   private JSONArray jsonArray;
   private String argument;
@@ -107,7 +107,6 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithReturnAddress 
    */
   public DumpRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json);
-    //super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.DUMP_REQUEST) {
       Exception e = new Exception("DumpRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();

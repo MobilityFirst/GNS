@@ -23,18 +23,20 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Date;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,7 +79,7 @@ public abstract class AbstractUpdateList extends BasicCommand {
     } else {
       timestamp = null;
     }
-    NSResponseCode responseCode;
+    GNSResponseCode responseCode;
     if (writer.equals(MAGIC_STRING)) {
       writer = null;
     }
@@ -87,7 +89,7 @@ public abstract class AbstractUpdateList extends BasicCommand {
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
             argument,
             getUpdateOperation(),
-            writer, signature, message, timestamp, handler)).isAnError()) {
+            writer, signature, message, timestamp, handler)).isError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

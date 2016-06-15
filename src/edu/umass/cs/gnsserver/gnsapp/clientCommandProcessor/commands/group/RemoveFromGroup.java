@@ -26,13 +26,15 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Group
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,10 +62,10 @@ public class RemoveFromGroup extends BasicCommand {
     return new String[]{GUID, MEMBER, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return REMOVE_FROM_GROUP;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return REMOVE_FROM_GROUP;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -75,10 +77,10 @@ public class RemoveFromGroup extends BasicCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    NSResponseCode responseCode;
+    GNSResponseCode responseCode;
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, member,
-              writer, signature, message, handler)).isAnError()) {
+              writer, signature, message, handler)).isError()) {
         return new CommandResponse<String>(OK_RESPONSE);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

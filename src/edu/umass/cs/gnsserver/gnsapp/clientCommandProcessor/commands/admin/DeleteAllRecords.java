@@ -24,7 +24,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -56,10 +56,10 @@ public class DeleteAllRecords extends BasicCommand {
     return new String[]{};
   }
 
-  @Override
-  public String getCommandName() {
-    return DELETE_ALL_RECORDS;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return DELETE_ALL_RECORDS;
+//  }
 
   @Override
   @SuppressWarnings("unchecked")
@@ -73,7 +73,8 @@ public class DeleteAllRecords extends BasicCommand {
 //        return new CommandResponse<String>(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

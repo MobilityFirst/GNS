@@ -21,7 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 
 /**
  *
@@ -47,10 +47,10 @@ public class GetGroupMembersSelf extends GetGroupMembers {
     return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return GET_GROUP_MEMBERS;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return GET_GROUP_MEMBERS;
+//  }
 
   @Override
   public String getCommandDescription() {

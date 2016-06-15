@@ -31,7 +31,7 @@ import org.json.JSONArray;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 
@@ -63,12 +63,12 @@ public class TimerKeepalive extends Thread
     logger.fine("Publishing start time");
     final long now = System.currentTimeMillis();
     DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.START_TIME, new JSONArray().put(now), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.START_TIME, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.START_TIME, null);
     DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(myGuid.getGuid(), Constants.TIME_REFRESH_INTERVAL,
         new JSONArray().put(publishFrequency), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.TIME_REFRESH_INTERVAL, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.TIME_REFRESH_INTERVAL, null);
     DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(guid.getGuid(), Constants.CURRENT_TIME, new JSONArray().put(now), myGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.CURRENT_TIME, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.CURRENT_TIME, null);
     logger.setLevel(Level.FINE);
   }
 

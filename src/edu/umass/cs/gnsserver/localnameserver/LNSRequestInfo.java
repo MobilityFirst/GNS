@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 
 /**
@@ -72,8 +73,7 @@ public class LNSRequestInfo {
    */
   public synchronized String getServiceName() {
     // arun: not needed any more, I think
-    return commandPacket
-            .getServiceName();
+    return commandPacket.getServiceName();
   }
 
   /**
@@ -90,8 +90,8 @@ public class LNSRequestInfo {
    *
    * @return the command type
    */
-  public String getCommandType() {
-    return commandPacket.getCommandName();
+  public CommandType getCommandType() {
+    return commandPacket.getCommandType();
   }
 
   /**
@@ -175,11 +175,11 @@ public class LNSRequestInfo {
 
   @Override
   public String toString() {
-    return this.getCommandType() + ":" + this.getServiceName() + ":" + this.lnsReqID;
+    return this.getCommandType().name() + ":" + this.getServiceName() + ":" + this.lnsReqID;
   }
 
   // arun
-  public String getCommandName() {
-    return this.commandPacket.getCommandName();
-  }
+//  public String getCommandName() {
+//    return this.commandPacket.getCommandName();
+//  }
 }

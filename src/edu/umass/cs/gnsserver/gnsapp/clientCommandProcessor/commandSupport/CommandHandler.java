@@ -19,12 +19,12 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
@@ -32,12 +32,18 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -93,7 +99,7 @@ public class CommandHandler {
       DelayProfiler.updateDelay("executeCommand", executeCommandStart);
       if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
         DelayProfiler.updateDelay(packet.getRequestType() + "."
-                + command.getCommandName(), executeCommandStart);
+                + command.getCommandType().toString(), executeCommandStart);
       }
       if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
         ClientCommandProcessorConfig.getLogger().log(Level.FINE,
@@ -172,7 +178,7 @@ public class CommandHandler {
     }
   }
 
-  // this little dance is because we need to remove the signature to get the message that was signed
+  // This little dance is because we need to remove the signature to get the message that was signed
   // alternatively we could have the client do it but that just means a longer message
   // OR we could put the signature outside the command in the packet, 
   // but some packets don't need a signature
@@ -233,16 +239,15 @@ public class CommandHandler {
     // Squirrel away the host and port so we know where to send the command return value
     // A little unnecessary hair for debugging... also peek inside the command.
     JSONObject command;
-    String commandString = null;
     String guid = null;
+     CommandType commandType = packet.getCommandType();
     if ((command = packet.getCommand()) != null) {
-      commandString = command.optString(COMMANDNAME, null);
       guid = command.optString(GUID, command.optString(NAME, null));
     }
     //GNSConfig.getLogger().info("FROM: " + packet.getSenderAddress());
     app.outStandingQueries.put(packet.getClientRequestId(),
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
-                    commandString, guid, packet.getMyListeningAddress()));
+                    commandType, guid, packet.getMyListeningAddress()));
     handlePacketCommandRequest(packet, doNotReplyToClient, app);
   }
 
@@ -262,22 +267,26 @@ public class CommandHandler {
           boolean doNotReplyToClient, GNSApp app) throws JSONException, IOException {
     long id = returnPacket.getClientRequestId();
     CommandRequestInfo sentInfo;
-    if ((sentInfo = app.outStandingQueries.get(id)) != null) {
+		// arun: changed get to remove as otherwise it seems to be never removed
+    if ((sentInfo = app.outStandingQueries.remove//get
+    (id)) != null) {
       ClientCommandProcessorConfig.getLogger()
               .log(Level.FINE,
                       "{0}:{1} => {2} -> {3}",
                       new Object[]{
-                        sentInfo.getCommand(),
+                        sentInfo.getCommandType().toString(),
                         sentInfo.getGuid(),
                         returnPacket.getSummary(),
                         sentInfo.getHost() + "/"
                         + sentInfo.getPort()});
       if (!doNotReplyToClient) {
-        app.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), returnPacket, returnPacket.toJSONObject(), sentInfo.myListeningAddress);
+        app.sendToClient(new InetSocketAddress(sentInfo.getHost(), 
+                sentInfo.getPort()), returnPacket, returnPacket.toJSONObject(), 
+                sentInfo.myListeningAddress);
       }
 
       // shows us stats every 100 commands, but not more than once every 5 seconds
-      if (commandCount++ % 100 == 0) {
+      if (commandCount++ % 100 == 0 && Config.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION)) {
         if (System.currentTimeMillis() - lastStatsTime > 5000) {
           ClientCommandProcessorConfig.getLogger().log(Level.INFO, "{0}",
                   new Object[]{DelayProfiler.getStats()});

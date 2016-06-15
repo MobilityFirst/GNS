@@ -25,14 +25,20 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
+
 /**
- * Contains logging and other main utilities for the GNS client.
+ * Contains logging and other main utilities for the GNS client. This file
+ * should be used only for client properties. Server properties are in
+ * {@link GNSConfig}.
  * 
- * @author westy
+ * @author westy, arun
  */
 public class GNSClientConfig {
   
   public static final int LNS_PORT = 24398;
+	// arun: It is almost never okay to use a hard-coded active replica port.
   public static final int ACTIVE_REPLICA_PORT = 24403;
   
   private final static Logger LOG = Logger.getLogger(GNSClientConfig.class.getName());
@@ -43,6 +49,45 @@ public class GNSClientConfig {
   public static final Logger getLogger() {
     return LOG;
   }
+  
+	/**
+	 *
+	 */
+	public static enum GNSCC implements Config.ConfigurableEnum {
+		/**
+		 * Used by AbstractGNSClient to use a single global monitor (bad old style) for all requests.
+		 */
+		USE_GLOBAL_MONITOR(false),
+		
+		/**
+		 * Uses secret keys for signatures that are ~180x faster at signing at
+		 * the client.
+		 */
+		ENABLE_SECRET_KEY (false),
+		;
+
+		final Object defaultValue;
+
+		GNSCC(Object defaultValue) {
+			this.defaultValue = defaultValue;
+		}
+
+		@Override
+		public Object getDefaultValue() {
+			return this.defaultValue;
+		}
+
+		@Override
+		public String getConfigFileKey() {
+			return "gigapaxosConfig";
+		}
+
+		@Override
+		public String getDefaultConfigFile() {
+			return "gns.client.properties";
+		}
+	}
+
   
   /**
    * @return Try to figure out the build version.

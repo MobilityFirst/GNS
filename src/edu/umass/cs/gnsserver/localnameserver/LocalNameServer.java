@@ -24,7 +24,7 @@ import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
+//import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import static edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig.INVALID_PING_LATENCY;
 import static edu.umass.cs.gnsserver.localnameserver.LocalNameServerOptions.PORT;
 import static edu.umass.cs.gnsserver.localnameserver.LocalNameServerOptions.disableSSL;
@@ -197,7 +197,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
             = ParametersAndOptions.getParametersAsHashMap(LocalNameServer.class.getCanonicalName(),
                     LocalNameServerOptions.getAllOptions(), args);
 
-    if (options.containsKey(HELP)) {
+    if (options.containsKey("help")) {
       ParametersAndOptions.printUsage(LocalNameServer.class.getCanonicalName(),
               LocalNameServerOptions.getAllOptions());
 

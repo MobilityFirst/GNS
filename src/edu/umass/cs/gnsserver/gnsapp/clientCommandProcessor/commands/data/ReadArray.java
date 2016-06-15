@@ -25,8 +25,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
 
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -54,7 +54,7 @@ public class ReadArray extends BasicCommand {
   public ReadArray(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public CommandType getCommandType() {
     return CommandType.ReadArray;
@@ -65,11 +65,10 @@ public class ReadArray extends BasicCommand {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return READ_ARRAY;
-  }
-
+//  @Override
+//  public String getCommandName() {
+//    return READ_ARRAY;
+//  }
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -91,7 +90,9 @@ public class ReadArray extends BasicCommand {
       reader = null;
     }
 
-    if (getCommandName().equals(READ_ARRAY_ONE)) {
+    if (getCommandType().equals(CommandType.ReadArrayOne)
+            || getCommandType().equals(CommandType.ReadArrayOneUnsigned)
+            || getCommandType().equals(CommandType.ReadArrayOneSelf)) {
       if (ALL_FIELDS.equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {

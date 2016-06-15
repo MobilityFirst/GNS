@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
@@ -31,7 +33,6 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -441,7 +442,7 @@ public class AccountAccess {
 
   private static String createVerificationCode(String name) {
     // Take the first N bytes of the array for our code
-    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
+    return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
   }
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
@@ -569,11 +570,11 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
     try {
 
-      NSResponseCode returnCode;
+      GNSResponseCode returnCode;
       // First try to create the HRN record to make sure this name isn't already registered
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isAnError()) {
+      if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -595,7 +596,7 @@ public class AccountAccess {
         // prefix is the same for all acls so just pick one to use here
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         // set up the default read access
-        if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isAnError()) {
+        if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isError()) {
           return new CommandResponse<>(OK_RESPONSE, handler.getApp().getNodeID());
         } else {
           // delete the record we added above
@@ -627,7 +628,7 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
-    if (!handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryName()).isAnError()) {
+    if (!handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryName()).isError()) {
       //if (!handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
       handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryGuid());
       //handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
@@ -680,9 +681,9 @@ public class AccountAccess {
       jsonHRN.put(HRN_GUID, guid);
       handler.getRemoteQuery().createRecord(name, jsonHRN);
       GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-      JSONObject json = new JSONObject();
-      json.put(GUID_INFO, guidInfo.toJSONObject());
-      json.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
+      JSONObject jsonGuid = new JSONObject();
+      jsonGuid.put(GUID_INFO, guidInfo.toJSONObject());
+      jsonGuid.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
       // set up ACL to look like this
       //"_GNS_ACL": {
       //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
@@ -690,8 +691,8 @@ public class AccountAccess {
       JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
               ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
       // prefix is the same for all acls so just pick one to use here
-      json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
-      handler.getRemoteQuery().createRecord(guid, json);
+      jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
+      handler.getRemoteQuery().createRecord(guid, jsonGuid);
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
       updateAccountInfoNoAuthentication(accountInfo, handler, true);
@@ -725,7 +726,7 @@ public class AccountAccess {
       for (int i = 0; i < names.size(); i++) {
         String name = names.get(i);
         String publicKey = publicKeys.get(i);
-        String guid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
+        String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
         accountInfo.addGuid(guid);
         guids.add(guid);
         // HRN records
@@ -743,23 +744,21 @@ public class AccountAccess {
         //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
         JSONObject acl = createACL(ALL_FIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
                 ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
-        jsonGuid.put("_GNS_ACL", acl);
-        jsonGuid.put("environment", 8675309); // test value
+        // prefix is the same for all acls so just pick one to use here
+        jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         guidInfoMap.put(guid, jsonGuid);
       }
       DelayProfiler.updateDelay("addMultipleGuidsSetup", startTime);
       accountInfo.noteUpdate();
 
       // first we create the HRN records as a batch
-      NSResponseCode returnCode;
+      GNSResponseCode returnCode;
       // First try to create the HRNS to insure that that name does not already exist
       if (!(returnCode = handler.getRemoteQuery().
-              createRecordBatch(new HashSet<>(names), hrnMap, handler)).isAnError()) {
-        //if (!(returnCode = handler.getIntercessor().sendAddBatchRecord(new HashSet<String>(names), hrnMap)).isAnError()) {
+              createRecordBatch(new HashSet<>(names), hrnMap, handler)).isError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids, guidInfoMap, handler);
-          //handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
           GNSConfig.getLogger().info(DelayProfiler.getStats());
           return new CommandResponse<>(OK_RESPONSE);
         }
@@ -895,7 +894,7 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(guidInfo.getGuid(), handler);
     // Then remove the guid record
-    if (!handler.getRemoteQuery().deleteRecord(guidInfo.getGuid()).isAnError()) {
+    if (!handler.getRemoteQuery().deleteRecord(guidInfo.getGuid()).isError()) {
       // remove reverse record
       handler.getRemoteQuery().deleteRecord(guidInfo.getName());
       // Possibly update the account guid we are associated with to
@@ -935,10 +934,10 @@ public class AccountAccess {
           String signature, String message, Date timestamp, ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
     try {
-      NSResponseCode returnCode;
+      GNSResponseCode returnCode;
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, accountInfo.getPrimaryGuid());
-      if ((returnCode = handler.getRemoteQuery().createRecord(alias, jsonHRN)).isAnError()) {
+      if ((returnCode = handler.getRemoteQuery().createRecord(alias, jsonHRN)).isError()) {
         //if ((returnCode = handler.getIntercessor().sendFullAddRecord(alias, jsonHRN)).isAnError()) {
 //    if ((returnCode = handler.getIntercessor().sendAddRecordWithSingleField(alias, HRN_GUID,
 //            new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))).isAnError()) {
@@ -949,7 +948,7 @@ public class AccountAccess {
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-              writer, signature, message, timestamp, handler, true).isAnError()) {
+              writer, signature, message, timestamp, handler, true).isError()) {
         // back out if we got an error
         handler.getRemoteQuery().deleteRecord(alias);
         return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ALIAS);
@@ -983,8 +982,8 @@ public class AccountAccess {
       return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ALIAS);
     }
     // remove the NAME -- GUID record
-    NSResponseCode responseCode;
-    if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isAnError()) {
+    GNSResponseCode responseCode;
+    if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isError()) {
       //if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
@@ -992,7 +991,7 @@ public class AccountAccess {
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
     if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            writer, signature, message, timestamp, handler, true)).isAnError()) {
+            writer, signature, message, timestamp, handler, true)).isError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1014,7 +1013,7 @@ public class AccountAccess {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            writer, signature, message, timestamp, handler, false).isAnError()) {
+            writer, signature, message, timestamp, handler, false).isError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1037,7 +1036,7 @@ public class AccountAccess {
           Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isAnError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1060,24 +1059,24 @@ public class AccountAccess {
           Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isAnError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
   }
 
-  private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
+  private static GNSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,
           String writer, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
-      NSResponseCode response;
+      GNSResponseCode response;
       if (sendToReplica) {
         try {
           handler.getRemoteQuery().fieldUpdate(guid, ACCOUNT_INFO, accountInfo.toJSONObject().toString());
-          response = NSResponseCode.NO_ERROR;
+          response = GNSResponseCode.NO_ERROR;
         } catch (ClientException | IOException | JSONException e) {
           GNSConfig.getLogger().log(Level.SEVERE, "Problem with remote query:{0}", e);
-          response = NSResponseCode.ERROR;
+          response = GNSResponseCode.GENERIC_ERROR;
         }
       } else {
         JSONObject json = new JSONObject();
@@ -1088,35 +1087,35 @@ public class AccountAccess {
       return response;
     } catch (JSONException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing account info:{0}", e);
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.GENERIC_ERROR;
     }
   }
 
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            null, null, null, null, handler, sendToReplica).isAnError();
+            null, null, null, null, handler, sendToReplica).isError();
   }
 
-  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo,
+  private static GNSResponseCode updateGuidInfo(GuidInfo guidInfo,
           String writer, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     try {
       JSONObject json = new JSONObject();
       json.put(GUID_INFO, guidInfo.toJSONObject());
-      NSResponseCode response = FieldAccess.updateUserJSON(guidInfo.getGuid(), json,
+      GNSResponseCode response = FieldAccess.updateUserJSON(guidInfo.getGuid(), json,
               writer, signature, message, timestamp, handler);
       return response;
     } catch (JSONException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing guid info:{0}", e);
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.GENERIC_ERROR;
     }
   }
 
   private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo,
           ClientRequestHandlerInterface handler) {
 
-    return !updateGuidInfo(guidInfo, null, null, null, null, handler).isAnError();
+    return !updateGuidInfo(guidInfo, null, null, null, null, handler).isError();
   }
 
   /**

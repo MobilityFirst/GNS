@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
@@ -28,7 +29,7 @@ import java.util.Iterator;
 
 /**
  * Either a ValuesMap or an Error. Used to represent values returned
- * from a DNS query. See also {@link NSResponseCode} which is used to
+ * from a DNS query. See also {@link GNSResponseCode} which is used to
  * represent errors in this class.
  *
  * Also has some instrumentation for round trip times and what server responded.
@@ -46,7 +47,7 @@ public class QueryResult<NodeIDType> implements Serializable {
   /**
    * Set if the response is an error.
    */
-  private NSResponseCode errorCode = null;
+  private GNSResponseCode errorCode = null;
   /**
    * Instrumentation - records the time between the LNS sending the request to the NS and the return message.
    */
@@ -73,7 +74,7 @@ public class QueryResult<NodeIDType> implements Serializable {
    * @param errorCode
    * @param responder
    */
-  public QueryResult(NSResponseCode errorCode, NodeIDType responder) {
+  public QueryResult(GNSResponseCode errorCode, NodeIDType responder) {
     this.errorCode = errorCode;
     this.responder = responder;
   }
@@ -81,7 +82,7 @@ public class QueryResult<NodeIDType> implements Serializable {
   /**
    * Gets the ValuesMap of this QueryResult.
    *
-   * @return
+   * @return the ValuesMap
    */
   public ValuesMap getValuesMap() {
     return valuesMap;
@@ -90,7 +91,7 @@ public class QueryResult<NodeIDType> implements Serializable {
   /**
    * Gets the ValuesMap, but scrubs any internal fields first.
    *
-   * @return
+   * @return the ValuesMap
    */
   public ValuesMap getValuesMapSansInternalFields() {
     ValuesMap copy = new ValuesMap(valuesMap);
@@ -102,7 +103,7 @@ public class QueryResult<NodeIDType> implements Serializable {
    * Gets one ResultValue from the ValuesMap.
    *
    * @param key
-   * @return
+   * @return the ResultValue
    */
   public ResultValue getArray(String key) {
     if (valuesMap != null) {
@@ -132,9 +133,9 @@ public class QueryResult<NodeIDType> implements Serializable {
   /**
    * Returns the error code. Can be null.
    *
-   * @return a {@link NSResponseCode}
+   * @return a {@link GNSResponseCode}
    */
-  public NSResponseCode getErrorCode() {
+  public GNSResponseCode getErrorCode() {
     return errorCode;
   }
 
@@ -151,7 +152,7 @@ public class QueryResult<NodeIDType> implements Serializable {
    * Instrumentation - holds the time between the LNS sending the request to the NS and the return message
    * being received.
    *
-   * @return
+   * @return the round trip time
    */
   public long getRoundTripTime() {
     return roundTripTime;

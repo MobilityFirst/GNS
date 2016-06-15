@@ -64,13 +64,13 @@ import org.json.JSONException;
  */
 public class ConsoleModule {
 
-  private ConsoleReader console;
-  private TreeSet<ConsoleCommand> commands;
+  private final ConsoleReader console;
+  private final TreeSet<ConsoleCommand> commands;
   private boolean quit = false;
   private boolean useGnsDefaults = true;
   @SuppressWarnings("javadoc")
   protected Completor consoleCompletor;
-  private String promptString = CONSOLE_PROMPT + "not connected to GNS>";
+  private String promptString = CONSOLE_PROMPT + "not connected>";
   private GNSClientCommands gnsClient;
   private GuidEntry currentGuid;
   // might be a better way to do this, but for now
@@ -93,7 +93,7 @@ public class ConsoleModule {
    */
   public ConsoleModule(ConsoleReader console) {
     this.console = console;
-    this.commands = new TreeSet<ConsoleCommand>();
+    this.commands = new TreeSet<>();
     commands.add(new Help(this));
     commands.add(new History(this));
     commands.add(new Quit(this));
@@ -105,10 +105,10 @@ public class ConsoleModule {
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
-        GNSClientConfig.getLogger().fine("Saving history.");
+        GNSClientConfig.getLogger().info("Saving history.");
         long startTime = System.currentTimeMillis();
-        //storeHistory();
-        GNSClientConfig.getLogger().log(Level.FINE, "Save history took {0}ms",
+        storeHistory();
+        GNSClientConfig.getLogger().log(Level.INFO, "Save history took {0}ms",
                 (System.currentTimeMillis() - startTime));
       }
     });
@@ -142,7 +142,7 @@ public class ConsoleModule {
     return console.getHistory().getHistoryList();
   }
 
-  private final static int NUMBER_OF_HISTORY_ITEMS_TO_STORE = 100;
+  private final static int NUMBER_OF_HISTORY_ITEMS_TO_STORE = 20;
 
   /**
    * Store the current command history
@@ -341,6 +341,12 @@ public class ConsoleModule {
    */
   public void handlePrompt() {
     quit = false;
+    // Try to connect to the GNS
+    try {
+      new Connect(this).parse("");
+    } catch (Exception e) {
+      printString("Couldn't connect to GNS...\n");
+    }
     if (useGnsDefaults) {
       useGnsDefaults();
     }
@@ -374,26 +380,15 @@ public class ConsoleModule {
   }
 
   /**
-   * Try to find the default GNS and default GUID and connect if these are
-   * defined.
+   * Connect and try to find default GUID if defined.
    */
   public void useGnsDefaults() {
-    String gns = KeyPairUtils.getDefaultGns();
-    printString("Default GNS: " + gns + "\n");
-    if (gns == null) {
-      return;
-    }
-    try {
-      new Connect(this).parse(gns.replace(":", " "));
-    } catch (Exception e) {
-      printString("Couldn't connect to default GNS " + gns);
-    }
     GuidEntry guid = KeyPairUtils.getDefaultGuidEntry(getGnsInstance());
-    printString("Default GUID: " + guid + "\n");
     if (guid == null) {
       return;
     }
     try {
+      printString("Looking for default GUID: " + guid + "\n");
       new GuidUse(this).parse(guid.getEntityName());
     } catch (Exception e) {
       printString("Couldn't connect default GUID " + guid);

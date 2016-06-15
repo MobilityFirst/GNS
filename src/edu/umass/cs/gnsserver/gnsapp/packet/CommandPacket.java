@@ -22,16 +22,22 @@ package edu.umass.cs.gnsserver.gnsapp.packet;
 import java.net.InetSocketAddress;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
+
 import java.util.logging.Level;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
@@ -130,10 +136,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       this.LNSRequestId = json.getLong(CLIENTREQUESTID);//-1;
     }
     this.senderAddress = json.optString(SENDERADDRESS, null);
-    this.senderPort = json.optInt(SENDERPORT, -1);
+    this.senderPort = json.has(SENDERPORT) ? json.getInt(SENDERPORT) : -1;
     this.command = json.getJSONObject(COMMAND);
 
-    this.myListeningAddress = MessageNIOTransport.getReceiverAddress(command);
+    this.myListeningAddress = null;//MessageNIOTransport.getReceiverAddress(json);
 
   }
 
@@ -144,7 +150,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   /**
    * Converts the command object into a JSONObject.
    *
-   * @return
+   * @return the JSONObject
    * @throws org.json.JSONException
    */
   @Override
@@ -190,7 +196,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   /**
    * For ClientRequest.
    *
-   * @return
+   * @return the response
    */
   @Override
   public ClientRequest getResponse() {
@@ -263,12 +269,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   }
 
   /**
-   * The service name should be the name of the GUID that is being written to
-   * or read, not the account GUID. To address the HRN/GUID ambiguity, you should
-   * either (1) issue each as separate requests from the client; or (2) retransmit
-   * a request until the replica it happens to go to has caught up; or (3) accept
-   * that it is normal behavior for a read immediately following a write to not
-   * see the result of the seemingly "committed" write.
+   * The service name is the name of the GUID/HRN that is being written to
+   * or read.
    */
   @Override
   public String getServiceName() {
@@ -287,32 +289,42 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return BOGUS_SERVICE_NAME;
   }
 
-  /**
-   * Return the command name.
-   *
-   * @return the command name
-   */
-  public String getCommandName() {
-    if (command != null) {
-      return command.optString(GNSCommandProtocol.COMMANDNAME, "unknown");
-    }
-    return "unknown";
-  }
-
   public boolean getCommandCoordinateReads() {
-    if (command != null) {
-      return command.optBoolean(GNSCommandProtocol.COORDINATE_READS, false);
+    try {
+      // arun: optBoolean is inefficient (~6us)
+      return command != null
+              && command.has(GNSCommandProtocol.COORDINATE_READS)
+              && command.getBoolean(GNSCommandProtocol.COORDINATE_READS);
+    } catch (JSONException e) {;
     }
     return false;
   }
 
   public int getCommandInteger() {
-    if (command != null) {
-      if (command.has(GNSCommandProtocol.COMMAND_INT)) {
-        return command.optInt(GNSCommandProtocol.COMMAND_INT, -1);
+    try {
+      if (command != null) {
+        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
+          return command.getInt(GNSCommandProtocol.COMMAND_INT);
+        }
       }
+    } catch (JSONException e) {
     }
     return -1;
+  }
+
+  public CommandType getCommandType() {
+    try {
+      if (command != null) {
+        if (command.has(GNSCommandProtocol.COMMAND_INT)) {
+          return CommandType.getCommandType(command.getInt(GNSCommandProtocol.COMMAND_INT));
+        }
+        if (command.has(GNSCommandProtocol.COMMANDNAME)) {
+          return CommandType.valueOf(command.getString(GNSCommandProtocol.COMMANDNAME));
+        }
+      }
+    } catch (IllegalArgumentException | JSONException e) {
+    }
+    return CommandType.Unknown;
   }
 
   @Override
@@ -325,8 +337,12 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     } else {
       // Cache it.
       needsCoordinationExplicitlySet = true;
-      needsCoordination = GNSCommandProtocol.UPDATE_COMMANDS.contains(getCommandName())
-              || (getCommandCoordinateReads() && GNSCommandProtocol.READ_COMMANDS.contains(getCommandName()));
+      CommandType commandType = getCommandType();
+      needsCoordination = (commandType.isRead() && getCommandCoordinateReads())
+              || commandType.isUpdate();
+//      String cmdName = getCommandName();
+//      needsCoordination = (GNSCommandProtocol.READ_COMMANDS.contains(cmdName) && getCommandCoordinateReads() )
+//    		  || GNSCommandProtocol.UPDATE_COMMANDS.contains(cmdName);
       if (needsCoordination) {
         GNSConfig.getLogger().log(Level.FINE, "{0} needs coordination", this);
       }
@@ -354,8 +370,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       @Override
       public String toString() {
         return getRequestType() + ":"
+                + getCommandType().toString() + ":"
                 + getCommandInteger() + ":"
-                + getCommandName() + ":"
                 + getServiceName() + ":"
                 + getRequestID() + "["
                 + getClientAddress() + "]";

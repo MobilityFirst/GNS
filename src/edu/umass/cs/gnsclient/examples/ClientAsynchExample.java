@@ -19,44 +19,43 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsclient.client.CommandResult;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnsclient.client.deprecated.CommandResult;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.READ;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.REPLACE_USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
+
 import org.json.JSONObject;
 
 /**
- * In this example we demonstrate the asynchronous client. 
- * 
- * It sends read or update requests for one field in a guid. 
+ * In this example we demonstrate the asynchronous client.
+ *
+ * It sends read or update requests for one field in a guid.
  * If you supply the -write arg it updates otherwise reads.
- * You’ll want to run it once with the -write arg before running 
+ * You’ll want to run it once with the -write arg before running
  * it with read to actually put a value in the field.
  * It runs forever so hit CTRL-C to stop it.
  * <p>
@@ -76,10 +75,8 @@ public class ClientAsynchExample {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
-    // Bring up the server selection dialog
-    InetSocketAddress address = ServerSelectDialog.selectServer();
     // Create the client
- GNSClientCommands client = new GNSClientCommands(null);
+    GNSClientCommands client = new GNSClientCommands(null);
     GuidEntry accountGuidEntry = null;
     try {
       // Create a guid (which is also an account guid)
@@ -89,7 +86,7 @@ public class ClientAsynchExample {
       e.printStackTrace();
       System.exit(1);
     }
-    System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
+    System.out.println("Client connected to GNS");
 
     JSONObject command;
     if (args.length > 0 && args[0].equals("-write")) {
@@ -98,12 +95,12 @@ public class ClientAsynchExample {
               + "\"gibberish\":{\"meiny\":\"bloop\",\"einy\":\"floop\"},"
               + "\"location\":\"work\",\"name\":\"frank\"}");
       command = createAndSignCommand(CommandType.ReplaceUserJSON,
-              accountGuidEntry.getPrivateKey(), REPLACE_USER_JSON,
-              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(), 
+              accountGuidEntry.getPrivateKey(),
+              GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(),
               WRITER, accountGuidEntry.getGuid());
     } else {
       command = createAndSignCommand(CommandType.Read,
-              accountGuidEntry.getPrivateKey(), READ,
+              accountGuidEntry.getPrivateKey(),
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }
@@ -136,14 +133,17 @@ public class ClientAsynchExample {
       for (Long id : pendingIds) {
         if (client.isAsynchResponseReceived(id)) {
           pendingIds.remove(id);
-          CommandResult commandResult = client.removeAsynchResponse(id);
+          Request removed = client.removeAsynchResponse(id);
+          if(removed instanceof CommandValueReturnPacket) {
+        	  CommandValueReturnPacket commandResult = ((CommandValueReturnPacket)removed);
           System.out.println("commandResult for  " + id + " is "
-                  + (commandResult.getErrorCode().equals(NSResponseCode.NO_ERROR)
-                          ? commandResult.getResult()
-                          : commandResult.getErrorCode().toString())
-                  + "\n"
-                  + "Latency is " + commandResult.getClientLatency()
+                  + (commandResult.getErrorCode().equals(GNSResponseCode.NO_ERROR)
+                  ? commandResult.getReturnValue()
+                  : commandResult.getErrorCode().toString())
+//                  + "\n"
+//                  + "Latency is " + commandResult.getClientLatency()
           );
+          }
         }
       }
     }

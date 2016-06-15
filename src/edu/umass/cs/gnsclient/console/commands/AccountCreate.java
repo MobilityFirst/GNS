@@ -121,9 +121,10 @@ public class AccountCreate extends ConsoleCommand
 
       if (!module.isSilent())
       {
-        printString("Created an account with GUID " + myGuid.getGuid() + ". "
-                + "An email might have been sent to "
-            + myGuid.getEntityName() + " with instructions on how to verify the new account.\n");
+        printString("Created an account with GUID " + myGuid.getGuid() + ".\n"
+//                + "An email might have been sent to "
+//            + myGuid.getEntityName() + " with instructions on how to verify the new account.\n"
+        );
       }
       if (module.getCurrentGuid() == null)
       {
@@ -131,9 +132,9 @@ public class AccountCreate extends ConsoleCommand
         if (KeyPairUtils.getDefaultGuidEntry(module.getGnsInstance()) == null)
         {
           KeyPairUtils.setDefaultGuidEntry(module.getGnsInstance(), aliasName);
-          module.printString(aliasName + " saved as default GUID for GNS " + module.getGnsInstance() + "\n");
+          module.printString(aliasName + " saved as default GUID \n");
         }
-        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + module.getGnsInstance() + "|" + aliasName + ">");
+        module.setPromptString(ConsoleModule.CONSOLE_PROMPT + aliasName + ">");
       }
     }
     catch (Exception e)

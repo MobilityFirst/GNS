@@ -34,7 +34,7 @@ import org.json.JSONArray;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 import edu.umass.cs.msocket.proxy.watchdog.Watchdog;
@@ -151,7 +151,7 @@ public class StartWatchdog extends ConsoleCommand
       // Make sure we advertise ourselves as a watchdog (readable for everyone)
       gnsClient.fieldReplaceOrCreateList(myGuid.getGuid(), Constants.SERVICE_TYPE_FIELD,
           new JSONArray().put(Constants.WATCHDOG_SERVICE), myGuid);
-      gnsClient.aclAdd(AccessType.READ_WHITELIST, myGuid, Constants.SERVICE_TYPE_FIELD, null);
+      gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, Constants.SERVICE_TYPE_FIELD, null);
 
       // Check if we are a member of the group
       final String groupGuid = module.getProxyGroupGuid().getGuid();

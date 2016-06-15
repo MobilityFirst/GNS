@@ -21,6 +21,7 @@ package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import static edu.umass.cs.gnscommon.utils.Format.formatPrettyDateUTC;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -130,7 +131,8 @@ public class SimpleKeyStore {
     String result = def;
     ResultSet rs = null;
     try {
-      PreparedStatement getStatement = conn.prepareStatement("select VALUEFIELD from " + TABLE_NAME + " where KEYFIELD=?");
+      PreparedStatement getStatement
+              = conn.prepareStatement("select VALUEFIELD from " + TABLE_NAME + " where KEYFIELD=?");
       getStatement.setString(1, key);
       rs = getStatement.executeQuery();
       if (rs.next()) {
@@ -161,7 +163,8 @@ public class SimpleKeyStore {
   public Date updateTime(String key) {
     ResultSet rs = null;
     try {
-      PreparedStatement getStatement = conn.prepareStatement("select UPDATETIME from " + TABLE_NAME + " where KEYFIELD=?");
+      PreparedStatement getStatement
+              = conn.prepareStatement("select UPDATETIME from " + TABLE_NAME + " where KEYFIELD=?");
       getStatement.setString(1, key);
       rs = getStatement.executeQuery();
       if (rs.next()) {
@@ -178,7 +181,8 @@ public class SimpleKeyStore {
   public Date readTime(String key) {
     ResultSet rs = null;
     try {
-      PreparedStatement getStatement = conn.prepareStatement("select READTIME from " + TABLE_NAME + " where KEYFIELD=?");
+      PreparedStatement getStatement 
+              = conn.prepareStatement("select READTIME from " + TABLE_NAME + " where KEYFIELD=?");
       getStatement.setString(1, key);
       rs = getStatement.executeQuery();
       if (rs.next()) {
@@ -199,7 +203,8 @@ public class SimpleKeyStore {
    */
   public void remove(String key) {
     try {
-      PreparedStatement removeStatement = conn.prepareStatement("delete from " + TABLE_NAME + " where KEYFIELD=?");
+      PreparedStatement removeStatement 
+              = conn.prepareStatement("delete from " + TABLE_NAME + " where KEYFIELD=?");
       removeStatement.setString(1, key);
       removeStatement.executeUpdate();
       //conn.commit();
@@ -331,11 +336,11 @@ public class SimpleKeyStore {
       try {
         keyStore.suppressUpdateRead = true;
         for (String key : keyStore.keys()) {
-          GNSClientConfig.getLogger().log(Level.INFO, 
-                  "{0} -> {1} '{'U:{2}, R:{3}'}'", 
-                  new Object[]{key, keyStore.get(key, null), 
-                    Format.formatPrettyDateUTC(keyStore.updateTime(key)), 
-                    Format.formatPrettyDateUTC(keyStore.readTime(key))});
+          GNSClientConfig.getLogger().log(Level.INFO,
+                  "{0} -> {1} '{'U:{2}, R:{3}'}'",
+                  new Object[]{key, keyStore.get(key, null),
+                    formatPrettyDateUTC(keyStore.updateTime(key)),
+                    formatPrettyDateUTC(keyStore.readTime(key))});
         }
       } finally {
         keyStore.suppressUpdateRead = false;

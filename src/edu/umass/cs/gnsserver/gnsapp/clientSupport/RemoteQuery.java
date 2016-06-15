@@ -11,6 +11,7 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.AclException;
@@ -25,7 +26,6 @@ import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
@@ -41,6 +41,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.utils.Util;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -51,6 +52,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -217,7 +219,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
-  private NSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
+  private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
     Object monitor = new Object();
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));//reconCallback);
     ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName(), monitor);
@@ -226,9 +228,9 @@ public class RemoteQuery extends ClientAsynchBase {
             ? // arun: return duplicate error if name already exists
             (response instanceof CreateServiceName
             && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
-                    ? NSResponseCode.DUPLICATE_ERROR
+                    ? GNSResponseCode.DUPLICATE_ID_EXCEPTION
                     : // else generic error
-                    NSResponseCode.ERROR) : NSResponseCode.NO_ERROR;
+                    GNSResponseCode.GENERIC_ERROR) : GNSResponseCode.NO_ERROR;
   }
 
   /**
@@ -238,7 +240,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @param value
    * @return a NSResponseCode
    */
-  public NSResponseCode createRecord(String name, JSONObject value) {
+  public GNSResponseCode createRecord(String name, JSONObject value) {
     try {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
       return sendReconRequest(packet);
@@ -246,7 +248,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       // FIXME: return better error codes.
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.GENERIC_ERROR;
     }
   }
 
@@ -258,7 +260,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @param handler
    * @return a NSResponseCode
    */
-  public NSResponseCode createRecordBatch(Set<String> names, Map<String, JSONObject> values,
+  public GNSResponseCode createRecordBatch(Set<String> names, Map<String, JSONObject> values,
           ClientRequestHandlerInterface handler) {
     try {
       CreateServiceName[] creates = makeBatchedCreateNameRequest(names, values, handler);
@@ -268,12 +270,12 @@ public class RemoteQuery extends ClientAsynchBase {
                 new Object[]{this, create.getServiceName()});
         sendReconRequest(create);
       }
-      return NSResponseCode.NO_ERROR;
+      return GNSResponseCode.NO_ERROR;
     } catch (JSONException | IOException | ClientException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Problem creating {0} :{1}",
               new Object[]{names, e});
       // FIXME: return better error codes.
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.GENERIC_ERROR;
     }
   }
 
@@ -309,9 +311,9 @@ public class RemoteQuery extends ClientAsynchBase {
    * Deletes a record at the appropriate reconfigurators.
    *
    * @param name
-   * @return
+   * @return an NSResponseCode
    */
-  public NSResponseCode deleteRecord(String name) {
+  public GNSResponseCode deleteRecord(String name) {
     try {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
@@ -319,7 +321,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       // FIXME: return better error codes.
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.GENERIC_ERROR;
     }
   }
 
@@ -357,7 +359,8 @@ public class RemoteQuery extends ClientAsynchBase {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} {1} got from {2} this: {3}",
                 new Object[]{this, packet.getServiceName(),
-                  packet.getResponder(), returnValue});
+                  "unknown"//packet.getResponder()
+        		, returnValue});
         // FIX ME: Tidy up all these error reponses for updates
         return checkResponse(returnValue);
       }

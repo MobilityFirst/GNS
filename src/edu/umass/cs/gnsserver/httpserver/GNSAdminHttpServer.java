@@ -27,6 +27,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,6 +47,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
@@ -71,7 +73,7 @@ public class GNSAdminHttpServer {
   private final CommandModule commandModule;
   private final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
-  
+
   private final static Logger LOG = Logger.getLogger(GNSAdminHttpServer.class.getName());
 
   public GNSAdminHttpServer(ClientRequestHandlerInterface requestHandler) {
@@ -178,14 +180,12 @@ public class GNSAdminHttpServer {
    * executes the matching command.
    */
   private String processQuery(String host, String action, String queryString) {
-    // Set the host field. Used by the help command. Find a better way to to do this?
-    //commandModule.setHTTPHost(host);
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     String fullString = action + QUERYPREFIX + queryString; // for signature check
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
     //new command processing
-    queryMap.put(COMMANDNAME, action);
+    //queryMap.put(COMMANDNAME, action);
     if (queryMap.keySet().contains(SIGNATURE)) {
       String signature = queryMap.get(SIGNATURE);
       String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
@@ -193,8 +193,9 @@ public class GNSAdminHttpServer {
     }
     JSONObject jsonFormattedCommand = new JSONObject(queryMap);
 
+    BasicCommand command = commandModule.lookupCommand(CommandType.valueOf(action));
     // Now we execute the command
-    BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+    //BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler).getReturnValue();
   }
 
@@ -227,55 +228,54 @@ public class GNSAdminHttpServer {
         String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationWords(new Date().getTime() - serverStartDate.getTime(), true, true);
         String serverSSLMode = "Server SSL mode: " + ReconfigurationConfig.getServerSSLMode().toString();
         String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
-        String serverLocalNameServerID = "Local node address: " + requestHandler.getNodeAddress();
-        String numberOfNameServers = "Server count: " + requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
-        //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
-        //String requestsReceivedString = "Client requests received: " + requestHandler.getReceivedRequests();
-        //String requestsRateString = "Client requests rate: " + requestHandler.getRequestsPerSecond();
+        String reconAddresses = "Recon addresses: " + ReconfigurationConfig.getReconfiguratorAddresses().toString();
+        String numberOfNameServers = "Server count: " + requestHandler.getGnsNodeConfig().getNumberOfNodes();
+        String recordsClass = "Records Class: " + AppReconfigurableNodeOptions.getNoSqlRecordsClass();
         StringBuilder resultString = new StringBuilder();
-        resultString.append("Servers:");
-        for (String topLevelNode : requestHandler.getGnsNodeConfig().getNodeIDs()) {
-          resultString.append("<br>&nbsp;&nbsp;");
-          resultString.append(topLevelNode);
-          resultString.append("&nbsp;=&gt;&nbsp;");
-          resultString.append(requestHandler.getGnsNodeConfig().getBindAddress(topLevelNode));
-          resultString.append("&nbsp;&nbspPublic IP:&nbsp;");
-          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(topLevelNode));
-        }
-        String nodeAddressesString = resultString.toString();
-        resultString = new StringBuilder();
-        String prefix = "";
-        for (String recon : requestHandler.getGnsNodeConfig().getReconfigurators()) {
-          resultString.append("<br>&nbsp;&nbsp;");
-          //resultString.append(prefix);
-          resultString.append(recon);
-          resultString.append("&nbsp;=&gt;&nbsp;");
-          //resultString.append("(");
-          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(recon).getHostName());
-          resultString.append(":");
-          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(recon));
-          //resultString.append(")");
-          //prefix = ", ";
-        }
-        String reconfiguratorsString = "Reconfigurators: " + resultString.toString();
-        resultString = new StringBuilder();
-        prefix = "";
-        for (String activeReplica : requestHandler.getGnsNodeConfig().getActiveReplicas()) {
-          resultString.append("<br>&nbsp;&nbsp;");
-          //resultString.append(prefix);
-          resultString.append(activeReplica);
-          resultString.append("&nbsp;=&gt;&nbsp;");
-          //resultString.append("(");
-          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(activeReplica).getHostName());
-          resultString.append(":");
-          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(activeReplica));
-          //resultString.append(")");
-          //prefix = ", ";
-        }
-        String activeReplicasString = "Active replicas: " + resultString.toString();
-        String consoleLogLevelString = "Console log level is " + GNSConfig.getLogger().getLevel().getLocalizedName();
-        String fileLogLevelString = "File log level is " + GNSConfig.getLogger().getLevel().getLocalizedName();
-
+        // Servers
+//        resultString.append("Servers:");
+//        for (String topLevelNode : requestHandler.getGnsNodeConfig().getNodeIDs()) {
+//          resultString.append("<br>&nbsp;&nbsp;");
+//          resultString.append(topLevelNode);
+//          resultString.append("&nbsp;=&gt;&nbsp;");
+//          resultString.append(requestHandler.getGnsNodeConfig().getBindAddress(topLevelNode));
+//          resultString.append("&nbsp;&nbspPublic IP:&nbsp;");
+//          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(topLevelNode));
+//        }
+//        String nodeAddressesString = resultString.toString();
+        //Reconfigurators
+//        resultString = new StringBuilder();
+//        String prefix = "";
+//        for (String recon : requestHandler.getGnsNodeConfig().getReconfigurators()) {
+//          resultString.append("<br>&nbsp;&nbsp;");
+//          //resultString.append(prefix);
+//          resultString.append(recon);
+//          resultString.append("&nbsp;=&gt;&nbsp;");
+//          //resultString.append("(");
+//          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(recon).getHostName());
+//          resultString.append(":");
+//          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(recon));
+//          //resultString.append(")");
+//          //prefix = ", ";
+//        }
+//        String reconfiguratorsString = "Reconfigurators: " + resultString.toString();
+        // Replicas
+//        resultString = new StringBuilder();
+//        prefix = "";
+//        for (String activeReplica : requestHandler.getGnsNodeConfig().getActiveReplicas()) {
+//          resultString.append("<br>&nbsp;&nbsp;");
+//          //resultString.append(prefix);
+//          resultString.append(activeReplica);
+//          resultString.append("&nbsp;=&gt;&nbsp;");
+//          //resultString.append("(");
+//          resultString.append(requestHandler.getGnsNodeConfig().getNodeAddress(activeReplica).getHostName());
+//          resultString.append(":");
+//          resultString.append(requestHandler.getGnsNodeConfig().getNodePort(activeReplica));
+//          //resultString.append(")");
+//          //prefix = ", ";
+//        }
+//        String activeReplicasString = "Active replicas: " + resultString.toString();
+        // Build the response
         responseBody.write(responsePreamble.getBytes());
         responseBody.write(buildVersionInfo.getBytes());
         responseBody.write("<br>".getBytes());
@@ -283,36 +283,26 @@ public class GNSAdminHttpServer {
         responseBody.write("<br>".getBytes());
         responseBody.write(serverUpTimeString.getBytes());
         responseBody.write("<br>".getBytes());
-        responseBody.write(serverLocalNameServerID.getBytes());
+        responseBody.write(numberOfNameServers.getBytes());
+        responseBody.write("<br>".getBytes());
+        responseBody.write(reconAddresses.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(serverSSLMode.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(clientSSLMode.getBytes());
         responseBody.write("<br>".getBytes());
-        responseBody.write(numberOfNameServers.getBytes());
-        responseBody.write("<br>".getBytes());
-        responseBody.write(nodeAddressesString.getBytes());
-        responseBody.write("<br>".getBytes());
-        responseBody.write(reconfiguratorsString.getBytes());
-        responseBody.write("<br>".getBytes());
-        responseBody.write(activeReplicasString.getBytes());
-//        responseBody.write("<br>".getBytes());
-//        responseBody.write(requestsReceivedString.getBytes());
-//        responseBody.write("<br>".getBytes());
-//        responseBody.write(requestsRateString.getBytes());
-        responseBody.write("<br>".getBytes());
 
-        responseBody.write("Gigapaxos is enabled<br>".getBytes());
-
-        responseBody.write("New app is enabled<br>".getBytes());
-        responseBody.write("Console logging level is ".getBytes());
-        responseBody.write(consoleLogLevelString.getBytes());
+//        responseBody.write(nodeAddressesString.getBytes());
+//        responseBody.write("<br>".getBytes());
+//        responseBody.write(reconfiguratorsString.getBytes());
+//        responseBody.write("<br>".getBytes());
+//        responseBody.write(activeReplicasString.getBytes());
+//        responseBody.write("<br>".getBytes());
+        responseBody.write(recordsClass.getBytes());
         responseBody.write("<br>".getBytes());
-        responseBody.write("File logging level is ".getBytes());
-        responseBody.write(fileLogLevelString.getBytes());
         responseBody.write("<br>".getBytes());
+        responseBody.write("Request Headers:".getBytes());
         responseBody.write("<br>".getBytes());
-        //responseBody.write(backingStoreClass.getBytes());
         while (iter.hasNext()) {
           String key = iter.next();
           List<String> values = requestHeaders.get(key);
@@ -325,14 +315,4 @@ public class GNSAdminHttpServer {
       }
     }
   }
-
-  /**
-   * Return the port.
-   *
-   * @return an int
-   */
-  public int getPort() {
-    return port;
-  }
-
 }

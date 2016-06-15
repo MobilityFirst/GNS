@@ -126,7 +126,8 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
-            GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(lnsRequestInfo.getCommandName())
+            lnsRequestInfo.getCommandType().isCreateDelete()
+            //GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(lnsRequestInfo.getCommandName())
             ? Config.getGlobalString(RC.SPECIAL_NAME)
             : lnsRequestInfo.getServiceName(), 0);
 

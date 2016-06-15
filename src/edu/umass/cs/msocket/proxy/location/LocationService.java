@@ -39,7 +39,7 @@ import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol.AccessType;
+import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.ProxyInfo;
@@ -182,7 +182,7 @@ public class LocationService extends Thread
     // everyone)
     DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(locationServiceGuid.getGuid(), Constants.SERVICE_TYPE_FIELD,
         new JSONArray().put(Constants.LOCATION_SERVICE), locationServiceGuid);
-    DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, locationServiceGuid, Constants.SERVICE_TYPE_FIELD, null);
+    DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, locationServiceGuid, Constants.SERVICE_TYPE_FIELD, null);
 
     // Update our location
     DefaultGNSClient.getGnsClient().setLocation(locationServiceGuid, locationServiceInfo.getLatLong().getLongitude(), locationServiceInfo.getLatLong()
@@ -232,7 +232,7 @@ public class LocationService extends Thread
         //final GuidEntry guidEntry = gnsCredentials.getGuidEntry();
         DefaultGNSClient.getGnsClient().fieldReplaceOrCreateList(locationServiceGuid.getGuid(), Constants.LOCATION_SERVICE_IP,
             new JSONArray().put(ipPort), locationServiceGuid);
-        DefaultGNSClient.getGnsClient().aclAdd(AccessType.READ_WHITELIST, locationServiceGuid, Constants.LOCATION_SERVICE_IP, null);
+        DefaultGNSClient.getGnsClient().aclAdd(AclAccessType.READ_WHITELIST, locationServiceGuid, Constants.LOCATION_SERVICE_IP, null);
 
         // Start the thread that collect information about proxy status
         statusThread = new ProxyStatusThread(proxyGroupName);

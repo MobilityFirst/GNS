@@ -84,7 +84,6 @@ import java.util.Set;
  */
 public class AWSEC2 {
   /*
-   * Important: Be sure to fill in your AWS access credentials in the
    *            AwsCredentials.properties file before you try to run this
    *            sample.
    * http://aws.amazon.com/security-credentials
@@ -517,7 +516,7 @@ public class AWSEC2 {
 
   /**
    * Creates a volume and attaches and mounts it on the instance at the default secondary mount point
-   * {@link DEFAULTSECONDMOUNTPOINT}. SO DON'T CALL THIS TWICE ON THE SAME INSTANCE!!
+   * DEFAULTSECONDMOUNTPOINT. SO DON'T CALL THIS TWICE ON THE SAME INSTANCE!!
    *
    * @param ec2
    * @param instanceId
@@ -829,7 +828,8 @@ public class AWSEC2 {
 
   public static void main(String[] args) throws Exception {
     AWSCredentials credentials = new PropertiesCredentials(
-            AWSEC2.class.getResourceAsStream("resources/AwsCredentials.properties"));
+            AWSEC2.class.getResourceAsStream(System.getProperty("user.home") 
+                    + FILESEPARATOR + ".aws" + FILESEPARATOR + "credentials"));
     //Create Amazon Client object
     AmazonEC2 ec2 = new AmazonEC2Client(credentials);
 

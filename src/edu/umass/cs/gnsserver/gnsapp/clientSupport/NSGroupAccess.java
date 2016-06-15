@@ -20,11 +20,11 @@
 package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
@@ -37,8 +37,8 @@ import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
-
 import java.util.logging.Level;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -161,9 +161,9 @@ public class NSGroupAccess {
    * @param groupGuid
    * @param memberGuid
    * @param handler
-   * @return an {@link NSResponseCode}
+   * @return an {@link GNSResponseCode}
    */
-  public static NSResponseCode removeFromGroup(String groupGuid, String memberGuid,
+  public static GNSResponseCode removeFromGroup(String groupGuid, String memberGuid,
           ClientRequestHandlerInterface handler) {
     try {
       handler.getRemoteQuery().fieldRemove(groupGuid, GroupAccess.GROUP, memberGuid);
@@ -177,9 +177,9 @@ public class NSGroupAccess {
 //      LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(groupGuid)),
 //              UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
 //    }
-      return NSResponseCode.NO_ERROR;
+      return GNSResponseCode.NO_ERROR;
     } catch (IOException | JSONException | ClientException e) {
-      return NSResponseCode.ERROR;
+      return GNSResponseCode.GENERIC_ERROR;
     }
 
   }

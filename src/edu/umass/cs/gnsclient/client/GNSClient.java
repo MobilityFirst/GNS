@@ -6,11 +6,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
@@ -18,6 +21,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
@@ -69,7 +73,8 @@ public class GNSClient extends AbstractGNSClient {
               "Unable to find any reconfigurator addresses; "
               + "at least one needed to initialize client");
     }
-    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(), ReconfigurationConfig.getClientPortSSLOffset());
+    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(),
+            ReconfigurationConfig.getClientPortOffset());
     this.checkConnectivity();
   }
 
@@ -110,12 +115,15 @@ public class GNSClient extends AbstractGNSClient {
         }
       }
     };
-    if (GNSCommandProtocol.CREATE_DELETE_COMMANDS
-            .contains(packet.getCommandName())
-            || packet.getCommandName().equals(GNSCommandProtocol.SELECT)) {
+    if (packet.getCommandType().isCreateDelete()
+            || packet.getCommandType().isSelect()) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
-      this.asyncClient.sendRequest(packet, callback);
+      Long requestID = this.asyncClient.sendRequest(packet, callback);
+      if (requestID == null) {
+        LOG.log(Level.SEVERE, "Request ID is null after send for {0}", new Object[]{packet.getSummary()});
+      }
+      //assert(this.asyncClient.sendRequest(packet, callback)!=null);
     }
   }
 
@@ -145,7 +153,9 @@ public class GNSClient extends AbstractGNSClient {
           throws JSONException, IOException {
     if (packet.getServiceName().equals(
             Config.getGlobalString(RC.SPECIAL_NAME))
-            || packet.getCommandName().equals(GNSCommandProtocol.SELECT)) {
+            || packet.getCommandType().isSelect() 
+            //packet.getCommandName().equals(GNSCommandProtocol.SELECT)
+            ) {
       this.asyncClient.sendRequestAnycast(packet, callback);
     } else {
       this.asyncClient.sendRequest(packet, callback);
@@ -212,7 +222,7 @@ public class GNSClient extends AbstractGNSClient {
    * Straightforward async client implementation that expects only one packet
    * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
    */
-  static class AsyncClient extends ReconfigurableAppClientAsync {
+  static class AsyncClient extends ReconfigurableAppClientAsync implements AppRequestParserBytes {
 
     private static Stringifiable<String> unstringer = new StringifiableDefault<>(
             "");
@@ -265,9 +275,18 @@ public class GNSClient extends AbstractGNSClient {
     public Set<IntegerPacketType> getRequestTypes() {
       return clientPacketTypes;
     }
+
+    @Override
+    public Request getRequest(byte[] bytes, NIOHeader header) {
+      return GNSApp.getRequestStatic(bytes, header, unstringer);
+    }
   }
 
-  public static void main(String[] args) throws IOException {
+  /**
+ * @param args
+ * @throws IOException
+ */
+public static void main(String[] args) throws IOException {
     GNSClient client = new GNSClient(null);
     client.close();
     System.out.println("Client created, successfully checked connectivity, and closing");

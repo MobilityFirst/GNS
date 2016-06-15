@@ -19,15 +19,11 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnsclient.client.AbstractGNSClient;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
 import java.util.Random;
@@ -88,17 +84,11 @@ public class ReplicaLatencyTest {
    * @param port
    */
   public ReplicaLatencyTest(String alias, String host, String port) {
-    InetSocketAddress address;
     if (alias != null) {
       accountAlias = alias;
     }
 
     if (client == null) {
-      if (host != null && port != null) {
-        address = new InetSocketAddress(host, Integer.parseInt(port));
-      } else {
-        address = ServerSelectDialog.selectServer();
-      }
       try {
         client = new GNSClientCommands(null);
       } catch (IOException e) {

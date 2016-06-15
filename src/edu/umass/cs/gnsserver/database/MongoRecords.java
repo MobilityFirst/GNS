@@ -60,7 +60,7 @@ import java.util.logging.Level;
  */
 public class MongoRecords implements NoSQLRecords {
 
-  private static final String DBROOTNAME = "GNS";
+  private static final String DBROOTNAME = "UMASS_GNS_DB_";
   /**
    * The name of the document where name records are stored.
    */
@@ -104,7 +104,7 @@ public class MongoRecords implements NoSQLRecords {
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
-      dbName = DBROOTNAME + "-" + nodeID.toString().replace('.', '-');
+      dbName = DBROOTNAME + nodeID.toString().replace('.', '_');
       //MongoClient mongoClient;
       //MongoCredential credential = MongoCredential.createMongoCRCredential("admin", dbName, "changeit".toCharArray());
       if (mongoPort > 0) {
@@ -684,9 +684,12 @@ public class MongoRecords implements NoSQLRecords {
     }
     List<String> names = mongoClient.getDatabaseNames();
     for (String name : names) {
-      mongoClient.dropDatabase(name);
+      if (name.startsWith(DBROOTNAME)) {
+        mongoClient.dropDatabase(name);
+        System.out.println("Dropped DB: " + name);
+      }
     }
-    System.out.println("Dropped mongo DBs: " + names.toString());
+    
     // reinit the instance
 //    init();
   }

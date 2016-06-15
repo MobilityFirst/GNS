@@ -27,7 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -66,10 +66,10 @@ public class AddMultipleGuids extends BasicCommand {
     return new String[]{NAMES, GUID, PUBLIC_KEYS, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return ADD_MULTIPLE_GUIDS;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return ADD_MULTIPLE_GUIDS;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -96,7 +96,7 @@ public class AddMultipleGuids extends BasicCommand {
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
         return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else if (names != null && publicKeys != null) {
-        //GNS.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
+        GNSConfig.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
         return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
                 JSONUtils.JSONArrayToArrayListString(publicKeys),
                 accountInfo, accountGuidInfo, handler);

@@ -21,12 +21,12 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.NSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandType;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
@@ -36,8 +36,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Arrays;
-
 import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,10 +65,10 @@ public class Create extends BasicCommand {
     return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public String getCommandName() {
-    return CREATE;
-  }
+//  @Override
+//  public String getCommandName() {
+//    return CREATE;
+//  }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -88,10 +88,10 @@ public class Create extends BasicCommand {
     } else {
       timestamp = null;
     }
-    NSResponseCode responseCode;
+    GNSResponseCode responseCode;
     if (!(responseCode = FieldAccess.create(guid, field,
             (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
-            writer, signature, message, timestamp, handler)).isAnError()) {
+            writer, signature, message, timestamp, handler)).isError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
