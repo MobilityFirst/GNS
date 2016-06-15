@@ -82,7 +82,7 @@ public class Admin extends BasicCommand {
       return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + 
               " Don't understand " + getCommandType().toString() + " " + passkey);
     } catch (UnknownHostException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " Unable to determine host address");
+      return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Unable to determine host address");
     }
   }
 

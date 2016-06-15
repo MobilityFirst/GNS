@@ -76,7 +76,7 @@ public class ChangeLogLevel extends BasicCommand {
           return new CommandResponse<>(BAD_RESPONSE);
         }
       } catch (IllegalArgumentException e) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " Bad level " + levelString);
+        return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString);
       }
     }
     return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 

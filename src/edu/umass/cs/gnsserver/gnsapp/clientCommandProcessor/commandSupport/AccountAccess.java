@@ -697,7 +697,7 @@ public class AccountAccess {
     } catch (JSONException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     } catch (ServerRuntimeException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 
@@ -764,7 +764,7 @@ public class AccountAccess {
     } catch (JSONException e) {
       return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     } catch (ServerRuntimeException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 
@@ -1073,7 +1073,7 @@ public class AccountAccess {
           response = GNSResponseCode.NO_ERROR;
         } catch (ClientException | IOException | JSONException e) {
           GNSConfig.getLogger().log(Level.SEVERE, "Problem with remote query:{0}", e);
-          response = GNSResponseCode.GENERIC_ERROR;
+          response = GNSResponseCode.UNSPECIFIED_ERROR;
         }
       } else {
         JSONObject json = new JSONObject();
@@ -1084,7 +1084,7 @@ public class AccountAccess {
       return response;
     } catch (JSONException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing account info:{0}", e);
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 
@@ -1105,7 +1105,7 @@ public class AccountAccess {
       return response;
     } catch (JSONException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing guid info:{0}", e);
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 

@@ -244,7 +244,25 @@ public class CommandUtils {
   /**
    * Checks the response from a command request for proper syntax as well as
    * converting error responses into the appropriate thrown GNS exceptions.
-   *
+   * 
+   * In the original protocol the string response was modeled after other simple string-based
+   * response protocols. Responses were either:
+   * 1) a return value whose format was interpreted by the caller - this is the nominal case
+   * 2) "+OK+" - which was used to indicate a nominal result for commands that don't return a value
+   * 2) "+NULL+" - another nominal which meant we should return null as the value
+   * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+
+   * Later a special case 4 was added for ACTIVE_REPLICA_EXCEPTION.
+   * 
+   * For case 3 the additional info strings (could be any number) were interpreted by the error handlers
+   * and generally used to help provide additional info to indicate error causes.
+   * 
+   * Also note that:
+   * 
+   * GNSCommandProtocol.OK_RESPONSE = "+OK+"
+   * GNSCommandProtocol.BAD_RESPONSE = "+NO+"
+   * GNSCommandProtocol.NULL_RESPONSE = "+NULL+"
+   * 
+   * 
    * @param command
    * @param response
    * @return
@@ -337,6 +355,9 @@ public class CommandUtils {
 
     GNSResponseCode code = packet.getErrorCode();
     String response = packet.getReturnValue();
+    // If the code isn't an error or exception we're just returning the 
+    // return value. Also handle the special case where the command
+    // wants to return a null value.
     if (!code.isError() && !code.isException()) {
       return (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
               : response;
@@ -369,20 +390,7 @@ public class CommandUtils {
       case NONEXISTENT_NAME_EXCEPTION:
         throw new InvalidGuidException(errorSummary);
 
-      /* FIXME: arun: NO_ERROR currently seems to conflate both "all ok"
-			 * and "something not ok". This type should not be used.*/
       case NO_ERROR:
-        return packet.getReturnValue();
-
-      /**
-       * FIXME: arun: All responses containing the BAD_RESPONSE string and NO_ERROR should
-       * return this error code instead.
-       */
-      case BAD_RESPONSE:
-        // FIXME: unclear if returning the value is the right action here.
-        return packet.getReturnValue();
-
-      case OK:
         return packet.getReturnValue();
 
       default:

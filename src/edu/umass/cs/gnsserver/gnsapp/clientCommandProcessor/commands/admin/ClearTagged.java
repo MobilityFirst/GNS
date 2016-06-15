@@ -83,7 +83,7 @@ public class ClearTagged extends BasicCommand {
       }
       return new CommandResponse<String>(OK_RESPONSE);
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

@@ -80,6 +80,10 @@ import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
