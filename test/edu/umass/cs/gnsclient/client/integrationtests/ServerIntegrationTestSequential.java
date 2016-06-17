@@ -45,7 +45,7 @@ public class ServerIntegrationTestSequential {
 			"test_410_JSONUpdate",
 			"test_420_NewRead",
 			"test_430_NewUpdate",
-			"test_512_CheckBatch"		
+			"test_511_CreateBatch"		
 	};
 	/**
 	 * Runs each of the ServerIntegrationTest tests numRuns times sequentially.

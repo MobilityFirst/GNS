@@ -49,7 +49,7 @@ public class ServerIntegrationTestThreaded {
 			"test_410_JSONUpdate",
 			"test_420_NewRead",
 			"test_430_NewUpdate",
-			"test_512_CheckBatch"		
+			"test_511_CreateBatch"			
 	};
 	
 	//Any test method in ServerIntegrationTest matching one of these strings will only be run in one thread, but will be run repeatedly sequentially.

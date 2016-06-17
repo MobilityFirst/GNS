@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.integrationtests;
 
 import static org.junit.Assert.*;
 
@@ -15,8 +15,6 @@ import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest;
 
 /**
  * @author Brendan
