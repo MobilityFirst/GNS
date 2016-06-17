@@ -62,7 +62,7 @@ public class ClientPool implements Runnable{
 	
 	//private static ConcurrentHashMap<Integer, Long> timeMap = new ConcurrentHashMap<Integer, Long>();
 	private ExecutorService executorPool;
-	private final int numSpareWorker = AppReconfigurableNodeOptions.activeCodeSpareWorker;
+	private final int numSpareWorker = 1; //AppReconfigurableNodeOptions.activeCodeSpareWorker;
 	
 	private static DatagramSocket tempSocket;
 	

@@ -332,7 +332,23 @@ public class GNSClientCapacityTest extends DefaultTest {
 				+ "K/s");
 		}
 	}
-
+	
+	/**
+	 * This test is used to measure the average latency 
+	 * @throws Exception
+	 */
+	@Test
+	public void test_10_SingleActiveReadAndWrite() throws Exception{
+		int numReads = Math.max(1000000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		long t = System.currentTimeMillis();
+		for (int i = 0; i < numReads; i++) {
+			clients[0].fieldRead(guidEntries[0].getGuid(), someField, null);
+		}
+		long elapsed = System.currentTimeMillis() - t;
+		
+		System.out.print("It takes "+elapsed+"ms. Average latency for read operation is average_latency="+elapsed*1000.0/numReads+"us");
+	}
+	
 	/**
 	 * Removes all account and sub-guids created during the test.
 	 * 

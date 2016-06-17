@@ -38,6 +38,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.active.ActiveHandler;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
@@ -126,18 +127,17 @@ public class ActiveCodeHandler {
 		try {
 			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		
+		/*
 		logger.setLevel(Level.INFO); 
 		
-		int numProcesses = AppReconfigurableNodeOptions.activeCodeWorkerCount;
+		int numProcesses = 1; //AppReconfigurableNodeOptions.activeCodeWorkerCount;
 		setGnsApp(app);
 	    
 		clientPool = new ClientPool(app); 
-		(new Thread(clientPool)).start();
-		
+		(new Thread(clientPool)).start();		
 		
 		guard = new ActiveCodeGuardian(clientPool);
 		
@@ -160,6 +160,7 @@ public class ActiveCodeHandler {
 	    (new Thread(scheduler)).start();
 	    
 	    clientPool.startSpareWorkers();
+	    */
 	}
 	
 	
@@ -169,7 +170,7 @@ public class ActiveCodeHandler {
 	 * @param action can be 'read' or 'write'
 	 * @return whether or not there is active code
 	 */
-	public static boolean hasCode(NameRecord nameRecord, String action) {
+	public static boolean hasCode_old(NameRecord nameRecord, String action) {
 		try {
             return nameRecord.getValuesMap().has(ActiveCode.getCodeField(action));
 		} catch (FieldNotFoundException e) {
@@ -177,6 +178,14 @@ public class ActiveCodeHandler {
 		}
 	}
 	
+	public static boolean hasCode(NameRecord nameRecord, String action) {
+		return AppReconfigurableNodeOptions.enableActiveCode;
+	}
+	
+	public static ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
+		//return valuesMap;
+		return ActiveHandler.runCode(noop_code, guid, field, action, valuesMap, activeCodeTTL);
+	}
 	
 	/**
 	 * Runs the active code. Returns a {@link ValuesMap}.
@@ -189,7 +198,7 @@ public class ActiveCodeHandler {
 	 * @param activeCodeTTL the remaining active code TTL
 	 * @return a Valuesmap
 	 */
-	public static ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
+	public static ValuesMap runCode_old(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
 		long startTime = System.nanoTime();		
 		//Construct Value parameters
 		String code = new String(Base64.decode(code64));
@@ -308,7 +317,30 @@ public class ActiveCodeHandler {
 	}
 	
 	/***************************** TEST CODE *********************/
-	
+	public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException {
+		new ActiveCodeHandler(null);
+		
+		// initialize the parameters used in the test 
+		JSONObject obj = new JSONObject();
+		obj.put("testGuid", "success");
+		ValuesMap valuesMap = new ValuesMap(obj);
+		final String guid1 = "guid";
+		final String field1 = "testGuid";
+		final String read_action = "read";
+		
+		String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
+		String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
+		ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+		
+		int n = 1000000;
+		long t = System.currentTimeMillis();
+		for(int i=0; i<n; i++){
+			ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+		}
+		long elapsed = System.currentTimeMillis() - t;
+		System.out.println(String.format("it takes %d ms, avg_latency = %f us", elapsed, elapsed*1000.0/n));
+		
+	}
 	
 	/**
 	 * @param args
@@ -317,7 +349,7 @@ public class ActiveCodeHandler {
 	 * @throws IOException 
 	 * @throws JSONException 
 	 */
-	public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException {
+	public static void main1(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException {
 		// Initialize the handler and get the executor for instrument
 		ActiveCodeHandler handler = new ActiveCodeHandler(null);
 		ActiveCodeExecutor executor = handler.getExecutor();

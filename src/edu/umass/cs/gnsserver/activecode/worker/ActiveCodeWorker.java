@@ -101,22 +101,15 @@ public class ActiveCodeWorker {
 		ActiveCodeUtils.sendMessage(serverSocket, new ActiveCodeMessage(), 60000);
 		
         while (keepGoing) {
-        	updateTime();
         	keepGoing = handleRequest();       	
         	numReqs++;
         	if(numReqs%1000 == 0){
         		System.out.println(DelayProfiler.getStats());
         	}
-        	updateTime();
-
+        	
         	elapsed = 0;
         }        
         serverSocket.close();
-	}
-	
-	private void updateTime(){		
-		//elapsed = elapsed + mxbean.getProcessCpuTime() - last;
-		//last = mxbean.getProcessCpuTime();
 	}
 	
 	private boolean handleRequest(){
@@ -150,7 +143,6 @@ public class ActiveCodeWorker {
 		    	
 		    	
 		    	assert(acm.error != null && acm.error.equals(ActiveCodeUtils.TIMEOUT_ERROR));
-		    	updateTime();
 		    	
 		    	acm.setCrashed(null);
 		    	
