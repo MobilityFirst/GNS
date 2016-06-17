@@ -20,8 +20,6 @@
 package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gnsclient.client.BasicGuidEntry;
-import edu.umass.cs.gnsclient.client.AbstractGNSClient;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -29,14 +27,12 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import org.json.JSONArray;
 
@@ -90,8 +86,6 @@ public class ContextAwareGroupGuidExample {
           InvalidKeyException, SignatureException, Exception {
 
     // BOILER PLATE FOR RUNNING AN EXAMPLE
-    // Bring up the server selection dialog
-    InetSocketAddress address = ServerSelectDialog.selectServer();
     // Start the client
     client = new GNSClientCommands(null);
     try {
@@ -101,7 +95,7 @@ public class ContextAwareGroupGuidExample {
       System.out.println("Exception during accountGuid creation: " + e);
       System.exit(1);
     }
-    System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
+    System.out.println("Client connected to GNS.");
 
     // THE INTERESTING STUFF STARTS HERE
     // Create 5 guids each of which have the field using our fieldname with a value of 25

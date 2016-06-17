@@ -102,7 +102,7 @@ public class RegisterAccount extends BasicCommand {
         return result;
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

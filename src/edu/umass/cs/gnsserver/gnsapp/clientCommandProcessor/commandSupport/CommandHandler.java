@@ -178,7 +178,7 @@ public class CommandHandler {
     }
   }
 
-  // this little dance is because we need to remove the signature to get the message that was signed
+  // This little dance is because we need to remove the signature to get the message that was signed
   // alternatively we could have the client do it but that just means a longer message
   // OR we could put the signature outside the command in the packet, 
   // but some packets don't need a signature

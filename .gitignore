@@ -54,3 +54,4 @@ build.number
 !/.travis.yml
 /nbproject/
 /nbbuild.xml
+/private.xml

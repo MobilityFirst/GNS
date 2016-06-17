@@ -179,7 +179,7 @@ public class NSGroupAccess {
 //    }
       return GNSResponseCode.NO_ERROR;
     } catch (IOException | JSONException | ClientException e) {
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
 
   }

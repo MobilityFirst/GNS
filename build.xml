@@ -5,11 +5,10 @@
   default="jar" >
 
   <property name="src.dir" value="src"/>
-  <property name="testsrc.dir" location="test"/>
+  <property name="test.dir" value="test" />
   <property name="build.dir" value="build"/>
   <property name="build.classes.dir" value="${build.dir}/classes"/>
   <property name="build.test.classes.dir" value="${build.dir}/test/classes"/>
-  <property name="test.dir" value="test" />
   <property name="build.test.dir" value="${build.dir}/test"/>
   <property name="build.jar.dir" value="${build.dir}/jars"/>
   <property name="lib.dir" value="lib"/>
@@ -19,7 +18,6 @@
   <property name="scripts.dir" value="scripts"/>
   <property name="db-props-file" location="edu/umass/cs/gnsclient/console/console.properties" />
 
-    
   <!-- Properties -->
   <property file="build.properties" />
   
@@ -69,10 +67,6 @@
   
   <fileset id="client.includes" dir="${build.classes.dir}"
            includes="**/*.class"/>
-  <!--           includes="edu/umass/cs/gnsclient/**/*.class,
-  edu/umass/cs/gnscommon/**/*.class,
-  edu/umass/cs/gnsserver/**/*.class, 
-  org/**/*.class"-->
                      
   <fileset id="console.properties" dir="${src.dir}">
     <include name="edu/umass/cs/gnsclient/console/console.properties" />
@@ -84,9 +78,6 @@
   <zipfileset id="client.lib" dir="${lib.dir}" 
               includes="derby.jar, jline*.jar, commons-cli*.jar, commons-lang*.jar, gigapaxos*.jar"
   />
-  <!--                       excludes="android.jar, hamcrest*.jar, junit*.jar"-->
-      
-  <!--                       includes="jline*.jar,mail.jar,commons*.jar,nio*.jar" -->
 
   <target name="client_jarbuild" depends="compile" description="generate jar files">
     <mkdir dir="${build.jar.dir}"/>
@@ -121,16 +112,12 @@
         <attribute name="Implementation-Version"
                    value="${VERSION}-${RELEASE}" />
         <attribute name="Main-Class" value="edu.umass.cs.gnsclient.console.CommandLineInterface" />
-        <!--       <attribute name="Class-Path" value="${jar.classpath}" />-->
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
       <fileset refid="client.includes"/>
       <fileset refid="client.keystore" />
       <fileset refid="console.properties" />
       <zipgroupfileset refid="client.lib" />
-      <!--      <fileset dir="${src.dir}">
-        <include name="edu/umass/cs/gnsclient/console/console.properties" />
-      </fileset>-->
     </jar>
   </target>
 
@@ -249,25 +236,22 @@
   
   <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
-    <!-- Allows use to pass in some standard args from command line using things like -Dhost=127.0.0.1/>-->
-    <property name="host" value=""/>
-    <property name="port" value=""/>
+    <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
     <property name="alias" value=""/>
     <property name="password" value=""/>
     <property name="count" value=""/>
-    <property name="disableSSL" value=""/>
     <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
     <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
+      <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-Dhost=${host}"/>
-      <jvmarg value="-Dport=${port}"/>
       <jvmarg value="-Dalias=${alias}"/>
       <jvmarg value="-Dpassword=${password}"/>
       <jvmarg value="-Dcount=${count}"/>
-      <jvmarg value="-DdisableSSL=${disableSSL}"/>
       <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
+      <!-- add this if you want SSL debugging enabled -->
       <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -283,10 +267,38 @@
     </junit>
   </target>
   
-  <target name="test" description="Runs the default integration test" 
+  <target name="batchTest" depends="compiletest">
+    <!-- Allows us to pass this in from the command line using -DgigapaxosConfig=filename/> -->
+    <property name="gigapaxosConfig" value="conf/gigapaxos.client.local.properties"/>
+    <junit>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Dalias=${alias}"/>
+      <jvmarg value="-Dpassword=${password}"/>
+      <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.junit.properties"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />   
+      <batchtest>
+        <fileset dir="${test.dir}">
+          <include name="**/*Test*.java"/>
+          <exclude name="edu/umass/cs/gnsclient/client/integrationtests/**" />
+        </fileset>
+      </batchtest>
+      <formatter type="plain" usefile="false"/>
+      <!--<formatter type="brief" usefile="false"/> -->
+    </junit>
+  </target> 
+  
+  <target name="test" description="Runs the default integration test against a 3 node server" 
           depends="jar, compiletest">
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
-      <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
@@ -303,10 +315,25 @@
     </junit>
   </target>
 
-  <target name="test1" description="Runs the default integration test" 
+  <target name="testAlwaysFail" description="This test always fails. Use for debugging what happens when tests fail." 
           depends="jar, compiletest">
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
-      <test name="edu.umass.cs.gnsclient.client.ServerIntegrationTest"/>
+      <test name="edu.umass.cs.gnsclient.client.AlwaysFail"/>
+      <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+    </junit>
+  </target>
+
+  <target name="test1" description="Runs the default integration test against a single node server" 
+          depends="jar, compiletest">
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>

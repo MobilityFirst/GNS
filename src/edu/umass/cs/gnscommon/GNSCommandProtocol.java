@@ -20,13 +20,12 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
 /**
  * This class defines a GNSCommandProtocol. Which is to say that
  * it defines a bunch of constants that define the protocol
  * support for communicating between the client and the local name server.
- * 
+ *
  * See also CommandType.
  *
  * @author arun, Westy
@@ -34,14 +33,8 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
  */
 public class GNSCommandProtocol {
 
-  public final static String WITHIN = "within";
-  public final static String NEAR = "near";
-  public final static String QUERY = "query";
-  public final static String INTERVAL = "interval";
-  public final static String MAX_DISTANCE = "maxDistance";
   //
-  public final static String LEVEL = "level";
-  public final static String GUIDCNT = "guidCnt";
+  // Reponse codes
   //
   public final static String OK_RESPONSE = "+OK+";
   public final static String NULL_RESPONSE = "+NULL+";
@@ -77,30 +70,42 @@ public class GNSCommandProtocol {
   public final static String UPDATE_ERROR = "+UPDATEERROR+";
   public final static String UPDATE_TIMEOUT = "+UPDATETIMEOUT+";
   public final static String SELECTERROR = "+SELECTERROR+";
-  public final static String GENERIC_ERROR = "+GENERICERROR+";
+  public final static String UNSPECIFIED_ERROR = "+GENERICERROR+";
   public final static String FAIL_ACTIVE_NAMESERVER = "+FAIL_ACTIVE+";
   public final static String INVALID_ACTIVE_NAMESERVER = "+INVALID_ACTIVE+";
   public final static String TIMEOUT = "+TIMEOUT+";
-  public final static String ALL_FIELDS = "+ALL+";
-  public final static String ALL_USERS = "+ALL+";
-  public final static String EVERYONE = "+ALL+";
 
-  public final static String ACTIVE_REPLICA_EXCEPTION =
-  ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION.toString()
-  ;
+  public final static String ACTIVE_REPLICA_EXCEPTION
+          = ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION.toString();
 
   //
   public static final String RSA_ALGORITHM = "RSA";
   public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
   public static final String DIGEST_ALGORITHM = "SHA1";
   public static final String SECRET_KEY_ALGORITHM = "DESede";
+  /**
+   * The character set used by client and server for reading and writing command packets.
+   */
   public static final String CHARSET = "ISO-8859-1";
+
   //
-  public final static String NAME = "name";
-  public final static String NAMES = "names";
+  // Argument field in commands.
+  //
+  /**
+   * The guid field in a command. Usually the guid being acted upon.
+   */
   public final static String GUID = "guid";
-  public final static String GUID_2 = "guid2";
-  // only used for for remove
+  /**
+   * The name field in a command. Usually the HRN being acted upon.
+   */
+  public final static String NAME = "name";
+  /**
+   * The names field in a command. Usually specifies a list of HRNs.
+   */
+  public final static String NAMES = "names";
+  /**
+   * The account guid field in a command. Only used in guid remove.
+   */
   public final static String ACCOUNT_GUID = "accountGuid";
   public final static String READER = "reader";
   public final static String WRITER = "writer";
@@ -112,25 +117,98 @@ public class GNSCommandProtocol {
   public final static String USER_JSON = "userjson";
   public final static String ARGUMENT = "argument";
   public final static String N = "n";
-  public final static String N2 = "n2";
+  /**
+   * The member field in a command. The member of a group guid.
+   */
   public final static String MEMBER = "member";
+  /**
+   * The member field in a command. The members of a group guid.
+   */
   public final static String MEMBERS = "members";
+  /**
+   * The acl type field in a command.
+   */
   public final static String ACL_TYPE = "aclType";
+  /**
+   * The public key field in a command.
+   */
   public final static String PUBLIC_KEY = "publickey";
+  /**
+   * The public keys list field in a command.
+   */
   public final static String PUBLIC_KEYS = "publickeys";
+  /**
+   * The password field in a command.
+   */
   public final static String PASSWORD = "password";
+  /**
+   * The code field in a command. Used for account verification.
+   */
   public final static String CODE = "code";
+  /**
+   * The signature field in a command.
+   */
   public final static String SIGNATURE = "signature";
+  // select commands
+  /**
+   * The signature field in a command. Used for select within.
+   */
+  public final static String WITHIN = "within";
+  /**
+   * The signature field in a command. Used for select near.
+   */
+  public final static String NEAR = "near";
+  /**
+   * The max distance field in a command. Used for select near.
+   */
+  public final static String MAX_DISTANCE = "maxDistance";
+  /**
+   * The signature field in a command. Used for select query.
+   */
+  public final static String QUERY = "query";
+  /**
+   * The signature field in a command. Used for select commands
+   * to determine refresh interval.
+   */
+  public final static String INTERVAL = "interval";
+  
+  public final static String ALL_FIELDS = "+ALL+";
+  public final static String ALL_USERS = "+ALL+";
+  public final static String EVERYONE = "+ALL+";
+
+  // admin commands
+  public final static String LEVEL = "level";
+  public final static String GUIDCNT = "guidCnt";
 
   public final static String SK_CERTIFICATE = "sk_certificate";
 
+  //
+  // Command packet fields
+  //
+  /**
+   * The timestamp field in a command packet.
+   */
   public final static String TIMESTAMP = "timestamp";
+  /**
+   * The sequence number field in a command packet.
+   */
   public final static String SEQUENCE_NUMBER = "seqnum";
+  /**
+   * The passkey number field in a command packet.
+   */
   public final static String PASSKEY = "passkey";
+  /**
+   * The message that was signed field in a command packet.
+   */
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
+  /**
+   * The magic string field in a command packet. The magic string indicates to the
+   * server that this command packet was sent by another server and does not
+   * need to be authenticated.
+   */
   public final static String MAGIC_STRING = "magic";
+
   // Special fields for ACL
-  public final static String GUID_ACL = "+GUID_ACL+";
   public final static String GROUP_ACL = "+GROUP_ACL+";
   // Field names in guid record JSON Object
   public static final String GUID_RECORD_PUBLICKEY = "publickey";
@@ -156,14 +234,14 @@ public class GNSCommandProtocol {
   public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   /**
-   * The preferred way to indicate the command type in a command packet.
+   * The preferred way to indicate the command type is a command packet.
    */
   public final static String COMMAND_INT = "COMMANDINT";
   /**
    * Can be used by clients to indicate the command type in a command packet.
    */
   public final static String COMMANDNAME = "COMMANDNAME";
-  
+
   public final static String COORDINATE_READS = "COORDREAD";
 
   public final static String AC_ACTION = "acAction";

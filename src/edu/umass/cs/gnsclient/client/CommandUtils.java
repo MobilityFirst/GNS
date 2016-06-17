@@ -58,7 +58,7 @@ import org.json.JSONObject;
 public class CommandUtils {
 
   /* arun: at least as many instances as cores for parallelism. */
-  private static Signature[] signatureInstances = new Signature[2*Runtime.getRuntime().availableProcessors()];
+  private static Signature[] signatureInstances = new Signature[2 * Runtime.getRuntime().availableProcessors()];
   private static Random random;
 
   static {
@@ -83,7 +83,6 @@ public class CommandUtils {
    * Creates a command object from the given action string and a variable
    * number of key and value pairs.
    *
-   * @param action
    * @param keysAndValues
    * @return the query string
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
@@ -186,7 +185,7 @@ public class CommandUtils {
     return mds[mdIndex++ % mds.length];
   }
 
-  private static final Cipher[] ciphers = new Cipher[2*Runtime.getRuntime().availableProcessors()];
+  private static final Cipher[] ciphers = new Cipher[2 * Runtime.getRuntime().availableProcessors()];
 
   static {
     for (int i = 0; i < ciphers.length; i++) {
@@ -245,7 +244,25 @@ public class CommandUtils {
   /**
    * Checks the response from a command request for proper syntax as well as
    * converting error responses into the appropriate thrown GNS exceptions.
-   *
+   * 
+   * In the original protocol the string response was modeled after other simple string-based
+   * response protocols. Responses were either:
+   * 1) a return value whose format was interpreted by the caller - this is the nominal case
+   * 2) "+OK+" - which was used to indicate a nominal result for commands that don't return a value
+   * 2) "+NULL+" - another nominal which meant we should return null as the value
+   * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+
+   * Later a special case 4 was added for ACTIVE_REPLICA_EXCEPTION.
+   * 
+   * For case 3 the additional info strings (could be any number) were interpreted by the error handlers
+   * and generally used to help provide additional info to indicate error causes.
+   * 
+   * Also note that:
+   * 
+   * GNSCommandProtocol.OK_RESPONSE = "+OK+"
+   * GNSCommandProtocol.BAD_RESPONSE = "+NO+"
+   * GNSCommandProtocol.NULL_RESPONSE = "+NULL+"
+   * 
+   * 
    * @param command
    * @param response
    * @return
@@ -305,25 +322,25 @@ public class CommandUtils {
     if (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) {
       return null;
     } else if (response.startsWith(
-    		GNSCommandProtocol.ACTIVE_REPLICA_EXCEPTION.toString()
-//    		GNSResponseCode.ACTIVE_REPLICA_EXCEPTION.toString()
-    		)) {
+            GNSCommandProtocol.ACTIVE_REPLICA_EXCEPTION.toString()
+    //    		GNSResponseCode.ACTIVE_REPLICA_EXCEPTION.toString()
+    )) {
       throw new InvalidGuidException(response);
     } else {
       return response;
     }
   }
-  
+
   // bridging hack 
   public static String checkResponse(JSONObject command, Object response) throws ClientException {
-	  return response instanceof String ? checkResponse(command, (String)response)
-			  : checkResponse(command, ((CommandValueReturnPacket)response));
+    return response instanceof String ? checkResponse(command, (String) response)
+            : checkResponse(command, ((CommandValueReturnPacket) response));
   }
-  
+
   /**
    * arun: This checkResponse method will replace the old one. There is no
    * reason to not directly use the received CommandValeReturnPacket.
-   * 
+   *
    * @param command
    * @param packet
    * @return Response as a string.
@@ -331,66 +348,57 @@ public class CommandUtils {
    */
   public static String checkResponse(JSONObject command,
           CommandValueReturnPacket packet) throws ClientException {
-	  // FIXME: arun: The line below disables this method
-		if (true)
-			return checkResponse(command, packet.getReturnValue());
-	  
-      GNSResponseCode code = packet.getErrorCode();
-      String response = packet.getReturnValue();
-      if (!code.isError() && !code.isException()) {
-          return (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
-                  : response;
-      }
-      // else error
-      String errorSummary = code + ": " + response + ": "
-              + packet.getSummary().toString();
-      switch (code) {
+    // FIXME: arun: The line below disables this method
+    if (true) {
+      return checkResponse(command, packet.getReturnValue());
+    }
+
+    GNSResponseCode code = packet.getErrorCode();
+    String response = packet.getReturnValue();
+    // If the code isn't an error or exception we're just returning the 
+    // return value. Also handle the special case where the command
+    // wants to return a null value.
+    if (!code.isError() && !code.isException()) {
+      return (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
+              : response;
+    }
+    // else error
+    String errorSummary = code + ": " + response + ": "
+            + packet.getSummary().toString();
+    switch (code) {
       case SIGNATURE_ERROR:
-          throw new EncryptionException(errorSummary);
+        throw new EncryptionException(errorSummary);
 
       case BAD_GUID_ERROR:
       case BAD_ACCESSOR_ERROR:
       case BAD_ACCOUNT_ERROR:
-          throw new InvalidGuidException(errorSummary);
+        throw new InvalidGuidException(errorSummary);
 
       case FIELD_NOT_FOUND_ERROR:
-          throw new FieldNotFoundException(errorSummary);
+        throw new FieldNotFoundException(errorSummary);
       case ACCESS_ERROR:
-          throw new AclException(errorSummary);
+        throw new AclException(errorSummary);
       case VERIFICATION_ERROR:
-          throw new VerificationException(errorSummary);
+        throw new VerificationException(errorSummary);
       case DUPLICATE_ID_EXCEPTION:
-          throw new DuplicateNameException(errorSummary);
+        throw new DuplicateNameException(errorSummary);
       case DUPLICATE_FIELD_EXCEPTION:
-          throw new InvalidFieldException(errorSummary);
+        throw new InvalidFieldException(errorSummary);
 
       case ACTIVE_REPLICA_EXCEPTION:
-          throw new InvalidGuidException(errorSummary);
+        throw new InvalidGuidException(errorSummary);
       case NONEXISTENT_NAME_EXCEPTION:
-          throw new InvalidGuidException(errorSummary);
+        throw new InvalidGuidException(errorSummary);
 
-			/* FIXME: arun: NO_ERROR currently seems to conflate both "all ok"
-			 * and "something not ok". This type should not be used.*/
       case NO_ERROR:
-    	  return packet.getReturnValue();
-    	  
-    	  /** FIXME: arun: All responses containing the BAD_RESPONSE string and NO_ERROR should 
-    	   * return this error code instead. 
-    	   */
-      case BAD_RESPONSE: 
-			// FIXME: unclear if returning the value is the right action here.
-    	  return packet.getReturnValue(); 
-    	  
-      case OK:
-    	  return packet.getReturnValue();
-    	  
-      default:
-          throw new ClientException(
-                  "Error received with an unknown response code: "
-                          + errorSummary);
-      }
-  }
+        return packet.getReturnValue();
 
+      default:
+        throw new ClientException(
+                "Error received with an unknown response code: "
+                + errorSummary);
+    }
+  }
 
   public static long getRandomRequestId() {
     return random.nextLong();

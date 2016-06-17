@@ -92,7 +92,7 @@ public class RemoveAccount extends BasicCommand {
         return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

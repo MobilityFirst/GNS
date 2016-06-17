@@ -289,7 +289,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		while (numFinishedReads < numReads) {
 			if(numFinishedReads>lastCount)  {
 				lastCount = numFinishedReads;
-				System.out.print(numFinishedReads + " ");
+				System.out.print(numFinishedReads + "@" + Util.df(numFinishedReads * 1.0 / (lastReadFinishedTime - t))+"K/s ");
 			}
 			Thread.sleep(1000);
 		}
@@ -310,7 +310,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_04_ParallelUnsignedReadCapacity() throws Exception {
-		for(int k=0; k<5; k++) {
+		for(int k=0; k<1; k++) {
 		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
 		reset();
 		long t = System.currentTimeMillis();
@@ -322,7 +322,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		while (numFinishedReads < numReads) {
 			if (numFinishedReads >= j) {
 				j *= 2;
-				System.out.print(numFinishedReads + " ");
+				System.out.print(numFinishedReads + "@" + Util.df(numFinishedReads * 1.0 / (lastReadFinishedTime - t))+"K/s ");
 			}
 			Thread.sleep(500);
 		}

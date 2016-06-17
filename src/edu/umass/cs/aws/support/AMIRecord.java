@@ -87,6 +87,18 @@ public class AMIRecord {
   public static void init() {
     records = new EnumMap<>(AMIRecordType.class);
     // our new mongo AMI
+    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2016_6_16_micro = new HashMap<>();
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.US_EAST_1, new AMIRecord("ami-e326de8e", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.US_WEST_2, new AMIRecord("ami-74699214", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.US_WEST_1, new AMIRecord("ami-bdf288dd", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.EU_WEST_1, new AMIRecord("ami-f762ff84", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.EU_CENTRAL_1, new AMIRecord("ami-ed719f82", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.AP_SOUTHEAST_1, new AMIRecord("ami-a25282c1", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.AP_NORTHEAST_1, new AMIRecord("ami-707f9611", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.AP_SOUTHEAST_2, new AMIRecord("ami-cd436aae", "Mongo_2016_6_8", "t1.micro"));
+    amiMap_Mongo_2016_6_16_micro.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-30cd475c", "Mongo_2016_6_8", "t1.micro"));
+    records.put(AMIRecordType.Mongo_2016_6_16_micro, amiMap_Mongo_2016_6_16_micro);
+    // our new mongo AMI
     HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6_micro = new HashMap<>();
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.US_EAST_1, new AMIRecord("ami-0479996c", "Mongo_2014_5_6", "t1.micro"));
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.US_WEST_2, new AMIRecord("ami-b7fd8a87", "Mongo_2014_5_6", "t1.micro"));
@@ -97,7 +109,7 @@ public class AMIRecord {
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.AP_SOUTHEAST_2, new AMIRecord("ami-e5a03bdf", "Mongo_2014_5_6", "t1.micro"));
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-ab54f9b6", "Mongo_2014_5_6", "t1.micro"));
     records.put(AMIRecordType.Mongo_2014_5_6_micro, amiMap_Mongo_2014_5_6_micro);
-    
+    // mongo vpc ami
     HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2015_6_25_vpc = new HashMap<>();
     amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.US_EAST_1, new AMIRecord("ami-87916bec", "Mongo_2015_6_25_vpc", 
             "t2.small", "subnet-69c40c1e", "aws-vpc"));

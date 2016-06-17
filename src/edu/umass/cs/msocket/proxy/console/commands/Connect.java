@@ -94,10 +94,6 @@ public class Connect extends ConsoleCommand
       // Create a client
       GNSClientCommands gnsClient = new GNSClientCommands(null);
       if (!module.isSilent())
-        console.printString("Checking GNS connectivity with " + gnsHost + ":" + gnsPort + " using account GUID "
-            + accountGuid + "\n");
-      gnsClient.checkConnectivity();
-      if (!module.isSilent())
         console.printString("Connected to GNS at " + gnsHost + ":" + gnsPort + "\n");
 
       module.setGnsClient(gnsClient);

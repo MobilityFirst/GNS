@@ -23,10 +23,6 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
-import edu.umass.cs.nio.MessageNIOTransport;
-import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.Util;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,6 +70,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    * Indicates if the response is an error.
    */
   private final GNSResponseCode errorCode;
+
   /**
    * Instrumentation - The RTT as measured from the LNS out and back.
    */
@@ -121,12 +118,13 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 //    this.requestCnt = requestCnt;
 //    this.requestRate = requestRate;
   }
+
   public CommandValueReturnPacket(long requestId, GNSResponseCode code, String returnValue) {
-	    this.setType(PacketType.COMMAND_RETURN_VALUE);
-	    this.clientRequestId = requestId;
-	    this.serviceName = null;
-	    this.returnValue = returnValue;
-	    this.errorCode = code;
+    this.setType(PacketType.COMMAND_RETURN_VALUE);
+    this.clientRequestId = requestId;
+    this.serviceName = null;
+    this.returnValue = returnValue;
+    this.errorCode = code;
   }
 
   /**
@@ -150,13 +148,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     } else {
       this.errorCode = GNSResponseCode.NO_ERROR;
     }
-    // instrumentation
-//    this.requestRate = json.getInt(REQUESTRATE);
-//    this.requestCnt = json.getLong(REQUESTCNT);
-    //
-//    this.CPPRoundTripTime = json.has(CPPROUNDTRIPTIME) ? json.getLong(CPPROUNDTRIPTIME) : -1;
-//    this.CPPProcessingTime = json.has(CPPPROCESSINGTIME) ? json.getLong(CPPPROCESSINGTIME) : -1;
-//    this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : MessageNIOTransport.getSenderAddressAsString(json);
   }
 
   /**
@@ -243,7 +234,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 //  public long getCPPRoundTripTime() {
 //    return CPPRoundTripTime;
 //  }
-
   /**
    * Get the LNS processing time (instrumentation).
    *
@@ -252,7 +242,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 //  public long getCPPProcessingTime() {
 //    return CPPProcessingTime;
 //  }
-
   /**
    * Get the responder host id (instrumentation).
    *
@@ -261,7 +250,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 //  public String getResponder() {
 //    return responder;
 //  }
-
   /**
    * Get the request count (instrumentation).'
    *
@@ -270,7 +258,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 //  public long getRequestCnt() {
 //    return requestCnt;
 //  }
-
   /**
    * Get the request rate (instrumentation).
    *
@@ -279,7 +266,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 //  public int getRequestRate() {
 //    return requestRate;
 //  }
-
   @Override
   public ClientRequest getResponse() {
     return this.response;
@@ -295,8 +281,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     return new Object() {
       @Override
       public String toString() {
-        return 
-                CommandValueReturnPacket.this.getRequestType()
+        return CommandValueReturnPacket.this.getRequestType()
                 + ":"
                 + CommandValueReturnPacket.this.getServiceName()
                 + ":"
@@ -307,9 +292,9 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     };
   }
 
-public ClientRequest setClientRequestAndLNSIds(long requestID) {
-	this.clientRequestId = requestID;
-	this.LNSRequestId = requestID;
-	return this;
-}
+  public ClientRequest setClientRequestAndLNSIds(long requestID) {
+    this.clientRequestId = requestID;
+    this.LNSRequestId = requestID;
+    return this;
+  }
 }

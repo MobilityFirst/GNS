@@ -19,19 +19,15 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.AbstractGNSClient;
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.net.InetSocketAddress;
 
 /**
  * Creates some DNS records for testing the GNS DNS service.
@@ -49,10 +45,6 @@ public class CreateSomeRecordsForDns {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
-    InetSocketAddress address;
-    if (args.length == 0 || (address = ServerSelectDialog.parseHostPortTuple(args[0])) == null) {
-      address = ServerSelectDialog.selectServer();
-    }
     client = new GNSClientCommands(null);
     try {
       accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
@@ -60,7 +52,7 @@ public class CreateSomeRecordsForDns {
       System.out.println("Exception during accountGuid creation: " + e);
       System.exit(1);
     }
-    System.out.println("Client connected to GNS at " + address.getHostName() + ":" + address.getPort());
+    System.out.println("Client connected to GNS");
 
     createAnARecord("westy.gns.", "173.236.153.191");
     

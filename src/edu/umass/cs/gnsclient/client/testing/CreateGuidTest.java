@@ -22,11 +22,9 @@ package edu.umass.cs.gnsclient.client.testing;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnsclient.client.util.ServerSelectDialog;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import java.awt.HeadlessException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -46,29 +44,17 @@ public class CreateGuidTest {
 
   private static final String ACCOUNT_ALIAS = "support@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static final String PASSWORD = "password";
-  private static GNSClientCommands client;
-  /**
-   * The address of the GNS server we will contact
-   */
-  private static InetSocketAddress address = null;
+  private static GNSClientCommands client = null;
   private static GuidEntry masterGuid;
-
-  private static boolean disableSSL = true;
 
   /**
    * Creates a SimpleLatencyTest with the given arguments.
    *
    * @param alias
-   * @param host
    * @param portString
    */
-  public CreateGuidTest(String alias, String host, String portString) {
-    if (address == null) {
-      if (host != null && portString != null) {
-        address = new InetSocketAddress(host, Integer.parseInt(portString));
-      } else {
-        address = ServerSelectDialog.selectServer();
-      }
+  public CreateGuidTest(String alias) {
+    if (client == null) {
       try {
         client = new GNSClientCommands(null);
       } catch (IOException e) {
@@ -119,7 +105,7 @@ public class CreateGuidTest {
       String alias = parser.getOptionValue("alias");
       String host = parser.getOptionValue("host");
       String portString = parser.getOptionValue("port");
-      new CreateGuidTest(alias != null ? alias : ACCOUNT_ALIAS, host, portString);
+      new CreateGuidTest(alias != null ? alias : ACCOUNT_ALIAS);
       System.exit(0);
     } catch (HeadlessException e) {
       System.out.println("When running headless you'll need to specify the host and port on the command line");

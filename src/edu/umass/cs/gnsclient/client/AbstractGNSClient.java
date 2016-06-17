@@ -141,10 +141,6 @@ public abstract class AbstractGNSClient {
    * @return the query string
    * @throws ClientException
    */
-  // FIXME: Temporarily hacked version for adding new command type integer. Will clean up once
-  // transition is done.
-  // The action argument will be going away and be ultimately replaced by the
-  // enum string.
   public JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, Object... keysAndValues)
           throws ClientException {
@@ -341,9 +337,8 @@ public abstract class AbstractGNSClient {
            * have error codes and systematic methods to automatically generate
            * error responses and be able to refactor them as needed easily.
          */
-        return 
-//        		GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT;
-        		new CommandValueReturnPacket(id, GNSResponseCode.TIMEOUT, GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
+        return //        		GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT;
+                new CommandValueReturnPacket(id, GNSResponseCode.TIMEOUT, GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
       }
       GNSClientConfig.getLogger().log(Level.FINE,
               "Response received for query {0}", new Object[]{id + ""});
@@ -360,14 +355,12 @@ public abstract class AbstractGNSClient {
               command.optString(GNSCommandProtocol.NAME, ""), id,
               "unknown"//result.getResponder()
             });
-    
+
     return // result.getResult()
-    		result instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket)result)
+            result instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket) result)
 //    				.getReturnValue() 
-    		: 
-//    			((ActiveReplicaError)result).getResponseMessage()
-    			new CommandValueReturnPacket(id, GNSResponseCode.ACTIVE_REPLICA_EXCEPTION, ((ActiveReplicaError)result).getResponseMessage())
-    		;
+                    : //    			((ActiveReplicaError)result).getResponseMessage()
+                    new CommandValueReturnPacket(id, GNSResponseCode.ACTIVE_REPLICA_EXCEPTION, ((ActiveReplicaError) result).getResponseMessage());
   }
 
   private long desktopSendCommmandNoWait(JSONObject command) throws IOException {
@@ -449,11 +442,11 @@ public abstract class AbstractGNSClient {
     // store the response away
     if (packet != null) {
       resultMap.put(id, packet
-    		  //new CommandResult(packet, receivedTime, latency)
-    		  );
+      //new CommandResult(packet, receivedTime, latency)
+      );
     } else {
       resultMap.put(id, error
-    		 // new CommandResult(error, receivedTime, latency)
+      // new CommandResult(error, receivedTime, latency)
       );
     }
 

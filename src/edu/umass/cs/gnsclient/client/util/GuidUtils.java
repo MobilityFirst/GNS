@@ -167,7 +167,7 @@ public class GuidUtils {
           System.out.println("Old guid for " + name + " is invalid. Creating a new one.");
         }
       }
-      Util.suicide("here");
+      //Util.suicide("here");
       guid = client.guidCreate(accountGuid, name);
       return guid;
     } else {

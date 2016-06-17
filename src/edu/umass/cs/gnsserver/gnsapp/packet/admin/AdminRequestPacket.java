@@ -49,10 +49,6 @@ public class AdminRequestPacket extends BasicPacketWithReturnAddress {
     DUMPCACHE,
     /** Set the logging level. **/
     CHANGELOGLEVEL,
-    /** Prints the entire ping table. **/
-    PINGTABLE,
-    /** Prints the a single ping table. **/
-    PINGVALUE;
   };
 
   private final static String ID = "id";
