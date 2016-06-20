@@ -159,14 +159,15 @@
       <fileset dir="${build.jar.dir}" includes="*.jar"/>
     </copy>  
     <!--    make a copy of the latest server and put it in GNS.jar-->
-    <copy file="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNS.jar" />
+    <!-- <copy file="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNS.jar" />-->
     <!--    make a copy of the latest client and put it in GNSClient.jar-->
-    <copy file="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNSClient.jar" />
-    <copy file="${dist.dir}/jars/gns-cli-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNS-CLI.jar" />
+    <!-- <copy file="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNSClient.jar" />-->
+    <!-- <copy file="${dist.dir}/jars/gns-cli-${VERSION}-${RELEASE}.jar" tofile="${dist.dir}/jars/GNS-CLI.jar" />-->
     <!--    make a symlink of the latest server and put it in GNS.jar-->
-    <!--    <symlink link="${dist.dir}/jars/GNS.jar" resource="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar"/>-->
+        <symlink link="${dist.dir}/jars/GNS.jar" resource="${dist.dir}/jars/gnsserver-${VERSION}-${RELEASE}.jar"/>
     <!--    make a symlink of the latest server and put it in GNSClient.jar-->
-    <!--    <symlink link="${dist.dir}/jars/GNSClient.jar" resource="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar"/>-->
+        <symlink link="${dist.dir}/jars/GNSClient.jar" resource="${dist.dir}/jars/gnsclient-${VERSION}-${RELEASE}.jar"/>
+        <symlink link="${dist.dir}/jars/GNS-CLI.jar" resource="${dist.dir}/jars/gnscli-${VERSION}-${RELEASE}.jar"/>
     <!-- copy jars into top level jars directory -->
     <mkdir dir="${jars.dir}"/>
     <copy todir="${jars.dir}">
