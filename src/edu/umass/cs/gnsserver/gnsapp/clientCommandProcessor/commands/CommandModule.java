@@ -128,14 +128,20 @@ public class CommandModule {
   }
 
   public BasicCommand lookupCommand(String commandName) {
-    return lookupCommand(CommandType.valueOf(commandName));
+    try {
+      return lookupCommand(CommandType.valueOf(commandName));
+    } catch (IllegalArgumentException e) {
+      ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
+              "Unable to parse command name {0}", commandName);
+      return null;
+    }
   }
 
   /**
    * Finds the command that corresponds to the JSONObject which was received command packet.
    *
    * @param json
-   * @return
+   * @return the command or null if the command indicator is not valid
    */
   public BasicCommand lookupCommand(JSONObject json) {
     BasicCommand command = null;
@@ -172,6 +178,14 @@ public class CommandModule {
     return lookupCommandFromCommandName(json);
   }
 
+  /**
+   * Finds the command that corresponds to the COMMANDNAME in the json.
+   * Old method for backward compatibility with older clients that
+   * aren't using the COMMAND_INT field.
+   * 
+   * @param json
+   * @return the command or null if the COMMANDNAME is not valid
+   */
   public BasicCommand lookupCommandFromCommandName(JSONObject json) {
     String action;
     try {
@@ -182,34 +196,6 @@ public class CommandModule {
       return null;
     }
     return lookupCommand(action);
-  }
-
-  @Deprecated
-  private BasicCommand lookupCommandLinearSearch(JSONObject json) {
-    String action;
-    try {
-      action = json.getString(COMMANDNAME);
-    } catch (JSONException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
-              "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
-      return null;
-    }
-    ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-            "Linear search of {0} commands:", commands.size());
-    // for now a linear search is fine
-    for (BasicCommand lookupCommand : commands) {
-      //GNS.getLogger().info("Search: " + command.toString());
-      if (lookupCommand.getCommandType().toString().equals(action)) {
-        //GNS.getLogger().info("Found action: " + action);
-        if (JSONContains(json, lookupCommand.getCommandParameters())) {
-          //GNS.getLogger().info("Matched parameters: " + json);
-          return lookupCommand;
-        }
-      }
-    }
-    ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
-            "***COMMAND SEARCH***: Unable to find {0}", json);
-    return null;
   }
 
   /**
