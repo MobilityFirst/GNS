@@ -230,7 +230,7 @@ public class RemoteQuery extends ClientAsynchBase {
             && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
                     ? GNSResponseCode.DUPLICATE_ID_EXCEPTION
                     : // else generic error
-                    GNSResponseCode.GENERIC_ERROR) : GNSResponseCode.NO_ERROR;
+                    GNSResponseCode.UNSPECIFIED_ERROR) : GNSResponseCode.NO_ERROR;
   }
 
   /**
@@ -248,7 +248,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       // FIXME: return better error codes.
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 
@@ -275,7 +275,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.FINE, "Problem creating {0} :{1}",
               new Object[]{names, e});
       // FIXME: return better error codes.
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 
@@ -321,7 +321,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       // FIXME: return better error codes.
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 

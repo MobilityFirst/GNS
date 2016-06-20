@@ -9,16 +9,16 @@ notifications:
     on_failure: always
 script:
 - ant test
-after_failure:
-- git config user.email "$GITEMAIL"
-- git config user.name  "$GITUSER"
-- export GITCOMMITUSER=$(git --no-pager show -s --format='%an' $TRAVIS_COMMIT);
-- git checkout master;
-- if [ "$GITCOMMITUSER" == "$GITUSER" ]; then echo "Not reverting since this commit
-  was issued automatically by travis..."; else git revert "$TRAVIS_COMMIT" HEAD --no-edit
-  --no-commit; git commit -m "Autoreverting a commit due to failed tests!"; $(git
-  push -q https://$GITUSER:$GITPASSWORD@github.com/MobilityFirst/GNS.git > /dev/null);
-  fi
+#after_failure:
+#- git config user.email "$GITEMAIL"
+#- git config user.name  "$GITUSER"
+#- export GITCOMMITUSER=$(git --no-pager show -s --format='%an' $TRAVIS_COMMIT);
+#- git checkout master;
+#- if [ "$GITCOMMITUSER" == "$GITUSER" ]; then echo "Not reverting since this commit
+#  was issued automatically by travis..."; else git revert "$TRAVIS_COMMIT" HEAD --no-edit
+#  --no-commit; git commit -m "Autoreverting a commit due to failed tests!"; $(git
+#  push -q https://$GITUSER:$GITPASSWORD@github.com/MobilityFirst/GNS.git > /dev/null);
+#  fi
 env:
   global:
   - secure: l+vGafJuEu4/wAykdB7mOuUMncAM9lqMqEJZa5UAdpW1F/spBgBkj3Hc1LuhiXADO6bitLhIWkoU8laBL4OkPRXhfJSaZmRhTL+ALcg1OpJ4UgBwfiP/KCAxk71eOmehFwJEPnwYktCQAArt3P0/RqTjbKfe0VH4M6qkK2+qr505KCo+8ilkuIPh3hdcgSsxIK3CD+kZW16upLEHHo6SwimPY/Sr/5SdTfrD3AGyq4cpSTGia/YA1Sfseu6DYwbRaYtUl1Cv7jRgo8MNtbVL3a+uAepn8kyB7Gc3h0O0v9xzy10hyyAvI2rO1cDgHB25aMF/h/jn1yBmdcs7hHAN9CG+7/GJlqrHF4IBAXi7WAML+BE1CV0j+HJfnOdS4Hxs5dx7NSUww9Jg06tkqEA+9Pkz/kt6TTkY6qCnmkq9mOsgCeWgD4doOYVtyZUxbfhKxQ8sfFHZ1hHMlL6/Any2GAXzW1NdM5cuc0MwpFeEWuXOfrorXl7gxid4bUEJzZWfqgoshIm37+GA8Kaw+Frc5N1DOzay4DjeZNoovbYQS9aaeFkK4NoHiCIleEwiq53jsTlS3biwpdIjoZ2XenjyetIaajDS0zLAx+BcwR3udJjwv0q17bp/To3On/Cme8sS/Ianufq8+hYi40JXvWSUMhzQek5MW8Z9k08P0zbJSW8=

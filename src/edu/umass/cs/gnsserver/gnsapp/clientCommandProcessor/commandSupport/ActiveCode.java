@@ -90,7 +90,7 @@ public class ActiveCode {
       json = new JSONObject();
       json.put(getCodeField(action), code);
     } catch (JSONException e) {
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
     GNSResponseCode response = FieldAccess.updateUserJSON(guid, json,
             writer, signature, message, timestamp, handler);

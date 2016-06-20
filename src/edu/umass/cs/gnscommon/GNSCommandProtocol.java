@@ -70,7 +70,7 @@ public class GNSCommandProtocol {
   public final static String UPDATE_ERROR = "+UPDATEERROR+";
   public final static String UPDATE_TIMEOUT = "+UPDATETIMEOUT+";
   public final static String SELECTERROR = "+SELECTERROR+";
-  public final static String GENERIC_ERROR = "+GENERICERROR+";
+  public final static String UNSPECIFIED_ERROR = "+GENERICERROR+";
   public final static String FAIL_ACTIVE_NAMESERVER = "+FAIL_ACTIVE+";
   public final static String INVALID_ACTIVE_NAMESERVER = "+INVALID_ACTIVE+";
   public final static String TIMEOUT = "+TIMEOUT+";
