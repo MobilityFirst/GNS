@@ -32,12 +32,10 @@ import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.Email;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -414,7 +412,7 @@ public class AccountAccess {
         }).start();
 
         if (emailOK) {
-          return new CommandResponse<>(OK_RESPONSE, handler.getApp().getNodeID());
+          return new CommandResponse<>(OK_RESPONSE);
         } else {
           // if we can't send the confirmation back out of the account creation
           AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler, true);
@@ -422,8 +420,7 @@ public class AccountAccess {
             removeAccount(accountInfo, handler);
           }
           return new CommandResponse<>(BAD_RESPONSE + " "
-                  + VERIFICATION_ERROR + " " + "Unable to send verification email",
-                  handler.getApp().getNodeID());
+                  + VERIFICATION_ERROR + " " + "Unable to send verification email");
         }
       } else {
         GNSConfig.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
@@ -594,7 +591,7 @@ public class AccountAccess {
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         // set up the default read access
         if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isError()) {
-          return new CommandResponse<>(OK_RESPONSE, handler.getApp().getNodeID());
+          return new CommandResponse<>(OK_RESPONSE);
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back

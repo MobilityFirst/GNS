@@ -42,13 +42,6 @@ public enum GNSResponseCode implements Serializable {
    * command was executed without error.
    * For other response codes the return value only contains
    * additional information to describe the error or exception.
-   *//**
-   * A positive acknowledgment. This indicates that the
-   * return value contains the result of the command or in
-   * the case of commands that don't return a value that the
-   * command was executed without error.
-   * For other response codes the return value only contains
-   * additional information to describe the error or exception.
    */
   NO_ERROR(200, GNSCommandProtocol.OK_RESPONSE, TYPE.NORMAL),
   /**
@@ -61,33 +54,48 @@ public enum GNSResponseCode implements Serializable {
    * Field in a record was not found.
    */
   FIELD_NOT_FOUND_ERROR(2, GNSCommandProtocol.FIELD_NOT_FOUND, TYPE.ERROR),
-  // The following are access or signature errors
+  // The following three are access or signature errors
   /**
    * Bad signature. An access or signature error.
+   * This will happen when the message in a command packet fails signature verification.
+   * See {@link edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication#signatureAndACLCheck}
    */
   SIGNATURE_ERROR(5, GNSCommandProtocol.BAD_SIGNATURE, TYPE.ERROR),
   /**
-   * Stale signature or key.
+   * Stale signature or key. An access or signature error.
+   * This will happen when a command packet arrives that is too old.
+   * 
+   * See {@link edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication#signatureAndACLCheck}
    */
   STALE_COMMAND_VALUE(6, GNSCommandProtocol.STALE_COMMMAND, TYPE.ERROR),
   /**
-   * Access denied.
+   * Access denied. An access or signature error.
+   * This will happen when a command packet arrives that tries to access a field
+   * for which it does not have the correct access control.
+   * 
+   * See {@link edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication#signatureAndACLCheck}
    */
   ACCESS_ERROR(7, GNSCommandProtocol.ACCESS_DENIED, TYPE.ERROR),
   /**
    * Non-existent GUID.
+   * This will happen when a command packet arrives that tries to access a guid
+   * that does not exist.
    */
   BAD_GUID_ERROR(8, GNSCommandProtocol.BAD_GUID, TYPE.ERROR),
   /**
    * Non-existent accessor GUID.
+   * This will happen when a command packet arrives that is trying to access
+   * a field using an accessor guid that does not exist.
    */
   BAD_ACCESSOR_ERROR(9, GNSCommandProtocol.BAD_ACCESSOR_GUID, TYPE.ERROR),
   /**
    * An error during account GUID verification.
+   * This will happen if the verification code is incorrect.
    */
   VERIFICATION_ERROR(10, GNSCommandProtocol.VERIFICATION_ERROR, TYPE.ERROR),
   /**
-   * Account does not exist.
+   * Account guid does not exist.
+   * 
    */
   BAD_ACCOUNT_ERROR(11, GNSCommandProtocol.BAD_ACCOUNT, TYPE.ERROR),
   /**
