@@ -49,7 +49,7 @@ value="GNS-${build.major.number}.${build.minor.number}.${build.revision.number}"
   <get src="https://github.com/MobilityFirst/gigapaxos/blob/master/bin/gpServer.sh" dest="bin/"/>
   <get src="https://github.com/MobilityFirst/gigapaxos/blob/master/bin/gpClient.sh" dest="bin/"/>
   <!--    make scripts executable-->
-  <chmod perm="ug+x" dir="${bin.dir}" />
+  <chmod perm="ug+x" dir="${bin.dir}" includes="**/*.sh"/>
   </target>
   
   <target name="server_jarbuild" depends="compile" description="generate jar files">
@@ -189,7 +189,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <fileset dir="${bin.dir}" includes="*"/>
     </copy>
     <!--    make bin scripts executable-->
-    <chmod perm="ug+x" dir="${dist.dir}/${bin.dir}" />
+    <chmod perm="ug+x" dir="${dist.dir}/${bin.dir}" includes="**/*.sh"/>
 
     <copy todir="${dist.dir}">
       <fileset dir="." includes="LICENSE.txt README.md"/>
