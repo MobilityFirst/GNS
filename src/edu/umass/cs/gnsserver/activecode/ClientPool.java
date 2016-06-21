@@ -278,7 +278,7 @@ public class ClientPool implements Runnable{
 	}
 	
 	protected Process startNewWorker(int workerPort, int initMemory){
-		List<String> command = new ArrayList<>();
+		List<String> command = new ArrayList<String>();
 		// Get the current classpath
 		// client port is unknown in the beginning for the worker
 		String classpath = System.getProperty("java.class.path");

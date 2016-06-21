@@ -1,6 +1,8 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -33,6 +35,7 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig;
 import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig.TRC;
 import edu.umass.cs.utils.Config;
@@ -189,15 +192,26 @@ public class GNSClientCapacityTest extends DefaultTest {
 
 	private static final String someField = "someField";
 	private static final String someValue = "someValue";
-
+	private static final String LEVEL1 = "level1";
+	private static final String LEVEL2 = "level2";
+	private static final String LEVEL3 = "level3";
+	
 	/**
 	 * Verifies a single write is successful.
+	 * @throws IOException 
 	 */
 	@Test
-	public void test_01_SingleWrite() {
+	public void test_01_SingleWrite() throws IOException {
 		GuidEntry guid = guidEntries[0];
+		String code = new String(Files.readAllBytes(Paths.get("scripts/activeCode/noop.js")));
 		try {
 			clients[0].fieldUpdate(guid, someField, someValue);
+			// prepare for active code
+			clients[0].fieldUpdate(guid, LEVEL1, someValue);
+			clients[0].fieldUpdate(guid, LEVEL2, someValue);
+			clients[0].fieldUpdate(guid, LEVEL3, someValue);
+			clients[0].activeCodeClear(guid.getGuid(), ActiveCode.READ_ACTION, guid);
+			clients[0].activeCodeSet(guid.getGuid(), ActiveCode.READ_ACTION, code, guid);
 			// verify written value
 			Assert.assertEquals(clients[0].fieldRead(guid, someField),
 					(someValue));
@@ -338,15 +352,37 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void test_10_SingleActiveReadAndWrite() throws Exception{
-		int numReads = Math.max(1000000, Config.getGlobalInt(TC.NUM_REQUESTS));
+	public void test_10_SingleActiveReadForLevels() throws Exception{
+		
+		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			clients[0].fieldRead(guidEntries[0].getGuid(), someField, null);
+			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL1, null);
 		}
 		long elapsed = System.currentTimeMillis() - t;
 		
-		System.out.print("It takes "+elapsed+"ms. Average latency for read operation is average_latency="+elapsed*1000.0/numReads+"us");
+		System.out.println(LEVEL1+":It takes "+elapsed+"ms. Average latency for read operation "
+				+ "is average_latency="+elapsed*1000.0/numReads+"us");
+		
+		t = System.currentTimeMillis();
+		for (int i = 0; i < numReads; i++) {
+			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL2, null);
+		}
+		elapsed = System.currentTimeMillis() - t;
+		
+		System.out.println(LEVEL2+":It takes "+elapsed+"ms. Average latency for read operation "
+				+ "is average_latency="+elapsed*1000.0/numReads+"us");
+		
+		t = System.currentTimeMillis();
+		for (int i = 0; i < numReads; i++) {
+			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL3, null);
+		}
+		elapsed = System.currentTimeMillis() - t;
+		
+		System.out.println(LEVEL3+":It takes "+elapsed+"ms. Average latency for read operation "
+				+ "is average_latency="+elapsed*1000.0/numReads+"us");
+
 	}
 	
 	/**

@@ -165,7 +165,8 @@ public class NSUpdateSupport {
   }
 
   private static ValuesMap handleActiveCode(String guid, String field, ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException, JSONException {
-    // Only do active field handling for user fields.
+	  
+	// Only do active field handling for user fields.
     if (field == null || !InternalField.isInternalField(field)) {
       NameRecord activeCodeNameRecord = null;
       try {

@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.script.ScriptException;
+
 //import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +41,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.active.ActiveHandler;
+import edu.umass.cs.gnsserver.active.worker.ActiveWorker;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
@@ -123,6 +126,7 @@ public class ActiveCodeHandler {
 	 * @param app
 	 */
 	public ActiveCodeHandler(ActiveDBInterface app) {
+		ActiveWorker worker = new ActiveWorker("/tmp/test");
 		
 		try {
 			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
@@ -170,7 +174,7 @@ public class ActiveCodeHandler {
 	 * @param action can be 'read' or 'write'
 	 * @return whether or not there is active code
 	 */
-	public static boolean hasCode_old(NameRecord nameRecord, String action) {
+	public static boolean hasCode(NameRecord nameRecord, String action) {
 		try {
             return nameRecord.getValuesMap().has(ActiveCode.getCodeField(action));
 		} catch (FieldNotFoundException e) {
@@ -178,13 +182,25 @@ public class ActiveCodeHandler {
 		}
 	}
 	
-	public static boolean hasCode(NameRecord nameRecord, String action) {
-		return AppReconfigurableNodeOptions.enableActiveCode;
-	}
 	
-	public static ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
-		//return valuesMap;
-		return ActiveHandler.runCode(noop_code, guid, field, action, valuesMap, activeCodeTTL);
+	/**
+	 * @param code64
+	 * @param guid
+	 * @param field
+	 * @param action
+	 * @param valuesMap
+	 * @param activeCodeTTL
+	 * @return
+	 */
+	public static ValuesMap runCode(String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
+		if(field.equals("level2"))
+			return valuesMap;
+		try {
+			return ActiveWorker.runCode(guid, field, noop_code, valuesMap);
+		} catch (NoSuchMethodException | ScriptException e) {
+			e.printStackTrace();
+		}
+		return valuesMap;
 	}
 	
 	/**

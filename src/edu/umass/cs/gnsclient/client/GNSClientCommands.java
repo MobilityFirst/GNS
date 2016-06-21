@@ -1575,21 +1575,21 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
             action, WRITER, writerGuid.getGuid()));
   }
 
-  public void activeCodeSet(String guid, String action, byte[] code,
+  public void activeCodeSet(String guid, String action, String code,
           GuidEntry writerGuid) throws ClientException, IOException {
     checkResponse(createAndSignCommand(CommandType.SetActiveCode,
             writerGuid.getPrivateKey(), GUID, guid,
             AC_ACTION, action,
-            AC_CODE, Base64.encodeToString(code, true), WRITER,
+            AC_CODE, code, WRITER,
             writerGuid.getGuid()));
   }
 
-  public byte[] activeCodeGet(String guid, String action, GuidEntry readerGuid)
+  public String activeCodeGet(String guid, String action, GuidEntry readerGuid)
           throws Exception {
-    String code64String = checkResponse(createAndSignCommand(
+    String code = checkResponse(createAndSignCommand(
             CommandType.GetActiveCode, readerGuid.getPrivateKey(),
             GUID, guid, AC_ACTION, action, READER, readerGuid.getGuid()));
-    return code64String != null ? Base64.decode(code64String) : null;
+    return code;
   }
 
   // Extended commands

@@ -295,13 +295,21 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
+	  
+	  if (field.equals("level1")){
+	    	return originalValues;
+	  }
 	  if(!AppReconfigurableNodeOptions.enableActiveCode) return originalValues;
 	  
-    ValuesMap newResult = originalValues;
-    // Only do this for user fields.
-    if (field == null || !InternalField.isInternalField(field)) {
+	  ValuesMap newResult = originalValues;
+	  
+	  
+	  
+	  // Only do this for user fields.
+	  if (field == null || !InternalField.isInternalField(field)) {
       int hopLimit = 1;
       // Grab the code because it is of a different type
+      long t = System.nanoTime();
       NameRecord codeRecord = null;
       try {
         codeRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), guid,
@@ -309,16 +317,22 @@ public class NSFieldAccess {
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
-
+      DelayProfiler.updateDelayNano("activeFetchCode", t);
+      
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
               && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
         try {
+          t = System.nanoTime();
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+          DelayProfiler.updateDelayNano("activeGetCodeString", t);
+          
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
                   new Object[]{guid, field, originalValues.toString()});
-
+          
+          t = System.nanoTime();
           newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field,
                   "read", originalValues, hopLimit);
+          DelayProfiler.updateDelayNano("activeRunCode", t);
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
                   newResult.toString());
 
