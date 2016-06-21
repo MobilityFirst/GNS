@@ -301,14 +301,14 @@ public class NSFieldAccess {
 	  }
 	  if(!AppReconfigurableNodeOptions.enableActiveCode) return originalValues;
 	  
-	  ValuesMap newResult = originalValues;
-	  
-	  
+	  ValuesMap newResult = originalValues;	  
 	  
 	  // Only do this for user fields.
 	  if (field == null || !InternalField.isInternalField(field)) {
       int hopLimit = 1;
       DelayProfiler.updateDelayNano("activeIsInternal", start);
+      
+      
       // Grab the code because it is of a different type
       long t = System.nanoTime();
       NameRecord codeRecord = null;
@@ -320,31 +320,33 @@ public class NSFieldAccess {
       }
       DelayProfiler.updateDelayNano("activeFetchCode", t);
       
+      
+      t = System.nanoTime();
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
               && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
     	  DelayProfiler.updateDelayNano("activeCheckNull", t);
         try {
           t = System.nanoTime();
-          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
-          DelayProfiler.updateDelayNano("activeGetCodeString", t);
+          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);          
           
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
                   new Object[]{guid, field, originalValues.toString()});
+          DelayProfiler.updateDelayNano("activeGetCodeString", t);
           
           t = System.nanoTime();
           newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field,
-                  "read", originalValues, hopLimit);
-          DelayProfiler.updateDelayNano("activeRunCode", t);
+                  "read", originalValues, hopLimit);          
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
                   newResult.toString());
-
+          DelayProfiler.updateDelayNano("activeRunCode", t);
+          
         } catch (Exception e) {
           ClientSupportConfig.getLogger().log(Level.FINE, "Active code error: {0}",
                   e.getMessage());
         }
       }
     }
-	  DelayProfiler.updateDelayNano("activeTotal", start);
+	DelayProfiler.updateDelayNano("activeTotal", start);
     return newResult;
   }
 }

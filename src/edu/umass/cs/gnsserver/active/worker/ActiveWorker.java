@@ -83,7 +83,7 @@ public class ActiveWorker {
 		DelayProfiler.updateDelayNano("activeUpdateCache", t);
 		
 		engine.setContext(contexts.get(guid));
-		DelayProfiler.updateDelay("activeEngineSetContext", t);
+		DelayProfiler.updateDelayNano("activeEngineSetContext", t);
 		
 		ValuesMap value = (ValuesMap) invocable.invokeFunction("run", valuesMap, field, null);
 		DelayProfiler.updateDelayNano("activeEngineInvoke", t);

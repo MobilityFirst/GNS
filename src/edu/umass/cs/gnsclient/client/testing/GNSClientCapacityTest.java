@@ -348,11 +348,10 @@ public class GNSClientCapacityTest extends DefaultTest {
 	}
 	
 	/**
-	 * This test is used to measure the average latency 
 	 * @throws Exception
 	 */
 	@Test
-	public void test_10_SingleActiveReadForLevels() throws Exception{
+	public void test_10_SingleActiveReadLevel1() throws Exception{
 		
 		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		
@@ -364,21 +363,39 @@ public class GNSClientCapacityTest extends DefaultTest {
 		
 		System.out.println(LEVEL1+":It takes "+elapsed+"ms. Average latency for read operation "
 				+ "is average_latency="+elapsed*1000.0/numReads+"us");
+	}
+	
+	/**
+	 * @throws Exception
+	 */
+	@Test
+	public void test_11_SingleActiveReadLevel2() throws Exception{
 		
-		t = System.currentTimeMillis();
+		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		
+		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL2, null);
 		}
-		elapsed = System.currentTimeMillis() - t;
+		long elapsed = System.currentTimeMillis() - t;
 		
 		System.out.println(LEVEL2+":It takes "+elapsed+"ms. Average latency for read operation "
 				+ "is average_latency="+elapsed*1000.0/numReads+"us");
+	}
+	
+	/**
+	 * @throws Exception
+	 */
+	@Test
+	public void test_12_SingleActiveReadLevel3() throws Exception{
 		
-		t = System.currentTimeMillis();
+		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		
+		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL3, null);
 		}
-		elapsed = System.currentTimeMillis() - t;
+		long elapsed = System.currentTimeMillis() - t;
 		
 		System.out.println(LEVEL3+":It takes "+elapsed+"ms. Average latency for read operation "
 				+ "is average_latency="+elapsed*1000.0/numReads+"us");
