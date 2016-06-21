@@ -128,7 +128,7 @@ jarfile="${build.jar.dir}/gns-cli-${build.major.number}.${build.minor.number}.${
 
   <target name="clean" description="remove generated files">
     <delete dir="${build.dir}"/>
-    <delete dir="${build.jars.dir}"/>
+    <delete dir="${build.jar.dir}"/>
     <delete dir="${dist.dir}"/>
   </target>
 
@@ -166,7 +166,7 @@ resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision
         <symlink link="${build.jar.dir}/GNSClient.jar" overwrite="yes"
 resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
         <symlink link="${build.jar.dir}/GNS-CLI.jar" overwrite="yes"
-resource="gnscli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
   </target>
 
 
