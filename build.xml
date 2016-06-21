@@ -351,6 +351,52 @@
     </junit>
   </target>
 
+  <target name="testSequential" description="Runs the default integration tests sequentially" 
+          depends="jar, compiletest">
+    <property name="integrationTestRuns" value="30"/>
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTestSequential"/>
+      <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+    </junit>
+  </target>
+
+      <target name="testThreaded" description="Runs the default integration tests in parallel" 
+          depends="jar, compiletest">
+    <property name="integrationTestRuns" value="30"/>
+    <property name="integrationTestThreads" value="50"/>
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTestThreaded"/>
+      <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
+      <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+    </junit>
+  </target>
+
   <target name="all" depends="clean,jar"
           description="build all files"/>
     
