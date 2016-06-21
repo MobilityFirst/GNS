@@ -306,7 +306,7 @@ public class NSFieldAccess {
 	  // Only do this for user fields.
 	  if (field == null || !InternalField.isInternalField(field)) {
       int hopLimit = 1;
-      DelayProfiler.updateDelayNano("activeIsInternal", start);
+      //DelayProfiler.updateDelayNano("activeIsInternal", start);
       
       
       // Grab the code because it is of a different type
@@ -324,7 +324,7 @@ public class NSFieldAccess {
       t = System.nanoTime();
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
               && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
-    	  DelayProfiler.updateDelayNano("activeCheckNull", t);
+    	  //DelayProfiler.updateDelayNano("activeCheckNull", t);
         try {
           t = System.nanoTime();
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);          

@@ -78,15 +78,11 @@ public class ActiveWorker {
 	 * @throws NoSuchMethodException
 	 */
 	public static ValuesMap runCode(String guid, String field, String code, ValuesMap valuesMap) throws ScriptException, NoSuchMethodException {
-		long t = System.nanoTime();
 		updateCache(guid, code);
-		DelayProfiler.updateDelayNano("activeUpdateCache", t);
 		
 		engine.setContext(contexts.get(guid));
-		DelayProfiler.updateDelayNano("activeEngineSetContext", t);
 		
 		ValuesMap value = (ValuesMap) invocable.invokeFunction("run", valuesMap, field, null);
-		DelayProfiler.updateDelayNano("activeEngineInvoke", t);
 		return value;
 	}
 	
