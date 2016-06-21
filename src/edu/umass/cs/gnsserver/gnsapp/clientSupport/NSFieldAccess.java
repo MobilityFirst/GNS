@@ -295,7 +295,7 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-	  
+	  long start = System.nanoTime();
 	  if (field.equals("level1")){
 	    	return originalValues;
 	  }
@@ -342,6 +342,7 @@ public class NSFieldAccess {
         }
       }
     }
+	  DelayProfiler.updateDelayNano("activeTotal", start);
     return newResult;
   }
 }
