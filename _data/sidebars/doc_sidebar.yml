@@ -1,0 +1,63 @@
+# This is your sidebar TOC. The sidebar code loops through sections here and provides the appropriate formatting.
+
+entries:
+- title: sidebar
+  product: GNS
+  version:
+  folders:
+
+  - title: Overview
+    output: web, pdf
+    folderitems:
+
+    - title: What is the GNS?
+      url: /
+      type: homepage
+      output: web, pdf
+
+    - title: Support
+      url: /mydoc_support/
+      output: web, pdf
+
+  - title: Getting Started
+    output: web, pdf
+    folderitems:
+
+    - title: Installation
+      url: /installation/
+      output: web, pdf
+
+    - title: Deploying A Single Node GNS Server
+      url: /deploy_single_node_server/
+      output: web, pdf
+
+    - title: CLI Example Client
+      url: /cli_example_client/
+      output: web, pdf
+
+    - title: Java Example Client
+      url: /java_example_client/
+      output: web, pdf
+
+
+  # Leaving this as an example of subfolders
+  # - title: Tag archives
+  #   output: web
+  #   folderitems:
+  # 
+  #   - title: Tag archives overview
+  #     url: /mydoc_tag_archives_overview/
+  #     output: web
+  # 
+  #     subfolders:
+  #     - title: Tag archive pages
+  #       output: web
+  #       subfolderitems:
+  # 
+  #       - title: Formatting pages
+  #         url: /tag_formatting/
+  #         output: web
+  # 
+  #       - title: Navigation pages
+  #         url: /tag_navigation/
+  #         output: web
