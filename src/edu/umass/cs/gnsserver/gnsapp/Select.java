@@ -28,11 +28,9 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Random;
@@ -40,7 +38,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
 import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
@@ -51,7 +48,6 @@ import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.utils.Util;
-
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashSet;
@@ -334,7 +330,7 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
             new Object[]{app.getNodeID(), address,
               response.getSummary()});
     try {
-      app.sendToClient(address, response, response.toJSONObject(), myListeningAddress);
+      app.sendToClient(response, response.toJSONObject());
       // arun: synchronous select handling
       if (GNSApp.DELEGATE_CLIENT_MESSAGING) {
         synchronized (QUERIES_IN_PROGRESS) {

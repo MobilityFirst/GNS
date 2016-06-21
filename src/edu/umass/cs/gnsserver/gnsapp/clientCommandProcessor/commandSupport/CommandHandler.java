@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
@@ -35,15 +34,10 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.Util;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -238,16 +232,16 @@ public class CommandHandler {
           throws JSONException, IOException {
     // Squirrel away the host and port so we know where to send the command return value
     // A little unnecessary hair for debugging... also peek inside the command.
-    JSONObject command;
-    String guid = null;
-     CommandType commandType = packet.getCommandType();
-    if ((command = packet.getCommand()) != null) {
-      guid = command.optString(GUID, command.optString(NAME, null));
-    }
+//    JSONObject command;
+//    String guid = null;
+//     CommandType commandType = packet.getCommandType();
+//    if ((command = packet.getCommand()) != null) {
+//      guid = command.optString(GUID, command.optString(NAME, null));
+//    }
     //GNSConfig.getLogger().info("FROM: " + packet.getSenderAddress());
-    app.outStandingQueries.put(packet.getClientRequestId(),
-            new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
-                    commandType, guid, packet.getMyListeningAddress()));
+//    app.outStandingQueries.put(packet.getClientRequestId(),
+//            new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
+//                    commandType, guid, packet.getMyListeningAddress()));
     handlePacketCommandRequest(packet, doNotReplyToClient, app);
   }
 
@@ -268,21 +262,19 @@ public class CommandHandler {
     long id = returnPacket.getClientRequestId();
     CommandRequestInfo sentInfo;
 		// arun: changed get to remove as otherwise it seems to be never removed
-    if ((sentInfo = app.outStandingQueries.remove//get
-    (id)) != null) {
-      ClientCommandProcessorConfig.getLogger()
-              .log(Level.FINE,
-                      "{0}:{1} => {2} -> {3}",
-                      new Object[]{
-                        sentInfo.getCommandType().toString(),
-                        sentInfo.getGuid(),
-                        returnPacket.getSummary(),
-                        sentInfo.getHost() + "/"
-                        + sentInfo.getPort()});
+//    if ((sentInfo = app.outStandingQueries.remove//get
+//    (id)) != null) {
+//      ClientCommandProcessorConfig.getLogger()
+//              .log(Level.FINE,
+//                      "{0}:{1} => {2} -> {3}",
+//                      new Object[]{
+//                        sentInfo.getCommandType().toString(),
+//                        sentInfo.getGuid(),
+//                        returnPacket.getSummary(),
+//                        sentInfo.getHost() + "/"
+//                        + sentInfo.getPort()});
       if (!doNotReplyToClient) {
-        app.sendToClient(new InetSocketAddress(sentInfo.getHost(), 
-                sentInfo.getPort()), returnPacket, returnPacket.toJSONObject(), 
-                sentInfo.myListeningAddress);
+        app.sendToClient(returnPacket, returnPacket.toJSONObject());
       }
 
       // shows us stats every 100 commands, but not more than once every 5 seconds
@@ -293,9 +285,9 @@ public class CommandHandler {
           lastStatsTime = System.currentTimeMillis();
         }
       }
-    } else {
-      ClientCommandProcessorConfig.getLogger().severe("Command packet info not found for "
-              + id + ": " + returnPacket.getSummary());
-    }
+//    } else {
+//      ClientCommandProcessorConfig.getLogger().severe("Command packet info not found for "
+//              + id + ": " + returnPacket.getSummary());
+//    }
   }
 }
