@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
@@ -43,17 +43,11 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   private final static String SERVICENAME = "srvceName";
   private final static String RETURNVALUE = "returnValue";
   private final static String ERRORCODE = "errorCode";
-  // Instrumentation
-  private final static String CPPROUNDTRIPTIME = "ccpRtt";
-  private final static String CPPPROCESSINGTIME = "ccpTime";
-  private final static String RESPONDER = "responder";
-  private final static String REQUESTCNT = "requestCnt";
-  private final static String REQUESTRATE = "requestRate";
 
   /**
    * Identifier of the request.
    */
-  private /*final*/ long clientRequestId;
+  private long clientRequestId;
   /**
    * The service name from the request. Usually the guid or HRN.
    */
@@ -61,7 +55,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
   /**
    * LNS identifier used by the LNS.
    */
-  private /*final*/ long LNSRequestId;
+  private long LNSRequestId;
   /**
    * The returned value.
    */
@@ -70,27 +64,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    * Indicates if the response is an error.
    */
   private final GNSResponseCode errorCode;
-
-  /**
-   * Instrumentation - The RTT as measured from the LNS out and back.
-   */
-//  private final long CPPRoundTripTime; // how long this query took from the CCP out and back
-  /**
-   * Instrumentation - Total command processing time at the LNS.
-   */
-//  private final long CPPProcessingTime; // how long this query took inside the CCP
-  /**
-   * Instrumentation - what nameserver responded to this query.
-   */
-//  private final String responder;
-  /**
-   * Instrumentation - the request counter from the LNS.
-   */
-//  private final long requestCnt;
-  /**
-   * Instrumentation - the current requests per second from the LNS (can be used to tell how busy LNS is).
-   */
-//  private final int requestRate;
 
   /**
    * Creates a CommandValueReturnPacket from a CommandResponse.
@@ -112,11 +85,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.serviceName = serviceName;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
-//    this.CPPRoundTripTime = response.getCCPRoundTripTime();
-//    this.CPPProcessingTime = cppProccessingTime;
-//    this.responder = response.getResponder();
-//    this.requestCnt = requestCnt;
-//    this.requestRate = requestRate;
   }
 
   public CommandValueReturnPacket(long requestId, GNSResponseCode code, String returnValue) {
@@ -169,19 +137,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     if (errorCode != null) {
       json.put(ERRORCODE, errorCode.getCodeValue());
     }
-//    json.put(REQUESTRATE, requestRate); // instrumentation
-//    json.put(REQUESTCNT, requestCnt); // instrumentation
-    // instrumentation
-//    if (CPPRoundTripTime != -1) {
-//      json.put(CPPROUNDTRIPTIME, CPPRoundTripTime);
-//    }
-//    if (CPPProcessingTime != -1) {
-//      json.put(CPPPROCESSINGTIME, CPPProcessingTime);
-//    }
-    // instrumentation
-//    if (responder != null) {
-//      json.put(RESPONDER, responder);
-//    }
     return json;
   }
 
@@ -226,46 +181,6 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     return errorCode;
   }
 
-  /**
-   * Get the LNS round trip time (instrumentation).
-   *
-   * @return the LNS round trip time
-   */
-//  public long getCPPRoundTripTime() {
-//    return CPPRoundTripTime;
-//  }
-  /**
-   * Get the LNS processing time (instrumentation).
-   *
-   * @return the LNS processing time
-   */
-//  public long getCPPProcessingTime() {
-//    return CPPProcessingTime;
-//  }
-  /**
-   * Get the responder host id (instrumentation).
-   *
-   * @return the responder
-   */
-//  public String getResponder() {
-//    return responder;
-//  }
-  /**
-   * Get the request count (instrumentation).'
-   *
-   * @return the request count
-   */
-//  public long getRequestCnt() {
-//    return requestCnt;
-//  }
-  /**
-   * Get the request rate (instrumentation).
-   *
-   * @return the request rate
-   */
-//  public int getRequestRate() {
-//    return requestRate;
-//  }
   @Override
   public ClientRequest getResponse() {
     return this.response;

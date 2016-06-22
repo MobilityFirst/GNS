@@ -154,10 +154,6 @@ public enum GNSResponseCode implements Serializable {
   /**
    *
    */
-  NO_ACTION_FOUND(407, GNSCommandProtocol.NO_ACTION_FOUND, TYPE.EXCEPTION),
-  /**
-   *
-   */
   TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION),;
 
   // stash the codes in a lookup table
