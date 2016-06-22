@@ -38,12 +38,18 @@ value="GNS-${build.major.number}.${build.minor.number}.${build.revision.number}"
     <mkdir dir="${build.classes.dir}"/>
   </target>
 
+  <!-- pretty much everything depends on this -->
   <target name="compile" depends="init, buildnumber" description="compile java files">
     <javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="true" debuglevel="lines,vars,source"
            includeantruntime="false">
       <compilerarg value="-Xlint:unchecked"/>
       <classpath refid="classpath.base"/>
     </javac>
+  <!-- fetch gigapaxos scripts -->
+  <get src="https://github.com/MobilityFirst/gigapaxos/blob/master/bin/gpServer.sh" dest="bin/"/>
+  <get src="https://github.com/MobilityFirst/gigapaxos/blob/master/bin/gpClient.sh" dest="bin/"/>
+  <!--    make scripts executable-->
+  <chmod perm="ug+x" dir="${bin.dir}" includes="**/*.sh"/>
   </target>
   
   <target name="server_jarbuild" depends="compile" description="generate jar files">
@@ -128,7 +134,7 @@ jarfile="${build.jar.dir}/gns-cli-${build.major.number}.${build.minor.number}.${
 
   <target name="clean" description="remove generated files">
     <delete dir="${build.dir}"/>
-    <delete dir="${build.jars.dir}"/>
+    <delete dir="${build.jar.dir}"/>
     <delete dir="${dist.dir}"/>
   </target>
 
@@ -166,7 +172,7 @@ resource="gnsserver-${build.major.number}.${build.minor.number}.${build.revision
         <symlink link="${build.jar.dir}/GNSClient.jar" overwrite="yes"
 resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
         <symlink link="${build.jar.dir}/GNS-CLI.jar" overwrite="yes"
-resource="gnscli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
   </target>
 
 
@@ -174,12 +180,17 @@ resource="gnscli-${build.major.number}.${build.minor.number}.${build.revision.nu
     <mkdir dir="${dist.dir}"/>
     <mkdir dir="${dist.dir}/${build.jar.dir}"/>
     <mkdir dir="${dist.dir}/${bin.dir}"/>
+
     <copy todir="${dist.dir}/${build.jar.dir}">
       <fileset dir="${build.jar.dir}" includes="*.jar"/>
     </copy>
+
     <copy todir="${dist.dir}/${bin.dir}">
       <fileset dir="${bin.dir}" includes="*"/>
     </copy>
+    <!--    make bin scripts executable-->
+    <chmod perm="ug+x" dir="${dist.dir}/${bin.dir}" includes="**/*.sh"/>
+
     <copy todir="${dist.dir}">
       <fileset dir="." includes="LICENSE.txt README.md"/>
     </copy>
