@@ -474,7 +474,7 @@ public class AccountAccess {
     if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
       return new CommandResponse<>(GNSCommandProtocol.OK_RESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
-      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to update account info");
+      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UPDATE_ERROR + " " + "Unable to update account info");
     }
   }
 
@@ -492,7 +492,7 @@ public class AccountAccess {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
       return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Not an account guid");
+              + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + "Not an account guid");
     } else if (!accountInfo.isVerified()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR
               + " Account not verified");
@@ -500,14 +500,14 @@ public class AccountAccess {
     if (verifyPassword(accountInfo, password)) {
       GuidInfo guidInfo;
       if ((guidInfo = lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to read guid info");
+        return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + "Unable to read guid info");
       } else {
         guidInfo.setPublicKey(publicKey);
         guidInfo.noteUpdate();
         if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
           return new CommandResponse<>(GNSCommandProtocol.OK_RESPONSE + " " + "Public key has been updated.");
         } else {
-          return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to update guid info");
+          return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + "Unable to update guid info");
         }
       }
     } else {

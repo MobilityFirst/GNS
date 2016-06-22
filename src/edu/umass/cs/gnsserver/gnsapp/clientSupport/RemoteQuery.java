@@ -21,7 +21,6 @@ import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
@@ -674,16 +673,9 @@ public class RemoteQuery extends ClientAsynchBase {
         if (error.startsWith(DUPLICATE_FIELD)) {
           throw new InvalidFieldException(error + rest);
         }
-        if (error.startsWith(BAD_FIELD) || error.startsWith(FIELD_NOT_FOUND)) {
+        if (error.startsWith(FIELD_NOT_FOUND)) {
           throw new FieldNotFoundException(error + rest);
         }
-        if (error.startsWith(BAD_USER) || error.startsWith(DUPLICATE_USER)) {
-          throw new InvalidUserException(error + rest);
-        }
-        if (error.startsWith(BAD_GROUP) || error.startsWith(DUPLICATE_GROUP)) {
-          throw new InvalidGroupException(error + rest);
-        }
-
         if (error.startsWith(ACCESS_DENIED)) {
           throw new AclException(error + rest);
         }

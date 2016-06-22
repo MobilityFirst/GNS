@@ -33,7 +33,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACL_TYPE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_ACTION;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_CODE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_USERS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.CODE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELDS;
@@ -90,6 +89,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.json.JSONException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP. This
@@ -1216,7 +1216,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     checkResponse(createAndSignCommand(CommandType.AclAddSelf,
             guid.getPrivateKey(), ACL_TYPE, accessType, GUID,
             guid.getGuid(), FIELD, field, ACCESSER,
-            accesserGuid == null ? ALL_USERS : accesserGuid));
+            accesserGuid == null ? ALL_GUIDS : accesserGuid));
   }
 
   private void aclRemove(String accessType, GuidEntry guid, String field,
@@ -1224,16 +1224,15 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     checkResponse(createAndSignCommand(CommandType.AclRemoveSelf,
             guid.getPrivateKey(), ACL_TYPE, accessType, GUID,
             guid.getGuid(), FIELD, field, ACCESSER,
-            accesserGuid == null ? ALL_USERS : accesserGuid));
+            accesserGuid == null ? ALL_GUIDS : accesserGuid));
   }
 
   private JSONArray aclGet(String accessType, GuidEntry guid, String field,
           String readerGuid) throws Exception {
     try {
-      return new JSONArray(checkResponse(createAndSignCommand(
-              CommandType.AclRetrieve, guid.getPrivateKey(),
+      return new JSONArray(checkResponse(createAndSignCommand(CommandType.AclRetrieve, guid.getPrivateKey(),
               ACL_TYPE, accessType, GUID, guid.getGuid(),
-              FIELD, field, READER, readerGuid == null ? ALL_USERS
+              FIELD, field, READER, readerGuid == null ? ALL_GUIDS
                       : readerGuid)));
     } catch (JSONException e) {
       throw new ClientException("Invalid ACL list", e);
