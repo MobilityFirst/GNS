@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -22,7 +23,6 @@ import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;

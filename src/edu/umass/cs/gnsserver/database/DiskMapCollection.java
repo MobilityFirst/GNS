@@ -10,12 +10,16 @@ package edu.umass.cs.gnsserver.database;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import static edu.umass.cs.gnsserver.database.MongoRecords.DBNAMERECORD;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DiskMap;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
 import org.json.JSONObject;
 
 /**
@@ -61,7 +65,9 @@ public class DiskMapCollection {
       public Set<String> commit(Map<String, JSONObject> toCommit) throws IOException {
         DatabaseConfig.getLogger().fine("Commit: " + toCommit);
         try {
-          mongoRecords.bulkUpdate(DBNAMERECORD, toCommit);
+        	// check whether in-memory DB is enabled
+        	if(!Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB))
+        		mongoRecords.bulkUpdate(DBNAMERECORD, toCommit);
         } catch (FailedDBOperationException | RecordExistsException e) {
           throw new IOException(e);
         }
@@ -71,10 +77,17 @@ public class DiskMapCollection {
       @Override
       public JSONObject restore(String key) throws IOException {
         try {
-          return mongoRecords.lookupEntireRecord(DBNAMERECORD, key);
-        } catch (FailedDBOperationException | RecordNotFoundException e) {
-          return null;
+        	// check whether in-memory DB is enabled
+        	if(!Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB))
+        		return mongoRecords.lookupEntireRecord(DBNAMERECORD, key);
+        } catch (FailedDBOperationException e) {
+        	GNSConfig.getLogger().severe(e.getMessage());
+        	e.printStackTrace();
+        } catch (RecordNotFoundException e) {
+        	// silently return null
+        	return null;
         }
+        return null;
       }
     };
   }

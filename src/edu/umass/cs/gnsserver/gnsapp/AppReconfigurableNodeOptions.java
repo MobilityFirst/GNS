@@ -22,13 +22,14 @@ package edu.umass.cs.gnsserver.gnsapp;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 //import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-
 import static edu.umass.cs.reconfiguration.ReconfigurationConfig.getDemandProfile;
 import edu.umass.cs.utils.Config;
+
 import java.util.Map;
 
 import org.apache.commons.cli.Option;
@@ -37,13 +38,14 @@ import org.apache.commons.cli.Options;
 /**
  * The command line options for AppReconfigurableNode.
  *
- * @author westy
+ * @author westy, arun
  */
 public class AppReconfigurableNodeOptions {
 
   public static void load() {
-    PaxosConfig.load();
-    PaxosConfig.load(ReconfigurationConfig.RC.class);
+	  // arun: the commented lines are not necessary
+    //PaxosConfig.load();
+    //PaxosConfig.load(ReconfigurationConfig.RC.class);
     PaxosConfig.load(AppReconfigurableNodeOptions.AppConfig.class);
   }
 
@@ -82,11 +84,17 @@ public class AppReconfigurableNodeOptions {
   }
 
   /**
-   * @return DemandProfile class.
+   * @return DB class
    */
   public static Class<?> getNoSqlRecordsClass() {
     if (noSqlRecordsclass == null) {
-      noSqlRecordsclass = getClassSuppressExceptions(Config.getGlobalString(AppConfig.NOSQL_RECORDS_CLASS));
+    	// arun: in-memory DB => DiskMap
+    	noSqlRecordsclass = getClassSuppressExceptions(Config
+    			.getGlobalBoolean(GNSC.ENABLE_DISKMAP)
+    			|| 
+    			// in-memory DB force-implies DiskMap
+    			Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB) ? "edu.umass.cs.gnsserver.database.DiskMapRecords"
+    					: Config.getGlobalString(AppConfig.NOSQL_RECORDS_CLASS));
     }
     return noSqlRecordsclass;
   }

@@ -46,8 +46,8 @@ value="GNS-${build.major.number}.${build.minor.number}.${build.revision.number}"
       <classpath refid="classpath.base"/>
     </javac>
   <!-- fetch gigapaxos scripts -->
-  <get src="https://github.com/MobilityFirst/gigapaxos/blob/master/bin/gpServer.sh" dest="bin/"/>
-  <get src="https://github.com/MobilityFirst/gigapaxos/blob/master/bin/gpClient.sh" dest="bin/"/>
+  <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpServer.sh" dest="bin/"/>
+  <get src="https://raw.githubusercontent.com/MobilityFirst/gigapaxos/master/bin/gpClient.sh" dest="bin/"/>
   <!--    make scripts executable-->
   <chmod perm="ug+x" dir="${bin.dir}" includes="**/*.sh"/>
   </target>
