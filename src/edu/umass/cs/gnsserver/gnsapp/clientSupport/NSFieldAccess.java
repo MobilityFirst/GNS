@@ -306,11 +306,10 @@ public class NSFieldAccess {
 	  // Only do this for user fields.
 	  if (field == null || !InternalField.isInternalField(field)) {
       int hopLimit = 1;
-      //DelayProfiler.updateDelayNano("activeIsInternal", start);
-      
+            
       
       // Grab the code because it is of a different type
-      long t = System.nanoTime();
+      //long t = System.nanoTime();
       NameRecord codeRecord = null;
       try {
         codeRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), guid,
@@ -318,27 +317,25 @@ public class NSFieldAccess {
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
-      DelayProfiler.updateDelayNano("activeFetchCode", t);
+      //DelayProfiler.updateDelayNano("activeFetchCode", t);
       
       
-      t = System.nanoTime();
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
               && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
-    	  //DelayProfiler.updateDelayNano("activeCheckNull", t);
         try {
-          t = System.nanoTime();
+          //t = System.nanoTime();
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);          
           
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
                   new Object[]{guid, field, originalValues.toString()});
-          DelayProfiler.updateDelayNano("activeGetCodeString", t);
+          //DelayProfiler.updateDelayNano("activeGetCodeString", t);
           
-          t = System.nanoTime();
+          //t = System.nanoTime();
           newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field,
                   "read", originalValues, hopLimit);          
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
                   newResult.toString());
-          DelayProfiler.updateDelayNano("activeRunCode", t);
+          //DelayProfiler.updateDelayNano("activeRunCode", t);
           
         } catch (Exception e) {
           ClientSupportConfig.getLogger().log(Level.FINE, "Active code error: {0}",

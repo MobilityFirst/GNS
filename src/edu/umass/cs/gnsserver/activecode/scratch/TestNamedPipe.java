@@ -19,8 +19,8 @@ public class TestNamedPipe implements Runnable{
 	private OutputStream writer;
 	private InputStream reader;
 	
-	private final static int bufferSize = 1024;
-	protected final static int total = 100000;
+	private final static int bufferSize = 2048;
+	protected static int total = 100000;
 			
 	private String ifile;
 	private String ofile;
@@ -152,10 +152,17 @@ public class TestNamedPipe implements Runnable{
 	
 	
 	public static void main(String[] args) throws IOException {
+		int size = 512;
+		if(args.length >= 1){
+			size = Integer.parseInt(args[0]);
+		}
+		if(args.length >= 2){
+			total = Integer.parseInt(args[1]);
+		}
 		
-		String cfile = "/tmp/client";
-		String sfile = "/tmp/server";
-		String msg = new String(new byte[512]);
+		String cfile = "/tmp/_client";
+		String sfile = "/tmp/_server";
+		String msg = new String(new byte[size]);
 		Runtime runtime = Runtime.getRuntime();
 		
 		runtime.exec("mkfifo "+cfile);
@@ -166,7 +173,7 @@ public class TestNamedPipe implements Runnable{
 		new Thread(p1).start();
 		TestNamedPipe p2 = new TestNamedPipe(sfile, cfile, true);
 		new Thread(p2).start();
-		byte[] content = (msg+"\n").getBytes();
+		byte[] content = msg.getBytes();
 		
 		long t = System.currentTimeMillis();
 		for(int i=0; i<total; i++){
@@ -180,8 +187,10 @@ public class TestNamedPipe implements Runnable{
 		System.out.println("The average latency is "+elapsed*1000.0/total+"us,thruput is "+total*1000.0/elapsed+"/s");
 		
 		// rm pipe file
-		runtime.exec("rm "+cfile);
-		runtime.exec("rm "+sfile);
+		new File(cfile).delete();
+		new File(sfile).delete();
+		
+		System.exit(0);
 	}
 
 	
