@@ -14,7 +14,7 @@ Certain GUIDs, called account GUIDs have an alias which must be an email address
 
 ## How Can We Use the GNS?
 
-The GNS can be a replacement for the [https://en.wikipedia.org/wiki/Domain_Name_System](DNS). Similar to GNS, DNS associates various information with user friendly names. Looking up IP addresses used to locate computer services and devices is the prominent example. Unfortunately, DNS conflates naming with location and also is subject to a variety of [security] and other issues.
+The GNS can be a replacement for the [DNS](https://en.wikipedia.org/wiki/Domain_Name_System). Similar to GNS, DNS associates various information with user friendly names. Looking up IP addresses used to locate computer services and devices is the prominent example. Unfortunately, DNS conflates naming with location and also is subject to a variety of [security] and other issues.
 
 A GNS based lookup service would keep the location and name of the device or service separate. It would also provide protection against spoofing of names because GUIDs are protected by the use of the private/public key.
 

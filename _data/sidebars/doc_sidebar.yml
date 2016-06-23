@@ -8,7 +8,6 @@ entries:
 
   - title: Overview
     output: web, pdf
-    url: /
     folderitems:
 
     - title: What is the GNS?
@@ -32,10 +31,13 @@ entries:
       url: /cli_example_client/
       output: web, pdf
 
+  - title: Development
+    output: web, pdf
+    folderitems:
+
     - title: Java Example Client
       url: /java_example_client/
       output: web, pdf
-
 
   # Leaving this as an example of subfolders
   # - title: Tag archives
