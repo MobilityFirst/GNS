@@ -53,7 +53,7 @@ import edu.umass.cs.utils.Util;
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
 public class GNSClientCapacityTest extends DefaultTest {
 
-	private static final String ACCOUNT_GUID_PREFIX = "ACCOUNT_GUID";
+	private static String ACCOUNT_GUID_PREFIX = "ACCOUNT_GUID";
 	private static final String PASSWORD = "some_password";
 
 	// following can not be final if we want to initialize via command-line
@@ -89,6 +89,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		accountGuidsOnly = Config.getGlobalBoolean(GNSTC.ACCOUNT_GUIDS_ONLY);
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		numGuids = Config.getGlobalInt(TC.NUM_GROUPS);
+		ACCOUNT_GUID_PREFIX = Config.getGlobalString(TC.TEST_GUID_PREFIX);
 		numAccountGuids = accountGuidsOnly ? numGuids : Math.max(
 				(int) Math.ceil(numGuids * 1.0 / numGuidsPerAccount), 1);
 		accountGuidEntries = new GuidEntry[numAccountGuids];
@@ -181,6 +182,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 				subGuids.clear();
 			}
 		}
+		
 		for (GuidEntry guidEntry : accountGuidEntries)
 			assert (guidEntry != null);
 		for (GuidEntry guidEntry : guidEntries)
@@ -350,7 +352,6 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	@Test
 	public void test_10_SingleActiveReadLevel1() throws Exception{
 		
 		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
@@ -368,7 +369,6 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	@Test
 	public void test_11_SingleActiveReadLevel2() throws Exception{
 		
 		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
@@ -386,7 +386,6 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	@Test
 	public void test_12_SingleActiveReadLevel3() throws Exception{
 		
 		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
