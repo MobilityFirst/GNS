@@ -3,7 +3,7 @@ title: Installation
 keywords: installation
 last_updated: June 21, 2016
 sidebar: doc_sidebar
-permalink: /installation/
+permalink: /install/
 folder: doc
 ---
 ## Prerequisites

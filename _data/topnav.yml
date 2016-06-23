@@ -4,7 +4,7 @@ topnav:
 - title: Topnav
   items:
     - title: Documentation
-      url: /getting_started/
+      url: /install/
     - title: Javadoc
       url: /javadoc/index.html
     - title: Github

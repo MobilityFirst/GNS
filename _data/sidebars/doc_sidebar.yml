@@ -8,6 +8,7 @@ entries:
 
   - title: Overview
     output: web, pdf
+    url: /
     folderitems:
 
     - title: What is the GNS?
@@ -15,16 +16,12 @@ entries:
       type: homepage
       output: web, pdf
 
-    - title: Support
-      url: /mydoc_support/
-      output: web, pdf
-
   - title: Getting Started
     output: web, pdf
     folderitems:
 
     - title: Installation
-      url: /installation/
+      url: /install/
       output: web, pdf
 
     - title: Deploying A Single Node GNS Server
