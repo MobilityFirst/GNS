@@ -8,7 +8,7 @@ output: web
 # this property is useful for conditional filtering of content that is separate from the PDF.
 topnav_title: Global Name Service
 # this appears on the top navigation bar next to the home button
-site_title: Jekyll theme for designers
+site_title: Global Name Service
 # this appears in the html browser tab for the site title (seen mostly by search engines, not users)
 company_name: Your company
 # this appears in the footer
@@ -84,5 +84,5 @@ defaults:
 # these are defaults used for the frontmatter for these file types
 
 
-description: "Intended as a documentation theme based on Jekyll for technical writers documenting software and other technical products, this theme has all the elements you would need to handle multiple products with both multi-level sidebar navigation, tags, and other documentation features."
+description: ""
 # the description is used in the feed.xml file
