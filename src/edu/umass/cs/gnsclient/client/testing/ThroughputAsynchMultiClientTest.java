@@ -329,7 +329,7 @@ public class ThroughputAsynchMultiClientTest {
         try {
           JSONObject command = createCommand(CommandType.LookupRandomGuids,
                   GUID, masterGuid.getGuid(), GUIDCNT, numberOfGuids);
-          String result = checkResponse(command, clients[0].sendCommandAndWait(command));
+          String result = checkResponse(clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
             existingGuids = new JSONArray(result);
           } else {

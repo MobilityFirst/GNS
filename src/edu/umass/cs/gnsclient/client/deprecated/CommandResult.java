@@ -20,7 +20,7 @@
 package edu.umass.cs.gnsclient.client.deprecated;
 
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 
 import java.io.Serializable;

@@ -23,11 +23,8 @@ import edu.umass.cs.gigapaxos.PaxosConfig;
 //import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
-import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import static edu.umass.cs.reconfiguration.ReconfigurationConfig.getDemandProfile;
 import edu.umass.cs.utils.Config;
 
 import java.util.Map;
@@ -144,11 +141,10 @@ public class AppReconfigurableNodeOptions {
    * If this is true the app will handle all operations locally (ie., it won't send request to reconfigurators).
    */
   public static boolean standAloneApp = false;
-  /**
-   * If this is true SSL will not be used for communications between servers.
-   */
-  public static boolean disableSSL = false;
 
+  /**
+   * Enable active code.
+   */
   public static boolean enableActiveCode = false;
   /**
    * Number of active code worker.
@@ -197,10 +193,6 @@ public class AppReconfigurableNodeOptions {
    */
   public static final String GNS_SERVER_IP = "gnsServerIP";
   /**
-   * DISABLE_SSL
-   */
-  public static final String DISABLE_SSL = "disableSSL";
-  /**
    * DISABLE_EMAIL_VERIFICATION
    */
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
@@ -229,7 +221,6 @@ public class AppReconfigurableNodeOptions {
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
-    Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
 
     // for CS
@@ -248,7 +239,6 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
     commandLineOptions.addOption(gnsServerIP);
-    commandLineOptions.addOption(disableSSL);
     commandLineOptions.addOption(disableEmailVerification);
 
     //context service options
@@ -277,27 +267,9 @@ public class AppReconfigurableNodeOptions {
       return;
     }
 
-    if (!allValues.containsKey(DISABLE_SSL)) {
-      disableSSL = ReconfigurationConfig.getClientSSLMode() == SSL_MODES.CLEAR;
-    } else {
-      disableSSL = true;
-    }
-
     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
       System.out.println("******** Email Verification is OFF *********");
       GNSConfig.enableEmailAccountVerification = false;
-    }
-
-//    if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
-//      GNSConfig.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
-//
-//    }
-//    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
-//      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
-//      GNSConfig.consoleOutputLevel = levelString;
-//    }
-    if (allValues.containsKey(STANDALONE)) {
-      standAloneApp = true;
     }
 
     // APP options

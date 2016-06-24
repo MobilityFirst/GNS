@@ -52,7 +52,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admin
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;

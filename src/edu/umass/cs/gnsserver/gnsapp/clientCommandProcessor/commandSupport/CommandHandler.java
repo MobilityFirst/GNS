@@ -27,7 +27,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -259,8 +259,8 @@ public class CommandHandler {
    */
   public static void handleCommandReturnValuePacketForApp(CommandValueReturnPacket returnPacket,
           boolean doNotReplyToClient, GNSApp app) throws JSONException, IOException {
-    long id = returnPacket.getClientRequestId();
-    CommandRequestInfo sentInfo;
+ //   long id = returnPacket.getClientRequestId();
+ //   CommandRequestInfo sentInfo;
 		// arun: changed get to remove as otherwise it seems to be never removed
 //    if ((sentInfo = app.outStandingQueries.remove//get
 //    (id)) != null) {

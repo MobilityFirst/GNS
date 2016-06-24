@@ -99,7 +99,7 @@ public enum GNSResponseCode implements Serializable {
    */
   BAD_ACCOUNT_ERROR(11, GNSCommandProtocol.BAD_ACCOUNT, TYPE.ERROR),
   /**
-   *
+   * The operation does not exist or does not except the arguments given.
    */
   OPERATION_NOT_SUPPORTED(404, GNSCommandProtocol.OPERATION_NOT_SUPPORTED,
           TYPE.ERROR),
@@ -147,12 +147,47 @@ public enum GNSResponseCode implements Serializable {
           ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION
           .toString(), TYPE.EXCEPTION),
   /**
-   *
+   * The ACL type does not exist.
    */
-  QUERY_PROCESSING_ERROR(405, GNSCommandProtocol.QUERY_PROCESSING_ERROR,
-          TYPE.ERROR),
+  BAD_ALIAS_EXCEPTION(18, GNSCommandProtocol.BAD_ALIAS, TYPE.EXCEPTION),
   /**
-   *
+   * The ACL type does not exist.
+   */
+  BAD_ACL_TYPE_ERROR(19, GNSCommandProtocol.BAD_ACL_TYPE, TYPE.ERROR),
+  /**
+   * The field does not exist.
+   */
+  FIELD_NOT_FOUND_EXCEPTION(20, GNSCommandProtocol.FIELD_NOT_FOUND, TYPE.EXCEPTION),
+  /**
+   * The field does not exist.
+   */
+  DUPLICATE_GUID_EXCEPTION(21, GNSCommandProtocol.DUPLICATE_GUID, TYPE.EXCEPTION),
+  /**
+   * The name already exists.
+   */
+  DUPLICATE_NAME_EXCEPTION(22, GNSCommandProtocol.DUPLICATE_NAME, TYPE.EXCEPTION),
+  /**
+   * A JSON parsing error occurred.
+   */
+  JSON_PARSE_ERROR(23, GNSCommandProtocol.JSON_PARSE_ERROR, TYPE.ERROR),
+  /**
+   * The max alias limit was exceeded.
+   */
+  TOO_MANY_ALIASES_EXCEPTION(24, GNSCommandProtocol.TOO_MANY_ALIASES, TYPE.EXCEPTION),
+  /**
+   * The max guid limit was exceeded.
+   */
+  TOO_MANY_GUIDS_EXCEPTION(25, GNSCommandProtocol.TOO_MANY_GUIDS, TYPE.EXCEPTION),
+  /**
+   * There was an error while updating a record.
+   */
+  UPDATE_ERROR(26, GNSCommandProtocol.UPDATE_ERROR, TYPE.ERROR),
+  /**
+   * An error occurred during the processing of a command query.
+   */
+  QUERY_PROCESSING_ERROR(405, GNSCommandProtocol.QUERY_PROCESSING_ERROR, TYPE.ERROR),
+  /**
+   * A timeout occurred.
    */
   TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION),;
 
