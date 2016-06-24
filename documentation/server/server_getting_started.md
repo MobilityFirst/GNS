@@ -35,6 +35,15 @@ The client's output should be self-explanatory and it should exit gracefully wit
 ### In-memory database mode
 If you prefer to not use mongodb, uncomment or enter `IN_MEMORY_DB=true` in the default configuration properties file, `gigapaxos.properties`. Using the in-memory mode does not affect durability as that is ensured by gigapaxos, however, the database size will be limited by memory, so it is not recommended for production use.
 
+### Stopping GNS server(s)
+
+The GNS server can be stopped as
+
+```
+bin/gpServer.sh stop all
+```
+
+***
 
 ### Configuration properties overview
 The gigapaxos server script `gpServer.sh` script above looks for a properties file named `gigapaxos.properties` by default in the current directory and, if not found, in the `./conf/` subdirectory. A detailed explanation of gigapaxos properties is at the [gigapaxos properties TBD](.) page. We just need to observe here that the `APPLICATION` is GNSApp and the file specifies a single _reconfigurator_ and a single _active_ replica, both listening on localhost ports. Both gigapaxos- and GNS-specific properties are specified in the same properties file.
@@ -45,6 +54,12 @@ In general, the client and server are expected to use different properties files
 bin/gpServer.sh -DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties restart all
 
 bin/gpClient.sh -DgigapaxosConfig=conf/gigapaxos.client.singleNode.local.properties edu.umass.cs.gnsclient.examples.ClientExample
+```
+
+For safety, many gigapaxos properties, especially node names and addresses, can not be manually changed after bootstrap. So it is best to create a fresh server install in a new directory in order to change the properties or use a different properties file for the different server configurations below. Alternatively, you can use the following command to clear all state created by the current install before proceeding to use a different properties file as in the multi-node example below.
+
+```
+bin/gpServer.sh clear all
 ```
 
 ### Multi-node, local GNS
