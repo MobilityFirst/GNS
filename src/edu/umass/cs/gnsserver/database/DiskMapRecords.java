@@ -7,7 +7,10 @@
  */
 package edu.umass.cs.gnsserver.database;
 
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
+
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
@@ -18,11 +21,14 @@ import edu.umass.cs.gnsserver.utils.JSONUtils;
 import static edu.umass.cs.gnsserver.utils.JSONUtils.copyJsonObject;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DiskMap;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +40,7 @@ import org.json.JSONObject;
  * See DiskMapCollection for more details.
  *
  *
- * @author westy
+ * @author westy, arun
  */
 public class DiskMapRecords implements NoSQLRecords {
 
@@ -83,11 +89,74 @@ public class DiskMapRecords implements NoSQLRecords {
     }
     try {
       // Make a new object to make sure there aren't any DBObjects lurking in here
-      return copyJsonObject(record);
+      return recursiveCopyJSONObject(record); //copyJsonObject(record);
     } catch (JSONException e) {
       throw new FailedDBOperationException(collection, name, "Unable to parse json record");
     }
   }
+  
+	/** arun: The methods below copy a JSONObject recursively without stringification while 
+	 * converting BasicDBObject and BasicDBList as needed. As in any JSONObject, it is assumed
+	 * that there are no cyclic pointers.
+	 */
+	protected static JSONObject recursiveCopyJSONObject(JSONObject record)
+			throws JSONException {
+		JSONObject copy = new JSONObject();
+		for (String key : JSONObject.getNames(record))
+			copy.put(key, recursiveCopyObject(record.get(key)));
+		return copy;
+	}
+
+	private static JSONArray recursiveCopyJSONArray(JSONArray jarray)
+			throws JSONException {
+		JSONArray copy = new JSONArray();
+		for (int i = 0; i < jarray.length(); i++)
+			copy.put(recursiveCopyObject(jarray.get(i)));
+		return copy;
+	}
+
+	private static JSONArray recursiveCopyCollection(Collection<?> collection)
+			throws JSONException {
+		JSONArray copy = new JSONArray();
+		for (Object value : collection)
+			copy.put(recursiveCopyObject(value));
+		return copy;
+	}
+
+	static JSONObject recursiveCopyMap(Map<String, ?> map)
+			throws JSONException {
+		JSONObject copy = new JSONObject();
+		for (String key : map.keySet())
+			copy.put(key, recursiveCopyObject(map.get(key)));
+		return copy;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static Object recursiveCopyObject(Object value)
+			throws JSONException {
+		if (value instanceof JSONObject)
+			value = recursiveCopyJSONObject((JSONObject) value);
+		else if (value instanceof JSONArray)
+			value = recursiveCopyJSONArray((JSONArray) value);
+		else if (value instanceof Map)
+			value = recursiveCopyMap((Map<String, ?>) value);
+		else if (value instanceof Collection)
+			value = recursiveCopyCollection((Collection) value);
+		return value;
+	}
+	
+	// for debugging
+	@SuppressWarnings("unused")
+	private void print(JSONObject json) throws JSONException {
+		for (String key : JSONObject.getNames(json)) {
+			Object obj = json.get(key);
+			System.out.print(key + " : "); 
+			if(obj instanceof JSONObject)  print((JSONObject)obj);
+			else System.out.print(
+				obj.getClass());
+			System.out.println("");
+		}
+	}
 
   @Override
   public HashMap<ColumnField, Object> lookupSomeFields(String collection, String name,

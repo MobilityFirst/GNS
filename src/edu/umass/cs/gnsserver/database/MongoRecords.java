@@ -51,6 +51,7 @@ import org.json.JSONObject;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -200,7 +201,11 @@ public class MongoRecords implements NoSQLRecords {
       }
       if (cursor.hasNext()) {
         DBObject obj = cursor.next();
-        JSONObject json = new JSONObject(obj.toString());
+        // arun: optimized for the common case of Map
+        @SuppressWarnings("unchecked")
+		JSONObject json = obj instanceof Map ? DiskMapRecords
+        		.recursiveCopyMap((Map<String, ?>) obj)
+        		: new JSONObject(obj.toString());
         // instrumentation
         DelayProfiler.updateDelay("lookupEntireRecord", startTime);
         // older style
