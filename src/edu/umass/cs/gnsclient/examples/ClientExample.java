@@ -170,7 +170,7 @@ public class ClientExample {
 						+ resultString);
 
 		// Delete created GUID 
-		client.guidRemove(guid);
+		client.accountGuidRemove(guid);
 
 		client.close();
 		System.out.println("Successfully performed test operations and closed client");
