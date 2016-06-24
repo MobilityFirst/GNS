@@ -35,7 +35,10 @@ import edu.umass.cs.gnsserver.utils.Email;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -72,7 +75,7 @@ import org.json.JSONObject;
  * GUID = Globally Unique Identifier<br>
  * HRN = Human Readable Name<br>
  *
- * @author westy
+ * @author westy, arun
  */
 public class AccountAccess {
 
@@ -436,13 +439,24 @@ public class AccountAccess {
 
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
-  private static final String SECRET = "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
-          + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
+  private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.VERIFICATION_SECRET);
+	// "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE" +
+	// "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
 
-  private static String createVerificationCode(String name) {
-    // Take the first N bytes of the array for our code
-    return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
-  }
+  
+  // arun: added random salt unless email verification is disabled.
+	private static String createVerificationCode(String name) {
+		return ByteUtils
+				.toHex(Arrays
+						.copyOf(ShaOneHashFunction
+								.getInstance()
+								.hash(name
+										+ SECRET
+										+ (!GNSConfig.enableEmailAccountVerification ? new String(
+												Util.getRandomAlphanumericBytes(128))
+												: "")),
+								VERIFICATION_CODE_LENGTH));
+	}
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 

@@ -60,14 +60,13 @@ public class DiskMapCollection {
   public DiskMapCollection(String nodeID, int port, String collectionName) {
     this.mongoRecords = new MongoRecords(nodeID + "-"
             + collectionName + new Random().nextInt(), port);
-    this.map = new DiskMap<String, JSONObject>(100000) {
+    this.map = new DiskMap<String, JSONObject>(!Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB) ? 128*1024 :
+    	Long.MAX_VALUE) {
       @Override
       public Set<String> commit(Map<String, JSONObject> toCommit) throws IOException {
         DatabaseConfig.getLogger().fine("Commit: " + toCommit);
         try {
-        	// check whether in-memory DB is enabled
-        	if(!Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB))
-        		mongoRecords.bulkUpdate(DBNAMERECORD, toCommit);
+        	mongoRecords.bulkUpdate(DBNAMERECORD, toCommit);
         } catch (FailedDBOperationException | RecordExistsException e) {
           throw new IOException(e);
         }
@@ -77,9 +76,7 @@ public class DiskMapCollection {
       @Override
       public JSONObject restore(String key) throws IOException {
         try {
-        	// check whether in-memory DB is enabled
-        	if(!Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB))
-        		return mongoRecords.lookupEntireRecord(DBNAMERECORD, key);
+        	return mongoRecords.lookupEntireRecord(DBNAMERECORD, key);
         } catch (FailedDBOperationException e) {
         	GNSConfig.getLogger().severe(e.getMessage());
         	e.printStackTrace();
