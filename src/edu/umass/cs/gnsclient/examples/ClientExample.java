@@ -169,7 +169,7 @@ public class ClientExample {
 				.println("Retrieved field \"name\" and \"occupation\" fields from guid: "
 						+ resultString);
 
-		// Delete created GUID
+		// Delete created GUID 
 		client.guidRemove(guid);
 
 		client.close();
