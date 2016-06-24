@@ -6,21 +6,12 @@ entries:
   version:
   folders:
 
-  - title: Overview
+  - title: Server
     output: web, pdf
     folderitems:
-
-    - title: What is the GNS?
-      url: /
-      type: homepage
-      output: web, pdf
-
-  - title: Getting Started
-    output: web, pdf
-    folderitems:
-
-    - title: Installation
-      url: /install/
+      
+    - title: Getting Started
+      url: /server_getting_started/
       output: web, pdf
 
     - title: Deploying A Single Node GNS Server
@@ -38,25 +29,3 @@ entries:
     - title: Java Example Client
       url: /java_example_client/
       output: web, pdf
-
-  # Leaving this as an example of subfolders
-  # - title: Tag archives
-  #   output: web
-  #   folderitems:
-  # 
-  #   - title: Tag archives overview
-  #     url: /mydoc_tag_archives_overview/
-  #     output: web
-  # 
-  #     subfolders:
-  #     - title: Tag archive pages
-  #       output: web
-  #       subfolderitems:
-  # 
-  #       - title: Formatting pages
-  #         url: /tag_formatting/
-  #         output: web
-  # 
-  #       - title: Navigation pages
-  #         url: /tag_navigation/
-  #         output: web
