@@ -70,7 +70,7 @@ import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -121,18 +121,16 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     super(anyReconfigurator);
   }
 
-  private String checkResponse(JSONObject command) throws ClientException,
-          IOException {
-    return CommandUtils.checkResponse(command, sendCommandAndWait(command));
+  private String checkResponse(JSONObject command) throws ClientException, IOException {
+    return CommandUtils.checkResponse(sendCommandAndWait(command));
   }
 
   private String checkAndReturnResponse(JSONObject command)
           throws ClientException, IOException {
     Object response;
-    CommandUtils.checkResponse(command,
-            response = sendCommandAndWait(command));
-		return response instanceof String ? (String) response
-				: ((CommandValueReturnPacket) response).getReturnValue();
+    CommandUtils.checkResponse(response = sendCommandAndWait(command));
+    return response instanceof String ? (String) response
+            : ((CommandValueReturnPacket) response).getReturnValue();
   }
 
   // READ AND WRITE COMMANDS
@@ -721,10 +719,10 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     }
     DelayProfiler.updateDelay("batchCreatePublicKeys", publicKeyStartTime);
 
-		return checkResponse(createAndSignCommand(CommandType.AddMultipleGuids,
-				accountGuid.getPrivateKey(), GUID, accountGuid.getGuid(),
-				NAMES, new JSONArray(aliasList), PUBLIC_KEYS, new JSONArray(
-						publicKeys)));
+    return checkResponse(createAndSignCommand(CommandType.AddMultipleGuids,
+            accountGuid.getPrivateKey(), GUID, accountGuid.getGuid(),
+            NAMES, new JSONArray(aliasList), PUBLIC_KEYS, new JSONArray(
+                    publicKeys)));
   }
 
   /**

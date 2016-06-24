@@ -17,11 +17,13 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.packet;
+package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,9 +33,6 @@ import org.json.JSONObject;
  * Contains the original id plus the return value (as a STRING)
  * plus a possible error code (could be null)
  * plus instrumentation.
- *
- * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent
- * insofar as the fields in the JSON Object is concerned.
  *
  */
 public class CommandValueReturnPacket extends BasicPacketWithClientAddress implements ClientRequest {
@@ -196,13 +195,13 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     return new Object() {
       @Override
       public String toString() {
-        return CommandValueReturnPacket.this.getRequestType()
+        return getRequestType()
                 + ":"
-                + CommandValueReturnPacket.this.getServiceName()
+                + getServiceName()
                 + ":"
-                + CommandValueReturnPacket.this.getRequestID()
+                + getRequestID()
                 + ":"
-                + CommandValueReturnPacket.this.getReturnValue();
+                + getReturnValue();
       }
     };
   }

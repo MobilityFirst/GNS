@@ -16,13 +16,14 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
+import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
@@ -243,7 +244,7 @@ public class CommandUtils {
   /**
    * Checks the response from a command request for proper syntax as well as
    * converting error responses into the appropriate thrown GNS exceptions.
-   * 
+   *
    * In the original protocol the string response was modeled after other simple string-based
    * response protocols. Responses were either:
    * 1) a return value whose format was interpreted by the caller - this is the nominal case
@@ -251,29 +252,28 @@ public class CommandUtils {
    * 2) "+NULL+" - another nominal which meant we should return null as the value
    * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+
    * Later a special case 4 was added for ACTIVE_REPLICA_EXCEPTION.
-   * 
+   *
    * For case 3 the additional info strings (could be any number) were interpreted by the error handlers
    * and generally used to help provide additional info to indicate error causes.
-   * 
+   *
    * Also note that:
-   * 
+   *
    * GNSCommandProtocol.OK_RESPONSE = "+OK+"
    * GNSCommandProtocol.BAD_RESPONSE = "+NO+"
    * GNSCommandProtocol.NULL_RESPONSE = "+NULL+"
-   * 
-   * 
-   * @param command
+   *
+   *
    * @param response
    * @return
    * @throws ClientException
    */
-  public static String checkResponse(JSONObject command, String response) throws ClientException {
+  public static String checkResponse(String response) throws ClientException {
     // System.out.println("response:" + response);
     if (response.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
       String[] results = response.split(" ");
       // System.out.println("results length:" + results.length);
       if (results.length < 2) {
-        throw new ClientException("Invalid bad response indicator: " + response + " Command: " + command.toString());
+        throw new ClientException("Invalid bad response indicator: " + response);
       } else if (results.length >= 2) {
         // System.out.println("results[0]:" + results[0]);
         // System.out.println("results[1]:" + results[1]);
@@ -309,14 +309,15 @@ public class CommandUtils {
         if (error.startsWith(GNSCommandProtocol.VERIFICATION_ERROR)) {
           throw new VerificationException(error + rest);
         }
+        if (error.startsWith(OPERATION_NOT_SUPPORTED)) {
+          throw new OperationNotSupportedException(error + rest);
+        }
         throw new ClientException("General command failure: " + error + rest);
       }
     }
     if (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) {
       return null;
-    } else if (response.startsWith(
-            GNSCommandProtocol.ACTIVE_REPLICA_EXCEPTION.toString()
-    //    		GNSResponseCode.ACTIVE_REPLICA_EXCEPTION.toString()
+    } else if (response.startsWith(GNSCommandProtocol.ACTIVE_REPLICA_EXCEPTION.toString()
     )) {
       throw new InvalidGuidException(response);
     } else {
@@ -325,25 +326,23 @@ public class CommandUtils {
   }
 
   // bridging hack 
-  public static String checkResponse(JSONObject command, Object response) throws ClientException {
-    return response instanceof String ? checkResponse(command, (String) response)
-            : checkResponse(command, ((CommandValueReturnPacket) response));
+  public static String checkResponse(Object response) throws ClientException {
+    return response instanceof String ? checkResponse((String) response)
+            : checkResponse(((CommandValueReturnPacket) response));
   }
 
   /**
    * arun: This checkResponse method will replace the old one. There is no
    * reason to not directly use the received CommandValeReturnPacket.
    *
-   * @param command
    * @param packet
    * @return Response as a string.
    * @throws ClientException
    */
-  public static String checkResponse(JSONObject command,
-          CommandValueReturnPacket packet) throws ClientException {
+  public static String checkResponse(CommandValueReturnPacket packet) throws ClientException {
     // FIXME: arun: The line below disables this method
     if (true) {
-      return checkResponse(command, packet.getReturnValue());
+      return checkResponse(packet.getReturnValue());
     }
 
     GNSResponseCode code = packet.getErrorCode();
