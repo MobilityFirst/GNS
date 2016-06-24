@@ -41,27 +41,38 @@ public class GNSConfig {
 
 		/**
 		 * Enables secret key communication that is ~180x faster at signing and
-		 * ~8x faster at verification. True by default as there is no reason to 
+		 * ~8x faster at verification. True by default as there is no reason to
 		 * not support it at the server.
 		 */
 		ENABLE_SECRET_KEY(true),
-		
+
 		/**
 		 * Uses DiskMapRecords if enabled.
 		 */
-		ENABLE_DISKMAP (false),
+		ENABLE_DISKMAP(false),
 		/**
 		 * Completely turns off mongo or other persistent database provided
 		 * DiskMap is also enabled.
 		 */
-		IN_MEMORY_DB (false),
-		
+		IN_MEMORY_DB(false),
+
 		/**
 		 * If enabled, the GNS will cache and return the same value for reads.
 		 * 
 		 * Code-breaking if enabled. Meant only for instrumentation.
 		 */
-		EXECUTE_NOOP_ENABLED(false), ;
+		EXECUTE_NOOP_ENABLED(false),
+
+		/**
+		 * A secret shared between the server and client in order to circumvent
+		 * account verification. Must be changed using properties file if manual
+		 * verification is disabled.
+		 */
+		VERIFICATION_SECRET(
+				"AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
+						+ "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri")
+
+		;
 
 		final Object defaultValue;
 
