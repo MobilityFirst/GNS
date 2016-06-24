@@ -19,8 +19,8 @@ public class ActivePipe implements ActiveChannel{
 	 */
 	public ActivePipe(String ifile, String ofile){
 		try {
-			writer = new RandomAccessFile(ofile, "rw");
 			reader = new RandomAccessFile(ifile, "r");
+			writer = new RandomAccessFile(ofile, "rw");			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
