@@ -173,5 +173,6 @@ public class ClientExample {
 		client.guidRemove(guid);
 
 		client.close();
+		System.out.println("Successfully performed test operations and closed client");
 	}
 }
