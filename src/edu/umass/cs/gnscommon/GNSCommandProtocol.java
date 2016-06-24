@@ -108,19 +108,23 @@ public class GNSCommandProtocol {
   public final static String BAD_ACCOUNT = "+BADACCOUNT+";
   /**
    * Indicates that a command is trying to use an alias that does not exist.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ALIAS_EXCEPTION}.
    * 
    */
   public final static String BAD_ALIAS = "+BADALIAS+";
   /**
    * Indicates that a command is trying to use an ACL type that does not exist.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ACL_TYPE_ERROR}.
    */
   public final static String BAD_ACL_TYPE = "+BADACLTYPE+";
   /**
    * Indicates that a command is trying to access a field that does not exist.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#FIELD_NOT_FOUND_EXCEPTION}.
    */
   public final static String FIELD_NOT_FOUND = "+FIELDNOTFOUND+";
   /**
    * Indicates that a command is trying to add a guid that already exists.
+   *  * See {@link edu.umass.cs.gnscommon.GNSResponseCode#DUPLICATE_GUID_EXCEPTION}.
    */
   public final static String DUPLICATE_GUID = "+DUPLICATEGUID+";
   /**
@@ -130,22 +134,27 @@ public class GNSCommandProtocol {
   public final static String DUPLICATE_FIELD = "+DUPLICATEFIELD+";
   /**
    * Indicates that a command is trying to add an alias that already exists.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#DUPLICATE_NAME_EXCEPTION}.
    */
   public final static String DUPLICATE_NAME = "+DUPLICATENAME+";
   /**
    * Indicates that a command resulted in a error while parsing a JSON string.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#JSON_PARSE_ERROR}.
    */
   public final static String JSON_PARSE_ERROR = "+JSONPARSEERROR+";
   /**
    * Indicates that a command attempted to create more alias than is allowed.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#TOO_MANY_ALIASES_EXCEPTION}.
    */
   public final static String TOO_MANY_ALIASES = "+TOMANYALIASES+";
   /**
    * Indicates that a command attempted to create more guids than is allowed.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#TOO_MANY_GUIDS_EXCEPTION}.
    */
   public final static String TOO_MANY_GUIDS = "+TOMANYGUIDS+";
   /**
    * Indicates that a command resulted in an error while updating a record.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#UPDATE_ERROR}.
    */
   public final static String UPDATE_ERROR = "+UPDATEERROR+";
   /**
@@ -156,6 +165,7 @@ public class GNSCommandProtocol {
   /**
    * Indicates that a command resulted in an active replica receiving a request
    * for a name that is not replicated there.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#ACTIVE_REPLICA_EXCEPTION}.
    */
   public final static String ACTIVE_REPLICA_EXCEPTION
           = ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION.toString();

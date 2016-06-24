@@ -225,7 +225,7 @@ public class AccountAccess {
    * * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
-   * 
+   *
    * @param name
    * @param handler
    * @return a guid or null if the corresponding guid does not exist
@@ -440,23 +440,16 @@ public class AccountAccess {
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
   private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.VERIFICATION_SECRET);
-	// "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE" +
-	// "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
+  // "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE" +
+  // "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
 
-  
   // arun: added random salt unless email verification is disabled.
-	private static String createVerificationCode(String name) {
-		return ByteUtils
-				.toHex(Arrays
-						.copyOf(ShaOneHashFunction
-								.getInstance()
-								.hash(name
-										+ SECRET
-										+ (!GNSConfig.enableEmailAccountVerification ? new String(
-												Util.getRandomAlphanumericBytes(128))
-												: "")),
-								VERIFICATION_CODE_LENGTH));
-	}
+  private static String createVerificationCode(String name) {
+    return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction.getInstance().hash(
+            name + SECRET + (!GNSConfig.enableEmailAccountVerification ? new String(
+                            Util.getRandomAlphanumericBytes(128)) : "")),
+            VERIFICATION_CODE_LENGTH));
+  }
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
 
@@ -961,7 +954,7 @@ public class AccountAccess {
               writer, signature, message, timestamp, handler, true).isError()) {
         // back out if we got an error
         handler.getRemoteQuery().deleteRecord(alias);
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ALIAS);
+        return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
       } else {
         return new CommandResponse<>(OK_RESPONSE);
       }
