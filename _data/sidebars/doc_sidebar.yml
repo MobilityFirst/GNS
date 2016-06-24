@@ -10,22 +10,63 @@ entries:
     output: web, pdf
     folderitems:
       
+    - title: Obtaining Server
+      url: /server_obtaining/
+      output: web, pdf
+      
     - title: Getting Started
       url: /server_getting_started/
       output: web, pdf
 
-    - title: Deploying A Single Node GNS Server
-      url: /deploy_single_node_server/
+      subfolders:
+      - title: Start a GNS Server
+        output: web
+        subfolderitems:
+          
+        - title: Single Node, Locally
+          url: /server_deploy_single_local/
+          output: web, pdf
+        
+        - title: Distributed, Locally
+          url: /server_deploy_distributed_local/
+          output: web, pdf
+        
+        - title: Distributed, Remotely
+          url: /server_deploy_distributed_remote/
+          output: web, pdf          
+
+    - title: Server gigapaxos.properties file
+      url: /server_gigapaxos_properties/
       output: web, pdf
 
-    - title: CLI Example Client
-      url: /cli_example_client/
-      output: web, pdf
-
-  - title: Development
+  - title: Client
     output: web, pdf
     folderitems:
 
-    - title: Java Example Client
-      url: /java_example_client/
+    - title: Obtaining Client
+      url: /client_obtaining/
+      output: web, pdf
+      
+    - title: CLI Tutorial
+      url: /client_cli_tutorial/
+      output: web, pdf
+    
+    - title: Simple Example
+      url: /client_simple_example/
+      output: web, pdf
+      
+    - title: Select Queries
+      url: /client_select_queries/
+      output: web, pdf
+      
+    - title: Acess Control Lists (ACLs)
+      url: /client_ACL_example/
+      output: web, pdf
+    
+    - title: Client gigapaxos.properties file
+      url: /client_gigapaxos_properties/
+      output: web, pdf
+      
+    - title: Javadoc
+      url: /javadoc/index.html
       output: web, pdf

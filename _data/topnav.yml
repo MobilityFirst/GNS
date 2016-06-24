@@ -5,7 +5,7 @@ topnav:
   items:
     - title: Documentation
       url: /install/
-    - title: Javadoc
-      url: /javadoc/index.html
+    - title: Community
+      url: /community/
     - title: Github
       external_url: https://github.com/MobilityFirst/GNS
