@@ -38,62 +38,77 @@ public class GNSCommandProtocol {
   //
   /**
    * Indicates that a command that does not return a value has completed successfully.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#NO_ERROR}.
    */
   public final static String OK_RESPONSE = "+OK+";
   /**
-   * Used to allow commands to store and return a null value.
-   */
-  public final static String NULL_RESPONSE = "+NULL+";
-  /**
-   * Indicates that a command did not complete successfully.
-   * Generally accompanied by an additional string value which indicates the
+   * A prefix used in the command return value to indicate an anomolous condition.
+   * Always accompanied by an additional string value which indicates the
    * particular exception or error that occurred.
+   * 
    */
   public final static String BAD_RESPONSE = "+NO+";
   /**
+   * Indicates that a command resulted in an error of some no specified type.
+   * Should be use sparingly if at all. Uses should replaced with a more specific code
+   * if possible.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#UNSPECIFIED_ERROR}.
+   */
+  public final static String UNSPECIFIED_ERROR = "+GENERICERROR+";
+  /**
    * Indicates that a the signature supplied with a command did not match the message
    * in the command.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#SIGNATURE_ERROR}.
    */
   public final static String BAD_SIGNATURE = "+BAD_SIGNATURE+";
   /**
    * Indicates that the accessor guid provided with the command does not have access
    * to the field being accessed.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#ACCESS_ERROR}.
    */
   public final static String ACCESS_DENIED = "+ACCESS_DENIED+";
   /**
    * Indicates that the command is too old to be executed.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#STALE_COMMAND_VALUE}.
    */
   public final static String STALE_COMMMAND = "+STALE_COMMMAND+";
   /**
    * Indicates that command could not be executed because it had an unknown name
    * or incorrect arguments.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#OPERATION_NOT_SUPPORTED}.
    */
   public final static String OPERATION_NOT_SUPPORTED = "+OPERATIONNOTSUPPORTED+";
   /**
    * Indicates that command could not be executed due to non-json parsing or
    * other interpretation error.
    * An additional string is usually provided explaining the error.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#QUERY_PROCESSING_ERROR}.
    */
   public final static String QUERY_PROCESSING_ERROR = "+QUERYPROCESSINGERROR+";
   /**
    * Indicates that command an account verification or password verification error occurred.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#VERIFICATION_ERROR}.
    */
   public final static String VERIFICATION_ERROR = "+VERIFICATIONERROR+";
   /**
    * Indicates that a command is trying to access a field using an
    * accessor guid that does not exist.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ACCESSOR_ERROR}.
    */
   public final static String BAD_ACCESSOR_GUID = "+BADACCESSORGUID+";
   /**
    * Indicates that a command is trying to use a guid that does not exist.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_GUID_ERROR}.
    */
   public final static String BAD_GUID = "+BADGUID+";
   /**
    * Indicates that a command is trying to use an account guid that does not exist.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#BAD_ACCOUNT_ERROR}.
    */
   public final static String BAD_ACCOUNT = "+BADACCOUNT+";
   /**
    * Indicates that a command is trying to use an alias that does not exist.
+   * 
    */
   public final static String BAD_ALIAS = "+BADALIAS+";
   /**
@@ -110,6 +125,7 @@ public class GNSCommandProtocol {
   public final static String DUPLICATE_GUID = "+DUPLICATEGUID+";
   /**
    * Indicates that a command is trying to add a field that already exists.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#DUPLICATE_FIELD_EXCEPTION}.
    */
   public final static String DUPLICATE_FIELD = "+DUPLICATEFIELD+";
   /**
@@ -133,13 +149,8 @@ public class GNSCommandProtocol {
    */
   public final static String UPDATE_ERROR = "+UPDATEERROR+";
   /**
-   * Indicates that a command resulted in an error of some no specified type.
-   * Should be use sparingly if at all. Uses should replaced with a more specific code
-   * if possible.
-   */
-  public final static String UNSPECIFIED_ERROR = "+GENERICERROR+";
-  /**
    * Indicates that a timeout occurred during the execution of a command.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#TIMEOUT}.
    */
   public final static String TIMEOUT = "+TIMEOUT+";
   /**
@@ -151,6 +162,10 @@ public class GNSCommandProtocol {
   //
   // End of Response codes
   //
+  /**
+   * Used to allow commands to store and return a null value.
+   */
+  public final static String NULL_RESPONSE = "+NULL+";
   /**
    * The name of the RSA algorithm. Used with {@link java.security.KeyFactory}
    */

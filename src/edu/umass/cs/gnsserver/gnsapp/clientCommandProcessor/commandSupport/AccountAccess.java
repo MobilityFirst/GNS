@@ -146,8 +146,7 @@ public class AccountAccess {
         return new AccountInfo(new JSONObject(result.getString(ACCOUNT_INFO)));
       }
     } catch (FailedDBOperationException | JSONException | ParseException e) {
-//      GNSConfig.getLogger().log(Level.SEVERE, "Problem extracting ACCOUNT_INFO from {0} :{1}",
-//              new Object[]{guid, e});
+      // Do nothing as this is a normal result when the record doesn't exist.
     }
     GNSConfig.getLogger().log(Level.FINE,
             "AAAAAAAAAAAAAAAAAAAAAAAAA  ACCOUNT_INFO NOT FOUND for {0}", guid);
@@ -162,17 +161,13 @@ public class AccountAccess {
       try {
         value = handler.getRemoteQuery().fieldRead(guid, ACCOUNT_INFO);
       } catch (IOException | JSONException | ClientException e) {
-//        GNSConfig.getLogger().log(Level.SEVERE,
-//                "Problem getting GUID_INFO for {0} from remote server: {1}",
-//                new Object[]{guid, e});
+        // Do nothing as this is a normal result when the record doesn't exist.
       }
       if (value != null) {
         try {
           return new AccountInfo(new JSONObject(value));
         } catch (JSONException | ParseException e) {
-//          GNSConfig.getLogger().log(Level.SEVERE,
-//                  "Problem parsing GUID_INFO value from remote server for {0}: {1}",
-//                  new Object[]{guid, e});
+          // Do nothing as this is a normal result when the record doesn't exist.
         }
       }
     }
@@ -222,6 +217,16 @@ public class AccountAccess {
     return value;
   }
 
+  /**
+   * Returns the GUID associated with name which is a HRN or null if one of that name does not exist.
+   * * <p>
+   * GUID = Globally Unique Identifier<br>
+   * HRN = Human Readable Name<br>
+   * 
+   * @param name
+   * @param handler
+   * @return a guid or null if the corresponding guid does not exist
+   */
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
     return lookupGuid(name, handler, false);
   }
@@ -235,7 +240,7 @@ public class AccountAccess {
    * @param name
    * @param handler
    * @param allowRemoteLookup
-   * @return a GUID
+   * @return a guid or null if the corresponding guid does not exist
    */
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler,
           boolean allowRemoteLookup) {
@@ -616,7 +621,7 @@ public class AccountAccess {
    * @throws java.io.IOException
    * @throws org.json.JSONException
    */
-  public static CommandResponse<String> removeAccount(AccountInfo accountInfo, 
+  public static CommandResponse<String> removeAccount(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException {
     // First remove any group links
@@ -932,9 +937,6 @@ public class AccountAccess {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, accountInfo.getPrimaryGuid());
       if ((returnCode = handler.getRemoteQuery().createRecord(alias, jsonHRN)).isError()) {
-        //if ((returnCode = handler.getIntercessor().sendFullAddRecord(alias, jsonHRN)).isAnError()) {
-//    if ((returnCode = handler.getIntercessor().sendAddRecordWithSingleField(alias, HRN_GUID,
-//            new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))).isAnError()) {
         // roll this back
         accountInfo.removeAlias(alias);
         return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + alias);
@@ -978,7 +980,6 @@ public class AccountAccess {
     // remove the NAME -- GUID record
     GNSResponseCode responseCode;
     if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isError()) {
-      //if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     // Now updated the account record
