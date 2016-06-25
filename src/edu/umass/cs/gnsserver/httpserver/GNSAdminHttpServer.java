@@ -153,7 +153,7 @@ public class GNSAdminHttpServer {
                     "Action: {0} Query:{1}", new Object[]{action, query});
             response = processQuery(host, action, query);
           } else {
-            response = BAD_RESPONSE + " " + NO_ACTION_FOUND;
+            response = BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query;
           }
           LOG.log(Level.FINER, "Response: {0}", response);
           responseBody.write(response.getBytes());

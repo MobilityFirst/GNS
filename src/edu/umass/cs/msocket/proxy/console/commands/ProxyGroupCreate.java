@@ -114,7 +114,7 @@ public class ProxyGroupCreate extends ConsoleCommand
         myGuid = gnsClient.guidCreate(module.getAccountGuid(), proxyGroupName);
         // Allow anyone to access the group membership that contains verified
         // proxies
-        gnsClient.groupAddMembershipReadPermission(myGuid, GNSCommandProtocol.ALL_USERS);
+        gnsClient.groupAddMembershipReadPermission(myGuid, GNSCommandProtocol.ALL_GUIDS);
       }
 
       // Create the fields containing the GUID lists
@@ -156,8 +156,8 @@ public class ProxyGroupCreate extends ConsoleCommand
     {
       gnsClient.fieldCreateList(myGuid.getGuid(), field, new JSONArray(), myGuid);
     }
-    gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
+    gnsClient.aclAdd(AclAccessType.READ_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_GUIDS);
     if (writeAll)
-      gnsClient.aclAdd(AclAccessType.WRITE_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_USERS);
+      gnsClient.aclAdd(AclAccessType.WRITE_WHITELIST, myGuid, field, GNSCommandProtocol.ALL_GUIDS);
   }
 }

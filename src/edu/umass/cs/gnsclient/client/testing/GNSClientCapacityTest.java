@@ -219,14 +219,17 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_02_SequentialSignedReadCapacity() throws Exception {
-		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Math.min(Integer.MAX_VALUE, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
+			long t1 = System.nanoTime();
 			clients[0].fieldRead(guidEntries[0], someField);
+			DelayProfiler.updateDelayNano("e2eLatency", t1);
 		}
 		System.out.print("sequential_read_rate="
 				+ Util.df(numReads * 1.0 / (System.currentTimeMillis() - t))
 				+ "K/s averaged over " + numReads + " reads.");
+		System.out.println(DelayProfiler.getStats());
 	}
 
 	/**
@@ -237,11 +240,14 @@ public class GNSClientCapacityTest extends DefaultTest {
 		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
+			long t1 = System.nanoTime();
 			clients[0].fieldRead(guidEntries[0].getGuid(), someField, null);
+			DelayProfiler.updateDelayNano("e2eLatency", t1);
 		}
 		System.out.print("sequential_read_rate="
 				+ Util.df(numReads * 1.0 / (System.currentTimeMillis() - t))
 				+ "K/s averaged over " + numReads + " reads.");
+		System.out.println(DelayProfiler.getStats());
 	}
 
 	private static int numFinishedReads = 0;

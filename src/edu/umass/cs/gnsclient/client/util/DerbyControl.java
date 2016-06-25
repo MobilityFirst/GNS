@@ -64,7 +64,7 @@ public class DerbyControl {
      * user can connect to your database using any password. To enable
      * authentication, see the Derby Developer's Guide.
      */
-    String dbName = "derbyDB"; // the name of the database
+    String dbName = "clientKeyDB"; // the name of the database
 
     /*
      * This connection specifies create=true in the connection URL to

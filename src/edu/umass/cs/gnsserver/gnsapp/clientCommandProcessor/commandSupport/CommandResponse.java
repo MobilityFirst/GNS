@@ -14,7 +14,7 @@
  *  implied. See the License for the specific language governing
  *  permissions and limitations under the License.
  *
- *  Initial developer(s): Abhigyan Sharma, Westy
+ *  Initial developer(s): Westy
  *
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
@@ -35,36 +35,16 @@ public class CommandResponse<NodeIDType> {
    * Indicates if the response is an error. Can be null.
    */
   private GNSResponseCode errorCode;
-  
-  // instrumentation
-  /**
-   * The RTT as measured from the CCP out and back.
-   */
-  private long CCPRoundTripTime; // how long this query took
-  /**
-   * Instrumentation - what nameserver responded to this query
-   */
-  private NodeIDType responder;
-//  /**
-//   * Database lookup time instrumentation
-//   */
-//  private final int lookupTime;
 
   /**
    * Create a command response object from a return value with an error code.
    * 
    * @param returnValue
    * @param errorCode
-   * @param CCPRoundTripTime
-   * @param responder
    */
-  public CommandResponse(String returnValue, GNSResponseCode errorCode, 
-          long CCPRoundTripTime, NodeIDType responder) {
+  public CommandResponse(String returnValue, GNSResponseCode errorCode) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
-    this.CCPRoundTripTime = CCPRoundTripTime;
-    this.responder = responder;
-    //this.lookupTime = lookupTime;
   }
 
   /**
@@ -73,19 +53,9 @@ public class CommandResponse<NodeIDType> {
    * @param returnValue
    */
   public CommandResponse(String returnValue) {
-    this(returnValue, GNSResponseCode.NO_ERROR, -1, null);
+    this(returnValue, GNSResponseCode.NO_ERROR);
   }
   
-  /**
-   * Create a command response object from a return value with no error.
-   * 
-   * @param returnValue
-   * @param responder
-   */
-  public CommandResponse(String returnValue, NodeIDType responder) {
-    this(returnValue, GNSResponseCode.NO_ERROR, -1, responder);
-  }
-
   /**
    * Gets the return value.
    * 
@@ -112,32 +82,5 @@ public class CommandResponse<NodeIDType> {
   public boolean isError() {
     return this.errorCode != null;
   }
-
-  /**
-   * Gets the LNS round trip time (computed from LNS to NS and back).
-   * 
-   * @return a long
-   */
-  public long getCCPRoundTripTime() {
-    return CCPRoundTripTime;
-  }
-
-  /**
-   * Gets the id of the name server that responded (could be -1 if not known).
-   * 
-   * @return an id
-   */
-  public NodeIDType getResponder() {
-    return responder;
-  }
-
-//  /**
-//   * Retrieves the database lookup time instrumentation from the command response.
-//   * 
-//   * @return 
-//   */
-//  public int getLookupTime() {
-//    return lookupTime;
-//  }
 
 }

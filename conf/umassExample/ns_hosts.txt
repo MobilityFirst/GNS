@@ -1,3 +1,0 @@
-plum.cs.umass.edu
-date.cs.umass.edu
-pear.cs.umass.edu

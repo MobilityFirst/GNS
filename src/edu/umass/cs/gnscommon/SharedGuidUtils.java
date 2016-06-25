@@ -75,8 +75,8 @@ public class SharedGuidUtils {
     for (int i = 0; i < publicKeys.length(); i++) {
       // Special case
       try {
-        if (publicKeys.getString(i).equals(GNSCommandProtocol.ALL_USERS)) {
-          guids.put(GNSCommandProtocol.ALL_USERS);
+        if (publicKeys.getString(i).equals(GNSCommandProtocol.ALL_GUIDS)) {
+          guids.put(GNSCommandProtocol.ALL_GUIDS);
         } else {
           guids.put(createGuidStringFromBase64PublicKey(publicKeys.getString(i)));
         }

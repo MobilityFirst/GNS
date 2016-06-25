@@ -54,9 +54,7 @@ import edu.umass.cs.gnscommon.exceptions.client.AclException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnscommon.CommandType;
@@ -1199,7 +1197,7 @@ public class UniversalHttpClient implements GNSClientInterface {
             accesserGuid == null ? CommandType.AclAdd : CommandType.AclAddSelf,
             GNSCommandProtocol.ACL_TYPE, accessType, GNSCommandProtocol.GUID,
             guid.getGuid(), GNSCommandProtocol.FIELD, field, GNSCommandProtocol.ACCESSER, accesserGuid == null
-                    ? GNSCommandProtocol.ALL_USERS
+                    ? GNSCommandProtocol.ALL_GUIDS
                     : accesserGuid);
     String response = sendGetCommand(command);
 
@@ -1212,7 +1210,7 @@ public class UniversalHttpClient implements GNSClientInterface {
             GNSCommandProtocol.ACL_TYPE, accessType,
             GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, field,
             GNSCommandProtocol.ACCESSER, accesserGuid == null
-                    ? GNSCommandProtocol.ALL_USERS
+                    ? GNSCommandProtocol.ALL_GUIDS
                     : accesserGuid);
     String response = sendGetCommand(command);
 
@@ -1225,7 +1223,7 @@ public class UniversalHttpClient implements GNSClientInterface {
             GNSCommandProtocol.ACL_TYPE, accessType,
             GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, field,
             GNSCommandProtocol.ACCESSER, accesserGuid == null
-                    ? GNSCommandProtocol.ALL_USERS
+                    ? GNSCommandProtocol.ALL_GUIDS
                     : accesserGuid);
     String response = sendGetCommand(command);
     try {
@@ -1257,20 +1255,14 @@ public class UniversalHttpClient implements GNSClientInterface {
         if (error.startsWith(GNSCommandProtocol.BAD_SIGNATURE)) {
           throw new EncryptionException();
         }
-        if (error.startsWith(GNSCommandProtocol.BAD_GUID) || error.startsWith(GNSCommandProtocol.BAD_ACCESSOR_GUID)
+        if (error.startsWith(GNSCommandProtocol.BAD_GUID) 
+                || error.startsWith(GNSCommandProtocol.BAD_ACCESSOR_GUID)
                 || error.startsWith(GNSCommandProtocol.DUPLICATE_GUID) || error.startsWith(GNSCommandProtocol.BAD_ACCOUNT)) {
           throw new InvalidGuidException(error + rest);
         }
-        if (error.startsWith(GNSCommandProtocol.BAD_FIELD) || error.startsWith(GNSCommandProtocol.DUPLICATE_FIELD)) {
+        if (error.startsWith(GNSCommandProtocol.DUPLICATE_FIELD)) {
           throw new InvalidFieldException(error + rest);
         }
-        if (error.startsWith(GNSCommandProtocol.BAD_USER) || error.startsWith(GNSCommandProtocol.DUPLICATE_USER)) {
-          throw new InvalidUserException(error + rest);
-        }
-        if (error.startsWith(GNSCommandProtocol.BAD_GROUP) || error.startsWith(GNSCommandProtocol.DUPLICATE_GROUP)) {
-          throw new InvalidGroupException(error + rest);
-        }
-
         if (error.startsWith(GNSCommandProtocol.ACCESS_DENIED)) {
           throw new AclException(error + rest);
         }

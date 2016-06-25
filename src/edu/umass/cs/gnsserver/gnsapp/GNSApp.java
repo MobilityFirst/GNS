@@ -27,8 +27,6 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -40,26 +38,21 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
-import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.disableSSL;
-
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandRequestInfo;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
@@ -95,8 +88,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 /**
@@ -120,19 +111,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   private ClientRequestHandlerInterface requestHandler;
 
   // Keep track of commands that are coming in
-  	/**
-	 * arun: I am not sure {@link #outStandingQueries} is really needed. It is
-	 * only being used in CommandHandler.handleCommandReturnValuePacketForApp
-	 * that invokes sendClient, but sendClient internally uses
-	 * {@link #outstanding} below that only needs the response, nothing else. If
-	 * you need to preserve the !DELEGATE_CLIENT_MESSAGING options, you could
-	 * read from {@link #outstanding} instead; it is designed to
-	 * auto-garbage-collect.
-	 */
-  @Deprecated
-  public final ConcurrentMap<Long, CommandRequestInfo> outStandingQueries
-          = new ConcurrentHashMap<>(10, 0.75f, 3);
-
+  /**
+   * arun: I am not sure {@link #outStandingQueries} is really needed. It is
+   * only being used in CommandHandler.handleCommandReturnValuePacketForApp
+   * that invokes sendClient, but sendClient internally uses
+   * {@link #outstanding} below that only needs the response, nothing else. If
+   * you need to preserve the !DELEGATE_CLIENT_MESSAGING options, you could
+   * read from {@link #outstanding} instead; it is designed to
+   * auto-garbage-collect.
+   */
+//  @Deprecated
+//  public final ConcurrentMap<Long, CommandRequestInfo> outStandingQueries
+//          = new ConcurrentHashMap<>(10, 0.75f, 3);
   private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
   private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<>(
           new GCConcurrentHashMapCallback() {
@@ -178,8 +168,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
       Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
       noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, AppReconfigurableNodeOptions.mongoPort);
       GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException 
-            | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
       // fallback plan
       GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
       noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
@@ -223,41 +212,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     constructed = true;
   }
 
-//  /**
-//   * Creates the application.
-//   *
-//   * @param id
-//   * @param nodeConfig
-//   * @param messenger
-//   * @throws java.io.IOException
-//   */
-//  @Deprecated
-//  public GNSApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
-//    this.nodeID = id;
-//    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-//    // Switch these two to enable DiskMapRecords
-//    //NoSQLRecords noSqlRecords = new DiskMapRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
-//    NoSQLRecords noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
-//    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
-//    GNSConfig.getLogger().log(Level.INFO, "App {0} created {1}",
-//            new Object[]{nodeID, nameRecordDB});
-//    this.messenger = messenger;
-//    this.requestHandler = new ClientRequestHandler(
-//            new Admintercessor(),
-//            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID), this.nodeConfig.getCcpPort(this.nodeID)),
-//            nodeID, this,
-//            ((GNSNodeConfig<String>) messenger.getNodeConfig()));
-//    // Should add this to the shutdown method - do we have a shutdown method?
-//    GNSAdminHttpServer httpServer = new GNSAdminHttpServer(requestHandler);
-//    // start the NSListenerAdmin thread
-//    new AppAdmin(this, nodeConfig).start();
-//    GNSConfig.getLogger().log(Level.INFO,
-//            "{0} Admin thread initialized", nodeID);
-//    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
-//            AppReconfigurableNodeOptions.activeCodeWorkerCount,
-//            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
-//    constructed = true;
-//  }
   @Override
   @SuppressWarnings("unchecked")
   public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
@@ -314,8 +268,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     }
     if (cachedResponse != null
             && request instanceof CommandPacket
-            && ((CommandPacket) request).getCommandType().isRead() 
-          //&& ((CommandPacket) request).getCommandName().equals(GNSCommandProtocol.READ)
+            && ((CommandPacket) request).getCommandType().isRead() //&& ((CommandPacket) request).getCommandName().equals(GNSCommandProtocol.READ)
             ) {
       try {
         ((BasicPacketWithClientAddress) request)
@@ -323,7 +276,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
                         .setClientRequestAndLNSIds(((ClientRequest) request)
                                 .getRequestID()));
       } catch (JSONException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       return true;
@@ -495,8 +447,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   public String checkpoint(String name) {
     try {
       NameRecord nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
-      //NameRecord nameRecord = NameRecord.getNameRecordMultiSystemFields(nameRecordDB, name, curValueRequestFields);
-      //NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
       GNSConfig.getLogger().log(Level.FINE,
               "&&&&&&& {0} getting state {1} ",
               new Object[]{this, nameRecord.getValuesMap().getSummary()});
@@ -611,21 +561,14 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   protected static final boolean DELEGATE_CLIENT_MESSAGING = true;
 
   /**
-   * arun: FIXME: This mode of calling getClientMessenger is outdated and
-   * poor. The better way is to either delegate client messaging to gigapaxos
-   * or to determine the right messenger to use in the app based on the
-   * listening socket address (clear or ssl) on which the request was received
-   * by invoking {@link SSLMessenger#getClientMessenger(InetSocketAddress)}.
-   * Doing it like below works but requires all client requests to use the
-   * same mode (ssl or clear), otherwise JSONMessenger has no through which
-   * socket the request came in.
+   * Delegates client messaging to gigapaxos.
    *
    * @param responseJSON
    * @throws java.io.IOException
    */
   @Override
-  public void sendToClient(InetSocketAddress isa, Request response,
-          JSONObject responseJSON, InetSocketAddress myListeningAddress)
+  public void sendToClient(Request response,
+          JSONObject responseJSON)
           throws IOException {
 
     if (DELEGATE_CLIENT_MESSAGING) {
@@ -634,8 +577,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               .remove(((RequestIdentifier) response).getRequestID());
       assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response).getSummary();
       if (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) {
-        ((BasicPacketWithClientAddress) originalRequest)
-                .setResponse((ClientRequest) response);
+        ((BasicPacketWithClientAddress) originalRequest).setResponse((ClientRequest) response);
         incrResponseCount((ClientRequest) response);
       }
       GNSConfig.getLogger().log(Level.FINE,
@@ -657,27 +599,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 		 * open and close connections.
 		 * 
 		 * 
-		 * arun: FIXME: use myListeningAddress and invoke just
-		 * getClientMessenger().sendToAddress(isa,
-		 * responseJSON,myListeningAddress), otherwise messenger does not know
-		 * which socket the request came in and is forced to either always use
-		 * SSL or always not use SSL. SSL should be a per-request option like
-		 * HTTPS, i.e., if SSL is enabled, a client should be able to send
-		 * requests to either the SSL port or the CLEAR port; the latter is
-		 * always available by default.
-		 * 
 		 * Alternatively, delegate client messaging to gigapaxos and you don't
 		 * have to worry about keeping track of sender or listening addresses.
 		 * For that we need the corresponding request here so that we can invoke
 		 * request.setResponse(response) here. */
-    if (!disableSSL) {
-      GNSConfig.getLogger().log(Level.FINE,
-              "{0} sending back response to client {1} -> {2}",
-              new Object[]{this, response.getSummary(), isa});
-      messenger.getSSLClientMessenger().sendToAddress(isa, responseJSON);
-    } else {
-      messenger.getClientMessenger().sendToAddress(isa, responseJSON);
-    }
+//    if (!disableSSL) {
+//      GNSConfig.getLogger().log(Level.FINE,
+//              "{0} sending back response to client {1} -> {2}",
+//              new Object[]{this, response.getSummary(), isa});
+//      messenger.getSSLClientMessenger().sendToAddress(isa, responseJSON);
+//    } else {
+//      messenger.getClientMessenger().sendToAddress(isa, responseJSON);
+//    }
   }
 
   @Override

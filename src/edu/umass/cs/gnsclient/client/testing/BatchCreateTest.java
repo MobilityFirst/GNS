@@ -162,7 +162,7 @@ public class BatchCreateTest {
       try {
         command = createCommand(CommandType.LookupRandomGuids,
                 GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
-        result = checkResponse(command, client.sendCommandAndWait(command));
+        result = checkResponse(client.sendCommandAndWait(command));
         if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);

@@ -24,10 +24,7 @@ import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
-
 import java.io.IOException;
-import java.net.InetSocketAddress;
-
 import org.json.JSONObject;
 
 /**
@@ -63,13 +60,11 @@ public interface GNSApplicationInterface<NodeIDType> {
   /**
    * Sends a JSON packet to a client.
    *
-   * @param isa
    * @param response
    * @param msg
-   * @param myListeningAddress
    * @throws IOException
    */
-  void sendToClient(InetSocketAddress isa, Request response, JSONObject msg, InetSocketAddress myListeningAddress) throws IOException;
+  void sendToClient(Request response, JSONObject msg) throws IOException;
 
   /**
    * Sends a JSON packet to a node.

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
@@ -108,14 +109,6 @@ public class Packet {
      * NOOP
      */
     NOOP(99, null),
-    /**
-     * TEST_PING
-     */
-    TEST_PING(222, "edu.umass.cs.protocoltask.examples.PingPongPacket"),
-    /**
-     * TEST_PONG
-     */
-    TEST_PONG(223, "edu.umass.cs.protocoltask.examples.PingPongPacket"),
     /**
      * TEST_NOOP
      */
@@ -240,7 +233,7 @@ public class Packet {
         case COMMAND:
           return new edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket(json);
         case COMMAND_RETURN_VALUE:
-          return new edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket(json);
+          return new edu.umass.cs.gnscommon.CommandValueReturnPacket(json);
         // Admin:
         case DUMP_REQUEST:
           return new edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket<>(json, unstringer);
@@ -285,7 +278,7 @@ public class Packet {
 
   /**
    * **
-   * Reads bytes until we see delimiter ":". All bytes before ":" indicates the size of the data. Bytes after ":" is the actual
+   * Reads bytes until we see delimiter HEADER_PATTERN. All bytes before HEADER_PATTERN indicates the size of the data. Bytes after ":" is the actual
    * data.
    *
    * @param inStream

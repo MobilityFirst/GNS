@@ -31,7 +31,7 @@ START_ALL > NSlogfile 2>&1 &
 # explicitly specify nodes as trailing command-line args
 
 # comment to start optional LNS
-#exit
+exit
 
 nohup java -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
