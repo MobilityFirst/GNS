@@ -1,5 +1,6 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -10,7 +11,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
-import org.json.simple.JSONObject;
+import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -27,24 +28,27 @@ public class ActiveWorker {
 	private final HashMap<String, Integer> codeHashes;
 	
 	private final ActiveChannel channel;
-	private final ActiveSerializer serializer;
-	private final String cfile;
-	private final String sfile;
+	private final String ifile;
+	private final String ofile;
 	
 	protected final static int bufferSize = 1024;
 	
-	public ActiveWorker(String cfile, String sfile) {		
-		this.cfile = cfile;
-		this.sfile = sfile;
-		
-		channel = new ActiveMappedBus(sfile, cfile);
-		serializer = new ActiveSerializer();
-		
+	/**
+	 * @param ifile
+	 * @param ofile
+	 */
+	public ActiveWorker(String ifile, String ofile) {		
+		this.ifile = ifile;
+		this.ofile = ofile;
+					
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
 		invocable = (Invocable) engine;
 		
 		contexts = new HashMap<String, ScriptContext>();
 		codeHashes = new HashMap<String, Integer>();
+		
+		channel = new ActivePipe(ifile, ofile);
+		System.out.println("Worker's channel is ready!");
 		
 		try {
 			runWorker();
@@ -83,33 +87,26 @@ public class ActiveWorker {
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
-	public ValuesMap runCode(String guid, String field, String code, ValuesMap value) throws ScriptException, NoSuchMethodException {
-		
+	public ValuesMap runCode(String guid, String field, String code, ValuesMap value) throws ScriptException, NoSuchMethodException {		
 		updateCache(guid, code);
-		
 		engine.setContext(contexts.get(guid));
-
 		return (ValuesMap) invocable.invokeFunction("run", value, field, null);
 	}
 
 	
-	private void runWorker() throws NoSuchMethodException, ScriptException{
-		
+	private void runWorker() throws NoSuchMethodException, ScriptException, UnsupportedEncodingException, JSONException{		
 		byte[] buffer = new byte[bufferSize];
-		System.out.println("Start running worker by listening on "+cfile+", and write to "+sfile);
+		System.out.println("Start running worker by listening on "+ifile+", and write to "+ofile);
 		
-		while( !Thread.currentThread().isInterrupted()){
-			if(channel.read(buffer)!= -1){
-				ActiveMessage msg = serializer.deserialize(buffer);
-				//System.out.println("Worker received:"+msg.getGuid()+" "+msg.getField() );
-				//msg.setJson((JSONObject) runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue()));
-				Arrays.fill(buffer, (byte) 0);
-				
-				// echo the message 
-				byte[] buf = serializer.serialize(msg);
-				channel.write(buf, 0, buf.length);
-				//System.out.println("Worker echo:"+msg.getGuid()+" "+msg.getField() );
-			}
+		while((channel.read(buffer))!= -1){
+			ActiveMessage msg = new ActiveMessage(buffer);
+			//System.out.println("Worker received:"+msg.toString() );
+			Arrays.fill(buffer, (byte) 0);
+			msg.setValue(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue()));
+			// echo the message 
+			byte[] buf = msg.toBytes();
+			channel.write(buf, 0, buf.length);
+			//System.out.println("Worker echo:"+msg.toString() );
 		}
 	}
 	

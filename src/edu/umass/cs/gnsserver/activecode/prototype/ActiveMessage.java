@@ -21,8 +21,8 @@ public class ActiveMessage {
 	
 	private boolean finished;
 	private int ttl;
-	private String guid;
-	private String field;
+	private final String guid;
+	private final String field;
 	private String code;
 	private ValuesMap value;
 	private String targetGuid;
@@ -34,6 +34,7 @@ public class ActiveMessage {
 	 * @param ttl
 	 * @param value 
 	 * @param finished 
+	 * @param targetGuid 
 	 */
 	public ActiveMessage(String guid, String field, String code, ValuesMap value, int ttl, boolean finished, String targetGuid){
 		this.guid = guid;
@@ -87,7 +88,11 @@ public class ActiveMessage {
 	protected ValuesMap getValue() {
 		return value;
 	}
-
+	
+	protected void setValue(ValuesMap value){
+		this.value = value;
+	}
+	
 	protected boolean isFinished() {
 		return finished;
 	}
@@ -210,6 +215,15 @@ public class ActiveMessage {
 		}
 	}
 	
+	@Override
+	public String toString(){
+		
+		return "[guid:"+this.guid
+				+",field:"+this.field
+				+",value:"+this.value.toString()
+				+"]";
+	}
+	
 	/**
 	 * @param args
 	 * @throws JSONException
@@ -244,7 +258,7 @@ public class ActiveMessage {
 		t = System.currentTimeMillis();
 		for (int i=0; i<n; i++){
 			rmsg = new ActiveMessage(amsg.toBytes());
-			//
+			new ActiveMessage(rmsg.toBytes());
 		}
 		long elapsed = System.currentTimeMillis() - t;
 		System.out.println("It takes "+elapsed+"ms for serialize and deserialize 1m ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");	
