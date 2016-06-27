@@ -83,7 +83,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.LNSRequestId = CCPRequestId;
     this.serviceName = serviceName;
     this.returnValue = response.getReturnValue();
-    this.errorCode = response.getErrorCode();
+    this.errorCode = response.getExceptionOrErrorCode();
   }
 
   public CommandValueReturnPacket(long requestId, GNSResponseCode code, String returnValue) {

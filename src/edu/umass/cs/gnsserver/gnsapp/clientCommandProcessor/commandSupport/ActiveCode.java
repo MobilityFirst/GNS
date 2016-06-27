@@ -138,7 +138,7 @@ public class ActiveCode {
     String field = getCodeField(action);
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return GNSCommandProtocol.NULL_RESPONSE;
     }
     try {

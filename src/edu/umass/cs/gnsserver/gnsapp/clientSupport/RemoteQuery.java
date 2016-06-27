@@ -220,16 +220,19 @@ public class RemoteQuery extends ClientAsynchBase {
    */
   private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
     Object monitor = new Object();
-    sendRequest(request, this.getReconfiguratoRequestCallback(monitor));//reconCallback);
+    sendRequest(request, this.getReconfiguratoRequestCallback(monitor));
     ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName(), monitor);
     // FIXME: return better error codes.
-    return response.isFailed()
-            ? // arun: return duplicate error if name already exists
-            (response instanceof CreateServiceName
-            && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
-                    ? GNSResponseCode.DUPLICATE_ID_EXCEPTION
-                    : // else generic error
-                    GNSResponseCode.UNSPECIFIED_ERROR) : GNSResponseCode.NO_ERROR;
+    if (response.isFailed()) {
+      // arun: return duplicate error if name already exists
+      return (response instanceof CreateServiceName
+              && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
+                      ? GNSResponseCode.DUPLICATE_ID_EXCEPTION
+                      : // else generic error
+                      GNSResponseCode.UNSPECIFIED_ERROR);
+    } else {
+      return GNSResponseCode.NO_ERROR;
+    }
   }
 
   /**

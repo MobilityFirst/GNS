@@ -163,7 +163,7 @@ public class GroupAccess {
             GROUP, null,
             reader, signature, message, timestamp,
             handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
     return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUP, handler.getApp().getDB());
@@ -187,7 +187,7 @@ public class GroupAccess {
           ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
     return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler);
@@ -198,7 +198,7 @@ public class GroupAccess {
           ClientRequestHandlerInterface handler) {
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
     return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUPS, handler.getApp().getDB());

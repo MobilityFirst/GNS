@@ -88,7 +88,7 @@ public class CreateList extends BasicCommand {
     }
     GNSResponseCode responseCode;
     if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), 
-            writer, signature, message, timestamp, handler)).isError()) {
+            writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

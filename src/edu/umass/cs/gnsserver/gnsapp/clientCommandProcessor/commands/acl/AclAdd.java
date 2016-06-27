@@ -102,7 +102,7 @@ public class AclAdd extends BasicCommand {
     }
     GNSResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(access, guid, field,
-            accessorPublicKey, writer, signature, message, timestamp, handler)).isError()) {
+            accessorPublicKey, writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(responseCode.getProtocolCode());

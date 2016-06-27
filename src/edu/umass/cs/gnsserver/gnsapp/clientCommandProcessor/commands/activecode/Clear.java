@@ -85,7 +85,7 @@ public class Clear extends BasicCommand {
     GNSResponseCode response = ActiveCode.clearCode(accountGuid, action,
             writer, signature, message, timestamp, handler);
 
-    if (response.isError()) {
+    if (response.isExceptionOrError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
       return new CommandResponse<>(OK_RESPONSE);

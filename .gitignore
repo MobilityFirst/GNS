@@ -56,3 +56,4 @@ build.number
 /nbbuild.xml
 /private.xml
 /clientKeyDB/
+/bin/

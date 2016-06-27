@@ -80,7 +80,7 @@ public class RemoveFromGroup extends BasicCommand {
     GNSResponseCode responseCode;
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, member,
-              writer, signature, message, handler)).isError()) {
+              writer, signature, message, handler)).isExceptionOrError()) {
         return new CommandResponse<String>(OK_RESPONSE);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
