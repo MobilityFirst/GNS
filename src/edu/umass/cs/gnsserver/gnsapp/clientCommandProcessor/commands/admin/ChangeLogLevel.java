@@ -54,7 +54,7 @@ public class ChangeLogLevel extends BasicCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{LEVEL};
+    return new String[]{LOG_LEVEL};
   }
 
 //  @Override
@@ -66,7 +66,7 @@ public class ChangeLogLevel extends BasicCommand {
   @SuppressWarnings("unchecked")
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String levelString = json.getString(LEVEL);
+    String levelString = json.getString(LOG_LEVEL);
     if (module.isAdminMode()) {
       try {
         Level level = Level.parse(levelString);
@@ -76,7 +76,7 @@ public class ChangeLogLevel extends BasicCommand {
           return new CommandResponse<>(BAD_RESPONSE);
         }
       } catch (IllegalArgumentException e) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + GENERIC_ERROR + " Bad level " + levelString);
+        return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString);
       }
     }
     return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 

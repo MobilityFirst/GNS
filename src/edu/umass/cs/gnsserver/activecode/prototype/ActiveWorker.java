@@ -24,8 +24,8 @@ public class ActiveWorker {
 	private ScriptEngine engine;
 	private Invocable invocable;
 	
-	private final HashMap<String, ScriptContext> contexts;
-	private final HashMap<String, Integer> codeHashes;
+	private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
+	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
 	private final ActiveChannel channel;
 	private final String ifile;
@@ -36,31 +36,40 @@ public class ActiveWorker {
 	/**
 	 * @param ifile
 	 * @param ofile
+	 * @param isTest
 	 */
-	public ActiveWorker(String ifile, String ofile) {		
+	public ActiveWorker(String ifile, String ofile, boolean isTest) {		
 		this.ifile = ifile;
 		this.ofile = ofile;
 					
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
 		invocable = (Invocable) engine;
-		
-		contexts = new HashMap<String, ScriptContext>();
-		codeHashes = new HashMap<String, Integer>();
-		
-		channel = new ActivePipe(ifile, ofile);
-		System.out.println("Worker's channel is ready!");
-		
-		try {
-			runWorker();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		} catch (Exception e){
-			e.printStackTrace();
-		} finally {
-			channel.shutdown();
+		if(!isTest){
+			channel = new ActivePipe(ifile, ofile);
+			System.out.println("Worker's channel is ready!");
+			
+			try {
+				runWorker();
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (ScriptException e) {
+				e.printStackTrace();
+			} catch (Exception e){
+				e.printStackTrace();
+			} finally {
+				channel.shutdown();
+			}
+		} else {
+			channel = null;
 		}
+	}
+	
+	/**
+	 * @param ifile
+	 * @param ofile
+	 */
+	public ActiveWorker(String ifile, String ofile){
+		this(ifile, ofile, false);
 	}
 	
 	protected void updateCache(String codeId, String code) throws ScriptException {
@@ -100,13 +109,13 @@ public class ActiveWorker {
 		
 		while((channel.read(buffer))!= -1){
 			ActiveMessage msg = new ActiveMessage(buffer);
-			//System.out.println("Worker received:"+msg.toString() );
+			System.out.println("Worker received:"+msg );
 			Arrays.fill(buffer, (byte) 0);
 			msg.setValue(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue()));
 			// echo the message 
 			byte[] buf = msg.toBytes();
 			channel.write(buf, 0, buf.length);
-			//System.out.println("Worker echo:"+msg.toString() );
+			System.out.println("Worker echo:"+msg );
 		}
 	}
 	

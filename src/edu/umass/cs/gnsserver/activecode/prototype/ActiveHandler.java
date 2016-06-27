@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.script.ScriptException;
+
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -26,14 +28,15 @@ public class ActiveHandler {
 	byte[] buffer = new byte[ActiveWorker.bufferSize];
 	
 	private Process workerProc;
-	final static int total = 1;
-	protected static int received = 0;
-	synchronized int incr(){
-		return ++received;
-	}
 	
+	/************** Test Only ******************/
+	ActiveWorker worker;
 	
-	protected ActiveHandler(String ifile, String ofile){
+	/**
+	 * @param ifile
+	 * @param ofile
+	 */
+	public ActiveHandler(String ifile, String ofile){
 		this.ifile = ifile;
 		this.ofile = ofile;
 		
@@ -44,7 +47,7 @@ public class ActiveHandler {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-				
+		
 		try {
 			workerProc = startWorker(ofile, ifile);
 		} catch (IOException e) {
@@ -54,6 +57,8 @@ public class ActiveHandler {
 		channel = new ActivePipe(ifile, ofile);
 		
 		System.out.println("Start handler by listening on "+ifile+", and write to "+ofile+".Handler's channel is ready!");
+		
+		worker = new ActiveWorker(ifile, ofile, true);
 	}
 	
 	
@@ -84,14 +89,14 @@ public class ActiveHandler {
 		
 		builder.redirectError(Redirect.INHERIT);
 		builder.redirectOutput(Redirect.INHERIT);
-		builder.redirectInput(Redirect.INHERIT);
+		//builder.redirectInput(Redirect.INHERIT);
 		
 		Process process = builder.start();		
 		System.out.println("Worker Start ...");
 		return process;
 	}
 	
-	protected ActiveMessage read(){
+	protected ActiveMessage receiveMessage(){
 		channel.read(buffer);
 		ActiveMessage am = null;
 		try {
@@ -103,7 +108,7 @@ public class ActiveHandler {
 		return am;
 	}
 	
-	protected boolean write(ActiveMessage am){
+	protected boolean sendMessage(ActiveMessage am){
 		boolean wSuccess = false;
 		try {
 			byte[] buf = am.toBytes();
@@ -113,6 +118,41 @@ public class ActiveHandler {
 			e.printStackTrace();
 		}		
 		return wSuccess;
+	}
+	
+	static int numReq = 0;
+	synchronized int incr(){
+		return ++numReq;
+	}
+	
+	static int received = 0;
+	synchronized int getRcv(){
+		return ++received;
+	}
+	
+	/**
+	 * @param guid
+	 * @param field
+	 * @param code
+	 * @param valuesMap
+	 * @param ttl
+	 * @return executed result sent back from worker
+	 */
+	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){		
+		if(field.equals("level3")){
+			try {
+				return worker.runCode(guid, field, code, valuesMap);
+			} catch (NoSuchMethodException | ScriptException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		ActiveMessage msg = new ActiveMessage(guid, field+incr(), code, valuesMap, ttl);
+		System.out.println("Start executing "+numReq+" request "+msg);
+		sendMessage(msg);
+		ActiveMessage result = receiveMessage();
+		System.out.println("Active executed "+getRcv()+" result :"+result+" with message "+msg);
+		return result.getValue();
 	}
 	
 	/**
@@ -125,8 +165,6 @@ public class ActiveHandler {
 		String sfile = "/tmp/server";		
 		
 		ActiveHandler handler = new ActiveHandler(cfile, sfile);
-
-		Thread.sleep(1000);
 		
 		String guid = "guid";
 		String field = "name";
@@ -139,14 +177,17 @@ public class ActiveHandler {
 		ValuesMap value = new ValuesMap();
 		value.put("string", "hello world!");	
 		
-		int n = 1000000;
-		ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value, 0);
+		int n = 10;
+		//ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value, 0);
 		
 		long t1 = System.currentTimeMillis();
-		for (int i=0; i<n; i++){				
-			handler.write(msg);
-			ActiveMessage am = handler.read();
-			//System.out.println("received:"+am.toString());
+		
+		for (int i=0; i<n; i++){
+			handler.runCode(guid, field, noop_code, value, 0);
+			/**
+			ActiveMessage am = handler.receiveMessage();
+			System.out.println("received:"+am.toString());
+			*/
 		}
 		
 		long elapsed = System.currentTimeMillis() - t1;

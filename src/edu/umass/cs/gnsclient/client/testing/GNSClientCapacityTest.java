@@ -233,31 +233,37 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * @throws Exception
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test_02_SequentialSignedReadCapacity() throws Exception {
-		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Math.min(Integer.MAX_VALUE, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
+			long t1 = System.nanoTime();
 			clients[0].fieldRead(guidEntries[0], someField);
+			DelayProfiler.updateDelayNano("e2eLatency", t1);
 		}
 		System.out.print("sequential_read_rate="
 				+ Util.df(numReads * 1.0 / (System.currentTimeMillis() - t))
 				+ "K/s averaged over " + numReads + " reads.");
+		System.out.println(DelayProfiler.getStats());
 	}
 
 	/**
 	 * @throws Exception
 	 */
-	@Test
+	//@Test
 	public void test_02_SequentialUnsignedReadCapacity() throws Exception {
 		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
+			long t1 = System.nanoTime();
 			clients[0].fieldRead(guidEntries[0].getGuid(), someField, null);
+			DelayProfiler.updateDelayNano("e2eLatency", t1);
 		}
 		System.out.print("sequential_read_rate="
 				+ Util.df(numReads * 1.0 / (System.currentTimeMillis() - t))
 				+ "K/s averaged over " + numReads + " reads.");
+		System.out.println(DelayProfiler.getStats());
 	}
 
 	private static int numFinishedReads = 0;
@@ -352,9 +358,10 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
+	@Test
 	public void test_10_SingleActiveReadLevel1() throws Exception{
 		
-		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
@@ -369,9 +376,10 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
+	@Test
 	public void test_11_SingleActiveReadLevel2() throws Exception{
 		
-		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
@@ -386,9 +394,10 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
+	@Test
 	public void test_12_SingleActiveReadLevel3() throws Exception{
 		
-		int numReads = Math.min(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {

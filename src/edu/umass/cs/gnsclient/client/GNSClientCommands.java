@@ -33,7 +33,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACL_TYPE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_ACTION;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.AC_CODE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_USERS;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.CODE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELDS;
@@ -71,7 +70,7 @@ import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -90,6 +89,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.json.JSONException;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP. This
@@ -121,18 +121,16 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     super(anyReconfigurator);
   }
 
-  private String checkResponse(JSONObject command) throws ClientException,
-          IOException {
-    return CommandUtils.checkResponse(command, sendCommandAndWait(command));
+  private String checkResponse(JSONObject command) throws ClientException, IOException {
+    return CommandUtils.checkResponse(sendCommandAndWait(command));
   }
 
   private String checkAndReturnResponse(JSONObject command)
           throws ClientException, IOException {
     Object response;
-    CommandUtils.checkResponse(command,
-            response = sendCommandAndWait(command));
-		return response instanceof String ? (String) response
-				: ((CommandValueReturnPacket) response).getReturnValue();
+    CommandUtils.checkResponse(response = sendCommandAndWait(command));
+    return response instanceof String ? (String) response
+            : ((CommandValueReturnPacket) response).getReturnValue();
   }
 
   // READ AND WRITE COMMANDS
@@ -721,10 +719,10 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     }
     DelayProfiler.updateDelay("batchCreatePublicKeys", publicKeyStartTime);
 
-		return checkResponse(createAndSignCommand(CommandType.AddMultipleGuids,
-				accountGuid.getPrivateKey(), GUID, accountGuid.getGuid(),
-				NAMES, new JSONArray(aliasList), PUBLIC_KEYS, new JSONArray(
-						publicKeys)));
+    return checkResponse(createAndSignCommand(CommandType.AddMultipleGuids,
+            accountGuid.getPrivateKey(), GUID, accountGuid.getGuid(),
+            NAMES, new JSONArray(aliasList), PUBLIC_KEYS, new JSONArray(
+                    publicKeys)));
   }
 
   /**
@@ -1216,7 +1214,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     checkResponse(createAndSignCommand(CommandType.AclAddSelf,
             guid.getPrivateKey(), ACL_TYPE, accessType, GUID,
             guid.getGuid(), FIELD, field, ACCESSER,
-            accesserGuid == null ? ALL_USERS : accesserGuid));
+            accesserGuid == null ? ALL_GUIDS : accesserGuid));
   }
 
   private void aclRemove(String accessType, GuidEntry guid, String field,
@@ -1224,16 +1222,15 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     checkResponse(createAndSignCommand(CommandType.AclRemoveSelf,
             guid.getPrivateKey(), ACL_TYPE, accessType, GUID,
             guid.getGuid(), FIELD, field, ACCESSER,
-            accesserGuid == null ? ALL_USERS : accesserGuid));
+            accesserGuid == null ? ALL_GUIDS : accesserGuid));
   }
 
   private JSONArray aclGet(String accessType, GuidEntry guid, String field,
           String readerGuid) throws Exception {
     try {
-      return new JSONArray(checkResponse(createAndSignCommand(
-              CommandType.AclRetrieve, guid.getPrivateKey(),
+      return new JSONArray(checkResponse(createAndSignCommand(CommandType.AclRetrieve, guid.getPrivateKey(),
               ACL_TYPE, accessType, GUID, guid.getGuid(),
-              FIELD, field, READER, readerGuid == null ? ALL_USERS
+              FIELD, field, READER, readerGuid == null ? ALL_GUIDS
                       : readerGuid)));
     } catch (JSONException e) {
       throw new ClientException("Invalid ACL list", e);

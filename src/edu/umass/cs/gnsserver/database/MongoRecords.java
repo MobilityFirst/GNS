@@ -32,20 +32,26 @@ import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.util.JSON;
+
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +98,8 @@ public class MongoRecords implements NoSQLRecords {
   }
 
   private void init(String nodeID, int mongoPort) {
+	  if(Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB))
+		  return;
     mongoCollectionSpecs = new MongoCollectionSpecs();
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     // add location as another index
@@ -102,6 +110,8 @@ public class MongoRecords implements NoSQLRecords {
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GNSCommandProtocol.IPADDRESS_FIELD_NAME, 1));
+    
+    boolean fatalException = false;
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
       dbName = DBROOTNAME + nodeID.toString().replace('.', '_');
@@ -117,7 +127,15 @@ public class MongoRecords implements NoSQLRecords {
 
       initializeIndexes();
     } catch (UnknownHostException e) {
+    	fatalException = true;
       DatabaseConfig.getLogger().severe("Unable to open Mongo DB: " + e);
+    } catch (com.mongodb.MongoServerSelectionException msse) {
+    	fatalException = true;
+        DatabaseConfig.getLogger().severe("Fatal exception while trying to initialize Mongo DB: " + msse);    	
+    } 
+    finally {
+    	if (fatalException)
+    		Util.suicide("Mongo DB initialization failed likely because a mongo DB server is not listening at the expected port; exiting.");
     }
   }
 
@@ -183,7 +201,11 @@ public class MongoRecords implements NoSQLRecords {
       }
       if (cursor.hasNext()) {
         DBObject obj = cursor.next();
-        JSONObject json = new JSONObject(obj.toString());
+        // arun: optimized for the common case of Map
+        @SuppressWarnings("unchecked")
+		JSONObject json = obj instanceof Map ? DiskMapRecords
+        		.recursiveCopyMap((Map<String, ?>) obj)
+        		: new JSONObject(obj.toString());
         // instrumentation
         DelayProfiler.updateDelay("lookupEntireRecord", startTime);
         // older style

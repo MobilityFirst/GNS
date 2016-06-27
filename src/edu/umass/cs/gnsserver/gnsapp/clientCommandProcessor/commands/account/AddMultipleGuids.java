@@ -109,7 +109,7 @@ public class AddMultipleGuids extends BasicCommand {
         int guidCnt = Integer.parseInt(guidCntString);
         return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR
+        return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR
                 + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT);
       }
     } else {

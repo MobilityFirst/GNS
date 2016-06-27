@@ -43,7 +43,6 @@
 	<classpathentry kind="lib" path="lib/aws-java-sdk-1.11.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.9.jar"/>
 	<classpathentry kind="lib" path="lib/freemarker-2.3.9.jar"/>
-	<classpathentry kind="lib" path="lib/gigapaxos-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/gigapaxos-nio-src.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.2.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.4.jar"/>
@@ -62,5 +61,6 @@
 	<classpathentry kind="lib" path="lib/fst-2.47-sources.jar"/>
 	<classpathentry kind="lib" path="lib/fst-2.47.jar"/>
 	<classpathentry kind="lib" path="lib/mappedbus-0.5.jar"/>
+	<classpathentry kind="lib" path="lib/gigapaxos-1.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

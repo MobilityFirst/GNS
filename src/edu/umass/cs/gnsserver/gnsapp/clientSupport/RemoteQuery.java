@@ -11,6 +11,7 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -19,15 +20,13 @@ import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGroupException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidUserException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
@@ -230,7 +229,7 @@ public class RemoteQuery extends ClientAsynchBase {
             && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
                     ? GNSResponseCode.DUPLICATE_ID_EXCEPTION
                     : // else generic error
-                    GNSResponseCode.GENERIC_ERROR) : GNSResponseCode.NO_ERROR;
+                    GNSResponseCode.UNSPECIFIED_ERROR) : GNSResponseCode.NO_ERROR;
   }
 
   /**
@@ -248,7 +247,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       // FIXME: return better error codes.
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 
@@ -275,7 +274,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.FINE, "Problem creating {0} :{1}",
               new Object[]{names, e});
       // FIXME: return better error codes.
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 
@@ -321,7 +320,7 @@ public class RemoteQuery extends ClientAsynchBase {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
       // FIXME: return better error codes.
-      return GNSResponseCode.GENERIC_ERROR;
+      return GNSResponseCode.UNSPECIFIED_ERROR;
     }
   }
 
@@ -339,7 +338,7 @@ public class RemoteQuery extends ClientAsynchBase {
   }
 
   /**
-   * Handles the reponse from some query with a specified timeout period.
+   * Handles the response from some query with a specified timeout period.
    *
    * @param requestId
    * @param monitor
@@ -351,7 +350,8 @@ public class RemoteQuery extends ClientAsynchBase {
   private String handleQueryResponse(long requestId, Object monitor, long timeout,
           String notFoundReponse) throws ClientException {
     try {
-      CommandValueReturnPacket packet = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, timeout);
+      CommandValueReturnPacket packet
+              = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, timeout);
       if (packet == null) {
         throw new ClientException("Packet not found in table " + requestId);
       } else {
@@ -360,9 +360,9 @@ public class RemoteQuery extends ClientAsynchBase {
                 "{0} {1} got from {2} this: {3}",
                 new Object[]{this, packet.getServiceName(),
                   "unknown"//packet.getResponder()
-        		, returnValue});
+                  , returnValue});
         // FIX ME: Tidy up all these error reponses for updates
-        return checkResponse(returnValue);
+        return CommandUtils.checkResponse(returnValue);
       }
     } catch (ActiveReplicaException e) {
       return notFoundReponse;
@@ -430,7 +430,8 @@ public class RemoteQuery extends ClientAsynchBase {
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
     long requestId = fieldUpdate(guid, field, value, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT, BAD_RESPONSE + " " + BAD_GUID + " " + guid + " " + BAD_GUID + " " + guid);
+    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT,
+            BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
   /**
@@ -634,79 +635,4 @@ public class RemoteQuery extends ClientAsynchBase {
       return null;
     }
   }
-
-  /**
-   * Checks the response from a command request for proper syntax as well as
-   * converting error responses into the appropriate thrown GNS exceptions.
-   *
-   * @param command
-   * @param response
-   * @return the result of the command
-   * @throws ClientException
-   */
-  //FIXME: With some changes we could probably use some existing version of this from the client.
-  private String checkResponse(String response) throws ClientException {
-    // System.out.println("response:" + response);
-    if (response.startsWith(BAD_RESPONSE)) {
-      String results[] = response.split(" ");
-      // System.out.println("results length:" + results.length);
-      if (results.length < 2) {
-        throw new ClientException("Invalid bad response indicator: " + response);
-      } else if (results.length >= 2) {
-        // System.out.println("results[0]:" + results[0]);
-        // System.out.println("results[1]:" + results[1]);
-        String error = results[1];
-        // deal with the rest
-        StringBuilder parts = new StringBuilder();
-        for (int i = 2; i < results.length; i++) {
-          parts.append(" ");
-          parts.append(results[i]);
-        }
-        String rest = parts.toString();
-
-        if (error.startsWith(BAD_SIGNATURE)) {
-          throw new EncryptionException();
-        }
-        if (error.startsWith(BAD_GUID) || error.startsWith(BAD_ACCESSOR_GUID)
-                || error.startsWith(DUPLICATE_GUID) || error.startsWith(BAD_ACCOUNT)) {
-          throw new InvalidGuidException(error + rest);
-        }
-        if (error.startsWith(DUPLICATE_FIELD)) {
-          throw new InvalidFieldException(error + rest);
-        }
-        if (error.startsWith(BAD_FIELD) || error.startsWith(FIELD_NOT_FOUND)) {
-          throw new FieldNotFoundException(error + rest);
-        }
-        if (error.startsWith(BAD_USER) || error.startsWith(DUPLICATE_USER)) {
-          throw new InvalidUserException(error + rest);
-        }
-        if (error.startsWith(BAD_GROUP) || error.startsWith(DUPLICATE_GROUP)) {
-          throw new InvalidGroupException(error + rest);
-        }
-
-        if (error.startsWith(ACCESS_DENIED)) {
-          throw new AclException(error + rest);
-        }
-
-        if (error.startsWith(DUPLICATE_NAME)) {
-          throw new DuplicateNameException(error + rest);
-        }
-
-        if (error.startsWith(VERIFICATION_ERROR)) {
-          throw new VerificationException(error + rest);
-        }
-
-        if (error.startsWith(OPERATION_NOT_SUPPORTED)) {
-          throw new OperationNotSupportedException(error + rest);
-        }
-        throw new ClientException("General command failure: " + error + rest);
-      }
-    }
-    if (response.startsWith(NULL_RESPONSE)) {
-      return null;
-    } else {
-      return response;
-    }
-  }
-
 }

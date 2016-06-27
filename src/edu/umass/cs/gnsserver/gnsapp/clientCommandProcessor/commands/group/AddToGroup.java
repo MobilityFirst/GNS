@@ -85,7 +85,7 @@ public class AddToGroup extends BasicCommand {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + GENERIC_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

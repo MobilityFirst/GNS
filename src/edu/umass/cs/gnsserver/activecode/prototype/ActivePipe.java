@@ -59,6 +59,10 @@ public class ActivePipe implements ActiveChannel{
 		return length;
 	}
 	
+	/**
+	 * This method must be synchronized because it is not guaranteed that lines will remain intact
+	 * when writing into a same pipe. They can become intermingled.
+	 */
 	public boolean write(byte[] buffer, int offset, int length){
 		boolean wSuccess = false;
 		try {
