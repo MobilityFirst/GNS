@@ -52,7 +52,6 @@
 	<classpathentry kind="lib" path="lib/jackson-dataformat-cbor-2.6.6.jar"/>
 	<classpathentry kind="lib" path="lib/javax.mail-api-1.4.6.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/nio-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/spring-beans-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring-context-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring-core-3.0.7.RELEASE.jar"/>
@@ -61,6 +60,7 @@
 	<classpathentry kind="lib" path="lib/fst-2.47-sources.jar"/>
 	<classpathentry kind="lib" path="lib/fst-2.47.jar"/>
 	<classpathentry kind="lib" path="lib/mappedbus-0.5.jar"/>
-	<classpathentry kind="lib" path="lib/gigapaxos-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/gigapaxos-1.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/nio-1.2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
