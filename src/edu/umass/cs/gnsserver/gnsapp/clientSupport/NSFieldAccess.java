@@ -309,7 +309,7 @@ public class NSFieldAccess {
             
       
       // Grab the code because it is of a different type
-      //long t = System.nanoTime();
+      long t = System.nanoTime();
       NameRecord codeRecord = null;
       try {
         codeRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), guid,
@@ -317,7 +317,7 @@ public class NSFieldAccess {
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
-      //DelayProfiler.updateDelayNano("activeFetchCode", t);
+      DelayProfiler.updateDelayNano("activeFetchCode", t);
       
       
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
