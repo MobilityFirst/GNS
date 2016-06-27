@@ -103,7 +103,7 @@ public class NSUpdateSupport {
       }
     }
     // return an error packet if one of the checks doesn't pass
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return errorCode;
     }
     if (!operation.equals(UpdateOperation.CREATE_INDEX)) {

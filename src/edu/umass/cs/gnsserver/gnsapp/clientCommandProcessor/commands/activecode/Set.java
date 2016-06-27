@@ -86,7 +86,7 @@ public class Set extends BasicCommand {
     GNSResponseCode response = ActiveCode.setCode(accountGuid, action,
             code, writer, signature, message, timestamp, handler);
 
-    if (response.isError()) {
+    if (response.isExceptionOrError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
       return new CommandResponse<>(OK_RESPONSE);

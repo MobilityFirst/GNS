@@ -81,7 +81,7 @@ public class RemoveMembersFromGroup extends BasicCommand {
     GNSResponseCode responseCode;
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, new ResultValue(members), writer, signature,
-              message, handler)).isError()) {
+              message, handler)).isExceptionOrError()) {
         return new CommandResponse<String>(OK_RESPONSE);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

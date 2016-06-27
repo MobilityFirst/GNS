@@ -80,7 +80,7 @@ public class AddMembersToGroup extends BasicCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GNSResponseCode responseCode;
     try {
-      if (!(responseCode = GroupAccess.addToGroup(guid, new ResultValue(members), writer, signature, message, handler)).isError()) {
+      if (!(responseCode = GroupAccess.addToGroup(guid, new ResultValue(members), writer, signature, message, handler)).isExceptionOrError()) {
         return new CommandResponse<String>(OK_RESPONSE);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());

@@ -151,14 +151,14 @@ public class NSAuthentication {
     AclResult aclResult = null;
     if (field != null) {
       aclResult = aclCheck(guid, field, accessorGuid, access, gnsApp);
-      if (aclResult.getResponseCode().isError()) {
+      if (aclResult.getResponseCode().isExceptionOrError()) {
         return aclResult.getResponseCode();
       }
     } else if (fields != null) {
       // Check each field individually.
       for (String aField : fields) {
         aclResult = aclCheck(guid, aField, accessorGuid, access, gnsApp);
-        if (aclResult.getResponseCode().isError()) {
+        if (aclResult.getResponseCode().isExceptionOrError()) {
           return aclResult.getResponseCode();
         }
       }

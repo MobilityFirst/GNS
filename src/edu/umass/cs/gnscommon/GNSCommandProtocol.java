@@ -133,7 +133,7 @@ public class GNSCommandProtocol {
    */
   public final static String DUPLICATE_FIELD = "+DUPLICATEFIELD+";
   /**
-   * Indicates that a command is trying to add an alias that already exists.
+   * Indicates that a command is trying to add a HRN that already exists.
    * See {@link edu.umass.cs.gnscommon.GNSResponseCode#DUPLICATE_NAME_EXCEPTION}.
    */
   public final static String DUPLICATE_NAME = "+DUPLICATENAME+";

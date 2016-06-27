@@ -23,6 +23,7 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
 
 /**
  * Encapsulates the response values and instrumentation that we pass back to the client.
+ *
  * @param <NodeIDType>
  */
 public class CommandResponse<NodeIDType> {
@@ -38,7 +39,7 @@ public class CommandResponse<NodeIDType> {
 
   /**
    * Create a command response object from a return value with an error code.
-   * 
+   *
    * @param returnValue
    * @param errorCode
    */
@@ -49,16 +50,16 @@ public class CommandResponse<NodeIDType> {
 
   /**
    * Create a command response object from a return value with no error.
-   * 
+   *
    * @param returnValue
    */
   public CommandResponse(String returnValue) {
     this(returnValue, GNSResponseCode.NO_ERROR);
   }
-  
+
   /**
    * Gets the return value.
-   * 
+   *
    * @return a string
    */
   public String getReturnValue() {
@@ -67,20 +68,10 @@ public class CommandResponse<NodeIDType> {
 
   /**
    * Gets the error code.
-   * 
+   *
    * @return a {@link GNSResponseCode}
    */
-  public GNSResponseCode getErrorCode() {
+  public GNSResponseCode getExceptionOrErrorCode() {
     return errorCode;
   }
-  
-  /**
-   * Does this Command contain an error result.
-   * 
-   * @return 
-   */
-  public boolean isError() {
-    return this.errorCode != null;
-  }
-
 }

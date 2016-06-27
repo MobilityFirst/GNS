@@ -404,7 +404,8 @@ public class AccountAccess {
     CommandResponse<String> response;
     String verifyCode = createVerificationCode(name); // make this even if we don't need it
     if ((response = addAccount(name, guid, publicKey, password,
-            GNSConfig.enableEmailAccountVerification, verifyCode, handler)).getReturnValue().equals(OK_RESPONSE)) {
+            GNSConfig.enableEmailAccountVerification, verifyCode, handler))
+            .getReturnValue().equals(OK_RESPONSE)) {
       if (GNSConfig.enableEmailAccountVerification) {
         // if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
         boolean emailOK = Email.email("GNS Account Verification", name,
@@ -580,7 +581,7 @@ public class AccountAccess {
       // First try to create the HRN record to make sure this name isn't already registered
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isError()) {
+      if (!(returnCode = handler.getRemoteQuery().createRecord(name, jsonHRN)).isExceptionOrError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -602,7 +603,7 @@ public class AccountAccess {
         // prefix is the same for all acls so just pick one to use here
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         // set up the default read access
-        if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isError()) {
+        if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isExceptionOrError()) {
           return new CommandResponse<>(OK_RESPONSE);
         } else {
           // delete the record we added above
@@ -634,7 +635,7 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
-    if (!handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryName()).isError()) {
+    if (!handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryName()).isExceptionOrError()) {
       //if (!handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
       handler.getRemoteQuery().deleteRecord(accountInfo.getPrimaryGuid());
       //handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
@@ -761,7 +762,7 @@ public class AccountAccess {
       GNSResponseCode returnCode;
       // First try to create the HRNS to insure that that name does not already exist
       if (!(returnCode = handler.getRemoteQuery().
-              createRecordBatch(new HashSet<>(names), hrnMap, handler)).isError()) {
+              createRecordBatch(new HashSet<>(names), hrnMap, handler)).isExceptionOrError()) {
         // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids, guidInfoMap, handler);
@@ -900,7 +901,7 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(guidInfo.getGuid(), handler);
     // Then remove the guid record
-    if (!handler.getRemoteQuery().deleteRecord(guidInfo.getGuid()).isError()) {
+    if (!handler.getRemoteQuery().deleteRecord(guidInfo.getGuid()).isExceptionOrError()) {
       // remove reverse record
       handler.getRemoteQuery().deleteRecord(guidInfo.getName());
       // Possibly update the account guid we are associated with to
@@ -943,7 +944,7 @@ public class AccountAccess {
       GNSResponseCode returnCode;
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, accountInfo.getPrimaryGuid());
-      if ((returnCode = handler.getRemoteQuery().createRecord(alias, jsonHRN)).isError()) {
+      if ((returnCode = handler.getRemoteQuery().createRecord(alias, jsonHRN)).isExceptionOrError()) {
         // roll this back
         accountInfo.removeAlias(alias);
         return new CommandResponse<>(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + alias);
@@ -951,7 +952,7 @@ public class AccountAccess {
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
       if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-              writer, signature, message, timestamp, handler, true).isError()) {
+              writer, signature, message, timestamp, handler, true).isExceptionOrError()) {
         // back out if we got an error
         handler.getRemoteQuery().deleteRecord(alias);
         return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
@@ -986,14 +987,14 @@ public class AccountAccess {
     }
     // remove the NAME -- GUID record
     GNSResponseCode responseCode;
-    if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isError()) {
+    if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isExceptionOrError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     // Now updated the account record
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
     if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            writer, signature, message, timestamp, handler, true)).isError()) {
+            writer, signature, message, timestamp, handler, true)).isExceptionOrError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1015,7 +1016,7 @@ public class AccountAccess {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            writer, signature, message, timestamp, handler, false).isError()) {
+            writer, signature, message, timestamp, handler, false).isExceptionOrError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1038,7 +1039,7 @@ public class AccountAccess {
           Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isExceptionOrError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1061,7 +1062,7 @@ public class AccountAccess {
           Date timestamp, ClientRequestHandlerInterface handler) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isExceptionOrError()) {
       return new CommandResponse<>(BAD_RESPONSE + " " + UPDATE_ERROR);
     }
     return new CommandResponse<>(OK_RESPONSE);
@@ -1096,7 +1097,7 @@ public class AccountAccess {
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
-            null, null, null, null, handler, sendToReplica).isError();
+            null, null, null, null, handler, sendToReplica).isExceptionOrError();
   }
 
   private static GNSResponseCode updateGuidInfo(GuidInfo guidInfo,
@@ -1117,7 +1118,7 @@ public class AccountAccess {
   private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo,
           ClientRequestHandlerInterface handler) {
 
-    return !updateGuidInfo(guidInfo, null, null, null, null, handler).isError();
+    return !updateGuidInfo(guidInfo, null, null, null, null, handler).isExceptionOrError();
   }
 
   /**

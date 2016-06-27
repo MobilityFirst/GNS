@@ -350,7 +350,7 @@ public class CommandUtils {
     // If the code isn't an error or exception we're just returning the 
     // return value. Also handle the special case where the command
     // wants to return a null value.
-    if (!code.isError() && !code.isException()) {
+    if (!code.isExceptionOrError()) {
       return (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
               : response;
     }

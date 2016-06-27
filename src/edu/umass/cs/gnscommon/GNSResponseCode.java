@@ -147,7 +147,7 @@ public enum GNSResponseCode implements Serializable {
           ClientReconfigurationPacket.ResponseCodes.ACTIVE_REPLICA_EXCEPTION
           .toString(), TYPE.EXCEPTION),
   /**
-   * The ACL type does not exist.
+   * The alias does not exist.
    */
   BAD_ALIAS_EXCEPTION(18, GNSCommandProtocol.BAD_ALIAS, TYPE.EXCEPTION),
   /**
@@ -159,11 +159,11 @@ public enum GNSResponseCode implements Serializable {
    */
   FIELD_NOT_FOUND_EXCEPTION(20, GNSCommandProtocol.FIELD_NOT_FOUND, TYPE.EXCEPTION),
   /**
-   * The field does not exist.
+   * The guid is a duplicate of an already existing guid.
    */
   DUPLICATE_GUID_EXCEPTION(21, GNSCommandProtocol.DUPLICATE_GUID, TYPE.EXCEPTION),
   /**
-   * The name already exists.
+   * The HRN already exists.
    */
   DUPLICATE_NAME_EXCEPTION(22, GNSCommandProtocol.DUPLICATE_NAME, TYPE.EXCEPTION),
   /**
@@ -259,6 +259,15 @@ public enum GNSResponseCode implements Serializable {
     return protocolCode;
   }
 
+  /**
+   * Is this an exception or error code. Some aren't, some are.
+   *
+   * @return true if this is an error
+   */
+  public boolean isExceptionOrError() {
+    return type == TYPE.ERROR || type == TYPE.EXCEPTION;
+  }
+  
   /**
    * Is this an error code. Some aren't, some are.
    *

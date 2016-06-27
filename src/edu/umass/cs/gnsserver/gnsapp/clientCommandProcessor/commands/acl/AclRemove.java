@@ -104,7 +104,7 @@ public class AclRemove extends BasicCommand {
     }
     if (!(responseCode = FieldMetaData.remove(access,
             guid, field, accessorPublicKey,
-            writer, signature, message, timestamp, handler)).isError()) {
+            writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse<String>(OK_RESPONSE);
     } else {
       return new CommandResponse<String>(responseCode.getProtocolCode());
