@@ -138,7 +138,8 @@ public class ActiveHandler {
 	 * @param ttl
 	 * @return executed result sent back from worker
 	 */
-	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){		
+	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
+		/*
 		if(field.equals("level3")){
 			try {
 				return worker.runCode(guid, field, code, valuesMap);
@@ -146,12 +147,12 @@ public class ActiveHandler {
 				e.printStackTrace();
 			}
 		}
-		
-		ActiveMessage msg = new ActiveMessage(guid, field+incr(), code, valuesMap, ttl);
-		System.out.println("Start executing "+numReq+" request "+msg);
+		*/
+		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
+		//System.out.println("Start executing "+numReq+" request "+msg);
 		sendMessage(msg);
 		ActiveMessage result = receiveMessage();
-		System.out.println("Active executed "+getRcv()+" result :"+result+" with message "+msg);
+		//System.out.println("Active executed "+getRcv()+" result :"+result+" with message "+msg);
 		return result.getValue();
 	}
 	
@@ -177,17 +178,13 @@ public class ActiveHandler {
 		ValuesMap value = new ValuesMap();
 		value.put("string", "hello world!");	
 		
-		int n = 10;
+		int n = 1000000;
 		//ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value, 0);
 		
 		long t1 = System.currentTimeMillis();
 		
 		for (int i=0; i<n; i++){
 			handler.runCode(guid, field, noop_code, value, 0);
-			/**
-			ActiveMessage am = handler.receiveMessage();
-			System.out.println("received:"+am.toString());
-			*/
 		}
 		
 		long elapsed = System.currentTimeMillis() - t1;

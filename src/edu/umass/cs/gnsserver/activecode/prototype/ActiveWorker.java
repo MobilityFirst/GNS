@@ -109,13 +109,13 @@ public class ActiveWorker {
 		
 		while((channel.read(buffer))!= -1){
 			ActiveMessage msg = new ActiveMessage(buffer);
-			System.out.println("Worker received:"+msg );
+			// System.out.println("Worker received:"+msg );
 			Arrays.fill(buffer, (byte) 0);
 			msg.setValue(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue()));
 			// echo the message 
 			byte[] buf = msg.toBytes();
 			channel.write(buf, 0, buf.length);
-			System.out.println("Worker echo:"+msg );
+			// ActiveWorker.System.out.println("Worker echo:"+msg );
 		}
 	}
 	
