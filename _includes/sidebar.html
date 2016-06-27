@@ -3,9 +3,14 @@
 <ul id="mysidebar" class="nav">
     <li class="sidebarTitle">{{sidebar[0].product}} {{sidebar[0].version}}</li>
     {% for entry in sidebar %}
-    {% for folder in entry.folders %}
+    {% for folder in entry.folders %}    
     {% if folder.output contains "web" %}
     <li>
+        {% if folder.external_url %}
+        <li><a href="{{folder.external_url}}" target="_blank">{{folder.title}}</a></li>
+        {% elsif folder.url %}
+        <li><a href="{{folder.url | prepend: site.baseurl}}">{{folder.title}}</a></li>
+        {% else %}
         <a href="#">{{ folder.title }}</a>
         <ul>
             {% for folderitem in folder.folderitems %}
@@ -40,6 +45,7 @@
             {% endif %}
             {% endfor %}
         </ul>
+        {% endif %}
         {% endif %}
         {% endfor %}
         {% endfor %}

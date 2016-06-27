@@ -2,7 +2,7 @@
 
 entries:
 - title: sidebar
-  product: GNS
+  product: 
   version:
   folders:
 
@@ -39,7 +39,7 @@ entries:
       url: /server_gigapaxos_properties/
       output: web, pdf
 
-  - title: Client
+  - title: Java Client
     output: web, pdf
     folderitems:
 
@@ -70,3 +70,27 @@ entries:
     - title: Javadoc
       url: /javadoc/index.html
       output: web, pdf
+
+  - title: IOS
+    url: /ios_client/
+    output: web, pdf
+
+  - title: Android
+    url: /android_client/
+    output: web, pdf
+
+  - title: ActiveCode
+    url: /activecode/
+    output: web, pdf
+
+  - title: Managed DNS
+    url: /managed_DNS/
+    output: web, pdf
+
+  - title: msocket
+    url: /msocket/
+    output: web, pdf
+
+  - title: Gigapaxos
+    external_url: http://www.giga.paxos
+    output: web, pdf
