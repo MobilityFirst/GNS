@@ -4,7 +4,7 @@ topnav:
 - title: Topnav
   items:
     - title: Documentation
-      url: /install/
+      url: /server_getting_started/
     - title: Community
       url: /community/
     - title: Github
