@@ -1,8 +1,8 @@
 #!/bin/bash
-BINARIES="./bin/*"
+#BINARIES="./bin/*"
 REPO="GNS"
 OWNER="MobilityFirst"
-USAGE='Usage: "./release.sh version description".  To change auth token, use: export GNSGitToken="YOUR_GITHUB_AUTH_TOKEN"'
+USAGE='Usage: "./release.sh description for the release notes".  To change auth token, use: export GNSGitToken="YOUR_GITHUB_AUTH_TOKEN"'
 
 
 if [ "$1" == "help" ]; then
@@ -10,13 +10,20 @@ if [ "$1" == "help" ]; then
 	exit 0
 fi
 
-if [ $# -lt 2 ]; then
+
+
+if [ $# -lt 1 ]; then
 	echo $USAGE
 	exit 1
 fi
-VERSION="$1" #First argument is the version
-DESCRIPTION="${*:2}" #Second argument and on is the description.
-
+#VERSION="$1" #First argument is the version
+MAJOR=$(cat build.properties | sed -n -e 's/^build.major.number=//p')
+MINOR=$(cat build.properties | sed -n -e 's/^build.minor.number=//p')
+REVISION=$(cat build.properties | sed -n -e 's/^build.revision.number=//p')
+VERSION="$MAJOR.$MINOR.$REVISION"
+BINARIES="GNS-$VERSION"
+#DESCRIPTION="${*:2}" #Second argument and on is the description.
+DESCRIPTION="$@" #The commandline argument is the description.
 # First prompt for an auth token if one is not already stored.
 if [ "$GNSGitToken" == "" ]; then
 	echo "Please enter a git token that has write access to the GNS repository: "
@@ -29,7 +36,7 @@ RELEASEID=$(curl "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$VERSI
 #curl "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$VERSION" > testFile2.txt
 echo "ID: $RELEASEID"
 # Tar the release binaries, and add them to the release.
-TARNAME="$VERSION-Binaries.tgz"
+TARNAME="GNS-$VERSION-Release.tgz"
 tar zcf $TARNAME $BINARIES 
 echo "https://api.github.com/repos/$OWNER/$REPO/releases/$RELEASEID/assets?name=$TARNAME&access_token=$GNSGitToken"
 curl -X POST --header "Content-Type:application/gzip" --data-binary @"$TARNAME" "https://uploads.github.com/repos/$OWNER/$REPO/releases/$RELEASEID/assets?name=$TARNAME&access_token=$GNSGitToken"
