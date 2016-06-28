@@ -176,7 +176,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
   </target>
 
 
-    <target name="dist" depends="jar">
+    <target name="dist" depends="clean, jar">
     <mkdir dir="${dist.dir}"/>
     <mkdir dir="${dist.dir}/${build.jar.dir}"/>
     <mkdir dir="${dist.dir}/${bin.dir}"/>
