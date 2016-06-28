@@ -120,10 +120,10 @@ mydoc_collections:
 
 
 
-mydoc_sidebar_navigation:
+mydocumentation_sidebar_navigation:
   title: "Sidebar navigation"
-  url: "/documentation-theme-jekyll/mydoc_sidebar_navigation/"
-  link: "<a href='/documentation-theme-jekyll/mydoc_sidebar_navigation/'>Sidebar navigation</a>"
+  url: "/documentation-theme-jekyll/mydocumentation_sidebar_navigation/"
+  link: "<a href='/documentation-theme-jekyll/mydocumentation_sidebar_navigation/'>Sidebar navigation</a>"
 
 
 

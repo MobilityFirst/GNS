@@ -5,90 +5,68 @@ entries:
   folders:
 
   - title: Server
-    output: web, pdf
     folderitems:
       
     - title: Obtaining Server
       url: /server_obtaining/
-      output: web, pdf
       
     - title: Getting Started
       url: /server_getting_started/
-      output: web, pdf
 
       subfolders:
       - title: Start a GNS Server
-        output: web
         subfolderitems:
           
         - title: Single Node, Locally
           url: /server_deploy_single_local/
-          output: web, pdf
         
         - title: Distributed, Locally
           url: /server_deploy_distributed_local/
-          output: web, pdf
         
         - title: Distributed, Remotely
-          url: /server_deploy_distributed_remote/
-          output: web, pdf          
+          url: /server_deploy_distributed_remote/      
 
     - title: Server gigapaxos.properties file
       url: /server_gigapaxos_properties/
-      output: web, pdf
 
   - title: Java Client
-    output: web, pdf
     folderitems:
 
     - title: Obtaining Client
       url: /client_obtaining/
-      output: web, pdf
       
     - title: CLI Tutorial
       url: /client_cli_tutorial/
-      output: web, pdf
     
     - title: Simple Example
       url: /client_simple_example/
-      output: web, pdf
       
     - title: Select Queries
       url: /client_select_queries/
-      output: web, pdf
       
     - title: Acess Control Lists (ACLs)
       url: /client_ACL_example/
-      output: web, pdf
     
     - title: Client gigapaxos.properties file
       url: /client_gigapaxos_properties/
-      output: web, pdf
       
     - title: Javadoc
       url: /javadoc/index.html
-      output: web, pdf
 
   - title: IOS
     url: /ios_client/
-    output: web, pdf
 
   - title: Android
     url: /android_client/
-    output: web, pdf
 
   - title: ActiveCode
     url: /activecode/
-    output: web, pdf
 
   - title: Managed DNS
     url: /managed_DNS/
-    output: web, pdf
 
   - title: msocket
     url: /msocket/
-    output: web, pdf
 
   - title: Gigapaxos
     external_url: http://www.giga.paxos
-    output: web, pdf

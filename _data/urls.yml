@@ -18,14 +18,21 @@
 
 
 
-getting_started:
+install:
   title: "Documentation"
-  url: "getting_started"
-  link: "<a href='/getting_started/'>Documentation</a>"
+  url: "install"
+  link: "<a href='/install/'>Documentation</a>"
 
 
 
-javadocindex.html:
-  title: "Javadoc"
-  url: "javadocindex.html"
-  link: "<a href='/javadoc/index.html'>Javadoc</a>"
+community:
+  title: "Community"
+  url: "community"
+  link: "<a href='/community/'>Community</a>"
+
+
+
+
+
+
+

@@ -2,7 +2,7 @@
 title: Java Example Client
 keywords: installation
 last_updated: June 23, 2016
-sidebar: doc_sidebar
+sidebar: documentation_sidebar
 permalink: /java_example_client/
 folder: doc
 ---

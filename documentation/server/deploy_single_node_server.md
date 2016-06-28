@@ -2,7 +2,7 @@
 title: Deploy a Single Node Server
 keywords: installation
 last_updated: June 23, 2016
-sidebar: doc_sidebar
+sidebar: documentation_sidebar
 permalink: /deploy_single_node_server/
 folder: doc
 ---

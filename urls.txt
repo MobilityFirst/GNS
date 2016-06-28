@@ -2,7 +2,7 @@
 layout: none
 search: exclude
 sidebar:
-- mydoc_sidebar
+- mydocumentation_sidebar
 - product1_sidebar
 - product2_sidebar
 ---
