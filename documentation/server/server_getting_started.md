@@ -3,7 +3,7 @@ title: Getting Started
 keywords: installation
 last_updated: June 23, 2016
 sidebar: doc_sidebar
-permalink: /server_getting_started/
+permalink: /server_gett:ing_started/
 folder: documentation
 ---
 

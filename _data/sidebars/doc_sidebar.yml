@@ -2,8 +2,6 @@
 
 entries:
 - title: sidebar
-  product: 
-  version:
   folders:
 
   - title: Server
