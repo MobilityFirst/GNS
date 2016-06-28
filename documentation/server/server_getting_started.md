@@ -1,10 +1,10 @@
 ---
-title: Getting Started
+title: "Getting Started"
 keywords: installation
 last_updated: June 23, 2016
 sidebar: documentation_sidebar
 permalink: /server_getting_started/
-folder: documentation
+toc: true
 ---
 
 Prerequisites: `JRE1.8+`, `bash`, `mongodb` (optional).

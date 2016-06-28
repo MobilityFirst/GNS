@@ -1,0 +1,21 @@
+{
+  "topnav": [
+    {
+      "title": "Topnav",
+      "items": [
+        {
+          "title": "Documentation",
+          "url": "/server_getting_started/"
+        },
+        {
+          "title": "Community",
+          "url": "/community/"
+        },
+        {
+          "external_url": "https://github.com/MobilityFirst/GNS",
+          "title": "Github"
+        }
+      ]
+    }
+  ]
+}

@@ -1,22 +1,5 @@
-{% if page.sidebar == "home_sidebar" %}
-{% assign sidebar = site.data.sidebars.home_sidebar.entries %}
-
-{% elsif page.sidebar == "documentation_sidebar" %}
-{% assign sidebar = site.data.sidebars.documentation_sidebar.entries %}
-
-{% elsif page.sidebar == "tags_sidebar" %}
-{% assign sidebar = site.data.sidebars.tags_sidebar.entries %}
-
-{% else %}
-{% assign sidebar = site.data.sidebars.home_sidebar.entries %}
-{% endif %}
-
-
-
 {% comment %}
-sidebar configuration for print files
+This is where we would put conditionals if we used more than one sidebar
 {% endcomment %}
 
-{% if site.product == "doc" %}
-{% assign sidebar_pdf = site.data.sidebars.documentation_sidebar.entries %}
-{% endif %}
+{% assign sidebar = site.data.sidebars.documentation_sidebar %}

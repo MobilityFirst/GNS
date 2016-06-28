@@ -1,45 +1,42 @@
 {% include custom/sidebarconfigs.html %}
 
 <ul id="mysidebar" class="nav">
-    <li class="sidebarTitle">{{sidebar[0].product}} {{sidebar[0].version}}</li>
-    {% for entry in sidebar %}
-    {% for folder in entry.folders %}    
+    <li class="sidebarTitle"></li> <!-- Unused, left for spacing -->
+    {% for layer1item in sidebar.layer1 %}   
     <li>
-        {% if folder.external_url %}
-        <li><a href="{{folder.external_url}}" target="_blank">{{folder.title}}</a></li>
-        {% elsif folder.url %}
-        <li><a href="{{folder.url | prepend: site.baseurl}}">{{folder.title}}</a></li>
+        {% if layer1item.external_url %}
+        <li><a href="{{layer1item.external_url}}" target="_blank">{{layer1item.title}}</a></li>
+        {% elsif layer1item.url %}
+        <li><a href="{{layer1item.url | prepend: site.baseurl}}">{{layer1item.title}}</a></li>
         {% else %}
-        <a href="#">{{ folder.title }}</a>
+        <a href="#">{{ layer1item.title }}</a>
         <ul>
-            {% for folderitem in folder.folderitems %}
-            {% if folderitem.external_url %}
-            <li><a href="{{folderitem.external_url}}" target="_blank">{{folderitem.title}}</a></li>
-            {% elsif page.url == folderitem.url %}
-            <li class="active"><a href="{{folderitem.url | prepend: site.baseurl}}">{{folderitem.title}}</a></li>
+            {% for layer2item in layer1item.layer2 %}
+            {% if layer2item.external_url %}
+            <li><a href="{{layer2item.external_url}}" target="_blank">{{layer2item.title}}</a></li>
+            {% elsif page.url == layer2item.url %} <!-- Highlight current page -->
+            <li class="active"><a href="{{layer2item.url | prepend: site.baseurl}}">{{layer2item.title}}</a></li>
+            {% elsif layer2item.url %}
+            <li><a href="{{layer2item.url | prepend: site.baseurl}}">{{layer2item.title}}</a></li>
             {% else %}
-            <li><a href="{{folderitem.url | prepend: site.baseurl}}">{{folderitem.title}}</a></li>
-            {% endif %}
-            {% for subfolders in folderitem.subfolders %}
             <li class="subfolders">
-                <a href="#">{{ subfolders.title }}</a>
+                <a href="#">{{ layer2item.title }}</a>
                 <ul>
-                    {% for subfolderitem in subfolders.subfolderitems %}
-                    {% if subfolderitem.external_url %}
-                    <li><a href="{{subfolderitem.external_url}}" target="_blank">{{subfolderitem.title}}</a></li>
-                    {% elsif page.url == subfolderitem.url %}
-                    <li class="active"><a href="{{subfolderitem.url | prepend: site.baseurl}}">{{subfolderitem.title}}</a></li>
+                    {% for layer3item in layer2item.layer3 %}
+                    {% if layer3item.external_url %}
+                    <li><a href="{{layer3item.external_url}}" target="_blank">{{layer3item.title}}</a></li>
+                    {% elsif page.url == layer3item.url %}
+                    <li class="active"><a href="{{layer3item.url | prepend: site.baseurl}}">{{layer3item.title}}</a></li>
                     {% else %}
-                    <li><a href="{{subfolderitem.url | prepend: site.baseurl}}">{{subfolderitem.title}}</a></li>
+                    <li><a href="{{layer3item.url | prepend: site.baseurl}}">{{layer3item.title}}</a></li>
                     {% endif %}
                     {% endfor %}
                 </ul>
             </li>
-            {% endfor %}
+            {% endif %}
             {% endfor %}
         </ul>
         {% endif %}
-        {% endfor %}
         {% endfor %}
         <!-- if you aren't using the accordion, uncomment this block:
            <p class="external">

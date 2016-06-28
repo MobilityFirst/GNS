@@ -1,5 +1,4 @@
 ---
-sidebar: documentation_sidebar
 layout: default_no_sidebar
 type: homepage
 toc: false

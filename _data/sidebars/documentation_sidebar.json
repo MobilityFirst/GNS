@@ -1,102 +1,95 @@
 {
-  "entries": [
+  "layer1": [
     {
-      "folders": [
+      "title": "Server",
+      "layer2": [
         {
-          "folderitems": [
+          "title": "Obtaining Server",
+          "url": "/server_obtaining/"
+        },
+        {
+          "title": "Getting Started",
+          "url": "/server_getting_started/"
+        },
+        {
+          "title": "Start a GNS Server",
+          "layer3": [
             {
-              "title": "Obtaining Server",
-              "url": "/server_obtaining/"
+              "title": "Single Node, Locally",
+              "url": "/server_deploy_single_local/"
             },
             {
-              "subfolders": [
-                {
-                  "subfolderitems": [
-                    {
-                      "title": "Single Node, Locally",
-                      "url": "/server_deploy_single_local/"
-                    },
-                    {
-                      "title": "Distributed, Locally",
-                      "url": "/server_deploy_distributed_local/"
-                    },
-                    {
-                      "title": "Distributed, Remotely",
-                      "url": "/server_deploy_distributed_remote/"
-                    }
-                  ],
-                  "title": "Start a GNS Server"
-                }
-              ],
-              "title": "Getting Started",
-              "url": "/server_getting_started/"
+              "title": "Distributed, Locally",
+              "url": "/server_deploy_distributed_local/"
             },
             {
-              "title": "Server gigapaxos.properties file",
-              "url": "/server_gigapaxos_properties/"
+              "title": "Distributed, Remotely",
+              "url": "/server_deploy_distributed_remote/"
             }
           ],
-          "title": "Server"
         },
         {
-          "folderitems": [
-            {
-              "title": "Obtaining Client",
-              "url": "/client_obtaining/"
-            },
-            {
-              "title": "CLI Tutorial",
-              "url": "/client_cli_tutorial/"
-            },
-            {
-              "title": "Simple Example",
-              "url": "/client_simple_example/"
-            },
-            {
-              "title": "Select Queries",
-              "url": "/client_select_queries/"
-            },
-            {
-              "title": "Acess Control Lists (ACLs)",
-              "url": "/client_ACL_example/"
-            },
-            {
-              "title": "Client gigapaxos.properties file",
-              "url": "/client_gigapaxos_properties/"
-            },
-            {
-              "title": "Javadoc",
-              "url": "/javadoc/index.html"
-            }
-          ],
-          "title": "Java Client"
-        },
-        {
-          "title": "IOS",
-          "url": "/ios_client/"
-        },
-        {
-          "title": "Android",
-          "url": "/android_client/"
-        },
-        {
-          "title": "ActiveCode",
-          "url": "/activecode/"
-        },
-        {
-          "title": "Managed DNS",
-          "url": "/managed_DNS/"
-        },
-        {
-          "title": "msocket",
-          "url": "/msocket/"
-        },
-        {
-          "external_url": "http://www.giga.paxos",
-          "title": "Gigapaxos"
+          "title": "Server gigapaxos.properties file",
+          "url": "/server_gigapaxos_properties/"
         }
-      ],
-      "title": "sidebar"
+      ]
+    },
+    {
+      "title": "Client",
+      "layer2": [
+        {
+          "title": "Obtaining Client",
+          "url": "/client_obtaining/"
+        },
+        {
+          "title": "CLI Tutorial",
+          "url": "/client_cli_tutorial/"
+        },
+        {
+          "title": "Simple Example",
+          "url": "/client_simple_example/"
+        },
+        {
+          "title": "Select Queries",
+          "url": "/client_select_queries/"
+        },
+        {
+          "title": "Acess Control Lists (ACLs)",
+          "url": "/client_ACL_example/"
+        },
+        {
+          "title": "Client gigapaxos.properties file",
+          "url": "/client_gigapaxos_properties/"
+        },
+        {
+          "title": "Javadoc",
+          "url": "/javadoc/index.html"
+        }
+      ]
+    },
+    {
+      "title": "IOS",
+      "url": "/ios_client/"
+    },
+    {
+      "title": "Android",
+      "url": "/android_client/"
+    },
+    {
+      "title": "ActiveCode",
+      "url": "/activecode/"
+    },
+    {
+      "title": "Managed DNS",
+      "url": "/managed_DNS/"
+    },
+    {
+      "title": "msocket",
+      "url": "/msocket/"
+    },
+    {
+      "external_url": "http://www.giga.paxos",
+      "title": "Gigapaxos"
     }
   ]
 }
