@@ -157,6 +157,11 @@ public class GNSCommandProtocol {
    * See {@link edu.umass.cs.gnscommon.GNSResponseCode#UPDATE_ERROR}.
    */
   public final static String UPDATE_ERROR = "+UPDATEERROR+";
+   /**
+   * Indicates that a command resulted in an error while updating a record.
+   * See {@link edu.umass.cs.gnscommon.GNSResponseCode#UPDATE_ERROR}.
+   */
+  public final static String DATABASE_OPERATION_ERROR = "+DATABASEOPERROR+";
   /**
    * Indicates that a timeout occurred during the execution of a command.
    * See {@link edu.umass.cs.gnscommon.GNSResponseCode#TIMEOUT}.

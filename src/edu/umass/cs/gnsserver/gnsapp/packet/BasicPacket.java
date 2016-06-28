@@ -61,7 +61,7 @@ public abstract class BasicPacket implements PacketInterface, ExtensiblePacketIn
    *
    * @param type the type to set
    */
-  public void setType(Packet.PacketType type) {
+  public final void setType(Packet.PacketType type) {
     this.type = type;
   }
   

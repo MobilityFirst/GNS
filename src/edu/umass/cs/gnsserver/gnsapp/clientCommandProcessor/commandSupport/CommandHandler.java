@@ -88,7 +88,7 @@ public class CommandHandler {
     try {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
       // Other than this line, one below and some catches all of this method is instrumentation.
-      CommandResponse<String> returnValue = executeCommand(command, jsonFormattedCommand, handler);
+      CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
 
       // instrumentation
       DelayProfiler.updateDelay("executeCommand", executeCommandStart);
@@ -199,7 +199,7 @@ public class CommandHandler {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> executeCommand(BasicCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
+  public static CommandResponse executeCommand(BasicCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       if (command != null) {
         ClientCommandProcessorConfig.getLogger().log(Level.FINE,
@@ -207,18 +207,18 @@ public class CommandHandler {
                 new Object[]{command, json});
         return command.execute(json, handler);
       } else {
-        return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+        return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
                 + " - Don't understand " + json.toString(),
         GNSResponseCode.OPERATION_NOT_SUPPORTED);
       }
     } catch (JSONException e) {
       //e.printStackTrace();
-      return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
+      return new CommandResponse(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
               + " while executing command.",
       GNSResponseCode.JSON_PARSE_ERROR);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException |
             SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e,
+      return new CommandResponse(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e,
       GNSResponseCode.QUERY_PROCESSING_ERROR);
     }
   }

@@ -59,11 +59,11 @@ public class Dump extends BasicCommand {
 //  }
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
       return handler.getAdmintercessor().sendDump(handler);
     }
-    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + getCommandType().toString(),
             GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }

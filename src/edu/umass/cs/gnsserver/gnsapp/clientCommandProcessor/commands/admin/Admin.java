@@ -67,23 +67,23 @@ public class Admin extends BasicCommand {
 //    return ADMIN;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
     try {
       GNSConfig.getLogger().log(Level.INFO, "Http host:port = {0}", handler.getHTTPServerHostPortString());
       if (handler.getHTTPServerHostPortString().equals(passkey) || "shabiz".equals(passkey)) {
         module.setAdminMode(true);
-        return new CommandResponse<>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       } else if ("off".equals(passkey)) {
         module.setAdminMode(false);
-        return new CommandResponse<>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       }
-      return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+      return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
               + " Don't understand " + getCommandType().toString() + " " + passkey,
               GNSResponseCode.OPERATION_NOT_SUPPORTED);
     } catch (UnknownHostException e) {
-      return new CommandResponse<>(BAD_RESPONSE
+      return new CommandResponse(BAD_RESPONSE
               + " " + UNSPECIFIED_ERROR + " Unable to determine host address",
               GNSResponseCode.UNSPECIFIED_ERROR);
     }

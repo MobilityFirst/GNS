@@ -67,7 +67,7 @@ public class GetGroupMembers extends BasicCommand {
 //    return GET_GROUP_MEMBERS;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     // reader might be same as guid
@@ -76,7 +76,7 @@ public class GetGroupMembers extends BasicCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    return new CommandResponse<>(new JSONArray(GroupAccess.lookup(guid,
+    return new CommandResponse(new JSONArray(GroupAccess.lookup(guid,
             reader, signature, message, timestamp, handler)).toString(),
             GNSResponseCode.NO_ERROR);
   }

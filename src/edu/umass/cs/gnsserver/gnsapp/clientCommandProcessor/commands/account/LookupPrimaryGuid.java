@@ -59,13 +59,13 @@ public class LookupPrimaryGuid extends BasicCommand {
 //    return LOOKUP_PRIMARY_GUID;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     String result = AccountAccess.lookupPrimaryGuid(guid, handler, false);
     if (result != null) {
-      return new CommandResponse<String>(result, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(result, GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID,
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID,
               GNSResponseCode.BAD_GUID_ERROR);
     }
 

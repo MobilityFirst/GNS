@@ -68,7 +68,7 @@ public class RemoveMembersFromGroup extends BasicCommand {
 //    return REMOVE_FROM_GROUP;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String members = json.getString(MEMBERS);
@@ -81,13 +81,13 @@ public class RemoveMembersFromGroup extends BasicCommand {
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, new ResultValue(members), writer, signature,
               message, handler)).isExceptionOrError()) {
-        return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
+        return new CommandResponse(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
                 responseCode);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
               GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }

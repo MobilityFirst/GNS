@@ -70,7 +70,7 @@ public class RegisterAccount extends BasicCommand {
 //    return REGISTER_ACCOUNT;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     String name = json.getString(NAME);
     String publicKey = json.getString(PUBLIC_KEY);
@@ -83,24 +83,24 @@ public class RegisterAccount extends BasicCommand {
     // See RegisterAccountUnsigned
     if (signature != null && message != null) {
       if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE,
+        return new CommandResponse(BAD_RESPONSE + " " + BAD_SIGNATURE,
                 GNSResponseCode.SIGNATURE_ERROR);
       }
     }
     try {
-      CommandResponse<String> result
-              = AccountAccess.addAccountWithVerification(handler.getHTTPServerHostPortString(),
-                      name, guid, publicKey,
-                      password, handler);
-      if (result.getExceptionOrErrorCode().isOKResult() 
-         //getReturnValue().equals(OK_RESPONSE)
-              ) {
-        return new CommandResponse<String>(guid, GNSResponseCode.NO_ERROR);
+      CommandResponse result = AccountAccess.addAccountWithVerification(
+              handler.getHTTPServerHostPortString(),
+              name, guid, publicKey,
+              password, handler);
+      if (result.getExceptionOrErrorCode().isOKResult()) {
+        // Everything is hunkey dorey so return the new guid
+        return new CommandResponse(guid, GNSResponseCode.NO_ERROR);
       } else {
+         // Otherwise return the error response.
         return result;
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
               GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }

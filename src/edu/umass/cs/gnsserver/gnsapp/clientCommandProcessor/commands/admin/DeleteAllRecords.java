@@ -63,17 +63,17 @@ public class DeleteAllRecords extends BasicCommand {
 //  }
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     // DISABLE THIS COMMAND
 //    if (module.isAdminMode()) {
 //      if (handler.getAdmintercessor().sendDeleteAllRecords(handler)) {
-//        return new CommandResponse<String>(OK_RESPONSE);
+//        return new CommandResponse(OK_RESPONSE);
 //      } else {
-//        return new CommandResponse<String>(BAD_RESPONSE);
+//        return new CommandResponse(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + getCommandType().toString(),
             GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }

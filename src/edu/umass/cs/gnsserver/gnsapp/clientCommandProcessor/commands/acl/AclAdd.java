@@ -71,7 +71,7 @@ public class AclAdd extends BasicCommand {
 //    return ACL_ADD;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -86,7 +86,7 @@ public class AclAdd extends BasicCommand {
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE
+      return new CommandResponse(BAD_RESPONSE
               + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString(),
               GNSResponseCode.BAD_ACL_TYPE_ERROR);
     }
@@ -96,7 +96,7 @@ public class AclAdd extends BasicCommand {
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler, true)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accesser,
+        return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + accesser,
                 GNSResponseCode.BAD_GUID_ERROR);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
@@ -105,9 +105,9 @@ public class AclAdd extends BasicCommand {
     GNSResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(access, guid, field,
             accessorPublicKey, writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<String>(responseCode.getProtocolCode(), responseCode);
+      return new CommandResponse(responseCode.getProtocolCode(), responseCode);
     }
   }
 

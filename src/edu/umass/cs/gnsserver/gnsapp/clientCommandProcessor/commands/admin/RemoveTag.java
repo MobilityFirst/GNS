@@ -68,7 +68,7 @@ public class RemoveTag extends BasicCommand {
 //  }
 
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String tag = json.getString(NAME);
@@ -78,7 +78,7 @@ public class RemoveTag extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
       GNSResponseCode.BAD_GUID_ERROR);
     }
     return AccountAccess.removeTag(guidInfo, tag, guid, signature, message, timestamp, handler);

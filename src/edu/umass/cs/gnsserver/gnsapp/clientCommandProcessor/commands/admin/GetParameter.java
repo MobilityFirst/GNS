@@ -63,18 +63,18 @@ public class GetParameter extends BasicCommand {
 //    return GET_PARAMETER;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(NAME);
     if (module.isAdminMode()) {
       try {
-        return new CommandResponse<String>(SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString(),
+        return new CommandResponse(SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString(),
                 GNSResponseCode.NO_ERROR);
       } catch (Exception e) {
         System.out.println("Problem getting parameter: " + e);
       }
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + CommandType.GetParameter.toString() + " " + parameterString,
             GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }

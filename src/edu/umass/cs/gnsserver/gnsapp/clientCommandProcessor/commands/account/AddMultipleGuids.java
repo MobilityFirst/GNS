@@ -72,7 +72,7 @@ public class AddMultipleGuids extends BasicCommand {
 //    return ADD_MULTIPLE_GUIDS;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 
     String guid = json.getString(GUID);
@@ -84,20 +84,20 @@ public class AddMultipleGuids extends BasicCommand {
 
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
               GNSResponseCode.BAD_GUID_ERROR);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
       if (accountInfo == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
+        return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
                 GNSResponseCode.BAD_ACCOUNT_ERROR);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
+        return new CommandResponse(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
                 GNSResponseCode.VERIFICATION_ERROR);
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS,
+        return new CommandResponse(BAD_RESPONSE + " " + TOO_MANY_GUIDS,
                 GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION);
       } else if (names != null && publicKeys != null) {
         GNSConfig.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
@@ -113,12 +113,12 @@ public class AddMultipleGuids extends BasicCommand {
         int guidCnt = Integer.parseInt(guidCntString);
         return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR
+        return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR
                 + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT,
                 GNSResponseCode.UNSPECIFIED_ERROR);
       }
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE,
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_SIGNATURE,
               GNSResponseCode.SIGNATURE_ERROR);
     }
     //}

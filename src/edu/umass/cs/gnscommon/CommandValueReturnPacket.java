@@ -76,7 +76,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    * @param cppProccessingTime
    */
   public CommandValueReturnPacket(long requestId, long CCPRequestId, String serviceName,
-          CommandResponse<String> response, long requestCnt,
+          CommandResponse response, long requestCnt,
           int requestRate, long cppProccessingTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.clientRequestId = requestId;

@@ -59,21 +59,21 @@ public class Help extends BasicCommand {
 //    return HELP;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) {
     if (json.has("tcp")) {
-      return new CommandResponse<String>("Commands are sent as TCP packets." + NEWLINE + NEWLINE
+      return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
               + module.allCommandDescriptions(CommandDescriptionFormat.TCP),
               GNSResponseCode.NO_ERROR);
     } else if (json.has("tcpwiki")) {
-      return new CommandResponse<String>("Commands are sent as TCP packets." + NEWLINE + NEWLINE
+      return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
               + module.allCommandDescriptions(CommandDescriptionFormat.TCP_Wiki),
               GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<String>("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
+      return new CommandResponse("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
               + module.allCommandDescriptions(CommandDescriptionFormat.HTML),

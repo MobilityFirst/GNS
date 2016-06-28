@@ -70,7 +70,7 @@ public class RemoveAccount extends BasicCommand {
 //    return REMOVE_ACCOUNT;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     String name = json.getString(NAME);
     String guid = json.getString(GUID);
@@ -78,7 +78,7 @@ public class RemoveAccount extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
               GNSResponseCode.BAD_GUID_ERROR);
     }
     try {
@@ -87,15 +87,15 @@ public class RemoveAccount extends BasicCommand {
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
         } else {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT,
+          return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT,
                   GNSResponseCode.BAD_ACCOUNT_ERROR);
         }
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE,
+        return new CommandResponse(BAD_RESPONSE + " " + BAD_SIGNATURE,
                 GNSResponseCode.SIGNATURE_ERROR);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
               GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }

@@ -61,25 +61,25 @@ public class LookupAccountRecord extends BasicCommand {
 //    return LOOKUP_ACCOUNT_RECORD;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     AccountInfo acccountInfo;
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
               GNSResponseCode.BAD_ACCOUNT_ERROR);
     }
     if (acccountInfo != null) {
       try {
         // the true below omits the list of guids which might be too big to send back to the client
-        return new CommandResponse<>(acccountInfo.toJSONObject(true).toString(),
+        return new CommandResponse(acccountInfo.toJSONObject(true).toString(),
                 GNSResponseCode.NO_ERROR);
-        //return new CommandResponse<>(acccountInfo.toJSONObject().toString());
+        //return new CommandResponse(acccountInfo.toJSONObject().toString());
       } catch (JSONException e) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR,
+        return new CommandResponse(BAD_RESPONSE + " " + JSON_PARSE_ERROR,
                 GNSResponseCode.JSON_PARSE_ERROR);
       }
     } else {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
               GNSResponseCode.BAD_GUID_ERROR);
     }
   }

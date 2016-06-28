@@ -59,8 +59,8 @@ public class ConnectionCheck extends BasicCommand {
 //  }
 
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
   }
 
   @Override

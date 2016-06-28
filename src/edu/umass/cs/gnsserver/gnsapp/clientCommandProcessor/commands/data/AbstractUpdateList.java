@@ -63,7 +63,7 @@ public abstract class AbstractUpdateList extends BasicCommand {
   public abstract UpdateOperation getUpdateOperation();
 
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -90,9 +90,9 @@ public abstract class AbstractUpdateList extends BasicCommand {
             argument,
             getUpdateOperation(),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
+      return new CommandResponse(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
               responseCode);
     }
 

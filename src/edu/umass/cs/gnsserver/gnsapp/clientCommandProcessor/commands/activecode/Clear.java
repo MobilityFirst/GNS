@@ -72,7 +72,7 @@ public class Clear extends BasicCommand {
 //  }
 
   @Override
-  public CommandResponse<String> execute(JSONObject json,
+  public CommandResponse execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
@@ -86,9 +86,9 @@ public class Clear extends BasicCommand {
             writer, signature, message, timestamp, handler);
 
     if (response.isExceptionOrError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode(), response);
+      return new CommandResponse(BAD_RESPONSE + " " + response.getProtocolCode(), response);
     } else {
-      return new CommandResponse<>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
     }
   }
 

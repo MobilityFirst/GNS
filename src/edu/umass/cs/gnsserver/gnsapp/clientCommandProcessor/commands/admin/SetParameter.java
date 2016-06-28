@@ -63,19 +63,19 @@ public class SetParameter extends BasicCommand {
 //    return SET_PARAMETER;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(NAME);
     String value = json.getString(VALUE);
     if (module.isAdminMode()) {
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldValue(value);
-        return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       } catch (Exception e) {
         System.out.println("Problem setting parameter: " + e);
       }
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand "
             + CommandType.SetParameter.toString() + " " + parameterString + " " + VALUE + " " + value,
             GNSResponseCode.OPERATION_NOT_SUPPORTED);

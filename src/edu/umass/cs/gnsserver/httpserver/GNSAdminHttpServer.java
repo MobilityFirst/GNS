@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
@@ -48,6 +49,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
@@ -147,16 +149,19 @@ public class GNSAdminHttpServer {
 
           String action = path.replaceFirst("/" + GNSPATH + "/", "");
 
-          String response;
+          CommandResponse response;
           if (!action.isEmpty()) {
             LOG.log(Level.FINE,
                     "Action: {0} Query:{1}", new Object[]{action, query});
             response = processQuery(host, action, query);
           } else {
-            response = BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query;
+            response = new CommandResponse(BAD_RESPONSE
+                    + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query,
+                    GNSResponseCode.OPERATION_NOT_SUPPORTED);
           }
           LOG.log(Level.FINER, "Response: {0}", response);
-          responseBody.write(response.getBytes());
+          // FIXME: This totally ignores the error code.
+          responseBody.write(response.getReturnValue().getBytes());
           responseBody.close();
         }
       } catch (Exception e) {
@@ -179,7 +184,7 @@ public class GNSAdminHttpServer {
    * the JSON Object format that is used by the CommandModeule class, then finds
    * executes the matching command.
    */
-  private String processQuery(String host, String action, String queryString) {
+  private CommandResponse processQuery(String host, String action, String queryString) {
     // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
     // the signature, and the message signed.
     String fullString = action + QUERYPREFIX + queryString; // for signature check
@@ -196,7 +201,7 @@ public class GNSAdminHttpServer {
     BasicCommand command = commandModule.lookupCommand(CommandType.valueOf(action));
     // Now we execute the command
     //BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler).getReturnValue();
+    return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler);
   }
 
   /**

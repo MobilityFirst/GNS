@@ -58,12 +58,12 @@ public class ListParameters extends BasicCommand {
 //    return LIST_PARAMETERS;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) {
     if (module.isAdminMode()) {
-      return new CommandResponse<String>(SystemParameter.listParameters(),
+      return new CommandResponse(SystemParameter.listParameters(),
               GNSResponseCode.NO_ERROR);
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + CommandType.ListParameters.toString(),
             GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }

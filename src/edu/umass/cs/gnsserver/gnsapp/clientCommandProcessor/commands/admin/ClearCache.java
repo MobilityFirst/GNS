@@ -63,18 +63,18 @@ public class ClearCache extends BasicCommand {
 //  }
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
       if (handler.getAdmintercessor().sendClearCache(handler)) {
-        return new CommandResponse<>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       } else {
-        return new CommandResponse<>(BAD_RESPONSE, GNSResponseCode.UNSPECIFIED_ERROR);
+        return new CommandResponse(BAD_RESPONSE, GNSResponseCode.UNSPECIFIED_ERROR);
       }
     }
-    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + getCommandType().toString(),
-            GNSResponseCode.UNSPECIFIED_ERROR);
+            GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }
 
   @Override

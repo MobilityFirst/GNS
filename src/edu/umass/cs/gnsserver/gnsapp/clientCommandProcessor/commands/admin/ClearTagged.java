@@ -70,7 +70,7 @@ public class ClearTagged extends BasicCommand {
 //  }
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
     try {
@@ -81,9 +81,9 @@ public class ClearTagged extends BasicCommand {
           AccountAccess.removeAccount(accountInfo, handler);
         }
       }
-      return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
               GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }

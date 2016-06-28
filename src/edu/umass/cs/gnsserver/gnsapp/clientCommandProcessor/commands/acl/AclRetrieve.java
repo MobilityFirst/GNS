@@ -69,7 +69,7 @@ public class AclRetrieve extends BasicCommand {
 //    return ACL_RETRIEVE;
 //  }
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -82,13 +82,13 @@ public class AclRetrieve extends BasicCommand {
 
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACL_TYPE
+      return new CommandResponse(BAD_RESPONSE + " " + BAD_ACL_TYPE
               + "Should be one of " + MetaDataTypeName.values().toString(),
               GNSResponseCode.BAD_ACL_TYPE_ERROR);
     }
     JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(access,
             guid, field, reader, signature, message, timestamp, handler)));
-    return new CommandResponse<>(guids.toString(), GNSResponseCode.NO_ERROR);
+    return new CommandResponse(guids.toString(), GNSResponseCode.NO_ERROR);
   }
 
   @Override

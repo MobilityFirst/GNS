@@ -121,7 +121,7 @@ public class NSUpdateSupport {
         return GNSResponseCode.NO_ERROR;
       } else {
         ClientSupportConfig.getLogger().log(Level.SEVERE, "Invalid index value:{0}", updateValue);
-        return GNSResponseCode.UNSPECIFIED_ERROR;
+        return GNSResponseCode.UPDATE_ERROR;
       }
   }
 

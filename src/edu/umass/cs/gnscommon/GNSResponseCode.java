@@ -183,8 +183,13 @@ public enum GNSResponseCode implements Serializable {
    */
   UPDATE_ERROR(26, GNSCommandProtocol.UPDATE_ERROR, TYPE.ERROR),
   /**
+   * Something went wrong while we were reading from or writing to the database.
+   */
+  DATABASE_OPERATION_ERROR(27, GNSCommandProtocol.DATABASE_OPERATION_ERROR, TYPE.ERROR),
+  /**
    * An error occurred during the processing of a command query.
    */
+  
   QUERY_PROCESSING_ERROR(405, GNSCommandProtocol.QUERY_PROCESSING_ERROR, TYPE.ERROR),
   /**
    * A timeout occurred.

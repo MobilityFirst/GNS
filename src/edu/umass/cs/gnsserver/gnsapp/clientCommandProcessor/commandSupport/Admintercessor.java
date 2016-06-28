@@ -303,10 +303,10 @@ public class Admintercessor {
    * @param handler
    * @return a string containing the contents of the GNS
    */
-  public CommandResponse<String> sendDump(ClientRequestHandlerInterface handler) {
+  public CommandResponse sendDump(ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
-      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE 
+      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE 
               + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS",
       GNSResponseCode.QUERY_PROCESSING_ERROR);
     }
@@ -314,9 +314,9 @@ public class Admintercessor {
     Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
-      return new CommandResponse<>(formatDumpRecords(result, handler), GNSResponseCode.NO_ERROR);
+      return new CommandResponse(formatDumpRecords(result, handler), GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE 
+      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE 
               + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "No response to dump command!",
       GNSResponseCode.QUERY_PROCESSING_ERROR);
     }
