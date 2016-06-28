@@ -352,6 +352,27 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <classpath refid="classpath.test" />
     </junit>
   </target>
+   <target name="bugSequential" description="Runs the test that is intended to reveal a timeout bug in the ServerIntegrationTest suite." 
+          depends="jar, compiletest">
+    <property name="integrationTestRuns" value="500"/>
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
+      <test name="edu.umass.cs.gnsclient.client.bugreports.SequentialCreateFieldTimeout"/>
+      <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gigapaxos.server.singleNode.local.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+    </junit>
+  </target>
 
   <target name="testSequential" description="Runs the default
 integration tests sequentially" 
