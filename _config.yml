@@ -46,11 +46,6 @@ kramdown:
  syntax_highlighter: rouge
 # filter used to process markdown. note that kramdown differs from github-flavored markdown in some subtle ways
 
-collections:
-  tooltips:
-    output: false
-# collection declared here. this renders the content in _tooltips and processes it, but doesn't output it as actual files in the output.
-
 defaults:
   -
     scope:
