@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -70,7 +71,6 @@ public class AddMultipleGuids extends BasicCommand {
 //  public String getCommandName() {
 //    return ADD_MULTIPLE_GUIDS;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
@@ -84,17 +84,21 @@ public class AddMultipleGuids extends BasicCommand {
 
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+              GNSResponseCode.BAD_GUID_ERROR);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
       if (accountInfo == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
+                GNSResponseCode.BAD_ACCOUNT_ERROR);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
+                GNSResponseCode.VERIFICATION_ERROR);
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + TOO_MANY_GUIDS,
+                GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION);
       } else if (names != null && publicKeys != null) {
         GNSConfig.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
         return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
@@ -110,10 +114,12 @@ public class AddMultipleGuids extends BasicCommand {
         return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
       } else {
         return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR
-                + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT);
+                + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT,
+                GNSResponseCode.UNSPECIFIED_ERROR);
       }
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE,
+              GNSResponseCode.SIGNATURE_ERROR);
     }
     //}
   }

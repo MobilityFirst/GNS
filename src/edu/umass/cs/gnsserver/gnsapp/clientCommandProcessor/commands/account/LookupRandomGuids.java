@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -63,29 +64,30 @@ public class LookupRandomGuids extends BasicCommand {
 //  public String getCommandName() {
 //    return LOOKUP_RANDOM_GUIDS;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     int count = json.getInt(GUIDCNT);
     AccountInfo acccountInfo;
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
+              GNSResponseCode.BAD_ACCOUNT_ERROR);
     }
     if (acccountInfo != null) {
       List<String> guids = acccountInfo.getGuids();
       if (count >= guids.size()) {
-        return new CommandResponse<>(new JSONArray(guids).toString());
+        return new CommandResponse<>(new JSONArray(guids).toString(), GNSResponseCode.NO_ERROR);
       } else {
         Random rand = new Random();
         List<String> result = new ArrayList<>();
         for (int i = 0; i < count; i++) {
           result.add(guids.get(rand.nextInt(guids.size())));
         }
-        return new CommandResponse<>(new JSONArray(result).toString());
+        return new CommandResponse<>(new JSONArray(result).toString(), GNSResponseCode.NO_ERROR);
       }
     } else {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+              GNSResponseCode.BAD_GUID_ERROR);
     }
     // }
   }

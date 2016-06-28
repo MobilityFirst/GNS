@@ -66,7 +66,6 @@ public class RemoveFromGroup extends BasicCommand {
 //  public String getCommandName() {
 //    return REMOVE_FROM_GROUP;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
@@ -81,12 +80,14 @@ public class RemoveFromGroup extends BasicCommand {
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, member,
               writer, signature, message, handler)).isExceptionOrError()) {
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
+                responseCode);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+              GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }
 

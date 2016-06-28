@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Group
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -68,7 +69,6 @@ public class GetGroups extends BasicCommand {
 //  public String getCommandName() {
 //    return GET_GROUPS;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -80,7 +80,8 @@ public class GetGroups extends BasicCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     return new CommandResponse<>(new JSONArray(GroupAccess.lookupGroupsLocally(guid, reader,
-            signature, message, timestamp, handler)).toString());
+            signature, message, timestamp, handler)).toString(),
+            GNSResponseCode.NO_ERROR);
   }
 
   @Override

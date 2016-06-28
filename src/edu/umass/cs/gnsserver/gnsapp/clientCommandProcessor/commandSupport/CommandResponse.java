@@ -49,15 +49,6 @@ public class CommandResponse<NodeIDType> {
   }
 
   /**
-   * Create a command response object from a return value with no error.
-   *
-   * @param returnValue
-   */
-  public CommandResponse(String returnValue) {
-    this(returnValue, GNSResponseCode.NO_ERROR);
-  }
-
-  /**
    * Gets the return value.
    *
    * @return a string

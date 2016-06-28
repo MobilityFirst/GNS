@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicComman
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -68,7 +69,6 @@ public class RegisterAccount extends BasicCommand {
 //  public String getCommandName() {
 //    return REGISTER_ACCOUNT;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
@@ -77,18 +77,14 @@ public class RegisterAccount extends BasicCommand {
     String password = json.getString(PASSWORD);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    
-    String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
-//    byte[] publicKeyBytes = Base64.decode(publicKey);
-//    String guid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
 
+    String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     // FIXME: this lacking signature check is for temporary backward compatability... remove it.
     // See RegisterAccountUnsigned
     if (signature != null && message != null) {
       if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
-//      } else {
-//        GNS.getLogger().info("########SIGNATURE VERIFIED FOR CREATE " + name);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE,
+                GNSResponseCode.SIGNATURE_ERROR);
       }
     }
     try {
@@ -96,13 +92,16 @@ public class RegisterAccount extends BasicCommand {
               = AccountAccess.addAccountWithVerification(handler.getHTTPServerHostPortString(),
                       name, guid, publicKey,
                       password, handler);
-      if (result.getReturnValue().equals(OK_RESPONSE)) {
-        return new CommandResponse<String>(guid);
+      if (result.getExceptionOrErrorCode().isOKResult() 
+         //getReturnValue().equals(OK_RESPONSE)
+              ) {
+        return new CommandResponse<String>(guid, GNSResponseCode.NO_ERROR);
       } else {
         return result;
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+              GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }
 

@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -60,7 +61,6 @@ public class DeleteAllRecords extends BasicCommand {
 //  public String getCommandName() {
 //    return DELETE_ALL_RECORDS;
 //  }
-
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -73,8 +73,9 @@ public class DeleteAllRecords extends BasicCommand {
 //        return new CommandResponse<String>(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
-            + " Don't understand " + getCommandType().toString());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand " + getCommandType().toString(),
+            GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }
 
   @Override

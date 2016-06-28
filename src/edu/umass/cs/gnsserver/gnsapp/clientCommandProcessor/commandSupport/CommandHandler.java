@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -207,15 +208,18 @@ public class CommandHandler {
         return command.execute(json, handler);
       } else {
         return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-                + " - Don't understand " + json.toString());
+                + " - Don't understand " + json.toString(),
+        GNSResponseCode.OPERATION_NOT_SUPPORTED);
       }
     } catch (JSONException e) {
       //e.printStackTrace();
       return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
-              + " while executing command.");
+              + " while executing command.",
+      GNSResponseCode.JSON_PARSE_ERROR);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException |
             SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
+      return new CommandResponse<>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e,
+      GNSResponseCode.QUERY_PROCESSING_ERROR);
     }
   }
 

@@ -612,7 +612,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
     String returnedGuid = accountGuidCreateHelper(alias,
             keyPair.getPublic(), keyPair.getPrivate(), password);
-    assert returnedGuid.equals(guid);
     // Anything else we want to do here?
     if (!returnedGuid.equals(guid)) {
       GNSClientConfig
@@ -621,6 +620,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
                       "Returned guid {0} doesn''t match locally created guid {1}",
                       new Object[]{returnedGuid, guid});
     }
+    assert returnedGuid.equals(guid);
     GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(),
             keyPair.getPrivate());
 

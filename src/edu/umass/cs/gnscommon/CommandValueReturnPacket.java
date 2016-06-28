@@ -135,6 +135,8 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     json.put(RETURNVALUE, returnValue);
     if (errorCode != null) {
       json.put(ERRORCODE, errorCode.getCodeValue());
+    } else {
+      json.put(ERRORCODE, GNSResponseCode.NO_ERROR.getCodeValue());
     }
     return json;
   }

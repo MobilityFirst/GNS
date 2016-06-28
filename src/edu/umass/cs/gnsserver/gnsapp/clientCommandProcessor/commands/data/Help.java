@@ -26,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDesc
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONObject;
 
@@ -42,7 +43,7 @@ public class Help extends BasicCommand {
   public Help(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public CommandType getCommandType() {
     return CommandType.Help;
@@ -57,24 +58,26 @@ public class Help extends BasicCommand {
 //  public String getCommandName() {
 //    return HELP;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) {
     if (json.has("tcp")) {
       return new CommandResponse<String>("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandDescriptionFormat.TCP));
+              + module.allCommandDescriptions(CommandDescriptionFormat.TCP),
+              GNSResponseCode.NO_ERROR);
     } else if (json.has("tcpwiki")) {
       return new CommandResponse<String>("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandDescriptionFormat.TCP_Wiki));
+              + module.allCommandDescriptions(CommandDescriptionFormat.TCP_Wiki),
+              GNSResponseCode.NO_ERROR);
     } else {
       return new CommandResponse<String>("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandDescriptionFormat.HTML));
+              + module.allCommandDescriptions(CommandDescriptionFormat.HTML),
+              GNSResponseCode.NO_ERROR);
     }
   }
 

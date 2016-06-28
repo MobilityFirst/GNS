@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -68,7 +69,6 @@ public class RemoveAccount extends BasicCommand {
 //  public String getCommandName() {
 //    return REMOVE_ACCOUNT;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
@@ -78,7 +78,8 @@ public class RemoveAccount extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+              GNSResponseCode.BAD_GUID_ERROR);
     }
     try {
       if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
@@ -86,13 +87,16 @@ public class RemoveAccount extends BasicCommand {
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
         } else {
-          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
+          return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT,
+                  GNSResponseCode.BAD_ACCOUNT_ERROR);
         }
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE,
+                GNSResponseCode.SIGNATURE_ERROR);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+              GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }
 

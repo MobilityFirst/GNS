@@ -24,6 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -61,7 +62,6 @@ public class ChangeLogLevel extends BasicCommand {
 //  public String getCommandName() {
 //    return CHANGE_LOG_LEVEL;
 //  }
-
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -71,16 +71,18 @@ public class ChangeLogLevel extends BasicCommand {
       try {
         Level level = Level.parse(levelString);
         if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
-          return new CommandResponse<>(OK_RESPONSE);
+          return new CommandResponse<>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
         } else {
-          return new CommandResponse<>(BAD_RESPONSE);
+          return new CommandResponse<>(BAD_RESPONSE, GNSResponseCode.UNSPECIFIED_ERROR);
         }
       } catch (IllegalArgumentException e) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString);
+        return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString,
+                GNSResponseCode.UNSPECIFIED_ERROR);
       }
     }
-    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
-            + " Don't understand " + getCommandType().toString());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand " + getCommandType().toString(),
+            GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }
 
   @Override

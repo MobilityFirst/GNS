@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -67,7 +68,6 @@ public class AddTag extends BasicCommand {
 //  public String getCommandName() {
 //    return ADD_TAG;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -79,7 +79,8 @@ public class AddTag extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+              GNSResponseCode.BAD_GUID_ERROR);
     }
     return AccountAccess.addTag(guidInfo, tag, guid, signature, message, timestamp, handler);
   }

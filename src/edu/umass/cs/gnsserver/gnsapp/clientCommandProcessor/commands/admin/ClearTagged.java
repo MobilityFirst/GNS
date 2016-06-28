@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -67,7 +68,6 @@ public class ClearTagged extends BasicCommand {
 //  public String getCommandName() {
 //    return CLEAR_TAGGED;
 //  }
-
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -81,9 +81,10 @@ public class ClearTagged extends BasicCommand {
           AccountAccess.removeAccount(accountInfo, handler);
         }
       }
-      return new CommandResponse<String>(OK_RESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
+              GNSResponseCode.UNSPECIFIED_ERROR);
     }
   }
 

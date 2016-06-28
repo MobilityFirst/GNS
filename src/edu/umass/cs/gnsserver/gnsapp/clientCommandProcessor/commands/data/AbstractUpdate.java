@@ -86,9 +86,9 @@ public abstract class AbstractUpdate extends BasicCommand {
       responseCode = FieldAccess.updateUserJSON(guid, userJSON, 
               writer, signature, message, timestamp, handler);
       if (!responseCode.isExceptionOrError()) {
-        return new CommandResponse<>(OK_RESPONSE);
+        return new CommandResponse<>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       } else {
-        return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode(), responseCode);
       }
     } else {
       // single field update
@@ -100,9 +100,9 @@ public abstract class AbstractUpdate extends BasicCommand {
               getUpdateOperation(),
               writer, signature, message, timestamp,
               handler)).isExceptionOrError()) {
-        return new CommandResponse<>(OK_RESPONSE);
+        return new CommandResponse<>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
       } else {
-        return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse<>(BAD_RESPONSE + " " + responseCode.getProtocolCode(), responseCode);
       }
     }
   }

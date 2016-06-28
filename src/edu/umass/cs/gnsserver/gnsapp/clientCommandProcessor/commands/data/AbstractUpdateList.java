@@ -57,7 +57,7 @@ public abstract class AbstractUpdateList extends BasicCommand {
 
   /**
    * Return the update operation.
-   * 
+   *
    * @return an {@link UpdateOperation}
    */
   public abstract UpdateOperation getUpdateOperation();
@@ -83,16 +83,17 @@ public abstract class AbstractUpdateList extends BasicCommand {
     if (writer.equals(MAGIC_STRING)) {
       writer = null;
     }
-    
+
     if (!(responseCode = FieldAccess.update(guid, field,
             JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
             argument,
             getUpdateOperation(),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse<String>(OK_RESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
+              responseCode);
     }
 
   }

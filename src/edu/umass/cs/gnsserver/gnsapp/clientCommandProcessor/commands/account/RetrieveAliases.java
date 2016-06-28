@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -68,7 +69,6 @@ public class RetrieveAliases extends BasicCommand {
 //  public String getCommandName() {
 //    return RETRIEVE_ALIASES;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
@@ -77,19 +77,24 @@ public class RetrieveAliases extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+              GNSResponseCode.BAD_GUID_ERROR);
     }
     if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
       if (accountInfo == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
+                GNSResponseCode.BAD_ACCOUNT_ERROR);
       } else if (!accountInfo.isVerified()) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+        return new CommandResponse<String>(BAD_RESPONSE
+                + " " + VERIFICATION_ERROR + " Account not verified",
+                GNSResponseCode.VERIFICATION_ERROR);
       }
       ArrayList<String> aliases = accountInfo.getAliases();
-      return new CommandResponse<String>(new JSONArray(aliases).toString());
+      return new CommandResponse<String>(new JSONArray(aliases).toString(), GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_SIGNATURE,
+              GNSResponseCode.SIGNATURE_ERROR);
     }
   }
 

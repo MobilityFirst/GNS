@@ -246,22 +246,20 @@ public class CommandUtils {
    * converting error responses into the appropriate thrown GNS exceptions.
    *
    * In the original protocol the string response was modeled after other simple string-based
-   * response protocols. Responses were either:
-   * 1) a return value whose format was interpreted by the caller - this is the nominal case
-   * 2) "+OK+" - which was used to indicate a nominal result for commands that don't return a value
-   * 2) "+NULL+" - another nominal which meant we should return null as the value
-   * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+
-   * Later a special case 4 was added for ACTIVE_REPLICA_EXCEPTION.
+   * response protocols. Responses were either:<br>
+   * 1) a return value whose format was interpreted by the caller - this is the nominal case<br>
+   * 2) "+OK+" - which was used to indicate a nominal result for commands that don't return a value<br>
+   * 2) "+NULL+" - another nominal which meant we should return null as the value<br>
+   * 3) "+NO+"{space}{error code string}{{space}{additional info string}}+<br>
+   * Later a special case 4 was added for ACTIVE_REPLICA_EXCEPTION.<br>
    *
    * For case 3 the additional info strings (could be any number) were interpreted by the error handlers
    * and generally used to help provide additional info to indicate error causes.
    *
-   * Also note that:
-   *
-   * GNSCommandProtocol.OK_RESPONSE = "+OK+"
-   * GNSCommandProtocol.BAD_RESPONSE = "+NO+"
-   * GNSCommandProtocol.NULL_RESPONSE = "+NULL+"
-   *
+   * Also note that:<br>
+   * GNSCommandProtocol.OK_RESPONSE = "+OK+"<br>
+   * GNSCommandProtocol.BAD_RESPONSE = "+NO+"<br>
+   * GNSCommandProtocol.NULL_RESPONSE = "+NULL+"<br>
    *
    * @param response
    * @return

@@ -14,17 +14,9 @@ import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
-import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.exceptions.client.AclException;
-import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
-import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
@@ -358,14 +350,9 @@ public class RemoteQuery extends ClientAsynchBase {
       if (packet == null) {
         throw new ClientException("Packet not found in table " + requestId);
       } else {
-        String returnValue = packet.getReturnValue();
         ClientSupportConfig.getLogger().log(Level.FINE,
-                "{0} {1} got from {2} this: {3}",
-                new Object[]{this, packet.getServiceName(),
-                  "unknown"//packet.getResponder()
-                  , returnValue});
-        // FIX ME: Tidy up all these error reponses for updates
-        return CommandUtils.checkResponse(returnValue);
+                "{0} received {1}", new Object[]{this, packet.getSummary()});
+        return CommandUtils.checkResponse(packet);
       }
     } catch (ActiveReplicaException e) {
       return notFoundReponse;

@@ -24,6 +24,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -60,7 +61,6 @@ public class ResetDatabase extends BasicCommand {
 //  public String getCommandName() {
 //    return RESET_DATABASE;
 //  }
-
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -73,8 +73,9 @@ public class ResetDatabase extends BasicCommand {
 //        return new CommandResponse<String>(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
-            + " Don't understand " + getCommandType().toString());
+    return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand " + getCommandType().toString(),
+            GNSResponseCode.OPERATION_NOT_SUPPORTED);
   }
 
   @Override

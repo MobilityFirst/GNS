@@ -53,7 +53,7 @@ public class CreateList extends BasicCommand {
   public CreateList(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public CommandType getCommandType() {
     return CommandType.CreateList;
@@ -68,7 +68,6 @@ public class CreateList extends BasicCommand {
 //  public String getCommandName() {
 //    return CREATE_LIST;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -87,17 +86,18 @@ public class CreateList extends BasicCommand {
       timestamp = null;
     }
     GNSResponseCode responseCode;
-    if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), 
+    if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse<String>(OK_RESPONSE);
+      return new CommandResponse<String>(OK_RESPONSE, GNSResponseCode.NO_ERROR);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
+              responseCode);
     }
   }
 
   @Override
   public String getCommandDescription() {
     return "Adds a key value pair to the GNS for the given GUID. Value is a list of items formated as a JSON list."
-             + " Field must be writeable by the WRITER guid.";
+            + " Field must be writeable by the WRITER guid.";
   }
 }

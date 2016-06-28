@@ -269,6 +269,15 @@ public enum GNSResponseCode implements Serializable {
   }
   
   /**
+   * Is this NOT an exception or error code.
+   * Convenience method. See {@link #isExceptionOrError()}.
+   * @return 
+   */
+  public boolean isOKResult() {
+    return type != TYPE.ERROR && type != TYPE.EXCEPTION;
+  }
+  
+  /**
    * Is this an error code. Some aren't, some are.
    *
    * @return true if this is an error

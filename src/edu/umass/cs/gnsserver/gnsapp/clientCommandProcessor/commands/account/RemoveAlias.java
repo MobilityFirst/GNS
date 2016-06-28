@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -66,7 +67,6 @@ public class RemoveAlias extends BasicCommand {
 //  public String getCommandName() {
 //    return REMOVE_ALIAS;
 //  }
-
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -76,13 +76,16 @@ public class RemoveAlias extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (AccountAccess.lookupGuidInfo(guid, handler, true) == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
+              GNSResponseCode.BAD_GUID_ERROR);
     }
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
     if (accountInfo == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
+              GNSResponseCode.BAD_ACCOUNT_ERROR);
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+      return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
+              GNSResponseCode.VERIFICATION_ERROR);
     }
     return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, timestamp, handler);
   }

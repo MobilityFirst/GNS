@@ -333,12 +333,9 @@ public abstract class AbstractGNSClient {
         GNSClientConfig.getLogger().log(Level.INFO,
                 "{0} timed out after {1}ms on {2}: {3}",
                 new Object[]{this, readTimeout, id + "", command});
-        /* FIXME: arun: returning string errors like this is poor. You should
-           * have error codes and systematic methods to automatically generate
-           * error responses and be able to refactor them as needed easily.
-         */
-        return //        		GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT;
-                new CommandValueReturnPacket(id, GNSResponseCode.TIMEOUT, GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
+        /* FIXME: Remove use of string reponse codes */
+        return new CommandValueReturnPacket(id, GNSResponseCode.TIMEOUT, 
+                        GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
       }
       GNSClientConfig.getLogger().log(Level.FINE,
               "Response received for query {0}", new Object[]{id + ""});
@@ -425,8 +422,7 @@ public abstract class AbstractGNSClient {
             : null;
     assert (packet != null || error != null);
 
-    long id = packet != null ? packet.getClientRequestId() : error
-            .getRequestID();
+    long id = packet != null ? packet.getClientRequestId() : error.getRequestID();
     GNSClientConfig.getLogger().log(
             Level.FINE,
             "{0} received response {1}:{2} from {3}",
@@ -437,17 +433,11 @@ public abstract class AbstractGNSClient {
     long queryStartTime = queryTimeStamp.remove(id);
     long latency = receivedTime - queryStartTime;
     movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
-    GNSClientConfig.getLogger().log(Level.FINE,
-            "Handling return packet: {0}", new Object[]{response.getSummary()});
     // store the response away
     if (packet != null) {
-      resultMap.put(id, packet
-      //new CommandResult(packet, receivedTime, latency)
-      );
+      resultMap.put(id, packet);
     } else {
-      resultMap.put(id, error
-      // new CommandResult(error, receivedTime, latency)
-      );
+      resultMap.put(id, error);
     }
 
     // differentiates between synchronusly and asynchronusly sent
@@ -474,8 +464,7 @@ public abstract class AbstractGNSClient {
         totalAsynchErrors++;
       }
     }
-    DelayProfiler.updateDelay("handleCommandValueReturnPacket",
-            methodStartTime);
+    DelayProfiler.updateDelay("handleCommandValueReturnPacket", methodStartTime);
   }
 
   public synchronized long generateNextRequestID() {
