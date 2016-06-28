@@ -202,7 +202,7 @@ resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision
         <symlink link="${dist.dir}/jars/GNSClient.jar" overwrite="yes"
 resource="gnsclient-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
         <symlink link="${dist.dir}/jars/GNS-CLI.jar" overwrite="yes"
-resource="gnscli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
+resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.number}.jar"/>
   </target>
   
   <path id="classpath.test">

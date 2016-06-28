@@ -64,7 +64,6 @@ public class DiskMapCollection {
     	Long.MAX_VALUE) {
       @Override
       public Set<String> commit(Map<String, JSONObject> toCommit) throws IOException {
-        DatabaseConfig.getLogger().fine("Commit: " + toCommit);
         try {
         	mongoRecords.bulkUpdate(DBNAMERECORD, toCommit);
         } catch (FailedDBOperationException | RecordExistsException e) {
