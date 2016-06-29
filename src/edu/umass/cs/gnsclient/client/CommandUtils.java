@@ -329,32 +329,33 @@ public class CommandUtils {
             : checkResponse(((CommandValueReturnPacket) response));
   }
 
+  private static final boolean USE_OLD_CHECK_RESPONSE = false;
   /**
    * arun: This checkResponse method will replace the old one. There is no
-   * reason to not directly use the received CommandValeReturnPacket.
+   * reason to not directly use the received CommandValueReturnPacket.
    *
    * @param packet
    * @return Response as a string.
    * @throws ClientException
    */
   public static String checkResponse(CommandValueReturnPacket packet) throws ClientException {
-    // FIXME: arun: The line below disables this method
-    if (true) {
+    if (USE_OLD_CHECK_RESPONSE) {
       return checkResponse(packet.getReturnValue());
     }
 
+    
     GNSResponseCode code = packet.getErrorCode();
     String response = packet.getReturnValue();
+    GNSConfig.getLogger().log(Level.FINE, "New check response: {0} {1}", new Object[]{code, response});
     // If the code isn't an error or exception we're just returning the 
     // return value. Also handle the special case where the command
     // wants to return a null value.
-    if (!code.isExceptionOrError()) {
+    if (code.isOKResult()) {
       return (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
               : response;
     }
     // else error
-    String errorSummary = code + ": " + response + ": "
-            + packet.getSummary().toString();
+    String errorSummary = code + ": " + response + ": " + packet.getSummary().toString();
     switch (code) {
       case SIGNATURE_ERROR:
         throw new EncryptionException(errorSummary);
@@ -380,13 +381,8 @@ public class CommandUtils {
       case NONEXISTENT_NAME_EXCEPTION:
         throw new InvalidGuidException(errorSummary);
 
-      case NO_ERROR:
-        return packet.getReturnValue();
-
       default:
-        throw new ClientException(
-                "Error received with an unknown response code: "
-                + errorSummary);
+        throw new ClientException("Error received with an unknown response code: " + errorSummary);
     }
   }
 

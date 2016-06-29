@@ -279,7 +279,7 @@ public enum GNSResponseCode implements Serializable {
    * @return 
    */
   public boolean isOKResult() {
-    return type != TYPE.ERROR && type != TYPE.EXCEPTION;
+    return !isExceptionOrError();
   }
   
   /**
