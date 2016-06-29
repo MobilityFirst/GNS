@@ -85,7 +85,7 @@ public class ActiveMessage {
 		return code;
 	}
 
-	protected ValuesMap getValue() {
+	public ValuesMap getValue() {
 		return value;
 	}
 	

@@ -8,7 +8,7 @@ public interface ActiveChannel {
 	
 	/**
 	 * @param buffer
-	 * @return
+	 * @return number of bytes read into buffer
 	 */
 	
 	public int read(byte[] buffer);
@@ -16,9 +16,12 @@ public interface ActiveChannel {
 	 * @param buffer
 	 * @param offset
 	 * @param length
-	 * @return
+	 * @return true if write succeeds, false otherwise
 	 */
 	public boolean write(byte[] buffer, int offset, int length);
 	
+	/**
+	 * close the channel
+	 */
 	public void shutdown();
 }

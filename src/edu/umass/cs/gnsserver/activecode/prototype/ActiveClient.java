@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.script.ScriptException;
-
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -20,7 +18,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author gaozy
  *
  */
-public class ActiveHandler {
+public class ActiveClient {
 	
 	private static ActiveChannel channel;
 	private String ifile;
@@ -36,7 +34,7 @@ public class ActiveHandler {
 	 * @param ifile
 	 * @param ofile
 	 */
-	public ActiveHandler(String ifile, String ofile){
+	public ActiveClient(String ifile, String ofile){
 		this.ifile = ifile;
 		this.ofile = ofile;
 		
@@ -108,7 +106,7 @@ public class ActiveHandler {
 		return am;
 	}
 	
-	protected boolean sendMessage(ActiveMessage am){
+	protected synchronized boolean sendMessage(ActiveMessage am){
 		boolean wSuccess = false;
 		try {
 			byte[] buf = am.toBytes();
@@ -138,7 +136,7 @@ public class ActiveHandler {
 	 * @param ttl
 	 * @return executed result sent back from worker
 	 */
-	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
+	public ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
 		/*
 		if(field.equals("level3")){
 			try {
@@ -165,7 +163,7 @@ public class ActiveHandler {
 		String cfile = "/tmp/client";
 		String sfile = "/tmp/server";		
 		
-		ActiveHandler handler = new ActiveHandler(cfile, sfile);
+		ActiveClient handler = new ActiveClient(cfile, sfile);
 		
 		String guid = "guid";
 		String field = "name";
