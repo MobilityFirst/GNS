@@ -31,6 +31,10 @@
         {
           "title": "Server gigapaxos.properties file",
           "url": "/server_gigapaxos_properties/"
+        },
+        {
+          "title": "Troubleshooting",
+          "url": "/server_troubleshooting/"
         }
       ]
     },
@@ -42,8 +46,8 @@
           "url": "/client_obtaining/"
         },
         {
-          "title": "CLI Tutorial",
-          "url": "/client_cli_tutorial/"
+          "title": "Command Line Interface",
+          "url": "/client_cli/"
         },
         {
           "title": "Simple Example",
@@ -64,6 +68,10 @@
         {
           "title": "Javadoc",
           "url": "/javadoc/index.html"
+        },
+        {
+          "title": "Troubleshooting",
+          "url": "/client_troubleshooting/"
         }
       ]
     },
