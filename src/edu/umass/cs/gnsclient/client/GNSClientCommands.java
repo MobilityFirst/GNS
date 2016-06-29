@@ -1103,7 +1103,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	//@Override
-	public void addTag(GuidEntry guid, String tag) throws Exception {
+	void addTag(GuidEntry guid, String tag) throws Exception {
 		getResponse(CommandType.AddTag, guid, GUID, guid.getGuid(), NAME, tag);
 	}
 
