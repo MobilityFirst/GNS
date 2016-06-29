@@ -33,6 +33,11 @@ import edu.umass.cs.utils.Config;
  */
 public class GNSClientConfig {
 
+	/**
+	 * Default LNS port.
+	 */
+	public static final int LNS_PORT = 24398;
+
 	private final static Logger LOG = Logger.getLogger(GNSClientConfig.class
 			.getName());
 

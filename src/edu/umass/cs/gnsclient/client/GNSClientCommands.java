@@ -126,13 +126,14 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * replaced by this getResponse method. */
 	private String getResponse(CommandType commandType, GuidEntry querier,
 			Object... keysAndValues) throws ClientException, IOException {
-		return this.checkResponse((createAndSignCommand(commandType, querier,
-				keysAndValues)));
+		return CommandUtils
+				.checkResponse(sendCommandAndWait(createAndSignCommand(
+						commandType, querier, keysAndValues)));
 	}
 
-	private String checkResponse(JSONObject command) throws ClientException,
-			IOException {
-		return CommandUtils.checkResponse(sendCommandAndWait(command));
+	private String getResponse(CommandType commandType, Object... keysAndValues)
+			throws ClientException, IOException {
+		return this.getResponse(commandType, null, keysAndValues);
 	}
 
 	// arun: removed the need for this method
@@ -197,11 +198,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public void fieldUpdate(String targetGuid, String field, Object value,
 			GuidEntry writer) throws IOException, ClientException,
 			JSONException {
-		JSONObject json = new JSONObject();
-		json.put(field, value);
-
 		getResponse(CommandType.ReplaceUserJSON, writer, GUID, targetGuid,
-				USER_JSON, json.toString(), WRITER, writer.getGuid());
+				USER_JSON, new JSONObject().put(field, value).toString(), WRITER, writer.getGuid());
 	}
 
 	/**
@@ -332,9 +330,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		String response = getResponse(reader != null ? CommandType.Read
 				: CommandType.ReadUnsigned, reader, GUID, targetGuid, FIELD,
 				field, READER, reader != null ? reader.getGuid() : null);
-		if (Util.oneIn(10)) {
+		if (Util.oneIn(10)) 
 			DelayProfiler.updateDelay("fieldRead", t);
-		}
 		return response;
 	}
 
@@ -434,8 +431,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray selectQuery(String query) throws Exception {
 
-		return new JSONArray(checkResponse(createCommand(
-				CommandType.SelectQuery, QUERY, query)));
+		return new JSONArray(getResponse(
+				CommandType.SelectQuery, QUERY, query));
 	}
 
 	/**
@@ -460,9 +457,9 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray selectSetupGroupQuery(GuidEntry accountGuid,
 			String publicKey, String query, int interval) throws Exception {
-		return new JSONArray(checkResponse(createCommand(
+		return new JSONArray(getResponse(
 				CommandType.SelectGroupSetupQuery, GUID, accountGuid.getGuid(),
-				PUBLIC_KEY, publicKey, QUERY, query, INTERVAL, interval)));
+				PUBLIC_KEY, publicKey, QUERY, query, INTERVAL, interval));
 	}
 
 	/**
@@ -476,8 +473,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	public JSONArray selectLookupGroupQuery(String guid) throws Exception {
-		return new JSONArray(checkResponse(createCommand(
-				CommandType.SelectGroupLookupQuery, GUID, guid)));
+		return new JSONArray(getResponse(
+				CommandType.SelectGroupLookupQuery, GUID, guid));
 	}
 
 	// ACCOUNT COMMANDS
@@ -492,7 +489,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String lookupGuid(String alias) throws IOException, ClientException {
 
-		return checkResponse(createCommand(CommandType.LookupGuid, NAME, alias));
+		return getResponse(CommandType.LookupGuid, NAME, alias);
 	}
 
 	/**
@@ -506,8 +503,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String lookupPrimaryGuid(String guid)
 			throws UnsupportedEncodingException, IOException, ClientException {
-		return checkResponse(createCommand(CommandType.LookupPrimaryGuid, GUID,
-				guid));
+		return getResponse(CommandType.LookupPrimaryGuid, GUID,
+				guid);
 	}
 
 	/**
@@ -524,8 +521,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public JSONObject lookupGuidRecord(String guid) throws IOException,
 			ClientException {
 		try {
-			return new JSONObject(checkResponse(createCommand(
-					CommandType.LookupGuidRecord, GUID, guid)));
+			return new JSONObject(getResponse(
+					CommandType.LookupGuidRecord, GUID, guid));
 		} catch (JSONException e) {
 			throw new ClientException(
 					"Failed to parse LOOKUP_GUID_RECORD response", e);
@@ -547,8 +544,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public JSONObject lookupAccountRecord(String accountGuid)
 			throws IOException, ClientException {
 		try {
-			return new JSONObject(checkResponse(createCommand(
-					CommandType.LookupAccountRecord, GUID, accountGuid)));
+			return new JSONObject(getResponse(
+					CommandType.LookupAccountRecord, GUID, accountGuid));
 		} catch (JSONException e) {
 			throw new ClientException(
 					"Failed to parse LOOKUP_ACCOUNT_RECORD response", e);
@@ -620,8 +617,10 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 				.getPublic().getEncoded());
 		// Squirrel this away now just in case the call below times out.
 		KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
+		GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(),
+				keyPair.getPrivate());
 		String returnedGuid = accountGuidCreateHelper(alias,
-				keyPair.getPublic(), keyPair.getPrivate(), password);
+				entry, password);
 		// Anything else we want to do here?
 		if (!returnedGuid.equals(guid)) {
 			GNSClientConfig
@@ -631,8 +630,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 							new Object[] { returnedGuid, guid });
 		}
 		assert returnedGuid.equals(guid);
-		GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(),
-				keyPair.getPrivate());
 
 		return entry;
 	}
@@ -1127,8 +1124,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	public JSONArray retrieveTagged(String tag) throws Exception {
-		return new JSONArray(checkResponse(createCommand(CommandType.Dump,
-				NAME, tag)));
+		return new JSONArray(getResponse(CommandType.Dump,
+				NAME, tag));
 	}
 
 	/**
@@ -1140,7 +1137,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	public void clearTagged(String tag) throws Exception {
-		checkResponse(createCommand(CommandType.ClearTagged, NAME, tag));
+		getResponse(CommandType.ClearTagged, NAME, tag);
 	}
 
 	// ///////////////////////////////
@@ -1181,20 +1178,20 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws InvalidGuidException
 	 *             if the user already exists
 	 */
-	private String accountGuidCreateHelper(String alias, PublicKey publicKey,
-			PrivateKey privateKey, String password)
+	private String accountGuidCreateHelper(String alias, GuidEntry guidEntry, String password)
 			throws UnsupportedEncodingException, IOException, ClientException,
 			InvalidGuidException, NoSuchAlgorithmException {
 		long startTime = System.currentTimeMillis();
-		String result = checkResponse(password != null ? //
-		createAndSignCommand(CommandType.RegisterAccount, privateKey,
-				publicKey, NAME, alias, PUBLIC_KEY, Base64.encodeToString(
-						publicKey.getEncoded(), false), PASSWORD,
+		String result = password != null ? getResponse(
+				CommandType.RegisterAccount, guidEntry, NAME, alias,
+				PUBLIC_KEY, Base64.encodeToString(
+						guidEntry.publicKey.getEncoded(), false), PASSWORD,
 				Base64.encodeToString(
 						Password.encryptPassword(password, alias), false))
-				: createAndSignCommand(CommandType.RegisterAccountSansPassword,
-						privateKey, publicKey, NAME, alias, PUBLIC_KEY,
-						Base64.encodeToString(publicKey.getEncoded(), false)));
+				: getResponse(CommandType.RegisterAccountSansPassword,
+						guidEntry.getPrivateKey(), guidEntry.publicKey, NAME,
+						alias, PUBLIC_KEY, Base64.encodeToString(
+								guidEntry.publicKey.getEncoded(), false));
 		DelayProfiler.updateDelay("accountGuidCreate", startTime);
 		return result;
 	}
@@ -1434,8 +1431,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	public JSONArray select(String field, String value) throws Exception {
-		return new JSONArray(checkResponse(createCommand(CommandType.Select,
-				FIELD, field, VALUE, value)));
+		return new JSONArray(getResponse(CommandType.Select,
+				FIELD, field, VALUE, value));
 	}
 
 	/**
@@ -1452,9 +1449,9 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray selectWithin(String field, JSONArray value)
 			throws Exception {
-		return new JSONArray(checkResponse(createCommand(
+		return new JSONArray(getResponse(
 				CommandType.SelectWithin, FIELD, field, WITHIN,
-				value.toString())));
+				value.toString()));
 	}
 
 	/**
@@ -1472,9 +1469,9 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray selectNear(String field, JSONArray value,
 			Double maxDistance) throws Exception {
-		return new JSONArray(checkResponse(createCommand(
+		return new JSONArray(getResponse(
 				CommandType.SelectNear, FIELD, field, NEAR, value.toString(),
-				MAX_DISTANCE, Double.toString(maxDistance))));
+				MAX_DISTANCE, Double.toString(maxDistance)));
 	}
 
 	/**
@@ -1890,8 +1887,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public void fieldReplaceFirstElementTest(String targetGuid, String field,
 			String value, GuidEntry writer) throws IOException, ClientException {
 		if (writer == null) {
-			checkResponse(createCommand(CommandType.ReplaceUnsigned, GUID,
-					targetGuid, FIELD, field, VALUE, value));
+			getResponse(CommandType.ReplaceUnsigned, GUID,
+					targetGuid, FIELD, field, VALUE, value);
 		} else {
 			this.fieldReplaceFirstElement(targetGuid, field, value, writer);
 		}
@@ -2053,7 +2050,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	public String adminEnable(String passkey) throws Exception {
-		return checkResponse(createCommand(CommandType.Admin, PASSKEY, passkey));
+		return getResponse(CommandType.Admin, PASSKEY, passkey);
 	}
 
 	/**
@@ -2062,8 +2059,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	public void parameterSet(String name, Object value) throws Exception {
-		checkResponse(createCommand(CommandType.SetParameter, NAME, name,
-				VALUE, value));
+		getResponse(CommandType.SetParameter, NAME, name,
+				VALUE, value);
 	}
 
 	/**
@@ -2072,7 +2069,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws Exception
 	 */
 	public String parameterGet(String name) throws Exception {
-		return checkResponse(createCommand(CommandType.GetParameter, NAME, name));
+		return getResponse(CommandType.GetParameter, NAME, name);
 	}
 
 	@Override
