@@ -443,8 +443,6 @@ public class AccountAccess {
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
   private static final String SECRET = Config.getGlobalString(GNSConfig.GNSC.VERIFICATION_SECRET);
-  // "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE" +
-  // "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
 
   // arun: added random salt unless email verification is disabled.
   private static String createVerificationCode(String name) {

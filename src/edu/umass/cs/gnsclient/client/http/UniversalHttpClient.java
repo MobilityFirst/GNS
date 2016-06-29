@@ -1117,7 +1117,6 @@ public class UniversalHttpClient implements GNSClientInterface {
    *
    * @throws IOException throws exception if a communication error occurs
    */
-  @Override
   public void checkConnectivity() throws IOException {
     if (IS_ANDROID) {
       String urlString = "http://" + host + ":" + port + "/";
@@ -1457,7 +1456,7 @@ public class UniversalHttpClient implements GNSClientInterface {
   }
 
   @Override
-  public void stop() {
+  public void close() {
     // nothing to stop
   }
 
@@ -1468,7 +1467,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param tag
    * @throws Exception
    */
-  @Override
+  //@Override
   public void addTag(GuidEntry guid, String tag) throws Exception {
     String command = createAndSignQuery(guid,
             CommandType.AddTag,

@@ -200,7 +200,7 @@ public abstract class AbstractGNSClient {
    * @param commandType
    * @param querier
    * @param keysAndValues
-   * @return
+   * @return JSONObject command
    * @throws ClientException
    */
   public JSONObject createAndSignCommand(CommandType commandType,
@@ -292,9 +292,6 @@ public abstract class AbstractGNSClient {
    * Sends a command to the server.
    * Waits for the response packet to come back.
    *
-   * @param command
-   * @return result of command as a string
-   * @throws IOException if an error occurs
    */
   private ConcurrentHashMap<Long, Object> monitorMap = new ConcurrentHashMap<Long, Object>();
 
@@ -467,7 +464,10 @@ public abstract class AbstractGNSClient {
     DelayProfiler.updateDelay("handleCommandValueReturnPacket", methodStartTime);
   }
 
-  public synchronized long generateNextRequestID() {
+  /**
+ * @return random long not in map
+ */
+public synchronized long generateNextRequestID() {
     long id;
     do {
       id = randomID.nextLong();
@@ -481,7 +481,7 @@ public abstract class AbstractGNSClient {
    * Returns true if a response has been received.
    *
    * @param id
-   * @return
+   * @return true if response has been received for request id
    */
   public boolean isAsynchResponseReceived(long id) {
     return resultMap.containsKey(id);
@@ -491,7 +491,7 @@ public abstract class AbstractGNSClient {
    * Removes and returns the command result.
    *
    * @param id
-   * @return
+   * @return {@link ConcurrentMap#remove(Object)}
    */
   public Request removeAsynchResponse(long id) {
     return resultMap.remove(id);
@@ -505,7 +505,10 @@ public abstract class AbstractGNSClient {
   private final ConcurrentHashMap<Long, CommandPacket> pendingAsynchPackets
           = new ConcurrentHashMap<>();
 
-  public int outstandingAsynchPacketCount() {
+  /**
+ * @return number of outstanding async command packets
+ */
+public int outstandingAsynchPacketCount() {
     return pendingAsynchPackets.size();
   }
 
@@ -567,7 +570,10 @@ public abstract class AbstractGNSClient {
 
   protected abstract void sendCommandPacket(CommandPacket packet) throws IOException;
 
-  public final void resetInstrumentation() {
+  /**
+ * 
+ */
+public final void resetInstrumentation() {
     movingAvgLatency = 0;
   }
 
@@ -575,7 +581,7 @@ public abstract class AbstractGNSClient {
    * Instrumentation. Returns the moving average of request latency
    * as seen by the client.
    *
-   * @return
+   * @return moving average of request latency
    */
   public double getMovingAvgLatency() {
     return movingAvgLatency;
@@ -584,7 +590,7 @@ public abstract class AbstractGNSClient {
   /**
    * Instrumentation. Currently only valid when asynch testing.
    *
-   * @return
+   * @return total number of errors
    */
   public int getTotalAsynchErrors() {
     return totalAsynchErrors;
@@ -593,7 +599,7 @@ public abstract class AbstractGNSClient {
   /**
    * Return a string representing the GNS server that we are connecting to.
    *
-   * @return
+   * @return GNS server instance
    */
   public String getGNSInstance() {
     return GNSInstance;

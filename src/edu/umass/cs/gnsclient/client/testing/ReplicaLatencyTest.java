@@ -131,7 +131,7 @@ public class ReplicaLatencyTest {
       // send the reads and writes
       test.readsAndWrites(closeActiveReplica);
       //test.removeSubGuid();
-      client.stop();
+      client.close();
       System.exit(0);
     } catch (HeadlessException e) {
       System.out.println("When running headless you'll need to specify the host and port on the command line");

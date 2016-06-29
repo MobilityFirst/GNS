@@ -1102,7 +1102,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @param tag
 	 * @throws Exception
 	 */
-	@Override
+	//@Override
 	public void addTag(GuidEntry guid, String tag) throws Exception {
 		getResponse(CommandType.AddTag, guid, GUID, guid.getGuid(), NAME, tag);
 	}
@@ -1114,7 +1114,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @param tag
 	 * @throws Exception
 	 */
-	public void removeTag(GuidEntry guid, String tag) throws Exception {
+	void removeTag(GuidEntry guid, String tag) throws Exception {
 		getResponse(CommandType.RemoveTag, guid, GUID, guid.getGuid(), NAME,
 				tag);
 	}
@@ -2076,7 +2076,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	}
 
 	@Override
-	public void stop() {
-		close();
+	public void close() {
+		super.close();
 	}
 }

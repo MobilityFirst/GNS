@@ -86,8 +86,7 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
   }
 
   /**
-   * @return
-   * @see java.lang.Object#equals(java.lang.Object)
+   * @return @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
   public boolean equals(Object o) {
@@ -171,8 +170,12 @@ public class GuidEntry extends BasicGuidEntry implements Serializable {
   }
 
   // Test code
-  public static void main(String[] args) throws IOException, Exception {
-    String address = "127.0.0.1";
+  /**
+ * @param args
+ * @throws IOException
+ * @throws Exception
+ */
+public static void main(String[] args) throws IOException, Exception {
     String name = "testGuid@gigapaxos.net";
     String password = "123";
     String file_name = "guid";
