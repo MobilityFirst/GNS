@@ -42,6 +42,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveClient;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveHandler;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
@@ -75,12 +76,12 @@ public class ActiveCodeHandler {
 	
 	// For instrument only, to tell whether a code is malicious or not 
 	private static String noop_code;
-	private static ActiveClient handler;
+	private static ActiveHandler handler;
 	
 	/**
 	 * enable debug output
 	 */
-	public static final boolean enableDebugging = AppReconfigurableNodeOptions.activeCodeEnableDebugging;
+	public static final boolean enableDebugging = false;// AppReconfigurableNodeOptions.activeCodeEnableDebugging;
 	
 
 	/**
@@ -127,7 +128,7 @@ public class ActiveCodeHandler {
 	 * @param app
 	 */
 	public ActiveCodeHandler(ActiveDBInterface app) {
-		handler = new ActiveClient("/tmp/client", "/tmp/server");
+		handler = new ActiveHandler(AppReconfigurableNodeOptions.activeCodeWorkerCount);
 		
 		try {
 			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
@@ -191,7 +192,7 @@ public class ActiveCodeHandler {
 	 * @param action
 	 * @param valuesMap
 	 * @param activeCodeTTL
-	 * @return
+	 * @return executed result
 	 */
 	public static ValuesMap runCode(String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
 		if(field.equals("level2"))

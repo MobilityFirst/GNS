@@ -20,21 +20,24 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveClient {
 	
-	private static ActiveChannel channel;
+	private ActiveChannel channel;
 	private String ifile;
 	private String ofile;
 	byte[] buffer = new byte[ActiveWorker.bufferSize];
 	
 	private Process workerProc;
+	final private int id;
 	
 	/************** Test Only ******************/
-	ActiveWorker worker;
+	//ActiveWorker worker;
 	
 	/**
 	 * @param ifile
 	 * @param ofile
+	 * @param id 
 	 */
-	public ActiveClient(String ifile, String ofile){
+	public ActiveClient(String ifile, String ofile, int id){
+		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
 		
@@ -47,21 +50,25 @@ public class ActiveClient {
 		}
 		
 		try {
-			workerProc = startWorker(ofile, ifile);
+			workerProc = startWorker(ofile, ifile, id);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		channel = new ActivePipe(ifile, ofile);
 		
-		System.out.println("Start handler by listening on "+ifile+", and write to "+ofile+".Handler's channel is ready!");
-		
-		worker = new ActiveWorker(ifile, ofile, true);
+		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 	}
 	
+	/**
+	 * @param ifile
+	 * @param ofile
+	 */
+	public ActiveClient(String ifile, String ofile){
+		this(ifile, ofile, 0);
+	}
 	
 	protected void shutdown(){
-		
 		if(workerProc != null){
 			workerProc.destroy();
 		}
@@ -70,7 +77,7 @@ public class ActiveClient {
 		(new File(ofile)).delete();
 	}
 	
-	private static Process startWorker(String ifile, String ofile) throws IOException{
+	private Process startWorker(String ifile, String ofile, int id) throws IOException{
 		List<String> command = new ArrayList<String>();
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
@@ -81,16 +88,17 @@ public class ActiveClient {
 	    command.add("edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker");
 	    command.add(ifile);
 	    command.add(ofile);
+	    command.add(""+id);
 		
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));
 		
 		builder.redirectError(Redirect.INHERIT);
-		builder.redirectOutput(Redirect.INHERIT);
+		//builder.redirectOutput(Redirect.INHERIT);
 		//builder.redirectInput(Redirect.INHERIT);
 		
 		Process process = builder.start();		
-		System.out.println("Worker Start ...");
+		//System.out.println("Worker Start ...");
 		return process;
 	}
 	
@@ -103,15 +111,16 @@ public class ActiveClient {
 			e.printStackTrace();
 		}
 		Arrays.fill(buffer, (byte) 0); 
+		//System.out.println(this+" receive "+am+" from "+ifile);
 		return am;
 	}
 	
-	protected synchronized boolean sendMessage(ActiveMessage am){
+	protected boolean sendMessage(ActiveMessage am){
 		boolean wSuccess = false;
 		try {
-			byte[] buf = am.toBytes();
-			channel.write(buf, 0, buf.length);
-			wSuccess = true;
+			byte[] buf = am.toBytes();		
+			wSuccess = channel.write(buf, 0, buf.length);
+			//System.out.println(this+" seccessfully sent "+am+" to "+ofile);
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}		
@@ -136,7 +145,7 @@ public class ActiveClient {
 	 * @param ttl
 	 * @return executed result sent back from worker
 	 */
-	public ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
+	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
 		/*
 		if(field.equals("level3")){
 			try {
@@ -147,11 +156,15 @@ public class ActiveClient {
 		}
 		*/
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
-		//System.out.println("Start executing "+numReq+" request "+msg);
+		//System.out.println(this+" start executing request "+msg);
 		sendMessage(msg);
 		ActiveMessage result = receiveMessage();
-		//System.out.println("Active executed "+getRcv()+" result :"+result+" with message "+msg);
+		//System.out.println(this+" executed result :"+result+" with message "+msg);
 		return result.getValue();
+	}
+	
+	public String toString(){
+		return this.getClass().getSimpleName()+id;
 	}
 	
 	/**
@@ -160,10 +173,17 @@ public class ActiveClient {
 	 * @throws JSONException 
 	 */
 	public static void main(String[] args) throws InterruptedException, JSONException{
-		String cfile = "/tmp/client";
-		String sfile = "/tmp/server";		
 		
-		ActiveClient handler = new ActiveClient(cfile, sfile);
+		String suffix = "";
+		if (args.length == 1)
+			suffix = args[0];
+		
+		String cfile = "/tmp/client"+suffix;
+		String sfile = "/tmp/server"+suffix;		
+		
+		ActiveClient client = new ActiveClient(cfile, sfile);
+		//initialize a new client for test
+	    //new ActiveClient(cfile+"1", sfile+"1");
 		
 		String guid = "guid";
 		String field = "name";
@@ -182,13 +202,13 @@ public class ActiveClient {
 		long t1 = System.currentTimeMillis();
 		
 		for (int i=0; i<n; i++){
-			handler.runCode(guid, field, noop_code, value, 0);
+			client.runCode(guid, field, noop_code, value, 0);
 		}
 		
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
 		
-		handler.shutdown();
+		client.shutdown();
 	}
 
 	

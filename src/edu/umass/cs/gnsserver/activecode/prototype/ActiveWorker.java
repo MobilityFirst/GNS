@@ -13,6 +13,7 @@ import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -30,24 +31,27 @@ public class ActiveWorker {
 	private final ActiveChannel channel;
 	private final String ifile;
 	private final String ofile;
+	private final int id;
 	
 	protected final static int bufferSize = 1024;
 	
 	/**
 	 * @param ifile
 	 * @param ofile
+	 * @param id 
 	 * @param isTest
 	 */
-	public ActiveWorker(String ifile, String ofile, boolean isTest) {		
+	public ActiveWorker(String ifile, String ofile, int id, boolean isTest) {		
 		this.ifile = ifile;
 		this.ofile = ofile;
-					
+		this.id = id;
+		
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
 		invocable = (Invocable) engine;
 		if(!isTest){
 			channel = new ActivePipe(ifile, ofile);
-			System.out.println("Worker's channel is ready!");
-			
+			//System.out.println(this+" channel is ready!");
+			//channel.write("ready".getBytes(), 0, "ready".getBytes().length);
 			try {
 				runWorker();
 			} catch (NoSuchMethodException e) {
@@ -69,7 +73,7 @@ public class ActiveWorker {
 	 * @param ofile
 	 */
 	public ActiveWorker(String ifile, String ofile){
-		this(ifile, ofile, false);
+		this(ifile, ofile, 0, false);
 	}
 	
 	protected void updateCache(String codeId, String code) throws ScriptException {
@@ -105,20 +109,27 @@ public class ActiveWorker {
 	
 	private void runWorker() throws NoSuchMethodException, ScriptException, UnsupportedEncodingException, JSONException{		
 		byte[] buffer = new byte[bufferSize];
-		System.out.println("Start running worker by listening on "+ifile+", and write to "+ofile);
+		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		
-		while((channel.read(buffer))!= -1){
+		while((channel.read(buffer)) > 0){
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(this+" ready to received msg from "+ifile);
 			ActiveMessage msg = new ActiveMessage(buffer);
-			// System.out.println("Worker received:"+msg );
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(this+" received:"+msg+" from "+ifile );
 			Arrays.fill(buffer, (byte) 0);
 			msg.setValue(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue()));
 			// echo the message 
 			byte[] buf = msg.toBytes();
 			channel.write(buf, 0, buf.length);
-			// ActiveWorker.System.out.println("Worker echo:"+msg );
+			if(ActiveCodeHandler.enableDebugging)
+				System.out.println(this+" echo:"+msg+" to "+ofile );
 		}
 	}
 	
+	public String toString(){
+		return this.getClass().getSimpleName()+id;
+	}
 	
 	/**
 	 * @param args
@@ -126,6 +137,7 @@ public class ActiveWorker {
 	public static void main(String[] args){
 		String cfile = args[0];
 		String sfile = args[1];
-		new ActiveWorker(cfile, sfile);
+		int id = Integer.parseInt(args[2]);
+		new ActiveWorker(cfile, sfile, id, false);
 	}
 }

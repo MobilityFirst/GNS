@@ -28,7 +28,7 @@ public class ActivePipe implements ActiveChannel{
 	              // Insert some method call here.
 	        	 try {
 					reader = new FileInputStream(new File(ifile));
-//					System.err.println("Setup reader on file "+ifile);
+					//System.err.println("Setup reader on file "+ifile);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -38,7 +38,7 @@ public class ActivePipe implements ActiveChannel{
 		
 		try {			
 			writer = new FileOutputStream(new File(ofile));
-//			System.err.println("Setup writer on file "+ofile);
+			//System.err.println("Setup writer on file "+ofile);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -50,7 +50,7 @@ public class ActivePipe implements ActiveChannel{
 	}
 	
 	public int read(byte[] buffer){
-		int length = -1;
+		int length = 0;
 		try {
 			length = reader.read(buffer);
 		} catch (IOException e) {
