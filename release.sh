@@ -17,11 +17,11 @@ if [ $# -lt 1 ]; then
 	exit 1
 fi
 #VERSION="$1" #First argument is the version
-MAJOR=$(cat build.properties | sed -n -e 's/^build.major.number=//p' | sed -n -e 's/\r$//p')
+MAJOR=$(cat build.properties | grep build.major | sed 's/^build.major.number=//' | sed 's/\r$//')
 #echo $MAJOR
-MINOR=$(cat build.properties | sed -n -e 's/^build.minor.number=//p'| sed -n -e 's/\r$//p')
+MINOR=$(cat build.properties | grep build.minor | sed 's/^build.minor.number=//'| sed 's/\r$//')
 #echo $MINOR
-REVISION=$(cat build.properties | sed -n -e 's/^build.revision.number=//p'| sed -n -e 's/\r$//p')
+REVISION=$(cat build.properties | grep build.revision | sed 's/^build.revision.number=//'| sed 's/\r$//')
 #echo $REVISION
 VERSION=v$MAJOR.$MINOR.$REVISION
 echo $VERSION
@@ -36,7 +36,7 @@ if [ "$GNSGitToken" == "" ]; then
 fi
 # Create a new release on github
 curl --data '{"tag_name": "'"$VERSION"'","target_commitish": "master","name": "'"$VERSION"'","body": "'"$DESCRIPTION"'","draft": false,"prerelease": false}' https://api.github.com/repos/$OWNER/$REPO/releases?access_token=$GNSGitToken
-RELEASEID=$(curl "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$VERSION" | sed -n -e 's/.*id": //p' | sed -n -e 's/,$//p' | grep [0-9][0-9]* -m 1 )
+RELEASEID=$(curl "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$VERSION" | grep id\": | sed 's/.*id": //' | sed 's/,$//' | grep [0-9][0-9]* -m 1 )
 #curl "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$VERSION" > testFile2.txt
 echo "ID: $RELEASEID"
 # Tar the release binaries, and add them to the release.
