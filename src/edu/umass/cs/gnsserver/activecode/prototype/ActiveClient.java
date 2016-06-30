@@ -23,10 +23,12 @@ public class ActiveClient {
 	private ActiveChannel channel;
 	private String ifile;
 	private String ofile;
-	byte[] buffer = new byte[ActiveWorker.bufferSize];
+	private final byte[] buffer = new byte[ActiveWorker.bufferSize];
 	
 	private Process workerProc;
 	final private int id;
+	
+	private static int heapSize = 64;
 	
 	/************** Test Only ******************/
 	//ActiveWorker worker;
@@ -81,8 +83,8 @@ public class ActiveClient {
 		List<String> command = new ArrayList<String>();
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
-	    command.add("-Xms64m");
-	    command.add("-Xmx64m");
+	    command.add("-Xms"+heapSize+"m");
+	    command.add("-Xmx"+heapSize+"m");
 	    command.add("-cp");
 	    command.add(classpath);
 	    command.add("edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker");
@@ -177,6 +179,11 @@ public class ActiveClient {
 		String suffix = "";
 		if (args.length == 1)
 			suffix = args[0];
+		if (args.length == 2)
+		{
+			suffix = args[0];
+			heapSize = Integer.parseInt(args[1]);
+		}
 		
 		String cfile = "/tmp/client"+suffix;
 		String sfile = "/tmp/server"+suffix;		

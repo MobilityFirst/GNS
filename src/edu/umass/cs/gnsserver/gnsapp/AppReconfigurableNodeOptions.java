@@ -150,11 +150,11 @@ public class AppReconfigurableNodeOptions {
   /**
    * Number of active code worker.
    */
-  public static int activeCodeWorkerCount = 5;
+  public static int activeCodeWorkerCount = 4;
   /**
    * Number of spare workers.
    */
-  public static int activeCodeSpareWorker = 5;
+  public static int activeCodeSpareWorker = 0;
   /**
    * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
    */

@@ -81,7 +81,7 @@ public class ActiveCodeHandler {
 	/**
 	 * enable debug output
 	 */
-	public static final boolean enableDebugging = false;// AppReconfigurableNodeOptions.activeCodeEnableDebugging;
+	public static final boolean enableDebugging = AppReconfigurableNodeOptions.activeCodeEnableDebugging;
 	
 
 	/**
