@@ -14,6 +14,7 @@ import javax.script.SimpleScriptContext;
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**

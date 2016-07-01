@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**

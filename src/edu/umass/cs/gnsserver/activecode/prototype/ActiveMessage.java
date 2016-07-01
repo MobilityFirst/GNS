@@ -21,12 +21,23 @@ public class ActiveMessage {
 	
 	private boolean finished;
 	private int ttl;
+	private Action action;
 	private final String guid;
 	private final String field;
 	private String code;
 	private ValuesMap value;
 	private String targetGuid;
+	
+	//TODO: implement this enum
+	enum Action {
+		Read(0), Write(1);
+		
+		Action(int action){
+			
+		}
+	}
 
+	
 	/**
 	 * @param guid
 	 * @param field
@@ -69,18 +80,22 @@ public class ActiveMessage {
 		this(guid, field, code, value, ttl, false, null);
 	}
 	
-	protected int getTtl() {
+	public int getTtl() {
 		return ttl;
 	}
 
-	protected String getGuid() {
+	public String getGuid() {
 		return guid;
 	}
 
-	protected String getField() {
+	public String getField() {
 		return field;
 	}
-
+	
+	public String getTargetGuid() {
+		return targetGuid;
+	}
+	
 	protected String getCode() {
 		return code;
 	}
@@ -216,6 +231,14 @@ public class ActiveMessage {
 			bbuf.get(valueBytes);
 			this.value = new ValuesMap(new JSONObject(new String(valueBytes, CHARSET)));
 		}
+	}
+	
+	/**
+	 * 
+	 * @return true if the action is read
+	 */
+	public boolean isRead(){
+		return action == Action.Read;
 	}
 	
 	@Override

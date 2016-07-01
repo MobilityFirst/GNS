@@ -3,6 +3,7 @@ package edu.umass.cs.gnsserver.activecode.prototype;
 import java.io.EOFException;
 import java.io.IOException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 import io.mappedbus.MappedBusReader;
 import io.mappedbus.MappedBusWriter;
 
