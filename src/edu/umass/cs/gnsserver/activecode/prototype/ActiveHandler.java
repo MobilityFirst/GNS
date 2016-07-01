@@ -20,7 +20,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  */
 public class ActiveHandler {
-	private final ThreadPoolExecutor executor;
+	
 	private ActiveClient[] clientPool;
 	
 	private final String cfilePrefix = "/tmp/client_";
@@ -29,6 +29,9 @@ public class ActiveHandler {
 	
 	private final int numProcess;
 	final AtomicInteger counter = new AtomicInteger();
+	
+	/****************** Test only ******************/
+	private final ThreadPoolExecutor executor;
 	
 	/**
 	 * @param numProcess
@@ -68,14 +71,7 @@ public class ActiveHandler {
 	 * @return executed result
 	 */
 	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl){
-		Future<ValuesMap> future = executor.submit(new ActiveTask(clientPool[counter.getAndIncrement()%numProcess], guid, field, code, value, ttl));
-		ValuesMap result = value;
-		try {
-			result = future.get();
-		} catch (InterruptedException | ExecutionException e) {
-			e.printStackTrace();
-		}
-		return result;
+		return clientPool[counter.getAndIncrement()%numProcess].runCode(guid, field, code, value, ttl);
 	}
 	
 	/***************** Test methods ****************/
