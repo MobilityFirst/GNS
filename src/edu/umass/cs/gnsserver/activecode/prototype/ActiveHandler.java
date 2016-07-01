@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.JSONException;
 
@@ -27,12 +28,7 @@ public class ActiveHandler {
 	private final String suffix = "_pipe";
 	
 	private final int numProcess;
-	/*
-	private static int idx = 0;
-	synchronized int incrIdx(){
-		return (idx++)%numProcess;
-	}
-	*/
+	final AtomicInteger counter = new AtomicInteger();
 	
 	/**
 	 * @param numProcess
@@ -72,7 +68,7 @@ public class ActiveHandler {
 	 * @return executed result
 	 */
 	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl){
-		Future<ValuesMap> future = executor.submit(new ActiveTask(clientPool[0], guid, field, code, value, ttl));
+		Future<ValuesMap> future = executor.submit(new ActiveTask(clientPool[counter.getAndIncrement()%numProcess], guid, field, code, value, ttl));
 		ValuesMap result = value;
 		try {
 			result = future.get();

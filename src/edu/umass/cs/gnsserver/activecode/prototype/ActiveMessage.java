@@ -260,6 +260,14 @@ public class ActiveMessage {
 		
 		t = System.currentTimeMillis();
 		for (int i=0; i<n; i++){
+			amsg.getValue();
+		}
+		long s = System.currentTimeMillis() - t;
+		System.out.println("It takes "+s+"ms for serialize and deserialize 1m ActiveMessage, and the average latency for each operation is "+(s*1000.0/n)+"us");	
+		
+		
+		t = System.currentTimeMillis();
+		for (int i=0; i<n; i++){
 			rmsg = new ActiveMessage(amsg.toBytes());
 			new ActiveMessage(rmsg.toBytes());
 		}
