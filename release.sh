@@ -17,12 +17,12 @@ if [ $# -lt 1 ]; then
 	exit 1
 fi
 #VERSION="$1" #First argument is the version
-MAJOR=$(cat build.properties | grep build.major | sed 's/^build.major.number=//' | sed 's/\r$//')
-#echo $MAJOR
-MINOR=$(cat build.properties | grep build.minor | sed 's/^build.minor.number=//'| sed 's/\r$//')
-#echo $MINOR
-REVISION=$(cat build.properties | grep build.revision | sed 's/^build.revision.number=//'| sed 's/\r$//')
-#echo $REVISION
+MAJOR=$(cat build.properties | grep build.major | sed 's/^build.major.number=//' | sed s/$(printf '\r')\$//)
+echo $MAJOR.
+MINOR=$(cat build.properties | grep build.minor | sed 's/^build.minor.number=//'| sed s/$(printf '\r')\$//)
+echo $MINOR.
+REVISION=$(cat build.properties | grep build.revision | sed 's/^build.revision.number=//'| sed s/$(printf '\r')\$//)
+echo $REVISION.
 VERSION=v$MAJOR.$MINOR.$REVISION
 echo $VERSION
 BINARIES="GNS-$MAJOR.$MINOR.$REVISION"
