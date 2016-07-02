@@ -170,7 +170,7 @@ public abstract class AbstractGNSClient {
    * @return Signed command.
    * @throws ClientException
    */
-  public JSONObject createAndSignCommand(CommandType commandType,
+  public static JSONObject createAndSignCommand(CommandType commandType,
           PrivateKey privateKey, PublicKey publicKey, Object... keysAndValues)
           throws ClientException {
     try {
@@ -203,11 +203,11 @@ public abstract class AbstractGNSClient {
    * @return JSONObject command
    * @throws ClientException
    */
-  public JSONObject createAndSignCommand(CommandType commandType,
+  public static JSONObject createAndSignCommand(CommandType commandType,
           GuidEntry querier, Object... keysAndValues)
           throws ClientException {
     return querier != null
-            ? this.createAndSignCommand(commandType, querier.getPrivateKey(),
+            ? createAndSignCommand(commandType, querier.getPrivateKey(),
                     querier.getPublicKey(), keysAndValues)
             : createCommand(commandType, keysAndValues);
   }
@@ -221,7 +221,7 @@ public abstract class AbstractGNSClient {
    * @return the query string
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
-  public JSONObject createCommand(CommandType commandType,
+  public static JSONObject createCommand(CommandType commandType,
           Object... keysAndValues)
           throws ClientException {
     try {
@@ -235,9 +235,9 @@ public abstract class AbstractGNSClient {
         value = keysAndValues[i + 1];
         result.put(key, value);
       }
-      if (forceCoordinatedReads) {
-        result.put(GNSCommandProtocol.COORDINATE_READS, true);
-      }
+//      if (forceCoordinatedReads) {
+//        result.put(GNSCommandProtocol.COORDINATE_READS, true);
+//      }
       DelayProfiler.updateDelayNano("createCommand", t);
       return result;
     } catch (JSONException e) {
@@ -476,6 +476,12 @@ public synchronized long generateNextRequestID() {
     } while (resultMap.containsKey(id));
     return id;
   }
+
+	protected static long generateRequestID() {
+		/* arun: we just generate a random value here because the
+		 * generateNextRequestId() stuff is broken anyway. */
+		return (long) (Math.random() * Long.MAX_VALUE);
+	}
 
   /**
    * Returns true if a response has been received.
