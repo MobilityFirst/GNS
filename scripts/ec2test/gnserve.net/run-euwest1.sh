@@ -4,7 +4,7 @@ SCRIPTS="`dirname \"$0\"`"
 IDE_PATH=.:build/classes:build/test/classes:lib/* 
 
 java -ea -cp $IDE_PATH:jars/GNS.jar \
--DgigapaxosConfig=conf/gnsserver.4gnserve.net.properties \
+-DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.properties \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
@@ -21,7 +21,7 @@ euwest1_recon euwest1_repl &
 exit
 
 java -ea  -cp $IDE_PATH:jars/GNS.jar \
--DgigapaxosConfig=conf/gnsserver.4gnserve.net.properties \
+-DgigapaxosConfig=conf/gigapaxos.server.gnserve.net.properties \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
