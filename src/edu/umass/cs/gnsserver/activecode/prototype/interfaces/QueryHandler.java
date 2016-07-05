@@ -1,6 +1,5 @@
 package edu.umass.cs.gnsserver.activecode.prototype.interfaces;
 
-import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -10,9 +9,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author gaozy
  *
  */
-public abstract class ActiveQueryHandler {
-	
-	GNSClient client;
+public abstract class QueryHandler {
 	
 	/**
 	 * This method handles the incoming requests from ActiveQuerier,
@@ -23,10 +20,10 @@ public abstract class ActiveQueryHandler {
 	 */
 	public ActiveMessage handleQuery(ActiveMessage am){
 		ActiveMessage response;
-		if(am.isRead())
-			response = handleReadQuery(am.getGuid(), am.getTargetGuid(), am.getValue(), am.getTtl());
+		if(am.type == ActiveMessage.Type.READ_QUERY)
+			response = handleReadQuery(am.getGuid(), am.getTargetGuid(), am.getField(), am.getTtl());
 		else
-			response = handleWriteQuery(am.getGuid(), am.getTargetGuid(), am.getValue(), am.getTtl());
+			response = handleWriteQuery(am.getGuid(), am.getTargetGuid(), am.getField(), am.getValue(), am.getTtl());
 		
 		return response;
 	}
@@ -37,21 +34,22 @@ public abstract class ActiveQueryHandler {
 	 * 
 	 * @param querierGuid
 	 * @param queriedGuid
-	 * @param value
+	 * @param field 
 	 * @param ttl 
 	 * @return the response ActiveMessage
 	 */
-	public abstract ActiveMessage handleReadQuery(String querierGuid, String queriedGuid, ValuesMap value, int ttl);
+	public abstract ActiveMessage handleReadQuery(String querierGuid, String queriedGuid, String field, int ttl);
 	
 	/**
 	 * This method handles write query from the worker. 
 	 * 
 	 * @param querierGuid
 	 * @param queriedGuid
+	 * @param field 
 	 * @param value
 	 * @param ttl 
 	 * @return the response ActiveMessage
 	 */
-	public abstract ActiveMessage handleWriteQuery(String querierGuid, String queriedGuid, ValuesMap value, int ttl);
+	public abstract ActiveMessage handleWriteQuery(String querierGuid, String queriedGuid, String field, ValuesMap value, int ttl);
 	
 }

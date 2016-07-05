@@ -178,8 +178,9 @@ public class NSUpdateSupport {
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
       }
       int hopLimit = 1;
+      boolean hasCode = activeCodeHandler.hasCode(activeCodeNameRecord.getValuesMap(), ActiveCode.WRITE_ACTION);
       if (activeCodeNameRecord != null
-              && activeCodeHandler.hasCode(activeCodeNameRecord, ActiveCode.WRITE_ACTION)) {
+              && hasCode) {
         String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
         ValuesMap packetValuesMap = userJSON;
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}", new Object[]{guid, field, packetValuesMap.toReasonableString()});

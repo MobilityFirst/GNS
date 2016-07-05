@@ -59,17 +59,20 @@ public class ActiveCodeQueryHelper {
 	 * @param field the field
 	 * @return the ValuesMap object encapsulated in a ActiveCodeQueryResponse object
 	 */
-	private ActiveCodeQueryResponse readLocalGuid(String quieriedGuid, String field) {
+	private ActiveCodeQueryResponse readLocalGuid(String queriedGuid, String field) {
 		String valuesMapString = null;
 		boolean success = false;
 		
 		try {
+			valuesMapString = app.read(queriedGuid, queriedGuid, field).toString();
+			/*
 			NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), quieriedGuid, ColumnFieldType.USER_JSON, field);
 			if(nameRecord.containsUserKey(field)) {
-				ValuesMap vm = nameRecord.getValuesMap();
+				ValuesMap vm = app.read(queriedGuid, queriedGuid, field); 
 				valuesMapString = vm.toString();
 				success = true;
 			}
+			*/
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -90,9 +93,12 @@ public class ActiveCodeQueryHelper {
 		
 		try {
 			ValuesMap userJSON = new ValuesMap(new JSONObject(valuesMapString));
+			app.write(queriedGuid, queriedGuid, field, new ValuesMap(new JSONObject(valuesMapString)));
+			/*
 			NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(app.getDB(), queriedGuid, ColumnFieldType.USER_JSON, field);
 			nameRecord.updateNameRecord(field, null, null, 0, userJSON,
 		              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
+		    */
 			success = true;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -150,16 +156,16 @@ public class ActiveCodeQueryHelper {
 							*/
 							
 							//Read the record and code from DB
-							NameRecord nameRecord = app.read(currentGuid, targetGuid, field);	
-							NameRecord codeRecord = app.read(currentGuid, targetGuid, ActiveCode.ON_READ);
+							ValuesMap val = app.read(currentGuid, targetGuid, field);	
+							ValuesMap code = app.read(currentGuid, targetGuid, ActiveCode.ON_READ);
 							
 							//set the response value to the code before running the active code
-							acqr = new ActiveCodeQueryResponse(true, nameRecord.getValuesMap().toString());
+							acqr = new ActiveCodeQueryResponse(true, val.toString());
 							DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
 							start = System.nanoTime();
-							if (codeRecord != null && nameRecord != null && ActiveCodeHandler.hasCode(codeRecord, "read")) {
-								String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
-								ValuesMap originalValues = nameRecord.getValuesMap();
+							if (code != null && val != null && ActiveCodeHandler.hasCode(code, "read")) {
+								String code64 = code.getString(ActiveCode.ON_READ);
+								ValuesMap originalValues = val;
 								ValuesMap newResult = null;
 								//System.out.println("Ready to do this external query for "+targetGuid+" on field "+field+" with the original value "+originalValues.toString());
 								newResult = ActiveCodeHandler.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
@@ -168,7 +174,7 @@ public class ActiveCodeQueryHelper {
 									acqr = new ActiveCodeQueryResponse(true, newResult.toString());
 									//System.out.println("Send the request with new result value "+newResult.toString());
 								} else {
-									acqr = new ActiveCodeQueryResponse(true, nameRecord.toString());
+									acqr = new ActiveCodeQueryResponse(true, val.toString());
 									//System.out.println("Send the request with new record value "+nameRecord.toString());
 								}
 							}
@@ -223,18 +229,16 @@ public class ActiveCodeQueryHelper {
 						*/
 						
 						// read the code from DB
- 						NameRecord codeRecord = app.read(currentGuid, targetGuid, ActiveCode.ON_WRITE);
+ 						ValuesMap code = app.read(currentGuid, targetGuid, ActiveCode.ON_WRITE);
 				                  
 						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
 						
 						start = System.nanoTime();
-						if (codeRecord != null && ActiveCodeHandler.hasCode(codeRecord, "write")) {
-							String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
+						if (code != null && ActiveCodeHandler.hasCode(code, "write")) {
+							String code64 = code.getString(ActiveCode.ON_WRITE);
 							ValuesMap userJSON = new ValuesMap(new JSONObject(acqreq.getValuesMapString()));
-							NameRecord nameRecord = app.read(currentGuid, targetGuid, field); //NameRecord.getNameRecordMultiField(app.getDB(), targetGuid, null, ColumnFieldType.USER_JSON, field);
-							nameRecord.updateNameRecord(field, null, null, 0, userJSON,
-						              UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
-							ActiveCodeHandler.runCode(code64, targetGuid, field, "write", nameRecord.getValuesMap(), hopLimit);
+							app.write(currentGuid, targetGuid, field,  userJSON);
+							ActiveCodeHandler.runCode(code64, targetGuid, field, "write", userJSON, hopLimit);
 							acqr = new ActiveCodeQueryResponse(true, null);
 						}
 						DelayProfiler.updateDelayNano("activeCodeQuerierWriteExecution", start);

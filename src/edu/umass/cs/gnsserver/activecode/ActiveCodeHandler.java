@@ -81,7 +81,7 @@ public class ActiveCodeHandler {
 	/**
 	 * enable debug output
 	 */
-	public static final boolean enableDebugging = AppReconfigurableNodeOptions.activeCodeEnableDebugging;
+	public static final boolean enableDebugging = false; // AppReconfigurableNodeOptions.activeCodeEnableDebugging;
 	
 
 	/**
@@ -91,34 +91,69 @@ public class ActiveCodeHandler {
 	public static ActiveDBInterface getActiveDB(GNSApplicationInterface<?> gnsApp) {
 		return new ActiveDBInterface() {
 
-			// FIXME: do not use this hacky method!
-			@Override
-			public BasicRecordMap getDB() {
+			private BasicRecordMap getDB() {
 				return gnsApp.getDB();
 			}
 
-			@Override
-			public NameRecord read(String querierGuid, String queriedGuid, String field) {
-				NameRecord record = null;
+			
+			private ValuesMap readSomeGuidFromLocal(String guid, String field){
+				ValuesMap value = null;
 				try {
-					record = NameRecord.getNameRecordMultiUserFields(getDB(), queriedGuid, ColumnFieldType.USER_JSON, field);
+					NameRecord record = NameRecord.getNameRecordMultiUserFields(getDB(), guid, ColumnFieldType.USER_JSON, field);
+					value = record.getValuesMap();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				return record;
+				return value;
 			}
-
+			
 			@Override
-			public boolean write(String querierGuid, String queriedGuid, String field, ValuesMap valuesMap) {
+			public ValuesMap read(String querierGuid, String queriedGuid, String field) {
+				ValuesMap value = null;
+				if(querierGuid.equals(queriedGuid)){
+					value = readSomeGuidFromLocal(queriedGuid, field);
+				}else{
+					/**
+					 * TODO:
+					 *  Do a common read here
+					 *  <p>1. check whether its a local guid
+					 *  <p>2. check ACL
+					 *  <p>3. read
+					 */
+					value = readSomeGuidFromLocal(queriedGuid, field);
+				}
+				return value;
+			}
+			
+			private boolean writeSomeGuidToLocal(String guid, String field, ValuesMap value){
 				try {
 					NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), 
-							queriedGuid, ColumnFieldType.USER_JSON, field);
-					nameRecord.updateNameRecord(field, null, null, 0, valuesMap,
+							guid, ColumnFieldType.USER_JSON, field);
+					nameRecord.updateNameRecord(field, null, null, 0, value,
 					         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 				} catch (Exception e) {
 					e.printStackTrace();
+					return false;
 				}
-				return false;
+				return true;
+			}
+			
+			@Override
+			public boolean write(String querierGuid, String queriedGuid, String field, ValuesMap valuesMap) {
+				boolean wSuccess = false;
+				if(querierGuid.equals(queriedGuid)){
+					wSuccess = writeSomeGuidToLocal(queriedGuid, field, valuesMap);
+				}else{
+					/**
+					 * TODO: 
+					 *  Do a common write here
+					 *  <p>1. check whether its a local guid
+					 *  <p>2. check ACL
+					 *  <p>3. write
+					 */
+					wSuccess = writeSomeGuidToLocal(queriedGuid, field, valuesMap);
+				}
+				return wSuccess;
 			}
 		};
 	}
@@ -128,7 +163,7 @@ public class ActiveCodeHandler {
 	 * @param app
 	 */
 	public ActiveCodeHandler(ActiveDBInterface app) {
-		handler = new ActiveHandler(AppReconfigurableNodeOptions.activeCodeWorkerCount);
+		handler = new ActiveHandler(app, AppReconfigurableNodeOptions.activeCodeWorkerCount);
 		
 		try {
 			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
@@ -172,14 +207,14 @@ public class ActiveCodeHandler {
 	
 	/**
 	 * Checks to see if this guid has active code for the specified action.
-	 * @param nameRecord
+	 * @param valuesMap 
 	 * @param action can be 'read' or 'write'
 	 * @return whether or not there is active code
 	 */
-	public static boolean hasCode(NameRecord nameRecord, String action) {
+	public static boolean hasCode(ValuesMap valuesMap, String action) {
 		try {
-            return nameRecord.getValuesMap().has(ActiveCode.getCodeField(action));
-		} catch (FieldNotFoundException e) {
+            return valuesMap.has(ActiveCode.getCodeField(action));
+		} catch (Exception e) {
 			return false;
 		}
 	}

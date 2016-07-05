@@ -1,7 +1,5 @@
 package edu.umass.cs.gnsserver.activecode.prototype.interfaces;
 
-import java.util.List;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -13,17 +11,17 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author gaozy
  *
  */
-public interface ActiveQuerier {
+public interface Querier {
 	
 	/**
 	 * This method allows customer's active code to read some other guid's value.
 	 * It allows querierGuid to read the values from the fields of queriedGuid.
 	 * 
 	 * <p>Querier guid and queried guid must be provided for ACL check. 
-	 * There could be multiple fields to read, but it is not guaranteed that
-	 * there will be multiple values to return as the field may not exist or
-	 * the read fails the ACL check for some fields. GNS will return as many 
-	 * values as possible of these fields from the queriedGuid, and put the 
+	 * A user could query all fields by setting field to null, but it is not guaranteed that
+	 * every read could get a value to return as the field may not exist or
+	 * the read fails the ACL check for some field. GNS will return as many 
+	 * values as possible of fields being read from the queriedGuid, and put the 
 	 * values into the returned map object.
 	 * 
 	 * <p>To implement this method, a ttl value is also needed as the depth constrain
@@ -32,12 +30,12 @@ public interface ActiveQuerier {
 	 * 
 	 * @param querierGuid
 	 * @param queriedGuid
-	 * @param fields
+	 * @param field
 	 * @param ttl 
 	 * @return the ValuesMap read from the field of the guid
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public ValuesMap readValuesFromFields(String querierGuid, String queriedGuid, List<String> fields, int ttl) throws ActiveException;
+	public ValuesMap readValuesFromField(String querierGuid, String queriedGuid, String field, int ttl) throws ActiveException;
 	
 	
 	/**
@@ -61,4 +59,5 @@ public interface ActiveQuerier {
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
 	public boolean writeValueIntoField(String querierGuid, String queriedGuid, String field, Object value, int ttl) throws ActiveException;
+	
 }

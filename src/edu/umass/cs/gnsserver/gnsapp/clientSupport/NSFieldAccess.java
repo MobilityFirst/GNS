@@ -319,9 +319,15 @@ public class NSFieldAccess {
       }
       DelayProfiler.updateDelayNano("activeFetchCode", t);
       
-      
+      boolean hasCode = false;
+		try {
+			hasCode = gnsApp.getActiveCodeHandler().hasCode(codeRecord.getValuesMap(), ActiveCode.READ_ACTION);
+		} catch (FieldNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
-              && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
+              && hasCode) {
         try {
           //t = System.nanoTime();
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);          

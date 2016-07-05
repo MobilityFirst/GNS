@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -34,9 +35,10 @@ public class ActiveHandler {
 	private final ThreadPoolExecutor executor;
 	
 	/**
+	 * @param app 
 	 * @param numProcess
 	 */
-	public ActiveHandler(int numProcess){
+	public ActiveHandler(ActiveDBInterface app, int numProcess){
 		
 		this.numProcess = numProcess;
 		executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -44,7 +46,7 @@ public class ActiveHandler {
 		
 		clientPool = new ActiveClient[numProcess];
 		for (int i=0; i<numProcess; i++){
-			clientPool[i] = new ActiveClient(cfilePrefix+i+suffix, sfilePrefix+i+suffix, i);
+			clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i);
 			//System.out.println("ActiveClient"+i+" is ready");
 		}
 		
@@ -89,8 +91,11 @@ public class ActiveHandler {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
-		int num = Integer.parseInt(args[0])+1;
-		
+		int num = 4; //Integer.parseInt(args[0]);
+		if(num <= 0){
+			System.out.println("Number of clients must be larger than 0.");
+			System.exit(0);
+		}
 		String guid = "zhaoyu";
 		String field = "gao";
 		String noop_code = "";
@@ -102,7 +107,7 @@ public class ActiveHandler {
 		ValuesMap value = new ValuesMap();
 		value.put("string", "hello world");
 		
-		ActiveHandler handler = new ActiveHandler(num);
+		ActiveHandler handler = new ActiveHandler(null, num);
 		ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
 		
 		int n = 1000000;

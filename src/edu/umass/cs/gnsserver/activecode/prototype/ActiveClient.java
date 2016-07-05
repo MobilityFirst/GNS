@@ -12,7 +12,9 @@ import java.util.List;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -20,6 +22,8 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  */
 public class ActiveClient {
+	
+	private ActiveQueryHandler queryHandler;
 	
 	private ActiveChannel channel;
 	private String ifile;
@@ -31,15 +35,19 @@ public class ActiveClient {
 	
 	private static int heapSize = 64;
 	
+	
+	
 	/************** Test Only ******************/
 	//ActiveWorker worker;
 	
+	
 	/**
+	 * @param app 
 	 * @param ifile
 	 * @param ofile
 	 * @param id 
 	 */
-	public ActiveClient(String ifile, String ofile, int id){
+	public ActiveClient(ActiveDBInterface app, String ifile, String ofile, int id){
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
@@ -61,14 +69,17 @@ public class ActiveClient {
 		channel = new ActivePipe(ifile, ofile);
 		
 		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
+		
+		queryHandler = new ActiveQueryHandler(app);
 	}
 	
 	/**
+	 * @param app 
 	 * @param ifile
 	 * @param ofile
 	 */
-	public ActiveClient(String ifile, String ofile){
-		this(ifile, ofile, 0);
+	public ActiveClient(ActiveDBInterface app, String ifile, String ofile){
+		this(app, ifile, ofile, 0);
 	}
 	
 	protected void shutdown(){
@@ -97,7 +108,7 @@ public class ActiveClient {
 		builder.directory(new File(System.getProperty("user.dir")));
 		
 		builder.redirectError(Redirect.INHERIT);
-		//builder.redirectOutput(Redirect.INHERIT);
+		builder.redirectOutput(Redirect.INHERIT);
 		//builder.redirectInput(Redirect.INHERIT);
 		
 		Process process = builder.start();		
@@ -114,7 +125,6 @@ public class ActiveClient {
 			e.printStackTrace();
 		}
 		Arrays.fill(buffer, (byte) 0); 
-		//System.out.println(this+" receive "+am+" from "+ifile);
 		return am;
 	}
 	
@@ -159,11 +169,36 @@ public class ActiveClient {
 		}
 		*/
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
-		//System.out.println(this+" start executing request "+msg);
 		sendMessage(msg);
-		ActiveMessage result = receiveMessage();
-		//System.out.println(this+" executed result :"+result+" with message "+msg);
-		return result.getValue();
+		ActiveMessage response;
+		while(true){
+			response = receiveMessage();
+			if(response.type==Type.RESPONSE){
+				// this is the response
+				break;
+			}else{
+				//FIXME: for test only
+				if(response.getField().equals("nextGuid")){
+					ValuesMap map = new ValuesMap();
+					try {
+						map.put("nextGuid", "");
+						sendMessage(new ActiveMessage(map, null));
+						continue;
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				}
+				ActiveMessage am = null;
+				if(response.type==Type.READ_QUERY){
+					am = queryHandler.handleReadQuery(response.getGuid(), response.getTargetGuid(), response.getField(), response.getTtl());
+
+				} else {
+					am = queryHandler.handleWriteQuery(response.getGuid(), response.getTargetGuid(), response.getField(), response.getValue(), response.getTtl());
+				}
+				sendMessage(am);
+			}
+		}
+		return response.getValue();
 	}
 	
 	public String toString(){
@@ -189,7 +224,7 @@ public class ActiveClient {
 		String cfile = "/tmp/client"+suffix;
 		String sfile = "/tmp/server"+suffix;		
 		
-		ActiveClient client = new ActiveClient(cfile, sfile);
+		ActiveClient client = new ActiveClient(null, cfile, sfile);
 		//initialize a new client for test
 	    //new ActiveClient(cfile+"1", sfile+"1");
 		

@@ -13,7 +13,6 @@ import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -34,6 +33,8 @@ public class ActiveWorker {
 	private final String ofile;
 	private final int id;
 	
+	private ActiveQuerier querier;
+	
 	protected final static int bufferSize = 1024;
 	
 	/**
@@ -51,14 +52,10 @@ public class ActiveWorker {
 		invocable = (Invocable) engine;
 		if(!isTest){
 			channel = new ActivePipe(ifile, ofile);
-			//System.out.println(this+" channel is ready!");
-			//channel.write("ready".getBytes(), 0, "ready".getBytes().length);
+			querier = new ActiveQuerier(channel);
+			
 			try {
 				runWorker();
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (ScriptException e) {
-				e.printStackTrace();
 			} catch (Exception e){
 				e.printStackTrace();
 			} finally {
@@ -97,34 +94,36 @@ public class ActiveWorker {
 	 * @param field
 	 * @param code
 	 * @param value
+	 * @param ttl
 	 * @return ValuesMap result 
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
-	public ValuesMap runCode(String guid, String field, String code, ValuesMap value) throws ScriptException, NoSuchMethodException {		
+	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
-		return (ValuesMap) invocable.invokeFunction("run", value, field, null);
+		querier.resetQuerier(guid, ttl);
+		return (ValuesMap) invocable.invokeFunction("run", value, field, querier);
 	}
 
 	
-	private void runWorker() throws NoSuchMethodException, ScriptException, UnsupportedEncodingException, JSONException{		
+	private void runWorker() throws UnsupportedEncodingException, JSONException {		
 		byte[] buffer = new byte[bufferSize];
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		
 		while((channel.read(buffer)) > 0){
-			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(this+" ready to received msg from "+ifile);
 			ActiveMessage msg = new ActiveMessage(buffer);
-			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(this+" received:"+msg+" from "+ifile );
 			Arrays.fill(buffer, (byte) 0);
-			msg.setValue(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue()));
-			// echo the message 
-			byte[] buf = msg.toBytes();
+			
+			ActiveMessage response;
+			try {
+				response = new ActiveMessage(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
+			} catch (NoSuchMethodException | ScriptException e) {
+				response = new ActiveMessage(null, e.getMessage());
+				e.printStackTrace();
+			}
+			byte[] buf = response.toBytes();
 			channel.write(buf, 0, buf.length);
-			if(ActiveCodeHandler.enableDebugging)
-				System.out.println(this+" echo:"+msg+" to "+ofile );
 		}
 	}
 	
