@@ -73,9 +73,8 @@ public class ResetDatabase extends BasicCommand {
 //        return new CommandResponse(BAD_RESPONSE);
 //      }
 //    }
-    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand " + getCommandType().toString(),
-            GNSResponseCode.OPERATION_NOT_SUPPORTED);
+    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

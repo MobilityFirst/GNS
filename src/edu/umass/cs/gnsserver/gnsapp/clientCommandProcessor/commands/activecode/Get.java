@@ -79,8 +79,8 @@ public class Get extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
 
-    return new CommandResponse(ActiveCode.getCode(accountGuid, action,
-            reader, signature, message, timestamp, handler), GNSResponseCode.NO_ERROR);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, ActiveCode.getCode(accountGuid, action,
+            reader, signature, message, timestamp, handler));
   }
 
   @Override

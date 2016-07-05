@@ -65,20 +65,16 @@ public class LookupGuidRecord extends BasicCommand {
     String guid = json.getString(GUID);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
-              GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (guidInfo != null) {
       try {
-        return new CommandResponse(guidInfo.toJSONObject().toString(),
-                GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, guidInfo.toJSONObject().toString());
       } catch (JSONException e) {
-        return new CommandResponse(BAD_RESPONSE + " " + JSON_PARSE_ERROR,
-                GNSResponseCode.JSON_PARSE_ERROR);
+        return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR);
       }
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
-              GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
   }
 

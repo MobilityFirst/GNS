@@ -74,18 +74,16 @@ public class Admin extends BasicCommand {
       GNSConfig.getLogger().log(Level.INFO, "Http host:port = {0}", handler.getHTTPServerHostPortString());
       if (handler.getHTTPServerHostPortString().equals(passkey) || "shabiz".equals(passkey)) {
         module.setAdminMode(true);
-        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } else if ("off".equals(passkey)) {
         module.setAdminMode(false);
-        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       }
-      return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-              + " Don't understand " + getCommandType().toString() + " " + passkey,
-              GNSResponseCode.OPERATION_NOT_SUPPORTED);
+      return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+              + " Don't understand " + getCommandType().toString() + " " + passkey);
     } catch (UnknownHostException e) {
-      return new CommandResponse(BAD_RESPONSE
-              + " " + UNSPECIFIED_ERROR + " Unable to determine host address",
-              GNSResponseCode.UNSPECIFIED_ERROR);
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE
+              + " " + UNSPECIFIED_ERROR + " Unable to determine host address");
     }
   }
 

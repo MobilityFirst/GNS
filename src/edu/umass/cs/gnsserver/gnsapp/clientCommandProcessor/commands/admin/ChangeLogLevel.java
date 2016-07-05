@@ -71,18 +71,16 @@ public class ChangeLogLevel extends BasicCommand {
       try {
         Level level = Level.parse(levelString);
         if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
-          return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
         } else {
-          return new CommandResponse(BAD_RESPONSE, GNSResponseCode.UNSPECIFIED_ERROR);
+          return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE);
         }
       } catch (IllegalArgumentException e) {
-        return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString,
-                GNSResponseCode.UNSPECIFIED_ERROR);
+        return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString);
       }
     }
-    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand " + getCommandType().toString(),
-            GNSResponseCode.OPERATION_NOT_SUPPORTED);
+    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

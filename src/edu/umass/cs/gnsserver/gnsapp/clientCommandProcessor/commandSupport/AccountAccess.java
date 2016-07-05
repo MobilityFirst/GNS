@@ -422,16 +422,15 @@ public class AccountAccess {
         }).start();
 
         if (emailOK) {
-          return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
         } else {
           // if we can't send the confirmation back out of the account creation
           AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler, true);
           if (accountInfo != null) {
             removeAccount(accountInfo, handler);
           }
-          return new CommandResponse(BAD_RESPONSE + " "
-                  + VERIFICATION_ERROR + " " + "Unable to send verification email",
-                  GNSResponseCode.VERIFICATION_ERROR);
+          return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " "
+                  + VERIFICATION_ERROR + " " + "Unable to send verification email");
         }
       } else {
         GNSConfig.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
@@ -465,40 +464,34 @@ public class AccountAccess {
   public static CommandResponse verifyAccount(String guid, String code, ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to read account info",
-              GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE + " "
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE + " "
               + GNSCommandProtocol.VERIFICATION_ERROR + " "
-              + GuidUtils.ACCOUNT_ALREADY_VERIFIED, GNSResponseCode.VERIFICATION_ERROR);
+              + GuidUtils.ACCOUNT_ALREADY_VERIFIED);
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Bad verification code",
-              GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Bad verification code");
     }
     if ((new Date()).getTime() - accountInfo.getCreated().getTime() > TWO_HOURS_IN_MILLESECONDS) {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Account code no longer valid",
-              GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Account code no longer valid");
     }
     if (!accountInfo.getVerificationCode().equals(code)) {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Code not correct",
-              GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Code not correct");
     }
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
     if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
-      return new CommandResponse(GNSCommandProtocol.OK_RESPONSE + " " + "Your account has been verified.",
-              GNSResponseCode.NO_ERROR); // add a little something for the kids
+      return new CommandResponse(GNSResponseCode.NO_ERROR, GNSCommandProtocol.OK_RESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.UPDATE_ERROR + " " + "Unable to update account info",
-              GNSResponseCode.UPDATE_ERROR);
+      return new CommandResponse(GNSResponseCode.UPDATE_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.UPDATE_ERROR + " " + "Unable to update account info");
     }
   }
 
@@ -515,33 +508,31 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + "Not an account guid", GNSResponseCode.BAD_ACCOUNT_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + "Not an account guid");
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse(BAD_RESPONSE + " " + VERIFICATION_ERROR
-              + " Account not verified", GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR
+              + " Account not verified");
     }
     if (verifyPassword(accountInfo, password)) {
       GuidInfo guidInfo;
       if ((guidInfo = lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-                + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + "Unable to read guid info", GNSResponseCode.BAD_ACCOUNT_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, GNSCommandProtocol.BAD_RESPONSE
+                + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + "Unable to read guid info");
       } else {
         guidInfo.setPublicKey(publicKey);
         guidInfo.noteUpdate();
         if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
-          return new CommandResponse(GNSCommandProtocol.OK_RESPONSE + " " + "Public key has been updated.",
-                  GNSResponseCode.NO_ERROR);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, GNSCommandProtocol.OK_RESPONSE + " " + "Public key has been updated.");
         } else {
-          return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
+          return new CommandResponse(GNSResponseCode.UPDATE_ERROR, GNSCommandProtocol.BAD_RESPONSE
                   + " " + GNSCommandProtocol.UNSPECIFIED_ERROR
-                  + " " + "Unable to update guid info", GNSResponseCode.UPDATE_ERROR);
+                  + " " + "Unable to update guid info");
         }
       }
     } else {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE
-              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Password mismatch",
-              GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Password mismatch");
     }
   }
 
@@ -621,21 +612,18 @@ public class AccountAccess {
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         // set up the default read access
         if (!(returnCode = handler.getRemoteQuery().createRecord(guid, json)).isExceptionOrError()) {
-          return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           handler.getRemoteQuery().deleteRecord(name);
-          return new CommandResponse(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid,
-                  returnCode);
+          return new CommandResponse(returnCode, BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
         }
       } else {
-        return new CommandResponse(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + name,
-                returnCode);
+        return new CommandResponse(returnCode, BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + name);
       }
     } catch (JSONException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage(),
-              GNSResponseCode.JSON_PARSE_ERROR);
+      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     }
   }
 
@@ -673,10 +661,9 @@ public class AccountAccess {
       }
 
       // all is well
-      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT,
-              GNSResponseCode.BAD_ACCOUNT_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
     }
   }
 
@@ -699,12 +686,10 @@ public class AccountAccess {
   public static CommandResponse addGuid(AccountInfo accountInfo, GuidInfo accountGuidInfo,
           String name, String guid, String publicKey, ClientRequestHandlerInterface handler) {
     if ((AccountAccess.lookupGuid(name, handler, true)) != null) {
-      return new CommandResponse(BAD_RESPONSE + " " + DUPLICATE_NAME + " " + name,
-              GNSResponseCode.DUPLICATE_NAME_EXCEPTION);
+      return new CommandResponse(GNSResponseCode.DUPLICATE_NAME_EXCEPTION, BAD_RESPONSE + " " + DUPLICATE_NAME + " " + name);
     }
     if ((AccountAccess.lookupGuidInfo(guid, handler, true)) != null) {
-      return new CommandResponse(BAD_RESPONSE + " " + DUPLICATE_GUID + " " + name,
-              GNSResponseCode.DUPLICATE_GUID_EXCEPTION);
+      return new CommandResponse(GNSResponseCode.DUPLICATE_GUID_EXCEPTION, BAD_RESPONSE + " " + DUPLICATE_GUID + " " + name);
     }
     try {
       JSONObject jsonHRN = new JSONObject();
@@ -726,13 +711,11 @@ public class AccountAccess {
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
       updateAccountInfoNoAuthentication(accountInfo, handler, true);
-      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     } catch (JSONException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage(),
-              GNSResponseCode.JSON_PARSE_ERROR);
+      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     } catch (ServerRuntimeException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
-              GNSResponseCode.UNSPECIFIED_ERROR);
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 
@@ -792,17 +775,14 @@ public class AccountAccess {
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           handler.getRemoteQuery().createRecordBatch(guids, guidInfoMap, handler);
           GNSConfig.getLogger().info(DelayProfiler.getStats());
-          return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
         }
       }
-      return new CommandResponse(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + names,
-              returnCode);
+      return new CommandResponse(returnCode, BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + names);
     } catch (JSONException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage(),
-              GNSResponseCode.JSON_PARSE_ERROR);
+      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     } catch (ServerRuntimeException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
-              GNSResponseCode.UNSPECIFIED_ERROR);
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 
@@ -909,9 +889,8 @@ public class AccountAccess {
     // (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
       if (lookupAccountInfoFromGuid(guidInfo.getGuid(), handler, true) != null) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " "
-                + guidInfo.getGuid() + " is an account guid",
-                GNSResponseCode.BAD_GUID_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " "
+                + guidInfo.getGuid() + " is an account guid");
       }
     }
     // Fill in a missing account info
@@ -919,14 +898,12 @@ public class AccountAccess {
       String accountGuid = AccountAccess.lookupPrimaryGuid(guidInfo.getGuid(), handler, true);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT
-                + " " + guidInfo.getGuid() + " does not have a primary account guid",
-                GNSResponseCode.BAD_ACCOUNT_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT
+                + " " + guidInfo.getGuid() + " does not have a primary account guid");
       }
       if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, handler, true)) == null) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT
-                + " " + guidInfo.getGuid() + " cannot find primary account guid for " + accountGuid,
-                GNSResponseCode.BAD_ACCOUNT_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT
+                + " " + guidInfo.getGuid() + " cannot find primary account guid for " + accountGuid);
       }
     }
     // First remove any group links
@@ -938,21 +915,19 @@ public class AccountAccess {
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
-        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } else {
         // update the account guid to know that we deleted the guid
         accountInfo.removeGuid(guidInfo.getGuid());
         accountInfo.noteUpdate();
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
-          return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
         } else {
-          return new CommandResponse(BAD_RESPONSE + " " + UPDATE_ERROR,
-                  GNSResponseCode.UPDATE_ERROR);
+          return new CommandResponse(GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
         }
       }
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID,
-              GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID);
     }
   }
 
@@ -980,8 +955,7 @@ public class AccountAccess {
       if ((returnCode = handler.getRemoteQuery().createRecord(alias, jsonHRN)).isExceptionOrError()) {
         // roll this back
         accountInfo.removeAlias(alias);
-        return new CommandResponse(BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + alias,
-                returnCode);
+        return new CommandResponse(returnCode, BAD_RESPONSE + " " + returnCode.getProtocolCode() + " " + alias);
       }
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
@@ -989,14 +963,12 @@ public class AccountAccess {
               writer, signature, message, timestamp, handler, true).isExceptionOrError()) {
         // back out if we got an error
         handler.getRemoteQuery().deleteRecord(alias);
-        return new CommandResponse(BAD_RESPONSE + " " + UPDATE_ERROR,
-                GNSResponseCode.UPDATE_ERROR);
+        return new CommandResponse(GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
       } else {
-        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       }
     } catch (JSONException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage(),
-              GNSResponseCode.JSON_PARSE_ERROR);
+      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e.getMessage());
     }
   }
 
@@ -1019,24 +991,21 @@ public class AccountAccess {
     GNSConfig.getLogger().log(Level.FINE,
             "ALIAS: {0} ALIASES:{1}", new Object[]{alias, accountInfo.getAliases()});
     if (!accountInfo.containsAlias(alias)) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_ALIAS,
-              GNSResponseCode.BAD_ALIAS_EXCEPTION);
+      return new CommandResponse(GNSResponseCode.BAD_ALIAS_EXCEPTION, BAD_RESPONSE + " " + BAD_ALIAS);
     }
     // remove the NAME -- GUID record
     GNSResponseCode responseCode;
     if ((responseCode = handler.getRemoteQuery().deleteRecord(alias)).isExceptionOrError()) {
-      return new CommandResponse(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
-              responseCode);
+      return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
     // Now updated the account record
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
     if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
             writer, signature, message, timestamp, handler, true)).isExceptionOrError()) {
-      return new CommandResponse(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
-              responseCode);
+      return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
-    return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
   }
 
   /**
@@ -1056,10 +1025,9 @@ public class AccountAccess {
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
             writer, signature, message, timestamp, handler, false).isExceptionOrError()) {
-      return new CommandResponse(BAD_RESPONSE + " " + UPDATE_ERROR,
-              GNSResponseCode.UPDATE_ERROR);
+      return new CommandResponse(GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
   }
 
   /**
@@ -1080,10 +1048,9 @@ public class AccountAccess {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isExceptionOrError()) {
-      return new CommandResponse(BAD_RESPONSE + " " + UPDATE_ERROR,
-              GNSResponseCode.UPDATE_ERROR);
+      return new CommandResponse(GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
   }
 
   /**
@@ -1104,10 +1071,9 @@ public class AccountAccess {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
     if (updateGuidInfo(guidInfo, writer, signature, message, timestamp, handler).isExceptionOrError()) {
-      return new CommandResponse(BAD_RESPONSE + " " + UPDATE_ERROR,
-              GNSResponseCode.UPDATE_ERROR);
+      return new CommandResponse(GNSResponseCode.UPDATE_ERROR, BAD_RESPONSE + " " + UPDATE_ERROR);
     }
-    return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
   }
 
   private static GNSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo,

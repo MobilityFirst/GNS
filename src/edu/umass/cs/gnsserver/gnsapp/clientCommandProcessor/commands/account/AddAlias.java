@@ -53,7 +53,7 @@ public class AddAlias extends BasicCommand {
   public AddAlias(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public CommandType getCommandType() {
     return CommandType.AddAlias;
@@ -68,7 +68,6 @@ public class AddAlias extends BasicCommand {
 //  public String getCommandName() {
 //    return ADD_ALIAS;
 //  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -79,15 +78,12 @@ public class AddAlias extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
     if (accountInfo == null) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
-      GNSResponseCode.BAD_ACCOUNT_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     }
     if (!accountInfo.isVerified()) {
-      return new CommandResponse(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
-      GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
     } else if (accountInfo.getAliases().size() > GNSConfig.MAXALIASES) {
-      return new CommandResponse(BAD_RESPONSE + " " + TOO_MANY_ALIASES,
-      GNSResponseCode.TOO_MANY_ALIASES_EXCEPTION);
+      return new CommandResponse(GNSResponseCode.TOO_MANY_ALIASES_EXCEPTION, BAD_RESPONSE + " " + TOO_MANY_ALIASES);
     } else {
       return AccountAccess.addAlias(accountInfo, name, guid, signature, message, timestamp, handler);
     }

@@ -77,24 +77,20 @@ public class RetrieveAliases extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
-              GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
       if (accountInfo == null) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
-                GNSResponseCode.BAD_ACCOUNT_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
       } else if (!accountInfo.isVerified()) {
-        return new CommandResponse(BAD_RESPONSE
-                + " " + VERIFICATION_ERROR + " Account not verified",
-                GNSResponseCode.VERIFICATION_ERROR);
+        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE
+                + " " + VERIFICATION_ERROR + " Account not verified");
       }
       ArrayList<String> aliases = accountInfo.getAliases();
-      return new CommandResponse(new JSONArray(aliases).toString(), GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(aliases).toString());
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_SIGNATURE,
-              GNSResponseCode.SIGNATURE_ERROR);
+      return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
     }
   }
 

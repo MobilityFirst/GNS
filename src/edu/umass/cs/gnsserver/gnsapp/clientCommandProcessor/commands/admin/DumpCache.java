@@ -66,12 +66,10 @@ public class DumpCache extends BasicCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
-      return new CommandResponse(handler.getAdmintercessor().sendDumpCache(handler),
-              GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, handler.getAdmintercessor().sendDumpCache(handler));
     }
-    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand " + getCommandType().toString(),
-            GNSResponseCode.OPERATION_NOT_SUPPORTED);
+    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand " + getCommandType().toString());
   }
 
   @Override

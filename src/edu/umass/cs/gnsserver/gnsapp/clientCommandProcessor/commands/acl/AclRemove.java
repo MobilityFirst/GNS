@@ -85,9 +85,8 @@ public class AclRemove extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse(BAD_RESPONSE
-              + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString(),
-              GNSResponseCode.BAD_ACL_TYPE_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
+              + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     GNSResponseCode responseCode;
     // We need the public key
@@ -98,8 +97,7 @@ public class AclRemove extends BasicCommand {
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler, true)) == null) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + accesser,
-                GNSResponseCode.BAD_GUID_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
@@ -107,9 +105,9 @@ public class AclRemove extends BasicCommand {
     if (!(responseCode = FieldMetaData.remove(access,
             guid, field, accessorPublicKey,
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     } else {
-      return new CommandResponse(responseCode.getProtocolCode(), responseCode);
+      return new CommandResponse(responseCode, responseCode.getProtocolCode());
     }
   }
 

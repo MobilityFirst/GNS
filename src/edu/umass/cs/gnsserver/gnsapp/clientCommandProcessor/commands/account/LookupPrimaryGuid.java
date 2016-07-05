@@ -63,10 +63,9 @@ public class LookupPrimaryGuid extends BasicCommand {
     String guid = json.getString(GUID);
     String result = AccountAccess.lookupPrimaryGuid(guid, handler, false);
     if (result != null) {
-      return new CommandResponse(result, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, result);
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID,
-              GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID);
     }
 
   }

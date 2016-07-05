@@ -86,9 +86,9 @@ public class Clear extends BasicCommand {
             writer, signature, message, timestamp, handler);
 
     if (response.isExceptionOrError()) {
-      return new CommandResponse(BAD_RESPONSE + " " + response.getProtocolCode(), response);
+      return new CommandResponse(response, BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
-      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     }
   }
 

@@ -80,14 +80,12 @@ public class RemoveFromGroup extends BasicCommand {
     try {
       if (!(responseCode = GroupAccess.removeFromGroup(guid, member,
               writer, signature, message, handler)).isExceptionOrError()) {
-        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } else {
-        return new CommandResponse(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
-                responseCode);
+        return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
-              GNSResponseCode.UNSPECIFIED_ERROR);
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

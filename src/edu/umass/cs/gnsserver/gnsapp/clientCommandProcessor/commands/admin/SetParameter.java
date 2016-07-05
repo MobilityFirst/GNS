@@ -70,15 +70,14 @@ public class SetParameter extends BasicCommand {
     if (module.isAdminMode()) {
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldValue(value);
-        return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } catch (Exception e) {
         System.out.println("Problem setting parameter: " + e);
       }
     }
-    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand "
-            + CommandType.SetParameter.toString() + " " + parameterString + " " + VALUE + " " + value,
-            GNSResponseCode.OPERATION_NOT_SUPPORTED);
+            + CommandType.SetParameter.toString() + " " + parameterString + " " + VALUE + " " + value);
   }
 
   @Override

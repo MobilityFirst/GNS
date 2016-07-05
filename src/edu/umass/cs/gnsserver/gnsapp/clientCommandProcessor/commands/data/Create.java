@@ -91,10 +91,9 @@ public class Create extends BasicCommand {
     if (!(responseCode = FieldAccess.create(guid, field,
             (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse(OK_RESPONSE, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + responseCode.getProtocolCode(),
-              responseCode);
+      return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
   }
 

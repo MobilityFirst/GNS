@@ -47,69 +47,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -306,19 +243,17 @@ public class Admintercessor {
   public CommandResponse sendDump(ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE 
-              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS",
-      GNSResponseCode.QUERY_PROCESSING_ERROR);
+      return new CommandResponse(      GNSResponseCode.QUERY_PROCESSING_ERROR, GNSCommandProtocol.BAD_RESPONSE 
+              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
     Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
-      return new CommandResponse(formatDumpRecords(result, handler), GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, formatDumpRecords(result, handler));
     } else {
-      return new CommandResponse(GNSCommandProtocol.BAD_RESPONSE 
-              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "No response to dump command!",
-      GNSResponseCode.QUERY_PROCESSING_ERROR);
+      return new CommandResponse(      GNSResponseCode.QUERY_PROCESSING_ERROR, GNSCommandProtocol.BAD_RESPONSE 
+              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "No response to dump command!");
     }
   }
 

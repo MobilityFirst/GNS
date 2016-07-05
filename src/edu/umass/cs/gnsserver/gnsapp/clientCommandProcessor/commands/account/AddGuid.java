@@ -71,7 +71,6 @@ public class AddGuid extends BasicCommand {
 //  public String getCommandName() {
 //    return ADD_GUID;
 //  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
@@ -86,26 +85,22 @@ public class AddGuid extends BasicCommand {
 //    String newGuid = SharedGuidUtils.createGuidStringFromPublicKey(publicKeyBytes);
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid,
-      GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
       if (accountInfo == null) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid,
-        GNSResponseCode.BAD_ACCOUNT_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
-        GNSResponseCode.VERIFICATION_ERROR);
+        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
-        return new CommandResponse(BAD_RESPONSE + " " + TOO_MANY_GUIDS,
-        GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION);
+        return new CommandResponse(GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION, BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
         CommandResponse result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
         if (result.getExceptionOrErrorCode().isOKResult()) {
           // Everything is hunkey dorey so return the new guid
-          return new CommandResponse(newGuid, GNSResponseCode.NO_ERROR);
+          return new CommandResponse(GNSResponseCode.NO_ERROR, newGuid);
         } else {
           // Otherwise return the error response
           return result;
@@ -113,7 +108,7 @@ public class AddGuid extends BasicCommand {
       }
     } else {
       // Signature verification failed
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_SIGNATURE, GNSResponseCode.SIGNATURE_ERROR);
+      return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
     }
     //}
   }

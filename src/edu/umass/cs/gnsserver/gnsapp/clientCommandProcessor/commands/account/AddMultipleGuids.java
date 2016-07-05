@@ -84,21 +84,17 @@ public class AddMultipleGuids extends BasicCommand {
 
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
-              GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);
       if (accountInfo == null) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
-                GNSResponseCode.BAD_ACCOUNT_ERROR);
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
-                GNSResponseCode.VERIFICATION_ERROR);
+        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
-        return new CommandResponse(BAD_RESPONSE + " " + TOO_MANY_GUIDS,
-                GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION);
+        return new CommandResponse(GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION, BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else if (names != null && publicKeys != null) {
         GNSConfig.getLogger().info("ADD SLOW" + names + " / " + publicKeys);
         return AccountAccess.addMultipleGuids(JSONUtils.JSONArrayToArrayListString(names),
@@ -113,13 +109,11 @@ public class AddMultipleGuids extends BasicCommand {
         int guidCnt = Integer.parseInt(guidCntString);
         return AccountAccess.addMultipleGuidsFasterAllRandom(guidCnt, accountInfo, accountGuidInfo, handler);
       } else {
-        return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR
-                + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT,
-                GNSResponseCode.UNSPECIFIED_ERROR);
+        return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR
+                + " bad arguments: need " + NAMES + " or " + NAMES + " and " + PUBLIC_KEYS + " or " + GUIDCNT);
       }
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_SIGNATURE,
-              GNSResponseCode.SIGNATURE_ERROR);
+      return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
     }
     //}
   }

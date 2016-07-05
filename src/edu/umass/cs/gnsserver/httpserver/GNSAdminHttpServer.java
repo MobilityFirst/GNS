@@ -155,9 +155,8 @@ public class GNSAdminHttpServer {
                     "Action: {0} Query:{1}", new Object[]{action, query});
             response = processQuery(host, action, query);
           } else {
-            response = new CommandResponse(BAD_RESPONSE
-                    + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query,
-                    GNSResponseCode.OPERATION_NOT_SUPPORTED);
+            response = new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE
+                    + " " + OPERATION_NOT_SUPPORTED + " Don't understand " + action + " " + query);
           }
           LOG.log(Level.FINER, "Response: {0}", response);
           // FIXME: This totally ignores the error code.

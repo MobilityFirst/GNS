@@ -79,9 +79,8 @@ public class GetGroups extends BasicCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    return new CommandResponse(new JSONArray(GroupAccess.lookupGroupsLocally(guid, reader,
-            signature, message, timestamp, handler)).toString(),
-            GNSResponseCode.NO_ERROR);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(GroupAccess.lookupGroupsLocally(guid, reader,
+            signature, message, timestamp, handler)).toString());
   }
 
   @Override

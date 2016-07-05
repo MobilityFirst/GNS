@@ -323,7 +323,7 @@ public class CommandUtils {
     }
   }
 
-  // bridging hack 
+  // bridging hack - this needs to stay around until we update the iOS client
   public static String checkResponse(Object response) throws ClientException {
     return response instanceof String ? checkResponse((String) response)
             : checkResponse(((CommandValueReturnPacket) response));

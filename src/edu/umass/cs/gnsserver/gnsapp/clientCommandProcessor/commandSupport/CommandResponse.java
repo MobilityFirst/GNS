@@ -37,11 +37,13 @@ public class CommandResponse{
 
   /**
    * Create a command response object from a return value with an error code.
+   * NOTE as of 7/1/16 (version 19): Full string form return values are kept for now 
+   * because of backward compatibility issues with older clients.
    *
    * @param returnValue
    * @param errorCode
    */
-  public CommandResponse(String returnValue, GNSResponseCode errorCode) {
+  public CommandResponse(GNSResponseCode errorCode, String returnValue) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
   }

@@ -66,10 +66,9 @@ public class LookupGuid extends BasicCommand {
     // look for an account guid
     String result = AccountAccess.lookupGuid(name, handler);
     if (result != null) {
-      return new CommandResponse(result, GNSResponseCode.NO_ERROR);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, result);
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT,
-              GNSResponseCode.BAD_ACCOUNT_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
     }
   }
 

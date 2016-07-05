@@ -77,11 +77,9 @@ public class SetPassword extends BasicCommand {
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (accountInfo == null) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
-              GNSResponseCode.BAD_ACCOUNT_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified",
-              GNSResponseCode.VERIFICATION_ERROR);
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
     }
     return AccountAccess.setPassword(accountInfo, password, guid, signature, message, timestamp, handler);
   }

@@ -70,24 +70,22 @@ public class LookupRandomGuids extends BasicCommand {
     int count = json.getInt(GUIDCNT);
     AccountInfo acccountInfo;
     if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid,
-              GNSResponseCode.BAD_ACCOUNT_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     }
     if (acccountInfo != null) {
       List<String> guids = acccountInfo.getGuids();
       if (count >= guids.size()) {
-        return new CommandResponse(new JSONArray(guids).toString(), GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(guids).toString());
       } else {
         Random rand = new Random();
         List<String> result = new ArrayList<>();
         for (int i = 0; i < count; i++) {
           result.add(guids.get(rand.nextInt(guids.size())));
         }
-        return new CommandResponse(new JSONArray(result).toString(), GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(result).toString());
       }
     } else {
-      return new CommandResponse(BAD_RESPONSE + " " + BAD_GUID + " " + guid,
-              GNSResponseCode.BAD_GUID_ERROR);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     // }
   }

@@ -68,15 +68,13 @@ public class GetParameter extends BasicCommand {
     String parameterString = json.getString(NAME);
     if (module.isAdminMode()) {
       try {
-        return new CommandResponse(SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString(),
-                GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString());
       } catch (Exception e) {
         System.out.println("Problem getting parameter: " + e);
       }
     }
-    return new CommandResponse(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand " + CommandType.GetParameter.toString() + " " + parameterString,
-            GNSResponseCode.OPERATION_NOT_SUPPORTED);
+    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand " + CommandType.GetParameter.toString() + " " + parameterString);
   }
 
   @Override

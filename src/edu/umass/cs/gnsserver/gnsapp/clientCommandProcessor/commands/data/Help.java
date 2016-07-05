@@ -61,23 +61,20 @@ public class Help extends BasicCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) {
     if (json.has("tcp")) {
-      return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
+      return new CommandResponse(GNSResponseCode.NO_ERROR, "Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandDescriptionFormat.TCP),
-              GNSResponseCode.NO_ERROR);
+              + module.allCommandDescriptions(CommandDescriptionFormat.TCP));
     } else if (json.has("tcpwiki")) {
-      return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
+      return new CommandResponse(GNSResponseCode.NO_ERROR, "Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandDescriptionFormat.TCP_Wiki),
-              GNSResponseCode.NO_ERROR);
+              + module.allCommandDescriptions(CommandDescriptionFormat.TCP_Wiki));
     } else {
-      return new CommandResponse("Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
+      return new CommandResponse(GNSResponseCode.NO_ERROR, "Commands are sent as HTTP GET queries." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE
               + "Commands:" + NEWLINE
-              + module.allCommandDescriptions(CommandDescriptionFormat.HTML),
-              GNSResponseCode.NO_ERROR);
+              + module.allCommandDescriptions(CommandDescriptionFormat.HTML));
     }
   }
 

@@ -83,8 +83,7 @@ public class RegisterAccount extends BasicCommand {
     // See RegisterAccountUnsigned
     if (signature != null && message != null) {
       if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse(BAD_RESPONSE + " " + BAD_SIGNATURE,
-                GNSResponseCode.SIGNATURE_ERROR);
+        return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     }
     try {
@@ -94,14 +93,13 @@ public class RegisterAccount extends BasicCommand {
               password, handler);
       if (result.getExceptionOrErrorCode().isOKResult()) {
         // Everything is hunkey dorey so return the new guid
-        return new CommandResponse(guid, GNSResponseCode.NO_ERROR);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, guid);
       } else {
-         // Otherwise return the error response.
+        // Otherwise return the error response.
         return result;
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage(),
-              GNSResponseCode.UNSPECIFIED_ERROR);
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

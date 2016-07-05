@@ -67,8 +67,7 @@ public class GetTagged extends BasicCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
-    return new CommandResponse(new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString(),
-            GNSResponseCode.NO_ERROR);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
   }
 
   @Override
