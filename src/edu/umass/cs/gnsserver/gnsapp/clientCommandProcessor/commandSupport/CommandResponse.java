@@ -24,7 +24,7 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
 /**
  * Encapsulates the response string and {@link GNSResponseCode} that we pass back to the client.
  */
-public class CommandResponse {
+public class CommandResponse{
 
   /**
    * Value returned.
@@ -37,13 +37,12 @@ public class CommandResponse {
 
   /**
    * Create a command response object from a return value with an error code.
+   * NOTE as of 7/1/16 (version 19): Full string form return values are kept for now 
+   * because of backward compatibility issues with older clients.
    *
-   * @param errorCode
    * @param returnValue
-   *
+   * @param errorCode
    */
-  // Full returnValue strings (second arg) are used by the HTTP server and
-  // also retain backward compatibility with older clients.
   public CommandResponse(GNSResponseCode errorCode, String returnValue) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
