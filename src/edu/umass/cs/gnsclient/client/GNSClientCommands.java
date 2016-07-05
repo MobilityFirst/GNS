@@ -123,30 +123,24 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		super(anyReconfigurator);
 	}
 
+	private static boolean USE_OLD_SEND = true;
+	
 	/* arun: All occurrences of checkResponse( createAndSignCommand have been
 	 * replaced by this getResponse method. */
 	private String getResponse(CommandType commandType, GuidEntry querier,
 			Object... keysAndValues) throws ClientException, IOException {
-		return CommandUtils
-				.checkResponse(sendCommandAndWait(createAndSignCommand(
-						commandType, querier, keysAndValues)));
+		return USE_OLD_SEND ? CommandUtils
+				.checkResponse(sendCommandAndWait(CommandUtils
+						.createAndSignCommand(commandType, querier,
+								keysAndValues))) : CommandUtils
+				.checkResponse(getCommand(commandType, querier, keysAndValues)
+						.setForceCoordinatedReads(
+								isForceCoordinatedReads()));
 	}
 
 	private String getResponse(CommandType commandType, Object... keysAndValues)
 			throws ClientException, IOException {
 		return this.getResponse(commandType, null, keysAndValues);
-	}
-
-	// arun: removed the need for this method
-	@SuppressWarnings("unused")
-	@Deprecated
-	// unused, about to go away
-	private String checkAndReturnResponse(JSONObject command)
-			throws ClientException, IOException {
-		Object response;
-		CommandUtils.checkResponse(response = sendCommandAndWait(command));
-		return response instanceof String ? (String) response
-				: ((CommandValueReturnPacket) response).getReturnValue();
 	}
 	
 	/**
@@ -159,10 +153,13 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public static CommandPacket getCommand(CommandType type, GuidEntry querier,
 			Object... keysAndValues) throws ClientException {
-		CommandPacket packet = new CommandPacket(
-		generateRequestID(), createAndSignCommand(type,
-				querier, keysAndValues));
+		CommandPacket packet = new CommandPacket(randomLong(),
+				CommandUtils.createAndSignCommand(type, querier, keysAndValues));
 		return packet;
+	}
+	
+	private static long randomLong() {
+		return (long)(Math.random()*Long.MAX_VALUE);
 	}
 
 	// READ AND WRITE COMMANDS

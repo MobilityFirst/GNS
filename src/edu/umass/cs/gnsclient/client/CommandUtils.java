@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gnsclient.client;
 
+import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
@@ -25,9 +26,11 @@ import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
 import edu.umass.cs.utils.SessionKeys.SecretKeyCertificate;
+import edu.umass.cs.utils.Util;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -82,6 +85,7 @@ public class CommandUtils {
   /**
    * Creates a command object from the given action string and a variable
    * number of key and value pairs.
+ * @param commandType 
    *
    * @param keysAndValues
    * @return the query string
@@ -100,6 +104,11 @@ public class CommandUtils {
         value = keysAndValues[i + 1];
         result.put(key, value);
       }
+      // arun: made this static for now
+      if (AbstractGNSClient.isForceCoordinatedReads()) {
+    	  result.put(GNSCommandProtocol.COORDINATE_READS, true);
+      }
+
       DelayProfiler.updateDelay("createCommand", startTime);
       return result;
     } catch (JSONException e) {
@@ -204,7 +213,20 @@ public class CommandUtils {
     return ciphers[cipherIndex++ % ciphers.length];
   }
 
-  public static String signDigestOfMessage(PrivateKey privateKey, PublicKey publicKey, String message)
+  /**
+ * @param privateKey
+ * @param publicKey
+ * @param message
+ * @return Signature as string
+ * @throws NoSuchAlgorithmException
+ * @throws InvalidKeyException
+ * @throws SignatureException
+ * @throws UnsupportedEncodingException
+ * @throws IllegalBlockSizeException
+ * @throws BadPaddingException
+ * @throws NoSuchPaddingException
+ */
+public static String signDigestOfMessage(PrivateKey privateKey, PublicKey publicKey, String message)
           throws NoSuchAlgorithmException, InvalidKeyException,
           SignatureException, UnsupportedEncodingException,
           IllegalBlockSizeException, BadPaddingException,
@@ -262,7 +284,7 @@ public class CommandUtils {
    * GNSCommandProtocol.NULL_RESPONSE = "+NULL+"<br>
    *
    * @param response
-   * @return
+   * @return Response as string.
    * @throws ClientException
    */
   public static String checkResponse(String response) throws ClientException {
@@ -386,8 +408,61 @@ public class CommandUtils {
     }
   }
 
-  public static long getRandomRequestId() {
+  /**
+ * @return Random long.
+ */
+public static long getRandomRequestId() {
     return random.nextLong();
+  }
+
+/**
+   * @param commandType
+   * @param privateKey
+   * @param publicKey
+   * @param keysAndValues
+   * @return Signed command.
+   * @throws ClientException
+   */
+  public static JSONObject createAndSignCommand(CommandType commandType,
+          PrivateKey privateKey, PublicKey publicKey, Object... keysAndValues)
+          throws ClientException {
+    try {
+      JSONObject result = createCommand(commandType, keysAndValues);
+      result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
+      result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+
+      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
+      String signatureString = null;
+      long t = System.nanoTime();
+      if (!Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY)) {
+        signatureString = signDigestOfMessage(privateKey, canonicalJSON);
+      } else {
+        signatureString = signDigestOfMessage(privateKey, publicKey, canonicalJSON);
+      }
+      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
+      if (edu.umass.cs.utils.Util.oneIn(10)) {
+        DelayProfiler.updateDelayNano("signature", t);
+      }
+      return result;
+    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException | NoSuchPaddingException e) {
+      throw new ClientException("Error encoding message", e);
+    }
+  }
+
+/**
+   * @param commandType
+   * @param querier
+   * @param keysAndValues
+   * @return JSONObject command
+   * @throws ClientException
+   */
+  public static JSONObject createAndSignCommand(CommandType commandType,
+          GuidEntry querier, Object... keysAndValues)
+          throws ClientException {
+    return querier != null
+            ? createAndSignCommand(commandType, querier.getPrivateKey(),
+                    querier.getPublicKey(), keysAndValues)
+            : createCommand(commandType, keysAndValues);
   }
 
 }

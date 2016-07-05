@@ -400,15 +400,22 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       CommandType commandType = getCommandType();
       needsCoordination = (commandType.isRead() && getCommandCoordinateReads())
               || commandType.isUpdate();
-//      String cmdName = getCommandName();
-//      needsCoordination = (GNSCommandProtocol.READ_COMMANDS.contains(cmdName) && getCommandCoordinateReads() )
-//    		  || GNSCommandProtocol.UPDATE_COMMANDS.contains(cmdName);
       if (needsCoordination) {
         GNSConfig.getLogger().log(Level.FINE, "{0} needs coordination", this);
       }
       return needsCoordination;
     }
   }
+  
+	/**
+	 * @param force 
+	 * @return Set coordination mode to true if this is a read command.
+	 */
+	public CommandPacket setForceCoordinatedReads(boolean force) {
+		if (force && getCommandType().isRead())
+			this.setNeedsCoordination(true);
+		return this;
+	}
 
   @Override
   public void setNeedsCoordination(boolean needsCoordination) {

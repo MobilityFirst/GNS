@@ -48,15 +48,10 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 /**
  * The base for all GNS clients.
@@ -88,7 +83,7 @@ public abstract class AbstractGNSClient {
   // FIXME: We might need a separate timeout just for certain ops like 
   // gui creation that sometimes take a while
   // 10 seconds is too short on EC2 
-  private int readTimeout = 20000; // 20 seconds... was 40 seconds
+  protected int readTimeout = 20000; // 20 seconds... was 40 seconds
 
   /* Keeps track of requests that are sent out and the reponses to them */
   private final ConcurrentMap<Long, Request> resultMap = new ConcurrentHashMap<Long, Request>(
@@ -106,7 +101,7 @@ public abstract class AbstractGNSClient {
   //private long lastLatency;
   private int totalAsynchErrors;
 
-  private boolean forceCoordinatedReads = false;
+  private static boolean forceCoordinatedReads = false;
 
   private static final String DEFAULT_INSTANCE = "server.gns.name";
 
@@ -140,77 +135,29 @@ public abstract class AbstractGNSClient {
    * @param keysAndValues
    * @return the query string
    * @throws ClientException
+   * 
+   * arun: commented out because it is redundant with CommandUtils
    */
-  public JSONObject createAndSignCommand(CommandType commandType,
-          PrivateKey privateKey, Object... keysAndValues)
-          throws ClientException {
-    try {
-      JSONObject result = createCommand(commandType, keysAndValues);
-      long t = System.nanoTime();
-      result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
-      result.put(GNSCommandProtocol.SEQUENCE_NUMBER, CommandUtils.getRandomRequestId());
-
-      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-      String signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
-      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
-      if (edu.umass.cs.utils.Util.oneIn(10)) {
-        DelayProfiler.updateDelayNano("signing", t);
-      }
-      return result;
-    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
-      throw new ClientException("Error encoding message", e);
-    }
-  }
-
-  /**
-   * @param commandType
-   * @param privateKey
-   * @param publicKey
-   * @param keysAndValues
-   * @return Signed command.
-   * @throws ClientException
-   */
-  public static JSONObject createAndSignCommand(CommandType commandType,
-          PrivateKey privateKey, PublicKey publicKey, Object... keysAndValues)
-          throws ClientException {
-    try {
-      JSONObject result = createCommand(commandType, keysAndValues);
-      result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
-      result.put(GNSCommandProtocol.SEQUENCE_NUMBER, CommandUtils.getRandomRequestId());
-
-      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-      String signatureString = null;
-      long t = System.nanoTime();
-      if (!Config.getGlobalBoolean(GNSCC.ENABLE_SECRET_KEY)) {
-        signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
-      } else {
-        signatureString = CommandUtils.signDigestOfMessage(privateKey, publicKey, canonicalJSON);
-      }
-      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
-      if (edu.umass.cs.utils.Util.oneIn(10)) {
-        DelayProfiler.updateDelayNano("signature", t);
-      }
-      return result;
-    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException | NoSuchPaddingException e) {
-      throw new ClientException("Error encoding message", e);
-    }
-  }
-
-  /**
-   * @param commandType
-   * @param querier
-   * @param keysAndValues
-   * @return JSONObject command
-   * @throws ClientException
-   */
-  public static JSONObject createAndSignCommand(CommandType commandType,
-          GuidEntry querier, Object... keysAndValues)
-          throws ClientException {
-    return querier != null
-            ? createAndSignCommand(commandType, querier.getPrivateKey(),
-                    querier.getPublicKey(), keysAndValues)
-            : createCommand(commandType, keysAndValues);
-  }
+//  public static JSONObject createAndSignCommand(CommandType commandType,
+//          PrivateKey privateKey, Object... keysAndValues)
+//          throws ClientException {
+//    try {
+//      JSONObject result = createCommand(commandType, keysAndValues);
+//      long t = System.nanoTime();
+//      result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
+//      result.put(GNSCommandProtocol.SEQUENCE_NUMBER, CommandUtils.getRandomRequestId());
+//
+//      String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
+//      String signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
+//      result.put(GNSCommandProtocol.SIGNATURE, signatureString);
+//      if (edu.umass.cs.utils.Util.oneIn(10)) {
+//        DelayProfiler.updateDelayNano("signing", t);
+//      }
+//      return result;
+//    } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {
+//      throw new ClientException("Error encoding message", e);
+//    }
+//  }
 
   /**
    * Creates a command object from the given command type and a variable
@@ -221,8 +168,7 @@ public abstract class AbstractGNSClient {
    * @return the query string
    * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
    */
-  public static JSONObject createCommand(CommandType commandType,
-          Object... keysAndValues)
+  public static JSONObject createCommand(CommandType commandType, Object... keysAndValues)
           throws ClientException {
     try {
       long t = System.nanoTime();
@@ -244,6 +190,17 @@ public abstract class AbstractGNSClient {
       throw new ClientException("Error encoding message", e);
     }
   }
+  
+	protected JSONObject setForceCoordinatedReads(JSONObject command) {
+		try {
+			return forceCoordinatedReads ? command.put(
+					GNSCommandProtocol.COORDINATE_READS, true) : command;
+		} catch (JSONException e) {
+			e.printStackTrace();
+			// return command; this exception will never happen anyway
+			return command;
+		}
+	}
 
   /**
    * Check that the connectivity with the host:port can be established
@@ -276,12 +233,12 @@ public abstract class AbstractGNSClient {
    * Sends a command to the server asychronously.
    *
    * @param command
-   * @return the request id of the packet
+   * @return CommandPacket sent.
    * @throws IOException if an error occurs
    */
-  public long sendCommandNoWait(JSONObject command) throws IOException {
+  public CommandPacket sendCommandNoWait(JSONObject command) throws IOException {
     if (IS_ANDROID) {
-      return androidSendCommandNoWait(command).getId();
+      return androidSendCommandNoWait(command).getCommandPacket();
     } else {
       return desktopSendCommmandNoWait(command);
     }
@@ -301,7 +258,7 @@ public abstract class AbstractGNSClient {
     long id;
     monitorMap.put(id = this.generateNextRequestID(), myMonitor);
 
-    desktopSendCommmandNoWait(command, id);
+    CommandPacket commandPacket = desktopSendCommmandNoWait(command, id);
     // now we wait until the correct packet comes back
     try {
       GNSClientConfig.getLogger().log(Level.FINE,
@@ -327,12 +284,7 @@ public abstract class AbstractGNSClient {
       }
 
       if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
-        GNSClientConfig.getLogger().log(Level.INFO,
-                "{0} timed out after {1}ms on {2}: {3}",
-                new Object[]{this, readTimeout, id + "", command});
-        /* FIXME: Remove use of string reponse codes */
-        return new CommandValueReturnPacket(id, GNSResponseCode.TIMEOUT, 
-                        GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
+    	  return this.getTimeoutResponse(commandPacket);
       }
       GNSClientConfig.getLogger().log(Level.FINE,
               "Response received for query {0}", new Object[]{id + ""});
@@ -356,28 +308,34 @@ public abstract class AbstractGNSClient {
                     : //    			((ActiveReplicaError)result).getResponseMessage()
                     new CommandValueReturnPacket(id, GNSResponseCode.ACTIVE_REPLICA_EXCEPTION, ((ActiveReplicaError) result).getResponseMessage());
   }
+  
+  protected CommandValueReturnPacket getTimeoutResponse(CommandPacket commandPacket) {
+      GNSClientConfig.getLogger().log(Level.INFO,
+              "{0} timed out after {1}ms on {2}: {3}",
+              new Object[]{this, readTimeout, commandPacket.getClientRequestId() + "", commandPacket});
+      /* FIXME: Remove use of string reponse codes */
+      return new CommandValueReturnPacket(commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT, 
+                      GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
 
-  private long desktopSendCommmandNoWait(JSONObject command) throws IOException {
-    long startTime = System.currentTimeMillis();
-    long id = generateNextRequestID();
-    CommandPacket packet = new CommandPacket(id, command);
-    GNSClientConfig.getLogger().log(Level.FINE, "{0} sending {1}:{2}",
-            new Object[]{this, id + "", packet.getSummary()});
-    queryTimeStamp.put(id, startTime);
-    sendCommandPacket(packet);
-    DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
-    return id;
   }
 
-  private long desktopSendCommmandNoWait(JSONObject command, long id) throws IOException {
+  private CommandPacket desktopSendCommmandNoWait(JSONObject command) throws IOException {
+	  return this.desktopSendCommmandNoWait(command, generateNextRequestID());
+  }
+
+  private CommandPacket desktopSendCommmandNoWait(JSONObject command, long id) throws IOException {
     long startTime = System.currentTimeMillis();
     CommandPacket packet = new CommandPacket(id, command);
+		/* arun: moved this here from createCommand. This is the right place to
+		 * put it because it is not easy to change "command" once it has been
+		 * signed, and the command creation methods are and should be static. */
+    packet.setForceCoordinatedReads(forceCoordinatedReads);
     GNSClientConfig.getLogger().log(Level.FINE, "{0} sending {1}:{2}",
             new Object[]{this, id + "", packet.getSummary()});
     queryTimeStamp.put(id, startTime);
     sendCommandPacket(packet);
     DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
-    return id;
+    return packet;
   }
 
   private String androidSendCommandAndWait(JSONObject command) throws IOException {
@@ -477,12 +435,6 @@ public synchronized long generateNextRequestID() {
     return id;
   }
 
-	protected static long generateRequestID() {
-		/* arun: we just generate a random value here because the
-		 * generateNextRequestId() stuff is broken anyway. */
-		return (long) (Math.random() * Long.MAX_VALUE);
-	}
-
   /**
    * Returns true if a response has been received.
    *
@@ -553,7 +505,7 @@ public int outstandingAsynchPacketCount() {
   public void fieldUpdateAsynch(String targetGuid, String field, Object value, GuidEntry writer) throws ClientException, IOException, JSONException {
     JSONObject json = new JSONObject();
     json.put(field, value);
-    JSONObject command = createAndSignCommand(CommandType.ReplaceUserJSON,
+    JSONObject command = CommandUtils.createAndSignCommand(CommandType.ReplaceUserJSON,
             writer.getPrivateKey(), GNSCommandProtocol.GUID,
             targetGuid, GNSCommandProtocol.USER_JSON, json.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     sendCommandNoWait(command);
@@ -616,7 +568,7 @@ public final void resetInstrumentation() {
    *
    * @return true if the client is forcing read operations to be coordinated
    */
-  public boolean isForceCoordinatedReads() {
+  public static boolean isForceCoordinatedReads() {
     return forceCoordinatedReads;
   }
 
@@ -625,8 +577,8 @@ public final void resetInstrumentation() {
    *
    * @param forceCoordinatedReads
    */
-  public void setForceCoordinatedReads(boolean forceCoordinatedReads) {
-    this.forceCoordinatedReads = forceCoordinatedReads;
+  public static void setForceCoordinatedReads(boolean forceCoordinatedReads) {
+    AbstractGNSClient.forceCoordinatedReads = forceCoordinatedReads;
   }
 
   /**

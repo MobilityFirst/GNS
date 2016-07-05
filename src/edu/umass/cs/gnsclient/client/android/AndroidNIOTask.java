@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.android;
 
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import android.os.AsyncTask;
 
 /**
@@ -31,6 +32,10 @@ public class AndroidNIOTask extends AsyncTask<Object, Void, String>
 {
   // Needed to pass back to caller.
   private long id;
+  
+  public CommandPacket getCommandPacket() {
+	  throw new RuntimeException("Unimplemented");
+  }
 
   public long getId() 
   {

@@ -16,6 +16,7 @@ import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
@@ -26,6 +27,7 @@ import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
 
@@ -34,7 +36,8 @@ import edu.umass.cs.utils.Config;
  *
  *         Cleaner implementation of a GNS client using gigapaxos' async client.
  */
-public class GNSClient extends AbstractGNSClient {
+public class GNSClient extends AbstractGNSClient 
+{
 
 	// initialized from properties file
 	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
@@ -152,6 +155,8 @@ public class GNSClient extends AbstractGNSClient {
 	public Long sendAsync(CommandPacket packet, RequestCallback callback)
 			throws IOException {
 		Long requestID = null;
+	    //packet.setForceCoordinatedReads(this.forceCoordinatedReads);
+
 		if (isAnycast(packet))
 			requestID = this.asyncClient.sendRequestAnycast(packet, callback);
 		else
@@ -180,32 +185,36 @@ public class GNSClient extends AbstractGNSClient {
 		this.sendAsync(packet, new RequestCallback() {
 			@Override
 			public void handleResponse(Request response) {
-				if (response instanceof CommandValueReturnPacket) {
-					retval[0] = (CommandValueReturnPacket) response;
-				}
+				retval[0] = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
+						: new CommandValueReturnPacket(
+								((ActiveReplicaError) response).getRequestID(),
+								GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
+								((ActiveReplicaError) response)
+										.getResponseMessage());
+
 				synchronized (monitor) {
 					monitor.notify();
 				}
 			}
 		});
 
-		// wait for timeout
-		if (retval[0] == null) {
-			try {
-				synchronized (monitor) {
+		try {
+			synchronized (monitor) {
+				// wait for response until timeout
+				if (retval[0] == null) {
 					if (timeout != null) {
 						monitor.wait(timeout);
 					} else {
 						monitor.wait();
 					}
 				}
-			} catch (InterruptedException e) {
-				throw new IOException(
-						"sendSync interrupted while waiting for a response for "
-								+ packet.getSummary());
 			}
+		} catch (InterruptedException e) {
+			throw new IOException(
+					"sendSync interrupted while waiting for a response for "
+							+ packet.getSummary());
 		}
-		return retval[0];
+		return retval[0]!=null ? retval[0] : this.getTimeoutResponse(packet);
 	}
 
 	/**
