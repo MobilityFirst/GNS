@@ -40,7 +40,7 @@ RELEASEID=$(curl "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$VERSI
 #curl "https://api.github.com/repos/$OWNER/$REPO/releases/tags/$VERSION" > testFile2.txt
 echo "ID: $RELEASEID"
 # Tar the release binaries, and add them to the release.
-TARNAME="GNS-$VERSION-Binaries.tgz"
+TARNAME="GNS-$BINARIES.tgz"
 tar zcf $TARNAME $BINARIES 
 echo "https://api.github.com/repos/$OWNER/$REPO/releases/$RELEASEID/assets?name=$TARNAME&access_token=$GNSGitToken"
 curl -X POST --header "Content-Type:application/gzip" --data-binary @"$TARNAME" "https://uploads.github.com/repos/$OWNER/$REPO/releases/$RELEASEID/assets?name=$TARNAME&access_token=$GNSGitToken"
