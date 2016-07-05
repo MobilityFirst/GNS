@@ -32,261 +32,268 @@ import edu.umass.cs.utils.Config;
 /**
  * @author arun
  *
- * Cleaner implementation of a GNS client using gigapaxos' async client.
+ *         Cleaner implementation of a GNS client using gigapaxos' async client.
  */
 public class GNSClient extends AbstractGNSClient {
 
-  // initialized from properties file
-  private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
-          .getReconfiguratorAddresses();
+	// initialized from properties file
+	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
+			.getReconfiguratorAddresses();
 
-  // initialized upon contsruction
-  private final Set<InetSocketAddress> reconfigurators;
-  private final AsyncClient asyncClient;
+	// initialized upon contsruction
+	private final Set<InetSocketAddress> reconfigurators;
+	private final AsyncClient asyncClient;
 
-  private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
+	private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
 
-  /**
-   * @throws IOException
-   */
-  public GNSClient() throws IOException {
-    this(STATIC_RECONFIGURATORS != null
-            && !STATIC_RECONFIGURATORS.isEmpty() ? STATIC_RECONFIGURATORS
-                    .iterator().next() : null);
-  }
+	/**
+	 * @throws IOException
+	 */
+	public GNSClient() throws IOException {
+		this(STATIC_RECONFIGURATORS != null
+				&& !STATIC_RECONFIGURATORS.isEmpty() ? STATIC_RECONFIGURATORS
+				.iterator().next() : null);
+	}
 
-  /**
-   * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
-   * The client can enquire and know of other reconfigurator addresses from
-   * this reconfigurator. If it is unable to do so, it will throw an
-   * IOException.
-   *
-   * @param anyReconfigurator
-   * @throws IOException
-   */
-  public GNSClient(InetSocketAddress anyReconfigurator)
-          throws IOException {
-    super(anyReconfigurator);
-    this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
-    if (this.reconfigurators == null || this.reconfigurators.isEmpty()) {
-      throw new IOException(
-              "Unable to find any reconfigurator addresses; "
-              + "at least one needed to initialize client");
-    }
-    this.asyncClient = new AsyncClient(reconfigurators, ReconfigurationConfig.getClientSSLMode(),
-            ReconfigurationConfig.getClientPortOffset());
-    this.checkConnectivity();
-  }
+	/**
+	 * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
+	 * The client can enquire and know of other reconfigurator addresses from
+	 * this reconfigurator. If it is unable to do so, it will throw an
+	 * IOException.
+	 *
+	 * @param anyReconfigurator
+	 * @throws IOException
+	 */
+	public GNSClient(InetSocketAddress anyReconfigurator) throws IOException {
+		super(anyReconfigurator);
+		this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
+		if (this.reconfigurators == null || this.reconfigurators.isEmpty()) {
+			throw new IOException(
+					"Unable to find any reconfigurator addresses; "
+							+ "at least one needed to initialize client");
+		}
+		this.asyncClient = new AsyncClient(reconfigurators,
+				ReconfigurationConfig.getClientSSLMode(),
+				ReconfigurationConfig.getClientPortOffset());
+		this.checkConnectivity();
+	}
 
-  /**
-   * TODO: implement request/response to know of other reconfigurators. It is
-   * also okay to just use a single reconfigurator address if it is an anycast
-   * address (with the TCP error caveat under route changes).
-   */
-  private Set<InetSocketAddress> knowOtherReconfigurators(
-          InetSocketAddress anyReconfigurator) throws IOException {
-    return anyReconfigurator != null ? new HashSet<>(
-            Arrays.asList(anyReconfigurator)) : STATIC_RECONFIGURATORS;
-  }
+	/**
+	 * TODO: implement request/response to know of other reconfigurators. It is
+	 * also okay to just use a single reconfigurator address if it is an anycast
+	 * address (with the TCP error caveat under route changes).
+	 */
+	private Set<InetSocketAddress> knowOtherReconfigurators(
+			InetSocketAddress anyReconfigurator) throws IOException {
+		return anyReconfigurator != null ? new HashSet<>(
+				Arrays.asList(anyReconfigurator)) : STATIC_RECONFIGURATORS;
+	}
 
-  @Override
-  public String toString() {
-    return this.asyncClient.toString();
-  }
+	@Override
+	public String toString() {
+		return this.asyncClient.toString();
+	}
 
-  /**
-   * Overrides older implementation of
-   * {@link #sendCommandPacket(CommandPacket)} with simpler async
-   * implementation.
-   *
-   * @param packet
-   * @throws IOException
-   */
-  @Override
-  protected void sendCommandPacket(CommandPacket packet) throws IOException {
-    RequestCallback callback = new RequestCallback() {
-      @Override
-      public void handleResponse(Request response) {
-        try {
-          GNSClient.this.handleCommandValueReturnPacket(response,
-                  System.currentTimeMillis());
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      }
-    };
-    if (packet.getCommandType().isCreateDelete()
-            || packet.getCommandType().isSelect()) {
-      this.asyncClient.sendRequestAnycast(packet, callback);
-    } else {
-      Long requestID = this.asyncClient.sendRequest(packet, callback);
-      if (requestID == null) {
-        LOG.log(Level.SEVERE, "Request ID is null after send for {0}", new Object[]{packet.getSummary()});
-      }
-      //assert(this.asyncClient.sendRequest(packet, callback)!=null);
-    }
-  }
+	/**
+	 * Overrides older implementation of
+	 * {@link #sendCommandPacket(CommandPacket)} with simpler async
+	 * implementation.
+	 *
+	 * @param packet
+	 * @throws IOException
+	 */
+	@Override
+	protected void sendCommandPacket(CommandPacket packet) throws IOException {
+		this.sendAsync(packet, new RequestCallback() {
+			@Override
+			public void handleResponse(Request response) {
+				try {
+					GNSClient.this.handleCommandValueReturnPacket(response,
+							System.currentTimeMillis());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
 
-  /**
-   * @throws IOException
-   */
-  @Override
-  public void checkConnectivity() throws IOException {
-    this.asyncClient.checkConnectivity();
-  }
+	private static boolean isAnycast(CommandPacket packet) {
+		return packet.getCommandType().isCreateDelete()
+				|| packet.getCommandType().isSelect()
+				|| packet.getServiceName().equals(
+						Config.getGlobalString(RC.SPECIAL_NAME));
+	}
 
-  /**
-   * Closes the underlying async client.
-   */
-  @Override
-  public void close() {
-    this.asyncClient.close();
-  }
+	/**
+	 * @throws IOException
+	 */
+	@Override
+	public void checkConnectivity() throws IOException {
+		this.asyncClient.checkConnectivity();
+	}
 
-  /**
-   * @param packet
-   * @param callback
-   * @throws JSONException
-   * @throws IOException
-   */
-  public void sendAsync(CommandPacket packet, RequestCallback callback)
-          throws JSONException, IOException {
-    if (packet.getServiceName().equals(
-            Config.getGlobalString(RC.SPECIAL_NAME))
-            || packet.getCommandType().isSelect() 
-            //packet.getCommandName().equals(GNSCommandProtocol.SELECT)
-            ) {
-      this.asyncClient.sendRequestAnycast(packet, callback);
-    } else {
-      this.asyncClient.sendRequest(packet, callback);
-    }
-  }
+	/**
+	 * Closes the underlying async client.
+	 */
+	@Override
+	public void close() {
+		this.asyncClient.close();
+	}
 
-  /**
-   * @param packet
-   * @param timeout
-   * @return Response from the server or null if the timeout expires.
-   * @throws IOException
-   */
-  public CommandValueReturnPacket sendSync(CommandPacket packet, Long timeout)
-          throws IOException {
-    Object monitor = new Object();
-    CommandValueReturnPacket[] retval = new CommandValueReturnPacket[1];
+	/**
+	 * All sends go ultimately go through this async send method because that is
+	 * what {@link ReconfigurableAppClientAsync} supports.
+	 * 
+	 * @param packet
+	 * @param callback
+	 * @return Long request ID if successfully sent, else null.
+	 * @throws IOException
+	 */
+	public Long sendAsync(CommandPacket packet, RequestCallback callback)
+			throws IOException {
+		Long requestID = null;
+		if (isAnycast(packet))
+			requestID = this.asyncClient.sendRequestAnycast(packet, callback);
+		else
+			requestID = this.asyncClient.sendRequest(packet, callback);
+		if (requestID == null)
+			/* Can only happen under remote node failure and extreme congestion
+			 * as otherwise NIO will buffer the packet for future delivery
+			 * attempts. */
+			LOG.log(Level.WARNING, "Request ID is null after send for {0}",
+					new Object[] { packet.getSummary() });
+		return requestID;
+	}
 
-    // send
-    this.asyncClient.sendRequest(packet, new RequestCallback() {
+	/**
+	 * @param packet
+	 * @param timeout
+	 * @return Response from the server or null if the timeout expires.
+	 * @throws IOException
+	 */
+	public CommandValueReturnPacket sendSync(CommandPacket packet, Long timeout)
+			throws IOException {
+		Object monitor = new Object();
+		CommandValueReturnPacket[] retval = new CommandValueReturnPacket[1];
 
-      @Override
-      public void handleResponse(Request response) {
-        if (response instanceof CommandValueReturnPacket) {
-          retval[0] = (CommandValueReturnPacket) response;
-        }
-        synchronized (monitor) {
-          monitor.notify();
-        }
-      }
-    });
+		// send sync also internally sends async first
+		this.sendAsync(packet, new RequestCallback() {
+			@Override
+			public void handleResponse(Request response) {
+				if (response instanceof CommandValueReturnPacket) {
+					retval[0] = (CommandValueReturnPacket) response;
+				}
+				synchronized (monitor) {
+					monitor.notify();
+				}
+			}
+		});
 
-    // wait for timeout
-    if (retval[0] == null) {
-      try {
-        synchronized (monitor) {
-          if (timeout != null) {
-            monitor.wait(timeout);
-          } else {
-            monitor.wait();
-          }
-        }
-      } catch (InterruptedException e) {
-        throw new IOException(
-                "sendSync interrupted while waiting for a response for "
-                + packet.getSummary());
-      }
-    }
-    return retval[0];
-  }
+		// wait for timeout
+		if (retval[0] == null) {
+			try {
+				synchronized (monitor) {
+					if (timeout != null) {
+						monitor.wait(timeout);
+					} else {
+						monitor.wait();
+					}
+				}
+			} catch (InterruptedException e) {
+				throw new IOException(
+						"sendSync interrupted while waiting for a response for "
+								+ packet.getSummary());
+			}
+		}
+		return retval[0];
+	}
 
-  /**
-   * @param packet
-   * @return Same as {@link #sendSync(CommandPacket, Long)} but with an
-   * infinite timeout.
-   *
-   * @throws IOException
-   */
-  public CommandValueReturnPacket sendSync(CommandPacket packet)
-          throws IOException {
-    return this.sendSync(packet, null);
-  }
+	/**
+	 * @param packet
+	 * @return Same as {@link #sendSync(CommandPacket, Long)} but with an
+	 *         infinite timeout.
+	 *
+	 * @throws IOException
+	 */
+	public CommandValueReturnPacket sendSync(CommandPacket packet)
+			throws IOException {
+		return this.sendSync(packet, null);
+	}
 
-  /**
-   * Straightforward async client implementation that expects only one packet
-   * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
-   */
-  static class AsyncClient extends ReconfigurableAppClientAsync implements AppRequestParserBytes {
+	/**
+	 * Straightforward async client implementation that expects only one packet
+	 * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
+	 */
+	static class AsyncClient extends ReconfigurableAppClientAsync implements
+			AppRequestParserBytes {
 
-    private static Stringifiable<String> unstringer = new StringifiableDefault<>(
-            "");
+		private static Stringifiable<String> unstringer = new StringifiableDefault<>(
+				"");
 
-    static final Set<IntegerPacketType> clientPacketTypes = new HashSet<>(
-            Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
+		static final Set<IntegerPacketType> clientPacketTypes = new HashSet<>(
+				Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
-    public AsyncClient(Set<InetSocketAddress> reconfigurators,
-            SSL_MODES sslMode, int clientPortOffset) throws IOException {
-      super(reconfigurators, sslMode, clientPortOffset);
-      this.enableJSONPackets();
-    }
+		public AsyncClient(Set<InetSocketAddress> reconfigurators,
+				SSL_MODES sslMode, int clientPortOffset) throws IOException {
+			super(reconfigurators, sslMode, clientPortOffset);
+			this.enableJSONPackets();
+		}
 
-    @Override
-    public Request getRequest(String msg) throws RequestParseException {
-      Request response = null;
-      JSONObject json = null;
-      try {
-        return this.getRequestFromJSON(new JSONObject(msg));
-      } catch (JSONException e) {
-        LOG.log(Level.WARNING, "Problem parsing packet from {0}: {1}", new Object[]{json, e});
-      }
-      return response;
-    }
+		@Override
+		public Request getRequest(String msg) throws RequestParseException {
+			Request response = null;
+			JSONObject json = null;
+			try {
+				return this.getRequestFromJSON(new JSONObject(msg));
+			} catch (JSONException e) {
+				LOG.log(Level.WARNING, "Problem parsing packet from {0}: {1}",
+						new Object[] { json, e });
+			}
+			return response;
+		}
 
-    @Override
-    public Request getRequestFromJSON(JSONObject json) throws RequestParseException {
-      Request response = null;
-      try {
-        Packet.PacketType type = Packet.getPacketType(json);
-        if (type != null) {
-          LOG.log(Level.FINER,
-                  "{0} retrieving packet from received json {1}",
-                  new Object[]{this, json});
-          if (clientPacketTypes.contains(Packet.getPacketType(json))) {
-            response = (Request) Packet.createInstance(json,
-                    unstringer);
-          }
-          assert (response == null || response.getRequestType() == Packet.PacketType.COMMAND_RETURN_VALUE);
-        }
-      } catch (JSONException e) {
-        LOG.log(Level.WARNING, "Problem parsing packet from {0}: {1}", new Object[]{json, e});
-      }
-      return response;
-    }
+		@Override
+		public Request getRequestFromJSON(JSONObject json)
+				throws RequestParseException {
+			Request response = null;
+			try {
+				Packet.PacketType type = Packet.getPacketType(json);
+				if (type != null) {
+					LOG.log(Level.FINER,
+							"{0} retrieving packet from received json {1}",
+							new Object[] { this, json });
+					if (clientPacketTypes.contains(Packet.getPacketType(json))) {
+						response = (Request) Packet.createInstance(json,
+								unstringer);
+					}
+					assert (response == null || response.getRequestType() == Packet.PacketType.COMMAND_RETURN_VALUE);
+				}
+			} catch (JSONException e) {
+				LOG.log(Level.WARNING, "Problem parsing packet from {0}: {1}",
+						new Object[] { json, e });
+			}
+			return response;
+		}
 
-    @Override
-    public Set<IntegerPacketType> getRequestTypes() {
-      return clientPacketTypes;
-    }
+		@Override
+		public Set<IntegerPacketType> getRequestTypes() {
+			return clientPacketTypes;
+		}
 
-    @Override
-    public Request getRequest(byte[] bytes, NIOHeader header) {
-      return GNSApp.getRequestStatic(bytes, header, unstringer);
-    }
-  }
+		@Override
+		public Request getRequest(byte[] bytes, NIOHeader header) {
+			return GNSApp.getRequestStatic(bytes, header, unstringer);
+		}
+	}
 
-  /**
- * @param args
- * @throws IOException
- */
-public static void main(String[] args) throws IOException {
-    GNSClient client = new GNSClient(null);
-    client.close();
-    System.out.println("Client created, successfully checked connectivity, and closing");
-  }
+	/**
+	 * @param args
+	 * @throws IOException
+	 */
+	public static void main(String[] args) throws IOException {
+		GNSClient client = new GNSClient(null);
+		client.close();
+		System.out
+				.println("Client created, successfully checked connectivity, and closing");
+	}
 }

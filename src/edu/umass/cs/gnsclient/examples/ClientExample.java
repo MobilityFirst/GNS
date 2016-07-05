@@ -75,7 +75,7 @@ public class ClientExample {
 			 * */
 			guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
 					"password", true);
-		} catch (Exception e) {
+		} catch (Exception | Error e) {
 			System.out.println("Exception during accountGuid creation: " + e);
 			System.exit(1);
 		}

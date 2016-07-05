@@ -329,7 +329,7 @@ public class CommandUtils {
             : checkResponse(((CommandValueReturnPacket) response));
   }
 
-  private static final boolean USE_OLD_CHECK_RESPONSE = false;
+  private static final boolean USE_OLD_CHECK_RESPONSE = true;
   /**
    * arun: This checkResponse method will replace the old one. There is no
    * reason to not directly use the received CommandValueReturnPacket.

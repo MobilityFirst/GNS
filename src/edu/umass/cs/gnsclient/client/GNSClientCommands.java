@@ -71,6 +71,7 @@ import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -99,7 +100,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
  *
  * This class contains a concise subset of all available server operations.
  *
- * @author <a href="mailto:westy@cs.umass.edu">Westy</a>, arun
+ * @author arun, <a href="mailto:westy@cs.umass.edu">Westy</a>
  * @version 1.0
  */
 public class GNSClientCommands extends GNSClient implements GNSClientInterface {
@@ -146,6 +147,22 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		CommandUtils.checkResponse(response = sendCommandAndWait(command));
 		return response instanceof String ? (String) response
 				: ((CommandValueReturnPacket) response).getReturnValue();
+	}
+	
+	/**
+	 * Constructs the command.
+	 * @param type
+	 * @param querier
+	 * @param keysAndValues
+	 * @return Constructed CommandPacket
+	 * @throws ClientException
+	 */
+	public static CommandPacket getCommand(CommandType type, GuidEntry querier,
+			Object... keysAndValues) throws ClientException {
+		CommandPacket packet = new CommandPacket(
+		generateRequestID(), createAndSignCommand(type,
+				querier, keysAndValues));
+		return packet;
 	}
 
 	// READ AND WRITE COMMANDS
