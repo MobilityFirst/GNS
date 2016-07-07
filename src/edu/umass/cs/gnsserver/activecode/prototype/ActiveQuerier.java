@@ -20,11 +20,19 @@ public class ActiveQuerier implements Querier {
 	private int currentTTL = 0;
 	private String currentGuid = "";
 	
-	protected ActiveQuerier(ActiveChannel channel){
+	/**
+	 * @param channel
+	 */
+	public ActiveQuerier(ActiveChannel channel){
 		this.channel = channel;
 	}
 	
-	protected void resetQuerier(String guid, int ttl){
+	
+	/**
+	 * @param guid
+	 * @param ttl
+	 */
+	public void resetQuerier(String guid, int ttl){
 		this.currentGuid = guid;
 		this.currentTTL = ttl;
 	}

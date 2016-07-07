@@ -1,8 +1,16 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -14,6 +22,7 @@ import javax.script.SimpleScriptContext;
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.multithreading.ActiveRunner;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -28,34 +37,58 @@ public class ActiveWorker {
 	private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
 	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
+	
+	
 	private final ActiveChannel channel;
 	private final String ifile;
 	private final String ofile;
 	private final int id;
+
 	
 	private ActiveQuerier querier;
 	
-	protected final static int bufferSize = 1024;
+	/**
+	 * bufferSize for all byte buffer
+	 */
+	public final static int bufferSize = 1024*4;
+	
+	/******************* TEST ********************/
+	private final ThreadPoolExecutor executor;
+	private final ActiveRunner[] runners;
+	private static final AtomicInteger counter = new AtomicInteger();
 	
 	/**
 	 * @param ifile
 	 * @param ofile
 	 * @param id 
+	 * @param numThread 
 	 * @param isTest
 	 */
-	public ActiveWorker(String ifile, String ofile, int id, boolean isTest) {		
+	public ActiveWorker(String ifile, String ofile, int id, int numThread, boolean isTest) {		
 		this.ifile = ifile;
 		this.ofile = ofile;
 		this.id = id;
 		
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
 		invocable = (Invocable) engine;
+		if(numThread>1){
+			executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());	
+			executor.prestartAllCoreThreads();
+			runners = new ActiveRunner[numThread];
+			for (int i=0; i<numThread; i++){
+				runners[i] = new ActiveRunner(null);
+			}
+		}else{
+			executor = null;
+			runners = null;
+		}
+		
 		if(!isTest){
 			channel = new ActivePipe(ifile, ofile);
 			querier = new ActiveQuerier(channel);
 			
 			try {
-				runWorker();
+				runWorker(numThread);
 			} catch (Exception e){
 				e.printStackTrace();
 			} finally {
@@ -71,10 +104,10 @@ public class ActiveWorker {
 	 * @param ofile
 	 */
 	public ActiveWorker(String ifile, String ofile){
-		this(ifile, ofile, 0, false);
+		this(ifile, ofile, 0, 1, false);
 	}
 	
-	protected void updateCache(String codeId, String code) throws ScriptException {
+	private void updateCache(String codeId, String code) throws ScriptException {
 	    if (!contexts.containsKey(codeId)) {
 	      // Create a context if one does not yet exist and eval the code
 	      ScriptContext sc = new SimpleScriptContext();
@@ -107,24 +140,56 @@ public class ActiveWorker {
 	}
 
 	
-	private void runWorker() throws UnsupportedEncodingException, JSONException {		
+	private void runWorker(int numThread) throws UnsupportedEncodingException, JSONException {		
 		byte[] buffer = new byte[bufferSize];
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		
 		while((channel.read(buffer)) > 0){
 			ActiveMessage msg = new ActiveMessage(buffer);
 			Arrays.fill(buffer, (byte) 0);
-			
-			ActiveMessage response;
-			try {
-				response = new ActiveMessage(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
-			} catch (NoSuchMethodException | ScriptException e) {
-				response = new ActiveMessage(null, e.getMessage());
-				e.printStackTrace();
+			if(numThread == 1){
+				ActiveMessage response;
+				try {
+					response = new ActiveMessage(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
+				} catch (NoSuchMethodException | ScriptException e) {
+					response = new ActiveMessage(null, e.getMessage());
+					e.printStackTrace();
+				}
+				byte[] buf = response.toBytes();
+				channel.write(buf, 0, buf.length);
+			} else{
+				ValuesMap value = null;
+				ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
+				tasks.add(executor.submit(new SimpleTask(runners[counter.getAndIncrement()%numThread], msg)));
+				for (Future<ValuesMap> task:tasks){
+					try {
+						value = task.get();
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				byte[] buf = new ActiveMessage(value, null).toBytes();
+				channel.write(buf, 0, buf.length);
 			}
-			byte[] buf = response.toBytes();
-			channel.write(buf, 0, buf.length);
 		}
+	}
+	
+	
+	private static class SimpleTask implements Callable<ValuesMap>{
+		private ActiveRunner runner;
+		private ActiveMessage am;
+		
+		private SimpleTask(ActiveRunner runner, ActiveMessage am){
+			this.runner = runner;
+			this.am = am;
+		}
+		
+		@Override
+		public ValuesMap call() throws Exception {
+			return runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl());
+		}
+		
 	}
 	
 	public String toString(){
@@ -138,6 +203,9 @@ public class ActiveWorker {
 		String cfile = args[0];
 		String sfile = args[1];
 		int id = Integer.parseInt(args[2]);
-		new ActiveWorker(cfile, sfile, id, false);
+		int copy = Integer.parseInt(args[3]);
+		
+		new ActiveWorker(cfile, sfile, id, copy, false);
+		
 	}
 }

@@ -173,7 +173,10 @@ public class ActiveMessage {
 		return targetGuid;
 	}
 	
-	protected String getCode() {
+	/**
+	 * @return the code to be run
+	 */
+	public String getCode() {
 		return code;
 	}
 
@@ -224,7 +227,12 @@ public class ActiveMessage {
 		return (int) (length*1.25);
 	}
 	
-	protected byte[] toBytes() throws UnsupportedEncodingException{
+	
+	/**
+	 * @return the byte array being serialized
+	 * @throws UnsupportedEncodingException
+	 */
+	public byte[] toBytes() throws UnsupportedEncodingException{
 		// First convert ValuesMap to String, as it is costly
 		String valuesMapString = (value == null)?null:value.toString();
 		

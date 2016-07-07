@@ -15,7 +15,7 @@ if [[ -z $1 ]]; then
   exit
 fi
 
-i=0 
+i=1 
 successes=0
 failures=0
 while [[ $i -lt $RUNS ]]; do  

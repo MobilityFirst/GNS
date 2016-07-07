@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 
@@ -18,7 +19,9 @@ public class ActivePipe implements ActiveChannel{
 	
 	private InputStream reader;
 	private OutputStream writer;
-	
+	byte[] readerLengthBuffer = new byte[Integer.BYTES];
+	byte[] writerLengthBuffer = new byte[Integer.BYTES];
+			
 	/**
 	 * @param ifile 
 	 * @param ofile 
@@ -27,10 +30,8 @@ public class ActivePipe implements ActiveChannel{
 		Thread t = new Thread(new Runnable() {
 	         public void run()
 	         {
-	              // Insert some method call here.
-	        	 try {
+	        	try {
 					reader = new FileInputStream(new File(ifile));
-					//System.err.println("Setup reader on file "+ifile);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -40,7 +41,6 @@ public class ActivePipe implements ActiveChannel{
 		
 		try {			
 			writer = new FileOutputStream(new File(ofile));
-			//System.err.println("Setup writer on file "+ofile);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -51,13 +51,20 @@ public class ActivePipe implements ActiveChannel{
 		}
 	}
 	
-	public int read(byte[] buffer){
+	public synchronized int read(byte[] buffer){
 		int length = 0;
+		
 		try {
 			length = reader.read(buffer);
+			/*
+			if(reader.read(readerLengthBuffer)>0){
+				length = ByteBuffer.wrap(readerLengthBuffer).getInt();
+				reader.read(buffer, 0, length);
+			}
+			*/
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		}		
 		return length;
 	}
 	
@@ -65,9 +72,11 @@ public class ActivePipe implements ActiveChannel{
 	 * This method must be synchronized because it is not guaranteed that lines will remain intact
 	 * when writing into a same pipe. They can become intermingled.
 	 */
-	public boolean write(byte[] buffer, int offset, int length){
+	public synchronized boolean write(byte[] buffer, int offset, int length){
 		boolean wSuccess = false;
 		try {
+			// write the length of byte array first then send the content			
+			//writer.write(ByteBuffer.allocate(Integer.BYTES+length).putInt(length).put(buffer).array());
 			writer.write(buffer, offset, length);
 			writer.flush();
 			wSuccess = true;

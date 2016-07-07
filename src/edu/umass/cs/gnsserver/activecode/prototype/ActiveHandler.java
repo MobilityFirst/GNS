@@ -46,8 +46,7 @@ public class ActiveHandler {
 		
 		clientPool = new ActiveClient[numProcess];
 		for (int i=0; i<numProcess; i++){
-			clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i);
-			//System.out.println("ActiveClient"+i+" is ready");
+			clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
 		}
 		
 	}
@@ -91,7 +90,7 @@ public class ActiveHandler {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
-		int num = 4; //Integer.parseInt(args[0]);
+		int num = Integer.parseInt(args[0]);
 		if(num <= 0){
 			System.out.println("Number of clients must be larger than 0.");
 			System.exit(0);

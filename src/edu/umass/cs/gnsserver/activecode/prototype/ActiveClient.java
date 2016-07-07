@@ -47,7 +47,7 @@ public class ActiveClient {
 	 * @param ofile
 	 * @param id 
 	 */
-	public ActiveClient(ActiveDBInterface app, String ifile, String ofile, int id){
+	public ActiveClient(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
@@ -61,7 +61,7 @@ public class ActiveClient {
 		}
 		
 		try {
-			workerProc = startWorker(ofile, ifile, id);
+			workerProc = startWorker(ofile, ifile, id, workerNumThread);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -79,7 +79,7 @@ public class ActiveClient {
 	 * @param ofile
 	 */
 	public ActiveClient(ActiveDBInterface app, String ifile, String ofile){
-		this(app, ifile, ofile, 0);
+		this(app, ifile, ofile, 0, 1);
 	}
 	
 	protected void shutdown(){
@@ -91,7 +91,7 @@ public class ActiveClient {
 		(new File(ofile)).delete();
 	}
 	
-	private Process startWorker(String ifile, String ofile, int id) throws IOException{
+	private Process startWorker(String ifile, String ofile, int id, int workerNumThread) throws IOException{
 		List<String> command = new ArrayList<String>();
 		String classpath = System.getProperty("java.class.path");
 	    command.add("java");
@@ -103,6 +103,7 @@ public class ActiveClient {
 	    command.add(ifile);
 	    command.add(ofile);
 	    command.add(""+id);
+	    command.add(""+workerNumThread);
 		
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));
@@ -116,13 +117,15 @@ public class ActiveClient {
 		return process;
 	}
 	
-	protected ActiveMessage receiveMessage(){
-		channel.read(buffer);
+	protected ActiveMessage receiveMessage(){		
 		ActiveMessage am = null;
-		try {
-			am = new ActiveMessage(buffer);
-		} catch (UnsupportedEncodingException | JSONException e) {
-			e.printStackTrace();
+		int length = channel.read(buffer);
+		if(length >0){
+			try {
+				am = new ActiveMessage(buffer);
+			} catch (UnsupportedEncodingException | JSONException e) {
+				e.printStackTrace();
+			}
 		}
 		Arrays.fill(buffer, (byte) 0); 
 		return am;
@@ -171,8 +174,7 @@ public class ActiveClient {
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		sendMessage(msg);
 		ActiveMessage response;
-		while(true){
-			response = receiveMessage();
+		while((response = receiveMessage()) != null){			
 			if(response.type==Type.RESPONSE){
 				// this is the response
 				break;
@@ -213,20 +215,20 @@ public class ActiveClient {
 	public static void main(String[] args) throws InterruptedException, JSONException{
 		
 		String suffix = "";
+		/*
 		if (args.length == 1)
 			suffix = args[0];
-		if (args.length == 2)
-		{
+		if (args.length == 2) {
 			suffix = args[0];
 			heapSize = Integer.parseInt(args[1]);
-		}
+		}*/
+		int numThread = 1; //Integer.parseInt(args[0]);
+		
 		
 		String cfile = "/tmp/client"+suffix;
 		String sfile = "/tmp/server"+suffix;		
 		
-		ActiveClient client = new ActiveClient(null, cfile, sfile);
-		//initialize a new client for test
-	    //new ActiveClient(cfile+"1", sfile+"1");
+		ActiveClient client = new ActiveClient(null, cfile, sfile, 0, numThread);
 		
 		String guid = "guid";
 		String field = "name";
@@ -250,7 +252,7 @@ public class ActiveClient {
 		
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
-		
+		System.out.println("The average throughput is "+(n*1000.0/elapsed)*numThread);
 		client.shutdown();
 	}
 
