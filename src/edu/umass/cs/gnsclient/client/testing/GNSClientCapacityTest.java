@@ -358,7 +358,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	//@Test
+	@Test
 	public void test_10_SingleActiveReadLevel1() throws Exception{
 		
 		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
@@ -376,7 +376,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	//@Test
+	@Test
 	public void test_11_SingleActiveReadLevel2() throws Exception{
 		
 		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
@@ -394,7 +394,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	//@Test
+	@Test
 	public void test_12_SingleActiveReadLevel3() throws Exception{
 		
 		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));

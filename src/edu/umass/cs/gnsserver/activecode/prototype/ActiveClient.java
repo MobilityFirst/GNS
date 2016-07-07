@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.script.ScriptException;
+
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
@@ -38,7 +40,7 @@ public class ActiveClient {
 	
 	
 	/************** Test Only ******************/
-	//ActiveWorker worker;
+	final ActiveWorker worker;
 	
 	
 	/**
@@ -46,6 +48,7 @@ public class ActiveClient {
 	 * @param ifile
 	 * @param ofile
 	 * @param id 
+	 * @param workerNumThread 
 	 */
 	public ActiveClient(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
 		this.id = id;
@@ -71,6 +74,8 @@ public class ActiveClient {
 		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 		
 		queryHandler = new ActiveQueryHandler(app);
+		
+		worker = new ActiveWorker(null, null, 0, 1, true);
 	}
 	
 	/**
@@ -162,15 +167,15 @@ public class ActiveClient {
 	 * @return executed result sent back from worker
 	 */
 	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
-		/*
+		
 		if(field.equals("level3")){
 			try {
-				return worker.runCode(guid, field, code, valuesMap);
+				return worker.runCode(guid, field, code, valuesMap, ttl);
 			} catch (NoSuchMethodException | ScriptException e) {
 				e.printStackTrace();
 			}
 		}
-		*/
+		
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		sendMessage(msg);
 		ActiveMessage response;

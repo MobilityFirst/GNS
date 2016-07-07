@@ -51,17 +51,16 @@ public class ActivePipe implements ActiveChannel{
 		}
 	}
 	
-	public synchronized int read(byte[] buffer){
+	public int read(byte[] buffer){
 		int length = 0;
 		
 		try {
-			length = reader.read(buffer);
-			/*
+			
 			if(reader.read(readerLengthBuffer)>0){
 				length = ByteBuffer.wrap(readerLengthBuffer).getInt();
 				reader.read(buffer, 0, length);
 			}
-			*/
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
@@ -72,12 +71,12 @@ public class ActivePipe implements ActiveChannel{
 	 * This method must be synchronized because it is not guaranteed that lines will remain intact
 	 * when writing into a same pipe. They can become intermingled.
 	 */
-	public synchronized boolean write(byte[] buffer, int offset, int length){
+	public boolean write(byte[] buffer, int offset, int length){
 		boolean wSuccess = false;
 		try {
 			// write the length of byte array first then send the content			
-			//writer.write(ByteBuffer.allocate(Integer.BYTES+length).putInt(length).put(buffer).array());
-			writer.write(buffer, offset, length);
+			writer.write(ByteBuffer.allocate(Integer.BYTES+length).putInt(length).put(buffer).array());
+			//writer.write(buffer, offset, length);
 			writer.flush();
 			wSuccess = true;
 		} catch (IOException e) {
