@@ -62,7 +62,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
-import edu.umass.cs.gnsserver.httpserver.GNSAdminHttpServer;
+import edu.umass.cs.gnsserver.httpserver.GNSHttpServer;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONPacket;
@@ -194,7 +194,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     GNSConfig.getLogger().log(Level.INFO,
             "{0} Admin thread initialized", nodeID);
     // Should add this to the shutdown method - do we have a shutdown method?
-    GNSAdminHttpServer httpServer = new GNSAdminHttpServer(requestHandler);
+    GNSHttpServer httpServer = new GNSHttpServer(requestHandler);
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;

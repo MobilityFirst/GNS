@@ -66,7 +66,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class GNSAdminHttpServer {
+public class GNSHttpServer {
 
   private static final String GNSPATH = GNSConfig.GNS_URL_PATH;
   private static final int STARTING_PORT = 8080;
@@ -76,9 +76,9 @@ public class GNSAdminHttpServer {
   private final ClientRequestHandlerInterface requestHandler;
   private final Date serverStartDate = new Date();
 
-  private final static Logger LOG = Logger.getLogger(GNSAdminHttpServer.class.getName());
+  private final static Logger LOG = Logger.getLogger(GNSHttpServer.class.getName());
 
-  public GNSAdminHttpServer(ClientRequestHandlerInterface requestHandler) {
+  public GNSHttpServer(ClientRequestHandlerInterface requestHandler) {
     this.commandModule = new CommandModule();
     this.requestHandler = requestHandler;
     runServer();
@@ -188,8 +188,7 @@ public class GNSAdminHttpServer {
     // the signature, and the message signed.
     String fullString = action + QUERYPREFIX + queryString; // for signature check
     Map<String, String> queryMap = Util.parseURIQueryString(queryString);
-    //new command processing
-    //queryMap.put(COMMANDNAME, action);
+
     if (queryMap.keySet().contains(SIGNATURE)) {
       String signature = queryMap.get(SIGNATURE);
       String message = NSAccessSupport.removeSignature(fullString, KEYSEP + SIGNATURE + VALSEP + signature);
@@ -197,7 +196,15 @@ public class GNSAdminHttpServer {
     }
     JSONObject jsonFormattedCommand = new JSONObject(queryMap);
 
-    BasicCommand command = commandModule.lookupCommand(CommandType.valueOf(action));
+    BasicCommand command;
+    try {
+      command = commandModule.lookupCommand(CommandType.valueOf(action));
+    // handle actions that valueOf can't parse
+    } catch (IllegalArgumentException e) {
+      return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED,
+              BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+              + " Don't understand " + action + QUERYPREFIX + queryString);
+    }
     // Now we execute the command
     //BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler);
