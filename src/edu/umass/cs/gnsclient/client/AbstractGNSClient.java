@@ -312,7 +312,7 @@ public abstract class AbstractGNSClient {
   protected CommandValueReturnPacket getTimeoutResponse(CommandPacket commandPacket) {
       GNSClientConfig.getLogger().log(Level.INFO,
               "{0} timed out after {1}ms on {2}: {3}",
-              new Object[]{this, readTimeout, commandPacket.getClientRequestId() + "", commandPacket});
+              new Object[]{this, readTimeout, commandPacket.getClientRequestId() + "", commandPacket.getSummary()});
       /* FIXME: Remove use of string reponse codes */
       return new CommandValueReturnPacket(commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT, 
                       GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);

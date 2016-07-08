@@ -21,6 +21,7 @@ import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.integrationtests.RunServer;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -29,7 +30,9 @@ import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.utils.Base64;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,11 +40,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
 import static org.hamcrest.Matchers.*;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
+
 import static org.junit.Assert.*;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -55,10 +62,14 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
+
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.utils.Util;
+
 import java.awt.geom.Point2D;
 import java.util.Set;
+
 import org.apache.commons.lang3.RandomUtils;
 import org.json.JSONException;
 
@@ -85,30 +96,101 @@ public class ServerIntegrationTest {
   public static void setAccountAlias(String alias) {
 	  accountAlias = alias;
   }
-  private static String SERVER_COMMAND="scripts/3nodeslocal/reset_and_restart.sh";
-  private static String OUTPUT_REDIRECTION=" 2>/tmp/log";
+  private static final String HOME=System.getProperty("user.home");
+  private static final String GNS_DIR = "GNS";
+  private static final String GNS_HOME = HOME + "/" + GNS_DIR+"/";
   
-  public static void setServerCommand(String cmd) {
-	  SERVER_COMMAND=cmd;
-  }
-  public static void setOutputRedirection(String cmd) {
-	  OUTPUT_REDIRECTION=cmd;
-  }
+	private static final String getPath(String filename) {
+		if (new File(filename).exists())
+			return filename;
+		if (new File(GNS_HOME + filename).exists())
+			return GNS_HOME + filename;
+		else
+			Util.suicide("Can not find server startup script: " + filename);
+		return null;
+	}
+	
+	private static enum DefaultProps {
+		SERVER_COMMAND("server.command", USE_GP_SCRIPTS ? GP_SERVER : SCRIPTS_SERVER, true),
+		GIGAPAXOS_CONFIG("gigapaxosConfig", "conf/gnsserver.3local.properties", true),
+		KEYSTORE("javax.net.ssl.keyStore","conf/trustStore/node100.jks", true),
+		KEYSTORE_PASSWORD("javax.net.ssl.keyStorePassword","qwerty"),
+		TRUSTSTORE("javax.net.ssl.trustStore","conf/trustStore/node100.jks", true),
+		TRUSTSTORE_PASSWORD("javax.net.ssl.trustStorePassword","qwerty"),
+		START_SERVER("startServer", "true"),
+		;
+
+		final String key; 
+		final String value;
+		final boolean isFile;
+
+		DefaultProps(String key, String value, boolean isFile) {
+			this.key = key;
+			this.value = value;
+			this.isFile = isFile;
+		}
+		DefaultProps(String key, String value) {
+			this(key, value, false);
+		}
+	}
+
+	private static final void setProperties() {
+		for(DefaultProps prop : DefaultProps.values()) 
+			if(System.getProperty(prop.key)==null)
+				System.setProperty(prop.key, prop.isFile ? getPath(prop.value) : prop.value);
+	}
+	// this static block must be above GP_OPTIONS
+	static {
+		setProperties();
+	}
+
+
+	private static final String SCRIPTS_SERVER="scripts/3nodeslocal/reset_and_restart.sh";
+	private static final String SCRIPTS_OPTIONS=" 2>/tmp/log";
+	
+	private static final String GP_SERVER = "bin/gpServer.sh";
+	private static final String GP_OPTIONS = getGigaPaxosOptions()
+			+ " restart all";
+	private static final boolean USE_GP_SCRIPTS = true;
+	private static final String OPTIONS = USE_GP_SCRIPTS ? GP_OPTIONS : SCRIPTS_OPTIONS;
+	
   
+  private static final String getGigaPaxosOptions() {
+	  String gpOptions="";
+	  for(DefaultProps prop : DefaultProps.values()) 
+		  gpOptions += " -D" + prop.key + "=" + System.getProperty(prop.key);
+	  return gpOptions;
+  }
+
+
+    
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-	  String serverCommand = System.getProperty("server.command");
-	  if(serverCommand!=null) {
-		  System.out.println("Running test using server command \""+serverCommand+"\"");
-		  setServerCommand(serverCommand);
-	  }
-	  
     // Run the server.
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
+		
+
+
+    	// clear explicitly if gigapaxos
+    	if (USE_GP_SCRIPTS) {
+    		RunServer
+    		.command(
+    				"kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`",
+    				".");
+    		System.out.println(System.getProperty(DefaultProps.SERVER_COMMAND.key)
+    				+ " " + getGigaPaxosOptions()
+    				+ " forceclear all");
+
+    		RunServer.command(
+    				System.getProperty(DefaultProps.SERVER_COMMAND.key)
+    				+ " " + getGigaPaxosOptions()
+    				+ " forceclear all", ".");
+    	}
+
+    	System.out.println(System.getProperty(DefaultProps.SERVER_COMMAND.key) + " " + OPTIONS);
       ArrayList<String> output = RunServer.command(
-    		  SERVER_COMMAND + OUTPUT_REDIRECTION, ".");
-      System.out.println("output=" + output);
+    		  System.getProperty(DefaultProps.SERVER_COMMAND.key) + " " + OPTIONS, ".");
       if (output != null) {
         for (String line : output) {
           System.out.println(line);
@@ -117,6 +199,8 @@ public class ServerIntegrationTest {
         fail("Server command failure: ; aborting all tests.");
       }
     }
+    
+    System.out.println("Starting client");
     
     client = new GNSClientCommands();
     // Make all the reads be coordinated
@@ -150,8 +234,11 @@ public class ServerIntegrationTest {
   public static void tearDownAfterClass() throws Exception {
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
-      ArrayList<String> output = RunServer.command(
-              "scripts/3nodeslocal/shutdown.sh", ".");
+			ArrayList<String> output = RunServer.command(
+					new File(System
+							.getProperty(DefaultProps.SERVER_COMMAND.key))
+							.getParent()
+							+ "/shutdown.sh", ".");
       if (output != null) {
         for (String line : output) {
           System.out.println(line);
@@ -1922,7 +2009,14 @@ public class ServerIntegrationTest {
     try {
       String sCurrentLine;
 
-      br = new BufferedReader(new FileReader("scripts/3nodeslocal/ns.properties"));
+      String filename = new File(
+    		  System.getProperty(DefaultProps.SERVER_COMMAND.key))
+      .getParent()
+      + "/ns.properties";
+      if(!new File(filename).exists())
+    	  return propMap;
+      
+      br = new BufferedReader(new FileReader(filename));
 
       while ((sCurrentLine = br.readLine()) != null) {
         String[] parsed = sCurrentLine.split("=");

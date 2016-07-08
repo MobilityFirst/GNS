@@ -104,10 +104,11 @@ public class CommandUtils {
         value = keysAndValues[i + 1];
         result.put(key, value);
       }
+      
       // arun: made this static for now
-      if (AbstractGNSClient.isForceCoordinatedReads()) {
-    	  result.put(GNSCommandProtocol.COORDINATE_READS, true);
-      }
+      if (GNSClientCommands.USE_OLD_SEND)
+    	  if (AbstractGNSClient.isForceCoordinatedReads())
+    		  result.put(GNSCommandProtocol.COORDINATE_READS, true);      
 
       DelayProfiler.updateDelay("createCommand", startTime);
       return result;

@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
+import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
@@ -155,18 +156,18 @@ public class GNSClient extends AbstractGNSClient
 	public Long sendAsync(CommandPacket packet, RequestCallback callback)
 			throws IOException {
 		Long requestID = null;
-	    //packet.setForceCoordinatedReads(this.forceCoordinatedReads);
+		ClientRequest request = packet.setForceCoordinatedReads(isForceCoordinatedReads());
 
 		if (isAnycast(packet))
-			requestID = this.asyncClient.sendRequestAnycast(packet, callback);
+			requestID = this.asyncClient.sendRequestAnycast(request, callback);
 		else
-			requestID = this.asyncClient.sendRequest(packet, callback);
+			requestID = this.asyncClient.sendRequest(request, callback);
 		if (requestID == null)
 			/* Can only happen under remote node failure and extreme congestion
 			 * as otherwise NIO will buffer the packet for future delivery
 			 * attempts. */
 			LOG.log(Level.WARNING, "Request ID is null after send for {0}",
-					new Object[] { packet.getSummary() });
+					new Object[] { request.getSummary() });
 		return requestID;
 	}
 

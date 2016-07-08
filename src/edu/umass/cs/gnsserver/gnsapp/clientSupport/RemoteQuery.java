@@ -140,7 +140,7 @@ public class RemoteQuery extends ClientAsynchBase {
                 - monitorStartTime < timeout)) {
           ClientSupportConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
                   new Object[]{this, id + "", timeout + "ms"});
-          monitor.wait(1000);
+          monitor.wait(WAIT_TIMESTEP);
         }
         if (timeout != 0
                 && System.currentTimeMillis() - monitorStartTime >= timeout) {
@@ -171,25 +171,30 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   }
 
-  private ClientReconfigurationPacket waitForReconResponse(String serviceName, Object monitor) throws ClientException {
-    return waitForReconResponse(serviceName, monitor, DEFAULT_RECON_TIMEOUT);
+  private ClientReconfigurationPacket waitForReconResponse(Request request, Object monitor) throws ClientException {
+    return waitForReconResponse(request, monitor, DEFAULT_RECON_TIMEOUT);
   }
+  
+  private static final long WAIT_TIMESTEP = 1000;
 
-  private ClientReconfigurationPacket waitForReconResponse(String serviceName, Object monitor, long timeout)
+  private ClientReconfigurationPacket waitForReconResponse(Request request, Object monitor, long timeout)
           throws ClientException {
     try {
       synchronized (monitor) {
         long monitorStartTime = System.currentTimeMillis();
-        while (!reconResultMap.containsKey(serviceName)
+        while (!reconResultMap.containsKey(request.getServiceName())
                 && (timeout == 0 || System.currentTimeMillis() - monitorStartTime < timeout)) {
-          monitor.wait(timeout);
+					ClientSupportConfig.getLogger().log(Level.FINE,
+							"{0} waiting for next time step for request {1}",
+							new Object[] { this, request.getSummary() });
+          monitor.wait(WAIT_TIMESTEP);
         }
         if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
           ClientException e = new ClientException(
                   this
                   + ": Timed out on reconfigurator response after waiting for "
                   + timeout + "ms response packet for "
-                  + serviceName);
+                  + request.getSummary());
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
@@ -198,7 +203,7 @@ public class RemoteQuery extends ClientAsynchBase {
     } catch (InterruptedException x) {
       throw new ClientException("Wait for return packet was interrupted " + x);
     }
-    return reconResultMap.remove(serviceName);
+    return reconResultMap.remove(request.getServiceName());
   }
 
   /**
@@ -213,7 +218,7 @@ public class RemoteQuery extends ClientAsynchBase {
   private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
     Object monitor = new Object();
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));
-    ClientReconfigurationPacket response = waitForReconResponse(request.getServiceName(), monitor);
+    ClientReconfigurationPacket response = waitForReconResponse(request, monitor);
     // FIXME: return better error codes.
     if (response.isFailed()) {
       // arun: return duplicate error if name already exists

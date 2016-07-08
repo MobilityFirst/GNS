@@ -123,7 +123,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		super(anyReconfigurator);
 	}
 
-	private static boolean USE_OLD_SEND = true;
+	protected static final boolean USE_OLD_SEND = false;
 	
 	/* arun: All occurrences of checkResponse( createAndSignCommand have been
 	 * replaced by this getResponse method. */
@@ -133,9 +133,9 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 				.checkResponse(sendCommandAndWait(CommandUtils
 						.createAndSignCommand(commandType, querier,
 								keysAndValues))) : CommandUtils
-				.checkResponse(getCommand(commandType, querier, keysAndValues)
-						.setForceCoordinatedReads(
-								isForceCoordinatedReads()));
+				.checkResponse(this.sendSync(getCommand(commandType, querier, keysAndValues)
+						, (long)this.readTimeout
+								));
 	}
 
 	private String getResponse(CommandType commandType, Object... keysAndValues)

@@ -29,6 +29,7 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReplicableClientRequest;
 
 import java.util.logging.Level;
 
@@ -411,9 +412,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
 	 * @param force 
 	 * @return Set coordination mode to true if this is a read command.
 	 */
-	public CommandPacket setForceCoordinatedReads(boolean force) {
+	public ClientRequest setForceCoordinatedReads(boolean force) {
 		if (force && getCommandType().isRead())
-			this.setNeedsCoordination(true);
+			// make forcibly coordinated
+			return ReplicableClientRequest.wrap(this,true);
+		// else
 		return this;
 	}
 
@@ -440,8 +443,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
                 + getCommandType().toString() + ":"
                 + getCommandInteger() + ":"
                 + getServiceName() + ":"
-                + getRequestID() + "["
-                + getClientAddress() + "]";
+                + getRequestID() + (getClientAddress() != null ? "["
+                + getClientAddress() + "]" : "");
       }
     };
   }

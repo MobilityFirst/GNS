@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsclient.client.bugreports;
+package edu.umass.cs.gnsclient.client.integrationtests;
 
 
 import static org.junit.Assert.assertEquals;
