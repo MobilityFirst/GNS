@@ -352,7 +352,7 @@ public static String signDigestOfMessage(PrivateKey privateKey, PublicKey public
             : checkResponse(((CommandValueReturnPacket) response));
   }
 
-  private static final boolean USE_OLD_CHECK_RESPONSE = true;
+  private static final boolean USE_OLD_CHECK_RESPONSE = false;
   /**
    * arun: This checkResponse method will replace the old one. There is no
    * reason to not directly use the received CommandValueReturnPacket.
