@@ -2,10 +2,19 @@ package edu.umass.cs.gnsclient.client.integrationtests;
 
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -23,6 +32,7 @@ import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.nio.JSONDelayEmulator;
@@ -42,39 +52,94 @@ public class ServerFailureTests {
 	private static final String PASSWORD = "password";
 	private static GNSClientCommands client = null;
 	private static GuidEntry masterGuid;
-	private static ArrayList<String> serverNameArray;
+	private static ServerFailureTests suite = new ServerFailureTests();
+	private static double startClock;
+	private static double endClock;
+	private static int TEST_TIME = 10000; //Time in ms to run each phase of the testing.
+	private static String gpPropDir;
+	private static String execString;
+	
+	private ArrayList<String> serverNameArray = new ArrayList<String>();
+	private ArrayList<String> serverDownNameArray = new ArrayList<String>();
+	private int numRequestsSuccessful = 0;
 
-	public static void causeRandomServerFailure(){
-		//Shutdown a random server, update server count.
+	public static void causeRandomServerFailure() throws IOException, InterruptedException{
+		//Get the GNS directory
+		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
+		//System.out.println("Current path: " + topDir);
+		Random rand = new Random();
 		
-		//Wait a random time length
+		//Get a random server name
+		String serverName;
+		synchronized(suite){
+			int idx = rand.nextInt(suite.serverNameArray.size());
+			serverName = suite.serverNameArray.remove(idx);
+			suite.serverDownNameArray.add(serverName);
+		}
+
+		//Stop the server
+		System.out.println("Stopping " +serverName);
+		Process killServer = Runtime.getRuntime().exec(execString+ "stop " + serverName);
+		killServer.waitFor(); //Throws a possible interruptedException here
+		System.out.println(serverName +" stopped.");
 		
-		//Restart the server to simulate recovery, update server count.
+		//Wait 10 seconds
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			//If we get interrupted just bring the server up early and print out that the interruption occurred.
+			e.printStackTrace();
+		}
+		
+		//Restart the server to simulate recovery.
+		System.out.println("Restarting " + serverName);
+		Process restartServer = Runtime.getRuntime().exec(execString + "start " + serverName);
+		restartServer.waitFor(); //Throws a possible interruptedException here
+		System.out.println(serverName +" restarted.");
+		synchronized(suite){
+			suite.serverDownNameArray.remove(serverName);
+			suite.serverNameArray.add(serverName);
+		}
 		
 	}
 	
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		//Testing.ServerList must be a comma separated list of server names that can be run using gpSever.sh
-		String serverList = System.getProperty("Testing.ServerList");
-		if (serverList.equals("")){
-			System.out.println("Missing Testing.ServerList, which must be a comma separated list of server names!");
-			System.exit(1);
-		}
-		while (serverList.length() > 0){
-			int commaIdx = serverList.indexOf(',');
-			if (commaIdx == -1){
-				serverNameArray.add(serverList); //Add the one server still in the input list.
-				break;
+		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
+
+		//Parse gigapaxos.properties file for the active replica names
+		String gpPropPath = System.getProperty("gigapaxosConfig");
+		System.out.println("Using gigapaxos config: " + gpPropPath);
+		gpPropDir = topDir + "/" + gpPropPath;
+		File file = new File(gpPropDir);
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String line = reader.readLine();
+		while (line != null){
+			if (line.startsWith("active.")){
+				int idx = line.indexOf(".");
+				int idx2 = line.indexOf("=",idx);
+				String serverName = line.substring(idx+1, idx2);
+				suite.serverNameArray.add(serverName);
 			}
-			else{
-				String server = serverList.substring(0,commaIdx);
-				serverNameArray.add(server); //Add the next server to the ArrayList.
-				serverList = serverList.substring(commaIdx+1,serverList.length()); //Remove that server from the input list.
-			}
+			line = reader.readLine();
 		}
+		reader.close();
+		System.out.println("Active Replicas to be used: " + suite.serverNameArray.toString());
 		
+		//Start all the servers
+		execString = topDir + "/bin/gpServer.sh -DgigapaxosConfig="+gpPropDir+" ";
+		System.out.println("Running " + execString + "start all");
+		Process startProcess = Runtime.getRuntime().exec(execString + "start all");
+		InputStream serverLauncherOutput = startProcess.getInputStream();
+		BufferedReader output = new BufferedReader(new InputStreamReader(serverLauncherOutput));
+		line = output.readLine();
+		while (startProcess.isAlive() && (line!=null)){
+			System.out.println(line);
+			line = output.readLine();
+		}
+		startProcess.waitFor();
+		System.out.println("Servers started.");
 		
 		client = new GNSClientCommands();
 		// Make all the reads be coordinated
@@ -112,6 +177,11 @@ public class ServerFailureTests {
 		if (client != null) {
 			client.close();
 		}
+		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
+		System.out.println("Stopping all servers...");
+		Process stopProcess = Runtime.getRuntime().exec(execString+"stop all");
+		stopProcess.waitFor();
+		System.out.println("Servers stopped.");
 	}
 	@Rule
 	public TestName testName = new TestName();
@@ -141,27 +211,85 @@ public class ServerFailureTests {
 	}
 
 	@Test
-	public void test_010_CreateEntity() {
-		String runsString = System.getProperty("integrationTest.runs");
-		int numRuns = 1000;
-		if (runsString != null){
-			numRuns=Integer.parseInt(runsString);
+	public void test_010_CreateEntity() throws Exception {
+		String threadString = System.getProperty("integrationTest.threads");
+		int numThreads = 20;
+		if (threadString != null){
+			numThreads=Integer.parseInt(threadString);
 		}
-		for (int i = 0; i < numRuns; i++){
-			if (i % 100 == 0){
+		
+		String testGuidName = "testGUID" + RandomString.randomString(6);
+	    final GuidEntry testGuid;
+	    try {
+	      testGuid = client.guidCreate(masterGuid, testGuidName);
+	    } catch (Exception e) {
+	      System.out.println("Exception while creating testGuid: " + e);
+	      throw e;
+	    }
+	    startClock = System.currentTimeMillis();
+	    numRequestsSuccessful = 0;
+	    Thread threads[] = new Thread[numThreads];
+	    for (int i = 0; i < numThreads; i++){
+			threads[i] = new Thread(){ 
+				public void run(){
+					try {
+						//Reads the guidEntry continuously until the thread is interrupted.
+						while(!Thread.interrupted()){
+						    try {
+							      assertEquals(masterGuid.getGuid(), client.lookupPrimaryGuid(testGuid.getGuid()));
+							      //We spawn a new thread that will sequentially increment the number of requests that have been successful so we don't have to block this thread.
+							      Thread increment = new Thread(){
+							    	  public void run(){
+							    		  synchronized(suite){
+							    			  suite.numRequestsSuccessful++;
+							    		  }
+							    	  }
+							      };
+							      increment.run();
+							    } catch (IOException | ClientException e) {
+							      //Ignore failures to read, they just won't increment the successful request count.
+							    }
+						}
+					} catch (Exception e) {
+						//Since this is threaded we need to handle any exceptions.  In this case by failing the test.
+						StringWriter printException = new StringWriter();
+						e.printStackTrace(new PrintWriter(printException));
+						fail("A testing thread threw an exception during the test:\n" + printException.toString());
+					}
+				}
+			};
+			threads[i].run();
+		}
+	    //Wait TEST_TIME ms before ending the test phase.
+	    int requestCount = 0;
+	    while (endClock - startClock < TEST_TIME){
+	    	Thread.sleep(1000);
+	    	endClock = System.currentTimeMillis();
+	    	requestCount = suite.numRequestsSuccessful;
+	    	System.out.println("Average read throughput: " + Double.toString(requestCount / (endClock - startClock)));
+	    }
+	    //Stop all the threads.
+	    for (int i = 0; i < numThreads; i++){
+	    	threads[i].interrupt();
+	    }
+	    
+		/*for (int i = 0; i < numRuns; i++){
+			if (i % 1000 == 0){
 				System.out.println("Running test for the " + Integer.toString(i) + "th time.");
+				endClock = System.currentTimeMillis();
+				double deltaSeconds = (endClock - startClock) / 1000;
+				System.out.println("Throughput: " + Double.toString(numRequestsSuccessful / deltaSeconds) + " requests/second.");
+				startClock = System.currentTimeMillis();
+				numRequestsSuccessful = 0;
 			}
-			String alias = "testGUID" + RandomString.randomString(12);
-			GuidEntry guidEntry = null;
-			try {
-				guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
-						alias);
-			} catch (Exception e) {
-				fail("Exception while creating guid on " + Integer.toString(i)+ "th run : " + e);
-			}
-			assertNotNull(guidEntry);
-			assertEquals(alias, guidEntry.getEntityName());
-		}
+		    try {
+			      assertEquals(masterGuid.getGuid(), client.lookupPrimaryGuid(testGuid.getGuid()));
+			      numRequestsSuccessful++;
+			    } catch (IOException | ClientException e) {
+			      //System.out.println("Exception while looking up primary guid on " + Integer.toString(i)+ "th run : " + e);
+			      //throw e;
+			    	//Ignore failures to read, they just won't increment the successful request count.
+			    }*/
 	}
 
 
