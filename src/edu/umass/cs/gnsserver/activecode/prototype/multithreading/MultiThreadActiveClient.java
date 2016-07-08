@@ -194,7 +194,7 @@ public class MultiThreadActiveClient implements Runnable{
 				;
 			long elapsed = System.currentTimeMillis() - t;
 			System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/total)+"us");
-			System.out.println("The average throughput is "+(total*1000.0/elapsed)*numThread);
+			System.out.println("The average throughput is "+(total*1000.0/elapsed));
 			
 		}catch(Exception e){
 			e.printStackTrace();

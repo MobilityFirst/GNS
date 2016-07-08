@@ -74,11 +74,13 @@ public class MultiThreadActiveWorker {
 	private void runWorker() throws UnsupportedEncodingException, JSONException {		
 		byte[] buffer = new byte[bufferSize];
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
-		while(channel.read(buffer) > 0){
-			ActiveMessage msg = new ActiveMessage(buffer);
-			//System.out.println("Length:"+length+",Type:"+msg.type+",msg:"+msg);
-			Arrays.fill(buffer, (byte) 0);			
-			submitTask(msg);
+		while(true){
+			if(channel.read(buffer) > 0){
+				ActiveMessage msg = new ActiveMessage(buffer);
+				//System.out.println("Length:"+length+",Type:"+msg.type+",msg:"+msg);
+				Arrays.fill(buffer, (byte) 0);			
+				submitTask(msg);
+			}
 		}
 	}
 	
