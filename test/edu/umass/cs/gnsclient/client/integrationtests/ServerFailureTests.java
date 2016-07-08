@@ -83,6 +83,7 @@ public class ServerFailureTests {
 		killServer.waitFor(); //Throws a possible interruptedException here
 		System.out.println(serverName +" stopped.");
 		
+		/*
 		//Wait 10 seconds
 		try {
 			Thread.sleep(10000);
@@ -100,7 +101,29 @@ public class ServerFailureTests {
 			suite.serverDownNameArray.remove(serverName);
 			suite.serverNameArray.add(serverName);
 		}
+		*/
 		
+	}
+	
+	public static void recoverAllServers() throws IOException{
+		//Restart the server to simulate recovery.
+		synchronized(suite){
+			for (String serverName : suite.serverDownNameArray){
+				System.out.println("Restarting " + serverName);
+				Process restartServer = Runtime.getRuntime().exec(execString + "start " + serverName);
+				try {
+					restartServer.waitFor();
+				} catch (InterruptedException e) {
+					// There's not much to be done if the process gets interrupted here
+					e.printStackTrace();
+				}
+				System.out.println(serverName +" restarted.");
+				synchronized(suite){
+					suite.serverDownNameArray.remove(serverName);
+					suite.serverNameArray.add(serverName);
+				}
+			}
+		}
 	}
 	
 	
@@ -262,11 +285,21 @@ public class ServerFailureTests {
 		}
 	    //Wait TEST_TIME ms before ending the test phase.
 	    int requestCount = 0;
-	    while (endClock - startClock < TEST_TIME){
-	    	Thread.sleep(1000);
-	    	endClock = System.currentTimeMillis();
-	    	requestCount = suite.numRequestsSuccessful;
-	    	System.out.println("Average read throughput: " + Double.toString(requestCount / (endClock - startClock)));
+	    int NUM_FAILURES=2;
+	    for (int i = 0; i <= NUM_FAILURES; i++){
+	    	//Bring all servers back up
+	    	recoverAllServers();
+	    	while (endClock - startClock < TEST_TIME){
+	    		Thread.sleep(1000);
+	    		endClock = System.currentTimeMillis();
+	    		requestCount = suite.numRequestsSuccessful;
+	    		System.out.println("Average read throughput: " + Double.toString(requestCount / (endClock - startClock)));
+	    	}
+	    	//Start with 0 failures, then 1, then 2, etc.
+	    	for (int j = 0; j < i; j++){
+	    		causeRandomServerFailure();
+	    	}
+    		System.out.println("Causing " + i + " server failures.");
 	    }
 	    //Stop all the threads.
 	    for (int i = 0; i < numThreads; i++){
