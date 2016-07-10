@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode.prototype.multithreading;
+package edu.umass.cs.gnsserver.activecode.prototype;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,8 +21,7 @@ import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveQuerier;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -37,9 +36,12 @@ public class ActiveRunner {
 	private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
 	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
-	private ActiveQuerier querier;
+	private Querier querier;
 	
-	public ActiveRunner(ActiveQuerier querier){
+	/**
+	 * @param querier
+	 */
+	public ActiveRunner(Querier querier){
 		this.querier = querier;
 		
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
@@ -74,7 +76,7 @@ public class ActiveRunner {
 	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
-		if(querier != null)querier.resetQuerier(guid, ttl);
+		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl);
 		return (ValuesMap) invocable.invokeFunction("run", value, field, querier);
 	}
 	

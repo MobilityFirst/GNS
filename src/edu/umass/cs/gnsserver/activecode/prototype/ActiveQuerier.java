@@ -11,6 +11,9 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
+ * This class is an implementation of Querier, Querier only contains
+ * readGuid and writeGuid method, so the protected methods will not be
+ * exposed to the javascript code.
  * @author gaozy
  *
  */
@@ -26,13 +29,12 @@ public class ActiveQuerier implements Querier {
 	public ActiveQuerier(ActiveChannel channel){
 		this.channel = channel;
 	}
-	
-	
+		
 	/**
 	 * @param guid
 	 * @param ttl
 	 */
-	public void resetQuerier(String guid, int ttl){
+	protected void resetQuerier(String guid, int ttl){
 		this.currentGuid = guid;
 		this.currentTTL = ttl;
 	}
@@ -43,8 +45,9 @@ public class ActiveQuerier implements Querier {
 	 * @return ValuesMap the code trying to read
 	 * @throws ActiveException
 	 */
+	@Override
 	public ValuesMap readGuid(String queriedGuid, String field) throws ActiveException{
-		return readValuesFromField(currentGuid, queriedGuid, field, currentTTL--);
+		return readValueFromField(currentGuid, queriedGuid, field, currentTTL--);
 	}
 	
 	/**
@@ -54,12 +57,13 @@ public class ActiveQuerier implements Querier {
 	 * @return true if the write succeeds, false otherwise
 	 * @throws ActiveException
 	 */
+	@Override
 	public boolean writeGuid(String queriedGuid, String field, Object value) throws ActiveException{
 		return writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
 	}
 	
-	@Override
-	public ValuesMap readValuesFromField(String querierGuid, String queriedGuid, String field, int ttl)
+	
+	private ValuesMap readValueFromField(String querierGuid, String queriedGuid, String field, int ttl)
 			throws ActiveException {
 		ValuesMap value = null;
 		try{
@@ -78,8 +82,7 @@ public class ActiveQuerier implements Querier {
 		return value;
 	}
 
-	@Override
-	public boolean writeValueIntoField(String querierGuid, String queriedGuid, String field, Object value, int ttl)
+	private boolean writeValueIntoField(String querierGuid, String queriedGuid, String field, Object value, int ttl)
 			throws ActiveException {
 		boolean wSuccess = false;
 		try{

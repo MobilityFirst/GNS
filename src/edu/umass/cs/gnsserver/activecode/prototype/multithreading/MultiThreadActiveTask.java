@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import javax.script.ScriptException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 import edu.umass.cs.gnsserver.utils.ValuesMap;

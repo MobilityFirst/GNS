@@ -22,7 +22,7 @@ import javax.script.SimpleScriptContext;
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
-import edu.umass.cs.gnsserver.activecode.prototype.multithreading.ActiveRunner;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -45,7 +45,7 @@ public class ActiveWorker {
 	private final int id;
 
 	
-	private ActiveQuerier querier;
+	private Querier querier;
 	
 	/**
 	 * bufferSize for all byte buffer
@@ -135,7 +135,7 @@ public class ActiveWorker {
 	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
-		querier.resetQuerier(guid, ttl);
+		((ActiveQuerier) querier).resetQuerier(guid, ttl);
 		return (ValuesMap) invocable.invokeFunction("run", value, field, querier);
 	}
 

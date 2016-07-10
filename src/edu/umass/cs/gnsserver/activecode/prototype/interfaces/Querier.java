@@ -6,8 +6,8 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 /**
  * This interface is used for active code to send back queries
  * to GNS from its worker. It contains the following interfaces:
- * readValuesFromFields
- * writeValueIntoField
+ * readGuid
+ * writeGuid
  * @author gaozy
  *
  */
@@ -17,7 +17,8 @@ public interface Querier {
 	 * This method allows customer's active code to read some other guid's value.
 	 * It allows querierGuid to read the values from the fields of queriedGuid.
 	 * 
-	 * <p>Querier guid and queried guid must be provided for ACL check. 
+	 * <p>Queried guid must be provided for ACL check. The implementation also needs
+	 * to provide the querier guid.
 	 * A user could query all fields by setting field to null, but it is not guaranteed that
 	 * every read could get a value to return as the field may not exist or
 	 * the read fails the ACL check for some field. GNS will return as many 
@@ -28,21 +29,19 @@ public interface Querier {
 	 * may apply. But the ttl value should be provided by ActiveQuerier, but not
 	 * user's code.
 	 * 
-	 * @param querierGuid
 	 * @param queriedGuid
 	 * @param field
-	 * @param ttl 
 	 * @return the ValuesMap read from the field of the guid
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public ValuesMap readValuesFromField(String querierGuid, String queriedGuid, String field, int ttl) throws ActiveException;
+	public ValuesMap readGuid(String queriedGuid, String field) throws ActiveException;
 	
 	
 	/**
 	 * This method allows customer's active code to update a field of some other guid.
 	 * It allows querierGuid to write value into a field of the queriedGuid.
 	 * 
-	 * <p>Querier guid, queried guid and field must be provided 
+	 * <p>Queried guid and field must be provided 
 	 * for ACL check. GNS returns true if the write operation succeeds on the GNS side, 
 	 * otherwise it returns false.
 	 * 
@@ -50,14 +49,12 @@ public interface Querier {
 	 * may apply. But the ttl value should be provided by ActiveQuerier, but not
 	 * user's code.
 	 * 
-	 * @param querierGuid
 	 * @param queriedGuid
 	 * @param field
 	 * @param value
-	 * @param ttl 
 	 * @return true if the write operation being executed succeeds, false otherwise
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public boolean writeValueIntoField(String querierGuid, String queriedGuid, String field, Object value, int ttl) throws ActiveException;
+	public boolean writeGuid(String queriedGuid, String field, Object value) throws ActiveException;
 	
 }

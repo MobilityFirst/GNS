@@ -12,7 +12,9 @@ import org.json.JSONException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.ActivePipe;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveQuerier;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 
 /**
  * @author gaozy
@@ -25,7 +27,7 @@ public class MultiThreadActiveWorker {
 	final AtomicInteger counter = new AtomicInteger();
 	final ActiveRunner[] runners;
 	private ActiveChannel channel;
-	private ActiveQuerier querier;
+	private Querier querier;
 	private final int numThread;
 	
 	private final String ifile;

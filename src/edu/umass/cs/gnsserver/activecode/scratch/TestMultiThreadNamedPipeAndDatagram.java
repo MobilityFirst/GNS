@@ -37,7 +37,12 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		private DatagramSocket clientSocket;
 		private int total;
 		private final AtomicInteger received = new AtomicInteger();
+		private final AtomicInteger sent = new AtomicInteger();
 		private int port;
+		private Object obj = new Object();
+		private boolean readyToSend = true;
+		private int thres;
+		
 		
 		SingleDatagramClient(int port, int total){
 			this.port = port;
@@ -47,33 +52,79 @@ public class TestMultiThreadNamedPipeAndDatagram {
 				e.printStackTrace();
 			}
 			this.total = total;
+			
+			try {
+				// set threshold for traffic control
+				thres = (int) (clientSocket.getSendBufferSize()/length*0.9);
+			} catch (SocketException e) {
+				e.printStackTrace();
+				// otherwise use default number
+				thres = 50;
+			}
+			
+			//thres = 100;
+			//System.out.println("Set the number of outstanding requests to "+thres);
 		}
 		
 		@Override
-		public void run() {	
-			InetAddress localAddress = null;
-			try {
-				localAddress = InetAddress.getByName("localhost");
-			} catch (UnknownHostException e1) {
-				e1.printStackTrace();
-			}
-			byte[] b = new byte[length];
-			new Random().nextBytes(b);
-			DatagramPacket p = new DatagramPacket(b, b.length, localAddress, port);
+		public void run() {						
 			/**
-			 * Send all requests sequentially
+			 * receive all responses
 			 */
 			while(received.get() < total){
 				try {
-					clientSocket.send(p);
 					byte[] receiveData = new byte[length];
 					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					clientSocket.receive(receivePacket);
 					received.incrementAndGet();
+					if(sent.get()-received.get() < thres){
+						readyToSend = true;
+						synchronized(obj){
+							obj.notifyAll();
+						}
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
+		}
+		
+		public void sendAllrequests() {
+			new Thread(){
+				public void run(){
+					InetAddress localAddress = null;
+					try {
+						localAddress = InetAddress.getByName("localhost");
+					} catch (UnknownHostException e1) {
+						e1.printStackTrace();
+					}
+					byte[] b = new byte[length];
+					new Random().nextBytes(b);
+					DatagramPacket packet = new DatagramPacket(b, b.length, localAddress, port);
+					
+					while(sent.get() < total){
+						if(sent.get() - received.get() < thres){
+							try {
+								clientSocket.send(packet);
+								sent.incrementAndGet();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}else{
+							readyToSend = false;
+							synchronized(obj){
+								while(!readyToSend){
+									try {
+										obj.wait();
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+									}
+								}
+							}
+						}
+					}
+				}
+			}.start();
 		}
 		
 		public boolean isFinished(){
@@ -137,6 +188,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		SingleDatagramClient[] clients = new SingleDatagramClient[numServers];
 		for (int i=0; i<numServers; i++){
 			clients[i] = new SingleDatagramClient(port+i, reqsPerClient);
+			executor.execute(clients[i]);
 		}
 		System.out.println("All clients ready!");
 		
@@ -144,7 +196,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		long t = System.currentTimeMillis();
 		
 		for (int i=0; i<numServers; i++){
-			executor.execute(clients[i]);
+			clients[i].sendAllrequests();
 		}
 		
 		for(int i=0; i<numServers; i++){
@@ -174,8 +226,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		@Override
 		public void run() {
 			byte[] buffer = new byte[length];
-			
-			
+						
 			while( counter.get() < total ){
 				if(channel.read(buffer) >0){
 					counter.incrementAndGet();
@@ -223,7 +274,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	}
 	
 	/**
-	 * 
+	 * Test the throughput of named pipe with the PipeClient and PipeServer as above
 	 */
 	@Test
 	public void test_02_NamedPipeThroughput(){
@@ -289,7 +340,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		numServers = 1; //Integer.parseInt(args[0]);
+		numServers = Integer.parseInt(args[0]);
 		
 		Result result = JUnitCore.runClasses(TestMultiThreadNamedPipeAndDatagram.class);
 		for (Failure failure : result.getFailures()) {
