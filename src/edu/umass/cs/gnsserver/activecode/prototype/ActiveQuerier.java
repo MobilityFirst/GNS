@@ -20,21 +20,36 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveQuerier implements Querier {
 	private ActiveChannel channel;
 	private final byte[] buffer = new byte[ActiveWorker.bufferSize];
-	private int currentTTL = 0;
-	private String currentGuid = "";
+	private int currentTTL;
+	private String currentGuid;
+	
+	/**
+	 * @param channel
+	 * @param ttl 
+	 * @param guid 
+	 */
+	public ActiveQuerier(ActiveChannel channel, int ttl, String guid){
+		this.channel = channel;
+		this.currentTTL = ttl;
+		this.currentGuid = guid;
+	}
+	
 	
 	/**
 	 * @param channel
 	 */
 	public ActiveQuerier(ActiveChannel channel){
-		this.channel = channel;
+		this(channel, 0, null);
 	}
-		
+	
 	/**
 	 * @param guid
 	 * @param ttl
 	 */
 	protected void resetQuerier(String guid, int ttl){
+		/**
+		 * This is high cost 
+		 */
 		this.currentGuid = guid;
 		this.currentTTL = ttl;
 	}
@@ -47,6 +62,8 @@ public class ActiveQuerier implements Querier {
 	 */
 	@Override
 	public ValuesMap readGuid(String queriedGuid, String field) throws ActiveException{
+		if(queriedGuid==null)
+			return null;
 		return readValueFromField(currentGuid, queriedGuid, field, currentTTL--);
 	}
 	
@@ -59,6 +76,8 @@ public class ActiveQuerier implements Querier {
 	 */
 	@Override
 	public boolean writeGuid(String queriedGuid, String field, Object value) throws ActiveException{
+		if(queriedGuid==null)
+			return false;
 		return writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
 	}
 	
@@ -106,9 +125,9 @@ public class ActiveQuerier implements Querier {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		ActiveQuerier querier = new ActiveQuerier(null);		
+		ActiveQuerier querier = new ActiveQuerier(null);
 		int ttl = 1;
-		String guid = "Zhaoyu Gao";		
+		String guid = "Zhaoyu Gao";			
 		
 		int n = 1000000;		
 		long t1 = System.currentTimeMillis();		
