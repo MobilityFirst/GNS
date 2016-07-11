@@ -4,6 +4,7 @@ package edu.umass.cs.gnsserver.activecode.prototype.interfaces;
  * @author gaozy
  *
  */
+@Deprecated
 public interface ActiveChannel {
 	
 	/**

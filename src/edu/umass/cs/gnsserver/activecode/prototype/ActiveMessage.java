@@ -9,13 +9,14 @@ import java.nio.file.Paths;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * @author gaozy
  *
  */
-public class ActiveMessage {
+public class ActiveMessage implements Message{
 	
 	private final static String CHARSET = "ISO-8859-1";
 	
@@ -187,9 +188,14 @@ public class ActiveMessage {
 		return value;
 	}
 	
+	protected String getError(){
+		return error;
+	}
+	
 	protected void setValue(ValuesMap value){
 		this.value = value;
 	}
+		
 	
 	private int getEstimatedLengthExceptForValuesMap(){
 		int length = 0;
@@ -232,6 +238,7 @@ public class ActiveMessage {
 	 * @return the byte array being serialized
 	 * @throws UnsupportedEncodingException
 	 */
+	@Override
 	public byte[] toBytes() throws UnsupportedEncodingException{
 		// First convert ValuesMap to String, as it is costly
 		String valuesMapString = (value == null)?null:value.toString();

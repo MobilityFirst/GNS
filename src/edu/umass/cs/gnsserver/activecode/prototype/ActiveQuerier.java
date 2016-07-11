@@ -1,12 +1,10 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import java.io.IOException;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -18,8 +16,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  */
 public class ActiveQuerier implements Querier {
-	private ActiveChannel channel;
-	private final byte[] buffer = new byte[ActiveWorker.bufferSize];
+	private Channel channel;
 	private int currentTTL;
 	private String currentGuid;
 	
@@ -28,7 +25,7 @@ public class ActiveQuerier implements Querier {
 	 * @param ttl 
 	 * @param guid 
 	 */
-	public ActiveQuerier(ActiveChannel channel, int ttl, String guid){
+	public ActiveQuerier(Channel channel, int ttl, String guid){
 		this.channel = channel;
 		this.currentTTL = ttl;
 		this.currentGuid = guid;
@@ -38,7 +35,7 @@ public class ActiveQuerier implements Querier {
 	/**
 	 * @param channel
 	 */
-	public ActiveQuerier(ActiveChannel channel){
+	public ActiveQuerier(Channel channel){
 		this(channel, 0, null);
 	}
 	
@@ -71,14 +68,13 @@ public class ActiveQuerier implements Querier {
 	 * @param queriedGuid
 	 * @param field
 	 * @param value
-	 * @return true if the write succeeds, false otherwise
 	 * @throws ActiveException
 	 */
 	@Override
-	public boolean writeGuid(String queriedGuid, String field, Object value) throws ActiveException{
+	public void writeGuid(String queriedGuid, String field, Object value) throws ActiveException{
 		if(queriedGuid==null)
-			return false;
-		return writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
+			throw new ActiveException();
+		writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
 	}
 	
 	
@@ -87,38 +83,35 @@ public class ActiveQuerier implements Querier {
 		ValuesMap value = null;
 		try{
 			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid);
-			//System.out.println("Send back query");
-			byte[] buf = am.toBytes();
-			channel.write(buf, 0, buf.length);
-			int length = channel.read(buffer);
-			if(length >0){
-				value = new ActiveMessage(buffer).getValue();				
-			}
-			Arrays.fill(buffer, (byte) 0);
-		} catch(UnsupportedEncodingException | JSONException e) {
+			channel.sendMessage(am);
+			ActiveMessage response = (ActiveMessage) channel.receiveMessage();
+			value = response.getValue();
+		} catch(IOException e) {
 			throw new ActiveException();
 		}
 		return value;
 	}
 
-	private boolean writeValueIntoField(String querierGuid, String queriedGuid, String field, Object value, int ttl)
+	private void writeValueIntoField(String querierGuid, String queriedGuid, String field, Object value, int ttl)
 			throws ActiveException {
-		boolean wSuccess = false;
-		try{
+		
 			ValuesMap map = new ValuesMap();
-			map.put(field, value);
-			ActiveMessage am = new ActiveMessage(ttl, querierGuid, queriedGuid, field, map);
-			byte[] buf = am.toBytes();
-			channel.write(buf, 0, buf.length);
-			int length = channel.read(buffer);
-			map = new ValuesMap(new JSONObject(new String(buffer,0,length)));
-			if(map.getBoolean(field)){
-				wSuccess = true;
+			try {
+				map.put(field, value);
+			} catch (JSONException e) {
+				e.printStackTrace();
+				throw new ActiveException();
 			}
-		}catch(Exception e){
-			throw new ActiveException();
-		}
-		return wSuccess;
+			ActiveMessage am = new ActiveMessage(ttl, querierGuid, queriedGuid, field, map);
+			try {
+				channel.sendMessage(am);
+				ActiveMessage response = (ActiveMessage) channel.receiveMessage();
+				if (response.getError() != null){
+					throw new ActiveException();
+				}
+			} catch (IOException e) {
+				throw new ActiveException();
+			}
 	}
 	
 	/**

@@ -9,26 +9,28 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import org.json.JSONException;
+
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 
 /**
- * This class is deprecated, and it is only used for test only.
  * @author gaozy
  *
  */
-@Deprecated
-public class ActivePipe implements ActiveChannel{
+public class ActiveNamedPipe implements Channel {
 	
 	private InputStream reader;
 	private OutputStream writer;
+	
 	byte[] readerLengthBuffer = new byte[Integer.BYTES];
 	byte[] writerLengthBuffer = new byte[Integer.BYTES];
-			
+	
 	/**
 	 * @param ifile 
 	 * @param ofile 
 	 */
-	public ActivePipe(String ifile, String ofile){
+	public ActiveNamedPipe(String ifile, String ofile){
 		Thread t = new Thread(new Runnable() {
 	         public void run()
 	         {
@@ -53,40 +55,38 @@ public class ActivePipe implements ActiveChannel{
 		}
 	}
 	
-	public int read(byte[] buffer){
-		int length = 0;
-		
-		try {
-			
-			if(reader.read(readerLengthBuffer)>0){
-				length = ByteBuffer.wrap(readerLengthBuffer).getInt();
-				reader.read(buffer, 0, length);
-			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}		
-		return length;
-	}
-	
-	/**
-	 * This method must be synchronized because it is not guaranteed that lines will remain intact
-	 * when writing into a same pipe. They can become intermingled.
-	 */
-	public boolean write(byte[] buffer, int offset, int length){
-		boolean wSuccess = false;
+	@Override
+	public void sendMessage(Message msg) throws IOException {
+		byte[] buf = msg.toBytes();
+		int length = buf.length;
 		try {
 			// write the length of byte array first then send the content			
-			writer.write(ByteBuffer.allocate(Integer.BYTES+length).putInt(length).put(buffer).array());
-			//writer.write(buffer, offset, length);
+			writer.write(ByteBuffer.allocate(Integer.BYTES+length).putInt(length).put(buf).array());
 			writer.flush();
-			wSuccess = true;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return wSuccess;
+	}
+
+	@Override
+	public Message receiveMessage() throws IOException {
+		Message am = null;
+					
+		if(reader.read(readerLengthBuffer, 0, readerLengthBuffer.length)>0){
+			int length = ByteBuffer.wrap(readerLengthBuffer).getInt();
+			byte[] buffer = new byte[length];
+			reader.read(buffer, 0, length);
+			try {
+				am = new ActiveMessage(buffer);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return am;
 	}
 	
+	@Override
 	public void shutdown() {
 		try{
 			if(reader != null)
@@ -97,6 +97,5 @@ public class ActivePipe implements ActiveChannel{
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 }

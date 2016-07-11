@@ -1,8 +1,7 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +20,7 @@ import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -39,7 +38,7 @@ public class ActiveWorker {
 	
 	
 	
-	private final ActiveChannel channel;
+	private final Channel channel;
 	private final String ifile;
 	private final String ofile;
 	private final int id;
@@ -50,7 +49,7 @@ public class ActiveWorker {
 	/**
 	 * bufferSize for all byte buffer
 	 */
-	public final static int bufferSize = 1024*4;
+	//public final static int bufferSize = 1024*4;
 	
 	/******************* TEST ********************/
 	private final ThreadPoolExecutor executor;
@@ -84,7 +83,7 @@ public class ActiveWorker {
 		}
 		
 		if(!isTest){
-			channel = new ActivePipe(ifile, ofile);
+			channel = new ActiveNamedPipe(ifile, ofile);
 			querier = new ActiveQuerier(channel);
 			
 			try {
@@ -140,13 +139,11 @@ public class ActiveWorker {
 	}
 
 	
-	private void runWorker(int numThread) throws UnsupportedEncodingException, JSONException {		
-		byte[] buffer = new byte[bufferSize];
+	private void runWorker(int numThread) throws JSONException, IOException {
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		
-		while((channel.read(buffer)) > 0){
-			ActiveMessage msg = new ActiveMessage(buffer);
-			Arrays.fill(buffer, (byte) 0);
+		ActiveMessage msg = null;
+		while((msg = (ActiveMessage) channel.receiveMessage()) != null){
 			if(numThread == 1){
 				ActiveMessage response;
 				try {
@@ -154,9 +151,8 @@ public class ActiveWorker {
 				} catch (NoSuchMethodException | ScriptException e) {
 					response = new ActiveMessage(null, e.getMessage());
 					e.printStackTrace();
-				}
-				byte[] buf = response.toBytes();
-				channel.write(buf, 0, buf.length);
+				}				
+				channel.sendMessage(response);
 			} else{
 				ValuesMap value = null;
 				ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
@@ -169,8 +165,8 @@ public class ActiveWorker {
 					}
 				}
 				
-				byte[] buf = new ActiveMessage(value, null).toBytes();
-				channel.write(buf, 0, buf.length);
+				ActiveMessage response = new ActiveMessage(value, null);
+				channel.sendMessage(response);
 			}
 		}
 	}

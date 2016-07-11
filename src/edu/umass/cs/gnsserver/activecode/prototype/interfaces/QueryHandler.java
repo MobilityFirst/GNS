@@ -15,7 +15,7 @@ public abstract class QueryHandler {
 	 * This method handles the incoming requests from ActiveQuerier,
 	 * the query could be a read or write request.
 	 * 
-	 * @param am 
+	 * @param am O
 	 * @return an ActiveMessage being sent back to worker as a response to the query
 	 */
 	public ActiveMessage handleQuery(ActiveMessage am){
@@ -24,7 +24,7 @@ public abstract class QueryHandler {
 			response = handleReadQuery(am.getGuid(), am.getTargetGuid(), am.getField(), am.getTtl());
 		else
 			response = handleWriteQuery(am.getGuid(), am.getTargetGuid(), am.getField(), am.getValue(), am.getTtl());
-		
+
 		return response;
 	}
 	

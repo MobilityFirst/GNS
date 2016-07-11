@@ -52,9 +52,8 @@ public interface Querier {
 	 * @param queriedGuid
 	 * @param field
 	 * @param value
-	 * @return true if the write operation being executed succeeds, false otherwise
 	 * @throws ActiveException throws an exception if any parameter is null or response indicates the query fails
 	 */
-	public boolean writeGuid(String queriedGuid, String field, Object value) throws ActiveException;
+	public void writeGuid(String queriedGuid, String field, Object value) throws ActiveException;
 	
 }

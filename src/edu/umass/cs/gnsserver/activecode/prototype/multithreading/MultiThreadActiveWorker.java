@@ -1,19 +1,16 @@
 package edu.umass.cs.gnsserver.activecode.prototype.multithreading;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.json.JSONException;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.ActivePipe;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveNamedPipe;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 
 /**
@@ -26,7 +23,7 @@ public class MultiThreadActiveWorker {
 	final ThreadPoolExecutor executor;
 	final AtomicInteger counter = new AtomicInteger();
 	final ActiveRunner[] runners;
-	private ActiveChannel channel;
+	private Channel channel;
 	private Querier querier;
 	private final int numThread;
 	
@@ -42,7 +39,7 @@ public class MultiThreadActiveWorker {
 		
 		executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		executor.prestartAllCoreThreads();		
-		channel = new ActivePipe(ifile, ofile);
+		channel = new ActiveNamedPipe(ifile, ofile);
 		querier = new ActiveQuerier(channel);
 		
 		runners = new ActiveRunner[numThread];
@@ -53,7 +50,7 @@ public class MultiThreadActiveWorker {
 		
 		try {
 			runWorker();
-		} catch (UnsupportedEncodingException | JSONException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		} finally{
 			channel.shutdown();
@@ -69,19 +66,13 @@ public class MultiThreadActiveWorker {
 		executor.execute(new MultiThreadActiveTask(runners[counter.getAndIncrement()%numThread], am, channel));
 	}
 	
-	protected synchronized void sendResponse(byte[] buffer){
-		channel.write(buffer, 0, buffer.length);
-	}
-	
-	private void runWorker() throws UnsupportedEncodingException, JSONException {		
-		byte[] buffer = new byte[bufferSize];
+	private void runWorker() throws IOException {
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		while(true){
-			if(channel.read(buffer) > 0){
-				ActiveMessage msg = new ActiveMessage(buffer);
-				//System.out.println("Length:"+length+",Type:"+msg.type+",msg:"+msg);
-				Arrays.fill(buffer, (byte) 0);			
-				submitTask(msg);
+			ActiveMessage request = null;
+			if((request = (ActiveMessage) channel.receiveMessage()) != null){
+				
+				submitTask(request);
 			}
 		}
 	}

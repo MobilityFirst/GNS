@@ -2,22 +2,17 @@ package edu.umass.cs.gnsserver.activecode.prototype.multithreading;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.ProcessBuilder.Redirect;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.json.JSONException;
-
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
-import edu.umass.cs.gnsserver.activecode.prototype.ActivePipe;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker;
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveNamedPipe;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -26,11 +21,10 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class MultiThreadActiveClient implements Runnable{
 	
-	private ActiveChannel channel;
+	private Channel channel;
 	private String ifile;
 	private String ofile;
-	private final byte[] buffer = new byte[ActiveWorker.bufferSize];
-	
+		
 	private Process workerProc;
 	private int numThread;
 	final private int id;
@@ -61,7 +55,7 @@ public class MultiThreadActiveClient implements Runnable{
 			e.printStackTrace();
 		}
 		
-		channel = new ActivePipe(ifile, ofile);
+		channel = new ActiveNamedPipe(ifile, ofile);
 		
 		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 	}
@@ -106,31 +100,23 @@ public class MultiThreadActiveClient implements Runnable{
 		return this.getClass().getSimpleName()+id;
 	}
 	
-	protected ActiveMessage receiveMessage(){		
+	
+	protected ActiveMessage receiveMessage() {		
 		ActiveMessage am = null;
-		int length = channel.read(buffer);
-		if(length > 0){
-			//System.out.println("receive length:"+length);
-			try {
-				am = new ActiveMessage(buffer);
-			} catch (UnsupportedEncodingException | JSONException e) {
-				e.printStackTrace();
-			}
+		try {
+			am = (ActiveMessage) channel.receiveMessage();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		Arrays.fill(buffer, (byte) 0); 
 		return am;
 	}
 	
-	protected boolean sendMessage(ActiveMessage am){
-		boolean wSuccess = false;
+	protected void sendMessage(ActiveMessage am){
 		try {
-			byte[] buf = am.toBytes();		
-			wSuccess = channel.write(buf, 0, buf.length);
-			//System.out.println("send length:"+buf.length);
-		} catch (UnsupportedEncodingException e) {
+			channel.sendMessage(am);
+		} catch (IOException e) {
 			e.printStackTrace();
-		}		
-		return wSuccess;
+		}
 	}
 	
 	/**
@@ -163,7 +149,7 @@ public class MultiThreadActiveClient implements Runnable{
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		
-		int numThread = Integer.parseInt(args[0]);
+		int numThread = 1; //Integer.parseInt(args[0]);
 		String cfile = "/tmp/client";
 		String sfile = "/tmp/server";
 		int id = 0;
