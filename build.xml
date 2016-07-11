@@ -391,11 +391,10 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
-      <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
