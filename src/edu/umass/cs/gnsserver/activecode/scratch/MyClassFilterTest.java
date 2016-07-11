@@ -1,5 +1,7 @@
 package edu.umass.cs.gnsserver.activecode.scratch;
 
+import java.io.IOException;
+
 import javax.script.ScriptEngine;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
@@ -32,7 +34,7 @@ public class MyClassFilterTest {
     }
   }
  
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
     MyClassFilterTest myApp = new MyClassFilterTest();
     myApp.testClassFilter();
   }

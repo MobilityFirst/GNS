@@ -29,20 +29,15 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  */
 public class ActiveWorker {
-		
+	
 	private ScriptEngine engine;
 	private Invocable invocable;
 	
 	private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
 	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
-	
-	
 	private final Channel channel;
-	private final String ifile;
-	private final String ofile;
 	private final int id;
-
 	
 	private Querier querier;
 	
@@ -57,15 +52,49 @@ public class ActiveWorker {
 	private static final AtomicInteger counter = new AtomicInteger();
 	
 	/**
+	 * Initialize a worker with a UDP channel
+	 * @param port
+	 * @param id
+	 * @param numThread
+	 */
+	protected ActiveWorker(int port, int serverPort, int id, int numThread){
+		this.id = id;
+		
+		engine = new ScriptEngineManager().getEngineByName("nashorn");
+		invocable = (Invocable) engine;
+		if(numThread>1){
+			executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());	
+			executor.prestartAllCoreThreads();
+			runners = new ActiveRunner[numThread];
+			for (int i=0; i<numThread; i++){
+				runners[i] = new ActiveRunner(null);
+			}
+		}else{
+			executor = null;
+			runners = null;
+		}
+		
+		channel = new ActiveDatagramChannel(port, serverPort);
+		querier = new ActiveQuerier(channel);
+		
+		try {
+			runWorker(numThread);
+		} catch (Exception e){
+			e.printStackTrace();
+		} finally {
+			channel.shutdown();
+		}
+	}
+	
+	/**
+	 * Initialize a worker with a named pipe
 	 * @param ifile
 	 * @param ofile
 	 * @param id 
 	 * @param numThread 
 	 * @param isTest
 	 */
-	public ActiveWorker(String ifile, String ofile, int id, int numThread, boolean isTest) {		
-		this.ifile = ifile;
-		this.ofile = ofile;
+	protected ActiveWorker(String ifile, String ofile, int id, int numThread, boolean isTest) {
 		this.id = id;
 		
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
@@ -140,7 +169,7 @@ public class ActiveWorker {
 
 	
 	private void runWorker(int numThread) throws JSONException, IOException {
-		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
+		//System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		
 		ActiveMessage msg = null;
 		while((msg = (ActiveMessage) channel.receiveMessage()) != null){
@@ -192,16 +221,27 @@ public class ActiveWorker {
 		return this.getClass().getSimpleName()+id;
 	}
 	
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args){
-		String cfile = args[0];
-		String sfile = args[1];
-		int id = Integer.parseInt(args[2]);
-		int copy = Integer.parseInt(args[3]);
-		
-		new ActiveWorker(cfile, sfile, id, copy, false);
-		
+		boolean pipeEnable = Boolean.parseBoolean(args[4]);
+		if(pipeEnable){
+			String cfile = args[0];
+			String sfile = args[1];
+			int id = Integer.parseInt(args[2]);
+			int copy = Integer.parseInt(args[3]);
+			
+			new ActiveWorker(cfile, sfile, id, copy, false);
+		}
+		else {
+			int port = Integer.parseInt(args[0]);
+			int serverPort = Integer.parseInt(args[1]);
+			int id = Integer.parseInt(args[2]);
+			int copy = Integer.parseInt(args[3]);
+			
+			new ActiveWorker(port, serverPort, id, copy);
+		}
 	}
 }

@@ -29,16 +29,15 @@ public class ActiveClient {
 	private String ifile;
 	private String ofile;
 	
+	
 	private Process workerProc;
 	final private int id;
+	final private boolean pipeEnable;
 	
 	private static int heapSize = 64;
 	
-	
-	
 	/************** Test Only ******************/
-	final ActiveWorker worker;
-	
+	final ActiveWorker worker;	
 	
 	/**
 	 * @param app 
@@ -51,6 +50,7 @@ public class ActiveClient {
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
+		this.pipeEnable = true;
 		
 		Runtime runtime = Runtime.getRuntime();
 		try {
@@ -58,19 +58,40 @@ public class ActiveClient {
 			runtime.exec("mkfifo "+ofile);
 		} catch (IOException e1) {
 			e1.printStackTrace();
-		}
-		
+		}		
 		try {
 			workerProc = startWorker(ofile, ifile, id, workerNumThread);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		channel = new ActiveNamedPipe(ifile, ofile);
-		//new ActivePipe(ifile, ofile);
-		
+		channel = new ActiveNamedPipe(ifile, ofile);				
 		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 		
+		queryHandler = new ActiveQueryHandler(app);
+		
+		worker = new ActiveWorker(null, null, 0, 1, true);
+	}
+	
+	/**
+	 * Initialize a client with a UDP channel
+	 * @param app
+	 * @param port
+	 * @param serverPort
+	 * @param id
+	 * @param workerNumThread
+	 */
+	public ActiveClient(ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
+		this.pipeEnable = false;
+		this.id = id;
+		
+		try {
+			// reverse the order of port and serverPort, so that worker 
+			workerProc = startWorker(serverPort, port, id, workerNumThread);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		channel = new ActiveDatagramChannel(port, serverPort);
 		queryHandler = new ActiveQueryHandler(app);
 		
 		worker = new ActiveWorker(null, null, 0, 1, true);
@@ -89,11 +110,21 @@ public class ActiveClient {
 		if(workerProc != null){
 			workerProc.destroy();
 		}
-		
-		(new File(ifile)).delete();
-		(new File(ofile)).delete();
+		if(pipeEnable){
+			(new File(ifile)).delete();
+			(new File(ofile)).delete();
+		}
 	}
 	
+	/**
+	 * Create a worker with named pipe
+	 * @param ifile
+	 * @param ofile
+	 * @param id
+	 * @param workerNumThread
+	 * @return
+	 * @throws IOException
+	 */
 	private Process startWorker(String ifile, String ofile, int id, int workerNumThread) throws IOException{
 		List<String> command = new ArrayList<String>();
 		String classpath = System.getProperty("java.class.path");
@@ -115,8 +146,41 @@ public class ActiveClient {
 		builder.redirectOutput(Redirect.INHERIT);
 		//builder.redirectInput(Redirect.INHERIT);
 		
-		Process process = builder.start();		
-		//System.out.println("Worker Start ...");
+		Process process = builder.start();
+		return process;
+	}
+	
+	/**
+	 * Create a worker with UDP channel
+	 * 
+	 * @param port1
+	 * @param id
+	 * @param workerNumThread
+	 * @return
+	 * @throws IOException
+	 */
+	private Process startWorker(int port1, int port2, int id, int workerNumThread) throws IOException{
+		List<String> command = new ArrayList<String>();
+		String classpath = System.getProperty("java.class.path");
+	    command.add("java");
+	    command.add("-Xms"+heapSize+"m");
+	    command.add("-Xmx"+heapSize+"m");
+	    command.add("-cp");
+	    command.add(classpath);
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker");
+	    command.add(""+port1);
+	    command.add(""+port2);
+	    command.add(""+id);
+	    command.add(""+workerNumThread);
+		
+	    ProcessBuilder builder = new ProcessBuilder(command);
+		builder.directory(new File(System.getProperty("user.dir")));
+		
+		builder.redirectError(Redirect.INHERIT);
+		builder.redirectOutput(Redirect.INHERIT);
+		//builder.redirectInput(Redirect.INHERIT);
+		
+		Process process = builder.start();
 		return process;
 	}
 	
@@ -159,6 +223,7 @@ public class ActiveClient {
 	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
 		
 		if(field.equals("level3")){
+			//FIXME: this test can be removed together with worker variable
 			try {
 				return worker.runCode(guid, field, code, valuesMap, ttl);
 			} catch (NoSuchMethodException | ScriptException e) {
@@ -188,7 +253,6 @@ public class ActiveClient {
 				ActiveMessage am = null;
 				if(response.type==Type.READ_QUERY){
 					am = queryHandler.handleReadQuery(response.getGuid(), response.getTargetGuid(), response.getField(), response.getTtl());
-
 				} else {
 					am = queryHandler.handleWriteQuery(response.getGuid(), response.getTargetGuid(), response.getField(), response.getValue(), response.getTtl());
 				}
@@ -222,7 +286,9 @@ public class ActiveClient {
 		
 		String cfile = "/tmp/client"+suffix;
 		String sfile = "/tmp/server"+suffix;		
-		
+		/**
+		 * Test client performance with named pipe channel
+		 */
 		ActiveClient client = new ActiveClient(null, cfile, sfile, 0, numThread);
 		
 		String guid = "guid";

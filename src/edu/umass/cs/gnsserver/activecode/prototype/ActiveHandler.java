@@ -1,5 +1,6 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,9 +25,16 @@ public class ActiveHandler {
 	
 	private ActiveClient[] clientPool;
 	
-	private final String cfilePrefix = "/tmp/client_";
-	private final String sfilePrefix = "/tmp/server_";
-	private final String suffix = "_pipe";
+	private final static String cfilePrefix = "/tmp/client_";
+	private final static String sfilePrefix = "/tmp/server_";
+	private final static String suffix = "_pipe";
+	private final static int clientPort = 50000;
+	private final static int workerPort = 60000;
+	
+	/**
+	 * Test then initialize this variable
+	 */
+	public boolean pipeEnable = true;
 	
 	private final int numProcess;
 	final AtomicInteger counter = new AtomicInteger();
@@ -39,6 +47,14 @@ public class ActiveHandler {
 	 * @param numProcess
 	 */
 	public ActiveHandler(ActiveDBInterface app, int numProcess){
+		final String fileTestForPipe = "/tmp/test";
+		try {
+			Runtime.getRuntime().exec("mkfifo "+fileTestForPipe);
+			new File(fileTestForPipe).delete();
+		} catch (IOException e) {
+			pipeEnable = false;
+			e.printStackTrace();			
+		}
 		
 		this.numProcess = numProcess;
 		executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -46,7 +62,11 @@ public class ActiveHandler {
 		
 		clientPool = new ActiveClient[numProcess];
 		for (int i=0; i<numProcess; i++){
-			clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
+			if(pipeEnable){
+				clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
+			} else {
+				clientPool[i] = new ActiveClient(app, clientPort+i, workerPort+i, i, 1);
+			}
 		}
 		
 	}
