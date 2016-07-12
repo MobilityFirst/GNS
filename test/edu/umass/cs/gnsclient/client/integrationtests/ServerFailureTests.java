@@ -145,12 +145,12 @@ public class ServerFailureTests {
 
 		//Stop the server
 		System.out.println("Stopping " +serverName);
-		//Process killServer = Runtime.getRuntime().exec(execString+ "stop " + serverName);
-		RunServer.command(
+		Process killServer = Runtime.getRuntime().exec(execString+ "stop " + serverName);
+		/*RunServer.command(
 				System.getProperty(DefaultProps.SERVER_COMMAND.key)
 				+ " " + getGigaPaxosOptions()
-				+ " stop " + serverName, ".");
-		//killServer.waitFor(); //Throws a possible interruptedException here
+				+ " stop " + serverName, ".");*/
+		killServer.waitFor(); //Throws a possible interruptedException here
 		System.out.println(serverName +" stopping.");
 		
 		/*
@@ -180,17 +180,18 @@ public class ServerFailureTests {
 		synchronized(suite){
 			for (String serverName : suite.serverDownNameArray){
 				System.out.println("Restarting " + serverName);
-				/*Process restartServer = Runtime.getRuntime().exec(execString + "start " + serverName);
+				Process restartServer = Runtime.getRuntime().exec(execString + "start " + serverName);
 				try {
 					restartServer.waitFor();
 				} catch (InterruptedException e) {
 					// There's not much to be done if the process gets interrupted here
 					e.printStackTrace();
-				}*/
-				RunServer.command(
+				}
+				/*RunServer.command(
 						System.getProperty(DefaultProps.SERVER_COMMAND.key)
 						+ " " + getGigaPaxosOptions()
-						+ " restart " + serverName, ".");
+						+ " restart " + serverName, ".");*/
+				
 				System.out.println(serverName +" restarting.");
 				synchronized(suite){
 					suite.serverDownNameArray.remove(serverName);
@@ -224,10 +225,8 @@ public class ServerFailureTests {
 		reader.close();
 		System.out.println("Active Replicas to be used: " + suite.serverNameArray.toString());
 		
-		//Start all the servers
-		/*execString = topDir + "/bin/gpServer.sh -DgigapaxosConfig="+gpPropDir+" ";
-		System.out.println("Running " + execString + "start all");
-		Process startProcess = Runtime.getRuntime().exec(execString + "start all");
+		//Kill any running servers
+		Process startProcess  = Runtime.getRuntime().exec("kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`");
 		InputStream serverLauncherOutput = startProcess.getInputStream();
 		BufferedReader output = new BufferedReader(new InputStreamReader(serverLauncherOutput));
 		line = output.readLine();
@@ -236,9 +235,36 @@ public class ServerFailureTests {
 			line = output.readLine();
 		}
 		startProcess.waitFor();
-		System.out.println("Servers started.");*/
 		
-		RunServer
+		//Kill any saved state
+		execString = topDir + "/bin/gpServer.sh -DgigapaxosConfig="+gpPropDir+" ";
+		System.out.println("Running " + execString + "forceclear all");
+		startProcess = Runtime.getRuntime().exec(execString + "forceclear all");
+		serverLauncherOutput = startProcess.getInputStream();
+		output = new BufferedReader(new InputStreamReader(serverLauncherOutput));
+		line = output.readLine();
+		while (startProcess.isAlive() && (line!=null)){
+			System.out.println(line);
+			line = output.readLine();
+		}
+		startProcess.waitFor();
+		
+
+
+		//Start the servers
+		System.out.println("Running " + execString + "restart all");
+		startProcess = Runtime.getRuntime().exec(execString + "restart all");
+		serverLauncherOutput = startProcess.getInputStream();
+		output = new BufferedReader(new InputStreamReader(serverLauncherOutput));
+		line = output.readLine();
+		while (startProcess.isAlive() && (line!=null)){
+			System.out.println(line);
+			line = output.readLine();
+		}
+		startProcess.waitFor();
+		System.out.println("Servers started.");
+		
+		/*RunServer
 		.command(
 				"kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`",
 				".");
@@ -261,7 +287,7 @@ public class ServerFailureTests {
 		} else {
 			fail("Server command failure: ; aborting all tests.");
 		}
-		
+		*/
 		Thread.sleep(5000);
 		 System.out.println("Starting client");
 		    
