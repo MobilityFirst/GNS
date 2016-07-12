@@ -262,6 +262,7 @@ public class ServerFailureTests {
 			fail("Server command failure: ; aborting all tests.");
 		}
 		
+		Thread.sleep(5000);
 		 System.out.println("Starting client");
 		    
 		    client = new GNSClientCommands();
@@ -297,6 +298,7 @@ public class ServerFailureTests {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		/*
 		ArrayList<String> output = RunServer.command(
 				new File(System
 						.getProperty(DefaultProps.SERVER_COMMAND.key))
@@ -308,7 +310,12 @@ public class ServerFailureTests {
 			}
 		} else {
 			System.out.println("SHUTDOWN SERVER COMMAND FAILED!");
-		}
+		}*/
+		
+		RunServer.command(
+				System.getProperty(DefaultProps.SERVER_COMMAND.key)
+				+ " " + getGigaPaxosOptions()
+				+ " stop all", ".");
 		if (client != null) {
 			client.close();
 		}
