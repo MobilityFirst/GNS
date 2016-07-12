@@ -178,6 +178,7 @@ public class ServerFailureTests {
 	public static void recoverAllServers() throws IOException{
 		//Restart the server to simulate recovery.
 		synchronized(suite){
+			ArrayList<String> toRestart = new ArrayList<String>();
 			for (String serverName : suite.serverDownNameArray){
 				System.out.println("Restarting " + serverName);
 				Process restartServer = Runtime.getRuntime().exec(execString + "start " + serverName);
@@ -193,10 +194,11 @@ public class ServerFailureTests {
 						+ " restart " + serverName, ".");*/
 				
 				System.out.println(serverName +" restarting.");
-				synchronized(suite){
-					suite.serverDownNameArray.remove(serverName);
-					suite.serverNameArray.add(serverName);
-				}
+				toRestart.add(serverName);
+			}
+			synchronized(suite){
+				suite.serverDownNameArray.removeAll(toRestart);
+				suite.serverNameArray.addAll(toRestart);
 			}
 		}
 	}
@@ -319,7 +321,7 @@ public class ServerFailureTests {
 		    }
 		
 		//Begin emulating transport delays
-		JSONDelayEmulator.emulateDelays();
+		//JSONDelayEmulator.emulateDelays();
 	}
 
 	@AfterClass
@@ -394,7 +396,7 @@ public class ServerFailureTests {
 	    startClock = System.currentTimeMillis();
 	    numRequestsSuccessful = 0;
 	    Thread threads[] = new Thread[numThreads];
-	    System.out.println("Beginning to test read throughput...");
+	    System.out.println("Spawning client threads...");
 	    for (int i = 0; i < numThreads; i++){
 			threads[i] = new Thread(){ 
 				public void run(){
@@ -424,25 +426,32 @@ public class ServerFailureTests {
 					}
 				}
 			};
-			threads[i].run();
+			threads[i].start();
 		}
+	    System.out.println("Client threads all spawned.");
 	    //Wait TEST_TIME ms before ending the test phase.
 	    int requestCount = 0;
 	    int NUM_FAILURES=2;
+	    endClock=System.currentTimeMillis();
 	    for (int i = 0; i <= NUM_FAILURES; i++){
 	    	//Bring all servers back up
 	    	recoverAllServers();
+	    	//Start with 0 failures, then 1, then 2, etc.
+    		System.out.println("Causing " + i + " server failures.");
+	    	for (int j = 0; j < i; j++){
+	    		causeRandomServerFailure();
+	    	}
+	    	synchronized(suite){
+		    	startClock = System.currentTimeMillis();
+	    		suite.numRequestsSuccessful = 0;
+	    	}
 	    	while (endClock - startClock < TEST_TIME){
 	    		Thread.sleep(1000);
 	    		endClock = System.currentTimeMillis();
 	    		requestCount = suite.numRequestsSuccessful;
 	    		System.out.println("Average read throughput: " + Double.toString(requestCount / (endClock - startClock)));
 	    	}
-	    	//Start with 0 failures, then 1, then 2, etc.
-	    	for (int j = 0; j < i; j++){
-	    		causeRandomServerFailure();
-	    	}
-    		System.out.println("Causing " + i + " server failures.");
+
 	    }
 	    //Stop all the threads.
 	    for (int i = 0; i < numThreads; i++){

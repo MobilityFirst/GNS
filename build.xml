@@ -384,6 +384,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
 
   <target name="testFailures" description="Runs the default integration test against a 3 node server" 
           depends="compile, compiletest">
+          <property name="integrationTestThreads" value="50"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerFailureTests"/>
       <formatter type="plain" usefile="false"/>
@@ -391,6 +392,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
+      <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
       <jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>
