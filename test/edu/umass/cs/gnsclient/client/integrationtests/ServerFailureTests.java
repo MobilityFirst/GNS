@@ -31,6 +31,7 @@ import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest.DefaultProps;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
@@ -262,32 +263,34 @@ public class ServerFailureTests {
 			fail("Server command failure: ; aborting all tests.");
 		}
 		
-		client = new GNSClientCommands();
-		// Make all the reads be coordinated
-		client.setForceCoordinatedReads(true);
-		// arun: connectivity check embedded in GNSClient constructor
-		boolean connected = client instanceof GNSClient;
-		if (connected) {
-			System.out.println("Client created and connected to server.");
-		}
-		//
-		int tries = 5;
-		boolean accountCreated = false;
+		 System.out.println("Starting client");
+		    
+		    client = new GNSClientCommands();
+		    // Make all the reads be coordinated
+		    client.setForceCoordinatedReads(true);
+		    // arun: connectivity check embedded in GNSClient constructor
+		    boolean connected = client instanceof GNSClient;
+		    if (connected) {
+		      System.out.println("Client created and connected to server.");
+		    }
+		    //
+		    int tries = 5;
+		    boolean accountCreated = false;
 
-		do {
-			try {
-				System.out.println("Creating account guid: " + (tries - 1)
-						+ " attempt remaining.");
-				masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
-						accountAlias, PASSWORD, true);
-				accountCreated = true;
-			} catch (Exception e) {
-				ThreadUtils.sleep((5 - tries) * 5000);
-			}
-		} while (!accountCreated && --tries > 0);
-		if (accountCreated == false) {
-			fail("Failure setting up account guid; aborting all tests.");
-		}
+		    do {
+		      try {
+		        System.out.println("Creating account guid: " + (tries - 1)
+		                + " attempt remaining.");
+		        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
+		                accountAlias, PASSWORD, true);
+		        accountCreated = true;
+		      } catch (Exception e) {
+		        ThreadUtils.sleep((5 - tries) * 5000);
+		      }
+		    } while (!accountCreated && --tries > 0);
+		    if (accountCreated == false) {
+		      fail("Failure setting up account guid; aborting all tests.");
+		    }
 		
 		//Begin emulating transport delays
 		JSONDelayEmulator.emulateDelays();
@@ -295,14 +298,21 @@ public class ServerFailureTests {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		ArrayList<String> output = RunServer.command(
+				new File(System
+						.getProperty(DefaultProps.SERVER_COMMAND.key))
+				.getParent()
+				+ "/shutdown.sh", ".");
+		if (output != null) {
+			for (String line : output) {
+				System.out.println(line);
+			}
+		} else {
+			System.out.println("SHUTDOWN SERVER COMMAND FAILED!");
+		}
 		if (client != null) {
 			client.close();
 		}
-		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
-		System.out.println("Stopping all servers...");
-		Process stopProcess = Runtime.getRuntime().exec(execString+"stop all");
-		stopProcess.waitFor();
-		System.out.println("Servers stopped.");
 	}
 	@Rule
 	public TestName testName = new TestName();
