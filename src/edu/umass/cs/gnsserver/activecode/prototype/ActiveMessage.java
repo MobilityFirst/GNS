@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,11 +20,13 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveMessage implements Message{
 	
 	private final static String CHARSET = "ISO-8859-1";
+	private final static AtomicLong counter = new AtomicLong();
 	
 	/**
 	 * Message type
 	 */
 	public Type type;
+	private long id;
 	private int ttl;	
 	private String guid;
 	private String field;
@@ -61,9 +64,7 @@ public class ActiveMessage implements Message{
 		 * This message is used for worker to send a write query
 		 * to GNS to update a field.
 		 */
-		WRITE_QUERY(3);
-		
-		
+		WRITE_QUERY(3);		
 		
 		private final int type;
 		Type(int type){
@@ -78,10 +79,10 @@ public class ActiveMessage implements Message{
 		}
 
 	}
-
 	
 	/**
 	 * @param type 
+	 * @param id 
 	 * @param guid
 	 * @param field
 	 * @param code
@@ -90,8 +91,9 @@ public class ActiveMessage implements Message{
 	 * @param targetGuid 
 	 * @param error 
 	 */
-	public ActiveMessage(Type type, int ttl, String guid, String field, String code, ValuesMap value, String targetGuid, String error){
+	public ActiveMessage(Type type, long id, int ttl, String guid, String field, String code, ValuesMap value, String targetGuid, String error){
 		this.type = type;
+		this.id = id;
 		this.ttl = ttl;
 		this.guid = guid;
 		this.field = field;
@@ -110,7 +112,7 @@ public class ActiveMessage implements Message{
 	 * @param ttl
 	 */
 	public ActiveMessage(String guid, String field, String code, ValuesMap value, int ttl){
-		this(Type.REQUEST, ttl, guid, field, code, value, null, null);
+		this(Type.REQUEST, counter.getAndIncrement(), ttl, guid, field, code, value, null, null);
 	}
 	
 	/**
@@ -121,7 +123,7 @@ public class ActiveMessage implements Message{
 	 * @param targetGuid
 	 */
 	public ActiveMessage(int ttl, String guid, String field, String targetGuid){
-		this(Type.READ_QUERY, ttl, guid, field, null, null, targetGuid, null);
+		this(Type.READ_QUERY, counter.getAndIncrement(), ttl, guid, field, null, null, targetGuid, null);
 	}
 	
 	
@@ -134,16 +136,17 @@ public class ActiveMessage implements Message{
 	 * @param value
 	 */
 	public ActiveMessage(int ttl, String guid, String field, String targetGuid, ValuesMap value){
-		this(Type.WRITE_QUERY, ttl, guid, field, null, value, targetGuid, null);
+		this(Type.WRITE_QUERY, counter.getAndIncrement(), ttl, guid, field, null, value, targetGuid, null);
 	}
 	
 	/**
 	 * This is a RESPONSE message
+	 * @param id 
 	 * @param value
 	 * @param error
 	 */
-	public ActiveMessage(ValuesMap value, String error){
-		this(Type.RESPONSE, 0, null, null, null, value, null, error);
+	public ActiveMessage(long id, ValuesMap value, String error){
+		this(Type.RESPONSE, id, 0, null, null, null, value, null, error);
 	}
 	
 	/**
@@ -188,12 +191,18 @@ public class ActiveMessage implements Message{
 		return value;
 	}
 	
-	protected String getError(){
+	/**
+	 * @return error
+	 */
+	public String getError(){
 		return error;
 	}
 	
-	protected void setValue(ValuesMap value){
-		this.value = value;
+	/**
+	 * @return id of the message
+	 */
+	public long getId(){
+		return id;
 	}
 		
 	
@@ -202,6 +211,7 @@ public class ActiveMessage implements Message{
 		switch(type){
 		case REQUEST:
 			length = 6*Integer.BYTES // type, ttl, guid length, field length, code length, valuesMap size 
+			+ Long.BYTES // id
 			+ guid.length() // guid
 			+ field.length() // field
 			+ code.length();
@@ -209,11 +219,13 @@ public class ActiveMessage implements Message{
 			
 		case RESPONSE:
 			length = 3*Integer.BYTES // type, ttl, error length
+			+ Long.BYTES // id
 			+ (error != null?error.length():0);
 			break;
 			
 		case READ_QUERY:
 			length = 5*Integer.BYTES // type, ttl, guid length, field length, targetGuid length
+			+ Long.BYTES // id
 			+ guid.length()
 			+ field.length()
 			+ targetGuid.length();
@@ -221,6 +233,7 @@ public class ActiveMessage implements Message{
 			
 		case WRITE_QUERY:
 			length = 5*Integer.BYTES // type, ttl, guid length, field length, targetGuid length
+			+ Long.BYTES // id
 			+ guid.length()
 			+ field.length()
 			+ targetGuid.length();
@@ -247,9 +260,11 @@ public class ActiveMessage implements Message{
 		ByteBuffer bbuf = ByteBuffer.wrap(buffer);
 		byte[] guidBytes,fieldBytes,codeBytes,valuesMapBytes,targetGuidBytes;
 		
-		// put type
+		// put type and request id
 		bbuf.putInt(type.getType());
 		int exactLength = Integer.BYTES;
+		bbuf.putLong(id);
+		exactLength += Long.BYTES;
 		
 		switch(type){
 		case REQUEST:
@@ -280,10 +295,10 @@ public class ActiveMessage implements Message{
 			
 			// put valuesMapString, can be null
 			assert(valuesMapString != null):"valuesMapString can't be null for active request";
-			valuesMapBytes = (valuesMapString==null)? new byte[0]:valuesMapString.getBytes();
-			bbuf.putInt( (valuesMapString==null)?0:valuesMapBytes.length );
+			valuesMapBytes = valuesMapString.getBytes(CHARSET);
+			bbuf.putInt( valuesMapBytes.length );
 			bbuf.put(valuesMapBytes);
-			exactLength += (Integer.BYTES + ((valuesMapString==null)? 0:valuesMapBytes.length));
+			exactLength += (Integer.BYTES + valuesMapBytes.length);
 			break;
 			
 		case READ_QUERY:
@@ -307,7 +322,7 @@ public class ActiveMessage implements Message{
 			
 			// put targetGuid, can't be null, ~100ns
 			assert(targetGuid != null):"targetGuid can't be null for read query";
-			targetGuidBytes = targetGuid.getBytes();
+			targetGuidBytes = targetGuid.getBytes(CHARSET);
 			bbuf.putInt(targetGuidBytes.length);
 			bbuf.put(targetGuidBytes);
 			exactLength += (Integer.BYTES + targetGuidBytes.length);
@@ -334,26 +349,26 @@ public class ActiveMessage implements Message{
 			
 			// put targetGuid, can't be null, ~100ns
 			assert(targetGuid != null):"targetGuid can't be null for read query";
-			targetGuidBytes = targetGuid.getBytes();
+			targetGuidBytes = targetGuid.getBytes(CHARSET);
 			bbuf.putInt(targetGuidBytes.length);
 			bbuf.put(targetGuidBytes);
 			exactLength += (Integer.BYTES + targetGuidBytes.length);
 			
 			// put value
 			assert(valuesMapString != null);
-			valuesMapBytes = valuesMapString.getBytes();
+			valuesMapBytes = valuesMapString.getBytes(CHARSET);
 			bbuf.putInt(valuesMapBytes.length);
 			bbuf.put(valuesMapBytes);
 			exactLength += (Integer.BYTES + valuesMapBytes.length);
 			break;
 			
 		case RESPONSE:
-			valuesMapBytes = valuesMapString.getBytes();
-			bbuf.putInt(valuesMapBytes.length);
+			valuesMapBytes = (valuesMapString==null)?new byte[0]:valuesMapString.getBytes(CHARSET);
+			bbuf.putInt((valuesMapString==null)?0:valuesMapBytes.length);
 			bbuf.put(valuesMapBytes);
 			exactLength += (Integer.BYTES + valuesMapBytes.length);
 			
-			byte[] errorBytes = (error==null)? new byte[0]:error.getBytes();
+			byte[] errorBytes = (error==null)? new byte[0]:error.getBytes(CHARSET);
 			bbuf.putInt( (error==null)?0:errorBytes.length );
 			bbuf.put(errorBytes);
 			exactLength += (Integer.BYTES + ((error==null)? 0:errorBytes.length));
@@ -385,8 +400,9 @@ public class ActiveMessage implements Message{
 	 */
 	public ActiveMessage(ByteBuffer bbuf) throws UnsupportedEncodingException, JSONException {
 		this.type = Type.values()[bbuf.getInt()];	
+		this.id = bbuf.getLong();
 		int length = 0;
-		byte[] guidBytes,fieldBytes,codeBytes,targetGuidBytes,valueBytes;
+		byte[] guidBytes,fieldBytes,codeBytes,targetGuidBytes,valueBytes,errorBytes;
 		
 		switch(type){
 		case REQUEST:
@@ -458,7 +474,20 @@ public class ActiveMessage implements Message{
 			break;
 						
 		case RESPONSE:
+			// get valuesMap
 			length = bbuf.getInt();
+			if(length>0){
+				valueBytes = new byte[length];
+				bbuf.get(valueBytes);
+				value = new ValuesMap(new JSONObject(new String(valueBytes, CHARSET)));
+			}
+			
+			length = bbuf.getInt();
+			if(length>0){
+				errorBytes = new byte[length];
+				bbuf.get(errorBytes);
+				error = new String(errorBytes, CHARSET);
+			}
 			
 			break;
 			
@@ -468,9 +497,10 @@ public class ActiveMessage implements Message{
 	@Override
 	public String toString(){
 		
-		return "[guid:"+this.guid
-				+",field:"+this.field
-				+",value:"+this.value.toString()
+		return "[id:"+id
+				+ ",guid:"+ ((guid != null)?guid:"null")
+				+",field:"+((field!=null)?field:"null")
+				+",value:"+((value!=null)?value:"null")
 				+"]";
 	}
 	
@@ -511,16 +541,18 @@ public class ActiveMessage implements Message{
 			amsg.getValue();
 		}
 		long s = System.currentTimeMillis() - t;
-		System.out.println("It takes "+s+"ms for serialize and deserialize 1m ActiveMessage, and the average latency for each operation is "+(s*1000.0/n)+"us");	
+		System.out.println("It takes "+s+"ms for getting a field from the message, and the average latency for each operation is "+(s*1000.0/n)+"us");	
 		
 		
 		t = System.currentTimeMillis();
 		for (int i=0; i<n; i++){
 			rmsg = new ActiveMessage(amsg.toBytes());
-			new ActiveMessage(new ActiveMessage(rmsg.getValue(), null).toBytes());
+			ActiveMessage resp = new ActiveMessage(rmsg.getId(), rmsg.getValue(), null);
+			new ActiveMessage(resp.toBytes());
+			//System.out.println(resp+" "+deserialized);
 		}
 		elapsed = System.currentTimeMillis() - t;
-		System.out.println("It takes "+elapsed+"ms for serialize and deserialize 1m ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");	
+		System.out.println("It takes "+elapsed+"ms for serialize and deserialize 1m REQUEST and RESPONSE ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");	
 		
 		int ttl = 1;
 		String querierGuid = "zhaoyu gao";
@@ -534,7 +566,7 @@ public class ActiveMessage implements Message{
 			new ActiveMessage(buf);
 		}
 		elapsed = System.currentTimeMillis() - t;
-		System.out.println("It takes "+elapsed+"ms for serialize and deserialize 1m ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/k)+"us");	
+		System.out.println("It takes "+elapsed+"ms for serialize and deserialize READ_QUERY 1m ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/k)+"us");	
 		
 	}
 
