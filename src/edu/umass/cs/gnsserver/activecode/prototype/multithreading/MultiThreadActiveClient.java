@@ -170,7 +170,6 @@ public class MultiThreadActiveClient implements Client,Runnable{
 			while(pendingMap.get(id).getGuid() != null){
 				try {
 					am.wait();
-					System.out.println("wait here");
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -185,7 +184,7 @@ public class MultiThreadActiveClient implements Client,Runnable{
 		if(workerProc != null){
 			workerProc.destroy();
 		}
-		channel.shutdown();
+		
 		if(pipeEnable){
 			(new File(ifile)).delete();
 			(new File(ofile)).delete();
@@ -243,7 +242,7 @@ public class MultiThreadActiveClient implements Client,Runnable{
 				synchronized(req){
 					req.notify();
 				}
-				System.out.println("received "+counter.incrementAndGet()+" massege:"+response);
+				//System.out.println("received "+counter.incrementAndGet()+" massege:"+response);
 				counter.incrementAndGet();
 			}
 		}

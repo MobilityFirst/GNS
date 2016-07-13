@@ -12,6 +12,7 @@ import edu.umass.cs.gnsserver.activecode.prototype.ActiveQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author gaozy
@@ -21,6 +22,7 @@ public class MultiThreadActiveWorker {
 	
 	protected final static int bufferSize = 1024;
 	final ThreadPoolExecutor executor;
+	final LinkedBlockingQueue<Runnable> queue;
 	final AtomicInteger counter = new AtomicInteger();
 	final ActiveRunner[] runners;
 	private Channel channel;
@@ -36,8 +38,8 @@ public class MultiThreadActiveWorker {
 		this.ofile = ofile;
 		this.id = id;
 		this.numThread = numThread;
-		
-		executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		queue = new LinkedBlockingQueue<Runnable>();
+		executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, queue);
 		executor.prestartAllCoreThreads();		
 		channel = new ActiveNamedPipe(ifile, ofile);
 		querier = new ActiveQuerier(channel);
@@ -63,15 +65,19 @@ public class MultiThreadActiveWorker {
 	}
 	
 	protected void submitTask(ActiveMessage am){
-		executor.execute(new MultiThreadActiveTask(runners[counter.getAndIncrement()%numThread], am, channel));
+		int k = counter.getAndIncrement();
+		executor.execute(new MultiThreadActiveTask(runners[k%numThread], am, channel));
+		if(k%1000 == 0){
+			DelayProfiler.updateMovAvg("workerQueueSize", queue.size());
+			System.out.println(DelayProfiler.getStats());
+		}
 	}
 	
 	private void runWorker() throws IOException {
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		while(true){
 			ActiveMessage request = null;
-			if((request = (ActiveMessage) channel.receiveMessage()) != null){
-				
+			if((request = (ActiveMessage) channel.receiveMessage()) != null){				
 				submitTask(request);
 			}
 		}

@@ -12,7 +12,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class MultiThreadTest {
 	
-	private static final int total = 10;	
+	private static final int total = 1000000;	
 	
 	/**
 	 * @param args
