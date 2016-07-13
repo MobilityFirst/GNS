@@ -21,7 +21,7 @@ import edu.umass.cs.utils.DelayProfiler;
 public class ActiveCodeGuardian {
 	
 	// transfer it to millisecond
-	private final static long timeout = AppReconfigurableNodeOptions.activeCodeTimeOut/1000000;
+	private final static long timeout = 1000; // 1 second
 	private final static long guard_interval = 100;
 
 	/**

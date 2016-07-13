@@ -150,7 +150,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * Number of active code worker.
    */
-  public static int activeCodeWorkerCount = 4;
+  public static int activeCodeWorkerCount = 1;
   
   /**
    * Number of threads running in each worker
@@ -161,21 +161,16 @@ public class AppReconfigurableNodeOptions {
    * Number of spare workers.
    */
   public static int activeCodeSpareWorker = 0;
+  
   /**
    * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
    */
   public static boolean activeCodeEnableTimeout = true;
   /**
-   * How long (in seconds) to blacklist active code.
-   */
-
-  public static long activeCodeTimeOut = 1000000000L;
-  /**
    * Enable debug message in active code package
    */
   public static boolean activeCodeEnableDebugging = false;
 
-  public static long activeCodeBlacklistSeconds = 10;
 
   // context service options
   public static boolean enableContextService = false;
