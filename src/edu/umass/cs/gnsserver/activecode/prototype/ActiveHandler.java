@@ -43,7 +43,7 @@ public class ActiveHandler {
 	final AtomicInteger counter = new AtomicInteger();
 	
 	/****************** Test only ******************/
-	private final ThreadPoolExecutor executor;
+	private static ThreadPoolExecutor executor;
 	
 	/**
 	 * Initialize handler with multi-process multi-threaded workers.
@@ -64,12 +64,6 @@ public class ActiveHandler {
 		System.out.println(ActiveCodeHandler.class.getName()+" start running "+numProcess+" workers with "+numThread+" threads ...");
 		
 		this.numProcess = numProcess;
-		if(numThread == 1){
-			executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-		}else{
-			executor = new ThreadPoolExecutor(10*numProcess, 10*numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-		}
-		executor.prestartAllCoreThreads();
 		
 		if(numThread == 1){
 			// initialize single threaded clients and workers
@@ -146,10 +140,21 @@ public class ActiveHandler {
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		int numProcess = Integer.parseInt(args[0]);
 		int numThread = Integer.parseInt(args[1]);
+		int factor = 10;
+		if(args.length > 2)
+			factor = Integer.parseInt(args[2]);
 		if(numProcess <= 0){
 			System.out.println("Number of clients must be larger than 0.");
 			System.exit(0);
 		}
+		
+		if(numThread == 1){
+			executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		}else{
+			executor = new ThreadPoolExecutor(factor*numProcess, factor*numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		}
+		executor.prestartAllCoreThreads();
+		
 		String guid = "zhaoyu";
 		String field = "gao";
 		String noop_code = "";

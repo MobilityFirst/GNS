@@ -67,10 +67,11 @@ public class MultiThreadActiveWorker {
 	protected void submitTask(ActiveMessage am){
 		int k = counter.getAndIncrement();
 		executor.execute(new MultiThreadActiveTask(runners[k%numThread], am, channel));
+		/*
 		if(k%10000 == 0){
 			DelayProfiler.updateMovAvg("workerQueueSize", queue.size());
 			System.out.println(DelayProfiler.getStats());
-		}
+		}*/
 	}
 	
 	private void runWorker() throws IOException {
