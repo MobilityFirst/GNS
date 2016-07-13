@@ -233,7 +233,7 @@ public class ActiveClient implements Client{
 	 */
 	@Override
 	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
-		
+		/*
 		if(field.equals("level3")){
 			//FIXME: this test can be removed together with worker variable
 			try {
@@ -242,7 +242,7 @@ public class ActiveClient implements Client{
 				e.printStackTrace();
 			}
 		}
-		
+		*/
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		sendMessage(msg);
 		ActiveMessage response;
