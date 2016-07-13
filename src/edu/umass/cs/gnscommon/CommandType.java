@@ -17,10 +17,9 @@ package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.cassandra.cql3.CQL3Type.Collection;
 
 /**
  * All the commands supported by the GNS server are listed here.

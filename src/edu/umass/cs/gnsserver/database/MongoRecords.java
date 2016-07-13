@@ -712,6 +712,7 @@ public class MongoRecords implements NoSQLRecords {
    * A utility to drop all the databases.
    *
    */
+	@Deprecated
   public static void dropAllDatabases() {
     MongoClient mongoClient;
     try {
