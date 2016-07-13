@@ -2,6 +2,7 @@ package edu.umass.cs.gnsserver.activecode.prototype;
 
 import java.util.concurrent.Callable;
 
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -9,14 +10,14 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  */
 public class ActiveTask implements Callable<ValuesMap> {
-	ActiveClient client;
+	Client client;
 	String guid;
 	String field;
 	String code;
 	ValuesMap value;
 	int ttl;
 	
-	ActiveTask(ActiveClient client, String guid, String field, String code, ValuesMap value, int ttl){
+	ActiveTask(Client client, String guid, String field, String code, ValuesMap value, int ttl){
 		this.client = client;
 		this.guid = guid;
 		this.field = field;

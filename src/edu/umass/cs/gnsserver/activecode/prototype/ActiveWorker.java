@@ -2,7 +2,6 @@ package edu.umass.cs.gnsserver.activecode.prototype;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -11,12 +10,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.script.Invocable;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
 
@@ -30,12 +24,13 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveWorker {
 	
-	private ScriptEngine engine;
-	private Invocable invocable;
+	//private ScriptEngine engine;
+	//private Invocable invocable;
 	
-	private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
-	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
+	//private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
+	//private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
+	private final ActiveRunner runner;
 	private final Channel channel;
 	private final int id;
 	
@@ -60,8 +55,10 @@ public class ActiveWorker {
 	protected ActiveWorker(int port, int serverPort, int id, int numThread){
 		this.id = id;
 		
-		engine = new ScriptEngineManager().getEngineByName("nashorn");
-		invocable = (Invocable) engine;
+		//engine = new ScriptEngineManager().getEngineByName("nashorn");
+		//invocable = (Invocable) engine;
+		
+		
 		if(numThread>1){
 			executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());	
 			executor.prestartAllCoreThreads();
@@ -76,6 +73,7 @@ public class ActiveWorker {
 		
 		channel = new ActiveDatagramChannel(port, serverPort);
 		querier = new ActiveQuerier(channel);
+		runner = new ActiveRunner(querier);
 		
 		try {
 			runWorker(numThread);
@@ -97,8 +95,8 @@ public class ActiveWorker {
 	protected ActiveWorker(String ifile, String ofile, int id, int numThread, boolean isTest) {
 		this.id = id;
 		
-		engine = new ScriptEngineManager().getEngineByName("nashorn");
-		invocable = (Invocable) engine;
+		//engine = new ScriptEngineManager().getEngineByName("nashorn");
+		//invocable = (Invocable) engine;
 		if(numThread>1){
 			executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());	
 			executor.prestartAllCoreThreads();
@@ -114,6 +112,7 @@ public class ActiveWorker {
 		if(!isTest){
 			channel = new ActiveNamedPipe(ifile, ofile);
 			querier = new ActiveQuerier(channel);
+			runner = new ActiveRunner(querier);
 			
 			try {
 				runWorker(numThread);
@@ -124,6 +123,7 @@ public class ActiveWorker {
 			}
 		} else {
 			channel = null;
+			runner = null;
 		}
 	}
 	
@@ -133,21 +133,6 @@ public class ActiveWorker {
 	 */
 	public ActiveWorker(String ifile, String ofile){
 		this(ifile, ofile, 0, 1, false);
-	}
-	
-	private void updateCache(String codeId, String code) throws ScriptException {
-	    if (!contexts.containsKey(codeId)) {
-	      // Create a context if one does not yet exist and eval the code
-	      ScriptContext sc = new SimpleScriptContext();
-	      contexts.put(codeId, sc);
-	      codeHashes.put(codeId, code.hashCode());
-	      engine.eval(code, sc);
-	    } else if ( codeHashes.get(codeId) != code.hashCode()) {
-	      // The context exists, but we need to eval the new code
-	      ScriptContext sc = contexts.get(codeId);
-	      codeHashes.put(codeId, code.hashCode());
-	      engine.eval(code, sc);
-	    }
 	}
 	
 	/**
@@ -160,11 +145,8 @@ public class ActiveWorker {
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
-	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {		
-		updateCache(guid, code);
-		engine.setContext(contexts.get(guid));
-		((ActiveQuerier) querier).resetQuerier(guid, ttl);
-		return (ValuesMap) invocable.invokeFunction("run", value, field, querier);
+	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {	
+		return runner.runCode(guid, field, code, value, ttl);
 	}
 
 	
@@ -176,13 +158,14 @@ public class ActiveWorker {
 			if(numThread == 1){
 				ActiveMessage response;
 				try {
-					response = new ActiveMessage(runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
+					response = new ActiveMessage(msg.getId(), runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
 				} catch (NoSuchMethodException | ScriptException e) {
-					response = new ActiveMessage(null, e.getMessage());
+					response = new ActiveMessage(msg.getId(), null, e.getMessage());
 					e.printStackTrace();
 				}				
 				channel.sendMessage(response);
 			} else{
+				// This is a test
 				ValuesMap value = null;
 				ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
 				tasks.add(executor.submit(new SimpleTask(runners[counter.getAndIncrement()%numThread], msg)));
@@ -194,7 +177,7 @@ public class ActiveWorker {
 					}
 				}
 				
-				ActiveMessage response = new ActiveMessage(value, null);
+				ActiveMessage response = new ActiveMessage(msg.getId(), value, null);
 				channel.sendMessage(response);
 			}
 		}

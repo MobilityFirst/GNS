@@ -106,7 +106,7 @@ public class ActiveRunner {
 	 */
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		
-		int numThread = 1; //Integer.parseInt(args[0]);		
+		int numThread = 10; //Integer.parseInt(args[0]);		
 		final ActiveRunner[] runners = new ActiveRunner[numThread];
 		for (int i=0; i<numThread; i++){
 			runners[i] = new ActiveRunner(null);
@@ -145,12 +145,14 @@ public class ActiveRunner {
 		System.out.println("The throughput is "+n*1000.0/elapsed);
 		
 		
+		/**
+		 * Test runner's protected method
+		 */
 		ActiveRunner runner = new ActiveRunner(new ActiveQuerier(null));
 		String chain_code = null;
 		try {
 			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		try {

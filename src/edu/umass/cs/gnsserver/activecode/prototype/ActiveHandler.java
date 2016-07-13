@@ -14,6 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
+import edu.umass.cs.gnsserver.activecode.prototype.multithreading.MultiThreadActiveClient;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -23,7 +25,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveHandler {
 	
-	private ActiveClient[] clientPool;
+	private final Client[] clientPool;
 	
 	private final static String cfilePrefix = "/tmp/client_";
 	private final static String sfilePrefix = "/tmp/server_";
@@ -43,10 +45,12 @@ public class ActiveHandler {
 	private final ThreadPoolExecutor executor;
 	
 	/**
+	 * Initialize handler with multi-process multi-threaded workers.
 	 * @param app 
 	 * @param numProcess
+	 * @param numThread 
 	 */
-	public ActiveHandler(ActiveDBInterface app, int numProcess){
+	public ActiveHandler(ActiveDBInterface app, int numProcess, int numThread){
 		final String fileTestForPipe = "/tmp/test";
 		try {
 			Runtime.getRuntime().exec("mkfifo "+fileTestForPipe);
@@ -60,17 +64,37 @@ public class ActiveHandler {
 		executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		executor.prestartAllCoreThreads();
 		
-		clientPool = new ActiveClient[numProcess];
-		for (int i=0; i<numProcess; i++){
-			if(pipeEnable){
-				clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
-			} else {
-				clientPool[i] = new ActiveClient(app, clientPort+i, workerPort+i, i, 1);
+		if(numThread == 1){
+			// initialize single threaded clients and workers
+			clientPool = new ActiveClient[numProcess];
+			for (int i=0; i<numProcess; i++){
+				if(pipeEnable){
+					clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
+				} else {
+					clientPool[i] = new ActiveClient(app, clientPort+i, workerPort+i, i, 1);
+				}
+			}
+		} else {
+			// initialize multi-threaded clients and workers
+			clientPool = new MultiThreadActiveClient[numProcess];
+			for (int i=0; i<numProcess; i++){
+				if(pipeEnable){
+					clientPool[i] = new MultiThreadActiveClient(app, numThread, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i);
+				} else {
+					clientPool[i] = new MultiThreadActiveClient(app, numThread, clientPort+i, workerPort+i, i);
+				}
 			}
 		}
-		
 	}
 	
+	/**
+	 * Initialize a handler with multi-process single-threaded workers.
+	 * @param app
+	 * @param numProcess
+	 */
+	public ActiveHandler(ActiveDBInterface app, int numProcess){
+		this(app, numProcess, 1);
+	}
 	
 	/**
 	 * Shutdown all the client and its corresponding workers
@@ -90,14 +114,15 @@ public class ActiveHandler {
 	 * @param value
 	 * @param ttl
 	 * @return executed result
+	 * @throws ActiveException 
 	 */
-	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl){
+	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ActiveException{
 		return clientPool[counter.getAndIncrement()%numProcess].runCode(guid, field, code, value, ttl);
 	}
 	
 	/***************** Test methods ****************/
 	private Future<ValuesMap> submitTask(String guid, String field, String code, ValuesMap value, int ttl){
-		ActiveClient client = clientPool[ttl%numProcess];
+		Client client = clientPool[ttl%numProcess];
 		return executor.submit(new ActiveTask(client, guid, field, code, value, ttl));
 	}
 	

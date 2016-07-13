@@ -75,7 +75,7 @@ public class ActiveNamedPipe implements Channel {
 		if(reader.read(readerLengthBuffer, 0, readerLengthBuffer.length)>0){
 			int length = ByteBuffer.wrap(readerLengthBuffer).getInt();
 			byte[] buffer = new byte[length];
-			reader.read(buffer, 0, length);
+			reader.read(buffer, 0, length);			
 			try {
 				am = new ActiveMessage(buffer);
 			} catch (JSONException e) {

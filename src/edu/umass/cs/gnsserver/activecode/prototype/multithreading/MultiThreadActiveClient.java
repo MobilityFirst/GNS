@@ -3,43 +3,57 @@ package edu.umass.cs.gnsserver.activecode.prototype.multithreading;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveDatagramChannel;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveNamedPipe;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveQueryHandler;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
  * @author gaozy
  *
  */
-public class MultiThreadActiveClient implements Runnable{
+public class MultiThreadActiveClient implements Client,Runnable{
+	//TODO: handle query from worker by using queryHandler
+	private ActiveQueryHandler queryHandler;
 	
 	private Channel channel;
 	private String ifile;
 	private String ofile;
 		
 	private Process workerProc;
-	private int numThread;
-	final private int id;
+	private final int id;
+	private final boolean pipeEnable;
 	
-	private static int heapSize = 64;
+	private static int heapSize = 256;
+	
+	private final ConcurrentHashMap<Long, ActiveMessage> pendingMap = new ConcurrentHashMap<Long, ActiveMessage>();
 	
 	/*****************Test*******************/
-	private static final int total = 1000000;
 	private static final AtomicInteger counter = new AtomicInteger();
 	
-	protected MultiThreadActiveClient(int numThread, String ifile, String ofile, int id){
-		this.numThread = numThread;
+	/**
+	 * @param app
+	 * @param numThread
+	 * @param ifile
+	 * @param ofile
+	 * @param id
+	 */
+	public MultiThreadActiveClient(ActiveDBInterface app, int numThread, String ifile, String ofile, int id){
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
+		this.pipeEnable = true;
 		
 		Runtime runtime = Runtime.getRuntime();
 		try {
@@ -50,19 +64,49 @@ public class MultiThreadActiveClient implements Runnable{
 		}
 		
 		try {
-			workerProc = startWorker(ofile, ifile, id);
+			workerProc = startWorker(ofile, ifile, id, numThread);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		channel = new ActiveNamedPipe(ifile, ofile);
 		
+		queryHandler = new ActiveQueryHandler(app);
+				
 		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 	}
 	
-	private Process startWorker(String ifile, String ofile, int id) throws IOException{
+	/**
+	 * Initialize a client with a UDP channel
+	 * @param app
+	 * @param numThread 
+	 * @param port
+	 * @param serverPort
+	 * @param id
+	 */
+	public MultiThreadActiveClient(ActiveDBInterface app, int numThread, int port, int serverPort, int id){
+		this.pipeEnable = false;
+		this.id = id;
+		
+		try {
+			// reverse the order of port and serverPort, so that worker 
+			workerProc = startWorker(serverPort, port, id, numThread);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		channel = new ActiveDatagramChannel(port, serverPort);
+		queryHandler = new ActiveQueryHandler(app);
+		
+	}
+	
+	
+	private Process startWorker(String ifile, String ofile, int id, int numThread) throws IOException{
 		List<String> command = new ArrayList<String>();
 		String classpath = System.getProperty("java.class.path");
+		command.add("nice");
+		command.add("-n");
+		command.add("20");
 	    command.add("java");
 	    command.add("-Xms"+heapSize+"m");
 	    command.add("-Xmx"+heapSize+"m");
@@ -73,7 +117,8 @@ public class MultiThreadActiveClient implements Runnable{
 	    command.add(ifile);
 	    command.add(ofile);
 	    command.add(""+id);
-		
+	    command.add(Boolean.toString(pipeEnable));
+	    
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));
 		
@@ -86,13 +131,65 @@ public class MultiThreadActiveClient implements Runnable{
 		return process;
 	}
 	
-	protected void shutdown(){
+	private Process startWorker(int serverPort, int port, int id, int numThread) throws IOException{
+		List<String> command = new ArrayList<String>();
+		String classpath = System.getProperty("java.class.path");
+	    command.add("java");
+	    command.add("-Xms"+heapSize+"m");
+	    command.add("-Xmx"+heapSize+"m");
+	    command.add("-cp");
+	    command.add(classpath);
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.multithreading.MultiThreadActiveWorker");
+	    command.add(""+numThread);
+	    command.add(""+serverPort);
+	    command.add(""+port);
+	    command.add(""+id);
+	    command.add(Boolean.toString(pipeEnable));
+	    
+	    ProcessBuilder builder = new ProcessBuilder(command);
+		builder.directory(new File(System.getProperty("user.dir")));
+		
+		builder.redirectError(Redirect.INHERIT);
+		builder.redirectOutput(Redirect.INHERIT);
+		
+		Process process = builder.start();		
+
+		return process;
+	}
+	
+	@Override
+	public ValuesMap runCode(String guid, String field, String code, ValuesMap valuesMap, int ttl)
+			throws ActiveException {
+		// TODO Auto-generated method stub
+		ActiveMessage am = new ActiveMessage(guid, field, code, valuesMap, ttl);
+		long id = am.getId();
+		
+		pendingMap.put(id, am);
+		sendMessage(am);
+		synchronized(am){
+			while(pendingMap.get(id).getGuid() != null){
+				try {
+					am.wait();
+					System.out.println("wait here");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		ValuesMap value = pendingMap.get(id).getValue();
+		pendingMap.remove(id);
+		return value;
+	}
+	
+	public void shutdown(){
 		if(workerProc != null){
 			workerProc.destroy();
 		}
-		
-		(new File(ifile)).delete();
-		(new File(ofile)).delete();
+		channel.shutdown();
+		if(pipeEnable){
+			(new File(ifile)).delete();
+			(new File(ofile)).delete();
+		}
 	}
 	
 	@Override
@@ -111,7 +208,8 @@ public class MultiThreadActiveClient implements Runnable{
 		return am;
 	}
 	
-	protected void sendMessage(ActiveMessage am){
+	protected synchronized void sendMessage(ActiveMessage am){
+		//System.out.println("send thread id is "+Thread.currentThread().getName()+" "+Thread.currentThread().getId());
 		try {
 			channel.sendMessage(am);
 		} catch (IOException e) {
@@ -126,21 +224,33 @@ public class MultiThreadActiveClient implements Runnable{
 	 * @param valuesMap
 	 * @param ttl
 	 */
-	public synchronized void sendRequest( String guid, String field, String code, ValuesMap valuesMap, int ttl){
+	protected void sendRequest( String guid, String field, String code, ValuesMap valuesMap, int ttl){
 		sendMessage(new ActiveMessage(guid, field, code, valuesMap, ttl));
 	}
 
 	@Override
 	public void run() {
+		// The thread calling runCode is different from this receive thread
+		// System.out.println("receive thread is "+Thread.currentThread().getName()+" "+Thread.currentThread().getId());
 		ActiveMessage response;
-		while( counter.get() < total ){
+		while(true){
 			response = receiveMessage();
 			if(response != null && response.type == Type.RESPONSE){
+				// wake up the corresponding thread
+				long id = response.getId();
+				ActiveMessage req = pendingMap.get(id);
+				pendingMap.put(id, response);
+				synchronized(req){
+					req.notify();
+				}
+				System.out.println("received "+counter.incrementAndGet()+" massege:"+response);
 				counter.incrementAndGet();
 			}
 		}
-		System.out.println("received all messages!");
-		
+	}
+	
+	protected int getReceived(){
+		return counter.get();
 	}
 	
 	/**
@@ -149,46 +259,6 @@ public class MultiThreadActiveClient implements Runnable{
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		
-		int numThread = 1; //Integer.parseInt(args[0]);
-		String cfile = "/tmp/client";
-		String sfile = "/tmp/server";
-		int id = 0;
 		
-		MultiThreadActiveClient client = new MultiThreadActiveClient(numThread, cfile, sfile, id);
-		
-		new Thread(client).start();
-		
-		
-		try{
-			String guid = "guid";
-			String field = "name";
-			String noop_code = "";
-			try {
-				noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
-			ValuesMap value = new ValuesMap();
-			value.put("string", "hello world!");
-			
-			long t = System.currentTimeMillis();
-			for(int i=0; i<total; i++){
-				client.sendRequest(guid, field, noop_code, value, 0);
-			}
-			
-			while(counter.get() < total)
-				;
-			long elapsed = System.currentTimeMillis() - t;
-			System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/total)+"us");
-			System.out.println("The average throughput is "+(total*1000.0/elapsed));
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally{
-		
-			client.shutdown();
-		}
-		
-		System.exit(0);
 	}
 }

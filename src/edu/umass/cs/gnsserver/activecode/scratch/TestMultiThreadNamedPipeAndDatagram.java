@@ -7,12 +7,17 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
@@ -31,13 +36,17 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	
 	private static int numServers = 1;
 	final static int length = 1000;
-	final static int totalReqs = 1000000;
+	final static int totalReqs = 100000;
 	
 	static class SingleDatagramClient implements Runnable {
+		//private List<Long> sendTime = Collections.synchronizedList(new ArrayList<Long>());
+		//private List<Long> receiveTime = Collections.synchronizedList(new ArrayList<Long>());
 		private DatagramSocket clientSocket;
 		private int total;
 		private final AtomicInteger received = new AtomicInteger();
 		private final AtomicInteger sent = new AtomicInteger();
+		private AtomicLong timeSpent = new AtomicLong();
+		
 		private int port;
 		private Object obj = new Object();
 		private boolean readyToSend = true;
@@ -61,9 +70,6 @@ public class TestMultiThreadNamedPipeAndDatagram {
 				// otherwise use default number
 				thres = 50;
 			}
-			
-			//thres = 100;
-			//System.out.println("Set the number of outstanding requests to "+thres);
 		}
 		
 		@Override
@@ -76,8 +82,10 @@ public class TestMultiThreadNamedPipeAndDatagram {
 					byte[] receiveData = new byte[length];
 					DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 					clientSocket.receive(receivePacket);
-					received.incrementAndGet();
-					if(sent.get()-received.get() < thres){
+					timeSpent.getAndAdd(System.currentTimeMillis());
+					received.getAndIncrement();
+					
+					if(sent.get() -received.get() < thres){
 						readyToSend = true;
 						synchronized(obj){
 							obj.notifyAll();
@@ -100,13 +108,16 @@ public class TestMultiThreadNamedPipeAndDatagram {
 					}
 					byte[] b = new byte[length];
 					new Random().nextBytes(b);
-					DatagramPacket packet = new DatagramPacket(b, b.length, localAddress, port);
+					
 					
 					while(sent.get() < total){
 						if(sent.get() - received.get() < thres){
 							try {
-								clientSocket.send(packet);
 								sent.incrementAndGet();
+								timeSpent.addAndGet(-System.currentTimeMillis());
+								//ByteBuffer.wrap(b).putLong(System.nanoTime());
+								DatagramPacket packet = new DatagramPacket(b, b.length, localAddress, port);
+								clientSocket.send(packet);								
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
@@ -125,6 +136,10 @@ public class TestMultiThreadNamedPipeAndDatagram {
 					}
 				}
 			}.start();
+		}
+		
+		public double getLatnecy(){
+			return timeSpent.get()/((double) total);
 		}
 		
 		public boolean isFinished(){
@@ -208,15 +223,25 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		long elapsed = System.currentTimeMillis() - t;
 		System.out.println("It takes "+elapsed+"ms for Datagram socket");
 		System.out.println("The average throughput with "+numServers+" Datagram servers and clients is "+numServers*reqsPerClient*1000.0/elapsed);
+		double lat = 0;
+		for (int i=0; i<numServers; i++) {
+			lat += clients[i].getLatnecy();
+			//System.out.println("The average latency is "+clients[i].getLatnecy());
+		}
+		System.out.println("The average latency is "+lat*1000.0/numServers+"us");
 		
 		executor.shutdown();		
 	}
 	
 	
 	static class PipeClient implements Runnable {
+		//private List<Long> sendTime = Collections.synchronizedList(new ArrayList<Long>());
+		//private List<Long> receiveTime = Collections.synchronizedList(new ArrayList<Long>());
+		
 		ActiveChannel channel;
 		final int total;
 		private final AtomicInteger counter = new AtomicInteger();
+		private final AtomicLong timeSpent = new AtomicLong();
 		
 		PipeClient(String ifile, String ofile, int total){
 			this.total = total;
@@ -229,7 +254,8 @@ public class TestMultiThreadNamedPipeAndDatagram {
 						
 			while( counter.get() < total ){
 				if(channel.read(buffer) >0){
-					counter.incrementAndGet();
+					timeSpent.addAndGet(System.nanoTime());
+					counter.incrementAndGet();					
 				}
 			}
 		}
@@ -239,7 +265,12 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		}
 		
 		public void sendData(byte[] buf){
+			timeSpent.addAndGet(-System.nanoTime());
 			channel.write(buf, 0, buf.length);
+		}
+		
+		public double getLatnecy(){
+			return timeSpent.get()/((double) total);
 		}
 	}
 	
@@ -331,6 +362,12 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		long elapsed = System.currentTimeMillis() - t;
 		System.out.println("It takes "+elapsed+"ms for named pipe.");
 		System.out.println("The average throughput with "+numServers+" named pipe servers and clients is "+numServers*reqsPerClient*1000.0/elapsed);
+		double lat = 0;
+		for (int i=0; i<numServers; i++) {
+			lat += clients[i].getLatnecy();
+			//System.out.println("The average latency is "+clients[i].getLatnecy());
+		}
+		System.out.println("The average latency is "+lat/1000.0/numServers+"us");
 		
 		executor.shutdown();	
 	}

@@ -14,6 +14,7 @@ import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -21,7 +22,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author gaozy
  *
  */
-public class ActiveClient {
+public class ActiveClient implements Client{
 	
 	private ActiveQueryHandler queryHandler;
 	
@@ -106,14 +107,22 @@ public class ActiveClient {
 		this(app, ifile, ofile, 0, 1);
 	}
 	
-	protected void shutdown(){
+	/**
+	 * Destroy the worker process if it's still running,
+	 * delete the 
+	 */
+	@Override
+	public void shutdown(){
 		if(workerProc != null){
 			workerProc.destroy();
 		}
+		
 		if(pipeEnable){
 			(new File(ifile)).delete();
 			(new File(ofile)).delete();
 		}
+		
+		channel.shutdown();
 	}
 	
 	/**
@@ -138,7 +147,8 @@ public class ActiveClient {
 	    command.add(ofile);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
-		
+	    command.add(Boolean.toString(pipeEnable));
+	    
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));
 		
@@ -172,6 +182,7 @@ public class ActiveClient {
 	    command.add(""+port2);
 	    command.add(""+id);
 	    command.add(""+workerNumThread);
+		command.add(Boolean.toString(pipeEnable));
 		
 	    ProcessBuilder builder = new ProcessBuilder(command);
 		builder.directory(new File(System.getProperty("user.dir")));
@@ -220,7 +231,8 @@ public class ActiveClient {
 	 * @param ttl
 	 * @return executed result sent back from worker
 	 */
-	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl){
+	@Override
+	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
 		
 		if(field.equals("level3")){
 			//FIXME: this test can be removed together with worker variable
@@ -244,7 +256,7 @@ public class ActiveClient {
 					ValuesMap map = new ValuesMap();
 					try {
 						map.put("nextGuid", "");
-						sendMessage(new ActiveMessage(map, null));
+						sendMessage(new ActiveMessage(response.getId(), map, null));
 						continue;
 					} catch (JSONException e) {
 						e.printStackTrace();
@@ -252,9 +264,9 @@ public class ActiveClient {
 				}
 				ActiveMessage am = null;
 				if(response.type==Type.READ_QUERY){
-					am = queryHandler.handleReadQuery(response.getGuid(), response.getTargetGuid(), response.getField(), response.getTtl());
+					am = queryHandler.handleReadQuery(response);
 				} else {
-					am = queryHandler.handleWriteQuery(response.getGuid(), response.getTargetGuid(), response.getField(), response.getValue(), response.getTtl());
+					am = queryHandler.handleWriteQuery(response);
 				}
 				sendMessage(am);
 			}
@@ -270,8 +282,9 @@ public class ActiveClient {
 	 * @param args
 	 * @throws InterruptedException 
 	 * @throws JSONException 
+	 * @throws ActiveException 
 	 */
-	public static void main(String[] args) throws InterruptedException, JSONException{
+	public static void main(String[] args) throws InterruptedException, JSONException, ActiveException{
 		
 		String suffix = "";
 		/*
