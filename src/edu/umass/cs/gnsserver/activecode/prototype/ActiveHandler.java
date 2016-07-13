@@ -61,7 +61,11 @@ public class ActiveHandler {
 		}
 		
 		this.numProcess = numProcess;
-		executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		if(numThread == 1){
+			executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		}else{
+			executor = new ThreadPoolExecutor(10*numProcess, 10*numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		}
 		executor.prestartAllCoreThreads();
 		
 		if(numThread == 1){
@@ -80,8 +84,10 @@ public class ActiveHandler {
 			for (int i=0; i<numProcess; i++){
 				if(pipeEnable){
 					clientPool[i] = new MultiThreadActiveClient(app, numThread, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i);
+					new Thread((MultiThreadActiveClient) clientPool[i]).start();
 				} else {
 					clientPool[i] = new MultiThreadActiveClient(app, numThread, clientPort+i, workerPort+i, i);
+					new Thread((MultiThreadActiveClient) clientPool[i]).start();
 				}
 			}
 		}
@@ -135,7 +141,7 @@ public class ActiveHandler {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
-		int num = Integer.parseInt(args[0]);
+		int num = 1; //Integer.parseInt(args[0]);
 		if(num <= 0){
 			System.out.println("Number of clients must be larger than 0.");
 			System.exit(0);
@@ -151,7 +157,8 @@ public class ActiveHandler {
 		ValuesMap value = new ValuesMap();
 		value.put("string", "hello world");
 		
-		ActiveHandler handler = new ActiveHandler(null, num);
+		// initialize a multithreaded client
+		ActiveHandler handler = new ActiveHandler(null, num, 2);
 		ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
 		
 		int n = 1000000;

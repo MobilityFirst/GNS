@@ -151,6 +151,12 @@ public class AppReconfigurableNodeOptions {
    * Number of active code worker.
    */
   public static int activeCodeWorkerCount = 4;
+  
+  /**
+   * Number of threads running in each worker
+   */
+  public static int activeWorkerThreads = 2;
+  
   /**
    * Number of spare workers.
    */
@@ -163,7 +169,7 @@ public class AppReconfigurableNodeOptions {
    * How long (in seconds) to blacklist active code.
    */
 
-  public static long activeCodeTimeOut = 1000000000;
+  public static long activeCodeTimeOut = 1000000000L;
   /**
    * Enable debug message in active code package
    */
@@ -215,6 +221,8 @@ public class AppReconfigurableNodeOptions {
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
   
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
+  
+  private static final String ACTIVE_WORKER_THREADS = "activeWorkerThreads";
   
   private static final String ACTIVE_CODE_SPARE_WORKER = "activeCodeSpareWorker";
   
@@ -312,6 +320,10 @@ public class AppReconfigurableNodeOptions {
     
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
     	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
+    }
+    
+    if (allValues.containsKey(ACTIVE_WORKER_THREADS)) {
+    	activeWorkerThreads = Integer.parseInt(allValues.get(ACTIVE_WORKER_THREADS));
     }
     
     if (allValues.containsKey(ACTIVE_CODE_SPARE_WORKER)) {

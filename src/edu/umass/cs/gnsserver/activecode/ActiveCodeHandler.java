@@ -163,7 +163,7 @@ public class ActiveCodeHandler {
 	 * @param app
 	 */
 	public ActiveCodeHandler(ActiveDBInterface app) {
-		handler = new ActiveHandler(app, AppReconfigurableNodeOptions.activeCodeWorkerCount);
+		handler = new ActiveHandler(app, AppReconfigurableNodeOptions.activeCodeWorkerCount, AppReconfigurableNodeOptions.activeWorkerThreads);
 		
 		try {
 			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
