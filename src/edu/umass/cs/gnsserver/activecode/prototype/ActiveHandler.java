@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.activecode.prototype.multithreading.MultiThreadActiveClient;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
@@ -59,6 +60,8 @@ public class ActiveHandler {
 			pipeEnable = false;
 			e.printStackTrace();			
 		}
+		
+		System.out.println(ActiveCodeHandler.class.getName()+" start running "+numProcess+" workers with "+numThread+" threads ...");
 		
 		this.numProcess = numProcess;
 		if(numThread == 1){
