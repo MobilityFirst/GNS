@@ -73,6 +73,7 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
@@ -124,6 +125,52 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	}
 
 	protected static final boolean USE_OLD_SEND = false;
+
+	/**
+	 * @param command
+	 * @return True upon successful execution of a query without a return value
+	 *         or a query with a boolean return value returning true; false
+	 *         otherwise .
+	 * @throws ClientException
+	 * @throws IOException
+	 */
+	public boolean execute(CommandPacket command) throws ClientException, IOException {
+		return command.setResult(CommandUtils
+				.checkResponse(this.sendSync(command))).hasResult();
+	}
+
+	/**	 
+	 * Invariant: A single CommandPacket should have complete information about
+	 * how to handle the command.
+	 */
+
+	/** 
+	 *  
+	 * @param command 
+	 * @return Query result as JSONObject
+	 * @throws ClientException 
+	 * @throws IOException */
+	/*public*/ JSONObject executeMapQuery(CommandPacket command) throws ClientException,
+			IOException {
+		try {
+			// TODO: check that this is a map query first
+			return new JSONObject(CommandUtils.checkResponse(this.sendSync(command,
+					(long) this.readTimeout)));
+		} catch (JSONException e) {
+			throw new ClientException(e);
+		}
+	}
+
+	/*public*/ JSONArray executeListQuery(CommandPacket command)
+			throws ClientException, IOException {
+		try {
+			// check that this is an array query first
+			return new JSONArray(CommandUtils.checkResponse(this.sendSync(
+					command, (long) this.readTimeout)));
+		} catch (JSONException e) {
+			throw new ClientException(e);
+		}
+	}
 	
 	/* arun: All occurrences of checkResponse( createAndSignCommand have been
 	 * replaced by this getResponse method. */
@@ -132,10 +179,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		return USE_OLD_SEND ? CommandUtils
 				.checkResponse(sendCommandAndWait(CommandUtils
 						.createAndSignCommand(commandType, querier,
-								keysAndValues))) : CommandUtils
+								keysAndValues))) : 
+									CommandUtils
 				.checkResponse(this.sendSync(getCommand(commandType, querier, keysAndValues)
 						, (long)this.readTimeout
-								));
+								))
+									;
 	}
 
 	private String getResponse(CommandType commandType, Object... keysAndValues)
@@ -161,7 +210,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	private static long randomLong() {
 		return (long)(Math.random()*Long.MAX_VALUE);
 	}
-
+	
 	// READ AND WRITE COMMANDS
 	/**
 	 * Updates the JSONObject associated with targetGuid using the given
@@ -274,7 +323,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * query using the private key of the guid.
 	 *
 	 * @param guid
-	 * @return a JSONArray containing the values in the field
+	 * @return a JSONObject containing the values in the field
 	 * @throws Exception
 	 */
 	public JSONObject read(GuidEntry guid) throws Exception {
@@ -340,13 +389,9 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String fieldRead(String targetGuid, String field, GuidEntry reader)
 			throws Exception {
-		long t = System.currentTimeMillis();
-		String response = getResponse(reader != null ? CommandType.Read
+		return CommandUtils.specialCaseSingleField(getResponse(reader != null ? CommandType.Read
 				: CommandType.ReadUnsigned, reader, GUID, targetGuid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null);
-		if (Util.oneIn(10)) 
-			DelayProfiler.updateDelay("fieldRead", t);
-		return response;
+				field, READER, reader != null ? reader.getGuid() : null));
 	}
 
 	/**
@@ -375,7 +420,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @param fields
 	 * @param reader
 	 *            if null the field must be readable for all
-	 * @return a JSONArray containing the values in the fields
+	 * @return a JSONObject containing the values in the fields
 	 * @throws Exception
 	 */
 	public String fieldRead(String targetGuid, ArrayList<String> fields,
@@ -503,7 +548,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String lookupGuid(String alias) throws IOException, ClientException {
 
-		return getResponse(CommandType.LookupGuid, NAME, alias);
+		return CommandUtils.specialCaseSingleField(getResponse(CommandType.LookupGuid, NAME, alias));
 	}
 
 	/**
@@ -517,8 +562,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String lookupPrimaryGuid(String guid)
 			throws UnsupportedEncodingException, IOException, ClientException {
-		return getResponse(CommandType.LookupPrimaryGuid, GUID,
-				guid);
+		return CommandUtils.specialCaseSingleField(getResponse(CommandType.LookupPrimaryGuid, GUID,
+				guid));
 	}
 
 	/**
@@ -812,7 +857,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray guidGetGroups(String guid, GuidEntry reader)
 			throws IOException, ClientException, InvalidGuidException {
-
 		try {
 			return new JSONArray(getResponse(CommandType.GetGroups, reader,
 					GUID, guid, READER, reader.getGuid()));
@@ -1103,55 +1147,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		} catch (JSONException e) {
 			throw new ClientException("Invalid alias list", e);
 		}
-	}
-
-	// TAGS
-	/**
-	 * Creates a tag to the tags of the guid.
-	 *
-	 * @param guid
-	 * @param tag
-	 * @throws Exception
-	 */
-	//@Override
-	void addTag(GuidEntry guid, String tag) throws Exception {
-		getResponse(CommandType.AddTag, guid, GUID, guid.getGuid(), NAME, tag);
-	}
-
-	/**
-	 * Removes a tag from the tags of the guid.
-	 *
-	 * @param guid
-	 * @param tag
-	 * @throws Exception
-	 */
-	void removeTag(GuidEntry guid, String tag) throws Exception {
-		getResponse(CommandType.RemoveTag, guid, GUID, guid.getGuid(), NAME,
-				tag);
-	}
-
-	/**
-	 * Retrieves GUIDs that have been tagged with tag
-	 *
-	 * @param tag
-	 * @return JSONArray of tagged GUIDs
-	 * @throws Exception
-	 */
-	public JSONArray retrieveTagged(String tag) throws Exception {
-		return new JSONArray(getResponse(CommandType.Dump,
-				NAME, tag));
-	}
-
-	/**
-	 * Removes all guids that have the corresponding tag. Removes the reverse
-	 * fields for the entity name and aliases. Note: doesn't remove all the
-	 * associated fields yet, though, so still a work in progress.
-	 *
-	 * @param tag
-	 * @throws Exception
-	 */
-	public void clearTagged(String tag) throws Exception {
-		getResponse(CommandType.ClearTagged, NAME, tag);
 	}
 
 	// ///////////////////////////////

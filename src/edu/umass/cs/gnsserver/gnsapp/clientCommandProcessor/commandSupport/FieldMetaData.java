@@ -99,13 +99,6 @@ public class FieldMetaData {
     ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field,
             handler.getApp().getDB());
     return new HashSet<>(result.toStringSet());
-//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
-//            ColumnFieldType.LIST_STRING);
-//    if (!result.isExceptionOrError()) {
-//      return new HashSet<>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());
-//    } else {
-//      return new HashSet<>();
-//    }
   }
 
   /**

@@ -19,6 +19,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
@@ -80,33 +81,67 @@ public class RemoteQuery extends ClientAsynchBase {
     return super.toString()
             + (this.myID != null ? ":" + this.myID : "");
   }
+  
+  public static interface RequestCallbackWithRequest extends RequestCallback {
+	  public RequestCallbackWithRequest setRequest(CommandPacket request);
+	  public CommandPacket getRequest();
+	  public Request getResponse();
+  }
 
   /**
    * A callback that notifys any waits and records the response from a replica.
+   * 
+   * arun: a hack to know the damned request, not just the ID, when a timeout happens. This 
+   * whole RemoteQuery/ClientAsyncBase crap needs a major cleanup just like GNSClient and
+   * ideally just reuse GNSClient.
    */
-  private final RequestCallback replicaCommandCallback = (Request response) -> {
+	private final RequestCallback replicaCommandCallback = (Request response) -> {
 
-    long requestId;
-    if (response instanceof ActiveReplicaError) {
-      requestId = ((ActiveReplicaError) response).getRequestID();
-    } else if (response instanceof ClientRequest) {
-      requestId = ((RequestIdentifier) response).getRequestID();
-    } else {
-      ClientSupportConfig.getLogger().log(Level.SEVERE, "Bad response type: {0}", response.getClass());
-      return;
-    }
+		long requestId;
+		if (response instanceof ActiveReplicaError) {
+			requestId = ((ActiveReplicaError) response).getRequestID();
+		} else if (response instanceof ClientRequest) {
+			requestId = ((RequestIdentifier) response).getRequestID();
+		} else {
+			ClientSupportConfig.getLogger().log(Level.SEVERE,
+					"Bad response type: {0}", response.getClass());
+			return;
+		}
 
-    replicaResultMap.put(requestId, response);
-  };
+		replicaResultMap.put(requestId, response);
+	};
 
-  private RequestCallback getRequestCallback(Object monitor) {
-    return (Request response) -> {
-      replicaCommandCallback.handleResponse(response);
-      synchronized (monitor) {
-        monitor.notifyAll();
-      }
-    };
-  }
+	private RequestCallbackWithRequest getRequestCallback(Object monitor) {
+		return new RequestCallbackWithRequest() {
+			CommandPacket request = null;
+			Request response = null;
+
+			public void handleResponse(Request response) {
+				this.response = response;
+				replicaCommandCallback.handleResponse(response);
+				synchronized (monitor) {
+					monitor.notifyAll();
+				}
+			}
+
+			@Override
+			public RequestCallbackWithRequest setRequest(CommandPacket request) {
+				 this.request = request;
+				 return this;
+			}
+
+			@Override
+			public CommandPacket getRequest() {
+				return this.request;
+			}
+
+			@Override
+			public Request getResponse() {
+				return this.response;
+			}
+
+		};
+	}
 
   /**
    * A callback that notifys any waits and records the response from a reconfigurator.
@@ -127,15 +162,15 @@ public class RemoteQuery extends ClientAsynchBase {
 
   private ClientRequest waitForReplicaResponse(long id, Object monitor)
           throws ClientException, ActiveReplicaException {
-    return waitForReplicaResponse(id, monitor, DEFAULT_REPLICA_READ_TIMEOUT);
+    return waitForReplicaResponse(id, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT);
   }
 
-  private ClientRequest waitForReplicaResponse(long id, Object monitor, long timeout)
+  private ClientRequest waitForReplicaResponse(long id, Object monitor, RequestCallbackWithRequest callback, long timeout)
           throws ClientException, ActiveReplicaException {
     try {
       synchronized (monitor) {
         long monitorStartTime = System.currentTimeMillis();
-        while (!replicaResultMap.containsKey(id)
+        while (!replicaResultMap.containsKey(id) && (callback==null || callback.getResponse()==null)
                 && (timeout == 0 || System.currentTimeMillis()
                 - monitorStartTime < timeout)) {
           ClientSupportConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
@@ -147,7 +182,7 @@ public class RemoteQuery extends ClientAsynchBase {
           // TODO: arun
           ClientException e = new ClientException(
                   this + ": Timed out on active replica response after waiting for "
-                  + timeout + "ms for response packet for " + id);
+                  + timeout + "ms for response packet for response for " + (callback !=null ? callback.getResponse().getSummary() : id));
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
@@ -161,9 +196,11 @@ public class RemoteQuery extends ClientAsynchBase {
       throw new ClientException("Wait for return packet was interrupted " + x);
     }
     Request response = replicaResultMap.remove(id);
+    assert(!(response instanceof CommandPacket) || response.equals(callback!=null ? callback.getResponse() : null));
+    
     if (response instanceof ActiveReplicaError) {
-      throw new ActiveReplicaException("No replicas found for "
-              + response.getServiceName());
+      throw new ActiveReplicaException("ActiveReplicaException incurred for "
+              + response.getServiceName() + " " + (callback!=null ? callback.getRequest() : ""));
     } else if (response instanceof ClientRequest) {
       return (ClientRequest) response;
     } else { // shouldn't ever get here because callback can't find a request id
@@ -334,7 +371,10 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws ClientException
    */
   private String handleQueryResponse(long requestId, Object monitor, String notFoundReponse) throws ClientException {
-    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
+    return handleQueryResponse(requestId, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
+  }
+  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, String notFoundReponse) throws ClientException {
+	  return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
   }
 
   /**
@@ -347,11 +387,11 @@ public class RemoteQuery extends ClientAsynchBase {
    * @return the response from the query
    * @throws ClientException
    */
-  private String handleQueryResponse(long requestId, Object monitor, long timeout,
+  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, long timeout,
           String notFoundReponse) throws ClientException {
     try {
       CommandValueReturnPacket packet
-              = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, timeout);
+              = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, callback, timeout);
       if (packet == null) {
         throw new ClientException("Packet not found in table " + requestId);
       } else {
@@ -380,8 +420,9 @@ public class RemoteQuery extends ClientAsynchBase {
             "{0} Field read of {1} : {2}",
             new Object[]{this, guid, Util.truncate(field, 16, 16)});
     Object monitor = new Object();
-    long requestId = fieldRead(guid, field, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor, null);
+    RequestCallbackWithRequest callback = null;
+    long requestId = fieldRead(guid, field, callback = this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor, callback, null);
   }
 
   private static final String EMPTY_JSON_ARRAY_STRING = new JSONArray().toString();
@@ -402,8 +443,9 @@ public class RemoteQuery extends ClientAsynchBase {
             "{0} Field read array of {1} : {2}",
             new Object[]{this, guid, field});
     Object monitor = new Object();
-    long requestId = fieldReadArray(guid, field, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor, EMPTY_JSON_ARRAY_STRING);
+    RequestCallbackWithRequest callback = null;
+    long requestId = fieldReadArray(guid, field, callback = this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor, callback, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -424,8 +466,9 @@ public class RemoteQuery extends ClientAsynchBase {
             "{0} Field update {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
-    long requestId = fieldUpdate(guid, field, value, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT,
+    RequestCallbackWithRequest callback = null;
+    long requestId = fieldUpdate(guid, field, value, callback = this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_UPDATE_TIMEOUT,
             BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
@@ -447,8 +490,9 @@ public class RemoteQuery extends ClientAsynchBase {
             "{0} Field fieldReplaceOrCreateArray {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
-    long requestId = fieldReplaceOrCreateArray(guid, field, value, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT,
+    RequestCallbackWithRequest callback = null;
+    long requestId = fieldReplaceOrCreateArray(guid, field, value, callback = this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_UPDATE_TIMEOUT,
             BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
@@ -469,8 +513,9 @@ public class RemoteQuery extends ClientAsynchBase {
             "{0} Field fieldAppendToArray {1} / {2} : {3}",
             new Object[]{this, guid, field, Util.truncate(value, 64, 64)});
     Object monitor = new Object();
-    long requestId = fieldAppendToArray(guid, field, value, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT,
+    RequestCallbackWithRequest callback = null;
+    long requestId = fieldAppendToArray(guid, field, value, callback = this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_UPDATE_TIMEOUT,
             BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
@@ -492,8 +537,9 @@ public class RemoteQuery extends ClientAsynchBase {
             "{0} Field remove {1} / {2} : {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
-    long requestId = fieldRemove(guid, field, value, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor,
+    RequestCallbackWithRequest callback = null;
+    long requestId = fieldRemove(guid, field, value, callback = this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor, callback,
             DEFAULT_REPLICA_UPDATE_TIMEOUT, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 
@@ -514,8 +560,9 @@ public class RemoteQuery extends ClientAsynchBase {
             "{0} Field fieldRemoveMultiple {1} / {2} = {3}",
             new Object[]{this, guid, field, value});
     Object monitor = new Object();
-    long requestId = fieldRemoveMultiple(guid, field, value, this.getRequestCallback(monitor));
-    return handleQueryResponse(requestId, monitor, DEFAULT_REPLICA_UPDATE_TIMEOUT,
+    RequestCallbackWithRequest callback = null;
+    long requestId = fieldRemoveMultiple(guid, field, value, callback = this.getRequestCallback(monitor));
+    return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_UPDATE_TIMEOUT,
             BAD_RESPONSE + " " + BAD_GUID + " " + guid);
   }
 

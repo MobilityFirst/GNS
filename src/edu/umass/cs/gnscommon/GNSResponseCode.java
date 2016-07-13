@@ -106,6 +106,12 @@ public enum GNSResponseCode implements Serializable {
   /* Errors above, exceptions below. The distinction is that the former is
 	 * more serious and irrecoverable for that operation, but the latter may
 	 * sometimes happen in the otherwise normal course of events. */
+          
+          /**
+           * Account has already been verified.
+           */
+          ALREADY_VERIFIED_EXCEPTION(12, GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION, TYPE.EXCEPTION),
+          
   /**
    * Duplicate GUID or HRN.
    */

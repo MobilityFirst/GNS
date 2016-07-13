@@ -95,6 +95,7 @@ public class RegisterAccount extends BasicCommand {
         // Everything is hunkey dorey so return the new guid
         return new CommandResponse(GNSResponseCode.NO_ERROR, guid);
       } else {
+    	  assert(result.getExceptionOrErrorCode()!=null);
         // Otherwise return the error response.
         return result;
       }

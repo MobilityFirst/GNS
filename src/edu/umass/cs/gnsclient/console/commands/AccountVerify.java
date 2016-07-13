@@ -24,6 +24,7 @@ import java.util.StringTokenizer;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
@@ -96,7 +97,7 @@ public class AccountVerify extends ConsoleCommand {
         // this happens if it was already verified, but we didn't notice
       } catch (VerificationException e) {
         module.setAccountVerified(true);
-        printString("Account already verified.\n");
+        printString(GuidUtils.ACCOUNT_ALREADY_VERIFIED+"\n");
         return;
       } catch (Exception e) {
         printString("Account not verified: " + e + "\n");

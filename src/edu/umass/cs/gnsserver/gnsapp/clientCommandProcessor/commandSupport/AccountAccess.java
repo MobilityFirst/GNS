@@ -212,6 +212,7 @@ public class AccountAccess {
               "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for PRIMARY_GUID for {0}", guid);
       try {
         value = handler.getRemoteQuery().fieldRead(guid, PRIMARY_GUID);
+        if(!FieldAccess.SINGLE_FIELD_VALUE_ONLY && value !=null) value = new JSONObject(value).getString(PRIMARY_GUID);
       } catch (IOException | JSONException | ClientException e) {
         GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{guid, e});
@@ -271,6 +272,11 @@ public class AccountAccess {
               "XXXXXXXXXXXXXXXXXXXXX LOOKING REMOTELY for HRN_GUID for {0}", name);
       try {
         value = handler.getRemoteQuery().fieldRead(name, HRN_GUID);
+        if(!FieldAccess.SINGLE_FIELD_VALUE_ONLY && value!=null) {
+            GNSConfig.getLogger().log(Level.FINE,
+                    "XXXXXXXXXXXXXXXXXXXXX Found HRN_GUID for {0}:{1}", new Object[]{name, value});
+        	value = new JSONObject(value).getString(HRN_GUID);
+        }
       } catch (IOException | JSONException | ClientException e) {
         GNSConfig.getLogger().log(Level.SEVERE,
                 "Problem getting HRN_GUID for {0} from remote server: {1}", new Object[]{name, e});
@@ -468,8 +474,8 @@ public class AccountAccess {
               + " " + GNSCommandProtocol.VERIFICATION_ERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
-      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE + " "
-              + GNSCommandProtocol.VERIFICATION_ERROR + " "
+      return new CommandResponse(GNSResponseCode.ALREADY_VERIFIED_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE + " "
+              + GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION + " "
               + GuidUtils.ACCOUNT_ALREADY_VERIFIED);
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
@@ -694,7 +700,11 @@ public class AccountAccess {
     try {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
-      handler.getRemoteQuery().createRecord(name, jsonHRN);
+      GNSResponseCode code = handler.getRemoteQuery().createRecord(name, jsonHRN);
+      // arun: You are not checking the response code below at all, which is a bug. 
+      if(code.isExceptionOrError()) 
+          return new CommandResponse(code, BAD_RESPONSE + " " + code.getProtocolCode() + " " + guid);
+      // else name created
       GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
       JSONObject jsonGuid = new JSONObject();
       jsonGuid.put(GUID_INFO, guidInfo.toJSONObject());
@@ -707,7 +717,17 @@ public class AccountAccess {
               ALL_FIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
       // prefix is the same for all acls so just pick one to use here
       jsonGuid.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
-      handler.getRemoteQuery().createRecord(guid, jsonGuid);
+      /*
+       * arun: You are not checking the response code below at all, which is a bug. 
+       * The addGuid needs to be rolled back if the second step fails.
+       */
+      code = handler.getRemoteQuery().createRecord(guid, jsonGuid);
+      if(code.isExceptionOrError()) {
+    	  // rollback
+          handler.getRemoteQuery().deleteRecord(name);
+          return new CommandResponse(code, BAD_RESPONSE + " " + code.getProtocolCode() + " " + guid);
+      }
+      // else both name and guid created
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
       updateAccountInfoNoAuthentication(accountInfo, handler, true);

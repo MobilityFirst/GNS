@@ -341,9 +341,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
       // arun: always clean up all created state upon exiting
       if (request instanceof RequestIdentifier && prev == null) {
-        GNSConfig.getLogger().log(Level.FINE,
-                "{0} dequeueing request {1}",
-                new Object[]{this, request.getSummary()});
+				GNSConfig
+						.getLogger()
+						.log(Level.FINE,
+								"{0} dequeueing request {1}; response={2}",
+								new Object[] {
+										this,
+										request.getSummary(),
+										request instanceof ClientRequest
+												&& ((ClientRequest) request)
+														.getResponse() != null ? ((ClientRequest) request)
+												.getResponse().getSummary()
+												: null });
         this.outstanding.remove(request);
       }
 
@@ -448,8 +457,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     try {
       NameRecord nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
       GNSConfig.getLogger().log(Level.FINE,
-              "&&&&&&& {0} getting state {1} ",
-              new Object[]{this, nameRecord.getValuesMap().getSummary()});
+              "&&&&&&& {0} getting state for {1} : {2} ",
+              new Object[]{this, name, nameRecord.getValuesMap().getSummary()});
       return nameRecord.getValuesMap().toString();
     } catch (RecordNotFoundException e) {
       // normal result

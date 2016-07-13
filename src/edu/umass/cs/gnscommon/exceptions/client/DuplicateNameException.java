@@ -1,74 +1,48 @@
-/*
- *
- *  Copyright (c) 2015 University of Massachusetts
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you
- *  may not use this file except in compliance with the License. You
- *  may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
- *  Initial developer(s): Westy, Emmanuel Cecchet
- *
- */
+/* Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
+ * Initial developer(s): Westy, Emmanuel Cecchet */
 package edu.umass.cs.gnscommon.exceptions.client;
+
+import edu.umass.cs.gnscommon.GNSResponseCode;
 
 /**
  * This class defines a GnsDupplicateNameException
  * 
- * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
+ * @author arun
  * @version 1.0
  */
-public class DuplicateNameException extends ClientException
-{
+public class DuplicateNameException extends ClientException {
 
-  /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
-   */
-  public DuplicateNameException()
-  {
-    super();
-    // TODO Auto-generated constructor stub
-  }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5740974385175983703L;
 
-  /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
-   * 
-   * @param message
-   * @param cause
-   */
-  public DuplicateNameException(String message, Throwable cause)
-  {
-    super(message, cause);
-    // TODO Auto-generated constructor stub
-  }
 
-  /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
-   * 
-   * @param message
-   */
-  public DuplicateNameException(String message)
-  {
-    super(message);
-    // TODO Auto-generated constructor stub
-  }
+	/**
+	 * @param code
+	 * @param message
+	 */
+	public DuplicateNameException(GNSResponseCode code, String message) {
+		super(code, message);
+	}
 
-  /**
-   * Creates a new <code>GnsDupplicateNameException</code> object
-   * 
-   * @param throwable
-   */
-  public DuplicateNameException(Throwable throwable)
-  {
-    super(throwable);
-    // TODO Auto-generated constructor stub
-  }
-
+	/**
+	 * @param message
+	 */
+	public DuplicateNameException(String message) {
+		super(GNSResponseCode.DUPLICATE_ID_EXCEPTION, message);
+	}
 }

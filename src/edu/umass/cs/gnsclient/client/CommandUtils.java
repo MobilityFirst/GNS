@@ -26,6 +26,7 @@ import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.SessionKeys;
@@ -116,6 +117,26 @@ public class CommandUtils {
       throw new ClientException("Error encoding message", e);
     }
   }
+  
+	/**
+	 * Only for backwards compatibility
+	 * 
+	 * @param response
+	 * @return Single value string if response is JSONObject with a single
+	 *         key-value piar.
+	 */
+	public static String specialCaseSingleField(String response) {
+		if (JSONPacket.couldBeJSON(response) && response.startsWith("{"))
+			try {
+				JSONObject json = new JSONObject(response);
+				String[] keys = JSONObject.getNames(json);
+				return (keys.length == 1) ? json.getString(JSONObject
+						.getNames(json)[0]) : response;
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		return response;
+	}
 
   /**
    * Creates a command object from the given action string and a variable
@@ -307,10 +328,11 @@ public static String signDigestOfMessage(PrivateKey privateKey, PublicKey public
         }
         String rest = parts.toString();
         if (error.startsWith(GNSCommandProtocol.BAD_SIGNATURE)) {
-          throw new EncryptionException();
+          throw new EncryptionException(error);
         }
         if (error.startsWith(GNSCommandProtocol.BAD_GUID)
                 || error.startsWith(GNSCommandProtocol.BAD_ACCESSOR_GUID)
+                // why not with DUPLICATE_NAME?
                 || error.startsWith(GNSCommandProtocol.DUPLICATE_GUID)
                 || error.startsWith(GNSCommandProtocol.BAD_ACCOUNT)) {
           throw new InvalidGuidException(error + rest);
@@ -330,6 +352,9 @@ public static String signDigestOfMessage(PrivateKey privateKey, PublicKey public
         if (error.startsWith(GNSCommandProtocol.VERIFICATION_ERROR)) {
           throw new VerificationException(error + rest);
         }
+        if (error.startsWith(GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION)) {
+            throw new VerificationException(error + rest);
+        }
         if (error.startsWith(OPERATION_NOT_SUPPORTED)) {
           throw new OperationNotSupportedException(error + rest);
         }
@@ -346,12 +371,6 @@ public static String signDigestOfMessage(PrivateKey privateKey, PublicKey public
     }
   }
 
-  // bridging hack - this needs to stay around until we update the iOS client
-  public static String checkResponse(Object response) throws ClientException {
-    return response instanceof String ? checkResponse((String) response)
-            : checkResponse(((CommandValueReturnPacket) response));
-  }
-
   private static final boolean USE_OLD_CHECK_RESPONSE = false;
   /**
    * arun: This checkResponse method will replace the old one. There is no
@@ -366,10 +385,9 @@ public static String signDigestOfMessage(PrivateKey privateKey, PublicKey public
       return checkResponse(packet.getReturnValue());
     }
 
-    
     GNSResponseCode code = packet.getErrorCode();
     String response = packet.getReturnValue();
-    GNSConfig.getLogger().log(Level.FINE, "New check response: {0} {1}", new Object[]{code, response});
+    GNSConfig.getLogger().log(Level.FINE, "New check response: {0} {1}", new Object[]{code, packet.getSummary()});
     // If the code isn't an error or exception we're just returning the 
     // return value. Also handle the special case where the command
     // wants to return a null value.
@@ -378,34 +396,40 @@ public static String signDigestOfMessage(PrivateKey privateKey, PublicKey public
               : response;
     }
     // else error
-    String errorSummary = code + ": " + response + ": " + packet.getSummary().toString();
+    String errorSummary = code + ": " + response + ": " + packet.getSummary();
     switch (code) {
       case SIGNATURE_ERROR:
-        throw new EncryptionException(errorSummary);
+        throw new EncryptionException(code, errorSummary);
 
       case BAD_GUID_ERROR:
       case BAD_ACCESSOR_ERROR:
       case BAD_ACCOUNT_ERROR:
-        throw new InvalidGuidException(errorSummary);
+        throw new InvalidGuidException(code, errorSummary);
 
       case FIELD_NOT_FOUND_ERROR:
-        throw new FieldNotFoundException(errorSummary);
+        throw new FieldNotFoundException(code, errorSummary);
       case ACCESS_ERROR:
-        throw new AclException(errorSummary);
+        throw new AclException(code, errorSummary);
       case VERIFICATION_ERROR:
-        throw new VerificationException(errorSummary);
+        throw new VerificationException(code, errorSummary);
+      case ALREADY_VERIFIED_EXCEPTION:
+          throw new VerificationException(code, errorSummary);
       case DUPLICATE_ID_EXCEPTION:
-        throw new DuplicateNameException(errorSummary);
+      case DUPLICATE_GUID_EXCEPTION:
+      case DUPLICATE_NAME_EXCEPTION:
+        throw new DuplicateNameException(code, errorSummary);
       case DUPLICATE_FIELD_EXCEPTION:
-        throw new InvalidFieldException(errorSummary);
+        throw new InvalidFieldException(code, errorSummary);
 
       case ACTIVE_REPLICA_EXCEPTION:
-        throw new InvalidGuidException(errorSummary);
+        throw new InvalidGuidException(code, errorSummary);
       case NONEXISTENT_NAME_EXCEPTION:
-        throw new InvalidGuidException(errorSummary);
+        throw new InvalidGuidException(code, errorSummary);
+      case TIMEOUT:
+      throw new ClientException(code, errorSummary);
 
       default:
-        throw new ClientException("Error received with an unknown response code: " + errorSummary);
+        throw new ClientException(code, "Error received with an unknown response code: " + errorSummary);
     }
   }
 

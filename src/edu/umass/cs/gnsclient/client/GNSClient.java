@@ -187,12 +187,13 @@ public class GNSClient extends AbstractGNSClient
 			@Override
 			public void handleResponse(Request response) {
 				retval[0] = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
-						: new CommandValueReturnPacket(
+						: new CommandValueReturnPacket(response.getServiceName(),
 								((ActiveReplicaError) response).getRequestID(),
 								GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
 								((ActiveReplicaError) response)
 										.getResponseMessage());
 
+				assert(retval[0].getErrorCode()!=null);
 				synchronized (monitor) {
 					monitor.notify();
 				}

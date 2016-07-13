@@ -316,7 +316,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.properties"/>
       <jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
@@ -351,7 +351,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.1local.properties"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.properties"/>
       <jvmarg value="-Dserver.command=scripts/singlenodetests/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>

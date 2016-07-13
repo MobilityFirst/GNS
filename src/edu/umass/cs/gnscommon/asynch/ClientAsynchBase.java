@@ -25,14 +25,17 @@ import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GuidEntry;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.util.Random;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -52,6 +55,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
@@ -64,6 +68,8 @@ import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery.RequestCallbackWithRequest;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -76,6 +82,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
@@ -187,9 +194,13 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    */
   public ClientAsynchBase(Set<InetSocketAddress> addresses) throws IOException {
     //super(addresses);
+	  
     // will use above code once we get rid of  ReconfigurationConfig accessors
     super(addresses, ReconfigurationConfig.getClientSSLMode(),
             ReconfigurationConfig.getClientPortOffset(), false);
+
+		// for MUTUAL_AUTH here instead (but it's no more secure)
+		//	  super(addresses, SSL_MODES.MUTUAL_AUTH, 0);
 
     ClientSupportConfig.getLogger().log(Level.INFO, "Reconfigurators {0}", addresses);
     ClientSupportConfig.getLogger().log(Level.INFO, "Client port offset {0}", ReconfigurationConfig.getClientPortOffset());
@@ -245,7 +256,10 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, command);
     ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
-    return sendRequest(packet, callback);
+    return sendRequest(
+    		packet,
+    		(callback instanceof RequestCallbackWithRequest) ? ((RequestCallbackWithRequest) callback)
+    				.setRequest(packet) : callback);
   }
 
   /**

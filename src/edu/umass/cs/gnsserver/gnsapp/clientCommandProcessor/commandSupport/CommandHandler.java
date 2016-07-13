@@ -114,6 +114,7 @@ public class CommandHandler {
               System.currentTimeMillis() - receiptTime);
 
       try {
+    	  assert(returnPacket.getErrorCode()!=null);
         ClientCommandProcessorConfig.getLogger().log(Level.FINE,
                 "Handling command reply: {0}",
                 new Object[]{returnPacket});

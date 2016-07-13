@@ -25,6 +25,8 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
+import edu.umass.cs.utils.Util;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -86,10 +88,10 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.errorCode = response.getExceptionOrErrorCode();
   }
 
-  public CommandValueReturnPacket(long requestId, GNSResponseCode code, String returnValue) {
+  public CommandValueReturnPacket(String serviceName, long requestId, GNSResponseCode code, String returnValue) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.clientRequestId = requestId;
-    this.serviceName = null;
+    this.serviceName = serviceName;
     this.returnValue = returnValue;
     this.errorCode = code;
   }
@@ -203,7 +205,9 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
                 + ":"
                 + getRequestID()
                 + ":"
-                + getReturnValue();
+                + getErrorCode()  
+                + ":"
+                + Util.truncate(getReturnValue(), 64, 64);
       }
     };
   }
