@@ -16,6 +16,7 @@
 package edu.umass.cs.gnsclient.client.integrationtests;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
@@ -336,6 +337,11 @@ public class ServerIntegrationTest extends DefaultTest {
 		if (client != null) {
 			client.close();
 		}
+		System.out.println("\nPrinting reverse-engineered return types:");
+		for (CommandType type : GNSClientCommands.reverseEngineer.keySet())
+			System.out.println(type + " returns "
+					+ GNSClientCommands.reverseEngineer.get(type) + "; e.g., "
+					+ Util.truncate(GNSClientCommands.returnValueExample.get(type), 64, 64));
 	}
 
 	/**

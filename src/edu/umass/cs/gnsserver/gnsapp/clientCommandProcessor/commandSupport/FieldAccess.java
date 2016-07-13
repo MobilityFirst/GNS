@@ -223,13 +223,19 @@ public class FieldAccess {
     String resultString;
     ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
-      resultString = new JSONArray(value).toString();
+      //resultString = new JSONArray(value).toString();
+    	try {
+			resultString = new JSONObject().put(field, value).toString();
+		} catch (JSONException e) {
+		      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + GNSResponseCode.JSON_PARSE_ERROR);
+		}
     } else {
-      resultString = EMPTY_JSON_ARRAY_STRING;
+      //resultString = EMPTY_JSON_ARRAY_STRING;
+    	resultString = new JSONObject().toString();
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
   }
-
+  
   /**
    * Reads the value of all the fields in a guid.
    * Doesn't return internal system fields.

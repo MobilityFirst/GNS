@@ -16,8 +16,11 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.cassandra.cql3.CQL3Type.Collection;
 
 /**
  * All the commands supported by the GNS server are listed here.
@@ -60,13 +63,13 @@ public enum CommandType {
   CreateListSelf(154, Type.UPDATE),
   CreateSelf(155, Type.UPDATE),
   //
-  Read(160, Type.READ),
-  ReadSelf(161, Type.READ),
-  ReadUnsigned(162, Type.READ),
-  ReadMultiField(163, Type.READ),
-  ReadMultiFieldUnsigned(164, Type.READ),
+  Read(160, Type.READ, Map.class),
+  ReadSelf(161, Type.READ, Map.class),
+  ReadUnsigned(162, Type.READ, Map.class),
+  ReadMultiField(163, Type.READ, Map.class),
+  ReadMultiFieldUnsigned(164, Type.READ, Map.class),
   //
-  ReadArray(170, Type.READ),
+  ReadArray(170, Type.READ, Map.class),
   ReadArrayOne(171, Type.READ),
   ReadArrayOneSelf(172, Type.READ),
   ReadArrayOneUnsigned(173, Type.READ),
@@ -122,8 +125,8 @@ public enum CommandType {
   SelectGroupSetupQueryWithGuidAndInterval(314, Type.SELECT),
   SelectGroupSetupQueryWithInterval(315, Type.SELECT),
   //
-  SelectNear(320, Type.SELECT),
-  SelectWithin(321, Type.SELECT),
+  SelectNear(320, Type.SELECT, Collection.class),
+  SelectWithin(321, Type.SELECT, Collection.class),
   SelectQuery(322, Type.SELECT),
   // Account
   AddAlias(410, Type.CREATE_DELETE),
@@ -146,7 +149,7 @@ public enum CommandType {
   RemoveAlias(441, Type.CREATE_DELETE),
   RemoveGuid(442, Type.CREATE_DELETE),
   RemoveGuidNoAccount(443, Type.CREATE_DELETE),
-  RetrieveAliases(444, Type.OTHER),
+  RetrieveAliases(444, Type.OTHER, Collection.class),
   //
   SetPassword(450, Type.UPDATE),
   VerifyAccount(451, Type.OTHER),
@@ -164,9 +167,9 @@ public enum CommandType {
   AddMembersToGroupSelf(611, Type.OTHER),
   AddToGroup(612, Type.OTHER),
   AddToGroupSelf(613, Type.OTHER),
-  GetGroupMembers(614, Type.OTHER),
+  GetGroupMembers(614, Type.OTHER, Collection.class),
   GetGroupMembersSelf(615, Type.OTHER),
-  GetGroups(616, Type.OTHER),
+  GetGroups(616, Type.OTHER, Collection.class),
   GetGroupsSelf(617, Type.OTHER),
   //
   RemoveFromGroup(620, Type.OTHER),
@@ -203,21 +206,20 @@ public enum CommandType {
   Unknown(999, Type.OTHER);
   private int number;
   private Type coordination;
-  private final String alias; // must also be unique
+  private Class<?> returnType;
 
   public enum Type {
     READ, UPDATE, CREATE_DELETE, SELECT, OTHER
   }
 
   private CommandType(int number, Type coordination) {
-    this(number, coordination, number + "" // default alias is just number
-    );
+    this(number, coordination, String.class);
   }
 
-  private CommandType(int number, Type readUpdateCreateDelete, String alias) {
+  private CommandType(int number, Type readUpdateCreateDelete, Class<?> returnType ) {
     this.number = number;
     this.coordination = readUpdateCreateDelete;
-    this.alias = alias;
+    this.returnType = returnType;
   }
 
   public int getInt() {

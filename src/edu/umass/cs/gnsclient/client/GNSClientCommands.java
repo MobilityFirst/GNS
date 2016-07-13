@@ -86,8 +86,12 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -176,15 +180,39 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * replaced by this getResponse method. */
 	private String getResponse(CommandType commandType, GuidEntry querier,
 			Object... keysAndValues) throws ClientException, IOException {
-		return USE_OLD_SEND ? CommandUtils
-				.checkResponse(sendCommandAndWait(CommandUtils
-						.createAndSignCommand(commandType, querier,
-								keysAndValues))) : 
-									CommandUtils
-				.checkResponse(this.sendSync(getCommand(commandType, querier, keysAndValues)
-						, (long)this.readTimeout
-								))
-									;
+		CommandPacket commandPacket = null;
+		return record(// just instrumentation
+				commandType,
+				USE_OLD_SEND ? CommandUtils
+						.checkResponse(sendCommandAndWait(CommandUtils
+								.createAndSignCommand(commandType, querier,
+										keysAndValues)))
+										// new send
+						: CommandUtils.checkResponse(commandPacket, this
+								.sendSync(
+										commandPacket = getCommand(commandType,
+												querier, keysAndValues),
+										(long) this.readTimeout)));
+	}
+	
+	private static final boolean RECORD_ENABLED = true;
+	/**
+	 * only for instrumentation to decode return value types
+	 */
+	public static final Map<CommandType,Set<String>> reverseEngineer = new TreeMap<CommandType,Set<String>>();
+	/**
+	 * only for instrumentation to decode return value types
+	 */
+	public static final Map<CommandType,Set<String>> returnValueExample = new TreeMap<CommandType,Set<String>>();
+	private static final String record(CommandType type, String response) {
+		if(!RECORD_ENABLED) return response;
+		if(reverseEngineer.get(type)==null) reverseEngineer.put(type, new HashSet<String>());
+		if(returnValueExample.get(type)==null) returnValueExample.put(type, new HashSet<String>());
+		if(response!=null) reverseEngineer.get(type).add(JSONPacket.couldBeJSONObject(response) ? "JSONObject"
+				: JSONPacket.couldBeJSONArray(response) ? "JSONArray"
+						: "String");
+		if(response!=null) returnValueExample.get(type).add(response);
+		return response;
 	}
 
 	private String getResponse(CommandType commandType, Object... keysAndValues)
@@ -1381,9 +1409,19 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray fieldReadArray(String guid, String field, GuidEntry reader)
 			throws Exception {
-		return new JSONArray(getResponse(reader != null ? CommandType.ReadArray
+		return 
+				toJSONArray(field,
+				(getResponse(reader != null ? CommandType.ReadArray
 				: CommandType.ReadArrayUnsigned, reader, GUID, guid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null));
+				field, READER, reader != null ? reader.getGuid() : null)))
+		;
+	}
+	
+	// arun: because we now return all fields as JSONObject
+	private JSONArray toJSONArray(String field, String response) throws JSONException {
+		if(JSONPacket.couldBeJSONArray(response))
+			return new JSONArray(response);
+		else return new JSONObject(response).getJSONArray(field);
 	}
 
 	/**

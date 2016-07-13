@@ -311,7 +311,7 @@ public abstract class AbstractGNSClient {
               new Object[]{this, readTimeout, commandPacket.getClientRequestId() + "", commandPacket.getSummary()});
       /* FIXME: Remove use of string reponse codes */
       return new CommandValueReturnPacket(commandPacket.getServiceName(), commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT, 
-                      GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
+                      GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT + " for command " + commandPacket.getSummary());
 
   }
 
