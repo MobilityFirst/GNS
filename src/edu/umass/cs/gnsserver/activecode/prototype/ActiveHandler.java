@@ -144,8 +144,9 @@ public class ActiveHandler {
 	 * @throws InterruptedException 
 	 */
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
-		int num = 1; //Integer.parseInt(args[0]);
-		if(num <= 0){
+		int numProcess = Integer.parseInt(args[0]);
+		int numThread = Integer.parseInt(args[1]);
+		if(numProcess <= 0){
 			System.out.println("Number of clients must be larger than 0.");
 			System.exit(0);
 		}
@@ -161,7 +162,7 @@ public class ActiveHandler {
 		value.put("string", "hello world");
 		
 		// initialize a multithreaded client
-		ActiveHandler handler = new ActiveHandler(null, num, 2);
+		ActiveHandler handler = new ActiveHandler(null, numProcess, numThread);
 		ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
 		
 		int n = 1000000;
