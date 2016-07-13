@@ -36,6 +36,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.nio.JSONDelayEmulator;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author Brendan
@@ -62,10 +63,75 @@ public class ServerFailureTests {
 	private ArrayList<String> serverNameArray = new ArrayList<String>();
 	private ArrayList<String> serverDownNameArray = new ArrayList<String>();
 	private int numRequestsSuccessful = 0;
+	
+	  private static final String HOME=System.getProperty("user.home");
+	  private static final String GNS_DIR = "GNS";
+	  private static final String GNS_HOME = HOME + "/" + GNS_DIR+"/";
+	  
+		private static final String SCRIPTS_SERVER="scripts/3nodeslocal/reset_and_restart.sh";
+		private static final String SCRIPTS_OPTIONS=" 2>/tmp/log";
+		
+		private static final String GP_SERVER = "bin/gpServer.sh";
+		private static final String GP_OPTIONS = getGigaPaxosOptions()
+				+ " restart all";
+		private static final boolean USE_GP_SCRIPTS = true;
+		private static final String OPTIONS = USE_GP_SCRIPTS ? GP_OPTIONS : SCRIPTS_OPTIONS;
+	
+	private static final void setProperties() {
+		for(DefaultProps prop : DefaultProps.values()) 
+			if(System.getProperty(prop.key)==null)
+				System.setProperty(prop.key, prop.isFile ? getPath(prop.value) : prop.value);
+	}
+	// this static block must be above GP_OPTIONS
+	static {
+		setProperties();
+	}
+	
+	private static final String getPath(String filename) {
+		if (new File(filename).exists())
+			return filename;
+		if (new File(GNS_HOME + filename).exists())
+			return GNS_HOME + filename;
+		else
+			Util.suicide("Can not find server startup script: " + filename);
+		return null;
+	}
+	
+	
+	private static enum DefaultProps {
+		SERVER_COMMAND("server.command", USE_GP_SCRIPTS ? GP_SERVER : SCRIPTS_SERVER, true),
+		GIGAPAXOS_CONFIG("gigapaxosConfig", "conf/gnsserver.3local.properties", true),
+		KEYSTORE("javax.net.ssl.keyStore","conf/trustStore/node100.jks", true),
+		KEYSTORE_PASSWORD("javax.net.ssl.keyStorePassword","qwerty"),
+		TRUSTSTORE("javax.net.ssl.trustStore","conf/trustStore/node100.jks", true),
+		TRUSTSTORE_PASSWORD("javax.net.ssl.trustStorePassword","qwerty"),
+		START_SERVER("startServer", "true"),
+		;
 
+		final String key; 
+		final String value;
+		final boolean isFile;
+
+		DefaultProps(String key, String value, boolean isFile) {
+			this.key = key;
+			this.value = value;
+			this.isFile = isFile;
+		}
+		DefaultProps(String key, String value) {
+			this(key, value, false);
+		}
+	}
+
+	  private static final String getGigaPaxosOptions() {
+		  String gpOptions="";
+		  for(DefaultProps prop : DefaultProps.values()) 
+			  gpOptions += " -D" + prop.key + "=" + System.getProperty(prop.key);
+		  return gpOptions;
+	  }
+	
 	public static void causeRandomServerFailure() throws IOException, InterruptedException{
 		//Get the GNS directory
-		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
+		//String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
 		//System.out.println("Current path: " + topDir);
 		Random rand = new Random();
 		
@@ -80,8 +146,12 @@ public class ServerFailureTests {
 		//Stop the server
 		System.out.println("Stopping " +serverName);
 		Process killServer = Runtime.getRuntime().exec(execString+ "stop " + serverName);
+		/*RunServer.command(
+				System.getProperty(DefaultProps.SERVER_COMMAND.key)
+				+ " " + getGigaPaxosOptions()
+				+ " stop " + serverName, ".");*/
 		killServer.waitFor(); //Throws a possible interruptedException here
-		System.out.println(serverName +" stopped.");
+		System.out.println(serverName +" stopping.");
 		
 		/*
 		//Wait 10 seconds
@@ -108,6 +178,7 @@ public class ServerFailureTests {
 	public static void recoverAllServers() throws IOException{
 		//Restart the server to simulate recovery.
 		synchronized(suite){
+			ArrayList<String> toRestart = new ArrayList<String>();
 			for (String serverName : suite.serverDownNameArray){
 				System.out.println("Restarting " + serverName);
 				Process restartServer = Runtime.getRuntime().exec(execString + "start " + serverName);
@@ -117,11 +188,17 @@ public class ServerFailureTests {
 					// There's not much to be done if the process gets interrupted here
 					e.printStackTrace();
 				}
-				System.out.println(serverName +" restarted.");
-				synchronized(suite){
-					suite.serverDownNameArray.remove(serverName);
-					suite.serverNameArray.add(serverName);
-				}
+				/*RunServer.command(
+						System.getProperty(DefaultProps.SERVER_COMMAND.key)
+						+ " " + getGigaPaxosOptions()
+						+ " restart " + serverName, ".");*/
+				
+				System.out.println(serverName +" restarting.");
+				toRestart.add(serverName);
+			}
+			synchronized(suite){
+				suite.serverDownNameArray.removeAll(toRestart);
+				suite.serverNameArray.addAll(toRestart);
 			}
 		}
 	}
@@ -150,10 +227,8 @@ public class ServerFailureTests {
 		reader.close();
 		System.out.println("Active Replicas to be used: " + suite.serverNameArray.toString());
 		
-		//Start all the servers
-		execString = topDir + "/bin/gpServer.sh -DgigapaxosConfig="+gpPropDir+" ";
-		System.out.println("Running " + execString + "start all");
-		Process startProcess = Runtime.getRuntime().exec(execString + "start all");
+		//Kill any running servers
+		Process startProcess  = Runtime.getRuntime().exec("kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`");
 		InputStream serverLauncherOutput = startProcess.getInputStream();
 		BufferedReader output = new BufferedReader(new InputStreamReader(serverLauncherOutput));
 		line = output.readLine();
@@ -162,49 +237,116 @@ public class ServerFailureTests {
 			line = output.readLine();
 		}
 		startProcess.waitFor();
+		
+		//Kill any saved state
+		execString = topDir + "/bin/gpServer.sh -DgigapaxosConfig="+gpPropDir+" ";
+		System.out.println("Running " + execString + "forceclear all");
+		startProcess = Runtime.getRuntime().exec(execString + "forceclear all");
+		serverLauncherOutput = startProcess.getInputStream();
+		output = new BufferedReader(new InputStreamReader(serverLauncherOutput));
+		line = output.readLine();
+		while (startProcess.isAlive() && (line!=null)){
+			System.out.println(line);
+			line = output.readLine();
+		}
+		startProcess.waitFor();
+		
+
+
+		//Start the servers
+		System.out.println("Running " + execString + "restart all");
+		startProcess = Runtime.getRuntime().exec(execString + "restart all");
+		serverLauncherOutput = startProcess.getInputStream();
+		output = new BufferedReader(new InputStreamReader(serverLauncherOutput));
+		line = output.readLine();
+		while (startProcess.isAlive() && (line!=null)){
+			System.out.println(line);
+			line = output.readLine();
+		}
+		startProcess.waitFor();
 		System.out.println("Servers started.");
 		
-		client = new GNSClientCommands();
-		// Make all the reads be coordinated
-		client.setForceCoordinatedReads(true);
-		// arun: connectivity check embedded in GNSClient constructor
-		boolean connected = client instanceof GNSClient;
-		if (connected) {
-			System.out.println("Client created and connected to server.");
-		}
-		//
-		int tries = 5;
-		boolean accountCreated = false;
+		/*RunServer
+		.command(
+				"kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`",
+				".");
+		System.out.println(System.getProperty(DefaultProps.SERVER_COMMAND.key)
+				+ " " + getGigaPaxosOptions()
+				+ " forceclear all");
 
-		do {
-			try {
-				System.out.println("Creating account guid: " + (tries - 1)
-						+ " attempt remaining.");
-				masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
-						accountAlias, PASSWORD, true);
-				accountCreated = true;
-			} catch (Exception e) {
-				ThreadUtils.sleep((5 - tries) * 5000);
+		RunServer.command(
+				System.getProperty(DefaultProps.SERVER_COMMAND.key)
+				+ " " + getGigaPaxosOptions()
+				+ " forceclear all", ".");
+
+		System.out.println(System.getProperty(DefaultProps.SERVER_COMMAND.key) + " " + OPTIONS);
+		ArrayList<String> output = RunServer.command(
+				System.getProperty(DefaultProps.SERVER_COMMAND.key) + " " + OPTIONS, ".");
+		if (output != null) {
+			for (String nextLine : output) {
+				System.out.println(nextLine);
 			}
-		} while (!accountCreated && --tries > 0);
-		if (accountCreated == false) {
-			fail("Failure setting up account guid; aborting all tests.");
+		} else {
+			fail("Server command failure: ; aborting all tests.");
 		}
+		*/
+		Thread.sleep(5000);
+		 System.out.println("Starting client");
+		    
+		    client = new GNSClientCommands();
+		    // Make all the reads be coordinated
+		    client.setForceCoordinatedReads(true);
+		    // arun: connectivity check embedded in GNSClient constructor
+		    boolean connected = client instanceof GNSClient;
+		    if (connected) {
+		      System.out.println("Client created and connected to server.");
+		    }
+		    //
+		    int tries = 5;
+		    boolean accountCreated = false;
+
+		    do {
+		      try {
+		        System.out.println("Creating account guid: " + (tries - 1)
+		                + " attempt remaining.");
+		        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client,
+		                accountAlias, PASSWORD, true);
+		        accountCreated = true;
+		      } catch (Exception e) {
+		        ThreadUtils.sleep((5 - tries) * 5000);
+		      }
+		    } while (!accountCreated && --tries > 0);
+		    if (accountCreated == false) {
+		      fail("Failure setting up account guid; aborting all tests.");
+		    }
 		
 		//Begin emulating transport delays
-		JSONDelayEmulator.emulateDelays();
+		//JSONDelayEmulator.emulateDelays();
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
+		/*
+		ArrayList<String> output = RunServer.command(
+				new File(System
+						.getProperty(DefaultProps.SERVER_COMMAND.key))
+				.getParent()
+				+ "/shutdown.sh", ".");
+		if (output != null) {
+			for (String line : output) {
+				System.out.println(line);
+			}
+		} else {
+			System.out.println("SHUTDOWN SERVER COMMAND FAILED!");
+		}*/
+		
+		RunServer.command(
+				System.getProperty(DefaultProps.SERVER_COMMAND.key)
+				+ " " + getGigaPaxosOptions()
+				+ " stop all", ".");
 		if (client != null) {
 			client.close();
 		}
-		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
-		System.out.println("Stopping all servers...");
-		Process stopProcess = Runtime.getRuntime().exec(execString+"stop all");
-		stopProcess.waitFor();
-		System.out.println("Servers stopped.");
 	}
 	@Rule
 	public TestName testName = new TestName();
@@ -234,17 +376,19 @@ public class ServerFailureTests {
 	}
 
 	@Test
-	public void test_010_CreateEntity() throws Exception {
+	public void test_010_Throughput() throws Exception {
 		String threadString = System.getProperty("integrationTest.threads");
 		int numThreads = 20;
 		if (threadString != null){
 			numThreads=Integer.parseInt(threadString);
 		}
 		
+		System.out.println("Creating guid for the test...");
 		String testGuidName = "testGUID" + RandomString.randomString(6);
 	    final GuidEntry testGuid;
 	    try {
 	      testGuid = client.guidCreate(masterGuid, testGuidName);
+	      System.out.println("Guid created.");
 	    } catch (Exception e) {
 	      System.out.println("Exception while creating testGuid: " + e);
 	      throw e;
@@ -252,6 +396,7 @@ public class ServerFailureTests {
 	    startClock = System.currentTimeMillis();
 	    numRequestsSuccessful = 0;
 	    Thread threads[] = new Thread[numThreads];
+	    System.out.println("Spawning client threads...");
 	    for (int i = 0; i < numThreads; i++){
 			threads[i] = new Thread(){ 
 				public void run(){
@@ -281,25 +426,32 @@ public class ServerFailureTests {
 					}
 				}
 			};
-			threads[i].run();
+			threads[i].start();
 		}
+	    System.out.println("Client threads all spawned.");
 	    //Wait TEST_TIME ms before ending the test phase.
 	    int requestCount = 0;
 	    int NUM_FAILURES=2;
+	    endClock=System.currentTimeMillis();
 	    for (int i = 0; i <= NUM_FAILURES; i++){
 	    	//Bring all servers back up
 	    	recoverAllServers();
+	    	//Start with 0 failures, then 1, then 2, etc.
+    		System.out.println("Causing " + i + " server failures.");
+	    	for (int j = 0; j < i; j++){
+	    		causeRandomServerFailure();
+	    	}
+	    	synchronized(suite){
+		    	startClock = System.currentTimeMillis();
+	    		suite.numRequestsSuccessful = 0;
+	    	}
 	    	while (endClock - startClock < TEST_TIME){
 	    		Thread.sleep(1000);
 	    		endClock = System.currentTimeMillis();
 	    		requestCount = suite.numRequestsSuccessful;
 	    		System.out.println("Average read throughput: " + Double.toString(requestCount / (endClock - startClock)));
 	    	}
-	    	//Start with 0 failures, then 1, then 2, etc.
-	    	for (int j = 0; j < i; j++){
-	    		causeRandomServerFailure();
-	    	}
-    		System.out.println("Causing " + i + " server failures.");
+
 	    }
 	    //Stop all the threads.
 	    for (int i = 0; i < numThreads; i++){
