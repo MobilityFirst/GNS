@@ -1,6 +1,6 @@
 #!/bin/bash
 # THIS FILE IS DIFFERENT FROM THE STANDARD SINGLE NODE ONLY IN USING NON-STANDARD PORT NUMBERS
-# SEE gigapaxos.server.singleNode.hazard.properties for details.
+# SEE gnsserver.1hazard.properties for details.
 #
 SCRIPTS="`dirname \"$0\"`"
 #echo $SCRIPTS
@@ -19,7 +19,7 @@ fi
 
 nohup java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
--DgigapaxosConfig=conf/gigapaxos.server.singleNode.hazard.properties \
+-DgigapaxosConfig=conf/gnsserver.1hazard.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \
@@ -35,7 +35,7 @@ exit
 
 nohup java -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djava.util.logging.config.file=conf/logging.gns.properties \
--DgigapaxosConfig=conf/gigapaxos.server.singleNode.hazard.properties \
+-DgigapaxosConfig=conf/gnsserver.1hazard.properties \
 -Djavax.net.ssl.trustStorePassword=qwerty \
 -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks \
 -Djavax.net.ssl.keyStorePassword=qwerty \

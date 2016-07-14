@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnscommon.exceptions.client;
 
+import edu.umass.cs.gnscommon.GNSResponseCode;
+
 /**
  * This class defines a ActiveReplicaException
  * 
@@ -27,47 +29,19 @@ package edu.umass.cs.gnscommon.exceptions.client;
 public class ActiveReplicaException extends ClientException
 {
   private static final long serialVersionUID = 2676899572105162853L;
+  
+	/**
+	 * @param code
+	 * @param message
+	 */
+	public ActiveReplicaException(GNSResponseCode code, String message) {
+		super(code, message);
+	}
 
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   */
-  public ActiveReplicaException()
-  {
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param detailMessage
-   */
-  public ActiveReplicaException(String detailMessage)
-  {
-    super(detailMessage);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param throwable
-   */
-  public ActiveReplicaException(Throwable throwable)
-  {
-    super(throwable);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param detailMessage
-   * @param throwable
-   */
-  public ActiveReplicaException(String detailMessage, Throwable throwable)
-  {
-    super(detailMessage, throwable);
-    // TODO Auto-generated constructor stub
-  }
-
+	/**
+	 * @param message
+	 */
+	public ActiveReplicaException(String message) {
+		super(GNSResponseCode.ACTIVE_REPLICA_EXCEPTION, message);
+	}
 }

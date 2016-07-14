@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
@@ -45,21 +46,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
@@ -254,18 +240,20 @@ public class Admintercessor {
    * @param handler
    * @return a string containing the contents of the GNS
    */
-  public CommandResponse<String> sendDump(ClientRequestHandlerInterface handler) {
+  public CommandResponse sendDump(ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
-      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS");
+      return new CommandResponse(      GNSResponseCode.QUERY_PROCESSING_ERROR, GNSCommandProtocol.BAD_RESPONSE 
+              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
     Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
-      return new CommandResponse<>(formatDumpRecords(result, handler));
+      return new CommandResponse(GNSResponseCode.NO_ERROR, formatDumpRecords(result, handler));
     } else {
-      return new CommandResponse<>(GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "No response to dump command!");
+      return new CommandResponse(      GNSResponseCode.QUERY_PROCESSING_ERROR, GNSCommandProtocol.BAD_RESPONSE 
+              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "No response to dump command!");
     }
   }
 

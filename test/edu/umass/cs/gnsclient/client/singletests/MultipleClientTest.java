@@ -1579,7 +1579,7 @@ public class MultipleClientTest {
   @Test
   public void test_77_Stop() {
     try {
-      getRandomClient().stop();
+      getRandomClient().close();
     } catch (Exception e) {
       fail("Exception during stop: " + e);
     }

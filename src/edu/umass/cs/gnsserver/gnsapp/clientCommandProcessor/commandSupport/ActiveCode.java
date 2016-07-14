@@ -90,7 +90,7 @@ public class ActiveCode {
       json = new JSONObject();
       json.put(getCodeField(action), code);
     } catch (JSONException e) {
-      return GNSResponseCode.UNSPECIFIED_ERROR;
+      return GNSResponseCode.JSON_PARSE_ERROR;
     }
     GNSResponseCode response = FieldAccess.updateUserJSON(guid, json,
             writer, signature, message, timestamp, handler);
@@ -138,7 +138,7 @@ public class ActiveCode {
     String field = getCodeField(action);
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return GNSCommandProtocol.NULL_RESPONSE;
     }
     try {

@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.http;
 
+import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
@@ -1117,7 +1118,6 @@ public class UniversalHttpClient implements GNSClientInterface {
    *
    * @throws IOException throws exception if a communication error occurs
    */
-  @Override
   public void checkConnectivity() throws IOException {
     if (IS_ANDROID) {
       String urlString = "http://" + host + ":" + port + "/";
@@ -1234,54 +1234,55 @@ public class UniversalHttpClient implements GNSClientInterface {
   }
 
   protected String checkResponse(String command, String response) throws ClientException {
-    // System.out.println("response:" + response);
-    if (response.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
-      String results[] = response.split(" ");
-      // System.out.println("results length:" + results.length);
-      if (results.length < 2) {
-        throw new ClientException("Invalid bad response indicator: " + response + " Command: " + command);
-      } else if (results.length >= 2) {
-        // System.out.println("results[0]:" + results[0]);
-        // System.out.println("results[1]:" + results[1]);
-        String error = results[1];
-        // deal with the rest
-        StringBuilder parts = new StringBuilder();
-        for (int i = 2; i < results.length; i++) {
-          parts.append(" ");
-          parts.append(results[i]);
-        }
-        String rest = parts.toString();
-
-        if (error.startsWith(GNSCommandProtocol.BAD_SIGNATURE)) {
-          throw new EncryptionException();
-        }
-        if (error.startsWith(GNSCommandProtocol.BAD_GUID) 
-                || error.startsWith(GNSCommandProtocol.BAD_ACCESSOR_GUID)
-                || error.startsWith(GNSCommandProtocol.DUPLICATE_GUID) || error.startsWith(GNSCommandProtocol.BAD_ACCOUNT)) {
-          throw new InvalidGuidException(error + rest);
-        }
-        if (error.startsWith(GNSCommandProtocol.DUPLICATE_FIELD)) {
-          throw new InvalidFieldException(error + rest);
-        }
-        if (error.startsWith(GNSCommandProtocol.ACCESS_DENIED)) {
-          throw new AclException(error + rest);
-        }
-
-        if (error.startsWith(GNSCommandProtocol.DUPLICATE_NAME)) {
-          throw new DuplicateNameException(error + rest);
-        }
-
-        if (error.startsWith(GNSCommandProtocol.VERIFICATION_ERROR)) {
-          throw new VerificationException(error + rest);
-        }
-        throw new ClientException("General command failure: " + error + rest);
-      }
-    }
-    if (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) {
-      return null;
-    } else {
-      return response;
-    }
+    return CommandUtils.checkResponse(response);
+//    // System.out.println("response:" + response);
+//    if (response.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
+//      String results[] = response.split(" ");
+//      // System.out.println("results length:" + results.length);
+//      if (results.length < 2) {
+//        throw new ClientException("Invalid bad response indicator: " + response + " Command: " + command);
+//      } else if (results.length >= 2) {
+//        // System.out.println("results[0]:" + results[0]);
+//        // System.out.println("results[1]:" + results[1]);
+//        String error = results[1];
+//        // deal with the rest
+//        StringBuilder parts = new StringBuilder();
+//        for (int i = 2; i < results.length; i++) {
+//          parts.append(" ");
+//          parts.append(results[i]);
+//        }
+//        String rest = parts.toString();
+//
+//        if (error.startsWith(GNSCommandProtocol.BAD_SIGNATURE)) {
+//          throw new EncryptionException();
+//        }
+//        if (error.startsWith(GNSCommandProtocol.BAD_GUID) 
+//                || error.startsWith(GNSCommandProtocol.BAD_ACCESSOR_GUID)
+//                || error.startsWith(GNSCommandProtocol.DUPLICATE_GUID) || error.startsWith(GNSCommandProtocol.BAD_ACCOUNT)) {
+//          throw new InvalidGuidException(error + rest);
+//        }
+//        if (error.startsWith(GNSCommandProtocol.DUPLICATE_FIELD)) {
+//          throw new InvalidFieldException(error + rest);
+//        }
+//        if (error.startsWith(GNSCommandProtocol.ACCESS_DENIED)) {
+//          throw new AclException(error + rest);
+//        }
+//
+//        if (error.startsWith(GNSCommandProtocol.DUPLICATE_NAME)) {
+//          throw new DuplicateNameException(error + rest);
+//        }
+//
+//        if (error.startsWith(GNSCommandProtocol.VERIFICATION_ERROR)) {
+//          throw new VerificationException(error + rest);
+//        }
+//        throw new ClientException("General command failure: " + error + rest);
+//      }
+//    }
+//    if (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) {
+//      return null;
+//    } else {
+//      return response;
+//    }
   }
 
   /**
@@ -1380,7 +1381,6 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @throws IOException if an error occurs
    */
   private String desktopSendGetCommmand(String queryString) throws IOException {
-    // long t0 = System.currentTimeMillis();
     HttpURLConnection connection = null;
     try {
 
@@ -1434,9 +1434,6 @@ public class UniversalHttpClient implements GNSClientInterface {
       // close the connection, set all objects to null
       connection.disconnect();
       connection = null;
-      // long t1 = System.currentTimeMillis();
-      // System.out.println("QueryLength = " + " Latency = " + (t1 - t0) +
-      // " ms");
     }
   }
 
@@ -1457,7 +1454,7 @@ public class UniversalHttpClient implements GNSClientInterface {
   }
 
   @Override
-  public void stop() {
+  public void close() {
     // nothing to stop
   }
 
@@ -1468,7 +1465,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param tag
    * @throws Exception
    */
-  @Override
+  //@Override
   public void addTag(GuidEntry guid, String tag) throws Exception {
     String command = createAndSignQuery(guid,
             CommandType.AddTag,

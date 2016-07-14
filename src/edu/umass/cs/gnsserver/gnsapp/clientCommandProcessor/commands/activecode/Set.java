@@ -72,7 +72,7 @@ public class Set extends BasicCommand {
 //  }
 
   @Override
-  public CommandResponse<String> execute(JSONObject json,
+  public CommandResponse execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
@@ -86,10 +86,10 @@ public class Set extends BasicCommand {
     GNSResponseCode response = ActiveCode.setCode(accountGuid, action,
             code, writer, signature, message, timestamp, handler);
 
-    if (response.isError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + response.getProtocolCode());
+    if (response.isExceptionOrError()) {
+      return new CommandResponse(response, BAD_RESPONSE + " " + response.getProtocolCode());
     } else {
-      return new CommandResponse<>(OK_RESPONSE);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     }
   }
 

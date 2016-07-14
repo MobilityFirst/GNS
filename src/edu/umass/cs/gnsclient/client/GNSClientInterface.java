@@ -26,14 +26,14 @@ import org.json.JSONObject;
 /**
  * The interface all the various GNS client classes should implement.
  *
- * @author westy
+ * @author westy, arun
  */
 public interface GNSClientInterface {
 
   /**
    * Shuts down the client.
    */
-  public void stop();
+  public void close();
   
   /**
    * Return a string representing the GNS server that we are connecting to.
@@ -50,7 +50,7 @@ public interface GNSClientInterface {
    * Returns a JSON object containing all of the guid information
    *
    * @param guid
-   * @return
+   * @return JSON object containing all of the guid information
    * @throws IOException
    * @throws ClientException
    */
@@ -64,7 +64,7 @@ public interface GNSClientInterface {
    * @param alias - a human readable alias to the guid - usually an email
    * address
    * @param password - a required password argument used as a failsafe accessor for the account
-   * @return
+   * @return GuidEntry for created account
    * @throws Exception
    */
   public GuidEntry accountGuidCreate(String alias, String password) throws Exception;
@@ -74,7 +74,7 @@ public interface GNSClientInterface {
    *
    * @param guid the account GUID to verify
    * @param code the verification code
-   * @return ?
+   * @return ???
    * @throws Exception
    */
   public String accountGuidVerify(GuidEntry guid, String code) throws Exception;
@@ -88,21 +88,5 @@ public interface GNSClientInterface {
    * @throws Exception
    */
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias) throws Exception;
-
-  /**
-   * Creates a tag to the tags of the guid.
-   *
-   * @param guid
-   * @param tag
-   * @throws Exception
-   */
-  public void addTag(GuidEntry guid, String tag) throws Exception;
-
-  /**
-   * Check that the connectivity with host:port can be established
-   *
-   * @throws IOException throws exception if a communication error occurs
-   */
-  public void checkConnectivity() throws IOException;
 
 }

@@ -32,6 +32,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Activ
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.text.ParseException;
 import java.util.Date;
@@ -67,7 +68,7 @@ public class Get extends BasicCommand {
 //  }
 
   @Override
-  public CommandResponse<String> execute(JSONObject json,
+  public CommandResponse execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
@@ -78,7 +79,7 @@ public class Get extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
 
-    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action,
+    return new CommandResponse(GNSResponseCode.NO_ERROR, ActiveCode.getCode(accountGuid, action,
             reader, signature, message, timestamp, handler));
   }
 

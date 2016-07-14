@@ -38,7 +38,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
-
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -46,28 +45,15 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
-
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
-
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-
 import org.apache.commons.lang3.time.DateUtils;
-
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
@@ -76,7 +62,7 @@ import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSuppor
  * Provides conversion between the database to java objects.
  *
  *
- * @author westy
+ * @author westy, arun
  */
 public class FieldAccess {
 
@@ -103,6 +89,13 @@ public class FieldAccess {
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
     return GNSCommandProtocol.ALL_FIELDS.equals(field) || !isKeyDotNotation(field);
   }
+  
+  /* false means that even single field queries will return a JSONObject response
+   * with a single key and value. The client code has been modified accordingly.
+   * The server-side modifications involve changes to AccountAccess to handle
+   * lookupGuid and lookupPrimaryGuid differently.
+   */
+  protected static final boolean SINGLE_FIELD_VALUE_ONLY = false;//true;
 
   /**
    * Reads the value of field in a guid.
@@ -118,16 +111,15 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse<String> lookupSingleField(String guid, String field,
+  public static CommandResponse lookupSingleField(String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 //    ClientSupportConfig.getLogger().log(Level.FINER, "Lookup: " + guid + "/" + field);
     GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode);
+    if (errorCode.isExceptionOrError()) {
+      return new CommandResponse(errorCode, BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
-    String resultString;
     ValuesMap valuesMap;
     try {
       valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, field, handler.getApp());
@@ -137,16 +129,32 @@ public class FieldAccess {
         valuesMap = valuesMap.removeInternalFields();
       }
       if (valuesMap != null) {
-        resultString = valuesMap.getString(field);
+    	  /* arun: changed to not rely on JSONException. The previous code was relying
+    	   * on valuesMap.getString() throwing a JSONException and conveying a JSON_PARSE_ERROR, 
+    	   * which is incorrect in this case because it should give a FIELD_NOT_FOUND_EXCEPTION
+    	   * to the client.
+    	   */
+				return valuesMap.isNull(field) ? new CommandResponse(
+						GNSResponseCode.FIELD_NOT_FOUND_EXCEPTION,
+						GNSCommandProtocol.BAD_RESPONSE + " "
+								+ GNSCommandProtocol.FIELD_NOT_FOUND + " ")
+				// arun: added support for SINGLE_FIELD_VALUE_ONLY flag
+						: new CommandResponse(GNSResponseCode.NO_ERROR,
+								SINGLE_FIELD_VALUE_ONLY ? valuesMap
+										.getString(field) : valuesMap
+										.toString());
       } else {
-        resultString = EMPTY_STRING;
+        return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_STRING);
       }
+
     } catch (FailedDBOperationException e) {
-      resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e;
+      return new CommandResponse(GNSResponseCode.DATABASE_OPERATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.DATABASE_OPERATION_ERROR + " " + e);
     } catch (JSONException e) {
-      resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e;
+      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e);
     }
-    return new CommandResponse<>(resultString);
+
   }
 
   /**
@@ -163,29 +171,28 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse<String> lookupMultipleFields(String guid, ArrayList<String> fields,
+  public static CommandResponse lookupMultipleFields(String guid, ArrayList<String> fields,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, null, fields,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode());
+    if (errorCode.isExceptionOrError()) {
+      return new CommandResponse(errorCode, BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
-    String resultString;
     ValuesMap valuesMap;
     try {
       valuesMap = NSFieldAccess.lookupFieldsLocalNoAuth(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
-
       if (reader != null) {
         // read is null means a magic internal request so we
         // only strip internal fields when read is not null
         valuesMap = valuesMap.removeInternalFields();
       }
-      resultString = valuesMap.toString(); // multiple field return
+      return new CommandResponse(GNSResponseCode.NO_ERROR, valuesMap.toString()); // multiple field return
     } catch (FailedDBOperationException e) {
-      resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.UNSPECIFIED_ERROR + " " + e;
+      return new CommandResponse(GNSResponseCode.DATABASE_OPERATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
+              + " " + GNSCommandProtocol.DATABASE_OPERATION_ERROR + " " + e);
     }
-    return new CommandResponse<>(resultString);
+
   }
 
   /**
@@ -204,25 +211,31 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> lookupJSONArray(String guid,
+  public static CommandResponse lookupJSONArray(String guid,
           String field, String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode);
+    if (errorCode.isExceptionOrError()) {
+      return new CommandResponse(errorCode, BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
     ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
-      resultString = new JSONArray(value).toString();
+      //resultString = new JSONArray(value).toString();
+    	try {
+			resultString = new JSONObject().put(field, value).toString();
+		} catch (JSONException e) {
+		      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + GNSResponseCode.JSON_PARSE_ERROR);
+		}
     } else {
-      resultString = EMPTY_JSON_ARRAY_STRING;
+      //resultString = EMPTY_JSON_ARRAY_STRING;
+    	resultString = new JSONObject().toString();
     }
-    return new CommandResponse<>(resultString);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
   }
-
+  
   /**
    * Reads the value of all the fields in a guid.
    * Doesn't return internal system fields.
@@ -234,7 +247,7 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> lookupMultipleValues(String guid,
+  public static CommandResponse lookupMultipleValues(String guid,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
@@ -242,8 +255,8 @@ public class FieldAccess {
             GNSCommandProtocol.ALL_FIELDS, null,
             reader, signature, message, timestamp,
             handler.getApp());
-    if (errorCode.isError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode(), errorCode);
+    if (errorCode.isExceptionOrError()) {
+      return new CommandResponse(errorCode, BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
     GNSResponseCode responseCode;
@@ -254,13 +267,14 @@ public class FieldAccess {
         responseCode = GNSResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        responseCode = GNSResponseCode.UNSPECIFIED_ERROR;
+        // arun:
+        responseCode = GNSResponseCode.BAD_GUID_ERROR;//.UNSPECIFIED_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;
-      responseCode = GNSResponseCode.UNSPECIFIED_ERROR;
+      responseCode = GNSResponseCode.DATABASE_OPERATION_ERROR;
     }
-    return new CommandResponse<>(resultString, responseCode);
+    return new CommandResponse(responseCode, resultString);
   }
 
   /**
@@ -274,14 +288,14 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> lookupOne(String guid, String field,
+  public static CommandResponse lookupOne(String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode());
+    if (errorCode.isExceptionOrError()) {
+      return new CommandResponse(errorCode, BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
     ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
@@ -293,9 +307,9 @@ public class FieldAccess {
         resultString = (String) value.get(0);
       }
     } else {
-      return new CommandResponse<>(BAD_RESPONSE + " " + GNSCommandProtocol.FIELD_NOT_FOUND);
+      return new CommandResponse(GNSResponseCode.FIELD_NOT_FOUND_ERROR, BAD_RESPONSE + " " + GNSCommandProtocol.FIELD_NOT_FOUND);
     }
-    return new CommandResponse<>(resultString);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
   }
 
   /**
@@ -309,15 +323,15 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> lookupOneMultipleValues(String guid, String reader,
+  public static CommandResponse lookupOneMultipleValues(String guid, String reader,
           String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid,
             GNSCommandProtocol.ALL_FIELDS, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + errorCode.getProtocolCode());
+    if (errorCode.isExceptionOrError()) {
+      return new CommandResponse(errorCode, BAD_RESPONSE + " " + errorCode.getProtocolCode());
     }
     String resultString;
     GNSResponseCode responseCode;
@@ -329,16 +343,17 @@ public class FieldAccess {
         responseCode = GNSResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        responseCode = GNSResponseCode.UNSPECIFIED_ERROR;
+        // arun: changed to BAD_GUID_ERROR
+        responseCode = GNSResponseCode.BAD_GUID_ERROR;//UNSPECIFIED_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;
-      responseCode = GNSResponseCode.UNSPECIFIED_ERROR;
+      responseCode = GNSResponseCode.DATABASE_OPERATION_ERROR;
     } catch (JSONException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.JSON_PARSE_ERROR + " " + e.getMessage();
-      responseCode = GNSResponseCode.UNSPECIFIED_ERROR;
+      responseCode = GNSResponseCode.JSON_PARSE_ERROR;
     }
-    return new CommandResponse<>(resultString, responseCode);
+    return new CommandResponse(responseCode, resultString);
   }
 
   /**
@@ -403,11 +418,14 @@ public class FieldAccess {
               timestamp,
               operation,
               value, oldValue, argument, null, handler.getApp(), false);
+    } catch (JSONException e) {
+      ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
+      return GNSResponseCode.JSON_PARSE_ERROR;
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
-            SignatureException | JSONException | IOException |
+            SignatureException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
-      return GNSResponseCode.UNSPECIFIED_ERROR;
+      return GNSResponseCode.UPDATE_ERROR;
     }
   }
 
@@ -437,7 +455,7 @@ public class FieldAccess {
             SignatureException | JSONException | IOException |
             FailedDBOperationException | RecordNotFoundException | FieldNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Update threw error: {0}", e);
-      return GNSResponseCode.UNSPECIFIED_ERROR;
+      return GNSResponseCode.UPDATE_ERROR;
     }
   }
 
@@ -497,15 +515,15 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> select(String key, Object value, ClientRequestHandlerInterface handler) {
+  public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
     try {
       JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
       if (result != null) {
-        return new CommandResponse<>(result.toString());
+        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException e) {
     }
-    return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -516,16 +534,16 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectWithin(String key, String value,
+  public static CommandResponse selectWithin(String key, String value,
           ClientRequestHandlerInterface handler) {
     try {
       JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
       if (result != null) {
-        return new CommandResponse<>(result.toString());
+        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException e) {
     }
-    return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -537,17 +555,17 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectNear(String key, String value, String maxDistance,
+  public static CommandResponse selectNear(String key, String value, String maxDistance,
           ClientRequestHandlerInterface handler) {
     try {
       JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
       //String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
       if (result != null) {
-        return new CommandResponse<>(result.toString());
+        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException e) {
     }
-    return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -557,15 +575,15 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectQuery(String query, ClientRequestHandlerInterface handler) {
+  public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
     try {
       JSONArray result = handler.getRemoteQuery().sendSelectQuery(query);
       if (result != null) {
-        return new CommandResponse<>(result.toString());
+        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException e) {
     }
-    return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -578,7 +596,7 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey,
+  public static CommandResponse selectGroupSetupQuery(String accountGuid, String query, String publicKey,
           int interval,
           ClientRequestHandlerInterface handler) {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
@@ -589,22 +607,23 @@ public class FieldAccess {
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
       if (accountInfo == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + TOO_MANY_GUIDS);
+        return new CommandResponse(GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION, BAD_RESPONSE + " " + TOO_MANY_GUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(ShaOneHashFunction.getInstance().hash(query), false);
-        CommandResponse<String> groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo,
+        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo,
                 name, guid, publicKey, handler);
-        if (!groupGuidCreateresult.getReturnValue().equals(OK_RESPONSE)) {
+        // If there was a problem adding return that error response.
+        if (!groupGuidCreateresult.getExceptionOrErrorCode().isOKResult()) {
           return groupGuidCreateresult;
         }
       }
@@ -613,11 +632,11 @@ public class FieldAccess {
     try {
       JSONArray result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
       if (result != null) {
-        return new CommandResponse<>(result.toString());
+        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException e) {
     }
-    return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   /**
@@ -627,15 +646,15 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
+  public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
     try {
       JSONArray result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
       if (result != null) {
-        return new CommandResponse<>(result.toString());
+        return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException e) {
     }
-    return new CommandResponse<>(EMPTY_JSON_ARRAY_STRING);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
   private static final int OLD_COMMAND_TIME = -30; // how far back is old?

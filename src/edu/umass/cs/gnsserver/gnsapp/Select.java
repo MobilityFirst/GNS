@@ -309,13 +309,21 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
               new Object[]{replica.getNodeID(), packet.getErrorMessage()});
     }
     // Remove the NS ID from the list to keep track of who has responded
-    info.removeServerID(packet.getNameServerID());
-    GNSConfig.getLogger().log(Level.FINE,
-            "NS{0} servers yet to respond:{1}",
-            new Object[]{replica.getNodeID(), info.serversYetToRespond()});
-    if (info.allServersResponded()) {
+    boolean allServersResponded = false;
+    /* arun: synchronization needed, otherwise assertion in app.sendToClient
+     * implying that an outstanding request is always found gets violated. */
+    synchronized (info) {
+    	// Remove the NS ID from the list to keep track of who has responded
+    	info.removeServerID(packet.getNameServerID());
+    	allServersResponded = info.allServersResponded();
+    }
+    if (allServersResponded) {
       handledAllServersResponded(packet, info, replica);
     }
+    else 
+        GNSConfig.getLogger().log(Level.FINE,
+                "NS{0} servers yet to respond:{1}",
+                new Object[]{replica.getNodeID(), info.serversYetToRespond()});
   }
 
   private static void sendReponsePacketToCaller(long id, long lnsQueryId,

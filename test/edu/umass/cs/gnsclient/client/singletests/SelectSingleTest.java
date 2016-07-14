@@ -144,7 +144,7 @@ public class SelectSingleTest {
   @Test
   public void test_999_Stop() {
     try {
-      client.stop();
+      client.close();
     } catch (Exception e) {
       fail("Exception during stop: " + e);
     }

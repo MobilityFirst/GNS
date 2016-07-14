@@ -103,7 +103,7 @@ public class NSUpdateSupport {
       }
     }
     // return an error packet if one of the checks doesn't pass
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return errorCode;
     }
     if (!operation.equals(UpdateOperation.CREATE_INDEX)) {
@@ -121,7 +121,7 @@ public class NSUpdateSupport {
         return GNSResponseCode.NO_ERROR;
       } else {
         ClientSupportConfig.getLogger().log(Level.SEVERE, "Invalid index value:{0}", updateValue);
-        return GNSResponseCode.UNSPECIFIED_ERROR;
+        return GNSResponseCode.UPDATE_ERROR;
       }
   }
 

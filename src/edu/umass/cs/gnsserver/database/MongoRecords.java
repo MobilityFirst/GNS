@@ -681,21 +681,38 @@ public class MongoRecords implements NoSQLRecords {
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
-//    } else if (args.length == 3) {
-//      //testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);
-//      queryTest(args[0], args[1], args[2], null);
-//    } else if (args.length == 4) {
-//      queryTest(args[0], args[1], args[2], args[3]);
     } else {
     }
     // important to include this!!
     System.exit(0);
   }
 
+	/**
+	 * @param nodeID
+	 */
+	public static void dropNodeDatabase(String nodeID) {
+		MongoClient mongoClient;
+		try {
+			mongoClient = new MongoClient("localhost");
+		} catch (UnknownHostException e) {
+			DatabaseConfig.getLogger().log(Level.SEVERE,
+					"Unable to open Mongo DB: {0}", e);
+			return;
+		}
+		String dbName = DBROOTNAME + sanitizeDBName(nodeID);
+		mongoClient.dropDatabase(dbName);
+		System.out.println("Dropped DB " + dbName);
+	}
+
+	private static final String sanitizeDBName(String nodeID) {
+		return nodeID.toString().replace('.', '_');
+	}
+
   /**
    * A utility to drop all the databases.
    *
    */
+	@Deprecated
   public static void dropAllDatabases() {
     MongoClient mongoClient;
     try {
@@ -711,8 +728,5 @@ public class MongoRecords implements NoSQLRecords {
         System.out.println("Dropped DB: " + name);
       }
     }
-    
-    // reinit the instance
-//    init();
   }
 }

@@ -56,3 +56,6 @@ build.number
 /nbbuild.xml
 /private.xml
 /clientKeyDB/
+/bin/gpClient.sh
+/bin/gpServer.sh
+.paxos_logs

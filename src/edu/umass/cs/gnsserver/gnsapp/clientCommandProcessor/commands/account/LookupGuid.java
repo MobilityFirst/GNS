@@ -26,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,16 +60,15 @@ public class LookupGuid extends BasicCommand {
 //  public String getCommandName() {
 //    return LOOKUP_GUID;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String name = json.getString(NAME);
     // look for an account guid
     String result = AccountAccess.lookupGuid(name, handler);
     if (result != null) {
-      return new CommandResponse<String>(result);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, result);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACCOUNT);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT);
     }
   }
 

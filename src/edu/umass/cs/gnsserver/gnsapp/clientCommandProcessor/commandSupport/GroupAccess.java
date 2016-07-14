@@ -23,7 +23,6 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -163,7 +162,7 @@ public class GroupAccess {
             GROUP, null,
             reader, signature, message, timestamp,
             handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
     return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUP, handler.getApp().getDB());
@@ -187,7 +186,7 @@ public class GroupAccess {
           ClientRequestHandlerInterface handler, boolean remoteLookup) throws FailedDBOperationException {
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
     return NSFieldAccess.lookupListFieldAnywhere(guid, GROUPS, true, handler);
@@ -198,7 +197,7 @@ public class GroupAccess {
           ClientRequestHandlerInterface handler) {
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, GROUPS, null,
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return new ResultValue();
     }
     return NSFieldAccess.lookupListFieldLocallyNoAuth(guid, GROUPS, handler.getApp().getDB());

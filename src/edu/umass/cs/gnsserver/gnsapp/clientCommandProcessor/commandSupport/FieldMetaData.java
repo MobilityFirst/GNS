@@ -93,19 +93,12 @@ public class FieldMetaData {
     String field = makeFieldMetaDataKey(type, key);
     GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null, 
             reader, signature, message, timestamp, handler.getApp());
-    if (errorCode.isError()) {
+    if (errorCode.isExceptionOrError()) {
       return new HashSet<>();
     }
     ResultValue result = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field,
             handler.getApp().getDB());
     return new HashSet<>(result.toStringSet());
-//    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
-//            ColumnFieldType.LIST_STRING);
-//    if (!result.isError()) {
-//      return new HashSet<>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());
-//    } else {
-//      return new HashSet<>();
-//    }
   }
 
   /**

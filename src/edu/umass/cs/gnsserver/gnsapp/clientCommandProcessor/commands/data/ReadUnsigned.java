@@ -59,7 +59,7 @@ public class ReadUnsigned extends Read {
   }
 
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     // Tells the lookup handler that we don't need to authenticate.
     // Will be moved to the client and will something more secure in the future.
