@@ -972,7 +972,7 @@ public class AccountAccess {
 							+ name
 							+ (createdGUID ? "; created " + guid
 									+ "; failed to update account info" : "")
-							: "; created neither " + name + " nor " + GUID));
+							: "; created neither " + name + " nor " + guid));
 		}
 	}
 
