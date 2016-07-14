@@ -400,7 +400,7 @@ public class CommandUtils {
 	 */
 	public static String checkResponse(CommandValueReturnPacket response)
 			throws ClientException {
-		return checkResponse(null, response);
+		return checkResponse(response, null);
 	}
 
 	private static final boolean USE_OLD_CHECK_RESPONSE = false;
@@ -411,33 +411,32 @@ public class CommandUtils {
 	 * 
 	 * @param command
 	 *
-	 * @param packet
+	 * @param responsePacket
 	 * @return Response as a string.
 	 * @throws ClientException
 	 */
-	public static String checkResponse(CommandPacket command,
-			CommandValueReturnPacket packet) throws ClientException {
+	public static String checkResponse(
+			CommandValueReturnPacket responsePacket, CommandPacket command) throws ClientException {
 		if (USE_OLD_CHECK_RESPONSE) {
-			return checkResponse(packet.getReturnValue());
+			return checkResponse(responsePacket.getReturnValue());
 		}
 
-		GNSResponseCode code = packet.getErrorCode();
-		String response = packet.getReturnValue();
+		GNSResponseCode code = responsePacket.getErrorCode();
+		String returnValue = responsePacket.getReturnValue();
 		GNSConfig.getLogger().log(Level.FINE, "New check response: {0} {1}",
-				new Object[] { code, packet.getSummary() });
+				new Object[] { code, responsePacket.getSummary() });
 		// If the code isn't an error or exception we're just returning the
 		// return value. Also handle the special case where the command
 		// wants to return a null value.
 		if (code.isOKResult()) {
-			return (response.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
-					: response;
+			return (returnValue.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
+					: returnValue;
 		}
 		// else error
 		String errorSummary = code
 				+ ": "
-				+ response
-				+ ": "
-				+ packet.getSummary()
+				+ returnValue
+				//+ ": " + responsePacket.getSummary()
 				+ (command != null ? " for command " + command.getSummary()
 						: "");
 		switch (code) {

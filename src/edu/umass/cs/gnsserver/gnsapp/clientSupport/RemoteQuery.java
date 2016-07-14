@@ -173,8 +173,8 @@ public class RemoteQuery extends ClientAsynchBase {
         while (!replicaResultMap.containsKey(id) && (callback==null || callback.getResponse()==null)
                 && (timeout == 0 || System.currentTimeMillis()
                 - monitorStartTime < timeout)) {
-          ClientSupportConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}",
-                  new Object[]{this, id + "", timeout + "ms"});
+          ClientSupportConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}ms",
+                  new Object[]{this, id, timeout});
           monitor.wait(WAIT_TIMESTEP);
         }
         if (timeout != 0
@@ -189,7 +189,7 @@ public class RemoteQuery extends ClientAsynchBase {
         } else {
           ClientSupportConfig.getLogger().log(Level.FINE,
                   "{0} successfully completed remote query {1}",
-                  new Object[]{this, id + ""});
+                  new Object[]{this, id});
         }
       }
     } catch (InterruptedException x) {
@@ -227,10 +227,10 @@ public class RemoteQuery extends ClientAsynchBase {
           monitor.wait(WAIT_TIMESTEP);
         }
         if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
-          ClientException e = new ClientException(
+          ClientException e = new ClientException(GNSResponseCode.TIMEOUT,
                   this
                   + ": Timed out on reconfigurator response after waiting for "
-                  + timeout + "ms response packet for "
+                  + timeout + "ms for response packet for "
                   + request.getSummary());
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
@@ -263,28 +263,28 @@ public class RemoteQuery extends ClientAsynchBase {
               && response.getResponseCode() == ClientReconfigurationPacket.ResponseCodes.DUPLICATE_ERROR
                       ? GNSResponseCode.DUPLICATE_ID_EXCEPTION
                       : // else generic error
-                      GNSResponseCode.UNSPECIFIED_ERROR);
+                      GNSResponseCode.UNSPECIFIED_ERROR).setMessage(response.getResponseMessage());
     } else {
       return GNSResponseCode.NO_ERROR;
     }
   }
 
-  /**
-   * Creates a record at an appropriate reconfigurator.
-   *
-   * @param name
-   * @param value
-   * @return a NSResponseCode
-   */
-  public GNSResponseCode createRecord(String name, JSONObject value) {
+	/**
+	 * Creates a record at an appropriate reconfigurator.
+	 *
+	 * @param name
+	 * @param value
+	 * @return a NSResponseCode
+	 * @throws ClientException
+	 */
+  public GNSResponseCode createRecord(String name, JSONObject value) throws ClientException {
     try {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
       return sendReconRequest(packet);
-    } catch (ClientException | IOException e) {
+    } catch (IOException e) {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
-      // FIXME: return better error codes.
-      return GNSResponseCode.UNSPECIFIED_ERROR;
+      throw new ClientException(GNSResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
   }
 
@@ -347,19 +347,38 @@ public class RemoteQuery extends ClientAsynchBase {
    * Deletes a record at the appropriate reconfigurators.
    *
    * @param name
-   * @return an NSResponseCode
+   * @return GNSResponseCode
+ * @throws ClientException 
    */
-  public GNSResponseCode deleteRecord(String name) {
+  public GNSResponseCode deleteRecord(String name) throws ClientException {
     try {
       DeleteServiceName packet = new DeleteServiceName(name);
       return sendReconRequest(packet);
-    } catch (ClientException | IOException e) {
+    } catch (IOException e) {
       ClientSupportConfig.getLogger().log(Level.SEVERE, "Problem creating {0} :{1}",
               new Object[]{name, e});
-      // FIXME: return better error codes.
-      return GNSResponseCode.UNSPECIFIED_ERROR;
+      throw new ClientException(GNSResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
   }
+
+	/**
+	 * @param name
+	 * @return GNSResponse code
+	 * @throws ClientException
+	 */
+	public GNSResponseCode deleteRecordSuppressExceptions(String name)
+			throws ClientException {
+		try {
+			DeleteServiceName packet = new DeleteServiceName(name);
+			return sendReconRequest(packet);
+		} catch (IOException e) {
+			ClientSupportConfig.getLogger().log(Level.SEVERE,
+					"Problem creating {0} :{1}", new Object[] { name, e });
+			return GNSResponseCode.UNSPECIFIED_ERROR.setMessage(e.getMessage());
+		} catch (ClientException ce) {
+			return ce.getCode().setMessage(ce.getMessage());
+		}
+	}
 
   /**
    * Handles the reponse from some query with a default timeout period.
@@ -581,7 +600,12 @@ public class RemoteQuery extends ClientAsynchBase {
           throws IOException, ClientException {
     SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
             SelectGroupBehavior.NONE, key, value, otherValue);
+    try {
     createRecord(packet.getServiceName(), new JSONObject());
+    } catch(Exception e) {
+    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+    }
+
     Object monitor = new Object();
     long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
@@ -604,7 +628,12 @@ public class RemoteQuery extends ClientAsynchBase {
    */
   public JSONArray sendSelectQuery(String query) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
+    try {
     createRecord(packet.getServiceName(), new JSONObject());
+    } catch(Exception e) {
+    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+    }
+
     Object monitor = new Object();
     long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
@@ -630,7 +659,12 @@ public class RemoteQuery extends ClientAsynchBase {
           throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
             query, guid, interval);
+    try {
     createRecord(packet.getServiceName(), new JSONObject());
+    } catch(Exception e) {
+    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+    }
+
     Object monitor = new Object();
     long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
@@ -666,7 +700,11 @@ public class RemoteQuery extends ClientAsynchBase {
    */
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
-    createRecord(packet.getServiceName(), new JSONObject());
+    try {
+    	createRecord(packet.getServiceName(), new JSONObject());
+    } catch(Exception e) {
+    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+    }
     Object monitor = new Object();
     long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")

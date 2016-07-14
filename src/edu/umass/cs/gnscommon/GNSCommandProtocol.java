@@ -96,6 +96,11 @@ public class GNSCommandProtocol {
    */
   public final static String ALREADY_VERIFIED_EXCEPTION = "+ALREADYVERIFIED+";
 
+	/**
+	 * Indicates that a remote query on the server side failed.
+	 */
+	public static final String REMOTE_QUERY_EXCEPTION = "+REMOTEQUERY+";
+
   /**
    * Indicates that a command is trying to access a field using an
    * accessor guid that does not exist.

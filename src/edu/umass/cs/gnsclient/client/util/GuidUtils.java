@@ -98,13 +98,14 @@ public class GuidUtils {
         if (guid == null) {
           System.out.println("  Creating a new account GUID for " + name);
         } else {
-          System.out.println("  Old account GUID found locally for " + name + " is invalid, creating a new one.");
+          System.out.println("  Old account GUID " + guid + " found locally is invalid, creating a new one.");
         }
       }
       try {
       guid = client.accountGuidCreate(name, password);
       } catch(DuplicateNameException e) {
     	  // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
+    	  System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
       }
       int attempts = 0;
       // Since we're cheating here we're going to catch already verified errors which means
@@ -124,7 +125,7 @@ public class GuidUtils {
               throw e;
             }
           } else {
-            System.out.println("  Caught and ignored \"Account already verified\" error for " + name);
+            System.out.println("  Caught and ignored \"Account already verified\" error for " + guid);
             break;
           }
         }

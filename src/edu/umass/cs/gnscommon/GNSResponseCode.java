@@ -200,7 +200,14 @@ public enum GNSResponseCode implements Serializable {
   /**
    * A timeout occurred.
    */
-  TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION),;
+  TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION),
+  
+	/**
+	 * A remote query failed on the server side.
+	 */
+	REMOTE_QUERY_EXCEPTION(410, GNSCommandProtocol.REMOTE_QUERY_EXCEPTION, TYPE.EXCEPTION), 
+	
+	;
 
   // stash the codes in a lookup table
   private static final Map<Integer, GNSResponseCode> responseCodes = new HashMap<Integer, GNSResponseCode>();
@@ -227,6 +234,7 @@ public enum GNSResponseCode implements Serializable {
   private final int codeValue;
   private final String protocolCode;
   private final TYPE type;
+  private String message=null;
 
   /**
    * The response code category.
@@ -251,6 +259,26 @@ public enum GNSResponseCode implements Serializable {
     this.protocolCode = protocolCode;
     this.type = type;
   }
+  
+	/**
+	 * Used to attach a message with the code when we want to return a code
+	 * rather than throw an exception; the code and message are expected to be
+	 * used upstream for possibly throwing an exception.
+	 * 
+	 * @param msg
+	 * @return this
+	 */
+	public GNSResponseCode setMessage(String msg) {
+		this.message = msg;
+		return this;
+	}
+	
+	/**
+	 * @return Message attached to this code.
+	 */
+	public String getMessage() {
+		return this.message;
+	}
 
   /**
    * Returns the integer equivalent of the code.

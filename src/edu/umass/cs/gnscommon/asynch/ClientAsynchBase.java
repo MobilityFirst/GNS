@@ -453,7 +453,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws UnsupportedEncodingException
    * @throws ClientException
    */
-  public long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, ClientException {
+  @Deprecated // unused
+  private long lookupGuid(String alias, RequestCallback callback) throws IOException, JSONException, ClientException {
     return sendCommandAsynch(createCommand(CommandType.LookupGuid, NAME, alias), callback);
   }
 
@@ -468,7 +469,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws ClientException
    * @throws org.json.JSONException
    */
-  public long lookupPrimaryGuid(String guid, RequestCallback callback)
+  @Deprecated
+  private long lookupPrimaryGuid(String guid, RequestCallback callback)
           throws UnsupportedEncodingException, IOException, ClientException, JSONException {
     return sendCommandAsynch(createCommand(CommandType.LookupPrimaryGuid, GUID, guid), callback);
   }
@@ -486,7 +488,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws ClientException
    * @throws org.json.JSONException
    */
-  public long lookupGuidRecord(String guid, RequestCallback callback)
+  @Deprecated
+  private long lookupGuidRecord(String guid, RequestCallback callback)
           throws IOException, ClientException, JSONException {
     return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, GUID, guid), callback);
   }
@@ -507,7 +510,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
    * @throws ClientException
    * @throws org.json.JSONException
    */
-  public long lookupAccountRecord(String accountGuid, RequestCallback callback)
+  @Deprecated // unused except ClientAsynchTest
+  protected long lookupAccountRecord(String accountGuid, RequestCallback callback)
           throws IOException, ClientException, JSONException {
     return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, GUID, accountGuid), callback);
   }

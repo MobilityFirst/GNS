@@ -73,4 +73,11 @@ public class GNSException extends Exception {
 		super(message, cause);
 		this.code = code;
 	}
+	
+	/**
+	 * @return Code
+	 */
+	public GNSResponseCode getCode() {
+		return this.code;
+	}
 }

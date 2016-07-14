@@ -262,6 +262,8 @@ public class ServerIntegrationTest extends DefaultTest {
 		boolean accountCreated = false;
 
 		long t = System.currentTimeMillis();
+		Thread.sleep(WAIT_TILL_ALL_SERVERS_READY);
+		
 		do {
 			try {
 				System.out.println("Creating account guid: " + (tries - 1)

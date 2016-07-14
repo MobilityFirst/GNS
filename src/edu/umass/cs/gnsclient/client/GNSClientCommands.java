@@ -188,11 +188,11 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 								.createAndSignCommand(commandType, querier,
 										keysAndValues)))
 										// new send
-						: CommandUtils.checkResponse(commandPacket, this
+						: CommandUtils.checkResponse(this
 								.sendSync(
 										commandPacket = getCommand(commandType,
 												querier, keysAndValues),
-										(long) this.readTimeout)));
+										(long) this.readTimeout), commandPacket));
 	}
 	
 	private static final boolean RECORD_ENABLED = true;
@@ -698,25 +698,35 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public GuidEntry accountGuidCreate(String alias, String password)
 			throws Exception {
 
-		KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
-				.generateKeyPair();
-		String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-				.getPublic().getEncoded());
-		// Squirrel this away now just in case the call below times out.
-		KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
-		GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(),
-				keyPair.getPrivate());
+		GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+		/* arun: Don't recreate pair if one already exists. Otherwise you can
+		 * not get out of the funk where the account creation timed out but
+		 * wasn't rolled back fully at the server. Re-using
+		 * the same GUID will at least pass verification as opposed to 
+		 * incurring an ACTIVE_REPLICA_EXCEPTION for a new (non-existent) GUID.
+		 */
+		if(entry==null) {
+			KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
+					.generateKeyPair();
+			String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+					.getPublic().getEncoded());
+			// Squirrel this away now just in case the call below times out.
+			KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
+			entry = new GuidEntry(alias, guid, keyPair.getPublic(),
+					keyPair.getPrivate());
+		}
+		assert(entry!=null);
 		String returnedGuid = accountGuidCreateHelper(alias,
 				entry, password);
 		// Anything else we want to do here?
-		if (!returnedGuid.equals(guid)) {
+		if (!returnedGuid.equals(entry.guid)) {
 			GNSClientConfig
 					.getLogger()
 					.log(Level.WARNING,
 							"Returned guid {0} doesn''t match locally created guid {1}",
-							new Object[] { returnedGuid, guid });
+							new Object[] { returnedGuid, entry.guid });
 		}
-		assert returnedGuid.equals(guid);
+		assert returnedGuid.equals(entry.guid);
 
 		return entry;
 	}
