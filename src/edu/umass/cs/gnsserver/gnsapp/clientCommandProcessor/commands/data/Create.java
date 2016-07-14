@@ -69,9 +69,8 @@ public class Create extends BasicCommand {
 //  public String getCommandName() {
 //    return CREATE;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -92,9 +91,9 @@ public class Create extends BasicCommand {
     if (!(responseCode = FieldAccess.create(guid, field,
             (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse<String>(OK_RESPONSE);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
     }
   }
 

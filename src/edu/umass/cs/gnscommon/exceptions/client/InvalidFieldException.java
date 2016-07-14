@@ -19,6 +19,8 @@
  */
 package edu.umass.cs.gnscommon.exceptions.client;
 
+import edu.umass.cs.gnscommon.GNSResponseCode;
+
 /**
  * This class defines a InvalidFieldException
  * 
@@ -29,46 +31,19 @@ public class InvalidFieldException extends ClientException
 {
   private static final long serialVersionUID = 2676899572105162853L;
 
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   */
-  public InvalidFieldException()
-  {
-    // TODO Auto-generated constructor stub
-  }
+	/**
+	 * @param code
+	 * @param message
+	 */
+	public InvalidFieldException(GNSResponseCode code, String message) {
+		super(code, message);
+	}
 
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param detailMessage
-   */
-  public InvalidFieldException(String detailMessage)
-  {
-    super(detailMessage);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param throwable
-   */
-  public InvalidFieldException(Throwable throwable)
-  {
-    super(throwable);
-    // TODO Auto-generated constructor stub
-  }
-
-  /**
-   * Creates a new <code>GnsInvalidFieldException</code> object
-   * 
-   * @param detailMessage
-   * @param throwable
-   */
-  public InvalidFieldException(String detailMessage, Throwable throwable)
-  {
-    super(detailMessage, throwable);
-    // TODO Auto-generated constructor stub
-  }
+	/**
+	 * @param message
+	 */
+	public InvalidFieldException(String message) {
+		super(GNSResponseCode.DUPLICATE_FIELD_EXCEPTION, message);
+	}
 
 }

@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.SystemParameter;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -61,22 +62,22 @@ public class SetParameter extends BasicCommand {
 //  public String getCommandName() {
 //    return SET_PARAMETER;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(NAME);
     String value = json.getString(VALUE);
     if (module.isAdminMode()) {
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldValue(value);
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } catch (Exception e) {
         System.out.println("Problem setting parameter: " + e);
       }
     }
-    return new CommandResponse<String>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED 
-            + " Don't understand " + CommandType.SetParameter.toString() + " " + parameterString + " " + VALUE + " " + value);
+    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Don't understand "
+            + CommandType.SetParameter.toString() + " " + parameterString + " " + VALUE + " " + value);
   }
 
   @Override

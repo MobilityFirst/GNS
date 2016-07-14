@@ -58,7 +58,7 @@ public class CreateSomeRecordsForDns {
     
     createAnARecord("mobilityfirst.gns.", "128.119.240.104");
     
-    client.stop();
+    client.close();
     
     System.exit(0);
   }

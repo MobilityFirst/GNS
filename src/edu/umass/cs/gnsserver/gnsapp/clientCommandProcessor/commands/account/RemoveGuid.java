@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidI
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import java.io.IOException;
@@ -70,9 +71,8 @@ public class RemoveGuid extends BasicCommand {
 //  public String getCommandName() {
 //    return REMOVE_GUID;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     String guidToRemove = json.getString(GUID);
     String accountGuid = json.optString(ACCOUNT_GUID, null);
@@ -81,11 +81,11 @@ public class RemoveGuid extends BasicCommand {
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
     if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler, true)) == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
     }
     if (accountGuid != null) {
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
+        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
     }
     try {
@@ -95,15 +95,15 @@ public class RemoveGuid extends BasicCommand {
         if (accountGuid != null) {
           accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
           if (accountInfo == null) {
-            return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
+            return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
           }
         }
         return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
-        return new CommandResponse<>(BAD_RESPONSE + " " + BAD_SIGNATURE);
+        return new CommandResponse(GNSResponseCode.SIGNATURE_ERROR, BAD_RESPONSE + " " + BAD_SIGNATURE);
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

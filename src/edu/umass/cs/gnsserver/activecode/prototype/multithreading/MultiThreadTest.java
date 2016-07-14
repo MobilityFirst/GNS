@@ -62,7 +62,7 @@ public class MultiThreadTest {
 		executor = new ThreadPoolExecutor(num, num, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		executor.prestartAllCoreThreads();
 		
-		int numThread = 2; //Integer.parseInt(args[0]);
+		int numThread = 1; //Integer.parseInt(args[0]);
 		String cfile = "/tmp/client";
 		String sfile = "/tmp/server";
 		int id = 0;

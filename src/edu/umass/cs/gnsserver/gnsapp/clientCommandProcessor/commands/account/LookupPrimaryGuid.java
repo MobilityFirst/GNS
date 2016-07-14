@@ -26,6 +26,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,15 +58,14 @@ public class LookupPrimaryGuid extends BasicCommand {
 //  public String getCommandName() {
 //    return LOOKUP_PRIMARY_GUID;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     String result = AccountAccess.lookupPrimaryGuid(guid, handler, false);
     if (result != null) {
-      return new CommandResponse<String>(result);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, result);
     } else {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID);
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID);
     }
 
   }

@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -87,7 +88,7 @@ public class CommandHandler {
     try {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
       // Other than this line, one below and some catches all of this method is instrumentation.
-      CommandResponse<String> returnValue = executeCommand(command, jsonFormattedCommand, handler);
+      CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
 
       // instrumentation
       DelayProfiler.updateDelay("executeCommand", executeCommandStart);
@@ -113,6 +114,7 @@ public class CommandHandler {
               System.currentTimeMillis() - receiptTime);
 
       try {
+    	  assert(returnPacket.getErrorCode()!=null);
         ClientCommandProcessorConfig.getLogger().log(Level.FINE,
                 "Handling command reply: {0}",
                 new Object[]{returnPacket});
@@ -198,7 +200,7 @@ public class CommandHandler {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse<String> executeCommand(BasicCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
+  public static CommandResponse executeCommand(BasicCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       if (command != null) {
         ClientCommandProcessorConfig.getLogger().log(Level.FINE,
@@ -206,16 +208,16 @@ public class CommandHandler {
                 new Object[]{command, json});
         return command.execute(json, handler);
       } else {
-        return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+        return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
                 + " - Don't understand " + json.toString());
       }
     } catch (JSONException e) {
       //e.printStackTrace();
-      return new CommandResponse<>(BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
+      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
               + " while executing command.");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | ParseException |
             SignatureException | InvalidKeyException | UnsupportedEncodingException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
+      return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
     }
   }
 
@@ -259,9 +261,9 @@ public class CommandHandler {
    */
   public static void handleCommandReturnValuePacketForApp(CommandValueReturnPacket returnPacket,
           boolean doNotReplyToClient, GNSApp app) throws JSONException, IOException {
- //   long id = returnPacket.getClientRequestId();
- //   CommandRequestInfo sentInfo;
-		// arun: changed get to remove as otherwise it seems to be never removed
+    //   long id = returnPacket.getClientRequestId();
+    //   CommandRequestInfo sentInfo;
+    // arun: changed get to remove as otherwise it seems to be never removed
 //    if ((sentInfo = app.outStandingQueries.remove//get
 //    (id)) != null) {
 //      ClientCommandProcessorConfig.getLogger()
@@ -273,18 +275,18 @@ public class CommandHandler {
 //                        returnPacket.getSummary(),
 //                        sentInfo.getHost() + "/"
 //                        + sentInfo.getPort()});
-      if (!doNotReplyToClient) {
-        app.sendToClient(returnPacket, returnPacket.toJSONObject());
-      }
+    if (!doNotReplyToClient) {
+      app.sendToClient(returnPacket, returnPacket.toJSONObject());
+    }
 
-      // shows us stats every 100 commands, but not more than once every 5 seconds
-      if (commandCount++ % 100 == 0 && Config.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION)) {
-        if (System.currentTimeMillis() - lastStatsTime > 5000) {
-          ClientCommandProcessorConfig.getLogger().log(Level.INFO, "{0}",
-                  new Object[]{DelayProfiler.getStats()});
-          lastStatsTime = System.currentTimeMillis();
-        }
+    // shows us stats every 100 commands, but not more than once every 5 seconds
+    if (commandCount++ % 100 == 0 && Config.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION)) {
+      if (System.currentTimeMillis() - lastStatsTime > 5000) {
+        ClientCommandProcessorConfig.getLogger().log(Level.INFO, "{0}",
+                new Object[]{DelayProfiler.getStats()});
+        lastStatsTime = System.currentTimeMillis();
       }
+    }
 //    } else {
 //      ClientCommandProcessorConfig.getLogger().severe("Command packet info not found for "
 //              + id + ": " + returnPacket.getSummary());

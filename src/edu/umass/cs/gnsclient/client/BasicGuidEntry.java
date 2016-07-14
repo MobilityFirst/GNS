@@ -107,31 +107,18 @@ public class BasicGuidEntry {
    * Returns the public key as a string - which for us means as
    * a Base64 encoded string without line separators.
    * 
-   * @return 
+   * @return public key as String
    */
   public String getPublicKeyString() {
     byte[] publicKeyBytes = publicKey.getEncoded();
     return Base64.encodeToString(publicKeyBytes, false);
   }
 
-  /**
-   * Converts this BasicGuidEntry to a string.
-   * 
-   * @return
-   * @see java.lang.Object#toString()
-   */
   @Override
   public String toString() {
     return entityName + " (" + guid + ")";
   }
 
-  /**
-   * Indicates whether some object is equal to this BasicGuidEntry object.
-   * 
-   * @param o
-   * @return
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object o) {
     if (o == null || !(o instanceof BasicGuidEntry)) {

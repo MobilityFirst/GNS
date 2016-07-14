@@ -23,7 +23,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  * @author gaozy
  *
  */
-public class MultiThreadActiveClient implements Client,Runnable{
+public class MultiThreadActiveClient implements Client, Runnable{
 	//TODO: handle query from worker by using queryHandler
 	private ActiveQueryHandler queryHandler;
 	
@@ -35,7 +35,7 @@ public class MultiThreadActiveClient implements Client,Runnable{
 	private final int id;
 	private final boolean pipeEnable;
 	
-	private static int heapSize = 256;
+	private static int heapSize = 64;
 	
 	private final ConcurrentHashMap<Long, ActiveMessage> pendingMap = new ConcurrentHashMap<Long, ActiveMessage>();
 	
@@ -67,7 +67,7 @@ public class MultiThreadActiveClient implements Client,Runnable{
 			workerProc = startWorker(ofile, ifile, id, numThread);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} 
 		
 		channel = new ActiveNamedPipe(ifile, ofile);
 		
@@ -93,9 +93,7 @@ public class MultiThreadActiveClient implements Client,Runnable{
 			workerProc = startWorker(serverPort, port, id, numThread);
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			workerProc.destroy();
-		}
+		} 
 		
 		channel = new ActiveDatagramChannel(port, serverPort);
 		queryHandler = new ActiveQueryHandler(app);
@@ -182,10 +180,8 @@ public class MultiThreadActiveClient implements Client,Runnable{
 		return value;
 	}
 	
-	public void shutdown(){
-		if(workerProc != null){
-			workerProc.destroy();
-		}
+	public void shutdown(){		
+		workerProc.destroyForcibly();
 		
 		if(pipeEnable){
 			(new File(ifile)).delete();
@@ -234,19 +230,25 @@ public class MultiThreadActiveClient implements Client,Runnable{
 		// The thread calling runCode is different from this receive thread
 		// System.out.println("receive thread is "+Thread.currentThread().getName()+" "+Thread.currentThread().getId());
 		ActiveMessage response;
-		while(true){
-			response = receiveMessage();
-			if(response != null && response.type == Type.RESPONSE){
-				// wake up the corresponding thread
-				long id = response.getId();
-				ActiveMessage req = pendingMap.get(id);
-				pendingMap.put(id, response);
-				synchronized(req){
-					req.notify();
+		try{
+			while(!Thread.currentThread().isInterrupted()){
+				response = receiveMessage();
+				if(response != null && response.type == Type.RESPONSE){
+					// wake up the corresponding thread
+					long id = response.getId();
+					ActiveMessage req = pendingMap.get(id);
+					pendingMap.put(id, response);
+					synchronized(req){
+						req.notify();
+					}
+					//System.out.println("received "+counter.incrementAndGet()+" massege:"+response);
+					counter.incrementAndGet();
 				}
-				//System.out.println("received "+counter.incrementAndGet()+" massege:"+response);
-				counter.incrementAndGet();
 			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			shutdown();
 		}
 	}
 	

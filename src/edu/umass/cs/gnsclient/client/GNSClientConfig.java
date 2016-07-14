@@ -33,9 +33,10 @@ import edu.umass.cs.utils.Config;
  */
 public class GNSClientConfig {
 
+	/**
+	 * Default LNS port.
+	 */
 	public static final int LNS_PORT = 24398;
-	// arun: It is almost never okay to use a hard-coded active replica port.
-	public static final int ACTIVE_REPLICA_PORT = 24403;
 
 	private final static Logger LOG = Logger.getLogger(GNSClientConfig.class
 			.getName());

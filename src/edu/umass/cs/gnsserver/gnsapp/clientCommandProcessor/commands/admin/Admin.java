@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.net.UnknownHostException;
@@ -65,24 +66,24 @@ public class Admin extends BasicCommand {
 //  public String getCommandName() {
 //    return ADMIN;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
     try {
       GNSConfig.getLogger().log(Level.INFO, "Http host:port = {0}", handler.getHTTPServerHostPortString());
       if (handler.getHTTPServerHostPortString().equals(passkey) || "shabiz".equals(passkey)) {
         module.setAdminMode(true);
-        return new CommandResponse<>(OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } else if ("off".equals(passkey)) {
         module.setAdminMode(false);
-        return new CommandResponse<>(OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       }
-      return new CommandResponse<>(BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED + 
-              " Don't understand " + getCommandType().toString() + " " + passkey);
+      return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+              + " Don't understand " + getCommandType().toString() + " " + passkey);
     } catch (UnknownHostException e) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Unable to determine host address");
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE
+              + " " + UNSPECIFIED_ERROR + " Unable to determine host address");
     }
   }
 

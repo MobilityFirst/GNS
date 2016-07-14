@@ -23,7 +23,6 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.main.GNSConfig;

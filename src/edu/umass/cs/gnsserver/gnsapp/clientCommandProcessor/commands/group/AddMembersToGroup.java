@@ -52,7 +52,7 @@ public class AddMembersToGroup extends BasicCommand {
   public AddMembersToGroup(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public CommandType getCommandType() {
     return CommandType.AddMembersToGroup;
@@ -67,9 +67,8 @@ public class AddMembersToGroup extends BasicCommand {
 //  public String getCommandName() {
 //    return ADD_TO_GROUP;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String members = json.getString(MEMBERS);
@@ -81,12 +80,12 @@ public class AddMembersToGroup extends BasicCommand {
     GNSResponseCode responseCode;
     try {
       if (!(responseCode = GroupAccess.addToGroup(guid, new ResultValue(members), writer, signature, message, handler)).isExceptionOrError()) {
-        return new CommandResponse<String>(OK_RESPONSE);
+        return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } else {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse(responseCode, BAD_RESPONSE + " " + responseCode.getProtocolCode());
       }
     } catch (ClientException | IOException e) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
   }
 

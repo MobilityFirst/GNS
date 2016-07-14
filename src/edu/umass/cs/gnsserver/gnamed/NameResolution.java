@@ -187,7 +187,7 @@ public class NameResolution {
 
           /* Resolve NS Record name to an IP address and add it to ADDITIONAL section */
           JSONObject nsResponseJson = lookupGuidField(ns, fieldName, null, handler);
-          //CommandResponse<String> nsResponse = lookupGuidGnsServer(ns, fieldName, null, handler);
+          //CommandResponse nsResponse = lookupGuidGnsServer(ns, fieldName, null, handler);
           if (nsResponseJson != null) {
             //if (nsResponse != null && !nsResponse.isError()) {
             String address = nsResponseJson.getString(ns);
@@ -204,7 +204,7 @@ public class NameResolution {
 
           /* Resolve MX Record name to an IP address and add it to ADDITIONAL section */
           JSONObject mxResponseJson = lookupGuidField(mxname, fieldName, null, handler);
-          //CommandResponse<String> mxResponse = lookupGuidGnsServer(mxname, fieldName, null, handler);
+          //CommandResponse mxResponse = lookupGuidGnsServer(mxname, fieldName, null, handler);
           if (mxResponseJson != null) {
             //if (mxResponse != null && !mxResponse.isError()) {
             String address = mxResponseJson.getString(mxname);

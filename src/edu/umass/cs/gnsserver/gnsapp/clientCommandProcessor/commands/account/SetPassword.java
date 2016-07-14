@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -66,9 +67,8 @@ public class SetPassword extends BasicCommand {
 //  public String getCommandName() {
 //    return SET_PASSWORD;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String password = json.getString(PASSWORD);
@@ -77,9 +77,9 @@ public class SetPassword extends BasicCommand {
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (accountInfo == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
+      return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     } else if (!accountInfo.isVerified()) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
+      return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, BAD_RESPONSE + " " + VERIFICATION_ERROR + " Account not verified");
     }
     return AccountAccess.setPassword(accountInfo, password, guid, signature, message, timestamp, handler);
   }

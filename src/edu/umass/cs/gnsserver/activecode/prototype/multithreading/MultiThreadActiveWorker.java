@@ -12,13 +12,12 @@ import edu.umass.cs.gnsserver.activecode.prototype.ActiveQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author gaozy
  *
  */
-public class MultiThreadActiveWorker {
+public class MultiThreadActiveWorker implements Runnable{
 	
 	protected final static int bufferSize = 1024;
 	final ThreadPoolExecutor executor;
@@ -33,14 +32,18 @@ public class MultiThreadActiveWorker {
 	private final String ofile;
 	private final int id;
 	
+	protected AtomicInteger numReq = new AtomicInteger();
+	
 	protected MultiThreadActiveWorker(int numThread, String ifile, String ofile, int id){
 		this.ifile = ifile;
 		this.ofile = ofile;
 		this.id = id;
 		this.numThread = numThread;
 		queue = new LinkedBlockingQueue<Runnable>();
+		
 		executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, queue);
-		executor.prestartAllCoreThreads();		
+		executor.prestartAllCoreThreads();
+		
 		channel = new ActiveNamedPipe(ifile, ofile);
 		querier = new ActiveQuerier(channel);
 		
@@ -50,13 +53,6 @@ public class MultiThreadActiveWorker {
 			runners[i] = new ActiveRunner(querier);
 		}
 		
-		try {
-			runWorker();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally{
-			channel.shutdown();
-		}
 	}
 	
 	@Override
@@ -74,14 +70,23 @@ public class MultiThreadActiveWorker {
 		}*/
 	}
 	
-	private void runWorker() throws IOException {
+	@Override
+	public void run(){
+		
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
-		while(true){
+		while(!Thread.currentThread().isInterrupted()){
 			ActiveMessage request = null;
-			if((request = (ActiveMessage) channel.receiveMessage()) != null){				
-				submitTask(request);
-			}
+			try {
+				if((request = (ActiveMessage) channel.receiveMessage()) != null){				
+					submitTask(request);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				break;
+			} 
 		}
+		
+		
 	}
 	
 	/**
@@ -92,6 +97,6 @@ public class MultiThreadActiveWorker {
 		String cfile = args[1];
 		String sfile = args[2];
 		int id = Integer.parseInt(args[3]);
-		new MultiThreadActiveWorker(num, cfile, sfile, id);
+		new Thread(new MultiThreadActiveWorker(num, cfile, sfile, id)).start();
 	}
 }

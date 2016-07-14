@@ -90,6 +90,7 @@ public class NSGroupAccess {
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about this when we get transactions working.
+   
     if (response.equals(GNSCommandProtocol.OK_RESPONSE)) {
       //if (!groupResponse.isAnError()) {
       // This is probably a bad idea to update every member

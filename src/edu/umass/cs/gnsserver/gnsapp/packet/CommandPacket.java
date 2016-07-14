@@ -27,11 +27,14 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReplicableClientRequest;
 
 import java.util.logging.Level;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -150,6 +153,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   private boolean needsCoordinationExplicitlySet = false;
 
   private int retransmissions = 0;
+  
+  private Object result=null;
 
   /**
    * Create a CommandPacket instance.
@@ -391,7 +396,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   public boolean needsCoordination() {
     if (needsCoordinationExplicitlySet) {
       if (needsCoordination) {
-        GNSConfig.getLogger().log(Level.FINE, "{0} needs coordination (set)", this);
+        GNSConfig.getLogger().log(Level.FINER, "{0} needs coordination (set)", this);
       }
       return needsCoordination;
     } else {
@@ -400,15 +405,24 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       CommandType commandType = getCommandType();
       needsCoordination = (commandType.isRead() && getCommandCoordinateReads())
               || commandType.isUpdate();
-//      String cmdName = getCommandName();
-//      needsCoordination = (GNSCommandProtocol.READ_COMMANDS.contains(cmdName) && getCommandCoordinateReads() )
-//    		  || GNSCommandProtocol.UPDATE_COMMANDS.contains(cmdName);
       if (needsCoordination) {
-        GNSConfig.getLogger().log(Level.FINE, "{0} needs coordination", this);
+        GNSConfig.getLogger().log(Level.FINER, "{0} needs coordination", this);
       }
       return needsCoordination;
     }
   }
+  
+	/**
+	 * @param force 
+	 * @return Set coordination mode to true if this is a read command.
+	 */
+	public ClientRequest setForceCoordinatedReads(boolean force) {
+		if (force && getCommandType().isRead())
+			// make forcibly coordinated
+			return ReplicableClientRequest.wrap(this,true);
+		// else
+		return this;
+	}
 
   @Override
   public void setNeedsCoordination(boolean needsCoordination) {
@@ -423,6 +437,34 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     return new CommandPacket(json);
   }
+  
+	/**
+	 * Used to set the result object in a form consumable by a querying
+	 * client: currently JSONObject, JSONArray, or String.
+	 * 
+	 * 
+	 * @param responseStr
+	 * @return this
+	 */
+	public CommandPacket setResult(String responseStr) {
+		// Note: this method has nothing to do with ClientRequest.setResponse
+		synchronized (this) {
+			if (this.result == null)
+				try {
+					this.result = responseStr!=null && JSONPacket.couldBeJSONObject(responseStr) ? new JSONObject(
+							responseStr) : responseStr!=null && JSONPacket
+							.couldBeJSONArray(responseStr) ? new JSONArray(
+							responseStr) : responseStr;
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			else throw new RuntimeException("Can not set response more than once");
+		}
+		return this;
+	}
+	public boolean hasResult() {
+		return this.result != null;
+	}
 
   @Override
   public Object getSummary() {
@@ -433,8 +475,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
                 + getCommandType().toString() + ":"
                 + getCommandInteger() + ":"
                 + getServiceName() + ":"
-                + getRequestID() + "["
-                + getClientAddress() + "]";
+                + getRequestID() + (getClientAddress() != null ? "["
+                + getClientAddress() + "]" : "");
       }
     };
   }

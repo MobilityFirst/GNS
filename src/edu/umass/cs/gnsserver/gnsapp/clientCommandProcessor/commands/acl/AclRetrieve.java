@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -52,7 +53,7 @@ public class AclRetrieve extends BasicCommand {
   public AclRetrieve(CommandModule module) {
     super(module);
   }
-  
+
   @Override
   public CommandType getCommandType() {
     return CommandType.AclRetrieve;
@@ -67,9 +68,8 @@ public class AclRetrieve extends BasicCommand {
 //  public String getCommandName() {
 //    return ACL_RETRIEVE;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -79,15 +79,15 @@ public class AclRetrieve extends BasicCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    
+
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse<>(BAD_RESPONSE + " " + BAD_ACL_TYPE 
+      return new CommandResponse(GNSResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE + " " + BAD_ACL_TYPE
               + "Should be one of " + MetaDataTypeName.values().toString());
     }
     JSONArray guids = SharedGuidUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(access,
             guid, field, reader, signature, message, timestamp, handler)));
-    return new CommandResponse<>(guids.toString());
+    return new CommandResponse(GNSResponseCode.NO_ERROR, guids.toString());
   }
 
   @Override

@@ -290,7 +290,7 @@ public class ThroughputAsynchMultiClientTest {
       // cleanup
       test.removeSubGuid();
       for (int i = 0; i < numberOfClients; i++) {
-        clients[i].stop();
+        clients[i].close();
       }
       System.exit(0);
     } catch (HeadlessException e) {

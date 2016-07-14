@@ -121,7 +121,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    * @throws java.io.UnsupportedEncodingException
    * @throws java.text.ParseException
    */
-  public abstract CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public abstract CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
           UnsupportedEncodingException, ParseException;
 

@@ -1566,7 +1566,7 @@ public class ClientFullTest {
   @Test
   public void test_77_Stop() {
     try {
-      client.stop();
+      client.close();
     } catch (Exception e) {
       fail("Exception during stop: " + e);
     }

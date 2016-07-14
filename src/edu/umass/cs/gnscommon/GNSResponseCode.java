@@ -106,6 +106,12 @@ public enum GNSResponseCode implements Serializable {
   /* Errors above, exceptions below. The distinction is that the former is
 	 * more serious and irrecoverable for that operation, but the latter may
 	 * sometimes happen in the otherwise normal course of events. */
+          
+          /**
+           * Account has already been verified.
+           */
+          ALREADY_VERIFIED_EXCEPTION(12, GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION, TYPE.EXCEPTION),
+          
   /**
    * Duplicate GUID or HRN.
    */
@@ -183,13 +189,25 @@ public enum GNSResponseCode implements Serializable {
    */
   UPDATE_ERROR(26, GNSCommandProtocol.UPDATE_ERROR, TYPE.ERROR),
   /**
+   * Something went wrong while we were reading from or writing to the database.
+   */
+  DATABASE_OPERATION_ERROR(27, GNSCommandProtocol.DATABASE_OPERATION_ERROR, TYPE.ERROR),
+  /**
    * An error occurred during the processing of a command query.
    */
+  
   QUERY_PROCESSING_ERROR(405, GNSCommandProtocol.QUERY_PROCESSING_ERROR, TYPE.ERROR),
   /**
    * A timeout occurred.
    */
-  TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION),;
+  TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION),
+  
+	/**
+	 * A remote query failed on the server side.
+	 */
+	REMOTE_QUERY_EXCEPTION(410, GNSCommandProtocol.REMOTE_QUERY_EXCEPTION, TYPE.EXCEPTION), 
+	
+	;
 
   // stash the codes in a lookup table
   private static final Map<Integer, GNSResponseCode> responseCodes = new HashMap<Integer, GNSResponseCode>();
@@ -216,6 +234,7 @@ public enum GNSResponseCode implements Serializable {
   private final int codeValue;
   private final String protocolCode;
   private final TYPE type;
+  private String message=null;
 
   /**
    * The response code category.
@@ -240,6 +259,26 @@ public enum GNSResponseCode implements Serializable {
     this.protocolCode = protocolCode;
     this.type = type;
   }
+  
+	/**
+	 * Used to attach a message with the code when we want to return a code
+	 * rather than throw an exception; the code and message are expected to be
+	 * used upstream for possibly throwing an exception.
+	 * 
+	 * @param msg
+	 * @return this
+	 */
+	public GNSResponseCode setMessage(String msg) {
+		this.message = msg;
+		return this;
+	}
+	
+	/**
+	 * @return Message attached to this code.
+	 */
+	public String getMessage() {
+		return this.message;
+	}
 
   /**
    * Returns the integer equivalent of the code.
@@ -266,6 +305,15 @@ public enum GNSResponseCode implements Serializable {
    */
   public boolean isExceptionOrError() {
     return type == TYPE.ERROR || type == TYPE.EXCEPTION;
+  }
+  
+  /**
+   * Is this NOT an exception or error code.
+   * Convenience method. See {@link #isExceptionOrError()}.
+   * @return 
+   */
+  public boolean isOKResult() {
+    return !isExceptionOrError();
   }
   
   /**

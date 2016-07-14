@@ -70,9 +70,8 @@ public class AclRemove extends BasicCommand {
 //  public String getCommandName() {
 //    return ACL_REMOVE;
 //  }
-
   @Override
-  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -86,7 +85,8 @@ public class AclRemove extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     MetaDataTypeName access;
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
-      return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
+      return new CommandResponse(GNSResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
+              + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     GNSResponseCode responseCode;
     // We need the public key
@@ -97,7 +97,7 @@ public class AclRemove extends BasicCommand {
     } else {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler, true)) == null) {
-        return new CommandResponse<String>(BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
+        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
@@ -105,9 +105,9 @@ public class AclRemove extends BasicCommand {
     if (!(responseCode = FieldMetaData.remove(access,
             guid, field, accessorPublicKey,
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
-      return new CommandResponse<String>(OK_RESPONSE);
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
     } else {
-      return new CommandResponse<String>(responseCode.getProtocolCode());
+      return new CommandResponse(responseCode, responseCode.getProtocolCode());
     }
   }
 
