@@ -88,6 +88,7 @@ public class ActiveHandler {
 				}
 			}
 		}
+		
 	}
 	
 	/**
@@ -102,7 +103,7 @@ public class ActiveHandler {
 	/**
 	 * Shutdown all the client and its corresponding workers
 	 */
-	public void shutdown(){
+	private void shutdown(){
 		for(int i=0; i<numProcess; i++){
 			if(clientPool[i] != null){
 				clientPool[i].shutdown();

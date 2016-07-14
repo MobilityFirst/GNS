@@ -93,6 +93,8 @@ public class MultiThreadActiveClient implements Client,Runnable{
 			workerProc = startWorker(serverPort, port, id, numThread);
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			workerProc.destroy();
 		}
 		
 		channel = new ActiveDatagramChannel(port, serverPort);
