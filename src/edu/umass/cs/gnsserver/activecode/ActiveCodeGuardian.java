@@ -57,7 +57,7 @@ public class ActiveCodeGuardian {
 		}
 		
 		ActiveCodeGuardian.clientPool = clientPool;
-		if (AppReconfigurableNodeOptions.activeCodeEnableTimeout){
+		if (ActiveCodeConfig.activeCodeEnableTimeout){
 			scheduler.scheduleAtFixedRate(new CheckAndCancelTask(), 0, guard_interval, TimeUnit.MILLISECONDS);
 		}		 
 	}
@@ -70,7 +70,7 @@ public class ActiveCodeGuardian {
 				/*
 				 * Invariant: total number of registered tasks should be less than the total number of active code worker
 				 */
-				assert(tasks.size() <= AppReconfigurableNodeOptions.activeCodeWorkerCount);
+				assert(tasks.size() <= ActiveCodeConfig.activeCodeWorkerCount);
 				
 				long now = System.currentTimeMillis();
 				synchronized(tasks){

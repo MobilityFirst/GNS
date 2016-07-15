@@ -95,8 +95,8 @@ public class ClientPool implements Runnable{
 		portStatus = new ConcurrentHashMap<Integer, Boolean>();
 		
 		executorPool = Executors.newFixedThreadPool(numSpareWorker);
-		System.out.println("Starting "+AppReconfigurableNodeOptions.activeCodeWorkerCount+
-				" workers with "+AppReconfigurableNodeOptions.activeCodeSpareWorker+" spare workers");
+		System.out.println("Starting "+ActiveCodeConfig.activeCodeWorkerCount+
+				" workers with "+ActiveCodeConfig.activeCodeSpareWorker+" spare workers");
 	}
 	
 	public void run(){
@@ -143,7 +143,7 @@ public class ClientPool implements Runnable{
 		/*
 		 * Invariant: after the client starts, no new thread and client should be created.
 		 */
-		assert(getClientID() <= AppReconfigurableNodeOptions.activeCodeWorkerCount);
+		assert(getClientID() <= ActiveCodeConfig.activeCodeWorkerCount);
 		
 		System.out.println("Add a client for thread "+t);
 		int workerPort = getOpenUDPPort();

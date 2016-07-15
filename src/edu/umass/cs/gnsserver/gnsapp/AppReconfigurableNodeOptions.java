@@ -148,30 +148,10 @@ public class AppReconfigurableNodeOptions {
   public static boolean enableActiveCode = false;
   
   /**
-   * Number of active code worker.
+   * FIXME: this hardcoded path should be able to 
    */
-  public static int activeCodeWorkerCount = 1;
+  public static String activeConfigFile = "activeConfig";
   
-  /**
-   * Number of threads running in each worker
-   */
-  public static int activeWorkerThreads = 2;
-  
-  /**
-   * Number of spare workers.
-   */
-  public static int activeCodeSpareWorker = 0;
-  
-  /**
-   * True if timeout is enabled, i.e., ActiveCodeGuardian thread will run.
-   */
-  public static boolean activeCodeEnableTimeout = true;
-  /**
-   * Enable debug message in active code package
-   */
-  public static boolean activeCodeEnableDebugging = false;
-
-
   // context service options
   public static boolean enableContextService = false;
 
@@ -214,19 +194,11 @@ public class AppReconfigurableNodeOptions {
    * DISABLE_EMAIL_VERIFICATION
    */
   public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
-  
-  private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
-  
-  private static final String ACTIVE_WORKER_THREADS = "activeWorkerThreads";
-  
-  private static final String ACTIVE_CODE_SPARE_WORKER = "activeCodeSpareWorker";
-  
-  private static final String ACTIVE_CODE_ENABLE_TIMEOUT = "activeCodeEnableTimeout";
-  
-  private static final String ACTIVE_CODE_ENABLE_DEBUGGING = "activeCodeEnableDebugging";
 
   private static final String ENABLE_ACTIVE_CODE = "enableActiveCode";
-
+  
+  public static final String ACTIVE_CONFIG_FILE = "activeConfigFile";
+  
   public static final String ENABLE_CONTEXT_SERVICE = "enableContextService";
 
   public static final String CONTEXT_SERVICE_IP_PORT = "contextServiceHostPort";
@@ -274,7 +246,7 @@ public class AppReconfigurableNodeOptions {
 
     // active code
     commandLineOptions.addOption(enableActiveCode);
-
+    
     return commandLineOptions;
 
   }
@@ -311,26 +283,6 @@ public class AppReconfigurableNodeOptions {
     }
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
-    }
-    
-    if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
-    	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
-    }
-    
-    if (allValues.containsKey(ACTIVE_WORKER_THREADS)) {
-    	activeWorkerThreads = Integer.parseInt(allValues.get(ACTIVE_WORKER_THREADS));
-    }
-    
-    if (allValues.containsKey(ACTIVE_CODE_SPARE_WORKER)) {
-    	activeCodeSpareWorker = Integer.parseInt(allValues.get(ACTIVE_CODE_SPARE_WORKER));
-    }
-    
-    if (allValues.containsKey(ACTIVE_CODE_ENABLE_TIMEOUT)) {
-    	activeCodeEnableTimeout = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_TIMEOUT));
-    }
-    
-    if (allValues.containsKey(ACTIVE_CODE_ENABLE_DEBUGGING)) {
-    	activeCodeEnableDebugging = Boolean.parseBoolean(allValues.get(ACTIVE_CODE_ENABLE_DEBUGGING));
     }
 
     if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {

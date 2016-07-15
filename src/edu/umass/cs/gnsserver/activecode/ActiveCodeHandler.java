@@ -163,7 +163,18 @@ public class ActiveCodeHandler {
 	 * @param app
 	 */
 	public ActiveCodeHandler(ActiveDBInterface app) {
-		handler = new ActiveHandler(app, AppReconfigurableNodeOptions.activeCodeWorkerCount, AppReconfigurableNodeOptions.activeWorkerThreads);
+		String configFile = System.getProperty(AppReconfigurableNodeOptions.activeConfigFile);
+		if(configFile != null){
+			try {
+				new ActiveCodeConfig(configFile);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}else{
+			//Specify config file name and set properties
+		}
+		
+		handler = new ActiveHandler(app, ActiveCodeConfig.activeCodeWorkerCount, ActiveCodeConfig.activeWorkerThreads);
 		
 		try {
 			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
@@ -230,8 +241,6 @@ public class ActiveCodeHandler {
 	 * @return executed result
 	 */
 	public static ValuesMap runCode(String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
-		if(field.equals("level2"))
-			return valuesMap;
 		try {
 			return handler.runCode(guid, field, noop_code, valuesMap, activeCodeTTL);
 		} catch (Exception e) {
