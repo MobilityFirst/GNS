@@ -242,7 +242,7 @@ public class ActiveCodeHandler {
 	 */
 	public static ValuesMap runCode(String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
 		try {
-			return handler.runCode(guid, field, noop_code, valuesMap, activeCodeTTL);
+			return handler.runCode(guid, field, code, valuesMap, activeCodeTTL);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

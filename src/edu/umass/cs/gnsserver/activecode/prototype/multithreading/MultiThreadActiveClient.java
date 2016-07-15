@@ -160,7 +160,7 @@ public class MultiThreadActiveClient implements Client, Runnable{
 	@Override
 	public ValuesMap runCode(String guid, String field, String code, ValuesMap valuesMap, int ttl)
 			throws ActiveException {
-		// TODO Auto-generated method stub
+
 		ActiveMessage am = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		long id = am.getId();
 		

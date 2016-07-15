@@ -36,11 +36,12 @@ public class ActiveQueryHandler {
 	 */
 	public ActiveMessage handleQuery(ActiveMessage am){
 		ActiveMessage response;
+		//System.out.println("Handle request "+am);
 		if(am.type == ActiveMessage.Type.READ_QUERY)
 			response = handleReadQuery(am);
 		else
 			response = handleWriteQuery(am);
-
+		//System.out.println("Response is "+response);
 		return response;
 	}
 	

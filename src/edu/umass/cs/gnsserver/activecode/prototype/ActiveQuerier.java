@@ -56,8 +56,10 @@ public class ActiveQuerier implements Querier {
 	 */
 	@Override
 	public ValuesMap readGuid(String queriedGuid, String field) throws ActiveException{
+		if(currentTTL <=0)
+			throw new ActiveException(); //"Out of query limit"
 		if(queriedGuid==null)
-			return null;
+			return readValueFromField(currentGuid, currentGuid, field, currentTTL--);
 		return readValueFromField(currentGuid, queriedGuid, field, currentTTL--);
 	}
 	
@@ -69,9 +71,12 @@ public class ActiveQuerier implements Querier {
 	 */
 	@Override
 	public void writeGuid(String queriedGuid, String field, Object value) throws ActiveException{
+		if(currentTTL <=0)
+			throw new ActiveException(); //"Out of query limit"
 		if(queriedGuid==null)
-			throw new ActiveException();
-		writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
+			writeValueIntoField(currentGuid, currentGuid, field, value, currentTTL--);
+		else
+			writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
 	}
 	
 	
