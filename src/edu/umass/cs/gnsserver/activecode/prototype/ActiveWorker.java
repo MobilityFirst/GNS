@@ -36,10 +36,6 @@ public class ActiveWorker {
 	
 	private Querier querier;
 	
-	/**
-	 * bufferSize for all byte buffer
-	 */
-	//public final static int bufferSize = 1024*4;
 	
 	/******************* TEST ********************/
 	private final ThreadPoolExecutor executor;
@@ -151,7 +147,7 @@ public class ActiveWorker {
 
 	
 	private void runWorker(int numThread) throws JSONException, IOException {
-		//System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
+		
 		
 		ActiveMessage msg = null;
 		while((msg = (ActiveMessage) channel.receiveMessage()) != null){

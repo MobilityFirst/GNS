@@ -194,9 +194,9 @@ public class GNSClientCapacityTest extends DefaultTest {
 
 	private static final String someField = "someField";
 	private static final String someValue = "someValue";
-	private static final String LEVEL1 = "level1";
-	private static final String LEVEL2 = "level2";
-	private static final String LEVEL3 = "level3";
+	//private static final String LEVEL1 = "level1";
+	//private static final String LEVEL2 = "level2";
+	//private static final String LEVEL3 = "level3";
 	
 	/**
 	 * Verifies a single write is successful.
@@ -205,13 +205,15 @@ public class GNSClientCapacityTest extends DefaultTest {
 	@Test
 	public void test_01_SingleWrite() throws IOException {
 		GuidEntry guid = guidEntries[0];
-		String code = new String(Files.readAllBytes(Paths.get("scripts/activeCode/noop.js")));
+		String codeFile = System.getProperty("activeCode");
+		 
+		if(codeFile==null)
+			codeFile = "scripts/activeCode/noop.js";
+		
+		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		try {
 			clients[0].fieldUpdate(guid, someField, someValue);
 			// prepare for active code
-			clients[0].fieldUpdate(guid, LEVEL1, someValue);
-			clients[0].fieldUpdate(guid, LEVEL2, someValue);
-			clients[0].fieldUpdate(guid, LEVEL3, someValue);
 			clients[0].activeCodeClear(guid.getGuid(), ActiveCode.READ_ACTION, guid);
 			clients[0].activeCodeSet(guid.getGuid(), ActiveCode.READ_ACTION, code, guid);
 			// verify written value
@@ -233,7 +235,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 * @throws Exception
 	 * 
 	 */
-	//@Test
+	@Test
 	public void test_02_SequentialSignedReadCapacity() throws Exception {
 		int numReads = Math.min(Integer.MAX_VALUE, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
@@ -251,7 +253,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	//@Test
+	@Test
 	public void test_02_SequentialUnsignedReadCapacity() throws Exception {
 		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
@@ -355,60 +357,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		}
 	}
 	
-	/**
-	 * @throws Exception
-	 */
-	//@Test
-	public void test_10_SingleActiveReadLevel1() throws Exception{
-		
-		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
-		
-		long t = System.currentTimeMillis();
-		for (int i = 0; i < numReads; i++) {
-			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL1, null);
-		}
-		long elapsed = System.currentTimeMillis() - t;
-		
-		System.out.println(LEVEL1+":It takes "+elapsed+"ms. Average latency for read operation "
-				+ "is average_latency="+elapsed*1000.0/numReads+"us");
-	}
-	
-	/**
-	 * @throws Exception
-	 */
-	//@Test
-	public void test_11_SingleActiveReadLevel2() throws Exception{
-		
-		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
-		
-		long t = System.currentTimeMillis();
-		for (int i = 0; i < numReads; i++) {
-			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL2, null);
-		}
-		long elapsed = System.currentTimeMillis() - t;
-		
-		System.out.println(LEVEL2+":It takes "+elapsed+"ms. Average latency for read operation "
-				+ "is average_latency="+elapsed*1000.0/numReads+"us");
-	}
-	
-	/**
-	 * @throws Exception
-	 */
-	//@Test
-	public void test_12_SingleActiveReadLevel3() throws Exception{
-		
-		int numReads = Math.max(100000, Config.getGlobalInt(TC.NUM_REQUESTS));
-		
-		long t = System.currentTimeMillis();
-		for (int i = 0; i < numReads; i++) {
-			clients[0].fieldRead(guidEntries[0].getGuid(), LEVEL3, null);
-		}
-		long elapsed = System.currentTimeMillis() - t;
-		
-		System.out.println(LEVEL3+":It takes "+elapsed+"ms. Average latency for read operation "
-				+ "is average_latency="+elapsed*1000.0/numReads+"us");
 
-	}
 	
 	/**
 	 * Removes all account and sub-guids created during the test.

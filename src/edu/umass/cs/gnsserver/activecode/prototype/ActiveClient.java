@@ -65,7 +65,7 @@ public class ActiveClient implements Client{
 			e.printStackTrace();
 		}
 		channel = new ActiveNamedPipe(ifile, ofile);				
-		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
+		//System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 		
 		queryHandler = new ActiveQueryHandler(app);
 		
@@ -232,16 +232,6 @@ public class ActiveClient implements Client{
 	 */
 	@Override
 	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
-		/*
-		if(field.equals("level3")){
-			//FIXME: this test can be removed together with worker variable
-			try {
-				return worker.runCode(guid, field, code, valuesMap, ttl);
-			} catch (NoSuchMethodException | ScriptException e) {
-				e.printStackTrace();
-			}
-		}
-		*/
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		sendMessage(msg);
 		ActiveMessage response;
@@ -261,12 +251,7 @@ public class ActiveClient implements Client{
 						e.printStackTrace();
 					}
 				}
-				ActiveMessage am = null;
-				if(response.type==Type.READ_QUERY){
-					am = queryHandler.handleReadQuery(response);
-				} else {
-					am = queryHandler.handleWriteQuery(response);
-				}
+				ActiveMessage am = queryHandler.handleQuery(response);
 				sendMessage(am);
 			}
 		}
