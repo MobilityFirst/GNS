@@ -233,15 +233,19 @@ public class MultiThreadActiveClient implements Client, Runnable{
 		try{
 			while(!Thread.currentThread().isInterrupted()){
 				response = receiveMessage();
-				if(response != null && response.type == Type.RESPONSE){
-					// wake up the corresponding thread
-					long id = response.getId();
-					ActiveMessage req = pendingMap.get(id);
-					pendingMap.put(id, response);
-					synchronized(req){
-						req.notify();
+				if(response != null){					
+					if(response.type == Type.RESPONSE){						
+						// wake up the corresponding thread
+						long id = response.getId();
+						ActiveMessage req = pendingMap.get(id);
+						pendingMap.put(id, response);
+						synchronized(req){
+							req.notify();
+						}
+					}else{
+						ActiveMessage am = queryHandler.handleQuery(response);
+						sendMessage(am);
 					}
-					//System.out.println("received "+counter.incrementAndGet()+" massege:"+response);
 					counter.incrementAndGet();
 				}
 			}

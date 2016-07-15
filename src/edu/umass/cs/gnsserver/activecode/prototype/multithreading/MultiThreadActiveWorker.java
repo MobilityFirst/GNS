@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveNamedPipe;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveQuerier;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
@@ -17,7 +18,7 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
  * @author gaozy
  *
  */
-public class MultiThreadActiveWorker implements Runnable{
+public class MultiThreadActiveWorker implements Runnable {
 	
 	protected final static int bufferSize = 1024;
 	final ThreadPoolExecutor executor;
@@ -25,7 +26,7 @@ public class MultiThreadActiveWorker implements Runnable{
 	final AtomicInteger counter = new AtomicInteger();
 	final ActiveRunner[] runners;
 	private Channel channel;
-	private Querier querier;
+	private Querier[] queriers;
 	private final int numThread;
 	
 	private final String ifile;
@@ -45,11 +46,13 @@ public class MultiThreadActiveWorker implements Runnable{
 		executor.prestartAllCoreThreads();
 		
 		channel = new ActiveNamedPipe(ifile, ofile);
-		querier = new ActiveQuerier(channel);
+		
 		
 		runners = new ActiveRunner[numThread];
 		
 		for (int i=0; i<numThread; i++){
+			Querier querier = new MultiThreadActiveQuerier(channel);
+			queriers[i] = querier;
 			runners[i] = new ActiveRunner(querier);
 		}
 		
@@ -75,10 +78,16 @@ public class MultiThreadActiveWorker implements Runnable{
 		
 		System.out.println("Start running "+this+" by listening on "+ifile+", and write to "+ofile);
 		while(!Thread.currentThread().isInterrupted()){
-			ActiveMessage request = null;
+			ActiveMessage message = null;
 			try {
-				if((request = (ActiveMessage) channel.receiveMessage()) != null){				
-					submitTask(request);
+				if((message = (ActiveMessage) channel.receiveMessage()) != null){
+					if(message.type == Type.REQUEST){
+						submitTask(message);
+					}else{
+						if(message.type == Type.RESPONSE){
+							// invoke the 
+						}
+					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

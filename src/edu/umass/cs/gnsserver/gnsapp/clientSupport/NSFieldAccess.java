@@ -305,7 +305,7 @@ public class NSFieldAccess {
 	  
 	  // Only do this for user fields.
 	  if (field == null || !InternalField.isInternalField(field)) {
-      int hopLimit = 1;
+      int hopLimit = 10;
             
       
       // Grab the code because it is of a different type

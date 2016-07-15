@@ -194,9 +194,8 @@ public class GNSClientCapacityTest extends DefaultTest {
 
 	private static final String someField = "someField";
 	private static final String someValue = "someValue";
-	//private static final String LEVEL1 = "level1";
-	//private static final String LEVEL2 = "level2";
-	//private static final String LEVEL3 = "level3";
+	private static final String activeField ="activeField";
+
 	
 	/**
 	 * Verifies a single write is successful.
@@ -206,13 +205,18 @@ public class GNSClientCapacityTest extends DefaultTest {
 	public void test_01_SingleWrite() throws IOException {
 		GuidEntry guid = guidEntries[0];
 		String codeFile = System.getProperty("activeCode");
-		 
+		int activeValue = 0; 
+		String activeDepth = System.getProperty("activeDepth");
+		if(activeDepth != null)
+			activeValue = Integer.parseInt(activeDepth);
+		
 		if(codeFile==null)
 			codeFile = "scripts/activeCode/noop.js";
 		
 		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		try {
 			clients[0].fieldUpdate(guid, someField, someValue);
+			clients[0].fieldUpdate(guid, activeField, activeValue);
 			// prepare for active code
 			clients[0].activeCodeClear(guid.getGuid(), ActiveCode.READ_ACTION, guid);
 			clients[0].activeCodeSet(guid.getGuid(), ActiveCode.READ_ACTION, code, guid);

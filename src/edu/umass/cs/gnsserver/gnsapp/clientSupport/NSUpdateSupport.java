@@ -177,7 +177,7 @@ public class NSUpdateSupport {
       if (activeCodeNameRecord != null) {
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
       }
-      int hopLimit = 1;
+      int hopLimit = 10;
       boolean hasCode = activeCodeHandler.hasCode(activeCodeNameRecord.getValuesMap(), ActiveCode.WRITE_ACTION);
       if (activeCodeNameRecord != null
               && hasCode) {

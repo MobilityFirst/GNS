@@ -1,41 +1,36 @@
-package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.prototype.multithreading;
 
 import java.io.IOException;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
- * This class is an implementation of Querier, Querier only contains
- * readGuid and writeGuid method, so the protected methods will not be
- * exposed to the javascript code.
+ * This a querier with a monitor to let it run in a multithreaded worker.
  * @author gaozy
  *
  */
-public class ActiveQuerier implements Querier {
+public class MultiThreadActiveQuerier implements Querier{
+	
 	private Channel channel;
 	private int currentTTL;
 	private String currentGuid;
 	
-	/**
-	 * @param channel
-	 * @param ttl 
-	 * @param guid 
-	 */
-	public ActiveQuerier(Channel channel, int ttl, String guid){
+	protected MultiThreadActiveQuerier(Channel channel, int ttl, String guid){
 		this.channel = channel;
 		this.currentTTL = ttl;
 		this.currentGuid = guid;
 	}
 	
-	
 	/**
 	 * @param channel
 	 */
-	public ActiveQuerier(Channel channel){
+	public MultiThreadActiveQuerier(Channel channel){
 		this(channel, 0, null);
 	}
 	
@@ -48,30 +43,23 @@ public class ActiveQuerier implements Querier {
 		this.currentTTL = ttl;
 	}
 	
-	/**
-	 * @param queriedGuid
-	 * @param field
-	 * @return ValuesMap the code trying to read
-	 * @throws ActiveException
-	 */
 	@Override
-	public ValuesMap readGuid(String queriedGuid, String field) throws ActiveException{
+	public ValuesMap readGuid(String queriedGuid, String field) throws ActiveException {
+		if(currentTTL <=0)
+			throw new ActiveException(); //"Out of query limit"
 		if(queriedGuid==null)
-			return null;
+			return readValueFromField(currentGuid, currentGuid, field, currentTTL--);
 		return readValueFromField(currentGuid, queriedGuid, field, currentTTL--);
 	}
-	
-	/**
-	 * @param queriedGuid
-	 * @param field
-	 * @param value
-	 * @throws ActiveException
-	 */
+
 	@Override
-	public void writeGuid(String queriedGuid, String field, Object value) throws ActiveException{
+	public void writeGuid(String queriedGuid, String field, Object value) throws ActiveException {
+		if(currentTTL <=0)
+			throw new ActiveException(); //"Out of query limit"
 		if(queriedGuid==null)
-			throw new ActiveException();
-		writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
+			writeValueIntoField(currentGuid, currentGuid, field, value, currentTTL--);
+		else
+			writeValueIntoField(currentGuid, queriedGuid, field, value, currentTTL--);
 	}
 	
 	
@@ -111,20 +99,4 @@ public class ActiveQuerier implements Querier {
 			}
 	}
 	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args){
-		ActiveQuerier querier = new ActiveQuerier(null);
-		int ttl = 1;
-		String guid = "Zhaoyu Gao";			
-		
-		int n = 1000000;		
-		long t1 = System.currentTimeMillis();		
-		for(int i=0; i<n; i++){
-			querier.resetQuerier(guid, ttl);
-		}		
-		long elapsed = System.currentTimeMillis() - t1;
-		System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
-	}
 }
