@@ -45,6 +45,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		int port; 
 		
 		public SequentialDatagramClient(int port) throws SocketException, UnknownHostException{
+			this.port = port;
 			clientSocket = new DatagramSocket(); 
 			IPAddress = InetAddress.getByName("localhost");
 		}
@@ -88,7 +89,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 			
 			try {
 				// set threshold for traffic control
-				thres = (int) (clientSocket.getSendBufferSize()/length*0.9);
+				thres = (int) (clientSocket.getSendBufferSize()/length*0.8);
 			} catch (SocketException e) {
 				e.printStackTrace();
 				// otherwise use default number
@@ -204,6 +205,9 @@ public class TestMultiThreadNamedPipeAndDatagram {
 			serverSocket.close();
 		}
 		
+		public void close(){
+			//serverSocket.close();
+		}
 	}
 	
 	/**
@@ -217,11 +221,13 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		int port = 60001;
 		int reqsPerClient = totalReqs/numServers;
 		
+		SingleDatagramServer[] servers = new SingleDatagramServer[numServers];
 		// start all servers
 		for (int i=0; i<numServers; i++){
-			executor.execute(new SingleDatagramServer(port+i));
+			servers[i] = new SingleDatagramServer(port+i);
+			executor.execute(servers[i]);
 		}
-		System.out.println("All servers started!");
+		//System.out.println("All servers started!");
 		
 		// start all clients
 		MultiThreadDatagramClient[] clients = new MultiThreadDatagramClient[numServers];
@@ -229,7 +235,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 			clients[i] = new MultiThreadDatagramClient(port+i, reqsPerClient);
 			executor.execute(clients[i]);
 		}
-		System.out.println("All clients ready!");
+		//System.out.println("All clients ready!");
 		
 		
 		long t = System.currentTimeMillis();
@@ -245,14 +251,18 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		}
 		
 		long elapsed = System.currentTimeMillis() - t;
-		System.out.println("It takes "+elapsed+"ms for Datagram socket");
-		System.out.println("The average throughput with "+numServers+" Datagram servers and clients is "+numServers*reqsPerClient*1000.0/elapsed);
+		System.out.println("It takes "+elapsed+"ms for parallel Datagram socket");
+		System.out.println("The average throughput with "+numServers+" parallel Datagram servers and clients is "+numServers*reqsPerClient*1000.0/elapsed);
 		double lat = 0;
 		for (int i=0; i<numServers; i++) {
 			lat += clients[i].getLatnecy();
 			//System.out.println("The average latency is "+clients[i].getLatnecy());
 		}
 		System.out.println("The average latency is "+lat*1000.0/numServers+"us");
+		
+		for(int i=0; i<numServers; i++){
+			servers[i].close();
+		}
 		
 		executor.shutdown();		
 	}
@@ -264,8 +274,10 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	 */
 	@Test
 	public void test_02_SequentialDatagramThroughput() throws UnknownHostException, SocketException{
-		int port = 60001;
-		new Thread(new SingleDatagramServer(port)).start();
+		int port = 50001;
+		SingleDatagramServer server = new SingleDatagramServer(port);
+		Thread th = new Thread(server);
+		th.start();
 		
 		SequentialDatagramClient client = new SequentialDatagramClient(port);
 		
@@ -277,8 +289,10 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		}
 		
 		long elapsed = System.currentTimeMillis() - t;
-		System.out.println("It takes "+elapsed+"ms for sequential Datagram packet, the average latency is "+elapsed*1000.0/totalReqs);
-		System.out.println("The average throughput with "+numServers+" Datagram servers and clients is "+totalReqs*1000.0/elapsed);		
+		System.out.println("It takes "+elapsed+"ms for sequential Datagram packet, the average latency is "+elapsed*1000.0/totalReqs+"us");
+		System.out.println("The average throughput with "+numServers+" sequential Datagram servers and clients is "+totalReqs*1000.0/elapsed);	
+		
+		server.close();
 	}
 	
 	
@@ -356,7 +370,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	 * Test the throughput of named pipe with the PipeClient and PipeServer as above
 	 */
 	@Test
-	public void test_02_NamedPipeThroughput(){
+	public void test_03_ParallelNamedPipeThroughput(){
 		byte[] buf = new byte[length];
 		new Random().nextBytes(buf);
 		
@@ -376,7 +390,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 				}
 			}
 		}.start();;
-		System.out.println("All servers started!");
+		//System.out.println("All servers started!");
 		
 		
 		
@@ -391,7 +405,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 			clients[i] = new PipeClient(cfile+i, sfile+i, reqsPerClient);
 			executor.execute(clients[i]);
 		}
-		System.out.println("All clients ready!");
+		//System.out.println("All clients ready!");
 		
 		long t = System.currentTimeMillis();
 		// start send all requests
@@ -408,8 +422,8 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		}
 		
 		long elapsed = System.currentTimeMillis() - t;
-		System.out.println("It takes "+elapsed+"ms for named pipe.");
-		System.out.println("The average throughput with "+numServers+" named pipe servers and clients is "+numServers*reqsPerClient*1000.0/elapsed);
+		System.out.println("It takes "+elapsed+"ms for parallel named pipe.");
+		System.out.println("The average throughput with "+numServers+" parallel named pipe servers and clients is "+numServers*reqsPerClient*1000.0/elapsed);
 		double lat = 0;
 		for (int i=0; i<numServers; i++) {
 			lat += clients[i].getLatnecy();
@@ -425,7 +439,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		numServers = Integer.parseInt(args[0]);
+		numServers = 1; //Integer.parseInt(args[0]);
 		
 		Result result = JUnitCore.runClasses(TestMultiThreadNamedPipeAndDatagram.class);
 		for (Failure failure : result.getFailures()) {
