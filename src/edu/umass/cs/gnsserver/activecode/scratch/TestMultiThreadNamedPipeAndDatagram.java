@@ -7,6 +7,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,7 +35,34 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	final static int length = 1000;
 	final static int totalReqs = 100000;
 	
-	static class SingleDatagramClient implements Runnable {
+	static class SequentialDatagramClient {
+		
+		DatagramSocket clientSocket;
+		SecureRandom random = new SecureRandom();
+		InetAddress IPAddress;
+		byte[] sendData = new byte[1024];
+		byte[] receiveData = new byte[1024];
+		int port; 
+		
+		public SequentialDatagramClient(int port) throws SocketException, UnknownHostException{
+			clientSocket = new DatagramSocket(); 
+			IPAddress = InetAddress.getByName("localhost");
+		}
+		
+		public void sendAndReceiveRequest(){
+			new Random().nextBytes(sendData);
+			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port); 
+			try {
+				clientSocket.send(sendPacket);
+				clientSocket.receive(receivePacket);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	static class MultiThreadDatagramClient implements Runnable {
 		//private List<Long> sendTime = Collections.synchronizedList(new ArrayList<Long>());
 		//private List<Long> receiveTime = Collections.synchronizedList(new ArrayList<Long>());
 		private DatagramSocket clientSocket;
@@ -49,7 +77,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		private int thres;
 		
 		
-		SingleDatagramClient(int port, int total){
+		MultiThreadDatagramClient(int port, int total){
 			this.port = port;
 			try {
 				this.clientSocket = new DatagramSocket();
@@ -196,9 +224,9 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		System.out.println("All servers started!");
 		
 		// start all clients
-		SingleDatagramClient[] clients = new SingleDatagramClient[numServers];
+		MultiThreadDatagramClient[] clients = new MultiThreadDatagramClient[numServers];
 		for (int i=0; i<numServers; i++){
-			clients[i] = new SingleDatagramClient(port+i, reqsPerClient);
+			clients[i] = new MultiThreadDatagramClient(port+i, reqsPerClient);
 			executor.execute(clients[i]);
 		}
 		System.out.println("All clients ready!");
@@ -227,6 +255,30 @@ public class TestMultiThreadNamedPipeAndDatagram {
 		System.out.println("The average latency is "+lat*1000.0/numServers+"us");
 		
 		executor.shutdown();		
+	}
+	
+	/**
+	 * @throws UnknownHostException 
+	 * @throws SocketException 
+	 * 
+	 */
+	@Test
+	public void test_02_SequentialDatagramThroughput() throws UnknownHostException, SocketException{
+		int port = 60001;
+		new Thread(new SingleDatagramServer(port)).start();
+		
+		SequentialDatagramClient client = new SequentialDatagramClient(port);
+		
+		
+		long t = System.currentTimeMillis();
+		
+		for (int i=0; i<totalReqs; i++){
+			client.sendAndReceiveRequest();
+		}
+		
+		long elapsed = System.currentTimeMillis() - t;
+		System.out.println("It takes "+elapsed+"ms for sequential Datagram packet, the average latency is "+elapsed*1000.0/totalReqs);
+		System.out.println("The average throughput with "+numServers+" Datagram servers and clients is "+totalReqs*1000.0/elapsed);		
 	}
 	
 	
