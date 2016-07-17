@@ -62,7 +62,7 @@ public class GNSClientConfig {
 		 * Uses secret keys for signatures that are ~180x faster at signing at
 		 * the client.
 		 */
-		ENABLE_SECRET_KEY(false),
+		ENABLE_SECRET_KEY(true),
 
 		/**
 		 * A secret shared between the server and client in order to circumvent
