@@ -428,16 +428,16 @@ integration tests sequentially"
   </target>
 
      <target name="testThreaded" description="Runs the default integration tests in parallel" 
-          depends="jar, compiletest">
-    <property name="integrationTestRuns" value="30"/>
-    <property name="integrationTestThreads" value="50"/>
+          depends="compile, compiletest">
+    <property name="integrationTestRuns" value="5"/>
+    <property name="integrationTestThreads" value="3"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTestThreaded"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.1local.properties"/>
