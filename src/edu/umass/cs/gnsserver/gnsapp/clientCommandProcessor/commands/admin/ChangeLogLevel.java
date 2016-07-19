@@ -23,6 +23,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
@@ -68,6 +69,13 @@ public class ChangeLogLevel extends BasicCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String levelString = json.getString(LOG_LEVEL);
     if (module.isAdminMode()) {
+  	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
+  	  String passkey = json.getString(PASSKEY);
+  	  if (!Admin.authenticate(passkey)){
+  		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
+  		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
+  	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
+  	  }
       try {
         Level level = Level.parse(levelString);
         if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
