@@ -124,8 +124,8 @@ public class Admin extends BasicCommand {
         module.setAdminMode(false);
         return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       }
-      return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-              + " Don't understand " + getCommandType().toString() + " " + passkey);
+      return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
+              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
     } catch (UnknownHostException e) {
       return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE
               + " " + UNSPECIFIED_ERROR + " Unable to determine host address");
