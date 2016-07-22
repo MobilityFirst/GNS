@@ -16,10 +16,10 @@ package edu.umass.cs.gnsclient.benchmarking;
  * 
  * Initial developer(s): aditya */
 
-
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -28,6 +28,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -41,13 +43,50 @@ import org.json.JSONObject;
  * 
  * @author aditya
  */
-public class SelectCallBenchmarking 
+public class SelectCallBenchmarking
 {
+	// dallas region in texas area, for which we have weather alerts.
+	public static final double LONGITUDE_MIN 					= -98.08;
+	public static final double LONGITUDE_MAX 					= -96.01;
+	
+	public static final double LATITUDE_MAX 					= 33.635;
+	public static final double LATITUDE_MIN 					= 31.854;
+	
+	public static final int NUM_GUIDs							= 10000;
+	
+	public static final int NUM_SELECT_OPER						= 1000;
+	
+	public static final String GUID_PREFIX 						= "GUIDPref";
+	
+	public static final String Latitude_Name					= "latitude";
+	public static final String Longitude_Name					= "longitude";
+	
+	private static final double LEFT = LONGITUDE_MIN;
+	private static final double RIGHT = LONGITUDE_MAX;
+	private static final double TOP = LATITUDE_MAX;
+	private static final double BOTTOM = LATITUDE_MIN;
+	
+	
+	private static JSONArray UPPER_LEFT ;
+//	= new GlobalCoordinate(TOP, LEFT);
+	
+	private static JSONArray UPPER_RIGHT;
+	//= new GlobalCoordinate(TOP, RIGHT);
+	
+	private static JSONArray LOWER_RIGHT;
+	//= new GlobalCoordinate(BOTTOM, RIGHT);
+	
+	private static JSONArray LOWER_LEFT;
+	//= new GlobalCoordinate(BOTTOM, LEFT);
+	
+	
 	// replace with your account alias
-	private static String ACCOUNT_ALIAS = "admin@gns.name";
+	private static String ACCOUNT_ALIAS 						= "admin@gns.name";
 	private static GNSClientCommands client;
-	private static GuidEntry guid;
-
+	private static GuidEntry account_guid;
+	private static Random randomGen								= new Random();
+	//private static List<GuidEntry>
+	
 	/**
 	 * @param args
 	 * @throws IOException
@@ -60,14 +99,27 @@ public class SelectCallBenchmarking
 	 */
 	public static void main(String[] args) throws IOException,
 			InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
-			InvalidKeyException, SignatureException, Exception {
-
+			InvalidKeyException, SignatureException, Exception 
+	{
+		UPPER_LEFT = new JSONArray("["+LEFT+","+TOP+"]");
+//		= new GlobalCoordinate(TOP, LEFT);
+		
+		UPPER_RIGHT = new JSONArray("["+RIGHT+","+TOP+"]");
+		//= new GlobalCoordinate(TOP, RIGHT);
+		
+		LOWER_RIGHT = new JSONArray("["+RIGHT+","+BOTTOM+"]");
+		//= new GlobalCoordinate(BOTTOM, RIGHT);
+		
+		LOWER_LEFT = new JSONArray("["+LEFT+","+BOTTOM+"]");
+		//= new GlobalCoordinate(BOTTOM, LEFT);
+		
 		/* Create the client that connects to a default reconfigurator as
 		 * specified in gigapaxos properties file. */
 		client = new GNSClientCommands();
 		System.out.println("[Client connected to GNS]\n");
-
-		try {
+		
+		try 
+		{
 			/**
 			 * Create an account GUID if one doesn't already exists. The true
 			 * flag makes it verbosely print out what it is doing. The password
@@ -81,14 +133,15 @@ public class SelectCallBenchmarking
 					.println("// account GUID creation\n"
 							+ "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
 							+ " \"password\", true)");
-			guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
+			account_guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
 					"password", true);
-		} catch (Exception | Error e) {
+		} catch (Exception | Error e) 
+		{
 			System.out.println("Exception during accountGuid creation: " + e);
 			e.printStackTrace();
 			System.exit(1);
 		}
-
+		
 		// Create a JSON Object to initialize our guid record
 		JSONObject json = new JSONObject("{\"occupation\":\"busboy\","
 				+ "\"friends\":[\"Joe\",\"Sam\",\"Billy\"],"
@@ -96,42 +149,42 @@ public class SelectCallBenchmarking
 				+ "\"location\":\"work\",\"name\":\"frank\"}");
 
 		// Write out the JSON Object
-		client.update(guid, json);
+		client.update(account_guid, json);
 		System.out.println("\n// record update\n"
 				+ "client.update(GUID, record) // record=" + json);
 
 		// and read the entire object back in
-		JSONObject result = client.read(guid);
+		JSONObject result = client.read(account_guid);
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Change a field
-		client.update(guid, new JSONObject(
+		client.update(account_guid, new JSONObject(
 				"{\"occupation\":\"rocket scientist\"}"));
 		System.out
 				.println("\n// field update\n"
 						+ "client.update(GUID, fieldKeyValue) // fieldKeyValue={\"occupation\":\"rocket scientist\"}");
 
 		// and read the entire object back in
-		result = client.read(guid);
+		result = client.read(account_guid);
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Add a field
-		client.update(guid, new JSONObject("{\"ip address\":\"127.0.0.1\"}"));
+		client.update(account_guid, new JSONObject("{\"ip address\":\"127.0.0.1\"}"));
 		System.out
 				.println("\n// field add\n"
 						+ "client.update(GUID, fieldKeyValue) // fieldKeyValue= {\"ip address\":\"127.0.0.1\"}");
 		
 		// and read the entire object back in
-		result = client.read(guid);
+		result = client.read(account_guid);
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Remove a field
-		client.fieldRemove(guid.getGuid(), "gibberish", guid);
+		client.fieldRemove(account_guid.getGuid(), "gibberish", account_guid);
 		System.out.println("\n// field remove\n"
 				+ "client.fieldRemove(GUID, \"gibberish\")");
 
 		// and read the entire object back in
-		result = client.read(guid);
+		result = client.read(account_guid);
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Add some more stuff to read back
@@ -144,17 +197,17 @@ public class SelectCallBenchmarking
 		subsubJson.put("left", "eight");
 		subJson.put("sally", subsubJson);
 		newJson.put("flapjack", subJson);
-		client.update(guid, newJson);
+		client.update(account_guid, newJson);
 		System.out.println("\n// field add with JSON value\n"
 				+ "client.update(GUID, fieldKeyValue) // fieldKeyValue="
 				+ newJson);
 
 		// Read a single field at the top level
-		String resultString = client.fieldRead(guid, "flapjack");
+		String resultString = client.fieldRead(account_guid, "flapjack");
 		System.out.println("client.fieldRead(\"flapjack\") -> " + resultString);
 
 		// Read a single field using dot notation
-		resultString = client.fieldRead(guid, "flapjack.sally.right");
+		resultString = client.fieldRead(account_guid, "flapjack.sally.right");
 		System.out.println("\n// dotted field read\n"
 				+ "client.fieldRead(GUID, \"flapjack.sally.right\") -> "
 				+ resultString);
@@ -162,42 +215,112 @@ public class SelectCallBenchmarking
 		// Update a field using dot notation
 		JSONArray newValue = new JSONArray(
 				Arrays.asList("One", "Ready", "Frap"));
-		client.fieldUpdate(guid, "flapjack.sammy", newValue);
+		client.fieldUpdate(account_guid, "flapjack.sammy", newValue);
 		System.out.println("\n// dotted field update\n"
 				+ "client.fieldUpdate(GUID, \"flapjack.sammy\", " + newValue);
 		
 		// Read the same field using dot notation
-		resultString = client.fieldRead(guid, "flapjack.sammy");
+		resultString = client.fieldRead(account_guid, "flapjack.sammy");
 		System.out.println("client.fieldRead(GUID, \"flapjack.sammy\") -> "
 				+ resultString);
 		
 		// Read two fields at a time
-		resultString = client.fieldRead(guid,
+		resultString = client.fieldRead(account_guid,
 				new ArrayList<String>(Arrays.asList("name", "occupation")));
 		System.out.println("\n// multi-field read\n"
 				+ "client.fieldRead(GUID, [\"name\",\"occupation\"] -> "
 				+ resultString);
 		
 		// Read the entire object back in
-		result = client.read(guid);
+		result = client.read(account_guid);
 		System.out.println("\nclient.read(GUID) -> " + result.toString());
 		
-		
+		//client.select
 		// Delete created GUID
-		client.accountGuidRemove(guid);
+		client.accountGuidRemove(account_guid);
 		System.out.println("\n// GUID delete\n"
-				+ "client.accountGuidRemove(GUID) // GUID=" + guid);
+				+ "client.accountGuidRemove(GUID) // GUID=" + account_guid);
 		
+		insertGUIDs();
 		// Try read the entire record
 		try {
-			result = client.read(guid);
+			result = client.read(account_guid);
 		} catch (Exception e) {
 			System.out.println("\n// non-existent GUID error (expected)\n"
-					+ "client.read(GUID) // GUID= " + guid + "\n  "
+					+ "client.read(GUID) // GUID= " + account_guid + "\n  "
 					+ e.getMessage());
 		}
 		
+		
+		
 		client.close();
 		System.out.println("\nclient.close() // test successful");
+	}
+	
+	public static void insertGUIDs()
+	{
+		for( int i=0; i<NUM_GUIDs; i++ )
+		{
+			String guidAlias = GUID_PREFIX + i;
+			
+			try
+			{
+				double randLat = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
+				double randLong = LONGITUDE_MIN + randomGen.nextDouble()*(LONGITUDE_MAX - LONGITUDE_MIN);
+				JSONObject updateJSON = new JSONObject();
+				updateJSON.put(Latitude_Name, randLat);
+				updateJSON.put(Longitude_Name, randLong);
+				
+				//JSONArray array = new JSONArray(Arrays.asList(randLong, randLat));
+				System.out.println("Creating GUID alias "+guidAlias);
+				GuidEntry guidEntry = client.guidCreate(account_guid, guidAlias);
+				client.setLocation(guidEntry, randLong, randLat);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		JSONArray wholeRegion = new JSONArray();
+		wholeRegion.put(UPPER_LEFT);
+		wholeRegion.put(LOWER_RIGHT);
+		
+		
+		// a test select
+		try
+		{
+			JSONArray resultArray = client.selectWithin
+						(GNSCommandProtocol.LOCATION_FIELD_NAME , wholeRegion);
+			System.out.println("Total guids returned "+resultArray.length());
+			assert(resultArray.length() == NUM_GUIDs);	
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public static void perfromSelectOperations()
+	{
+//		for( int i=0; i<NUM_SELECT_OPER; i++ )
+//		{
+//			double randLat1 = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
+//			double randLong1 = LONGITUDE_MIN + randomGen.nextDouble()*(LONGITUDE_MAX - LONGITUDE_MIN);
+//			
+//			double randLat2 = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
+//			double randLong2 = LONGITUDE_MIN + randomGen.nextDouble()*(LONGITUDE_MAX - LONGITUDE_MIN);
+//			
+//			double minLat = (randLat1>randLat2)?randLat2:randLat1;
+//			double maxLat = (randLat1>randLat2)?randLat1:randLat2;
+//			
+//			JSONArray minPoint = new JSONArray();
+//			
+//			double minLong = (randLong1>randLong2)?randLong2:randLong1;
+//			double maxLong = (randLong1>randLong2)?randLong1:randLong2;
+//			
+//			client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME , value)
+//			
+//		}
 	}
 }
