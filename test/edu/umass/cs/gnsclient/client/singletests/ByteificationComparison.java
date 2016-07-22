@@ -187,7 +187,7 @@ public class ByteificationComparison {
 		byte[] bytes = testJson.toString().getBytes();
 		JSONObject testJson2 = new JSONObject(new String(bytes));
 		System.out.println("JSON1: \n" + testJson.toString());
-		System.out.println("JSON2: \n" + testJson.toString());
+		System.out.println("JSON2: \n" + testJson2.toString());
 		
 	}
 	
@@ -206,7 +206,7 @@ public class ByteificationComparison {
 		byte[] bytes = testJson.toString().getBytes();
 		JSONObject testJson2 = new JSONObject(new String(bytes));
 		System.out.println("JSON1: \n" + testJson.toString());
-		System.out.println("JSON2: \n" + testJson.toString());
+		System.out.println("JSON2: \n" + testJson2.toString());
 	}
 
 }
