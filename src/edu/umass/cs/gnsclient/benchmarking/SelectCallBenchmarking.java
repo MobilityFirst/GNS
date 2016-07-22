@@ -235,13 +235,15 @@ public class SelectCallBenchmarking
 		result = client.read(account_guid);
 		System.out.println("\nclient.read(GUID) -> " + result.toString());
 		
+		insertGUIDs();
+		
 		//client.select
 		// Delete created GUID
 		client.accountGuidRemove(account_guid);
 		System.out.println("\n// GUID delete\n"
 				+ "client.accountGuidRemove(GUID) // GUID=" + account_guid);
 		
-		insertGUIDs();
+		
 		// Try read the entire record
 		try {
 			result = client.read(account_guid);
