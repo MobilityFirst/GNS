@@ -1,3 +1,5 @@
+package edu.umass.cs.gnsclient.benchmarking;
+
 /* Copyright (c) 2016 University of Massachusetts
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
@@ -12,8 +14,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  * 
- * Initial developer(s): Westy */
-package edu.umass.cs.gnsclient.examples;
+ * Initial developer(s): aditya */
+
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -37,10 +39,10 @@ import org.json.JSONObject;
  * verify an account GUID's human-readable name has been disabled on the server
  * using the -disableEmailVerification option.
  * 
- * @author arun, westy
+ * @author aditya
  */
-public class ClientExample {
-
+public class SelectCallBenchmarking 
+{
 	// replace with your account alias
 	private static String ACCOUNT_ALIAS = "admin@gns.name";
 	private static GNSClientCommands client;
@@ -118,7 +120,7 @@ public class ClientExample {
 		System.out
 				.println("\n// field add\n"
 						+ "client.update(GUID, fieldKeyValue) // fieldKeyValue= {\"ip address\":\"127.0.0.1\"}");
-
+		
 		// and read the entire object back in
 		result = client.read(guid);
 		System.out.println("client.read(GUID) -> " + result.toString());
@@ -156,36 +158,36 @@ public class ClientExample {
 		System.out.println("\n// dotted field read\n"
 				+ "client.fieldRead(GUID, \"flapjack.sally.right\") -> "
 				+ resultString);
-
+		
 		// Update a field using dot notation
 		JSONArray newValue = new JSONArray(
 				Arrays.asList("One", "Ready", "Frap"));
 		client.fieldUpdate(guid, "flapjack.sammy", newValue);
 		System.out.println("\n// dotted field update\n"
 				+ "client.fieldUpdate(GUID, \"flapjack.sammy\", " + newValue);
-
+		
 		// Read the same field using dot notation
 		resultString = client.fieldRead(guid, "flapjack.sammy");
 		System.out.println("client.fieldRead(GUID, \"flapjack.sammy\") -> "
 				+ resultString);
-
+		
 		// Read two fields at a time
 		resultString = client.fieldRead(guid,
 				new ArrayList<String>(Arrays.asList("name", "occupation")));
 		System.out.println("\n// multi-field read\n"
 				+ "client.fieldRead(GUID, [\"name\",\"occupation\"] -> "
 				+ resultString);
-
+		
 		// Read the entire object back in
 		result = client.read(guid);
 		System.out.println("\nclient.read(GUID) -> " + result.toString());
-
+		
 		
 		// Delete created GUID
 		client.accountGuidRemove(guid);
 		System.out.println("\n// GUID delete\n"
 				+ "client.accountGuidRemove(GUID) // GUID=" + guid);
-
+		
 		// Try read the entire record
 		try {
 			result = client.read(guid);
@@ -194,7 +196,7 @@ public class ClientExample {
 					+ "client.read(GUID) // GUID= " + guid + "\n  "
 					+ e.getMessage());
 		}
-
+		
 		client.close();
 		System.out.println("\nclient.close() // test successful");
 	}
