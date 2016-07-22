@@ -104,7 +104,7 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
- * @author westy, arun
+ * @author arun, westy
  *
  * Packet format sent from a client and handled by a local name server.
  *
@@ -125,22 +125,32 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   /**
    * Identifier of the request on the client.
    */
-  private long clientRequestId;
+  private final long clientRequestId;
   /**
    * LNS identifier - filled in at the LNS.
+   * 
+   * arun: This will go away as we don't a separate LNSRequestId in this class. We
+   * can either rely on ENABLE_ID_TRANSFORM in the async client or the LNS could 
+   * simply maintain a re-mapping table with a new CommandPacket in case of 
+   * conflicting IDs.
    */
+  @Deprecated
   private long LNSRequestId;
   /**
-   * The IP address of the sender as a string
+   * The IP address of the sender as a string.
+   * 
+   * arun: This does not have to be maintained in this class.
    */
+  @Deprecated
   private final String senderAddress;
   /**
-   * The TCP port of the sender as an int
+   * The TCP port of the sender as an int.
+   * 
+   * arun: This does not have to be maintained in this class.
    */
+  @Deprecated
   private final int senderPort;
 
-  // arun: Need this for correct receiver messaging 
-  private final InetSocketAddress myListeningAddress;
   /**
    * The JSON form of the command. Always includes a COMMANDNAME field.
    * Almost always has a GUID field or NAME (for HRN records) field.
@@ -164,15 +174,19 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * @param command
    * @param senderPort
    */
-  public CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
+  private CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.clientRequestId = requestId;
+    /* arun: can only come here via public constructor with no sender address.
+     * In preparation of removing sender address altogether from the stringified
+     * form.
+     */
+    assert(senderAddress==null && senderPort==-1);
     this.senderAddress = senderAddress;
     this.senderPort = senderPort;
     this.command = command;
 
     this.LNSRequestId = -1; // this will be filled in at the LNS
-    this.myListeningAddress = null;
   }
 
   /**
@@ -204,12 +218,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderPort = json.has(SENDERPORT) ? json.getInt(SENDERPORT) : -1;
     this.command = json.getJSONObject(COMMAND);
 
-    this.myListeningAddress = null;//MessageNIOTransport.getReceiverAddress(json);
-
-  }
-
-  public InetSocketAddress getMyListeningAddress() {
-    return this.myListeningAddress;
   }
 
   /**
@@ -227,14 +235,16 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
       json.put(LNSREQUESTID, this.LNSRequestId);
     }
     json.put(COMMAND, this.command);
+    /* arun: serializing sender address should never be needed. These 
+     * are needed if at all at local name servers to remember the 
+     * original sender. Even that could be done by remembering the
+     * sender address outside of this class.
+     */
     if (senderAddress != null) {
-      json.put(SENDERADDRESS, this.senderAddress);
+      //json.put(SENDERADDRESS, this.senderAddress);
     }
     if (senderPort != -1) {
-      json.put(SENDERPORT, this.senderPort);
-    }
-    if (this.myListeningAddress != null) {
-
+      //json.put(SENDERPORT, this.senderPort);
     }
     return json;
   }
@@ -266,11 +276,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   @Override
   public ClientRequest getResponse() {
     return this.response;
-  }
-
-  // only for testing
-  public void setClientRequestId(long requestId) {
-    this.clientRequestId = requestId;
   }
 
   /**
@@ -354,7 +359,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return BOGUS_SERVICE_NAME;
   }
 
-  public boolean getCommandCoordinateReads() {
+  /**
+ * @return True if this command needs to be coordinated at servers or executed locally.
+ */
+public boolean getCommandCoordinateReads() {
     try {
       // arun: optBoolean is inefficient (~6us)
       return command != null
@@ -365,7 +373,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return false;
   }
 
-  public int getCommandInteger() {
+  /**
+ * @return CommandType as Integer.
+ */
+public int getCommandInteger() {
     try {
       if (command != null) {
         if (command.has(GNSCommandProtocol.COMMAND_INT)) {
@@ -377,7 +388,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return -1;
   }
 
-  public CommandType getCommandType() {
+  /**
+ * @return CommandType
+ */
+public CommandType getCommandType() {
     try {
       if (command != null) {
         if (command.has(GNSCommandProtocol.COMMAND_INT)) {
@@ -429,14 +443,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     needsCoordinationExplicitlySet = true;
     this.needsCoordination = needsCoordination;
   }
-
-  // arun: bad hack because of poor legacy code 
-  public CommandPacket removeSenderInfo() throws JSONException {
-    JSONObject json = this.toJSONObject();
-    json.remove(MessageNIOTransport.SNDR_IP_FIELD);
-    json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
-    return new CommandPacket(json);
-  }
   
 	/**
 	 * Used to set the result object in a form consumable by a querying
@@ -447,7 +453,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
 	 * @return this
 	 */
 	public CommandPacket setResult(String responseStr) {
-		// Note: this method has nothing to do with ClientRequest.setResponse
+		// Note: this method has nothing to do with setResponse(ClientRequest)
 		synchronized (this) {
 			if (this.result == null)
 				try {
@@ -462,6 +468,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
 		}
 		return this;
 	}
+	/**
+	 * @return True if this command has the result of its execution.
+	 */
 	public boolean hasResult() {
 		return this.result != null;
 	}

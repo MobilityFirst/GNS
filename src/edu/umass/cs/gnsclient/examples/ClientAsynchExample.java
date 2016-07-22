@@ -104,7 +104,8 @@ public class ClientAsynchExample {
               READER, accountGuidEntry.getGuid());
     }
     // Create the command packet with a bogus id
-    CommandPacket commandPacket = new CommandPacket(-1, command);
+    // arun: can not change request ID
+    CommandPacket commandPacket = new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command);
     // Keep track of what we've sent for the other thread to look at.
     Set<Long> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     // Create and run another thread to pick up the responses
@@ -113,11 +114,11 @@ public class ClientAsynchExample {
     };
     new Thread(companion).start();
     while (true) {
-      long id = client.generateNextRequestID();
+      //long id = client.generateNextRequestID();
       // Important to set the new request id each time
-      commandPacket.setClientRequestId(id);
+      //commandPacket.setClientRequestId(id);
       // Record what we're sending
-      pendingIds.add(id);
+      pendingIds.add(commandPacket.getRequestID());
       // Actually send out the packet
       client.sendCommandPacketAsynch(commandPacket);
       ThreadUtils.sleep(100); // if you generate them too fast you'll clog things up 

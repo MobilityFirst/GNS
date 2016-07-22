@@ -442,7 +442,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               header.rcvr, json);
       request = (Request) Packet.createInstance(json, unstringer);
       if (Util.oneIn(100)) {
-        DelayProfiler.updateDelayNano("getRequest." + request.getClass().getSimpleName(), t);
+        DelayProfiler.updateDelayNano("getRequest." + request.getRequestType(), t);
       }
     } catch (JSONException | UnsupportedEncodingException e) {
       e.printStackTrace();

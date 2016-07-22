@@ -176,8 +176,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		}
 	}
 	
-	/* arun: All occurrences of checkResponse( createAndSignCommand have been
-	 * replaced by this getResponse method. */
+	/** arun: All occurrences of checkResponse( createAndSignCommand have been
+	 * replaced by this getResponse method. 
+	 * 
+	 * The response here is converted to a String for legacy reasons. Otherwise,
+	 * all responses should be of type {@link CommandValueReturnPacket}.
+	 */
 	private String getResponse(CommandType commandType, GuidEntry querier,
 			Object... keysAndValues) throws ClientException, IOException {
 		CommandPacket commandPacket = null;
@@ -204,8 +208,10 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * only for instrumentation to decode return value types
 	 */
 	public static final Map<CommandType,Set<String>> returnValueExample = new TreeMap<CommandType,Set<String>>();
-	private static final String record(CommandType type, String response) {
-		if(!RECORD_ENABLED) return response;
+	private static final String record(CommandType type, Object responseObj) {
+		if(!RECORD_ENABLED || responseObj==null) return (String)responseObj;
+		String response = responseObj instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket)responseObj).getReturnValue() 
+				: responseObj.toString();
 		if(reverseEngineer.get(type)==null) reverseEngineer.put(type, new HashSet<String>());
 		if(returnValueExample.get(type)==null) returnValueExample.put(type, new HashSet<String>());
 		if(response!=null) reverseEngineer.get(type).add(JSONPacket.couldBeJSONObject(response) ? "JSONObject"
@@ -214,7 +220,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		if(response!=null) returnValueExample.get(type).add(response);
 		return response;
 	}
-
 	private String getResponse(CommandType commandType, Object... keysAndValues)
 			throws ClientException, IOException {
 		return this.getResponse(commandType, null, keysAndValues);

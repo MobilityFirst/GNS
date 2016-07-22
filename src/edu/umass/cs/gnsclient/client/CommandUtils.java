@@ -49,6 +49,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -104,6 +105,16 @@ public class CommandUtils {
 				key = (String) keysAndValues[i];
 				value = keysAndValues[i + 1];
 				result.put(key, value);
+				try {
+				assert(key==null || key instanceof String 
+						|| value==null
+						|| value instanceof String
+						|| value instanceof JSONArray)
+						: key.getClass().getSimpleName() + ":" + value.getClass().getSimpleName();
+				} catch(Throwable e) {
+					e.printStackTrace();
+					throw e;
+				}
 			}
 
 			// arun: made this static for now
@@ -300,6 +311,15 @@ public class CommandUtils {
 	}
 
 	/**
+	 * @param cvrp
+	 * @return Response
+	 * @throws ClientException
+	 */
+	public static CommandValueReturnPacket oldCheckResponse(CommandValueReturnPacket cvrp) throws ClientException {
+		oldCheckResponse(cvrp.getReturnValue());
+		return cvrp;
+	}
+	/**
 	 * Checks the response from a command request for proper syntax as well as
 	 * converting error responses into the appropriate thrown GNS exceptions.
 	 *
@@ -327,7 +347,7 @@ public class CommandUtils {
 	 * @return Response as string.
 	 * @throws ClientException
 	 */
-	public static String checkResponse(String response) throws ClientException {
+	public static String oldCheckResponse(String response) throws ClientException {
 		// System.out.println("response:" + response);
 		if (response.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
 			String[] results = response.split(" ");
@@ -400,7 +420,7 @@ public class CommandUtils {
 	 */
 	public static String checkResponse(CommandValueReturnPacket response)
 			throws ClientException {
-		return checkResponse(response, null);
+		return checkResponse(response, null).getReturnValue();
 	}
 
 	private static final boolean USE_OLD_CHECK_RESPONSE = false;
@@ -415,11 +435,10 @@ public class CommandUtils {
 	 * @return Response as a string.
 	 * @throws ClientException
 	 */
-	public static String checkResponse(
+	public static CommandValueReturnPacket checkResponse(
 			CommandValueReturnPacket responsePacket, CommandPacket command) throws ClientException {
-		if (USE_OLD_CHECK_RESPONSE) {
-			return checkResponse(responsePacket.getReturnValue());
-		}
+		if (USE_OLD_CHECK_RESPONSE) 
+			return oldCheckResponse(responsePacket);
 
 		GNSResponseCode code = responsePacket.getErrorCode();
 		String returnValue = responsePacket.getReturnValue();
@@ -430,7 +449,7 @@ public class CommandUtils {
 		// wants to return a null value.
 		if (code.isOKResult()) {
 			return (returnValue.startsWith(GNSCommandProtocol.NULL_RESPONSE)) ? null
-					: returnValue;
+					: responsePacket;//returnValue;
 		}
 		// else error
 		String errorSummary = code
