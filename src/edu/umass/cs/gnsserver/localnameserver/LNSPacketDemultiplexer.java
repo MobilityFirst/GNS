@@ -29,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
@@ -163,7 +164,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(),
             packet);
     handler.addRequestInfo(packet.getRequestID(), requestInfo);
-    packet = packet.removeSenderInfo();
+    packet = removeSenderInfo(json);
 
     if (requestInfo.getCommandType().isCreateDelete()
             || requestInfo.getCommandType().isSelect()) {
@@ -173,6 +174,12 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     } else {
       this.asyncLNSClient.sendRequest(packet, callback, redirector);
     }
+  }
+  
+  private static CommandPacket removeSenderInfo(JSONObject json) throws JSONException {
+	  json.remove(MessageNIOTransport.SNDR_IP_FIELD);
+	  json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
+	  return new CommandPacket(json);
   }
 
   /**

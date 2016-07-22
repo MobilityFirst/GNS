@@ -80,19 +80,29 @@ import edu.umass.cs.utils.Util;
 public class GNSCommand {
 
 	/**
-	 * Constructs the command.
+	 * Constructs a command of type {@code type} issued by the {@code querier}
+	 * using the variable length array {@code keysAndValues}. If {@code querier}
+	 * is non-null, the returned command will be signed by the querier's private
+	 * key. If {@code querier} is null, the command will succeed only if the
+	 * operation is open to all, which is normally true only for fields that are
+	 * readable by anyone.
 	 * 
 	 * @param type
 	 * @param querier
+	 *            The GUID issuing this query.
 	 * @param keysAndValues
-	 * @return Constructed CommandPacket
+	 *            A variable length array of even size containing a sequence of
+	 *            key and value pairs.
+	 * @return A {@link CommandPacket} constructed using the supplied arguments.
 	 * @throws ClientException
 	 */
 	public static CommandPacket getCommand(CommandType type, GuidEntry querier,
 			Object... keysAndValues) throws ClientException {
 		CommandPacket packet = new CommandPacket(
-		/* arun: we just generate a random value here because it is not possible
-		 * to guarantee non-conflicting IDs here. */
+		/* arun: we just generate a random value here because it is not easy (or
+		 * worth trying) to guarantee non-conflicting IDs here. Conflicts will
+		 * either result in an IOException further down or the query will be
+		 * transformed to carry a different ID if */
 		randomLong(), CommandUtils.createAndSignCommand(type, querier,
 				keysAndValues));
 		return packet;
@@ -118,18 +128,20 @@ public class GNSCommand {
 	}
 
 	/**
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being updated.
 	 * @param json
 	 * @param writer
+	 *            The GUID issuing the update.
 	 * @return Refer {@link #update(String, JSONObject, GuidEntry)}
 	 * @throws IOException
 	 * @throws ClientException
 	 */
-	public static final CommandPacket update(String targetGuid,
+	public static final CommandPacket update(String targetGUID,
 			JSONObject json, GuidEntry writer) throws IOException,
 			ClientException {
 		return getCommand(CommandType.ReplaceUserJSON, writer, GUID,
-				targetGuid, USER_JSON, json.toString(), WRITER,
+				targetGUID, USER_JSON, json.toString(), WRITER,
 				writer.getGuid());
 	}
 

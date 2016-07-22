@@ -29,7 +29,7 @@ import java.util.Map;
  * Each one of these has a corresponding method in an array defined in
  * edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDefs
  */
-// We could probably despense with the CommandDefs array (see above) and just put the classes in the enum
+// We could probably dispense with the CommandDefs array (see above) and just put the classes in the enum
 // once we upgrade older clients to not use the old command strings.
 public enum CommandType {
   Append(110, Type.UPDATE, Boolean.class, true, false),

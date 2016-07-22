@@ -49,7 +49,7 @@ public class GNSConfig {
 		/**
 		 * Uses DiskMapRecords if enabled.
 		 */
-		ENABLE_DISKMAP(false),
+		ENABLE_DISKMAP(true),
 		/**
 		 * Completely turns off mongo or other persistent database provided
 		 * DiskMap is also enabled.

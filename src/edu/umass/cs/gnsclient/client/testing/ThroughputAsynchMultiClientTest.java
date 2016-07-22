@@ -496,7 +496,8 @@ public class ThroughputAsynchMultiClientTest {
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
-    return new CommandPacket(-1, command);
+    // arun: can not reset requestID
+    return new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command);
   }
 
   private static CommandPacket createUpdateCommandPacket(AbstractGNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
@@ -529,7 +530,8 @@ public class ThroughputAsynchMultiClientTest {
           } while (chosen.contains(index));
           chosen.add(index);
           // important to set the request id to something unique for the client
-          commmandPackets[index][clientNumber].setClientRequestId(clients[clientNumber].generateNextRequestID());
+          // arun: nope, requestID is final, can not change
+          //commmandPackets[index][clientNumber].setClientRequestId(clients[clientNumber].generateNextRequestID());
           clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index][clientNumber]);
           // clear this out if we have used all the guids
           if (chosen.size() == numberOfGuids) {

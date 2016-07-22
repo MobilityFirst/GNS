@@ -41,7 +41,9 @@ public class ServerIntegrationTestSequential {
 			"test_180_DBUpserts",
 			"test_212_GroupRemoveGuid", 				// Double remove would cause an error.
 			"test_223_GroupAndACLTestRemoveGuid",		// Same as above
-			"test_231_AliasRemove",						// Same as above
+			"test_230_AliasAdd",						//Double add causes duplicate exception
+			"test_231_AliasRemove",						// Double remove would cause an error.
+			"test_320_GeoSpatialSelect",                //Double add could cause duplicate exception if random strings collide.
 			"test_410_JSONUpdate",
 			"test_420_NewRead",
 			"test_430_NewUpdate",
