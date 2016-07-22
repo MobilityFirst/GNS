@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -38,6 +37,13 @@ import javax.script.ScriptException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsclient.client.CommandUtils;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSCommand;
+import edu.umass.cs.gnsclient.console.commands.Read;
+import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
@@ -49,6 +55,7 @@ import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
@@ -86,15 +93,22 @@ public class ActiveCodeHandler {
 
 	/**
 	 * @param gnsApp
-	 * @return an app
+	 * @return an app 
+	 * @throws IOException 
 	 */
-	public static ActiveDBInterface getActiveDB(GNSApplicationInterface<?> gnsApp) {
+	public static ActiveDBInterface getActiveDB(GNSApplicationInterface<?> gnsApp) throws IOException {
 		return new ActiveDBInterface() {
-
+				
+			GNSClientCommands client = new GNSClientCommands();
+			
 			private BasicRecordMap getDB() {
 				return gnsApp.getDB();
 			}
-
+			
+			@Override
+			public String toString(){
+				return this.getClass().getSimpleName();
+			}
 			
 			private ValuesMap readSomeGuidFromLocal(String guid, String field){
 				ValuesMap value = null;
@@ -107,20 +121,45 @@ public class ActiveCodeHandler {
 				return value;
 			}
 			
+			/**
+			 * The remote read doesn't mean the guid must have to be on a remote GNS, it just uses
+			 * a GNSClient to send a query a GNS which holds the record of the guid.
+			 * 
+			 * @param querierGuid
+			 * @param queriedGuid
+			 * @param field
+			 * @return
+			 */
+			private ValuesMap readSomeFieldFromRemote(String querierGuid, String queriedGuid, String field) {
+				ValuesMap value = null;
+				/**
+				 *  Do a common read here, follows the flow:
+				 *  <p> server side: GNSCommand.fieldRead(String targetGuid, String field, GuidEntry guid);
+				 *  <p> client side: GNSClientCommands.fieldRead -> CommandUtils.specialCaseSingleField -> 
+				 *  GNSClientCommands.getResponse -> CommandUtils.checkResponse -> 
+				 */
+				try{
+					String response = CommandUtils.checkResponse(client.sendCommandAndWait( CommandUtils.createCommand(CommandType.Read, 
+									GNSCommandProtocol.GUID, queriedGuid, 
+									GNSCommandProtocol.FIELD, field, 
+									GNSCommandProtocol.READER, GNSCommandProtocol.MAGIC_STRING)));
+					System.out.println(this+" receives response from remote GNS "+response);
+					value = new ValuesMap(new JSONObject(response));
+				} catch (Exception e){
+					e.printStackTrace();
+				}
+				
+				return value;
+			}
+			
+			
 			@Override
 			public ValuesMap read(String querierGuid, String queriedGuid, String field) {
 				ValuesMap value = null;
 				if(querierGuid.equals(queriedGuid)){
 					value = readSomeGuidFromLocal(queriedGuid, field);
-				}else{
-					/**
-					 * TODO:
-					 *  Do a common read here
-					 *  <p>1. check whether its a local guid
-					 *  <p>2. check ACL
-					 *  <p>3. read
-					 */
-					value = readSomeGuidFromLocal(queriedGuid, field);
+				}else{				
+					value = readSomeFieldFromRemote(querierGuid, queriedGuid, field);
 				}
 				return value;
 			}
@@ -147,11 +186,9 @@ public class ActiveCodeHandler {
 					/**
 					 * TODO: 
 					 *  Do a common write here
-					 *  <p>1. check whether its a local guid
-					 *  <p>2. check ACL
-					 *  <p>3. write
+					 *  <p> GNSCommand.fieldWrite
 					 */
-					wSuccess = writeSomeGuidToLocal(queriedGuid, field, valuesMap);
+					
 				}
 				return wSuccess;
 			}
