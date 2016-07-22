@@ -62,5 +62,20 @@
 	<classpathentry kind="lib" path="lib/gigapaxos-1.0.05.jar"/>
 	<classpathentry kind="lib" path="lib/gigapaxos-nio-src.jar"/>
 	<classpathentry kind="lib" path="lib/nio-1.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-bytes-1.7.3-SNAPSHOT-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-bytes-1.7.3-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-bytes-1.7.3-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-core-1.7.3-SNAPSHOT-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-core-1.7.3-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-core-1.7.3-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-queue-4.5.3-SNAPSHOT-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-queue-4.5.3-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-queue-4.5.3-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-threads-1.7.2-SNAPSHOT-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-threads-1.7.2-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-threads-1.7.2-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-wire-1.7.5-SNAPSHOT-javadoc.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-wire-1.7.5-SNAPSHOT-sources.jar"/>
+	<classpathentry kind="lib" path="lib/chronicle-wire-1.7.5-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

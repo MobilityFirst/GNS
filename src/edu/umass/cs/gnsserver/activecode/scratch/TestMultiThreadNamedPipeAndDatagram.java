@@ -32,8 +32,8 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
 public class TestMultiThreadNamedPipeAndDatagram {
 	
 	private static int numServers = 1;
-	final static int length = 1000;
-	final static int totalReqs = 100000;
+	final static int length = 40;
+	final static int totalReqs = 1000000;
 	
 	static class SequentialDatagramClient {
 		
@@ -89,7 +89,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 			
 			try {
 				// set threshold for traffic control
-				thres = (int) (clientSocket.getSendBufferSize()/length*0.8);
+				thres = (int) (clientSocket.getSendBufferSize()/length*0.9);
 			} catch (SocketException e) {
 				e.printStackTrace();
 				// otherwise use default number
@@ -214,11 +214,11 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	 * @throws UnknownHostException 
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test_01_DatagramThroughput() throws UnknownHostException{
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(numServers*2, numServers*2, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		executor.prestartAllCoreThreads();
-		int port = 60001;
+		int port = 60004;
 		int reqsPerClient = totalReqs/numServers;
 		
 		SingleDatagramServer[] servers = new SingleDatagramServer[numServers];
@@ -272,7 +272,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	 * @throws SocketException 
 	 * 
 	 */
-	@Test
+	//@Test
 	public void test_02_SequentialDatagramThroughput() throws UnknownHostException, SocketException{
 		int port = 50001;
 		SingleDatagramServer server = new SingleDatagramServer(port);
@@ -439,7 +439,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
-		numServers = 1; //Integer.parseInt(args[0]);
+		numServers = 4;//Integer.parseInt(args[0]);
 		
 		Result result = JUnitCore.runClasses(TestMultiThreadNamedPipeAndDatagram.class);
 		for (Failure failure : result.getFailures()) {

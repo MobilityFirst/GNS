@@ -206,7 +206,7 @@ public class CommandUtils {
 	}
 
 	private static final MessageDigest[] mds = new MessageDigest[Runtime
-			.getRuntime().availableProcessors()];
+			.getRuntime().availableProcessors()*2]; // multiply this number with some other number
 
 	static {
 		for (int i = 0; i < mds.length; i++) {

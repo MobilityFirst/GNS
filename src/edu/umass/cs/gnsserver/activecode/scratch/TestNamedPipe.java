@@ -105,18 +105,19 @@ public class TestNamedPipe implements Runnable{
 		
 	}
 	
-	protected boolean write(byte[] buffer, int offset, int length){
+	protected void write(byte[] buffer, int offset, int length){
 		incrSent(length);
 		//System.out.println((isServer?"Server":"Client")+" writes "+(new String(buffer))+" "+length+"bytes");
-		boolean wSuccess = false;		
-		try {
-			writer.write(buffer, offset, length);
-			writer.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return wSuccess;
+		synchronized(writer){
+			try {
+				writer.write(buffer, offset, length);
+				writer.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}		
 		}
-		return wSuccess;
+		
 	}
 	
 	protected void close(){
@@ -152,7 +153,7 @@ public class TestNamedPipe implements Runnable{
 	
 	
 	public static void main(String[] args) throws IOException {
-		int size = 512;
+		int size = 1024;
 		if(args.length >= 1){
 			size = Integer.parseInt(args[0]);
 		}
