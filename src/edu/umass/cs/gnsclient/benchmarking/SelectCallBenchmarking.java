@@ -52,7 +52,7 @@ public class SelectCallBenchmarking
 	public static final double LATITUDE_MAX 					= 33.635;
 	public static final double LATITUDE_MIN 					= 31.854;
 	
-	public static final int NUM_GUIDs							= 10000;
+	public static final int NUM_GUIDs							= 1000;
 	
 	public static final int NUM_SELECT_OPER						= 1000;
 	
@@ -118,7 +118,7 @@ public class SelectCallBenchmarking
 		client = new GNSClientCommands();
 		System.out.println("[Client connected to GNS]\n");
 		
-		try 
+		try
 		{
 			/**
 			 * Create an account GUID if one doesn't already exists. The true
