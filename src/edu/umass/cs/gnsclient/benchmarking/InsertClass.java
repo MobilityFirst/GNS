@@ -1,6 +1,5 @@
 package edu.umass.cs.gnsclient.benchmarking;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
 
 
 public class InsertClass extends AbstractRequestSendingClass
@@ -133,7 +132,7 @@ public class InsertClass extends AbstractRequestSendingClass
 //		}
 //	}
 	
-	public static void insertGUID(int guidNum)
+	public void insertGUID(int guidNum)
 	{
 		String guidAlias = SelectCallBenchmarking.GUID_PREFIX + guidNum;
 		
@@ -149,9 +148,12 @@ public class InsertClass extends AbstractRequestSendingClass
 			
 			//JSONArray array = new JSONArray(Arrays.asList(randLong, randLat));
 			System.out.println("Creating GUID alias "+guidAlias);
-			GuidEntry guidEntry = SelectCallBenchmarking.client.guidCreate
-						(SelectCallBenchmarking.account_guid, guidAlias);
-			SelectCallBenchmarking.client.setLocation(guidEntry, randLong, randLat);
+			//GuidEntry guidEntry = SelectCallBenchmarking.client.guidCreate
+			//			(SelectCallBenchmarking.account_guid, guidAlias);
+			//SelectCallBenchmarking.client.setLocation(guidEntry, randLong, randLat);
+			numSent++;
+			InsertTask insTask = new InsertTask(guidAlias, randLat, randLong, this);
+			SelectCallBenchmarking.taskES.execute(insTask);
 		}
 		catch (Exception e)
 		{

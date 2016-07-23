@@ -1,12 +1,7 @@
 package edu.umass.cs.gnsclient.benchmarking;
 
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Iterator;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
 
