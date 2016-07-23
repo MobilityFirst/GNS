@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -355,6 +354,9 @@ public class SelectCallBenchmarking
 	
 	public static void perfromSelectOperations() throws Exception
 	{
+		double totalTime = 0.0;
+		double totalSize = 0.0;
+		
 		for( int i=0; i<NUM_SELECT_OPER; i++ )
 		{
 			double randLat1 = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
@@ -385,7 +387,10 @@ public class SelectCallBenchmarking
 			JSONArray resultArr = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME , region);
 			long end = System.currentTimeMillis();
 			
+			totalTime = totalTime + (end-start);
+			totalSize = totalSize + resultArr.length();
 			System.out.println("perfromSelectOperations "+i+" size "+resultArr.length()+" time "+(end-start));
 		}
+		System.out.println("Average time "+(totalTime/NUM_SELECT_OPER)+" average size "+(totalSize/NUM_SELECT_OPER));
 	}
 }
