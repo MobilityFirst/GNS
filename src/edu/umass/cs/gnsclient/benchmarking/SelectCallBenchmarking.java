@@ -59,7 +59,9 @@ public class SelectCallBenchmarking
 	// 1% loss tolerance
 	public static final double SEARCH_LOSS_TOLERANCE			= 0.0;
 	
-	public static final String ACCOUNT_ALIAS 					= "admin@gns.name";
+	public static final String ACCOUNT_ALIAS_PREFIX 			= "admin";
+	public static final String ACCOUNT_ALIAS_SUFFIX 			= "@gns.name";
+	//public static final String ACCOUNT_ALIAS 					= "admin@gns.name";
 	
 	
 	// dallas region in texas area, for which we have weather alerts.
@@ -153,8 +155,9 @@ public class SelectCallBenchmarking
 					.println("// account GUID creation\n"
 							+ "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
 							+ " \"password\", true)");
-			account_guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
+			account_guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS_PREFIX+ACCOUNT_ALIAS_SUFFIX,
 					"password", true);
+			
 		} catch (Exception | Error e) 
 		{
 			System.out.println("Exception during accountGuid creation: " + e);

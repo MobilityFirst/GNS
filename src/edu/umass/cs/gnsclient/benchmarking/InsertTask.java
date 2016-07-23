@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 
 import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
 public class InsertTask implements Runnable
 {
@@ -42,8 +43,13 @@ public class InsertTask implements Runnable
 	{
 		try 
 		{
-			GuidEntry guidEntry = SelectCallBenchmarking.client.guidCreate
-					(SelectCallBenchmarking.account_guid, guidAlias);
+//			GuidEntry guidEntry = SelectCallBenchmarking.client.guidCreate
+//					(SelectCallBenchmarking.account_guid, guidAlias);
+			
+			String accountAlias = SelectCallBenchmarking.ACCOUNT_ALIAS_PREFIX+guidAlias
+					+SelectCallBenchmarking.ACCOUNT_ALIAS_SUFFIX;
+			GuidEntry guidEntry = GuidUtils.lookupOrCreateAccountGuid(SelectCallBenchmarking.client, 
+					accountAlias, "password", true);
 			
 			SelectCallBenchmarking.client.setLocation(guidEntry, longitude, latitude);
 		} 
