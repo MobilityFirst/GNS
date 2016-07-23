@@ -78,7 +78,7 @@ public class SelectCallBenchmarking
 	public static final String Latitude_Name					= "latitude";
 	public static final String Longitude_Name					= "longitude";
 	
-	public static final int THREAD_POOL_SIZE					= 100;
+	public static final int THREAD_POOL_SIZE					= 1;
 	public static Random randomGen								= new Random();
 	
 	// replace with your account alias
@@ -221,11 +221,11 @@ public class SelectCallBenchmarking
 		System.out.println("\n// field add with JSON value\n"
 				+ "client.update(GUID, fieldKeyValue) // fieldKeyValue="
 				+ newJson);
-
+		
 		// Read a single field at the top level
 		String resultString = client.fieldRead(account_guid, "flapjack");
 		System.out.println("client.fieldRead(\"flapjack\") -> " + resultString);
-
+		
 		// Read a single field using dot notation
 		resultString = client.fieldRead(account_guid, "flapjack.sally.right");
 		System.out.println("\n// dotted field read\n"
