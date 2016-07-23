@@ -33,7 +33,7 @@ public class InsertClass extends AbstractRequestSendingClass
 		// sleep for 100ms
 		double numberShouldBeSentPerSleep = reqspms*100.0;
 		
-		double currUserGuidNum   = 1000000;
+		//double currUserGuidNum   = 1000000;
 		int numGuidsInserted = 0;
 		while( ( numGuidsInserted < SelectCallBenchmarking.NUM_GUIDs ) )
 //		while( ( (System.currentTimeMillis() - expStartTime)
@@ -42,8 +42,7 @@ public class InsertClass extends AbstractRequestSendingClass
 			for(int i=0; i<numberShouldBeSentPerSleep; i++ )
 			{
 				//doUpdate( (int)currUserGuidNum );
-				insertGUID((int)currUserGuidNum);
-				currUserGuidNum++;
+				insertGUID((int)numGuidsInserted);
 				numGuidsInserted++;
 				if(numGuidsInserted >= SelectCallBenchmarking.NUM_GUIDs)
 					break;
@@ -63,9 +62,8 @@ public class InsertClass extends AbstractRequestSendingClass
 			for(int i=0;i<needsToBeSentBeforeSleep;i++)
 			{
 				//doUpdate((int)currUserGuidNum);
-				insertGUID((int)currUserGuidNum);
+				insertGUID((int)numGuidsInserted);
 				
-				currUserGuidNum++;
 				numGuidsInserted++;
 				if(numGuidsInserted >= SelectCallBenchmarking.NUM_GUIDs)
 					break;
