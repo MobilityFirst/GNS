@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -267,6 +268,8 @@ public class SelectCallBenchmarking
 		requestTypeObj.waitForThreadFinish();
 		
 		issueWholeRegionSelectQuery();
+		
+		perfromSelectOperations();
 		//client.select
 		// Delete created GUID
 		client.accountGuidRemove(account_guid);
@@ -299,7 +302,7 @@ public class SelectCallBenchmarking
 			JSONArray resultArray = client.selectWithin
 						(GNSCommandProtocol.LOCATION_FIELD_NAME , wholeRegion);
 			System.out.println("Total guids returned "+resultArray.length());
-			assert( resultArray.length() == NUM_GUIDs );
+			assert( resultArray.length() > 0 );
 		}
 		catch (Exception e)
 		{
@@ -350,26 +353,39 @@ public class SelectCallBenchmarking
 		}
 	}
 	
-	public static void perfromSelectOperations()
+	public static void perfromSelectOperations() throws Exception
 	{
-//		for( int i=0; i<NUM_SELECT_OPER; i++ )
-//		{
-//			double randLat1 = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
-//			double randLong1 = LONGITUDE_MIN + randomGen.nextDouble()*(LONGITUDE_MAX - LONGITUDE_MIN);
-//			
-//			double randLat2 = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
-//			double randLong2 = LONGITUDE_MIN + randomGen.nextDouble()*(LONGITUDE_MAX - LONGITUDE_MIN);
-//			
-//			double minLat = (randLat1>randLat2)?randLat2:randLat1;
-//			double maxLat = (randLat1>randLat2)?randLat1:randLat2;
-//			
-//			JSONArray minPoint = new JSONArray();
-//			
-//			double minLong = (randLong1>randLong2)?randLong2:randLong1;
-//			double maxLong = (randLong1>randLong2)?randLong1:randLong2;
-//			
-//			client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME , value)
-//			
-//		}
+		for( int i=0; i<NUM_SELECT_OPER; i++ )
+		{
+			double randLat1 = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
+			double randLong1 = LONGITUDE_MIN + randomGen.nextDouble()*(LONGITUDE_MAX - LONGITUDE_MIN);
+			
+			double randLat2 = LATITUDE_MIN + randomGen.nextDouble()*(LATITUDE_MAX - LATITUDE_MIN);
+			double randLong2 = LONGITUDE_MIN + randomGen.nextDouble()*(LONGITUDE_MAX - LONGITUDE_MIN);
+			
+			double minLat = (randLat1>randLat2)?randLat2:randLat1;
+			double maxLat = (randLat1>randLat2)?randLat1:randLat2;
+			
+			double minLong = (randLong1>randLong2)?randLong2:randLong1;
+			double maxLong = (randLong1>randLong2)?randLong1:randLong2;
+			
+			JSONArray upperLeft = new JSONArray();
+			upperLeft.put(minLong);
+			upperLeft.put(maxLat);
+			
+			JSONArray lowerRight = new JSONArray();
+			lowerRight.put(maxLong);
+			lowerRight.put(minLat);
+			
+			JSONArray region = new JSONArray();
+			region.put(upperLeft);
+			region.put(lowerRight);
+			
+			long start = System.currentTimeMillis();
+			JSONArray resultArr = client.selectWithin(GNSCommandProtocol.LOCATION_FIELD_NAME , region);
+			long end = System.currentTimeMillis();
+			
+			System.out.println("perfromSelectOperations "+i+" size "+resultArr.length()+" time "+(end-start));
+		}
 	}
 }
