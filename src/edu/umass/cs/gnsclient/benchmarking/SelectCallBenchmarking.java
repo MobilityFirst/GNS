@@ -80,7 +80,7 @@ public class SelectCallBenchmarking
 	public static final String Latitude_Name					= "latitude";
 	public static final String Longitude_Name					= "longitude";
 	
-	public static final int THREAD_POOL_SIZE					= 5;
+	public static final int THREAD_POOL_SIZE					= 1;
 	public static Random randomGen								= new Random();
 	
 	// replace with your account alias
