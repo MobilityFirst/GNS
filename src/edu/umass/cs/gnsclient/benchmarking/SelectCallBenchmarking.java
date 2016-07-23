@@ -21,6 +21,7 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -29,6 +30,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -45,6 +48,20 @@ import org.json.JSONObject;
  */
 public class SelectCallBenchmarking
 {
+	// after sending all the requests it waits for 100 seconds 
+	public static final int WAIT_TIME							= 100000;
+	// 1% loss tolerance
+	public static final double INSERT_LOSS_TOLERANCE			= 0.0;
+	
+	// 1% loss tolerance
+	public static final double UPD_LOSS_TOLERANCE				= 0.0;
+	
+	// 1% loss tolerance
+	public static final double SEARCH_LOSS_TOLERANCE			= 0.0;
+	
+	public static final String ACCOUNT_ALIAS 					= "admin@gns.name";
+	
+	
 	// dallas region in texas area, for which we have weather alerts.
 	public static final double LONGITUDE_MIN 					= -98.08;
 	public static final double LONGITUDE_MAX 					= -96.01;
@@ -61,31 +78,32 @@ public class SelectCallBenchmarking
 	public static final String Latitude_Name					= "latitude";
 	public static final String Longitude_Name					= "longitude";
 	
-	private static final double LEFT = LONGITUDE_MIN;
-	private static final double RIGHT = LONGITUDE_MAX;
-	private static final double TOP = LATITUDE_MAX;
-	private static final double BOTTOM = LATITUDE_MIN;
-	
-	
-	private static JSONArray UPPER_LEFT ;
-//	= new GlobalCoordinate(TOP, LEFT);
-	
-	private static JSONArray UPPER_RIGHT;
-	//= new GlobalCoordinate(TOP, RIGHT);
-	
-	private static JSONArray LOWER_RIGHT;
-	//= new GlobalCoordinate(BOTTOM, RIGHT);
-	
-	private static JSONArray LOWER_LEFT;
-	//= new GlobalCoordinate(BOTTOM, LEFT);
-	
+	public static final int THREAD_POOL_SIZE					= 100;
+	public static Random randomGen								= new Random();
 	
 	// replace with your account alias
-	private static String ACCOUNT_ALIAS 						= "admin@gns.name";
-	private static GNSClientCommands client;
-	private static GuidEntry account_guid;
-	private static Random randomGen								= new Random();
+	public static GNSClientCommands client;
+	public static GuidEntry account_guid;
 	//private static List<GuidEntry>
+		
+	public static ExecutorService	 taskES						= null;
+	
+	public static final double LEFT 							= LONGITUDE_MIN;
+	public static final double RIGHT 							= LONGITUDE_MAX;
+	public static final double TOP 								= LATITUDE_MAX;
+	public static final double BOTTOM 							= LATITUDE_MIN;
+	
+	public static JSONArray UPPER_LEFT ;
+	//	= new GlobalCoordinate(TOP, LEFT);
+	
+	public static JSONArray UPPER_RIGHT;
+	//= new GlobalCoordinate(TOP, RIGHT);
+	
+	public static JSONArray LOWER_RIGHT;
+	//= new GlobalCoordinate(BOTTOM, RIGHT);
+	
+	public static JSONArray LOWER_LEFT;
+	//= new GlobalCoordinate(BOTTOM, LEFT);
 	
 	/**
 	 * @param args
@@ -101,6 +119,8 @@ public class SelectCallBenchmarking
 			InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
 			InvalidKeyException, SignatureException, Exception 
 	{
+		taskES =  Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+		
 		UPPER_LEFT = new JSONArray("["+LEFT+","+TOP+"]");
 //		= new GlobalCoordinate(TOP, LEFT);
 		
@@ -116,7 +136,7 @@ public class SelectCallBenchmarking
 		/* Create the client that connects to a default reconfigurator as
 		 * specified in gigapaxos properties file. */
 		client = new GNSClientCommands();
-		System.out.println("[Client connected to GNS]\n");
+		System.out.println("[Client connected to GNS]\n");	
 		
 		try
 		{
@@ -235,17 +255,24 @@ public class SelectCallBenchmarking
 		result = client.read(account_guid);
 		System.out.println("\nclient.read(GUID) -> " + result.toString());
 		
-		insertGUIDs();
 		
+		//insertGUIDs();
+		AbstractRequestSendingClass requestTypeObj = null;
+		requestTypeObj = new InsertClass();
+		
+		new Thread(requestTypeObj).start();
+		requestTypeObj.waitForThreadFinish();
+		
+		issueWholeRegionSelectQuery();
 		//client.select
 		// Delete created GUID
 		client.accountGuidRemove(account_guid);
 		System.out.println("\n// GUID delete\n"
 				+ "client.accountGuidRemove(GUID) // GUID=" + account_guid);
 		
-		
 		// Try read the entire record
-		try {
+		try
+		{
 			result = client.read(account_guid);
 		} catch (Exception e) {
 			System.out.println("\n// non-existent GUID error (expected)\n"
@@ -253,10 +280,28 @@ public class SelectCallBenchmarking
 					+ e.getMessage());
 		}
 		
-		
-		
 		client.close();
 		System.out.println("\nclient.close() // test successful");
+	}
+	
+	public static void issueWholeRegionSelectQuery()
+	{
+		JSONArray wholeRegion = new JSONArray();
+		wholeRegion.put(UPPER_LEFT);
+		wholeRegion.put(LOWER_RIGHT);
+		
+		// a test select
+		try
+		{
+			JSONArray resultArray = client.selectWithin
+						(GNSCommandProtocol.LOCATION_FIELD_NAME , wholeRegion);
+			System.out.println("Total guids returned "+resultArray.length());
+			assert( resultArray.length() == NUM_GUIDs );
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public static void insertGUIDs()
@@ -288,7 +333,6 @@ public class SelectCallBenchmarking
 		wholeRegion.put(UPPER_LEFT);
 		wholeRegion.put(LOWER_RIGHT);
 		
-		
 		// a test select
 		try
 		{
@@ -296,7 +340,7 @@ public class SelectCallBenchmarking
 						(GNSCommandProtocol.LOCATION_FIELD_NAME , wholeRegion);
 			System.out.println("Total guids returned "+resultArray.length());
 			assert(resultArray.length() == NUM_GUIDs);	
-		} 
+		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
