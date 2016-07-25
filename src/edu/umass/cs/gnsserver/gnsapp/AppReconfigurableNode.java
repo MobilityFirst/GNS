@@ -130,36 +130,36 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
-    System.out
-            .println("*********************************************************\n"
-                    + "This mode of starting the GNS is not recommended. Start ReconfigurableNode"
+    System.out.println("*********************************************************\n"
+                    + "This mode of starting the GNS is no longer supported. Start ReconfigurableNode"
                     + " instead with the node ID(s) being started listed at the end of command-line options,"
                     + " and APPLICATION=edu.umass.cs.gnsserver.GnsApp in gigapaxos.properties."
                     + "*********************************************************\n");
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        for (AppReconfigurableNode node : ALL_NODES) {
-          System.out.println("Shutting down " + node.myID);
-          node.close();
-        }
-        System.out.println("********* All nodes have been shutdown. *********");
-      }
-    });
-    Map<String, String> options = initOptions(args);
-
-    if (options.containsKey(STANDALONE) && options.get(NS_FILE) != null) {
-      startStandalone(options.get(NS_FILE));
-      // run multiple nodes on a single machine
-    } else if (options.get(TEST) != null && options.get(NS_FILE) != null) {
-      startTestNodes(options.get(NS_FILE));
-    } else if (options.get(ID) != null && options.get(NS_FILE) != null) {
-      startNodePair(options.get(ID), options.get(NS_FILE));
-    } else {
-      ParametersAndOptions.printUsage(AppReconfigurableNode.class.getCanonicalName(),
-              AppReconfigurableNodeOptions.getAllOptions());
-      System.exit(0);
-    }
+    System.exit(-1);
+//    Runtime.getRuntime().addShutdownHook(new Thread() {
+//      @Override
+//      public void run() {
+//        for (AppReconfigurableNode node : ALL_NODES) {
+//          System.out.println("Shutting down " + node.myID);
+//          node.close();
+//        }
+//        System.out.println("********* All nodes have been shutdown. *********");
+//      }
+//    });
+//    Map<String, String> options = initOptions(args);
+//
+//    if (options.containsKey(STANDALONE) && options.get(NS_FILE) != null) {
+//      startStandalone(options.get(NS_FILE));
+//      // run multiple nodes on a single machine
+//    } else if (options.get(TEST) != null && options.get(NS_FILE) != null) {
+//      startTestNodes(options.get(NS_FILE));
+//    } else if (options.get(ID) != null && options.get(NS_FILE) != null) {
+//      startNodePair(options.get(ID), options.get(NS_FILE));
+//    } else {
+//      ParametersAndOptions.printUsage(AppReconfigurableNode.class.getCanonicalName(),
+//              AppReconfigurableNodeOptions.getAllOptions());
+//      System.exit(0);
+//    }
   }
 
   @Override
