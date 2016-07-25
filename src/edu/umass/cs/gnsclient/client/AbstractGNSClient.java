@@ -83,7 +83,7 @@ public abstract class AbstractGNSClient {
   // FIXME: We might need a separate timeout just for certain ops like 
   // gui creation that sometimes take a while
   // 10 seconds is too short on EC2 
-  protected int readTimeout = 20000; // 20 seconds... was 40 seconds
+  protected int readTimeout = 8000; // 20 seconds... was 40 seconds
 
   /* Keeps track of requests that are sent out and the reponses to them */
   private final ConcurrentMap<Long, Request> resultMap = new ConcurrentHashMap<Long, Request>(
@@ -221,7 +221,7 @@ public abstract class AbstractGNSClient {
    * @return Result as CommandValueReturnPacket; or String if Android (FIXME)
    * @throws IOException if an error occurs
    */
-  public Object sendCommandAndWait(JSONObject command) throws IOException {
+  public CommandValueReturnPacket sendCommandAndWait(JSONObject command) throws IOException {
     if (IS_ANDROID) {
       return androidSendCommandAndWait(command);
     } else {
@@ -294,28 +294,24 @@ public abstract class AbstractGNSClient {
     //CommandResult 
     Request result = resultMap.remove(id);
     GNSClientConfig.getLogger().log(Level.FINE,
-            "Command name: {0} {1} {2} id: {3} " + "NS: {4} ",
-            new Object[]{
-              command.optInt(GNSCommandProtocol.COMMAND_INT, -1),
-              command.optString(GNSCommandProtocol.GUID, ""),
-              command.optString(GNSCommandProtocol.NAME, ""), id,
-              "unknown"//result.getResponder()
+            "{0} received response {1} ",
+            new Object[]{this, result.getSummary()
             });
 
-    return // result.getResult()
-            result instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket) result)
-//    				.getReturnValue() 
-                    : //    			((ActiveReplicaError)result).getResponseMessage()
-                    new CommandValueReturnPacket(id, GNSResponseCode.ACTIVE_REPLICA_EXCEPTION, ((ActiveReplicaError) result).getResponseMessage());
+
+    return result instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket) result)
+    		: new CommandValueReturnPacket(result.getServiceName(), id,
+    				GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
+    				((ActiveReplicaError) result).getResponseMessage());
   }
   
   protected CommandValueReturnPacket getTimeoutResponse(CommandPacket commandPacket) {
       GNSClientConfig.getLogger().log(Level.INFO,
               "{0} timed out after {1}ms on {2}: {3}",
-              new Object[]{this, readTimeout, commandPacket.getClientRequestId() + "", commandPacket});
+              new Object[]{this, readTimeout, commandPacket.getClientRequestId() + "", commandPacket.getSummary()});
       /* FIXME: Remove use of string reponse codes */
-      return new CommandValueReturnPacket(commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT, 
-                      GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT);
+      return new CommandValueReturnPacket(commandPacket.getServiceName(), commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT, 
+                      GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT + " for command " + commandPacket.getSummary());
 
   }
 
@@ -338,11 +334,11 @@ public abstract class AbstractGNSClient {
     return packet;
   }
 
-  private String androidSendCommandAndWait(JSONObject command) throws IOException {
+  private CommandValueReturnPacket androidSendCommandAndWait(JSONObject command) throws IOException {
     final AndroidNIOTask sendTask = androidSendCommandNoWait(command);
     try {
-      return sendTask.get();
-    } catch (InterruptedException | ExecutionException e) {
+      return new CommandValueReturnPacket(new JSONObject(sendTask.get()));
+    } catch (InterruptedException | ExecutionException | JSONException e) {
       throw new IOException(e);
     }
   }

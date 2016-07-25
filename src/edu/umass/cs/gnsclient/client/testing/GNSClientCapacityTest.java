@@ -219,7 +219,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_02_SequentialSignedReadCapacity() throws Exception {
-		int numReads = Math.min(Integer.MAX_VALUE, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS)/10;
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();
@@ -237,7 +237,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_02_SequentialUnsignedReadCapacity() throws Exception {
-		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = (Config.getGlobalInt(TC.NUM_REQUESTS)/2);
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();

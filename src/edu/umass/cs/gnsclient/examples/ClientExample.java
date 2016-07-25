@@ -63,23 +63,29 @@ public class ClientExample {
 		/* Create the client that connects to a default reconfigurator as
 		 * specified in gigapaxos properties file. */
 		client = new GNSClientCommands();
+		System.out.println("[Client connected to GNS]\n");
+
 		try {
 			/**
 			 * Create an account GUID if one doesn't already exists. The true
 			 * flag makes it verbosely print out what it is doing. The password
-			 * is for future use and is needed mainly if the keypair is generated
-			 * on the server in order to retrieve the private key.
+			 * is for future use and is needed mainly if the keypair is
+			 * generated on the server in order to retrieve the private key.
 			 * lookupOrCreateAccountGuid "cheats" by bypassing email-based or
 			 * other verification mechanisms using a shared secret between the
 			 * server and the client.
 			 * */
+			System.out
+					.println("// account GUID creation\n"
+							+ "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
+							+ " \"password\", true)");
 			guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
 					"password", true);
 		} catch (Exception | Error e) {
 			System.out.println("Exception during accountGuid creation: " + e);
+			e.printStackTrace();
 			System.exit(1);
 		}
-		System.out.println("Client connected to GNS.");
 
 		// Create a JSON Object to initialize our guid record
 		JSONObject json = new JSONObject("{\"occupation\":\"busboy\","
@@ -89,37 +95,42 @@ public class ClientExample {
 
 		// Write out the JSON Object
 		client.update(guid, json);
-		System.out.println("Wrote JSONObject :" + json);
+		System.out.println("\n// record update\n"
+				+ "client.update(GUID, record) // record=" + json);
 
 		// and read the entire object back in
 		JSONObject result = client.read(guid);
-		System.out.println("Read JSON: " + result.toString());
+		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Change a field
 		client.update(guid, new JSONObject(
 				"{\"occupation\":\"rocket scientist\"}"));
-		System.out.println("Updated \"occupation\" to \"rocket scientist\"");
+		System.out
+				.println("\n// field update\n"
+						+ "client.update(GUID, fieldKeyValue) // fieldKeyValue={\"occupation\":\"rocket scientist\"}");
 
 		// and read the entire object back in
 		result = client.read(guid);
-		System.out.println("Retrieved JSON from guid: " + result.toString());
+		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Add a field
 		client.update(guid, new JSONObject("{\"ip address\":\"127.0.0.1\"}"));
 		System.out
-				.println("Added field \"ip address\" with value \"127.0.0.1\"");
+				.println("\n// field add\n"
+						+ "client.update(GUID, fieldKeyValue) // fieldKeyValue= {\"ip address\":\"127.0.0.1\"}");
 
 		// and read the entire object back in
 		result = client.read(guid);
-		System.out.println("Retrieved JSON from guid: " + result.toString());
+		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Remove a field
 		client.fieldRemove(guid.getGuid(), "gibberish", guid);
-		System.out.println("Removed field \"gibberish\"");
+		System.out.println("\n// field remove\n"
+				+ "client.fieldRemove(GUID, \"gibberish\")");
 
 		// and read the entire object back in
 		result = client.read(guid);
-		System.out.println("Retrieved JSON from guid: " + result.toString());
+		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Add some more stuff to read back
 		JSONObject newJson = new JSONObject();
@@ -132,47 +143,59 @@ public class ClientExample {
 		subJson.put("sally", subsubJson);
 		newJson.put("flapjack", subJson);
 		client.update(guid, newJson);
-		System.out.println("Added field \"flapjack\" with value "
-				+ newJson.getJSONObject("flapjack"));
-
-		// Read a single field using dot notation
-		String resultString = client.fieldRead(guid, "flapjack.sally.right");
-		System.out
-				.println("Retrieved field \"flapjack.sally.right\" from guid: "
-						+ resultString);
+		System.out.println("\n// field add with JSON value\n"
+				+ "client.update(GUID, fieldKeyValue) // fieldKeyValue="
+				+ newJson);
 
 		// Read a single field at the top level
-		resultString = client.fieldRead(guid, "flapjack");
-		System.out.println("Retrieved field \"flapjack\" from guid: "
+		String resultString = client.fieldRead(guid, "flapjack");
+		System.out.println("client.fieldRead(\"flapjack\") -> " + resultString);
+
+		// Read a single field using dot notation
+		resultString = client.fieldRead(guid, "flapjack.sally.right");
+		System.out.println("\n// dotted field read\n"
+				+ "client.fieldRead(GUID, \"flapjack.sally.right\") -> "
 				+ resultString);
 
 		// Update a field using dot notation
 		JSONArray newValue = new JSONArray(
 				Arrays.asList("One", "Ready", "Frap"));
 		client.fieldUpdate(guid, "flapjack.sammy", newValue);
-		System.out.println("Changed value of \"flapjack.sammy\" field to "
-				+ newValue);
+		System.out.println("\n// dotted field update\n"
+				+ "client.fieldUpdate(GUID, \"flapjack.sammy\", " + newValue);
 
 		// Read the same field using dot notation
 		resultString = client.fieldRead(guid, "flapjack.sammy");
-		System.out.println("Retrieved field \"flapjack.sammy\" from guid: "
+		System.out.println("client.fieldRead(GUID, \"flapjack.sammy\") -> "
 				+ resultString);
-
-		// Read the entire object back in
-		result = client.read(guid);
-		System.out.println("Retrieved JSON from guid: " + result.toString());
 
 		// Read two fields at a time
 		resultString = client.fieldRead(guid,
 				new ArrayList<String>(Arrays.asList("name", "occupation")));
-		System.out
-				.println("Retrieved field \"name\" and \"occupation\" fields from guid: "
-						+ resultString);
+		System.out.println("\n// multi-field read\n"
+				+ "client.fieldRead(GUID, [\"name\",\"occupation\"] -> "
+				+ resultString);
 
-		// Delete created GUID 
+		// Read the entire object back in
+		result = client.read(guid);
+		System.out.println("\nclient.read(GUID) -> " + result.toString());
+
+		
+		// Delete created GUID
 		client.accountGuidRemove(guid);
+		System.out.println("\n// GUID delete\n"
+				+ "client.accountGuidRemove(GUID) // GUID=" + guid);
+
+		// Try read the entire record
+		try {
+			result = client.read(guid);
+		} catch (Exception e) {
+			System.out.println("\n// non-existent GUID error (expected)\n"
+					+ "client.read(GUID) // GUID= " + guid + "\n  "
+					+ e.getMessage());
+		}
 
 		client.close();
-		System.out.println("Successfully performed test operations and closed client");
+		System.out.println("\nclient.close() // test successful");
 	}
 }

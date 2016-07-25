@@ -62,7 +62,7 @@ import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSuppor
  * Provides conversion between the database to java objects.
  *
  *
- * @author westy
+ * @author westy, arun
  */
 public class FieldAccess {
 
@@ -89,6 +89,13 @@ public class FieldAccess {
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
     return GNSCommandProtocol.ALL_FIELDS.equals(field) || !isKeyDotNotation(field);
   }
+  
+  /* false means that even single field queries will return a JSONObject response
+   * with a single key and value. The client code has been modified accordingly.
+   * The server-side modifications involve changes to AccountAccess to handle
+   * lookupGuid and lookupPrimaryGuid differently.
+   */
+  protected static final boolean SINGLE_FIELD_VALUE_ONLY = false;//true;
 
   /**
    * Reads the value of field in a guid.
@@ -122,7 +129,20 @@ public class FieldAccess {
         valuesMap = valuesMap.removeInternalFields();
       }
       if (valuesMap != null) {
-        return new CommandResponse(GNSResponseCode.NO_ERROR, valuesMap.getString(field));
+    	  /* arun: changed to not rely on JSONException. The previous code was relying
+    	   * on valuesMap.getString() throwing a JSONException and conveying a JSON_PARSE_ERROR, 
+    	   * which is incorrect in this case because it should give a FIELD_NOT_FOUND_EXCEPTION
+    	   * to the client.
+    	   */
+				return valuesMap.isNull(field) ? new CommandResponse(
+						GNSResponseCode.FIELD_NOT_FOUND_EXCEPTION,
+						GNSCommandProtocol.BAD_RESPONSE + " "
+								+ GNSCommandProtocol.FIELD_NOT_FOUND + " ")
+				// arun: added support for SINGLE_FIELD_VALUE_ONLY flag
+						: new CommandResponse(GNSResponseCode.NO_ERROR,
+								SINGLE_FIELD_VALUE_ONLY ? valuesMap
+										.getString(field) : valuesMap
+										.toString());
       } else {
         return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_STRING);
       }
@@ -203,13 +223,19 @@ public class FieldAccess {
     String resultString;
     ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
-      resultString = new JSONArray(value).toString();
+      //resultString = new JSONArray(value).toString();
+    	try {
+			resultString = new JSONObject().put(field, value).toString();
+		} catch (JSONException e) {
+		      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + GNSResponseCode.JSON_PARSE_ERROR);
+		}
     } else {
-      resultString = EMPTY_JSON_ARRAY_STRING;
+      //resultString = EMPTY_JSON_ARRAY_STRING;
+    	resultString = new JSONObject().toString();
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
   }
-
+  
   /**
    * Reads the value of all the fields in a guid.
    * Doesn't return internal system fields.
@@ -241,7 +267,8 @@ public class FieldAccess {
         responseCode = GNSResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        responseCode = GNSResponseCode.UNSPECIFIED_ERROR;
+        // arun:
+        responseCode = GNSResponseCode.BAD_GUID_ERROR;//.UNSPECIFIED_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;
@@ -316,7 +343,8 @@ public class FieldAccess {
         responseCode = GNSResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        responseCode = GNSResponseCode.UNSPECIFIED_ERROR;
+        // arun: changed to BAD_GUID_ERROR
+        responseCode = GNSResponseCode.BAD_GUID_ERROR;//UNSPECIFIED_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;

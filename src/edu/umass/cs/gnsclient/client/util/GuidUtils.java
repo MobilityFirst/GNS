@@ -23,17 +23,17 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GNSClientCommandsTest;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.http.UniversalHttpClient;
-import edu.umass.cs.gnsclient.client.http.UniversalHttpClientTest;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -96,12 +96,17 @@ public class GuidUtils {
     if (guid == null || !guidExists(client, guid)) {
       if (verbose) {
         if (guid == null) {
-          System.out.println("Creating a new account guid for " + name);
+          System.out.println("  Creating a new account GUID for " + name);
         } else {
-          System.out.println("Old account guid for " + name + " is invalid. Creating a new one.");
+          System.out.println("  Old account GUID " + guid + " found locally is invalid, creating a new one.");
         }
       }
+      try {
       guid = client.accountGuidCreate(name, password);
+      } catch(DuplicateNameException e) {
+    	  // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
+    	  System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
+      }
       int attempts = 0;
       // Since we're cheating here we're going to catch already verified errors which means
       // someone on the server probably turned off verification for testing purposes
@@ -112,7 +117,7 @@ public class GuidUtils {
         } catch (ClientException e) {
           // a bit of a hack here that depends on someone not changing
           // that error message
-          if (!e.getMessage().endsWith(ACCOUNT_ALREADY_VERIFIED)) {
+          if (!e.getMessage().contains(GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION)) {
             if (attempts++ < NUM_VERIFICATION_ATTEMPTS) {
               // do nothing
             } else {
@@ -120,13 +125,13 @@ public class GuidUtils {
               throw e;
             }
           } else {
-            System.out.println("Caught and ignored \"Account already verified\" error for " + name);
+            System.out.println("  Caught and ignored \"Account already verified\" error for " + guid);
             break;
           }
         }
       }
       if (verbose) {
-        System.out.println("Created and verified account guid for " + guid.getEntityName() + " (" + guid.getGuid() + ")");
+        System.out.println("  Created and verified account GUID " + guid);
       }
       return guid;
     } else {
@@ -199,13 +204,20 @@ public class GuidUtils {
     }
     return entry;
     */
-		/* arun: This gymnastics is to hide ugly methods like addTag from public
-		 * view. */
-		if (client instanceof GNSClientCommands)
-			return GNSClientCommandsTest.addTag(client, entry, tagName);
-		else if (client instanceof UniversalHttpClient)
-			return UniversalHttpClientTest.addTag(client, entry, tagName);
-		else throw new RuntimeException("Unimplemented");
+		/* arun: This gymnastics below is to hide ugly methods like addTag from public
+		 * view. 
+		 * 
+		 * I am disabling addTag because it is incorrect. There is no reason for 
+		 * a local (as it happens to be) addTag operation to succeed after entityName's
+		 * creation done as a remote transaction (that is also poor to 
+		 * begin with).
+		 * */
+//		if (client instanceof GNSClientCommands)
+//			return GNSClientCommandsTest.addTag(client, entry, tagName);
+//		else if (client instanceof UniversalHttpClient)
+//			return UniversalHttpClientTest.addTag(client, entry, tagName);
+//		else throw new RuntimeException("Unimplemented");
+    return entry;
   }
 
   /**

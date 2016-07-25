@@ -228,13 +228,32 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     }
   }
 
-  private static PacketType[] types = {
-    PacketType.SELECT_REQUEST,
-    PacketType.SELECT_RESPONSE,
-    PacketType.STOP,
-    PacketType.NOOP,
-    PacketType.COMMAND,
-    PacketType.COMMAND_RETURN_VALUE};
+	private static PacketType[] types = { PacketType.COMMAND,
+
+	PacketType.SELECT_REQUEST,
+
+	PacketType.SELECT_RESPONSE,
+
+	/* arun: It is a security flaw to frivolously register packets that are unexpected as they
+	 * can halt the state machine as execute(.) returns false as the default behavior when an
+	 * unexpected packet is received.
+	 */
+	
+	// STOP and NOOP are no longer needed.
+	// PacketType.STOP,
+	// PacketType.NOOP,
+
+	/* arun: Unclear why we expect COMMAND_RETURN_VALUE.
+	 * 
+	 * Notes:
+	 * 
+	 * (1) responses to RemoteQuery requests don't come via GNSApp.execute(.) as
+	 * they are directly processed by their callback.
+	 * 
+	 * (2) Local name servers unlike GNSApp servers should expect
+	 * COMMAND_RETURN_VALUE as they are proxying for end-clients. */
+	// PacketType.COMMAND_RETURN_VALUE
+	};
 
   /**
    * arun: The code below {@link #incrResponseCount(ClientRequest)} and
@@ -299,12 +318,13 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               new Object[]{this, request.getSummary()});
       Request prev = null;
       // arun: enqueue request, dequeue before returning
-      if (request instanceof RequestIdentifier) {
-        prev = this.outstanding.putIfAbsent(((RequestIdentifier) request).getRequestID(),
-                request);
-      } else {
-        assert (false);
-      }
+      if (request instanceof RequestIdentifier)
+    	  prev = this.outstanding.putIfAbsent(
+    			  ((RequestIdentifier) request).getRequestID(), request);
+      else
+    	  assert (false) : this
+    	  + " should not be getting requests that do not implement "
+    	  + RequestIdentifier.class;
 
       switch (packetType) {
         case SELECT_REQUEST:
@@ -318,32 +338,41 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
           Select.handleSelectResponse(
                   (SelectResponsePacket<String>) request, this);
           break;
-        // Keeping STOP and NOOP here because we have to return true below
-        // because returning false might cause reexecution
-        case STOP:
-          break;
-        case NOOP:
-          break;
         case COMMAND:
           CommandHandler.handleCommandPacketForApp(
                   (CommandPacket) request, doNotReplyToClient, this);
           break;
+
+          /* arun: COMMAND_RETURN_VALUE should never have been an expected
+           * type here as GNSApp should never be getting responses. STOP and
+           * NOOP are no longer necessary. */
         case COMMAND_RETURN_VALUE:
-          CommandHandler.handleCommandReturnValuePacketForApp(
-                  (CommandValueReturnPacket) request, doNotReplyToClient, this);
-          break;
+        	// CommandHandler.handleCommandReturnValuePacketForApp((CommandValueReturnPacket)
+        	// request, doNotReplyToClient, this);
+        case STOP:
+        case NOOP:
         default:
-          GNSConfig.getLogger().log(Level.SEVERE,
-                  " Packet type not found: {0}", request.getSummary());
+        	assert(false) :  (this + " should not be getting packets of type " + packetType + "; exiting");
+        	GNSConfig.getLogger().log(Level.SEVERE,
+        			" Packet type not found: {0}", request.getSummary());
           return false;
       }
       executed = true;
 
       // arun: always clean up all created state upon exiting
       if (request instanceof RequestIdentifier && prev == null) {
-        GNSConfig.getLogger().log(Level.FINE,
-                "{0} dequeueing request {1}",
-                new Object[]{this, request.getSummary()});
+				GNSConfig
+						.getLogger()
+						.log(Level.FINE,
+								"{0} dequeueing request {1}; response={2}",
+								new Object[] {
+										this,
+										request.getSummary(),
+										request instanceof ClientRequest
+												&& ((ClientRequest) request)
+														.getResponse() != null ? ((ClientRequest) request)
+												.getResponse().getSummary()
+												: null });
         this.outstanding.remove(request);
       }
 
@@ -365,7 +394,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
     return executed;
   }
-
+  
   // For InterfaceApplication
   @Override
   public Request getRequest(String string)
@@ -413,7 +442,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               header.rcvr, json);
       request = (Request) Packet.createInstance(json, unstringer);
       if (Util.oneIn(100)) {
-        DelayProfiler.updateDelayNano("getRequest." + request.getClass().getSimpleName(), t);
+        DelayProfiler.updateDelayNano("getRequest." + request.getRequestType(), t);
       }
     } catch (JSONException | UnsupportedEncodingException e) {
       e.printStackTrace();
@@ -448,8 +477,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     try {
       NameRecord nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
       GNSConfig.getLogger().log(Level.FINE,
-              "&&&&&&& {0} getting state {1} ",
-              new Object[]{this, nameRecord.getValuesMap().getSummary()});
+              "&&&&&&& {0} getting state for {1} : {2} ",
+              new Object[]{this, name, nameRecord.getValuesMap().getSummary()});
       return nameRecord.getValuesMap().toString();
     } catch (RecordNotFoundException e) {
       // normal result
@@ -517,7 +546,13 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    */
   @Override
   public ReconfigurableRequest getStopRequest(String name, int epoch) {
-    return new StopPacket(name, epoch);
+	  /* arun: reconfiguration has long had support for creating
+	   * a default stop request if the app returns null, so a nontrivial
+	   * stop request is not needed unless the app wants to do specific
+	   * cleanup activities in case of a stop. The default action of
+	   * restoring state to null is automatically done by gigapaxos.
+	   */
+    return null; // new StopPacket(name, epoch);
   }
 
   @Override

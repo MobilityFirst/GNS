@@ -1234,7 +1234,7 @@ public class UniversalHttpClient implements GNSClientInterface {
   }
 
   protected String checkResponse(String command, String response) throws ClientException {
-    return CommandUtils.checkResponse(response);
+    return CommandUtils.oldCheckResponse(response);
 //    // System.out.println("response:" + response);
 //    if (response.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
 //      String results[] = response.split(" ");

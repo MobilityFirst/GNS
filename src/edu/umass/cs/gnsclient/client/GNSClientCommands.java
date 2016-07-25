@@ -73,6 +73,7 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
@@ -85,8 +86,12 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -123,21 +128,98 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		super(anyReconfigurator);
 	}
 
-	private static boolean USE_OLD_SEND = true;
-	
-	/* arun: All occurrences of checkResponse( createAndSignCommand have been
-	 * replaced by this getResponse method. */
-	private String getResponse(CommandType commandType, GuidEntry querier,
-			Object... keysAndValues) throws ClientException, IOException {
-		return USE_OLD_SEND ? CommandUtils
-				.checkResponse(sendCommandAndWait(CommandUtils
-						.createAndSignCommand(commandType, querier,
-								keysAndValues))) : CommandUtils
-				.checkResponse(getCommand(commandType, querier, keysAndValues)
-						.setForceCoordinatedReads(
-								isForceCoordinatedReads()));
+	protected static final boolean USE_OLD_SEND = false;
+
+	/**
+	 * @param command
+	 * @return True upon successful execution of a query without a return value
+	 *         or a query with a boolean return value returning true; false
+	 *         otherwise .
+	 * @throws ClientException
+	 * @throws IOException
+	 */
+	public boolean execute(CommandPacket command) throws ClientException, IOException {
+		return command.setResult(CommandUtils
+				.checkResponse(this.sendSync(command))).hasResult();
 	}
 
+	/**	 
+	 * Invariant: A single CommandPacket should have complete information about
+	 * how to handle the command.
+	 */
+
+	/** 
+	 *  
+	 * @param command 
+	 * @return Query result as JSONObject
+	 * @throws ClientException 
+	 * @throws IOException */
+	/*public*/ JSONObject executeMapQuery(CommandPacket command) throws ClientException,
+			IOException {
+		try {
+			// TODO: check that this is a map query first
+			return new JSONObject(CommandUtils.checkResponse(this.sendSync(command,
+					(long) this.readTimeout)));
+		} catch (JSONException e) {
+			throw new ClientException(e);
+		}
+	}
+
+	/*public*/ JSONArray executeListQuery(CommandPacket command)
+			throws ClientException, IOException {
+		try {
+			// check that this is an array query first
+			return new JSONArray(CommandUtils.checkResponse(this.sendSync(
+					command, (long) this.readTimeout)));
+		} catch (JSONException e) {
+			throw new ClientException(e);
+		}
+	}
+	
+	/** arun: All occurrences of checkResponse( createAndSignCommand have been
+	 * replaced by this getResponse method. 
+	 * 
+	 * The response here is converted to a String for legacy reasons. Otherwise,
+	 * all responses should be of type {@link CommandValueReturnPacket}.
+	 */
+	private String getResponse(CommandType commandType, GuidEntry querier,
+			Object... keysAndValues) throws ClientException, IOException {
+		CommandPacket commandPacket = null;
+		return record(// just instrumentation
+				commandType,
+				USE_OLD_SEND ? CommandUtils
+						.checkResponse(sendCommandAndWait(CommandUtils
+								.createAndSignCommand(commandType, querier,
+										keysAndValues)))
+										// new send
+						: CommandUtils.checkResponse(this
+								.sendSync(
+										commandPacket = getCommand(commandType,
+												querier, keysAndValues),
+										(long) this.readTimeout), commandPacket));
+	}
+	
+	private static final boolean RECORD_ENABLED = true;
+	/**
+	 * only for instrumentation to decode return value types
+	 */
+	public static final Map<CommandType,Set<String>> reverseEngineer = new TreeMap<CommandType,Set<String>>();
+	/**
+	 * only for instrumentation to decode return value types
+	 */
+	public static final Map<CommandType,Set<String>> returnValueExample = new TreeMap<CommandType,Set<String>>();
+	private static final String record(CommandType type, Object responseObj) {
+		if(!RECORD_ENABLED || responseObj==null) return (String)responseObj;
+		String response = responseObj instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket)responseObj).getReturnValue() 
+				: responseObj.toString();
+		if(reverseEngineer.get(type)==null) reverseEngineer.put(type, new HashSet<String>());
+		if(returnValueExample.get(type)==null) returnValueExample.put(type, new HashSet<String>());
+		if(response!=null) reverseEngineer.get(type).add(JSONPacket.couldBeJSONObject(response) ? "JSONObject"
+				: JSONPacket.couldBeJSONArray(response) ? "JSONArray"
+						: "String");
+		if(response!=null) returnValueExample.get(type).add(response);
+		return response;
+	}
 	private String getResponse(CommandType commandType, Object... keysAndValues)
 			throws ClientException, IOException {
 		return this.getResponse(commandType, null, keysAndValues);
@@ -161,7 +243,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	private static long randomLong() {
 		return (long)(Math.random()*Long.MAX_VALUE);
 	}
-
+	
 	// READ AND WRITE COMMANDS
 	/**
 	 * Updates the JSONObject associated with targetGuid using the given
@@ -274,7 +356,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * query using the private key of the guid.
 	 *
 	 * @param guid
-	 * @return a JSONArray containing the values in the field
+	 * @return a JSONObject containing the values in the field
 	 * @throws Exception
 	 */
 	public JSONObject read(GuidEntry guid) throws Exception {
@@ -340,13 +422,9 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String fieldRead(String targetGuid, String field, GuidEntry reader)
 			throws Exception {
-		long t = System.currentTimeMillis();
-		String response = getResponse(reader != null ? CommandType.Read
+		return CommandUtils.specialCaseSingleField(getResponse(reader != null ? CommandType.Read
 				: CommandType.ReadUnsigned, reader, GUID, targetGuid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null);
-		if (Util.oneIn(10)) 
-			DelayProfiler.updateDelay("fieldRead", t);
-		return response;
+				field, READER, reader != null ? reader.getGuid() : null));
 	}
 
 	/**
@@ -375,7 +453,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @param fields
 	 * @param reader
 	 *            if null the field must be readable for all
-	 * @return a JSONArray containing the values in the fields
+	 * @return a JSONObject containing the values in the fields
 	 * @throws Exception
 	 */
 	public String fieldRead(String targetGuid, ArrayList<String> fields,
@@ -503,7 +581,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String lookupGuid(String alias) throws IOException, ClientException {
 
-		return getResponse(CommandType.LookupGuid, NAME, alias);
+		return CommandUtils.specialCaseSingleField(getResponse(CommandType.LookupGuid, NAME, alias));
 	}
 
 	/**
@@ -517,8 +595,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public String lookupPrimaryGuid(String guid)
 			throws UnsupportedEncodingException, IOException, ClientException {
-		return getResponse(CommandType.LookupPrimaryGuid, GUID,
-				guid);
+		return CommandUtils.specialCaseSingleField(getResponse(CommandType.LookupPrimaryGuid, GUID,
+				guid));
 	}
 
 	/**
@@ -625,25 +703,35 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	public GuidEntry accountGuidCreate(String alias, String password)
 			throws Exception {
 
-		KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
-				.generateKeyPair();
-		String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
-				.getPublic().getEncoded());
-		// Squirrel this away now just in case the call below times out.
-		KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
-		GuidEntry entry = new GuidEntry(alias, guid, keyPair.getPublic(),
-				keyPair.getPrivate());
+		GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(this, alias);
+		/* arun: Don't recreate pair if one already exists. Otherwise you can
+		 * not get out of the funk where the account creation timed out but
+		 * wasn't rolled back fully at the server. Re-using
+		 * the same GUID will at least pass verification as opposed to 
+		 * incurring an ACTIVE_REPLICA_EXCEPTION for a new (non-existent) GUID.
+		 */
+		if(entry==null) {
+			KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
+					.generateKeyPair();
+			String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+					.getPublic().getEncoded());
+			// Squirrel this away now just in case the call below times out.
+			KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
+			entry = new GuidEntry(alias, guid, keyPair.getPublic(),
+					keyPair.getPrivate());
+		}
+		assert(entry!=null);
 		String returnedGuid = accountGuidCreateHelper(alias,
 				entry, password);
 		// Anything else we want to do here?
-		if (!returnedGuid.equals(guid)) {
+		if (!returnedGuid.equals(entry.guid)) {
 			GNSClientConfig
 					.getLogger()
 					.log(Level.WARNING,
 							"Returned guid {0} doesn''t match locally created guid {1}",
-							new Object[] { returnedGuid, guid });
+							new Object[] { returnedGuid, entry.guid });
 		}
-		assert returnedGuid.equals(guid);
+		assert returnedGuid.equals(entry.guid);
 
 		return entry;
 	}
@@ -812,7 +900,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray guidGetGroups(String guid, GuidEntry reader)
 			throws IOException, ClientException, InvalidGuidException {
-
 		try {
 			return new JSONArray(getResponse(CommandType.GetGroups, reader,
 					GUID, guid, READER, reader.getGuid()));
@@ -1105,55 +1192,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 		}
 	}
 
-	// TAGS
-	/**
-	 * Creates a tag to the tags of the guid.
-	 *
-	 * @param guid
-	 * @param tag
-	 * @throws Exception
-	 */
-	//@Override
-	void addTag(GuidEntry guid, String tag) throws Exception {
-		getResponse(CommandType.AddTag, guid, GUID, guid.getGuid(), NAME, tag);
-	}
-
-	/**
-	 * Removes a tag from the tags of the guid.
-	 *
-	 * @param guid
-	 * @param tag
-	 * @throws Exception
-	 */
-	void removeTag(GuidEntry guid, String tag) throws Exception {
-		getResponse(CommandType.RemoveTag, guid, GUID, guid.getGuid(), NAME,
-				tag);
-	}
-
-	/**
-	 * Retrieves GUIDs that have been tagged with tag
-	 *
-	 * @param tag
-	 * @return JSONArray of tagged GUIDs
-	 * @throws Exception
-	 */
-	public JSONArray retrieveTagged(String tag) throws Exception {
-		return new JSONArray(getResponse(CommandType.Dump,
-				NAME, tag));
-	}
-
-	/**
-	 * Removes all guids that have the corresponding tag. Removes the reverse
-	 * fields for the entity name and aliases. Note: doesn't remove all the
-	 * associated fields yet, though, so still a work in progress.
-	 *
-	 * @param tag
-	 * @throws Exception
-	 */
-	public void clearTagged(String tag) throws Exception {
-		getResponse(CommandType.ClearTagged, NAME, tag);
-	}
-
 	// ///////////////////////////////
 	// // PRIVATE METHODS BELOW /////
 	// /////////////////////////////
@@ -1386,9 +1424,19 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 */
 	public JSONArray fieldReadArray(String guid, String field, GuidEntry reader)
 			throws Exception {
-		return new JSONArray(getResponse(reader != null ? CommandType.ReadArray
+		return 
+				toJSONArray(field,
+				(getResponse(reader != null ? CommandType.ReadArray
 				: CommandType.ReadArrayUnsigned, reader, GUID, guid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null));
+				field, READER, reader != null ? reader.getGuid() : null)))
+		;
+	}
+	
+	// arun: because we now return all fields as JSONObject
+	private JSONArray toJSONArray(String field, String response) throws JSONException {
+		if(JSONPacket.couldBeJSONArray(response))
+			return new JSONArray(response);
+		else return new JSONObject(response).getJSONArray(field);
 	}
 
 	/**

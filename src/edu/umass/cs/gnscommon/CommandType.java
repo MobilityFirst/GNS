@@ -16,7 +16,11 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -25,10 +29,10 @@ import java.util.Map;
  * Each one of these has a corresponding method in an array defined in
  * edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDefs
  */
-// We could probably despense with the CommandDefs array (see above) and just put the classes in the enum
+// We could probably dispense with the CommandDefs array (see above) and just put the classes in the enum
 // once we upgrade older clients to not use the old command strings.
 public enum CommandType {
-  Append(110, Type.UPDATE),
+  Append(110, Type.UPDATE, Boolean.class, true, false),
   AppendList(111, Type.UPDATE),
   AppendListSelf(112, Type.UPDATE),
   AppendListUnsigned(113, Type.UPDATE),
@@ -60,13 +64,13 @@ public enum CommandType {
   CreateListSelf(154, Type.UPDATE),
   CreateSelf(155, Type.UPDATE),
   //
-  Read(160, Type.READ),
-  ReadSelf(161, Type.READ),
-  ReadUnsigned(162, Type.READ),
-  ReadMultiField(163, Type.READ),
-  ReadMultiFieldUnsigned(164, Type.READ),
+  Read(160, Type.READ, Map.class, true, false),
+  ReadSelf(161, Type.READ, Map.class),
+  ReadUnsigned(162, Type.READ, Map.class),
+  ReadMultiField(163, Type.READ, Map.class),
+  ReadMultiFieldUnsigned(164, Type.READ, Map.class),
   //
-  ReadArray(170, Type.READ),
+  ReadArray(170, Type.READ, Map.class),
   ReadArrayOne(171, Type.READ),
   ReadArrayOneSelf(172, Type.READ),
   ReadArrayOneUnsigned(173, Type.READ),
@@ -122,8 +126,8 @@ public enum CommandType {
   SelectGroupSetupQueryWithGuidAndInterval(314, Type.SELECT),
   SelectGroupSetupQueryWithInterval(315, Type.SELECT),
   //
-  SelectNear(320, Type.SELECT),
-  SelectWithin(321, Type.SELECT),
+  SelectNear(320, Type.SELECT, Collection.class),
+  SelectWithin(321, Type.SELECT, Collection.class),
   SelectQuery(322, Type.SELECT),
   // Account
   AddAlias(410, Type.CREATE_DELETE),
@@ -146,7 +150,7 @@ public enum CommandType {
   RemoveAlias(441, Type.CREATE_DELETE),
   RemoveGuid(442, Type.CREATE_DELETE),
   RemoveGuidNoAccount(443, Type.CREATE_DELETE),
-  RetrieveAliases(444, Type.OTHER),
+  RetrieveAliases(444, Type.OTHER, Collection.class),
   //
   SetPassword(450, Type.UPDATE),
   VerifyAccount(451, Type.OTHER),
@@ -164,9 +168,9 @@ public enum CommandType {
   AddMembersToGroupSelf(611, Type.OTHER),
   AddToGroup(612, Type.OTHER),
   AddToGroupSelf(613, Type.OTHER),
-  GetGroupMembers(614, Type.OTHER),
+  GetGroupMembers(614, Type.OTHER, Collection.class),
   GetGroupMembersSelf(615, Type.OTHER),
-  GetGroups(616, Type.OTHER),
+  GetGroups(616, Type.OTHER, Collection.class),
   GetGroupsSelf(617, Type.OTHER),
   //
   RemoveFromGroup(620, Type.OTHER),
@@ -201,23 +205,62 @@ public enum CommandType {
 
   // Catch all for parsing errors
   Unknown(999, Type.OTHER);
-  private int number;
-  private Type coordination;
-  private final String alias; // must also be unique
 
+  private final int number;
+  private final Type category;
+  private final Class<?> returnType;
+  
+  /* arun: Adding more fields below for documentation and invariant assertion purposes.
+   */
+
+  /** True means that this command can be safely coordinated by RemoteQuery
+   * at servers. True must mean that it is never the case that execute(name1)
+   * for any canBeSafelyCoordinated command never remote-query-invokes this 
+   * command also for name1.
+   */
+  private boolean canBeSafelyCoordinated;
+  
+  /** Commands that are not intended to be run by rogue clients.
+   */
+  private boolean notForRogueClients;
+  
+  /** Other commands that may be remote-query-invoked by this command.
+   * Non-final only because we can not name enums before they are defined.
+   */
+  private CommandType[] commandTypes;
+  private void setChain(CommandType...commandTypes) {
+	  if(this.commandTypes==null)
+		  this.commandTypes = commandTypes;
+	  else throw new RuntimeException("Can set command chain exactly once");
+  }
+
+  // Westy: please fill these in
+  static {
+	  Read.setChain(ReadUnsigned);
+	  AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned); // what else?
+  }
+  
   public enum Type {
     READ, UPDATE, CREATE_DELETE, SELECT, OTHER
   }
 
   private CommandType(int number, Type coordination) {
-    this(number, coordination, number + "" // default alias is just number
-    );
+    this(number, coordination, String.class);
   }
+  private CommandType(int number, Type category, Class<?> returnType ) {
+	    this(number, category, String.class, category==Type.READ || category==Type.UPDATE, false);
 
-  private CommandType(int number, Type readUpdateCreateDelete, String alias) {
+  }
+  private CommandType(int number, Type readUpdateCreateDelete, Class<?> returnType, boolean canBeSafelyCoordinated, boolean notForRogueClients) {
     this.number = number;
-    this.coordination = readUpdateCreateDelete;
-    this.alias = alias;
+    this.category = readUpdateCreateDelete;
+    this.returnType = returnType;
+    
+    this.canBeSafelyCoordinated = canBeSafelyCoordinated;
+    
+    // presumably every command is currently available to thugs
+    this.notForRogueClients = notForRogueClients;
+    
   }
 
   public int getInt() {
@@ -232,19 +275,19 @@ public enum CommandType {
   // AKA multi-transactional commands
 
   public boolean isRead() {
-    return coordination.equals(Type.READ);
+    return category.equals(Type.READ);
   }
 
   public boolean isUpdate() {
-    return coordination.equals(Type.UPDATE);
+    return category.equals(Type.UPDATE);
   }
 
   public boolean isCreateDelete() {
-    return coordination.equals(Type.CREATE_DELETE);
+    return category.equals(Type.CREATE_DELETE);
   }
 
   public boolean isSelect() {
-    return coordination.equals(Type.SELECT);
+    return category.equals(Type.SELECT);
   }
 
   private static final Map<Integer, CommandType> map = new HashMap<Integer, CommandType>();
