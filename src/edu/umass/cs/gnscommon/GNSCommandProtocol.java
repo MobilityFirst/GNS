@@ -431,7 +431,7 @@ public class GNSCommandProtocol {
   /**
    * The aliases field in a account record.
    */
-  public static final String ACCOUNT_RECORD_ALIASED = "aliases";
+  public static final String ACCOUNT_RECORD_ALIASES = "aliases";
 
   // Blessed field names
   /**

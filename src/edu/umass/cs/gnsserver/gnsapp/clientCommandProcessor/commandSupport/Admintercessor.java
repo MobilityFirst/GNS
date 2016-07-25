@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -138,13 +139,14 @@ public class Admintercessor {
    * @param handler
    * @return true if we were successful
    */
+  // Keep this around for future use.
   public boolean sendClearCache(ClientRequestHandlerInterface handler) {
-    try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
-      return true;
-    } catch (JSONException | IOException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending CLEARCACHE request: {0}", e);
-    }
+//    try {
+//      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
+//      return true;
+//    } catch (JSONException | IOException e) {
+//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending CLEARCACHE request: {0}", e);
+//    }
     return false;
   }
 
@@ -154,21 +156,23 @@ public class Admintercessor {
    * @param handler
    * @return a string containing the cache
    */
+  // Keep this around for future use.
   public String sendDumpCache(ClientRequestHandlerInterface handler) {
-    int id = nextAdminRequestID();
-    try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
-      waitForAdminResponse(id);
-      JSONObject json = adminResult.get(id);
-      if (json != null) {
-        return json.getString("CACHE");
-      } else {
-        return null;
-      }
-    } catch (JSONException | IOException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending DUMPCACHE request: {0}", e);
-      return null;
-    }
+//    int id = nextAdminRequestID();
+//    try {
+//      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
+//      waitForAdminResponse(id);
+//      JSONObject json = adminResult.get(id);
+//      if (json != null) {
+//        return json.getString("CACHE");
+//      } else {
+//        return null;
+//      }
+//    } catch (JSONException | IOException e) {
+//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending DUMPCACHE request: {0}", e);
+//      return null;
+//    }
+  return "Currently not supported.";
   }
 
   /**
@@ -244,7 +248,7 @@ public class Admintercessor {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
       return new CommandResponse(      GNSResponseCode.QUERY_PROCESSING_ERROR, GNSCommandProtocol.BAD_RESPONSE 
-              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS");
+              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to replica");
     }
     waitForDumpResponse(id);
     Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);

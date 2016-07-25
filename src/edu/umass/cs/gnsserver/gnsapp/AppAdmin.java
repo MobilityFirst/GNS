@@ -199,11 +199,13 @@ public class AppAdmin extends Thread implements Shutdownable {
                   GNSConfig.getLogger().log(Level.WARNING,
                           "NSListenerAdmin ({0}) : Ignoring CLEARCACHE request", app.getNodeID());
                   break;
+                case DUMPCACHE:
+                  GNSConfig.getLogger().log(Level.WARNING,
+                          "NSListenerAdmin ({0}) : Ignoring DUMPCACHE request", app.getNodeID());
+                  break;
 
               }
               break;
-//          case STATUS_INIT:
-//            break;
           }
         }
       } catch (IOException | JSONException | FailedDBOperationException | ParseException | IllegalArgumentException | SecurityException e) {

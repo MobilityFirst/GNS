@@ -34,22 +34,22 @@ public enum SystemParameter {
   /**
    * Determines if email verification is used.
    */
-  EMAIL_VERIFICATION(ParameterType.Boolean, "edu.umass.cs.gnsserver.main.GNS", "enableEmailAccountVerification",
+  EMAIL_VERIFICATION(ParameterType.Boolean, "edu.umass.cs.gnsserver.main.GNSConfig", "enableEmailAccountVerification",
           "Determines if email verification is used."),
   /**
    * Determines if query and field authentication using signatures and ACLS is enabled.
    */
-  SIGNATURE_AUTHENTICATION(ParameterType.Boolean, "edu.umass.cs.gnsserver.main.GNS", "enableSignatureAuthentication",
+  SIGNATURE_AUTHENTICATION(ParameterType.Boolean, "edu.umass.cs.gnsserver.main.GNSConfig", "enableSignatureAuthentication",
           "Determines if query and field authentication using signatures and ACLS is enabled."),
   /**
    * Puts a limit on the number of guids an account can have.
    */
-  MAX_GUIDS(ParameterType.Integer, "edu.umass.cs.gnsserver.main.GNS", "MAXGUIDS",
+  MAX_GUIDS(ParameterType.Integer, "edu.umass.cs.gnsserver.main.GNSConfig", "MAXGUIDS",
           "Puts a limit on the number of guids an account can have."),
   /**
    * Puts a limit on the number of alias an account can have.
    */
-  MAX_ALIASES(ParameterType.Integer, "edu.umass.cs.gnsserver.main.GNS", "MAXALIASES",
+  MAX_ALIASES(ParameterType.Integer, "edu.umass.cs.gnsserver.main.GNSConfig", "MAXALIASES",
           "Puts a limit on the number of alias an account can have.");
 
   //
