@@ -24,7 +24,6 @@ import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,6 +37,7 @@ import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.SharedGuidUtils;

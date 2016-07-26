@@ -37,9 +37,10 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
+
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 
 /**
  * @author westy
@@ -90,7 +91,7 @@ public class KeyPairUtils {
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
         PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
         return new GuidEntry(username, guid, publicKey, privateKey);
-      } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+      } catch (NoSuchAlgorithmException | InvalidKeySpecException | EncryptionException e) {
         System.out.println(e.toString());
         return null;
       }

@@ -37,7 +37,8 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;

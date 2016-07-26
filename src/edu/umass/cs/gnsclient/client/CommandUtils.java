@@ -4,6 +4,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
@@ -105,16 +106,6 @@ public class CommandUtils {
 				key = (String) keysAndValues[i];
 				value = keysAndValues[i + 1];
 				result.put(key, value);
-				try {
-				assert(key==null || key instanceof String 
-						|| value==null
-						|| value instanceof String
-						|| value instanceof JSONArray)
-						: key.getClass().getSimpleName() + ":" + value.getClass().getSimpleName();
-				} catch(Throwable e) {
-					e.printStackTrace();
-					throw e;
-				}
 			}
 
 			// arun: made this static for now

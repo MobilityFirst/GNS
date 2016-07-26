@@ -20,10 +20,13 @@
 package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
+
 import java.io.IOException;
+
 import org.json.JSONArray;
+
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 
 /**

@@ -35,11 +35,12 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.LinkedList;
 import java.util.List;
+
 import android.os.Environment;
 import android.util.Log;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 
 /**
  * Class to store and retrieve key value pairs in Android.
@@ -376,7 +377,10 @@ public class KeyPairUtilsAndroid {
             Log.e(KeyPairUtilsAndroid.class.getName(), "Cannot decode keys", e);
           } catch (InvalidKeySpecException e) {
             Log.e(KeyPairUtilsAndroid.class.getName(), "Cannot decode keys", e);
-          }
+          } catch (EncryptionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         }
       }
     } catch (IOException e) {
@@ -451,7 +455,7 @@ public class KeyPairUtilsAndroid {
               PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
               PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
               return new GuidEntry(username, guid, publicKey, privateKey);
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | EncryptionException e) {
               Log.e(KeyPairUtilsAndroid.class.getName(), "Cannot decode keys", e);
             }
           }

@@ -19,10 +19,11 @@
  */
 package edu.umass.cs.gnsclient.console.commands;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
+
 import java.io.IOException;
 import java.util.StringTokenizer;
 

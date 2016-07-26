@@ -21,9 +21,9 @@ package edu.umass.cs.gnsclient.examples;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.AbstractGNSClient;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;

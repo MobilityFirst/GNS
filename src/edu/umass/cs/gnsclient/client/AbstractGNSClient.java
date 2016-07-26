@@ -32,6 +32,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.android.AndroidNIOTask;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.utils.Config;
@@ -364,9 +365,9 @@ public abstract class AbstractGNSClient {
    * @param receivedTime
    * @throws JSONException
    */
-  protected void handleCommandValueReturnPacket(Request response,
-          long receivedTime) throws JSONException {
-    long methodStartTime = System.currentTimeMillis();
+  protected void handleCommandValueReturnPacket(Request response
+          ) throws JSONException {
+    long methodStartTime = System.currentTimeMillis(), receivedTime = System.currentTimeMillis();
     CommandValueReturnPacket packet = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
             : null;
     ActiveReplicaError error = response instanceof ActiveReplicaError ? (ActiveReplicaError) response

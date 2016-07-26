@@ -56,11 +56,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
@@ -77,7 +79,74 @@ import edu.umass.cs.utils.Util;
  * 
  *         A helper class with static methods to help construct GNS commands.
  */
-public class GNSCommand {
+public class GNSCommand extends CommandPacket {
+
+	/**
+	 * The result types that can be returned by executing {@link CommandPacket}.
+	 */
+	public static enum ResultType {
+		/**
+		 * The default methods {@link CommandPacket#getResultString()} or
+		 * {@link CommandPacket#getResult()} be used to retrieve the result
+		 * irrespective of the result type.
+		 */
+		STRING,
+
+		/**
+		 * The methods {@link CommandPacket#getResultMap} or
+		 * {@link CommandPacket#getResultJSONObject} can be used if and only if
+		 * the result type is {@link #MAP};
+		 */
+		MAP,
+
+		/**
+		 * The methods {@link CommandPacket#getResultList},
+		 * {@link CommandPacket#getResultJSONArray} can be used if and only if
+		 * the result type is {@link #LIST}
+		 */
+		LIST,
+
+		/**
+		 * The method {@link CommandPacket#getResultBoolean} can be used if and
+		 * only if the result type is {@link #BOOLEAN}.
+		 */
+		BOOLEAN,
+
+		/**
+		 * The method {@link CommandPacket#getResultLong} can be used if and
+		 * only if the result type is {@link #LONG}.
+		 */
+		LONG,
+
+		/**
+		 * The method {@link CommandPacket#getResultInt} can be used if and only
+		 * if the result type is {@link #INTEGER}.
+		 */
+		INTEGER,
+
+		/**
+		 * The method {@link CommandPacket#getResultDouble} can be used if and
+		 * only if the result type is {@link #DOUBLE}.
+		 */
+		DOUBLE,
+
+		/**
+		 * The result of executing this command is null or does not return a
+		 * result.
+		 */
+		NULL
+
+	};
+
+	/* GNSCommand constructors must remain private */
+	private GNSCommand(JSONObject command) {
+		super(
+		/* arun: we just generate a random value here because it is not easy (or
+		 * worth trying) to guarantee non-conflicting IDs here. Conflicts will
+		 * either result in an IOException further down or the query will be
+		 * transformed to carry a different ID if */
+		randomLong(), command);
+	}
 
 	/**
 	 * Constructs a command of type {@code type} issued by the {@code querier}
@@ -96,16 +165,10 @@ public class GNSCommand {
 	 * @return A {@link CommandPacket} constructed using the supplied arguments.
 	 * @throws ClientException
 	 */
-	public static CommandPacket getCommand(CommandType type, GuidEntry querier,
+	public static GNSCommand getCommand(CommandType type, GuidEntry querier,
 			Object... keysAndValues) throws ClientException {
-		CommandPacket packet = new CommandPacket(
-		/* arun: we just generate a random value here because it is not easy (or
-		 * worth trying) to guarantee non-conflicting IDs here. Conflicts will
-		 * either result in an IOException further down or the query will be
-		 * transformed to carry a different ID if */
-		randomLong(), CommandUtils.createAndSignCommand(type, querier,
+		return new GNSCommand(CommandUtils.createAndSignCommand(type, querier,
 				keysAndValues));
-		return packet;
 	}
 
 	/**
@@ -119,409 +182,356 @@ public class GNSCommand {
 		return getCommand(type, null, keysAndValues);
 	}
 
-	/* We just use a random long here as we will get an IOException if there is
-	 * a conflicting request ID, i.e., if another unequal request is awaiting a
-	 * response in the async client. Equal requests are considered as
-	 * retransmissions. */
+	/**
+	 * We just use a random long here as we will either get an IOException if
+	 * there is a conflicting request ID, i.e., if another unequal request is
+	 * awaiting a response in the async client unless ENABLE_ID_TRANSFORM is
+	 * true.
+	 */
 	private static long randomLong() {
 		return (long) (Math.random() * Long.MAX_VALUE);
 	}
 
+	/* ********** Start of actual command construction methods ********* */
+
 	/**
 	 * @param targetGUID
-	 *            The GUID being updated.
+	 *            The GUID being queried.
 	 * @param json
-	 * @param writer
-	 *            The GUID issuing the update.
-	 * @return Refer {@link #update(String, JSONObject, GuidEntry)}
-	 * @throws IOException
+	 *            The JSONObject representation of the entire record value
+	 *            excluding the targetGUID itself.
+	 * 
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * 
 	 * @throws ClientException
 	 */
 	public static final CommandPacket update(String targetGUID,
-			JSONObject json, GuidEntry writer) throws IOException,
-			ClientException {
-		return getCommand(CommandType.ReplaceUserJSON, writer, GUID,
+			JSONObject json, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.ReplaceUserJSON, querierGUID, GUID,
 				targetGUID, USER_JSON, json.toString(), WRITER,
-				writer.getGuid());
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param json
+	 *            The JSONObject representation of the entire record value
+	 *            excluding the targetGUID itself.
 	 * @return Refer {@link #update(String, JSONObject, GuidEntry)}
-	 * @throws IOException
 	 * @throws ClientException
 	 */
-	public static final CommandPacket update(GuidEntry guid, JSONObject json)
-			throws IOException, ClientException {
-		return update(guid.getGuid(), json, guid);
+	public static final CommandPacket update(GuidEntry targetGUID,
+			JSONObject json) throws ClientException {
+		return update(targetGUID.getGuid(), json, targetGUID);
 	}
 
 	/**
 	 * @param targetGuid
+	 *            The GUID being queried.
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @param writer
+	 *            The value being assigned to targetGUID.field.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
 	 * @return Refer
 	 *         {@link GNSClientCommands#fieldUpdate(String, String, Object, GuidEntry)}
 	 *         .
-	 * @throws IOException
 	 * @throws ClientException
-	 * @throws JSONException
 	 */
 	public static final CommandPacket fieldUpdate(String targetGuid,
-			String field, Object value, GuidEntry writer) throws IOException,
-			ClientException, JSONException {
-		return getCommand(CommandType.ReplaceUserJSON, writer, GUID,
-				targetGuid, USER_JSON, new JSONObject().put(field, value)
-						.toString(), WRITER, writer.getGuid());
+			String field, Object value, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.ReplaceUserJSON, querierGUID, GUID,
+				targetGuid, USER_JSON, getJSONObject(field, value).toString(),
+				WRITER, querierGUID.getGuid());
+	}
+
+	// converts JSONException to ClientException
+	private static JSONObject getJSONObject(String field, Object value)
+			throws ClientException {
+		try {
+			return new JSONObject().put(field, value);
+		} catch (JSONException e) {
+			throw new ClientException(e);
+		}
 	}
 
 	/**
-	 * Creates an index for a field. The guid is only used for authentication
-	 * purposes.
+	 * Creates an index for a field. {@code targetGUID} is only used for
+	 * authentication purposes. This command will succeed only the issuer has
+	 * the credentials to issue this query.
 	 *
-	 * @param guid
+	 * @param GUID
+	 *            The GUID issuing the query.
 	 * @param field
+	 *            The field key.
 	 * @param index
-	 * @return
-	 * @throws IOException
+	 *            The name of the index being created upon {@code field}.
+	 * @return CommandPacket
 	 * @throws ClientException
-	 * @throws JSONException
 	 */
-	public static final CommandPacket fieldCreateIndex(GuidEntry guid,
-			String field, String index) throws IOException, ClientException,
-			JSONException {
-		return getCommand(CommandType.CreateIndex, guid, GUID, guid.getGuid(),
-				FIELD, field, VALUE, index, WRITER, guid.getGuid());
+	protected static final CommandPacket fieldCreateIndex(GuidEntry GUID,
+			String field, String index) throws ClientException {
+		return getCommand(CommandType.CreateIndex, GUID, GUID, GUID.getGuid(),
+				FIELD, field, VALUE, index, WRITER, GUID.getGuid());
 	}
 
 	/**
-	 * Updates the field in the targetGuid. Signs the query using the private
-	 * key of the given guid.
+	 * Updates {@code targetGUID}:{@code field} to {@code value}. Signs the
+	 * query using the private key of {@code targetGUID}.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return
-	 * @throws IOException
+	 *            The value being assigned to {@code field}.
+	 * @return CommandPacket
 	 * @throws ClientException
-	 * @throws JSONException
 	 */
-	public static final CommandPacket fieldUpdate(GuidEntry targetGuid,
-			String field, Object value) throws IOException, ClientException,
-			JSONException {
-		return fieldUpdate(targetGuid.getGuid(), field, value, targetGuid);
+	public static final CommandPacket fieldUpdate(GuidEntry targetGUID,
+			String field, Object value) throws ClientException {
+		return fieldUpdate(targetGUID.getGuid(), field, value, targetGUID);
 	}
 
 	/**
-	 * Reads the JSONObject for the given targetGuid. The reader is the guid of
-	 * the user attempting access. Signs the query using the private key of the
-	 * user associated with the reader guid (unsigned if reader is null).
+	 * Reads the entire record for {@code targetGUID}. {@code reader} is the
+	 * GUID issuing the query and must be present in the ACL for
+	 * {@code targetGUID}{@code ALL_FIELDS} for the query to succeed. If
+	 * {@code reader} is null, {@code targetGUID}{@code ALL_FIELDS} must be
+	 * globally readable.
+	 * 
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket read(String targetGUID,
+			GuidEntry querierGUID) throws ClientException {
+		return getCommand(querierGUID != null ? CommandType.ReadArray
+				: CommandType.ReadArrayUnsigned, querierGUID, GUID, targetGUID,
+				FIELD, ALL_FIELDS, READER,
+				querierGUID != null ? querierGUID.getGuid() : null);
+	}
+
+	/**
+	 * Reads the entire record for {@code targetGUID} implicitly assuming that
+	 * the querier is also {@code targetGUID}.
 	 *
-	 * @param targetGuid
-	 * @param reader
-	 *            if null guid must be all fields readable for all users
-	 * @return a JSONObject
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @return CommandPacket
 	 * @throws Exception
 	 */
-	public static final CommandPacket read(String targetGuid, GuidEntry reader)
+	public static final CommandPacket read(GuidEntry targetGUID)
 			throws Exception {
-		return getCommand(reader != null ? CommandType.ReadArray
-				: CommandType.ReadArrayUnsigned, reader, GUID, targetGuid,
-				FIELD, ALL_FIELDS, READER, reader != null ? reader.getGuid()
-						: null);
+		return read(targetGUID.getGuid(), targetGUID);
 	}
 
 	/**
-	 * Reads the entire record from the GNS server for the given guid. Signs the
-	 * query using the private key of the guid.
+	 * Checks if {@code field} exists in {@code targetGuid}.
 	 *
-	 * @param guid
-	 * @return a JSONArray containing the values in the field
-	 * @throws Exception
-	 */
-	public static final CommandPacket read(GuidEntry guid) throws Exception {
-		return read(guid.getGuid(), guid);
-	}
-
-	/**
-	 * Returns true if the field exists in the given targetGuid. Field is a
-	 * string the naming the field. Field can use dot notation to indicate
-	 * subfields. The reader is the guid of the user attempting access. This
-	 * method signs the query using the private key of the user associated with
-	 * the reader guid (unsigned if reader is null).
-	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @param reader
-	 *            if null the field must be readable for all
-	 * @return a boolean indicating if the field exists
-	 * @throws Exception
+	 *            The field key.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldExists(String targetGuid,
-			String field, GuidEntry reader) throws Exception {
-		return getCommand(reader != null ? CommandType.Read
-				: CommandType.ReadUnsigned, reader, GUID, targetGuid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null);
+	public static final CommandPacket fieldExists(String targetGUID,
+			String field, GuidEntry querierGUID) throws ClientException {
+		return getCommand(querierGUID != null ? CommandType.Read
+				: CommandType.ReadUnsigned, querierGUID, GUID, targetGUID,
+				FIELD, field, READER,
+				querierGUID != null ? querierGUID.getGuid() : null);
 	}
 
 	/**
-	 * Returns true if the field exists in the given targetGuid. Field is a
-	 * string the naming the field. Field can use dot notation to indicate
-	 * subfields. This method signs the query using the private key of the
-	 * targetGuid.
+	 * Checks if {@code field} exists in {@code targetGuid}. The querier GUID is
+	 * assumed to also be {@code targetGUID}.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @return a boolean indicating if the field exists
-	 * @throws Exception
+	 *            The field key.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldExists(GuidEntry targetGuid,
-			String field) throws Exception {
-		return fieldExists(targetGuid.getGuid(), field, targetGuid);
+	public static final CommandPacket fieldExists(GuidEntry targetGUID,
+			String field) throws ClientException {
+		return fieldExists(targetGUID.getGuid(), field, targetGUID);
 	}
 
 	/**
-	 * Reads the value of field for the given targetGuid. Field is a string the
-	 * naming the field. Field can use dot notation to indicate subfields. The
-	 * reader is the guid of the user attempting access. This method signs the
-	 * query using the private key of the user associated with the reader guid
-	 * (unsigned if reader is null).
+	 * Reads the value of {@code targetGUID}:{@code field}. {@code querierGUID},
+	 * if not null, must be present in the ACL for {@code targetGUID}:
+	 * {@code field}; if null, {@code targetGUID}:{@code field} must be globally
+	 * readable.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @param reader
-	 *            if null the field must be readable for all
+	 *            The field key.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
 	 * @return a string containing the values in the field
-	 * @throws Exception
-	 */
-	public static final CommandPacket fieldRead(String targetGuid,
-			String field, GuidEntry reader) throws Exception {
-		return getCommand(reader != null ? CommandType.Read
-				: CommandType.ReadUnsigned, reader, GUID, targetGuid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null);
-	}
-
-	/**
-	 * Reads the value of field from the targetGuid. Field is a string the
-	 * naming the field. Field can use dot notation to indicate subfields. This
-	 * method signs the query using the private key of the targetGuid.
-	 *
-	 * @param targetGuid
-	 * @param field
-	 * @return field value
-	 * @throws Exception
-	 */
-	public static final CommandPacket fieldRead(GuidEntry targetGuid,
-			String field) throws Exception {
-		return fieldRead(targetGuid.getGuid(), field, targetGuid);
-	}
-
-	/**
-	 * Reads the value of fields for the given targetGuid. Fields is a list of
-	 * strings the naming the field. Fields can use dot notation to indicate
-	 * subfields. The reader is the guid of the user attempting access. This
-	 * method signs the query using the private key of the user associated with
-	 * the reader guid (unsigned if reader is null).
-	 *
-	 * @param targetGuid
-	 * @param fields
-	 * @param reader
-	 *            if null the field must be readable for all
-	 * @return a JSONArray containing the values in the fields
-	 * @throws Exception
-	 */
-	public static final CommandPacket fieldRead(String targetGuid,
-			ArrayList<String> fields, GuidEntry reader) throws Exception {
-		return getCommand(reader != null ? CommandType.ReadMultiField
-				: CommandType.ReadMultiFieldUnsigned, reader, GUID, targetGuid,
-				FIELDS, fields, READER, reader != null ? reader.getGuid()
-						: null);
-	}
-
-	/**
-	 * Reads the value of fields for the given guid. Fields is a list of strings
-	 * the naming the field. Fields can use dot notation to indicate subfields.
-	 * This method signs the query using the private key of the guid.
-	 *
-	 * @param targetGuid
-	 * @param fields
-	 * @return values of fields
-	 * @throws Exception
-	 */
-	public static final CommandPacket fieldRead(GuidEntry targetGuid,
-			ArrayList<String> fields) throws Exception {
-		return fieldRead(targetGuid.getGuid(), fields, targetGuid);
-	}
-
-	/**
-	 * Removes a field in the JSONObject record of the given targetGuid. The
-	 * writer is the guid of the user attempting access. Signs the query using
-	 * the private key of the user associated with the writer guid.
-	 *
-	 * @param targetGuid
-	 * @param field
-	 * @param writer
-	 * @return
-	 * @throws IOException
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws SignatureException
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldRemove(String targetGuid,
-			String field, GuidEntry writer) throws IOException,
-			InvalidKeyException, NoSuchAlgorithmException, SignatureException,
-			ClientException {
-		return getCommand(CommandType.RemoveField, writer, GUID, targetGuid,
-				FIELD, field, WRITER, writer.getGuid());
-	}
-
-	// SELECT COMMANDS
-	/**
-	 * Selects all records that match query. Returns the result of the query as
-	 * a JSONArray of guids.
-	 *
-	 * The query syntax is described here:
-	 * https://gns.name/wiki/index.php?title=Query_Syntax
-	 *
-	 * Currently there are two predefined field names in the GNS client (this is
-	 * in edu.umass.cs.gnsclient.client.GNSCommandProtocol): LOCATION_FIELD_NAME
-	 * = "geoLocation"; Defined as a "2d" index in the database.
-	 * IPADDRESS_FIELD_NAME = "netAddress";
-	 *
-	 * There are links in the wiki page abive to find the exact syntax for
-	 * querying spacial coordinates.
-	 *
-	 * @param query
-	 *            - the query
-	 * @return - a JSONArray of guids
-	 * @throws Exception
-	 */
-	public static final CommandPacket selectQuery(String query)
-			throws Exception {
-
-		return getCommand(CommandType.SelectQuery, QUERY, query);
+	public static final CommandPacket fieldRead(String targetGUID,
+			String field, GuidEntry querierGUID) throws ClientException {
+		return getCommand(querierGUID != null ? CommandType.Read
+				: CommandType.ReadUnsigned, querierGUID, GUID, targetGUID,
+				FIELD, field, READER,
+				querierGUID != null ? querierGUID.getGuid() : null);
 	}
 
 	/**
-	 * Set up a context aware group guid using a query. Requires a accountGuid
-	 * and a publicKey which are used to set up the new guid or look it up if it
-	 * already exists.
-	 *
-	 * Also returns the result of the query as a JSONArray of guids.
-	 *
-	 * The query syntax is described here:
-	 * https://gns.name/wiki/index.php?title=Query_Syntax
-	 *
-	 * @param accountGuid
-	 * @param publicKey
-	 * @param query
-	 *            the query
-	 * @param interval
-	 *            - the refresh interval in seconds - default is 60 - (queries
-	 *            that happens quicker than this will get stale results)
-	 * @return a JSONArray of guids
-	 * @throws Exception
+	 * Same as {@link #fieldRead(String, String, GuidEntry)} with
+	 * {@code querierGUID} set to {@code targetGUID}. The result type of the
+	 * execution result of this query is {@link GNSCommand.ResultType#MAP}.
+	 * 
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @param field
+	 *            The field key.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket selectSetupGroupQuery(
-			GuidEntry accountGuid, String publicKey, String query, int interval)
-			throws Exception {
-		return getCommand(CommandType.SelectGroupSetupQuery, GUID,
-				accountGuid.getGuid(), PUBLIC_KEY, publicKey, QUERY, query,
-				INTERVAL, interval);
+	public static final CommandPacket fieldRead(GuidEntry targetGUID,
+			String field) throws ClientException {
+		return fieldRead(targetGUID.getGuid(), field, targetGUID);
 	}
 
 	/**
-	 * Look up the value of a context aware group guid using a query. Returns
-	 * the result of the query as a JSONArray of guids. The results will be
-	 * stale if the queries that happen more quickly than the refresh interval
-	 * given during setup.
+	 * Reads {@code targetGUID}:{@code field} for each field in {@code fields}.
+	 * {@code querierGUID} must be present in the read ACL of every field in
+	 * {@code fields}. The result type of the execution result of this query is
+	 * {@link GNSCommand.ResultType#LIST}.
 	 *
-	 * @param guid
-	 * @return a JSONArray of guids
-	 * @throws Exception
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @param fields
+	 *            The list of field keys being queried.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket selectLookupGroupQuery(String guid)
-			throws Exception {
-		return getCommand(CommandType.SelectGroupLookupQuery, GUID, guid);
+	public static final CommandPacket fieldRead(String targetGUID,
+			ArrayList<String> fields, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(querierGUID != null ? CommandType.ReadMultiField
+				: CommandType.ReadMultiFieldUnsigned, querierGUID, GUID,
+				targetGUID, FIELDS, fields, READER,
+				querierGUID != null ? querierGUID.getGuid() : null);
+	}
+
+	/**
+	 * Same as {@link #fieldRead(String, ArrayList, GuidEntry)} with
+	 * {@code querierGUID} set to {@code targetGUID}.
+	 *
+	 * @param targetGUID
+	 * @param fields
+	 *            The list of field keys.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket fieldRead(GuidEntry targetGUID,
+			ArrayList<String> fields) throws ClientException {
+		return fieldRead(targetGUID.getGuid(), fields, targetGUID);
+	}
+
+	/**
+	 * Removes {@code targetGUID}:{@code field}. {@code querierGUID} must be
+	 * present in the write ACL of {@code targetGUID}:{@code field} for the
+	 * query to succeed.
+	 *
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @param field
+	 *            The field key.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket fieldRemove(String targetGUID,
+			String field, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.RemoveField, querierGUID, GUID,
+				targetGUID, FIELD, field, WRITER, querierGUID.getGuid());
 	}
 
 	// ACCOUNT COMMANDS
 	/**
-	 * Obtains the guid of the alias from the GNS server.
+	 * Retrieves the GUID of {@code alias}.
 	 *
 	 * @param alias
-	 * @return guid
-	 * @throws IOException
-	 * @throws UnsupportedEncodingException
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket lookupGuid(String alias)
-			throws IOException, ClientException {
+	public static final CommandPacket lookupGUID(String alias)
+			throws ClientException {
 
 		return getCommand(CommandType.LookupGuid, NAME, alias);
 	}
 
 	/**
-	 * If this is a sub guid returns the account guid it was created under.
+	 * If this is a sub-GUID, this command looks up the corresponding account
+	 * GUID.
 	 *
-	 * @param guid
-	 * @return Account GUID of {@code guid}
-	 * @throws UnsupportedEncodingException
-	 * @throws IOException
+	 * @param subGUID
+	 * @return Account GUID of {@code subGUID}
 	 * @throws ClientException
 	 */
-	public static final CommandPacket lookupPrimaryGuid(String guid)
-			throws UnsupportedEncodingException, IOException, ClientException {
-		return getCommand(CommandType.LookupPrimaryGuid, GUID, guid);
+	public static final CommandPacket lookupPrimaryGUID(String subGUID)
+			throws ClientException {
+		return getCommand(CommandType.LookupPrimaryGuid, GUID, subGUID);
 	}
 
 	/**
-	 * Returns a JSON object containing all of the guid meta information. This
-	 * method returns meta data about the guid. If you want any particular field
-	 * or fields of the guid you'll need to use one of the read methods.
+	 * Looks up metadata for {@code targetGUID}. The result type of the
+	 * execution result of this query is {@link GNSCommand.ResultType#MAP}.
 	 *
-	 * @param guid
-	 * @return {@code guid} meta info
-	 * @throws IOException
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket lookupGuidRecord(String guid)
-			throws IOException, ClientException {
-		return (getCommand(CommandType.LookupGuidRecord, GUID, guid));
+	public static final CommandPacket lookupGUIDRecord(String targetGUID)
+			throws ClientException {
+		return (getCommand(CommandType.LookupGuidRecord, GUID, targetGUID));
 	}
 
 	/**
-	 * Returns a JSON object containing all of the account meta information for
-	 * an account guid. This method returns meta data about the account
-	 * associated with this guid if and only if the guid is an account guid. If
-	 * you want any particular field or fields of the guid you'll need to use
-	 * one of the read methods.
+	 * Looks up the the metadata for {@code accountGUID}.
 	 *
-	 * @param accountGuid
-	 * @return accountGUID meta info
-	 * @throws IOException
+	 * @param accountGUID
+	 *            The account GUID being queried.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket lookupAccountRecord(String accountGuid)
-			throws IOException, ClientException {
-		return getCommand(CommandType.LookupAccountRecord, GUID, accountGuid);
+	public static final CommandPacket lookupAccountRecord(String accountGUID)
+			throws ClientException {
+		return getCommand(CommandType.LookupAccountRecord, GUID, accountGUID);
 	}
 
 	/**
-	 * Get the public key for a given alias.
+	 * Get the public key for {@code alias}.
 	 *
 	 * @param alias
-	 * @return the public key registered for the alias
-	 * @throws InvalidGuidException
+	 * @return CommandPacket
 	 * @throws ClientException
-	 * @throws IOException
 	 */
-	public PublicKey publicKeyLookupFromAlias(String alias)
+	PublicKey publicKeyLookupFromAlias(String alias)
 			throws InvalidGuidException, ClientException, IOException {
-
 		throw new RuntimeException("Unimplementable");
 		// String guid = lookupGuid(alias);
 		// return publicKeyLookupFromGuid(guid);
@@ -530,31 +540,30 @@ public class GNSCommand {
 	/**
 	 * Get the public key for a given GUID.
 	 *
-	 * @param guid
-	 * @return Public key for {@code guid}
-	 * @throws InvalidGuidException
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @return CommandPacket
 	 * @throws ClientException
-	 * @throws IOException
 	 */
-	public static final CommandPacket publicKeyLookupFromGuid(String guid)
-			throws InvalidGuidException, ClientException, IOException {
-
-		return lookupGuidRecord(guid);
+	public static final CommandPacket publicKeyLookupFromGUID(String targetGUID)
+			throws ClientException {
+		return lookupGUIDRecord(targetGUID);
 	}
 
 	/**
-	 * Register a new account guid with the corresponding alias on the GNS
-	 * server. This generates a new guid and a public / private key pair.
-	 * Returns a GuidEntry for the new account which contains all of this
-	 * information.
+	 * Register a new account GUID with the name {@code alias} and a password
+	 * {@code password}. Executing this query generates a new GUID and a public
+	 * / private key pair. {@code password} can be used to retrieve account
+	 * information if the client loses the private key corresponding to the
+	 * account GUID.
 	 * 
 	 * @param gnsInstance
 	 *
 	 * @param alias
-	 *            - a human readable alias to the guid - usually an email
-	 *            address
+	 *            Human readable alias for the account GUID being created, e.g.,
+	 *            an email address
 	 * @param password
-	 * @return GuidEntry for {@code alias}
+	 * @return CommandPacket
 	 * @throws Exception
 	 */
 	public static final CommandPacket accountGuidCreate(String gnsInstance,
@@ -573,274 +582,252 @@ public class GNSCommand {
 	/**
 	 * Verify an account by sending the verification code back to the server.
 	 *
-	 * @param guid
-	 *            the account GUID to verify
+	 * @param accountGUID
+	 *            The account GUID to verify
 	 * @param code
-	 *            the verification code
-	 * @return ?
-	 * @throws Exception
+	 *            The verification code
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket accountGuidVerify(GuidEntry guid,
-			String code) throws Exception {
-		return getCommand(CommandType.VerifyAccount, guid, GUID,
-				guid.getGuid(), CODE, code);
+	public static final CommandPacket accountGuidVerify(GuidEntry accountGUID,
+			String code) throws ClientException {
+		return getCommand(CommandType.VerifyAccount, accountGUID, GUID,
+				accountGUID.getGuid(), CODE, code);
 	}
 
 	/**
-	 * Deletes the account given by name
+	 * Deletes the account named {@code name}.
 	 *
-	 * @param guid
-	 *            GuidEntry
-	 * @return
-	 * @throws Exception
+	 * @param accountGUID
+	 *            GuidEntry for the account being removed.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket accountGuidRemove(GuidEntry guid)
-			throws Exception {
-		return getCommand(CommandType.RemoveAccount, guid, GUID,
-				guid.getGuid(), NAME, guid.getEntityName());
+	public static final CommandPacket accountGuidRemove(GuidEntry accountGUID)
+			throws ClientException {
+		return getCommand(CommandType.RemoveAccount, accountGUID, GUID,
+				accountGUID.getGuid(), NAME, accountGUID.getEntityName());
 	}
 
 	/**
 	 * Creates an new GUID associated with an account on the GNS server.
 	 * 
 	 * @param gnsInstance
+	 *            The name of the GNS service instance.
 	 *
-	 * @param accountGuid
+	 * @param accountGUID
+	 *            The account GUID being created.
 	 * @param alias
-	 *            the alias
-	 * @return the newly created GUID entry
-	 * @throws Exception
+	 *            The alias for the account GUID.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket guidCreate(String gnsInstance,
-			GuidEntry accountGuid, String alias) throws Exception {
-
-		GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
-		return guidCreateHelper(accountGuid, alias, entry.getPublicKey());
+	public static final CommandPacket createGUID(String gnsInstance,
+			GuidEntry accountGUID, String alias) throws ClientException {
+		try {
+			return guidCreateHelper(accountGUID, alias, GuidUtils
+					.createAndSaveGuidEntry(alias, gnsInstance).getPublicKey());
+		} catch (NoSuchAlgorithmException e) {
+			throw new ClientException(e);
+		}
 	}
 
 	/**
-	 * Batch create guids with the given aliases. If createPublicKeys is true,
-	 * key pairs will be created and saved by the client for the guids. If not,
-	 * bogus public keys will be uses which will make the guids only accessible
-	 * using the account guid (which has ACL access to each guid).
+	 * Creates a batch of GUIDs listed in {@code aliases} using gigapaxos' batch
+	 * creation mechanism.
 	 * 
 	 * @param gnsInstance
+	 *            The name of the GNS service instance.
 	 *
-	 * @param accountGuid
+	 * @param accountGUID
 	 * @param aliases
-	 * @return ???
-	 * @throws Exception
+	 *            The batch of names being created.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket guidBatchCreate(String gnsInstance,
-			GuidEntry accountGuid, Set<String> aliases) throws Exception {
+	public static final CommandPacket batchCreateGUIDs(String gnsInstance,
+			GuidEntry accountGUID, Set<String> aliases) throws ClientException {
 
 		List<String> aliasList = new ArrayList<>(aliases);
 		List<String> publicKeys = null;
-		long publicKeyStartTime = System.currentTimeMillis();
 		publicKeys = new ArrayList<>();
 		for (String alias : aliasList) {
-			long singleEntrystartTime = System.currentTimeMillis();
-			GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-					gnsInstance);
-			DelayProfiler.updateDelay("updateOnePreference",
-					singleEntrystartTime);
+			GuidEntry entry;
+			try {
+				entry = GuidUtils.createAndSaveGuidEntry(alias, gnsInstance);
+			} catch (NoSuchAlgorithmException e) {
+				// FIXME: Do we need to roll back created keys?
+				throw new ClientException(e);
+			}
 			byte[] publicKeyBytes = entry.getPublicKey().getEncoded();
 			String publicKeyString = Base64.encodeToString(publicKeyBytes,
 					false);
 			publicKeys.add(publicKeyString);
 		}
-		DelayProfiler.updateDelay("batchCreatePublicKeys", publicKeyStartTime);
 
-		return getCommand(CommandType.AddMultipleGuids, accountGuid, GUID,
-				accountGuid.getGuid(), NAMES, new JSONArray(aliasList),
+		return getCommand(CommandType.AddMultipleGuids, accountGUID, GUID,
+				accountGUID.getGuid(), NAMES, new JSONArray(aliasList),
 				PUBLIC_KEYS, new JSONArray(publicKeys));
 	}
 
 	/**
-	 * Removes a guid (not for account Guids - use removeAccountGuid for them).
+	 * Removes {@code targetGUID} that is not an account GUID.
 	 *
-	 * @param guid
-	 *            the guid to remove
-	 * @throws Exception
+	 * @param targetGUID
+	 *            The GUID being removed.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket guidRemove(GuidEntry guid)
-			throws Exception {
-		return getCommand(CommandType.RemoveGuidNoAccount, guid, GUID,
-				guid.getGuid());
+	public static final CommandPacket removeGUID(GuidEntry targetGUID)
+			throws ClientException {
+		return getCommand(CommandType.RemoveGuidNoAccount, targetGUID, GUID,
+				targetGUID.getGuid());
 	}
 
 	/**
-	 * Removes a guid given the guid and the associated account guid.
+	 * Removes {@code targetGUID} given the associated {@code accountGUID}.
 	 *
-	 * @param accountGuid
-	 * @param guidToRemove
-	 * @throws Exception
+	 * @param accountGUID
+	 * @param targetGUID
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket guidRemove(GuidEntry accountGuid,
-			String guidToRemove) throws Exception {
-		return getCommand(CommandType.RemoveGuid, accountGuid, ACCOUNT_GUID,
-				accountGuid.getGuid(), GUID, guidToRemove);
+	public static final CommandPacket removeGUID(GuidEntry accountGUID,
+			String targetGUID) throws ClientException {
+		return getCommand(CommandType.RemoveGuid, accountGUID, ACCOUNT_GUID,
+				accountGUID.getGuid(), GUID, targetGUID);
 	}
 
 	// GROUP COMMANDS
 	/**
-	 * Return the list of guids that are members of the group. Signs the query
-	 * using the private key of the user associated with the guid.
+	 * Looks up the list of GUIDs that are members of {@code groupGUID}. The
+	 * result type of the execution result of this query is
+	 * {@link GNSCommand.ResultType#LIST}.
 	 *
 	 * @param groupGuid
-	 *            the guid of the group to lookup
-	 * @param reader
-	 *            the guid of the entity doing the lookup
-	 * @return the list of guids as a JSONArray
-	 * @throws IOException
-	 *             if a communication error occurs
+	 *            The group GUID being queried.
+	 * @param querierGUID
+	 *            The GUID issuing of the query.
+	 * @return CommandPacket
 	 * @throws ClientException
-	 *             if a protocol error occurs or the list cannot be parsed
-	 * @throws InvalidGuidException
-	 *             if the group guid is invalid
 	 */
 	public static final CommandPacket groupGetMembers(String groupGuid,
-			GuidEntry reader) throws IOException, ClientException,
-			InvalidGuidException {
-		return getCommand(CommandType.GetGroupMembers, reader, GUID, groupGuid,
-				READER, reader.getGuid());
+			GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.GetGroupMembers, querierGUID, GUID,
+				groupGuid, READER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Return a list of the groups that the guid is a member of. Signs the query
-	 * using the private key of the user associated with the guid.
+	 * Looks up the list of groups of which {@code targetGUID} is a member.
 	 *
-	 * @param guid
-	 *            the guid we are looking for
-	 * @param reader
-	 *            the guid of the entity doing the lookup
+	 * @param targetGUID
+	 *            The GUID whose groups are being looked up.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
 	 * @return the list of groups as a JSONArray
-	 * @throws IOException
-	 *             if a communication error occurs
 	 * @throws ClientException
 	 *             if a protocol error occurs or the list cannot be parsed
-	 * @throws InvalidGuidException
-	 *             if the group guid is invalid
 	 */
-	public static final CommandPacket guidGetGroups(String guid,
-			GuidEntry reader) throws IOException, ClientException,
-			InvalidGuidException {
+	public static final CommandPacket guidGetGroups(String targetGUID,
+			GuidEntry querierGUID) throws ClientException {
 
-		return getCommand(CommandType.GetGroups, reader, GUID, guid, READER,
-				reader.getGuid());
+		return getCommand(CommandType.GetGroups, querierGUID, GUID, targetGUID,
+				READER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Add a guid to a group guid. Any guid can be a group guid. Signs the query
-	 * using the private key of the user associated with the writer.
+	 * Add a GUID to {@code groupGUID}. Any GUID can be a group GUID.
 	 *
-	 * @param groupGuid
-	 *            guid of the group
-	 * @param guidToAdd
-	 *            guid to add to the group
-	 * @param writer
-	 *            the guid doing the add
-	 * @throws IOException
-	 * @throws InvalidGuidException
-	 *             if the group guid does not exist
+	 * @param groupGUID
+	 *            The GUID of the group.
+	 * @param toAddGUID
+	 *            The GUID being added.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket groupAddGuid(String groupGuid,
-			String guidToAdd, GuidEntry writer) throws IOException,
-			InvalidGuidException, ClientException {
-		return getCommand(CommandType.AddToGroup, writer, GUID, groupGuid,
-				MEMBER, guidToAdd, WRITER, writer.getGuid());
+	public static final CommandPacket groupAddGuid(String groupGUID,
+			String toAddGUID, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.AddToGroup, querierGUID, GUID, groupGUID,
+				MEMBER, toAddGUID, WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Add multiple members to a group
+	 * Add multiple members to a group.
 	 *
-	 * @param groupGuid
-	 *            guid of the group
+	 * @param groupGUID
+	 *            The GUID of the group.
 	 * @param members
-	 *            guids of members to add to the group
-	 * @param writer
-	 *            the guid doing the add
-	 * @throws IOException
-	 * @throws InvalidGuidException
+	 *            The member GUIDs to add to the group.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws SignatureException
 	 */
-	public static final CommandPacket groupAddGuids(String groupGuid,
-			JSONArray members, GuidEntry writer) throws IOException,
-			InvalidGuidException, ClientException, InvalidKeyException,
-			NoSuchAlgorithmException, SignatureException {
-		return getCommand(CommandType.AddMembersToGroup, writer, GUID,
-				groupGuid, MEMBERS, members.toString(), WRITER,
-				writer.getGuid());
+	public static final CommandPacket groupAddGUIDs(String groupGUID,
+			Set<String> members, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.AddMembersToGroup, querierGUID, GUID,
+				groupGUID, MEMBERS, new JSONArray(members).toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Removes a guid from a group guid. Any guid can be a group guid. Signs the
-	 * query using the private key of the user associated with the writer.
+	 * Removes a GUID from a group GUID. Any GUID can be a group GUID.
+	 * 
 	 *
-	 * @param guid
-	 *            guid of the group
-	 * @param guidToRemove
-	 *            guid to remove from the group
-	 * @param writer
-	 *            the guid of the entity doing the remove
-	 * @throws IOException
-	 * @throws InvalidGuidException
-	 *             if the group guid does not exist
+	 * @param groupGUID
+	 *            The group GUID
+	 * @param toRemoveGUID
+	 *            The GUID being removed.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket groupRemoveGuid(String guid,
-			String guidToRemove, GuidEntry writer) throws IOException,
-			InvalidGuidException, ClientException {
-		return getCommand(CommandType.RemoveFromGroup, writer, GUID, guid,
-				MEMBER, guidToRemove, WRITER, writer.getGuid());
+	public static final CommandPacket groupRemoveGuid(String groupGUID,
+			String toRemoveGUID, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.RemoveFromGroup, querierGUID, GUID,
+				groupGUID, MEMBER, toRemoveGUID, WRITER, querierGUID.getGuid());
 	}
 
 	/**
 	 * Remove a list of members from a group
 	 *
-	 * @param guid
-	 *            guid of the group
+	 * @param groupGUID
+	 *            The group GUID
 	 * @param members
-	 *            guids to remove from the group
-	 * @param writer
-	 *            the guid of the entity doing the remove
-	 * @throws IOException
-	 * @throws InvalidGuidException
+	 *            The GUIDs to be removed.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws SignatureException
 	 */
-	public static final CommandPacket groupRemoveGuids(String guid,
-			JSONArray members, GuidEntry writer) throws IOException,
-			InvalidGuidException, ClientException, InvalidKeyException,
-			NoSuchAlgorithmException, SignatureException {
-		return getCommand(CommandType.RemoveMembersFromGroup, writer, GUID,
-				guid, MEMBERS, members.toString(), WRITER, writer.getGuid());
+	public static final CommandPacket groupRemoveGuids(String groupGUID,
+			JSONArray members, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.RemoveMembersFromGroup, querierGUID,
+				GUID, groupGUID, MEMBERS, members.toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Authorize guidToAuthorize to add/remove members from the group groupGuid.
-	 * If guidToAuthorize is null, everyone is authorized to add/remove members
-	 * to the group. Note that this method can only be called by the group owner
-	 * (private key required) Signs the query using the private key of the group
-	 * owner.
+	 * Authorize {@code toAuthorizeGUID} to add/remove members from the group
+	 * {@code groupGUID}. If {@code toAuthorizeGUID} is null, everyone is
+	 * authorized to add/remove members to the group. Note that this method can
+	 * only be called by the group owner (private key required).
 	 *
-	 * @param groupGuid
+	 * @param groupGUID
 	 *            the group GUID entry
-	 * @param guidToAuthorize
-	 *            the guid to authorize to manipulate group membership or null
+	 * @param toAuthorizeGUID
+	 *            the GUID being authorized to change group membership or null
 	 *            for anyone
-	 * @throws Exception
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
 	public static final CommandPacket groupAddMembershipUpdatePermission(
-			GuidEntry groupGuid, String guidToAuthorize) throws Exception {
-		return aclAdd(AclAccessType.WRITE_WHITELIST, groupGuid, GROUP_ACL,
-				guidToAuthorize);
+			GuidEntry groupGUID, String toAuthorizeGUID) throws ClientException {
+		return aclAdd(AclAccessType.WRITE_WHITELIST, groupGUID, GROUP_ACL,
+				toAuthorizeGUID);
 	}
 
 	/**
@@ -855,151 +842,160 @@ public class GNSCommand {
 	 * @param guidToUnauthorize
 	 *            the guid to authorize to manipulate group membership or null
 	 *            for anyone
-	 * @throws Exception
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
 	public static final CommandPacket groupRemoveMembershipUpdatePermission(
-			GuidEntry groupGuid, String guidToUnauthorize) throws Exception {
+			GuidEntry groupGuid, String guidToUnauthorize)
+			throws ClientException {
 		return aclRemove(AclAccessType.WRITE_WHITELIST, groupGuid, GROUP_ACL,
 				guidToUnauthorize);
 	}
 
 	/**
-	 * Authorize guidToAuthorize to get the membership list from the group
-	 * groupGuid. If guidToAuthorize is null, everyone is authorized to list
-	 * members of the group. Note that this method can only be called by the
-	 * group owner (private key required). Signs the query using the private key
-	 * of the group owner.
+	 * Authorize {@code toAuthorizeGUID} to get the membership list from the
+	 * group {@code groupGUID}. If {@code toAuthorizeGUID} is null, everyone is
+	 * authorized to list members of the group. Note that this method can only
+	 * be called by the group owner (private key required).
 	 *
-	 * @param groupGuid
+	 * @param groupGUID
 	 *            the group GUID entry
-	 * @param guidToAuthorize
+	 * @param toAuthorizeGUID
 	 *            the guid to authorize to manipulate group membership or null
 	 *            for anyone
-	 * @throws Exception
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
 	public static final CommandPacket groupAddMembershipReadPermission(
-			GuidEntry groupGuid, String guidToAuthorize) throws Exception {
-		return aclAdd(AclAccessType.READ_WHITELIST, groupGuid, GROUP_ACL,
-				guidToAuthorize);
+			GuidEntry groupGUID, String toAuthorizeGUID) throws ClientException {
+		return aclAdd(AclAccessType.READ_WHITELIST, groupGUID, GROUP_ACL,
+				toAuthorizeGUID);
 	}
 
 	/**
-	 * Unauthorize guidToUnauthorize to get the membership list from the group
-	 * groupGuid. If guidToUnauthorize is null, everyone is forbidden from
-	 * querying the group membership. Note that this method can only be called
-	 * by the group owner (private key required). Signs the query using the
-	 * private key of the group owner.
+	 * Unauthorize {@code toUnauthorizeGUID} to get the membership list from the
+	 * group {@code groupGUID}. If {@code toUnauthorizeGUID} is null, everyone
+	 * is forbidden from querying the group membership. Note that this method
+	 * can only be called by the group owner (private key required).
 	 *
-	 * @param groupGuid
+	 * @param groupGUID
 	 *            the group GUID entry
-	 * @param guidToUnauthorize
-	 *            the guid to authorize to manipulate group membership or null
-	 *            for anyone
-	 * @throws Exception
+	 * @param toUnauthorizeGUID
+	 *            The GUID to unauthorize to change group membership or null for
+	 *            anyone.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
 	public static final CommandPacket groupRemoveMembershipReadPermission(
-			GuidEntry groupGuid, String guidToUnauthorize) throws Exception {
-		return aclRemove(AclAccessType.READ_WHITELIST, groupGuid, GROUP_ACL,
-				guidToUnauthorize);
+			GuidEntry groupGUID, String toUnauthorizeGUID)
+			throws ClientException {
+		return aclRemove(AclAccessType.READ_WHITELIST, groupGUID, GROUP_ACL,
+				toUnauthorizeGUID);
 	}
 
-	// ACL COMMANDS
+	/* ************* ACL COMMANDS ********************* */
 	/**
-	 * Adds to an access control list of the given field. The accesser can be a
-	 * guid of a user or a group guid or null which means anyone can access the
-	 * field. The field can be also be +ALL+ which means all fields can be read
-	 * by the reader. Signs the query using the private key of the user
-	 * associated with the guid.
+	 * Adds {@code accessorGUID} to the access control list (ACL) of
+	 * {@code targetGUID}:{@code field}. {@code accessorGUID} can be a GUID of a
+	 * user or a group GUID or null that means anyone can access the field. The
+	 * field can be also be +ALL+ which means the {@code accessorGUID} is being
+	 * added to the ACLs of all fields of {@code targetGUID}.
 	 *
 	 * @param accessType
 	 *            a value from GnrsProtocol.AclAccessType
-	 * @param targetGuid
-	 *            guid of the field to be modified
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
-	 *            field name
-	 * @param accesserGuid
-	 *            guid to add to the ACL
-	 * @throws Exception
+	 *            The field key.
+	 * @param accesserGUID
+	 *            GUID to add to the ACL
+	 * @return CommandPacket
 	 * @throws ClientException
 	 *             if the query is not accepted by the server.
 	 */
 	public static final CommandPacket aclAdd(AclAccessType accessType,
-			GuidEntry targetGuid, String field, String accesserGuid)
-			throws Exception {
-		return aclAdd(accessType.name(), targetGuid, field, accesserGuid);
+			GuidEntry targetGUID, String field, String accesserGUID)
+			throws ClientException {
+		return aclAdd(accessType.name(), targetGUID, field, accesserGUID);
 	}
 
 	/**
-	 * Removes a GUID from an access control list of the given user's field on
-	 * the GNS server to include the guid specified in the accesser param. The
-	 * accesser can be a guid of a user or a group guid or null which means
-	 * anyone can access the field. The field can be also be +ALL+ which means
-	 * all fields can be read by the reader. Signs the query using the private
-	 * key of the user associated with the guid.
+	 * Removes {@code accessorGUID} from the access control list (ACL) of
+	 * {@code targetGUID}:{@code field}. {@code accessorGUID} can be a GUID of a
+	 * user or a group GUID or null that means anyone can access the field. The
+	 * field can be also be +ALL+ which means the {@code accessorGUID} is being
+	 * added to the ACLs of all fields of {@code targetGUID}.
 	 *
 	 * @param accessType
-	 * @param guid
+	 * @param targetGUID
 	 * @param field
-	 * @param accesserGuid
-	 * @throws Exception
+	 *            The field key.
+	 * @param accesserGUID
+	 *            The GUID to remove from the ACL.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 *             if the query is not accepted by the server.
 	 */
 	public static final CommandPacket aclRemove(AclAccessType accessType,
-			GuidEntry guid, String field, String accesserGuid) throws Exception {
-		return aclRemove(accessType.name(), guid, field, accesserGuid);
+			GuidEntry targetGUID, String field, String accesserGUID)
+			throws ClientException {
+		return aclRemove(accessType.name(), targetGUID, field, accesserGUID);
 	}
 
 	/**
-	 * Get an access control list of the given user's field on the GNS server to
-	 * include the guid specified in the accesser param. The accesser can be a
-	 * guid of a user or a group guid or null which means anyone can access the
-	 * field. The field can be also be +ALL+ which means all fields can be read
-	 * by the reader. Signs the query using the private key of the user
-	 * associated with the guid.
+	 * Get the access control list of {@code targetGUID}:{@code field}.
+	 * {@code accesserGUID} can be a user or group GUID or null meaning that
+	 * anyone can access the field. The field can be also be +ALL+ meaning that
+	 * FIXME: TBD.
 	 *
 	 * @param accessType
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @param accesserGuid
-	 * @return list of GUIDs for that ACL
-	 * @throws Exception
+	 *            The field key.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 *             if the query is not accepted by the server.
 	 */
 	public static final CommandPacket aclGet(AclAccessType accessType,
-			GuidEntry guid, String field, String accesserGuid) throws Exception {
-		return aclGet(accessType.name(), guid, field, accesserGuid);
+			GuidEntry targetGUID, String field, String querierGUID)
+			throws ClientException {
+		return aclGet(accessType.name(), targetGUID, field, querierGUID);
 	}
 
-	// ALIASES
+	/* ********************* ALIASES ******************** */
 	/**
-	 * Creates an alias entity name for the given guid. The alias can be used
-	 * just like the original entity name.
+	 * Creates an alias for {@code targetGUID}. The alias can be used just like
+	 * the original GUID.
 	 *
-	 * @param guid
+	 * @param targetGUID
 	 * @param name
 	 *            - the alias
-	 * @throws Exception
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket addAlias(GuidEntry guid, String name)
-			throws Exception {
-		return getCommand(CommandType.AddAlias, guid, GUID, guid.getGuid(),
-				NAME, name);
+	public static final CommandPacket addAlias(GuidEntry targetGUID, String name)
+			throws ClientException {
+		return getCommand(CommandType.AddAlias, targetGUID, GUID,
+				targetGUID.getGuid(), NAME, name);
 	}
 
 	/**
-	 * Removes the alias for the given guid.
+	 * Removes the alias {@code name} for {@code targetGUID}.
 	 *
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param name
-	 *            - the alias
-	 * @throws Exception
+	 *            The alias.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket removeAlias(GuidEntry guid, String name)
-			throws Exception {
-		return getCommand(CommandType.RemoveAlias, guid, GUID, guid.getGuid(),
-				NAME, name);
+	public static final CommandPacket removeAlias(GuidEntry targetGUID,
+			String name) throws ClientException {
+		return getCommand(CommandType.RemoveAlias, targetGUID, GUID,
+				targetGUID.getGuid(), NAME, name);
 	}
 
 	/**
@@ -1015,34 +1011,6 @@ public class GNSCommand {
 				guid.getGuid());
 	}
 
-	// TAGS
-	/**
-	 * Creates a tag to the tags of the guid.
-	 *
-	 * @param guid
-	 * @param tag
-	 * @throws Exception
-	 */
-	// @Override
-	static final CommandPacket addTag(GuidEntry guid, String tag)
-			throws Exception {
-		return getCommand(CommandType.AddTag, guid, GUID, guid.getGuid(), NAME,
-				tag);
-	}
-
-	/**
-	 * Removes a tag from the tags of the guid.
-	 *
-	 * @param guid
-	 * @param tag
-	 * @throws Exception
-	 */
-	static final CommandPacket removeTag(GuidEntry guid, String tag)
-			throws Exception {
-		return getCommand(CommandType.RemoveTag, guid, GUID, guid.getGuid(),
-				NAME, tag);
-	}
-
 	// ///////////////////////////////
 	// // PRIVATE METHODS BELOW /////
 	// /////////////////////////////
@@ -1056,8 +1024,7 @@ public class GNSCommand {
 	 * @throws Exception
 	 */
 	private static final CommandPacket guidCreateHelper(GuidEntry accountGuid,
-			String name, PublicKey publicKey) throws Exception {
-		long startTime = System.currentTimeMillis();
+			String name, PublicKey publicKey) throws ClientException {
 		byte[] publicKeyBytes = publicKey.getEncoded();
 		String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
 		return getCommand(CommandType.AddGuid, accountGuid, GUID,
@@ -1095,263 +1062,346 @@ public class GNSCommand {
 	}
 
 	private static final CommandPacket aclAdd(String accessType,
-			GuidEntry guid, String field, String accesserGuid) throws Exception {
+			GuidEntry guid, String field, String accesserGuid)
+			throws ClientException {
 		return getCommand(CommandType.AclAddSelf, guid, ACL_TYPE, accessType,
 				GUID, guid.getGuid(), FIELD, field, ACCESSER,
 				accesserGuid == null ? ALL_GUIDS : accesserGuid);
 	}
 
 	private static final CommandPacket aclRemove(String accessType,
-			GuidEntry guid, String field, String accesserGuid) throws Exception {
+			GuidEntry guid, String field, String accesserGuid)
+			throws ClientException {
 		return getCommand(CommandType.AclRemoveSelf, guid, ACL_TYPE,
 				accessType, GUID, guid.getGuid(), FIELD, field, ACCESSER,
 				accesserGuid == null ? ALL_GUIDS : accesserGuid);
 	}
 
 	private static final CommandPacket aclGet(String accessType,
-			GuidEntry guid, String field, String readerGuid) throws Exception {
+			GuidEntry guid, String field, String readerGuid)
+			throws ClientException {
 		return getCommand(CommandType.AclRetrieve, guid, ACL_TYPE, accessType,
 				GUID, guid.getGuid(), FIELD, field, READER,
 				readerGuid == null ? ALL_GUIDS : readerGuid);
 	}
 
-	// Extended commands
+	/* ******************* Extended commands ******************** */
+
 	/**
-	 * Creates a new field with value being the list. Allows a a different guid
-	 * as the writer. If the writer is different use addToACL first to allow
-	 * other the guid to write this field.
+	 * Creates anew {@code targetGUID}:{@code field} with the value
+	 * {@code value}.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
+	 *            The field key.
+	 * @param list
+	 *            The list.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldCreateList(String targetGuid,
-			String field, JSONArray value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.CreateList, writer, GUID, targetGuid,
-				FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
+	public static final CommandPacket fieldCreateList(String targetGUID,
+			String field, JSONArray list, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.CreateList, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, list.toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Appends the values of the field onto list of values or creates a new
-	 * field with values in the list if it does not exist.
+	 * Appends the values in the list {@code value} to the list
+	 * {@code targetGUID}:{@code field} or creates anew {@code field} with the
+	 * values in the list {@code value} if it does not exist.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @param value
-	 * @param writer
-	 * @throws IOException
+	 *            The field key.
+	 * @param list
+	 *            The list value.
+	 * @param querierGUID
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
 	public static final CommandPacket fieldAppendOrCreateList(
-			String targetGuid, String field, JSONArray value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.AppendOrCreateList, writer, GUID,
-				targetGuid, FIELD, field, VALUE, value.toString(), WRITER,
-				writer.getGuid());
+			String targetGUID, String field, JSONArray list,
+			GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.AppendOrCreateList, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, list.toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
 	 * Replaces the values of the field with the list of values or creates a new
 	 * field with values in the list if it does not exist.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
-	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
+	 *            The field key.
+	 * @param list
+	 *            The list value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
 	public static final CommandPacket fieldReplaceOrCreateList(
-			String targetGuid, String field, JSONArray value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.ReplaceOrCreateList, writer, GUID,
-				targetGuid, FIELD, field, VALUE, value.toString(), WRITER,
-				writer.getGuid());
+			String targetGUID, String field, JSONArray list,
+			GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.ReplaceOrCreateList, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, list.toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Appends a list of values onto a field.
+	 * Appends {@code list} to the list {@code targetGUID}:{@code field}
+	 * creating the list if it does not exist.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
 	 *            GUID where the field is stored
 	 * @param field
 	 *            field name
-	 * @param value
+	 * @param list
 	 *            list of values
-	 * @param writer
+	 * @param querierGUID
 	 *            GUID entry of the writer
-	 * @return
-	 * @throws IOException
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldAppend(String targetGuid,
-			String field, JSONArray value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.AppendListWithDuplication, writer, GUID,
-				targetGuid, FIELD, field, VALUE, value.toString(), WRITER,
-				writer.getGuid());
+	public static final CommandPacket fieldAppend(String targetGUID,
+			String field, JSONArray list, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.AppendListWithDuplication, querierGUID,
+				GUID, targetGUID, FIELD, field, VALUE, list.toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Replaces all the values of field with the list of values.
+	 * Replaces the list {@code targetGUID}:{@code field} with {@code list}.
 	 *
-	 * @param targetGuid
-	 *            GUID where the field is stored
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 *            field name
-	 * @param value
-	 *            list of values
-	 * @param writer
+	 *            The field key
+	 * @param list
+	 *            The list value.
+	 * @param querierGUID
 	 *            GUID entry of the writer
-	 * @return
-	 * @throws IOException
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldReplaceList(String targetGuid,
-			String field, JSONArray value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.ReplaceList, writer, GUID, targetGuid,
-				FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
+	public static final CommandPacket fieldReplaceList(String targetGUID,
+			String field, JSONArray list, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.ReplaceList, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, list.toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Removes all the values in the list from the field.
+	 * Removes all the values in {@code list} from {@code targetGUID}:
+	 * {@code field}.
 	 *
-	 * @param targetGuid
-	 *            GUID where the field is stored
+	 * @param targetGUID
+	 *            The GUID being queried (updated)
 	 * @param field
-	 *            field name
-	 * @param value
-	 *            list of values
-	 * @param writer
-	 *            GUID entry of the writer
-	 * @return
-	 * @throws IOException
+	 *            The field key
+	 * @param list
+	 *            The list value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldClear(String targetGuid,
-			String field, JSONArray value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.RemoveList, writer, GUID, targetGuid,
-				FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
+	public static final CommandPacket fieldClear(String targetGUID,
+			String field, JSONArray list, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.RemoveList, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, list.toString(), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Removes all values from the field.
+	 * Removes all values from {@code targetGUID}:{@code field}.
 	 *
-	 * @param targetGuid
-	 *            GUID where the field is stored
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
-	 *            field name
-	 * @param writer
-	 *            GUID entry of the writer
-	 * @return
-	 * @throws IOException
+	 *            The field key.
+	 * @param querierGUID
+	 *            The GUID issuing the update.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldClear(String targetGuid,
-			String field, GuidEntry writer) throws IOException, ClientException {
-		return getCommand(CommandType.Clear, writer, GUID, targetGuid, FIELD,
-				field, WRITER, writer.getGuid());
+	public static final CommandPacket fieldClear(String targetGUID,
+			String field, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.Clear, querierGUID, GUID, targetGUID,
+				FIELD, field, WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Reads all the values for a key from the GNS server for the given guid.
-	 * The guid of the user attempting access is also needed. Signs the query
-	 * using the private key of the user associated with the reader guid
-	 * (unsigned if reader is null).
+	 * Reads the list field {@code targetGUID}:{@code field}. The result type of
+	 * the execution result of this query is {@link GNSCommand.ResultType#LIST}.
 	 *
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @param reader
-	 *            if null the field must be readable for all
-	 * @return a JSONArray containing the values in the field
-	 * @throws Exception
+	 *            The field key.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldReadArray(String guid, String field,
-			GuidEntry reader) throws Exception {
-		return getCommand(reader != null ? CommandType.ReadArray
-				: CommandType.ReadArrayUnsigned, reader, GUID, guid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null);
+	public static final CommandPacket fieldReadArray(String targetGUID,
+			String field, GuidEntry querierGUID) throws ClientException {
+		return getCommand(querierGUID != null ? CommandType.ReadArray
+				: CommandType.ReadArrayUnsigned, querierGUID, GUID, targetGUID,
+				FIELD, field, READER,
+				querierGUID != null ? querierGUID.getGuid() : null);
 	}
 
 	/**
-	 * Sets the nth value (zero-based) indicated by index in the list contained
-	 * in field to newValue. Index must be less than the current size of the
-	 * list.
+	 * Sets the nth value (zero-based) indicated by {@code index} in the list
+	 * {@code targetGUID}:{@code field} to {@code newValue}. Index must be less
+	 * than the current size of the list.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
+	 *            The field key.
 	 * @param newValue
+	 *            The new value.
 	 * @param index
-	 * @param writer
-	 * @return
-	 * @throws IOException
+	 *            The index of the array element being updated.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldSetElement(String targetGuid,
-			String field, String newValue, int index, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.Set, writer, GUID, targetGuid, FIELD,
-				field, VALUE, newValue, N, Integer.toString(index), WRITER,
-				writer.getGuid());
+	public static final CommandPacket fieldSetElement(String targetGUID,
+			String field, String newValue, int index, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.Set, querierGUID, GUID, targetGUID,
+				FIELD, field, VALUE, newValue, N, Integer.toString(index),
+				WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Sets a field to be null. That is when read field is called a null will be
-	 * returned.
+	 * Sets {@code targetGUID}:{@code field} to null. Subsequent reads of the
+	 * field will return a result type of null.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
 	 * @param field
-	 * @param writer
-	 * @return
-	 * @throws IOException
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws SignatureException
+	 * @param querierGUID
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldSetNull(String targetGuid,
-			String field, GuidEntry writer) throws IOException,
-			InvalidKeyException, NoSuchAlgorithmException, SignatureException,
-			ClientException {
-		return getCommand(CommandType.SetFieldNull, writer, GUID, targetGuid,
-				FIELD, field, WRITER, writer.getGuid());
+	public static final CommandPacket fieldSetNull(String targetGUID,
+			String field, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.SetFieldNull, querierGUID, GUID,
+				targetGUID, FIELD, field, WRITER, querierGUID.getGuid());
 	}
 
-	//
-	// SELECT
-	//
+	/* *********************** SELECT *********************** */
+
 	/**
-	 * Returns all GUIDs that have a field that contains the given value as a
-	 * JSONArray containing guids.
+	 * Selects all GUID records that match {@code query}. The result type of the
+	 * execution result of this query is {@link GNSCommand.ResultType#LIST}.
+	 *
+	 * The query syntax is described here:
+	 * https://gns.name/wiki/index.php?title=Query_Syntax
+	 *
+	 * There are some predefined field names such as
+	 * {@link GNSCommandProtocol#LOCATION_FIELD_NAME} and
+	 * {@link GNSCommandProtocol#IPADDRESS_FIELD_NAME} that are indexed by
+	 * default.
+	 *
+	 * There are links in the wiki page above to find the exact syntax for
+	 * querying spatial coordinates.
+	 *
+	 * @param query
+	 *            The select query being issued.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket selectQuery(String query)
+			throws ClientException {
+		return getCommand(CommandType.SelectQuery, QUERY, query);
+	}
+
+	/**
+	 * Set up a context-aware group GUID corresponding to the query. Requires
+	 * {@code accountGuid} and {@code publicKey} that are used to set up the new
+	 * GUID or look it up if it already exists. The result type of the execution
+	 * result of this query is {@link GNSCommand.ResultType#LIST}.
+	 *
+	 * The query syntax is described here:
+	 * https://gns.name/wiki/index.php?title=Query_Syntax
+	 *
+	 * @param accountGUID
+	 *            The GUID issuing the query.
+	 * @param publicKey
+	 * @param query
+	 *            The select query.
+	 * @param interval
+	 *            The refresh interval in seconds (default 60).
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket selectSetupGroupQuery(
+			GuidEntry accountGUID, String publicKey, String query, int interval)
+			throws ClientException {
+		return getCommand(CommandType.SelectGroupSetupQuery, GUID,
+				accountGUID.getGuid(), PUBLIC_KEY, publicKey, QUERY, query,
+				INTERVAL, interval);
+	}
+
+	/**
+	 * Looks up the membership of a context-aware group GUID created using a
+	 * query. The results may be stale if the queries that happen more quickly
+	 * than the refresh interval given during setup. The result type of the
+	 * execution result of this query is {@link GNSCommand.ResultType#LIST}.
+	 *
+	 * @param groupGUID
+	 *            The group GUID being queried.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket selectLookupGroupQuery(String groupGUID)
+			throws ClientException {
+		return getCommand(CommandType.SelectGroupLookupQuery, GUID, groupGUID);
+	}
+
+	/**
+	 * Searches for all GUIDs whose {@code field} has the value {@code value}.
 	 *
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return a JSONArray containing the guids of all the matched records
-	 * @throws Exception
+	 *            The value that is being searched.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
 	public static final CommandPacket select(String field, String value)
-			throws Exception {
+			throws ClientException {
 		return getCommand(CommandType.Select, FIELD, field, VALUE, value);
 	}
 
 	/**
-	 * If field is a GeoSpatial field queries the GNS server return all the
-	 * guids that have fields that are within value which is a bounding box
-	 * specified as a nested JSONArrays of paired tuples: [[LONG_UL,
-	 * LAT_UL],[LONG_BR, LAT_BR]]
+	 * If {@code field} is a GeoSpatial field, the query searches for all GUIDs
+	 * that have fields that are within the bounding box specified by
+	 * {@code value} as nested JSONArrays of paired tuples: [[LONG_UL,
+	 * LAT_UL],[LONG_BR, LAT_BR]]. The result type of the execution result of
+	 * this query is {@link GNSCommand.ResultType#LIST}.
 	 *
 	 * @param field
+	 *            The field key.
 	 * @param value
 	 *            - [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
-	 * @return a JSONArray containing the guids of all the matched records
+	 * @return CommandPacket
 	 * @throws Exception
 	 */
 	public static final CommandPacket selectWithin(String field, JSONArray value)
@@ -1361,636 +1411,603 @@ public class GNSCommand {
 	}
 
 	/**
-	 * If field is a GeoSpatial field queries the GNS server and returns all the
-	 * guids that have fields that are near value which is a point specified as
-	 * a two element JSONArray: [LONG, LAT]. Max Distance is in meters.
+	 * If {@code field} is a GeoSpatial field, the query searches for all GUIDs
+	 * whose {@code field} is near {@code value} that is a point specified as a
+	 * two element JSONArray: [LONG, LAT]. {@code maxDistance} is in meters.
 	 *
 	 * @param field
+	 *            The field key
 	 * @param value
 	 *            - [LONG, LAT]
 	 * @param maxDistance
 	 *            - distance in meters
-	 * @return a JSONArray containing the guids of all the matched records
-	 * @throws Exception
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
 	public static final CommandPacket selectNear(String field, JSONArray value,
-			Double maxDistance) throws Exception {
+			Double maxDistance) throws ClientException {
 		return getCommand(CommandType.SelectNear, FIELD, field, NEAR,
 				value.toString(), MAX_DISTANCE, Double.toString(maxDistance));
 	}
 
 	/**
-	 * Update the location field for the given GUID
+	 * Update the location field for {@code targetGUID}.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param longitude
-	 *            the GUID longitude
+	 *            the longitude
 	 * @param latitude
-	 *            the GUID latitude
-	 * @param writer
-	 * @return
-	 * @throws Exception
+	 *            the latitude
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
 	 *             if a GNS error occurs
 	 */
-	public static final CommandPacket setLocation(String targetGuid,
-			double longitude, double latitude, GuidEntry writer)
-			throws Exception {
-		return fieldReplaceOrCreateList(targetGuid, LOCATION_FIELD_NAME,
-				new JSONArray(Arrays.asList(longitude, latitude)), writer);
+	public static final CommandPacket setLocation(String targetGUID,
+			double longitude, double latitude, GuidEntry querierGUID)
+			throws ClientException {
+		return fieldReplaceOrCreateList(targetGUID, LOCATION_FIELD_NAME,
+				new JSONArray(Arrays.asList(longitude, latitude)), querierGUID);
 	}
 
 	/**
-	 * Update the location field for the given GUID
+	 * Update the location field for {@code targetGUID}.
 	 *
 	 * @param longitude
 	 *            the GUID longitude
 	 * @param latitude
 	 *            the GUID latitude
-	 * @param guid
+	 * @param targetGUID
 	 *            the GUID to update
-	 * @return
-	 * @throws Exception
+	 * @return CommandPacket
+	 * @throws ClientException
 	 *             if a GNS error occurs
 	 */
-	public static final CommandPacket setLocation(GuidEntry guid,
-			double longitude, double latitude) throws Exception {
-		return setLocation(guid.getGuid(), longitude, latitude, guid);
+	public static final CommandPacket setLocation(GuidEntry targetGUID,
+			double longitude, double latitude) throws ClientException {
+		return setLocation(targetGUID.getGuid(), longitude, latitude,
+				targetGUID);
 	}
 
 	/**
-	 * Get the location of the target GUID as a JSONArray: [LONG, LAT]
+	 * Get the location of {@code targetGUID} as a JSONArray: [LONG, LAT]
 	 *
-	 * @param readerGuid
+	 * @param querierGUID
 	 *            the GUID issuing the request
-	 * @param targetGuid
+	 * @param targetGUID
 	 *            the GUID that we want to know the location
 	 * @return a JSONArray: [LONGITUDE, LATITUDE]
-	 * @throws Exception
+	 * @throws ClientException
 	 *             if a GNS error occurs
 	 */
-	public static final CommandPacket getLocation(String targetGuid,
-			GuidEntry readerGuid) throws Exception {
-		return fieldReadArray(targetGuid, LOCATION_FIELD_NAME, readerGuid);
+	public static final CommandPacket getLocation(String targetGUID,
+			GuidEntry querierGUID) throws ClientException {
+		return fieldReadArray(targetGUID, LOCATION_FIELD_NAME, querierGUID);
 	}
 
 	/**
-	 * Get the location of the target GUID as a JSONArray: [LONG, LAT]
+	 * Get the location of {@code targetGUID} as a JSONArray: [LONG, LAT]
 	 *
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @return a JSONArray: [LONGITUDE, LATITUDE]
-	 * @throws Exception
+	 * @throws ClientException
 	 *             if a GNS error occurs
 	 */
-	public static final CommandPacket getLocation(GuidEntry guid)
-			throws Exception {
-		return fieldReadArray(guid.getGuid(), LOCATION_FIELD_NAME, guid);
+	public static final CommandPacket getLocation(GuidEntry targetGUID)
+			throws ClientException {
+		return fieldReadArray(targetGUID.getGuid(), LOCATION_FIELD_NAME,
+				targetGUID);
 	}
 
+	/* ******************* Active Code ********************** */
 	/**
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param action
-	 * @param writerGuid
+	 *            The action corresponding to the active code.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 * @throws IOException
 	 */
-	// Active Code
-	public static final CommandPacket activeCodeClear(String guid,
-			String action, GuidEntry writerGuid) throws ClientException,
+	public static final CommandPacket activeCodeClear(String targetGUID,
+			String action, GuidEntry querierGUID) throws ClientException,
 			IOException {
-		return getCommand(CommandType.ClearActiveCode, writerGuid, GUID, guid,
-				AC_ACTION, action, WRITER, writerGuid.getGuid());
+		return getCommand(CommandType.ClearActiveCode, querierGUID, GUID,
+				targetGUID, AC_ACTION, action, WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param action
+	 *            The action triggering the active code.
 	 * @param code
-	 * @param writerGuid
-	 * @return
+	 *            The active code being installed.
+	 * @param querierGUID
+	 * @return CommandPacket
 	 * @throws ClientException
-	 * @throws IOException
 	 */
-	public static final CommandPacket activeCodeSet(String guid, String action,
-			byte[] code, GuidEntry writerGuid) throws ClientException,
-			IOException {
-		return getCommand(CommandType.SetActiveCode, writerGuid, GUID, guid,
-				AC_ACTION, action, AC_CODE, Base64.encodeToString(code, true),
-				WRITER, writerGuid.getGuid());
+	public static final CommandPacket activeCodeSet(String targetGUID,
+			String action, byte[] code, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.SetActiveCode, querierGUID, GUID,
+				targetGUID, AC_ACTION, action, AC_CODE,
+				Base64.encodeToString(code, true), WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param action
-	 * @param readerGuid
-	 * @return Active code of {@code guid} as byte[]
-	 * @throws Exception
-	 */
-	public static final CommandPacket activeCodeGet(String guid, String action,
-			GuidEntry readerGuid) throws Exception {
-		return getCommand(CommandType.GetActiveCode, readerGuid, GUID, guid,
-				AC_ACTION, action, READER, readerGuid.getGuid());
-	}
-
-	// Extended commands
-	/**
-	 * Creates a new field in the target guid with value being the list.
-	 *
-	 * @param target
-	 * @param field
-	 * @param value
-	 * @throws IOException
+	 *            The action triggering the active code.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldCreateList(GuidEntry target,
-			String field, JSONArray value) throws IOException, ClientException {
-		return fieldCreateList(target.getGuid(), field, value, target);
+	public static final CommandPacket activeCodeGet(String targetGUID,
+			String action, GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.GetActiveCode, querierGUID, GUID,
+				targetGUID, AC_ACTION, action, READER, querierGUID.getGuid());
 	}
 
+	/* ********************* More extended commands ********************** */
 	/**
-	 * Creates a new one element field with single element value being the
-	 * string. Allows a a different guid as the writer. If the writer is
-	 * different use addToACL first to allow other the guid to write this field.
+	 * Creates a new field in {@code targetGUID} with the list {@code list}.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
-	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
+	 *            The field key.
+	 * @param list
+	 *            The list value.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldCreateOneElementList(
-			String targetGuid, String field, String value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.Create, writer, GUID, targetGuid, FIELD,
-				field, VALUE, value, WRITER, writer.getGuid());
+	public static final CommandPacket fieldCreateList(GuidEntry targetGUID,
+			String field, JSONArray list) throws ClientException {
+		return fieldCreateList(targetGUID.getGuid(), field, list, targetGUID);
 	}
 
 	/**
-	 * Creates a new one element field in the target guid with single element
-	 * value being the string.
+	 * Creates a new one-element field {@code targetGUID}:{@code field} with the
+	 * string {@code value}.
 	 *
-	 * @param target
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return
-	 * @throws IOException
+	 *            The single-element value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
 	public static final CommandPacket fieldCreateOneElementList(
-			GuidEntry target, String field, String value) throws IOException,
-			ClientException {
-		return fieldCreateOneElementList(target.getGuid(), field, value, target);
+			String targetGUID, String field, String value, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.Create, querierGUID, GUID, targetGUID,
+				FIELD, field, VALUE, value, WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Appends the single value of the field onto list of values or creates a
-	 * new field with a single value list if it does not exist. If the writer is
-	 * different use addToACL first to allow other the guid to write this field.
+	 * Same as
+	 * {@link #fieldCreateOneElementList(String, String, String, GuidEntry)}
+	 * with {@code querierGUID} same as {@code targetGUID}.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
+	 *            The single-element value.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldAppendOrCreate(String targetGuid,
-			String field, String value, GuidEntry writer) throws IOException,
-			ClientException {
-		return getCommand(CommandType.AppendOrCreate, writer, GUID, targetGuid,
-				FIELD, field, VALUE, value, WRITER, writer.getGuid());
+	public static final CommandPacket fieldCreateOneElementList(
+			GuidEntry targetGUID, String field, String value)
+			throws ClientException {
+		return fieldCreateOneElementList(targetGUID.getGuid(), field, value,
+				targetGUID);
 	}
 
 	/**
-	 * Replaces the values of the field in targetGuid with the single value or
-	 * creates a new field with a single value list if it does not exist. If the
-	 * writer is different use addToACL first to allow other the guid to write
-	 * this field.
+	 * Appends the single-element string {@code value} to {@code targetGUID}:
+	 * {@code field} or creates a new field with the single-value list if it
+	 * does not exist.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
+	 *            The single-element value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldReplaceOrCreate(String targetGuid,
-			String field, String value, GuidEntry writer) throws IOException,
-			ClientException {
-		return getCommand(CommandType.ReplaceOrCreate, writer, GUID,
-				targetGuid, FIELD, field, VALUE, value, WRITER,
-				writer.getGuid());
+	public static final CommandPacket fieldAppendOrCreate(String targetGUID,
+			String field, String value, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.AppendOrCreate, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, value, WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Replaces the values of the field with the list of values or creates a new
-	 * field with values in the list if it does not exist.
-	 *
-	 * @param targetGuid
+	 * Replaces the value(s) of {@code targetGUID}:{@code field} with the single
+	 * value {@code value} or creates a new field with a single-element list if
+	 * it does not exist.
+	 * 
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return
-	 * @throws IOException
+	 *            The single-element value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket fieldReplaceOrCreate(String targetGUID,
+			String field, String value, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.ReplaceOrCreate, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, value, WRITER,
+				querierGUID.getGuid());
+	}
+
+	/**
+	 * Replaces the value(s) of {@code targetGUID}:{@code field} with the list
+	 * {@code value} or creates a new field with the list {@code value} if it
+	 * does not exist.
+	 *
+	 * @param targetGUID
+	 *            The GUID being queried.
+	 * @param field
+	 *            The field key.
+	 * @param value
+	 *            The list value.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
 	public static final CommandPacket fieldReplaceOrCreateList(
-			GuidEntry targetGuid, String field, JSONArray value)
-			throws IOException, ClientException {
-		return fieldReplaceOrCreateList(targetGuid.getGuid(), field, value,
-				targetGuid);
+			GuidEntry targetGUID, String field, JSONArray value)
+			throws ClientException {
+		return fieldReplaceOrCreateList(targetGUID.getGuid(), field, value,
+				targetGUID);
 	}
 
 	/**
-	 * Replaces the values of the field in the target guid with the single value
-	 * or creates a new field with a single value list if it does not exist.
+	 * Replaces the value(s) of {@code targetGUID}:{@code field} with the
+	 * single-element string {@code value} or creates a new field with a single
+	 * value list if it does not exist.
 	 *
-	 * @param target
+	 * @param targetGUID
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return
-	 * @throws IOException
+	 *            The single-element string value.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
 	public static final CommandPacket fieldReplaceOrCreateList(
-			GuidEntry target, String field, String value) throws IOException,
-			ClientException {
-		return fieldReplaceOrCreate(target.getGuid(), field, value, target);
+			GuidEntry targetGUID, String field, String value)
+			throws ClientException {
+		return fieldReplaceOrCreate(targetGUID.getGuid(), field, value,
+				targetGUID);
 	}
 
 	/**
 	 * Replaces all the values of field with the single value. If the writer is
 	 * different use addToACL first to allow other the guid to write this field.
 	 *
-	 * @param targetGuid
-	 *            GUID where the field is stored
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
-	 *            field name
+	 *            The field key.
 	 * @param value
-	 *            the new value
-	 * @param writer
-	 *            GUID entry of the writer
-	 * @return
-	 * @throws IOException
+	 *            The single-element string value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldReplace(String targetGuid,
-			String field, String value, GuidEntry writer) throws IOException,
-			ClientException {
-		return getCommand(CommandType.Replace, writer, GUID, targetGuid, FIELD,
-				field, VALUE, value, WRITER, writer.getGuid());
+	public static final CommandPacket fieldReplace(String targetGUID,
+			String field, String value, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.Replace, querierGUID, GUID, targetGUID,
+				FIELD, field, VALUE, value, WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Replaces all the values of field in target with with the single value.
+	 * Replaces {@code targetGUID}:{@code field} with the single-element string
+	 * {@code value}.
 	 *
-	 * @param target
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return
-	 * @throws IOException
+	 *            The single-element string value.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldReplace(GuidEntry target,
-			String field, String value) throws IOException, ClientException {
-		return fieldReplace(target.getGuid(), field, value, target);
+	public static final CommandPacket fieldReplace(GuidEntry targetGUID,
+			String field, String value) throws ClientException {
+		return fieldReplace(targetGUID.getGuid(), field, value, targetGUID);
 	}
 
 	/**
-	 * Replaces all the values of field in target with the list of values.
+	 * Replaces {@code targetGUID}:{@code field} with the list {@code value}.
 	 *
-	 * @param target
+	 * @param targetGUID
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return
-	 * @throws IOException
+	 *            The list value.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldReplace(GuidEntry target,
-			String field, JSONArray value) throws IOException, ClientException {
-		return fieldReplaceList(target.getGuid(), field, value, target);
+	public static final CommandPacket fieldReplace(GuidEntry targetGUID,
+			String field, JSONArray value) throws ClientException {
+		return fieldReplaceList(targetGUID.getGuid(), field, value, targetGUID);
 	}
 
 	/**
-	 * Appends a single value onto a field. If the writer is different use
-	 * addToACL first to allow other the guid to write this field.
+	 * Appends a single-element string {@code value} to {@code targetGUID}:
+	 * {@code field}.
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
+	 *            The single-element string value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldAppend(String targetGuid,
-			String field, String value, GuidEntry writer) throws IOException,
-			ClientException {
-		return getCommand(CommandType.AppendWithDuplication, writer, GUID,
-				targetGuid, FIELD, field, VALUE, value, WRITER,
-				writer.getGuid());
+	public static final CommandPacket fieldAppend(String targetGUID,
+			String field, String value, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.AppendWithDuplication, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, value, WRITER,
+				querierGUID.getGuid());
 	}
 
 	/**
-	 * Appends a single value onto a field in the target guid.
+	 * Appends a single-element string {@code value} to {@code targetGUID}:
+	 * {@code field}.
 	 *
-	 * @param target
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
+	 *            The field key.
 	 * @param value
-	 * @return
-	 * @throws IOException
+	 *            The single-element string value.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldAppend(GuidEntry target,
-			String field, String value) throws IOException, ClientException {
-		return fieldAppend(target.getGuid(), field, value, target);
+	public static final CommandPacket fieldAppend(GuidEntry targetGUID,
+			String field, String value) throws ClientException {
+		return fieldAppend(targetGUID.getGuid(), field, value, targetGUID);
 	}
 
 	/**
-	 * Appends a list of values onto a field but converts the list to set
-	 * removing duplicates. If the writer is different use addToACL first to
-	 * allow other the guid to write this field.
+	 * Appends a list {@code value} to {@code targetGUID}{:{@code field} but
+	 * after first converting the list to a set (removing duplicates).
+	 * 
 	 *
-	 * @param targetGuid
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
+	 * @param field
+	 *            The field key.
+	 * @param value
+	 *            The list value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket fieldAppendWithSetSemantics(
+			String targetGUID, String field, JSONArray value,
+			GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.AppendList, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, value.toString(), WRITER,
+				querierGUID.getGuid());
+	}
+
+	/**
+	 * Appends a list {@code value} onto a {@code targetGUID}:{@code field} but
+	 * first converts the list to a set (removing duplicates).
+	 *
+	 * @param targetGUID
 	 * @param field
 	 * @param value
-	 * @param writer
-	 * @return
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket fieldAppendWithSetSemantics(
+			GuidEntry targetGUID, String field, JSONArray value)
+			throws ClientException {
+		return fieldAppendWithSetSemantics(targetGUID.getGuid(), field, value,
+				targetGUID);
+	}
+
+	/**
+	 * Appends a single-element string {@code value} to {@code targetGUID}:
+	 * {@code field} but first converts the list to set (removing duplicates).
+	 *
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
+	 * @param field
+	 *            The field key.
+	 * @param value
+	 *            The single-element string value.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
+	 * @throws ClientException
+	 */
+	public static final CommandPacket fieldAppendWithSetSemantics(
+			String targetGUID, String field, String value, GuidEntry querierGUID)
+			throws ClientException {
+		return getCommand(CommandType.Append, querierGUID, GUID, targetGUID,
+				FIELD, field, VALUE, value.toString(), WRITER,
+				querierGUID.getGuid());
+	}
+
+	/**
+	 * Appends a single-element string value to {@code targetGUID}:{@code field}
+	 * but first converts the list to a set (removing duplicates).
+	 *
+	 * @param targetGUID
+	 * @param field
+	 * @param value
+	 * @return CommandPacket
 	 * @throws IOException
 	 * @throws ClientException
 	 */
 	public static final CommandPacket fieldAppendWithSetSemantics(
-			String targetGuid, String field, JSONArray value, GuidEntry writer)
+			GuidEntry targetGUID, String field, String value)
 			throws IOException, ClientException {
-		return getCommand(CommandType.AppendList, writer, GUID, targetGuid,
-				FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
+		return fieldAppendWithSetSemantics(targetGUID.getGuid(), field, value,
+				targetGUID);
 	}
 
 	/**
-	 * Appends a list of values onto a field in target but converts the list to
-	 * set removing duplicates.
+	 * Substitutes {@code targetGUID}:{@code field}'s value with
+	 * {@code newValue} if the current value is {@code oldValue}.
 	 *
-	 * @param target
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
-	 * @param value
-	 * @return
-	 * @throws IOException
-	 * @throws ClientException
-	 */
-	public static final CommandPacket fieldAppendWithSetSemantics(
-			GuidEntry target, String field, JSONArray value)
-			throws IOException, ClientException {
-		return fieldAppendWithSetSemantics(target.getGuid(), field, value,
-				target);
-	}
-
-	/**
-	 * Appends a single value onto a field but converts the list to set removing
-	 * duplicates. If the writer is different use addToACL first to allow other
-	 * the guid to write this field.
-	 *
-	 * @param targetGuid
-	 * @param field
-	 * @param value
-	 * @param writer
-	 * @throws IOException
-	 * @throws ClientException
-	 */
-	public static final CommandPacket fieldAppendWithSetSemantics(
-			String targetGuid, String field, String value, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.Append, writer, GUID, targetGuid, FIELD,
-				field, VALUE, value.toString(), WRITER, writer.getGuid());
-	}
-
-	/**
-	 * Appends a single value onto a field in target but converts the list to
-	 * set removing duplicates.
-	 *
-	 * @param target
-	 * @param field
-	 * @param value
-	 * @throws IOException
-	 * @throws ClientException
-	 */
-	public static final CommandPacket fieldAppendWithSetSemantics(
-			GuidEntry target, String field, String value) throws IOException,
-			ClientException {
-		return fieldAppendWithSetSemantics(target.getGuid(), field, value,
-				target);
-	}
-
-	/**
-	 * Replaces all the first element of field with the value. If the writer is
-	 * different use addToACL first to allow other the guid to write this field.
-	 * If writer is null the command is sent unsigned.
-	 *
-	 * @param targetGuid
-	 * @param field
-	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
-	 * @throws ClientException
-	 */
-	public static final CommandPacket fieldReplaceFirstElement(
-			String targetGuid, String field, String value, GuidEntry writer)
-			throws IOException, ClientException {
-		if (writer == null)
-			throw new ClientException(
-					"Can not perform an update without querier information");
-		return getCommand(CommandType.Replace, writer, GUID, targetGuid, FIELD,
-				field, VALUE, value, WRITER, writer != null ? writer.getGuid()
-						: null);
-	}
-
-	/**
-	 * For testing only.
-	 *
-	 * @param targetGuid
-	 * @param field
-	 * @param value
-	 * @param writer
-	 * @return
-	 * @throws IOException
-	 * @throws ClientException
-	 */
-	public static final CommandPacket fieldReplaceFirstElementTest(
-			String targetGuid, String field, String value, GuidEntry writer)
-			throws IOException, ClientException {
-		return writer == null ? getCommand(CommandType.ReplaceUnsigned, GUID,
-				targetGuid, FIELD, field, VALUE, value)
-				: fieldReplaceFirstElement(targetGuid, field, value, writer);
-	}
-
-	/**
-	 * Replaces the first element of field in target with the value.
-	 *
-	 * @param target
-	 * @param field
-	 * @param value
-	 * @return
-	 * @throws IOException
-	 * @throws ClientException
-	 */
-	public static final CommandPacket fieldReplaceFirstElement(
-			GuidEntry target, String field, String value) throws IOException,
-			ClientException {
-		return fieldReplaceFirstElement(target.getGuid(), field, value, target);
-	}
-
-	/**
-	 * Substitutes the value for oldValue in the list of values of a field. If
-	 * the writer is different use addToACL first to allow other the guid to
-	 * write this field.
-	 *
-	 * @param targetGuid
-	 *            GUID where the field is stored
-	 * @param field
-	 *            field name
+	 *            The field key.
 	 * @param newValue
+	 *            The new value.
 	 * @param oldValue
-	 * @param writer
-	 *            GUID entry of the writer
-	 * @return
-	 * @throws IOException
+	 *            The value being substituted.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldSubstitute(String targetGuid,
-			String field, String newValue, String oldValue, GuidEntry writer)
-			throws IOException, ClientException {
-		return getCommand(CommandType.Substitute, writer, GUID, targetGuid,
-				FIELD, field, VALUE, newValue, OLD_VALUE, oldValue, WRITER,
-				writer.getGuid());
+	public static final CommandPacket fieldSubstitute(String targetGUID,
+			String field, String newValue, String oldValue,
+			GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.Substitute, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, newValue, OLD_VALUE, oldValue,
+				WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Substitutes the value for oldValue in the list of values of a field in
-	 * the target.
+	 * Same as {@link #fieldSubstitute(GuidEntry, String, String, String)} with
+	 * {@code querierGUID} same as {@code targetGUID}.
 	 *
-	 * @param target
+	 * @param targetGUID
 	 * @param field
 	 * @param newValue
 	 * @param oldValue
-	 * @return
-	 * @throws IOException
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldSubstitute(GuidEntry target,
-			String field, String newValue, String oldValue) throws IOException,
-			ClientException {
-		return fieldSubstitute(target.getGuid(), field, newValue, oldValue,
-				target);
+	public static final CommandPacket fieldSubstitute(GuidEntry targetGUID,
+			String field, String newValue, String oldValue)
+			throws ClientException {
+		return fieldSubstitute(targetGUID.getGuid(), field, newValue, oldValue,
+				targetGUID);
 	}
 
 	/**
-	 * Pairwise substitutes all the values for the oldValues in the list of
-	 * values of a field. If the writer is different use addToACL first to allow
-	 * other the guid to write this field.
+	 * Pairwise-substitutes all the values in {@code oldValues} with
+	 * {@code newValues} in the list {@code targetGUID}:{@code field}.
 	 *
 	 *
-	 * @param targetGuid
-	 *            GUID where the field is stored
+	 * @param targetGUID
+	 *            The GUID being queried (updated).
 	 * @param field
+	 *            The field key.
 	 * @param newValue
-	 *            list of new values
+	 *            The list of new values.
 	 * @param oldValue
-	 *            list of old values
-	 * @param writer
-	 *            GUID entry of the writer
-	 * @return
-	 * @throws IOException
+	 *            The list of old values being substituted.
+	 * @param querierGUID
+	 *            The GUID issuing the query.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldSubstitute(String targetGuid,
+	public static final CommandPacket fieldSubstitute(String targetGUID,
 			String field, JSONArray newValue, JSONArray oldValue,
-			GuidEntry writer) throws IOException, ClientException {
-		return getCommand(CommandType.SubstituteList, writer, GUID, targetGuid,
-				FIELD, field, VALUE, newValue.toString(), OLD_VALUE,
-				oldValue.toString(), WRITER, writer.getGuid());
+			GuidEntry querierGUID) throws ClientException {
+		return getCommand(CommandType.SubstituteList, querierGUID, GUID,
+				targetGUID, FIELD, field, VALUE, newValue.toString(),
+				OLD_VALUE, oldValue.toString(), WRITER, querierGUID.getGuid());
 	}
 
 	/**
-	 * Pairwise substitutes all the values for the oldValues in the list of
-	 * values of a field in the target.
+	 * Same as
+	 * {@link #fieldSubstitute(String, String, JSONArray, JSONArray, GuidEntry)}
+	 * with {@code querierGUID} same as {@code targetGUID}.
 	 *
-	 * @param target
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
+	 *            The field key.
 	 * @param newValue
+	 *            The list of new values.
 	 * @param oldValue
-	 * @throws IOException
+	 *            The list of old values.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldSubstitute(GuidEntry target,
+	public static final CommandPacket fieldSubstitute(GuidEntry targetGUID,
 			String field, JSONArray newValue, JSONArray oldValue)
-			throws IOException, ClientException {
-		return fieldSubstitute(target.getGuid(), field, newValue, oldValue,
-				target);
+			throws ClientException {
+		return fieldSubstitute(targetGUID.getGuid(), field, newValue, oldValue,
+				targetGUID);
 	}
 
 	/**
-	 * Reads the first value for a key from the GNS server for the given guid.
-	 * The guid of the user attempting access is also needed. Signs the query
-	 * using the private key of the user associated with the reader guid
-	 * (unsigned if reader is null).
+	 * Removes the field {@code targetGUID}:{@code field}.
 	 *
-	 * @param guid
+	 * @param targetGUID
+	 *            The GUID being queried.
 	 * @param field
-	 * @param reader
-	 * @return First value of {@code field} whose value is expected to be an
-	 *         array.
-	 * @throws Exception
-	 */
-	public static final CommandPacket fieldReadArrayFirstElement(String guid,
-			String field, GuidEntry reader) throws Exception {
-		return getCommand(reader != null ? CommandType.ReadArrayOne
-				: CommandType.ReadArrayOneUnsigned, reader, GUID, guid, FIELD,
-				field, READER, reader != null ? reader.getGuid() : null);
-	}
-
-	/**
-	 * Reads the first value for a key in the guid.
-	 *
-	 * @param guid
-	 * @param field
-	 * @return First value of {@code field} whose value is expected to be an
-	 *         array.
-	 * @throws Exception
-	 */
-	public static final CommandPacket fieldReadArrayFirstElement(
-			GuidEntry guid, String field) throws Exception {
-		return fieldReadArrayFirstElement(guid.getGuid(), field, guid);
-	}
-
-	/**
-	 * Removes a field in the JSONObject record of the given guid. Signs the
-	 * query using the private key of the guid. A convenience method™.
-	 *
-	 * @param guid
-	 * @param field
-	 * @return
-	 * @throws IOException
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws SignatureException
+	 *            The field key.
+	 * @return CommandPacket
 	 * @throws ClientException
 	 */
-	public static final CommandPacket fieldRemove(GuidEntry guid, String field)
-			throws IOException, InvalidKeyException, NoSuchAlgorithmException,
-			SignatureException, ClientException {
-		return fieldRemove(guid.getGuid(), field, guid);
+	public static final CommandPacket fieldRemove(GuidEntry targetGUID,
+			String field) throws ClientException {
+		return fieldRemove(targetGUID.getGuid(), field, targetGUID);
 	}
 
 	/**
 	 * @param passkey
-	 * @return ???
-	 * @throws Exception
+	 * @return CommandPacket
+	 * @throws ClientException
 	 */
 	public static final CommandPacket adminEnable(String passkey)
-			throws Exception {
+			throws ClientException {
 		return getCommand(CommandType.Admin, PASSKEY, passkey);
 	}
 
+	/**
+	 * @return The {@link GNSCommand.ResultType} type of the result obtained by
+	 *         executing this query.
+	 */
+	public ResultType getResultType() {
+		return this.getCommandType().getResultType();
+	}
 }

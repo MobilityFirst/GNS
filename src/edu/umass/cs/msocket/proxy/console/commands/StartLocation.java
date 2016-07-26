@@ -23,7 +23,7 @@
 package edu.umass.cs.msocket.proxy.console.commands;
 
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;

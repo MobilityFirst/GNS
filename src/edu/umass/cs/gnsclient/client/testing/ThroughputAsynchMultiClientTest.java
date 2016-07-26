@@ -22,9 +22,9 @@ package edu.umass.cs.gnsclient.client.testing;
 import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -37,6 +37,7 @@ import edu.umass.cs.utils.DelayProfiler;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.CommandType;
+
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -47,6 +48,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;

@@ -24,16 +24,16 @@ import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.http.UniversalHttpClient;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -243,8 +243,9 @@ public class GuidUtils {
    * @param hostport
    * @return
    * @throws NoSuchAlgorithmException
+ * @throws EncryptionException 
    */
-  public static GuidEntry createAndSaveGuidEntry(String alias, String hostport) throws NoSuchAlgorithmException {
+  public static GuidEntry createAndSaveGuidEntry(String alias, String hostport) throws NoSuchAlgorithmException, EncryptionException {
     long keyPairStart = System.currentTimeMillis();
     KeyPair keyPair = KeyPairGenerator.getInstance(GNSCommandProtocol.RSA_ALGORITHM).generateKeyPair();
     DelayProfiler.updateDelay("createKeyPair", keyPairStart);
@@ -262,8 +263,9 @@ public class GuidUtils {
    * @param gnsInstance
    * @return
    * @throws NoSuchAlgorithmException
+ * @throws EncryptionException 
    */
-  public static GuidEntry lookupOrCreateGuidEntry(String alias, String gnsInstance) throws NoSuchAlgorithmException {
+  public static GuidEntry lookupOrCreateGuidEntry(String alias, String gnsInstance) throws NoSuchAlgorithmException, EncryptionException {
     GuidEntry entry;
     if ((entry = GuidUtils.lookupGuidEntryFromDatabase(gnsInstance, alias)) != null) {
       return entry;

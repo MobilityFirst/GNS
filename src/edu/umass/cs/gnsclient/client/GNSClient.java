@@ -112,8 +112,7 @@ public class GNSClient extends AbstractGNSClient
 			@Override
 			public void handleResponse(Request response) {
 				try {
-					GNSClient.this.handleCommandValueReturnPacket(response,
-							System.currentTimeMillis());
+					GNSClient.this.handleCommandValueReturnPacket(response);
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -145,6 +144,23 @@ public class GNSClient extends AbstractGNSClient
 	}
 
 	/**
+	 * @param packet
+	 * @param callback
+	 * @return Long request ID if successfully sent, else null.
+	 * @throws IOException
+	 */
+	public Long sendAsync(CommandPacket packet,
+			final GNSCommandCallback callback) throws IOException {
+		return this.sendAsync(packet, new RequestCallback() {
+			@Override
+			public void handleResponse(Request response) {
+				Packet.setResult(packet, defaultHandleResponse(response));
+				callback.handleResponse(packet);
+			}
+		});
+	}
+
+	/**
 	 * All sends go ultimately go through this async send method because that is
 	 * what {@link ReconfigurableAppClientAsync} supports.
 	 * 
@@ -153,7 +169,7 @@ public class GNSClient extends AbstractGNSClient
 	 * @return Long request ID if successfully sent, else null.
 	 * @throws IOException
 	 */
-	public Long sendAsync(CommandPacket packet, RequestCallback callback)
+	protected Long sendAsync(CommandPacket packet, final RequestCallback callback)
 			throws IOException {
 		Long requestID = null;
 		ClientRequest request = packet.setForceCoordinatedReads(isForceCoordinatedReads());
@@ -170,14 +186,23 @@ public class GNSClient extends AbstractGNSClient
 					new Object[] { request.getSummary() });
 		return requestID;
 	}
-
+	
+	private static final CommandValueReturnPacket defaultHandleResponse(Request response) {
+		return response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
+				: new CommandValueReturnPacket(response.getServiceName(),
+						((ActiveReplicaError) response).getRequestID(),
+						GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
+						((ActiveReplicaError) response)
+								.getResponseMessage());
+	}
+	
 	/**
 	 * @param packet
 	 * @param timeout
 	 * @return Response from the server or null if the timeout expires.
 	 * @throws IOException
 	 */
-	public CommandValueReturnPacket sendSync(CommandPacket packet, Long timeout)
+	protected CommandValueReturnPacket sendSync(CommandPacket packet, Long timeout)
 			throws IOException {
 		Object monitor = new Object();
 		CommandValueReturnPacket[] retval = new CommandValueReturnPacket[1];
@@ -186,13 +211,7 @@ public class GNSClient extends AbstractGNSClient
 		this.sendAsync(packet, new RequestCallback() {
 			@Override
 			public void handleResponse(Request response) {
-				retval[0] = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
-						: new CommandValueReturnPacket(response.getServiceName(),
-								((ActiveReplicaError) response).getRequestID(),
-								GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
-								((ActiveReplicaError) response)
-										.getResponseMessage());
-
+				retval[0] = defaultHandleResponse(response);
 				assert(retval[0].getErrorCode()!=null);
 				synchronized (monitor) {
 					monitor.notify();
@@ -226,7 +245,7 @@ public class GNSClient extends AbstractGNSClient
 	 *
 	 * @throws IOException
 	 */
-	public CommandValueReturnPacket sendSync(CommandPacket packet)
+	 CommandValueReturnPacket sendSync(CommandPacket packet)
 			throws IOException {
 		return this.sendSync(packet, null);
 	}
@@ -296,15 +315,6 @@ public class GNSClient extends AbstractGNSClient
 			return GNSApp.getRequestStatic(bytes, header, unstringer);
 		}
 	}
-
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
-		GNSClient client = new GNSClient(null);
-		client.close();
-		System.out
-				.println("Client created, successfully checked connectivity, and closing");
-	}
+	
+	/* **************** Start of execute methods ****************** */
 }

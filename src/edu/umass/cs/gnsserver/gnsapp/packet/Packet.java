@@ -503,4 +503,13 @@ public class Packet {
     }
   }
 
+	/**
+	 * @param command
+	 * @param response
+	 * @return  CommandPacket {@code command} with {@code response} in it.
+	 */
+	public static CommandPacket setResult(CommandPacket command,
+			CommandValueReturnPacket response) {
+		return command.setResult(response);
+	}
 }

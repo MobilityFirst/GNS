@@ -23,7 +23,10 @@ import java.net.InetSocketAddress;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -32,11 +35,14 @@ import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReplicableClientRequest;
 
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
@@ -165,7 +171,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   private int retransmissions = 0;
   
   private Object result=null;
-
+  
   /**
    * Create a CommandPacket instance.
    *
@@ -198,6 +204,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    */
   public CommandPacket(long requestId, JSONObject command) {
     this(requestId, null, -1, command);
+  }
+  
+  protected CommandPacket() {
+	  throw new RuntimeException("This method should not have been called");
   }
 
   /**
@@ -444,36 +454,225 @@ public CommandType getCommandType() {
     this.needsCoordination = needsCoordination;
   }
   
+	/* ********************** Start of result-related methods **************** */
+  
+
 	/**
-	 * Used to set the result object in a form consumable by a querying
-	 * client: currently JSONObject, JSONArray, or String.
+	 * Waits till this command has finished execution.
+	 */
+	public void finish() {
+		synchronized (this) {
+			while (!this.executed)
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					// continue waiting
+				}
+		}
+	}
+
+	// internal utility method
+	private String getRespStr() {
+		this.finish();
+		if (this.result != null)
+			return ((CommandValueReturnPacket) this.result).getReturnValue();
+		else
+			return null;
+	}
+
+	private boolean executed = false;
+	/**
+	 * Used to set the response obtained by executing this request.
 	 * 
 	 * 
 	 * @param responseStr
 	 * @return this
 	 */
-	public CommandPacket setResult(String responseStr) {
+	 CommandPacket setResult(CommandValueReturnPacket responsePacket) {
 		// Note: this method has nothing to do with setResponse(ClientRequest)
 		synchronized (this) {
-			if (this.result == null)
-				try {
-					this.result = responseStr!=null && JSONPacket.couldBeJSONObject(responseStr) ? new JSONObject(
-							responseStr) : responseStr!=null && JSONPacket
-							.couldBeJSONArray(responseStr) ? new JSONArray(
-							responseStr) : responseStr;
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
+			if (this.result == null) {
+				this.executed = true;
+				this.result = responsePacket;
+				this.notifyAll();
+			}
 			else throw new RuntimeException("Can not set response more than once");
 		}
 		return this;
 	}
+	 
+	/**
+	 * arun: The getResult methods below must satisfy the following invariants:
+	 * (1) A successful (without exceptions) invocation of the method can return
+	 * a non-null value at most once. This invariant implies that this.result
+	 * should be set to null upon a successful invocation.
+	 * 
+	 * (2) The method is atomic (all-or-none), i.e., exceptions because of the
+	 * caller expecting the wrong result type, e.g., invoking getResultList when
+	 * the response is a Map, should not change any state and still allow the
+	 * caller to still call other getResult methods until one is successful.
+	 * This invariant implies that this.result should be reset to null only for
+	 * successful calls.
+	 */
+
+	/**
+	 * @return The result of executing this command.
+	 * @throws ClientException
+	 */
+	public Object getResult() throws ClientException {
+		// else 
+		String responseStr = this.getRespStr();
+		try {
+			Object retval = responseStr != null
+					&& JSONPacket.couldBeJSONObject(responseStr) ? new JSONObject(
+					responseStr)
+					: responseStr != null
+							&& JSONPacket.couldBeJSONArray(responseStr) ? new JSONArray(
+							responseStr)
+							: getResultValueFromString(responseStr);
+			return retval;
+		} catch (JSONException e) {
+			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+					e.getMessage());
+		}
+	}
+	/**
+	 * @return The String result of executing this command.
+	 * @throws ClientException
+	 */
+	public String getResultString() throws ClientException {
+		return this.getRespStr();
+	}
+
+	/**
+	 * @return The JSONObject result of executing this command.
+	 * @throws ClientException
+	 */
+	public JSONObject getResultJSONObject() throws ClientException {
+		String responseStr = this.getRespStr();
+		try {
+			JSONObject json = new JSONObject(responseStr);
+			return json;
+		} catch (JSONException e) {
+			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+					e.getMessage());
+		}
+	}
+	
+	/**
+	 * @return The Map<String,?> result of executing this command.
+	 * @throws ClientException
+	 */
+	public Map<String,?> getResultMap() throws ClientException {
+		String responseStr = this.getRespStr();
+		try {
+			Map<String,?> map = JSONObjectToMap(new JSONObject(responseStr));
+			return map;
+		} catch (JSONException e) {
+			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+					e.getMessage());
+		}
+	}
+
+	/**
+	 * @return The JSONObject result of executing this command.
+	 * @throws ClientException
+	 */
+	public List<?> getResultList() throws ClientException {
+		String responseStr = this.getRespStr();
+		try {
+			List<?> list = JSONArrayToList(new JSONArray(responseStr));
+			return list;
+		} catch (JSONException e) {
+			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+					e.getMessage());
+		}
+	}
+	
+	/* arun: This method will be a utility method to convert a JSONArray to
+	 * an ArrayList while recursively converting the elements to JSONObject 
+	 * or JSONArray as needed.
+	 */
+	private static List<?> JSONArrayToList(JSONArray jsonArray) {
+		throw new RuntimeException("Unimplemented");
+	}
+	
+	/* arun: This method will be a utility method to convert a JSONObject to
+	 * a Map<String,?> while recursively converting the values to JSONObject 
+	 * or JSONArray as needed.
+	 */
+	private static Map<String,?> JSONObjectToMap(JSONObject jsonArray) {
+		throw new RuntimeException("Unimplemented");
+	}
+
+	/**
+	 * @return The JSONArray result of executing this command.
+	 * @throws ClientException
+	 */
+	public JSONArray getResultJSONArray() throws ClientException {
+		String responseStr = this.getRespStr();
+		try {
+			return new JSONArray(responseStr);
+		} catch (JSONException e) {
+			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
+					e.getMessage());
+		}
+	}
+	
+	/**
+	 * @return boolean result value of executing this command.
+	 * @throws ClientException
+	 */
+	public boolean getResultBoolean() throws ClientException {
+		Object obj = this.getResult();
+		if(obj != null && obj instanceof Boolean) return (boolean)obj;
+		throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR, "Unable to parse response as boolean");
+	}
+	
+	/**
+	 * @return int result value of executing this command.
+	 * @throws ClientException
+	 */
+	public int getResultInt() throws ClientException {
+		Object obj = this.getResult();
+		if(obj != null && obj instanceof Integer) return (int)obj;
+		throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR, "Unable to parse response as boolean");
+	}
+	
+	/**
+	 * @return long result value of executing this command.
+	 * @throws ClientException
+	 */
+	public long getResultLong() throws ClientException {
+		Object obj = this.getResult();
+		if(obj != null && obj instanceof Long) return (long)obj;
+		throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR, "Unable to parse response as boolean");
+	}
+
+	/**
+	 * @return double result value of executing this command.
+	 * @throws ClientException
+	 */
+	public double getResultDouble() throws ClientException {
+		Object obj = this.getResult();
+		if(obj != null && obj instanceof Double) return (double)obj;
+		throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR, "Unable to parse response as boolean");
+	}
+
+	private static Object getResultValueFromString(String str) throws ClientException {
+		return JSONObject.stringToValue(str);
+	}
+	
 	/**
 	 * @return True if this command has the result of its execution.
 	 */
 	public boolean hasResult() {
 		return this.result != null;
 	}
+	
+	/* ********************** End of result-related methods **************** */
+
 
   @Override
   public Object getSummary() {

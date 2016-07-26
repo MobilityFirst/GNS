@@ -10,10 +10,12 @@ package edu.umass.cs.gnscommon.asynch;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+
 import java.io.IOException;
 import java.util.logging.Level;
+
 import org.json.JSONException;
 
 /**

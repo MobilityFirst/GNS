@@ -22,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
 
+import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
@@ -72,6 +74,7 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.DelayProfiler;
@@ -139,8 +142,11 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	 * @throws IOException
 	 */
 	public boolean execute(CommandPacket command) throws ClientException, IOException {
-		return command.setResult(CommandUtils
-				.checkResponse(this.sendSync(command))).hasResult();
+		/** arun: We use a static Packet.setResult in order to not expose a public method
+		 * in CommandPacket as it is meant to be used only by internal system methods.
+		 */
+		return Packet.setResult(command, CommandUtils
+				.checkResponse(this.sendSync(command), command)).hasResult();
 	}
 
 	/**	 
