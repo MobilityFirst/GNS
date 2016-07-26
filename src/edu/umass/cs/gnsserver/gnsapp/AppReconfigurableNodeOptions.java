@@ -40,9 +40,6 @@ import org.apache.commons.cli.Options;
 public class AppReconfigurableNodeOptions {
 
   public static void load() {
-	  // arun: the commented lines are not necessary
-    //PaxosConfig.load();
-    //PaxosConfig.load(ReconfigurationConfig.RC.class);
     PaxosConfig.load(AppReconfigurableNodeOptions.AppConfig.class);
   }
 
@@ -52,7 +49,9 @@ public class AppReconfigurableNodeOptions {
 
   public static enum AppConfig implements Config.DefaultValueEnum {
 
-    NOSQL_RECORDS_CLASS("edu.umass.cs.gnsserver.database.MongoRecords");
+    NOSQL_RECORDS_CLASS("edu.umass.cs.gnsserver.database.MongoRecords"),
+    
+    ENABLE_EMAIL_VERIFICATION(true);
 
     final Object defaultValue;
 
@@ -78,6 +77,10 @@ public class AppReconfigurableNodeOptions {
       e.printStackTrace();
     }
     return clazz;
+  }
+  
+  public static boolean isEmailAuthenticationEnabled() {
+    return Config.getGlobalBoolean(AppConfig.ENABLE_EMAIL_VERIFICATION);
   }
 
   /**
@@ -120,11 +123,7 @@ public class AppReconfigurableNodeOptions {
    * Used by {@link LocationBasedDemandProfile}.
    */
   public static double normalizingConstant = 0.5;
-
-  /**
-   * If this is true sending of email by the verification mechanism is disabled.
-   */
-  public static boolean noEmail = false;
+  
   /**
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
@@ -167,19 +166,19 @@ public class AppReconfigurableNodeOptions {
    * ID
    */
   public static final String ID = "id";
-  /**
-   * NS_FILE
-   */
-  public static final String NS_FILE = "nsfile";
+//  /**
+//   * NS_FILE
+//   */
+//  public static final String NS_FILE = "nsfile";
 // 
-  /**
-   * TEST. This option is used to create multiple nodes on a single host
-   */
-  public static final String TEST = "test";
-  /**
-   * STANDALONE
-   */
-  public static final String STANDALONE = "standalone";
+//  /**
+//   * TEST. This option is used to create multiple nodes on a single host
+//   */
+//  public static final String TEST = "test";
+//  /**
+//   * STANDALONE
+//   */
+//  public static final String STANDALONE = "standalone";
   /**
    * DNS_GNS_ONLY
    */
@@ -192,10 +191,10 @@ public class AppReconfigurableNodeOptions {
    * GNS_SERVER_IP
    */
   public static final String GNS_SERVER_IP = "gnsServerIP";
-  /**
-   * DISABLE_EMAIL_VERIFICATION
-   */
-  public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
+//  /**
+//   * DISABLE_EMAIL_VERIFICATION
+//   */
+//  public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
 
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
@@ -214,14 +213,14 @@ public class AppReconfigurableNodeOptions {
     Option help = new Option("help", "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nodeId = new Option(ID, true, "Node ID");
-    Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
-    Option test = new Option(TEST, "Runs multiple test nodes on one machine");
-    Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
+    //Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
+    //Option test = new Option(TEST, "Runs multiple test nodes on one machine");
+    //Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
     // for CCP
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
-    Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
+    //Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
 
     // for CS
     Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
@@ -232,14 +231,14 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(help);
     commandLineOptions.addOption(nodeId);
-    commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(test);
-    commandLineOptions.addOption(standAlone);
+    //commandLineOptions.addOption(nsFile);
+    //commandLineOptions.addOption(test);
+    //commandLineOptions.addOption(standAlone);
     // for CCP
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
     commandLineOptions.addOption(gnsServerIP);
-    commandLineOptions.addOption(disableEmailVerification);
+    //commandLineOptions.addOption(disableEmailVerification);
 
     //context service options
     commandLineOptions.addOption(enableContextService);
@@ -267,10 +266,10 @@ public class AppReconfigurableNodeOptions {
       return;
     }
 
-    if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
-      System.out.println("******** Email Verification is OFF *********");
-      GNSConfig.enableEmailAccountVerification = false;
-    }
+//    if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
+//      System.out.println("******** Email Verification is OFF *********");
+//      GNSConfig.enableEmailAccountVerification = false;
+//    }
 
     // APP options
     if (allValues.containsKey(DNS_GNS_ONLY)) {

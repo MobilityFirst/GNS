@@ -11,7 +11,7 @@ java -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djavax.net.ssl.keyStorePassword=qwerty \
 -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks \
 edu.umass.cs.reconfiguration.ReconfigurableNode \
--disableEmailVerification -configFile \
+-configFile \
 $SCRIPTS/ns.properties \
 useast1_recon useast1_repl &
 # START_ALL starts all nodes for a single node test; else should

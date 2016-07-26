@@ -122,7 +122,7 @@ public class ServerIntegrationTest extends DefaultTest {
 		SERVER_COMMAND("server.command", USE_GP_SCRIPTS ? GP_SERVER
 				: SCRIPTS_SERVER, true),
 
-		GIGAPAXOS_CONFIG("gigapaxosConfig", "conf/gnsserver.3local.properties",
+		GIGAPAXOS_CONFIG("gigapaxosConfig", "conf/gnsserver.3local.unitest.properties",
 				true),
 
 		KEYSTORE("javax.net.ssl.keyStore", "conf/keyStore.jks", true),

@@ -37,7 +37,7 @@ import org.json.JSONObject;
  * <p>
  * Note: This example assumes that the verification step (e.g., via email) to
  * verify an account GUID's human-readable name has been disabled on the server
- * using the -disableEmailVerification option.
+ * using the ENABLE_EMAIL_VERIFICATION=false option.
  * 
  * @author arun, westy
  */

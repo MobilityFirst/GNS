@@ -23,7 +23,6 @@ import edu.umass.cs.gnscommon.utils.Format;
 import com.sun.mail.smtp.SMTPTransport;
 import com.sun.mail.util.MailSSLSocketFactory;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import java.security.GeneralSecurityException;
 import java.util.Date;
 import javax.mail.Message;
@@ -156,9 +155,6 @@ public class Email {
    * @return true if the message was sent
    */
   public static boolean emailSSL(String subject, String recipient, String text, boolean suppressWarning) {
-    if (AppReconfigurableNodeOptions.noEmail) {
-      return true;
-    }
     try {
       Properties props = new Properties();
       props.put("mail.smtp.host", SMTP_HOST);
