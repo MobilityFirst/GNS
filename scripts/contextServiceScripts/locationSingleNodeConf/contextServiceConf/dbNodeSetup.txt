@@ -1,4 +1,1 @@
 0 3306 contextDB0 root aditya
-1 3306 contextDB1 root aditya
-2 3306 contextDB2 root aditya
-3 3306 contextDB3 root aditya
