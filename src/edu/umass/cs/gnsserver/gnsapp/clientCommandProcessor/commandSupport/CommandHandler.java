@@ -137,9 +137,10 @@ public class CommandHandler {
 		// reply to client is true, this means this is the active replica
 		// that recvd the request from the gnsClient. So, let's check for
 		// sending trigger to Context service here.
-		if (AppReconfigurableNodeOptions.enableContextService) {
-			if (!doNotReplyToClient) {
-
+		if (AppReconfigurableNodeOptions.enableContextService) 
+		{
+			if (!doNotReplyToClient) 
+			{
 				if (command.getClass().getSuperclass() == AbstractUpdate.class) {
 					GNSConfig
 							.getLogger()

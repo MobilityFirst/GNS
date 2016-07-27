@@ -224,8 +224,8 @@ public class AppReconfigurableNodeOptions {
     Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
 
     // for CS
-    Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
-    Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
+    Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, true, "if true enables context service on nameserver. Set in ns properties file");
+    Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, true, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
             + "information of GNS");
 
     Options commandLineOptions = new Options();
