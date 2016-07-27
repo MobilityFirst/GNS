@@ -424,7 +424,8 @@ public class AccountAccess {
   }
 
   private static final String VERIFY_COMMAND = "account_verify";
-  private static final String EMAIL_BODY = "This is an automated message informing you that an application has created an account for %s on the GNS server.\n\n"
+  private static final String EMAIL_BODY = "This is an automated message informing you "
+          + "that %s has created an account for %s on the GNS server.\n\n"
           + "This is your verification code: %s\n\n"
           + "To verify this account you can click on the link below or enter this query into a browser:\n\n"
           + "http://%s/"
@@ -436,10 +437,12 @@ public class AccountAccess {
           + "If you did not create this account please ignore this message.";
   private static final String SUCCESS_NOTICE = "A confirmation email has been sent to %s. "
           + "Please follow the instructions in that email to verify your account.\n";
-  private static final String PROBLEM_NOTICE = "There is some system problem in sending your confirmation email to %s. "
+  private static final String PROBLEM_NOTICE = "There is some system problem in sending "
+          + "your confirmation email to %s. "
           + "Your account has been created. Please email us at %s and we will attempt to fix the problem.\n";
   //
-  private static final String ADMIN_NOTICE = "This is an automated message informing you that an account has been created for %s on the GNS server at %s.\n"
+  private static final String ADMIN_NOTICE = "This is an automated message informing "
+          + "you that %s has created an account for %s on the GNS server at %s.\n"
           + "You can view their information using the link below:\n\nhttp://register.gns.name/admin/showuser.php?show=%s \n";
 
   /**
@@ -475,7 +478,9 @@ public class AccountAccess {
         //if (GNSConfig.enableEmailAccountVerification) {
         // Send out the confirmation email with a verification code
         boolean emailOK = Email.email("GNS Account Verification", name,
-                String.format(EMAIL_BODY, name, verifyCode,
+                String.format(EMAIL_BODY, 
+                        AppReconfigurableNodeOptions.getApplicationName(),
+                        name, verifyCode,
                         hostPortString, guid, verifyCode, name,
                         verifyCode));
         // do the admin email in another thread so it's faster and
@@ -486,7 +491,9 @@ public class AccountAccess {
             boolean adminEmailOK = Email.email(
                     "GNS Account Notification",
                     Email.ACCOUNT_CONTACT_EMAIL, String.format(
-                            ADMIN_NOTICE, name, hostPortString,
+                            ADMIN_NOTICE, 
+                            AppReconfigurableNodeOptions.getApplicationName(),
+                            name, hostPortString,
                             guid));
           }
         }).start();

@@ -51,7 +51,10 @@ public class AppReconfigurableNodeOptions {
 
     NOSQL_RECORDS_CLASS("edu.umass.cs.gnsserver.database.MongoRecords"),
     
-    ENABLE_EMAIL_VERIFICATION(true);
+    ENABLE_EMAIL_VERIFICATION(true),
+    
+    APPLICATION_NAME("an application")
+    ;
 
     final Object defaultValue;
 
@@ -81,6 +84,10 @@ public class AppReconfigurableNodeOptions {
   
   public static boolean isEmailAuthenticationEnabled() {
     return Config.getGlobalBoolean(AppConfig.ENABLE_EMAIL_VERIFICATION);
+  }
+  
+  public static String getApplicationName() {
+    return Config.getGlobalString(AppConfig.APPLICATION_NAME);
   }
 
   /**
