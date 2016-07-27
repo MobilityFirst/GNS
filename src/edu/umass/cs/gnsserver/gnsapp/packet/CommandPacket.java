@@ -63,7 +63,7 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
  * Packet format sent from a client and handled by a local name server.
  *
  */
-public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest, Byteable {
+public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest {
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";
@@ -680,7 +680,6 @@ public CommandType getCommandType() {
   }
 
 @SuppressWarnings("unchecked")
-@Override
 public byte[] toBytes() {
 
 	  /*
