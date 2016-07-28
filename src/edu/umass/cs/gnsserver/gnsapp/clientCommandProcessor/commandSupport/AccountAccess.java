@@ -469,17 +469,17 @@ public class AccountAccess {
     String verifyCode = createVerificationCode(name); // make this even if
     // we don't need it
     if ((response = addAccount(name, guid, publicKey, password,
-            AppReconfigurableNodeOptions.isEmailAuthenticationEnabled(),
+            GNSConfig.GNSC.isEmailAuthenticationEnabled(),
             //GNSConfig.enableEmailAccountVerification, 
             verifyCode, handler))
             .getExceptionOrErrorCode().isOKResult()) {
       // Account creation was succesful so maybe send email verification.
-      if (AppReconfigurableNodeOptions.isEmailAuthenticationEnabled()) {
+      if (GNSConfig.GNSC.isEmailAuthenticationEnabled()) {
         //if (GNSConfig.enableEmailAccountVerification) {
         // Send out the confirmation email with a verification code
         boolean emailOK = Email.email("GNS Account Verification", name,
                 String.format(EMAIL_BODY, 
-                        AppReconfigurableNodeOptions.getApplicationName(),
+                        GNSConfig.GNSC.getApplicationName(),
                         name, verifyCode,
                         hostPortString, guid, verifyCode, name,
                         verifyCode));
@@ -492,7 +492,7 @@ public class AccountAccess {
                     "GNS Account Notification",
                     Email.ACCOUNT_CONTACT_EMAIL, String.format(
                             ADMIN_NOTICE, 
-                            AppReconfigurableNodeOptions.getApplicationName(),
+                            GNSConfig.GNSC.getApplicationName(),
                             name, hostPortString,
                             guid));
           }
@@ -531,7 +531,7 @@ public class AccountAccess {
     return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
             .getInstance().hash(name + SECRET
                     // Add salt unless email verification is disabled.
-                    + (!AppReconfigurableNodeOptions.isEmailAuthenticationEnabled()
+                    + (!GNSConfig.GNSC.isEmailAuthenticationEnabled()
                             //!GNSConfig.enableEmailAccountVerification
                             ? new String(
                                     Util.getRandomAlphanumericBytes(128))

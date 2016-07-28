@@ -20,21 +20,14 @@
 package edu.umass.cs.gnsclient.client.util;
 
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.Util;
-import edu.umass.cs.gnsclient.client.CommandUtils;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
-import edu.umass.cs.gnsclient.client.http.UniversalHttpClient;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.utils.DelayProfiler;
 
 import java.io.IOException;

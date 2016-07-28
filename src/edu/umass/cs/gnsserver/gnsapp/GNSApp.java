@@ -57,7 +57,6 @@ import edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.StopPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
@@ -164,7 +163,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
     NoSQLRecords noSqlRecords;
     try {
-      Class<?> clazz = AppReconfigurableNodeOptions.getNoSqlRecordsClass();
+      Class<?> clazz = GNSC.getNoSqlRecordsClass();
       Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
       noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, AppReconfigurableNodeOptions.mongoPort);
       GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());

@@ -48,7 +48,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 import edu.umass.cs.gnsserver.utils.Util;
@@ -241,7 +240,7 @@ public class GNSHttpServer {
         String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
         String reconAddresses = "Recon addresses: " + ReconfigurationConfig.getReconfiguratorAddresses().toString();
         String numberOfNameServers = "Server count: " + requestHandler.getGnsNodeConfig().getNumberOfNodes();
-        String recordsClass = "Records Class: " + AppReconfigurableNodeOptions.getNoSqlRecordsClass();
+        String recordsClass = "Records Class: " + GNSConfig.GNSC.getNoSqlRecordsClass();
         StringBuilder resultString = new StringBuilder();
         // Servers
 //        resultString.append("Servers:");
