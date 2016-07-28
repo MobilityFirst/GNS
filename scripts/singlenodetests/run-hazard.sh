@@ -25,7 +25,6 @@ nohup java -Xms2048M -ea -cp $IDE_PATH:jars/GNS.jar \
 -Djavax.net.ssl.keyStorePassword=qwerty \
 -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks \
 edu.umass.cs.reconfiguration.ReconfigurableNode \
-#-test -disableEmailVerification 
 -configFile $SCRIPTS/ns_hazard.properties \
 START_ALL > NSlogfile 2>&1 &
 # START_ALL starts all nodes for a single node test; else should
