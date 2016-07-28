@@ -68,6 +68,7 @@ public class GNSConfig {
     VERIFICATION_SECRET(
             "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
             + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri"),
+    
     /**
      * The class used to represent NoSQL records.
      */
@@ -76,6 +77,12 @@ public class GNSConfig {
      * If enabled, email verfication will be used when account guids are created.
      */
     ENABLE_EMAIL_VERIFICATION(true),
+    /**
+     * If enabled, email salt will be added to the EMAIL_VERIFICATION code.
+     * This is needed so we can disable salting in the case where we're using email verification and 
+     * shared secret verification simultaneously.
+     */
+    ENABLE_EMAIL_VERIFICATION_SALT(true),
     /**
      * Disables the use of the local emailer when sending verification messages.
      * Needed for hosts where the emailer is badly configured and eats outgoing email.
@@ -98,14 +105,34 @@ public class GNSConfig {
       return this.defaultValue;
     }
 
+    /**
+     * 
+     * @return true if email verfication will be used when account guids are created
+     */
     public static boolean isEmailAuthenticationEnabled() {
       return Config.getGlobalBoolean(GNSC.ENABLE_EMAIL_VERIFICATION);
     }
+    
+    /**
+     * 
+     * @return true if email salt will be added to the EMAIL_VERIFICATION code.
+     */
+    public static boolean isEmailAuthenticationSaltEnabled() {
+      return Config.getGlobalBoolean(GNSC.ENABLE_EMAIL_VERIFICATION_SALT);
+    }
 
+    /**
+     * 
+     * @return true if the use of the local mailer is disabled when sending verification messages
+     */
     public static boolean isDontTryLocalEmail() {
       return Config.getGlobalBoolean(GNSC.DONT_TRY_LOCAL_EMAIL);
     }
 
+    /**
+     * 
+     * @return the application name (currently used by the verification mailer)
+     */
     public static String getApplicationName() {
       return Config.getGlobalString(GNSC.APPLICATION_NAME);
     }

@@ -530,9 +530,9 @@ public class AccountAccess {
   private static String createVerificationCode(String name) {
     return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
             .getInstance().hash(name + SECRET
-                    // Add salt unless email verification is disabled.
-                    + (!GNSConfig.GNSC.isEmailAuthenticationEnabled()
-                            //!GNSConfig.enableEmailAccountVerification
+                    // Add additional salt unless email verification is disabled or salt is disabled.
+                    + (GNSConfig.GNSC.isEmailAuthenticationEnabled()
+                            && GNSConfig.GNSC.isEmailAuthenticationSaltEnabled()
                             ? new String(
                                     Util.getRandomAlphanumericBytes(128))
                             : "")),
