@@ -226,6 +226,10 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
     <pathelement location="${lib.dir}/gigapaxos-1.0.05.jar"/>
     <pathelement location="${lib.dir}/context-client-GNS.jar"/>
     <pathelement location="${lib.dir}/mongo-java-driver-2.12.1.jar"/>
+    <pathelement location="${lib.dir}/jackson-databind-2.6.6.jar"/>
+    <pathelement location="${lib.dir}/jackson-annotations-2.6.0.jar"/>
+    <pathelement location="${lib.dir}/jackson-core-2.6.6.jar"/>
+    <pathelement location="${lib.dir}/jackson-dataformat-cbor-2.6.6.jar"/>
     <pathelement location="${conf.dir}"/>
     <pathelement location="${db-props-file}" />
   </path>
