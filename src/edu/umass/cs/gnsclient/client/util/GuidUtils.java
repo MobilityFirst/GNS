@@ -46,8 +46,8 @@ public class GuidUtils {
   // this is so we can mimic the verification code the server is generting
   // AKA we're cheating... if the SECRET changes on the server side
   // you'll need to change it here as well
-  private static final String SECRET = 
-		  Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
+  private static final String SECRET
+          = Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
   private static boolean guidExists(GNSClientInterface client, GuidEntry guid) throws IOException {
@@ -95,10 +95,10 @@ public class GuidUtils {
         }
       }
       try {
-      guid = client.accountGuidCreate(name, password);
-      } catch(DuplicateNameException e) {
-    	  // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
-    	  System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
+        guid = client.accountGuidCreate(name, password);
+      } catch (DuplicateNameException e) {
+        // ignore as it is most likely because of a seemingly failed creation operation that actually succeeded.
+        System.out.println("  Account GUID " + guid + " aready exists on the server; " + e.getMessage());
       }
       int attempts = 0;
       // Since we're cheating here we're going to catch already verified errors which means
@@ -136,7 +136,8 @@ public class GuidUtils {
   }
 
   private static String createVerificationCode(String name) {
-    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
+    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET),
+            VERIFICATION_CODE_LENGTH));
   }
 
   /**
@@ -196,8 +197,8 @@ public class GuidUtils {
       client.addTag(entry, tagName);
     }
     return entry;
-    */
-		/* arun: This gymnastics below is to hide ugly methods like addTag from public
+     */
+ /* arun: This gymnastics below is to hide ugly methods like addTag from public
 		 * view. 
 		 * 
 		 * I am disabling addTag because it is incorrect. There is no reason for 
@@ -236,7 +237,7 @@ public class GuidUtils {
    * @param hostport
    * @return
    * @throws NoSuchAlgorithmException
- * @throws EncryptionException 
+   * @throws EncryptionException
    */
   public static GuidEntry createAndSaveGuidEntry(String alias, String hostport) throws NoSuchAlgorithmException, EncryptionException {
     long keyPairStart = System.currentTimeMillis();
@@ -256,7 +257,7 @@ public class GuidUtils {
    * @param gnsInstance
    * @return
    * @throws NoSuchAlgorithmException
- * @throws EncryptionException 
+   * @throws EncryptionException
    */
   public static GuidEntry lookupOrCreateGuidEntry(String alias, String gnsInstance) throws NoSuchAlgorithmException, EncryptionException {
     GuidEntry entry;
