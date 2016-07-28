@@ -20,9 +20,9 @@
 package edu.umass.cs.gnsserver.utils;
 
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import com.sun.mail.smtp.SMTPTransport;
 import com.sun.mail.util.MailSSLSocketFactory;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import java.security.GeneralSecurityException;
 import java.util.Date;
 import javax.mail.Message;
@@ -61,7 +61,7 @@ public class Email {
    * @return true if successful
    */
   public static boolean email(String subject, String recipient, String text) {
-      if (!AppReconfigurableNodeOptions.isDontTryLocalEmail() && emailLocal(subject, recipient, text, true)) {
+      if (!GNSC.isDontTryLocalEmail() && emailLocal(subject, recipient, text, true)) {
       return true;
     } else if (simpleMail(subject, recipient, text, true)) {
       return true;
@@ -70,7 +70,7 @@ public class Email {
     } else if (emailTLS(subject, recipient, text, true)) {
       return true;
       //now run it again with error messages turned on
-    } else if (!AppReconfigurableNodeOptions.isDontTryLocalEmail() && emailLocal(subject, recipient, text, false)) {
+    } else if (!GNSC.isDontTryLocalEmail() && emailLocal(subject, recipient, text, false)) {
       return true;
     } else if (simpleMail(subject, recipient, text, false)) {
       return true;

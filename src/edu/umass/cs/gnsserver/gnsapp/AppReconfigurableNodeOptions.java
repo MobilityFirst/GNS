@@ -19,13 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gigapaxos.PaxosConfig;
-//import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
-import edu.umass.cs.utils.Config;
 
 import java.util.Map;
 
@@ -37,82 +32,11 @@ import org.apache.commons.cli.Options;
  *
  * @author westy, arun
  */
+// FIXME: Port the rest of these to the config style above or delete them if they are unused.
+@Deprecated
 public class AppReconfigurableNodeOptions {
 
-  public static void load() {
-    PaxosConfig.load(AppReconfigurableNodeOptions.AppConfig.class);
-  }
-
-  static {
-    load();
-  }
-
-  public static enum AppConfig implements Config.DefaultValueEnum {
-
-    NOSQL_RECORDS_CLASS("edu.umass.cs.gnsserver.database.MongoRecords"),
-    
-    ENABLE_EMAIL_VERIFICATION(true),
-
-    DONT_TRY_LOCAL_EMAIL(false),   
-    
-    APPLICATION_NAME("an application")
-    ;
-
-    final Object defaultValue;
-
-    AppConfig(Object defaultValue) {
-      this.defaultValue = defaultValue;
-    }
-
-    @Override
-    public Object getDefaultValue() {
-      return this.defaultValue;
-    }
-  }
-
-  private static Class<?> noSqlRecordsclass = getNoSqlRecordsClass();
-
-  private static Class<?> getClassSuppressExceptions(String className) {
-    Class<?> clazz = null;
-    try {
-      if (className != null && !"null".equals(className)) {
-        clazz = Class.forName(className);
-      }
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-    }
-    return clazz;
-  }
   
-  public static boolean isEmailAuthenticationEnabled() {
-    return Config.getGlobalBoolean(AppConfig.ENABLE_EMAIL_VERIFICATION);
-  }
-
-  public static boolean isDontTryLocalEmail() {
-    return Config.getGlobalBoolean(AppConfig.DONT_TRY_LOCAL_EMAIL);
-  }
-  
-  public static String getApplicationName() {
-    return Config.getGlobalString(AppConfig.APPLICATION_NAME);
-  }
-
-  /**
-   * @return DB class
-   */
-  public static Class<?> getNoSqlRecordsClass() {
-    if (noSqlRecordsclass == null) {
-    	// arun: in-memory DB => DiskMap
-    	noSqlRecordsclass = getClassSuppressExceptions(Config
-    			.getGlobalBoolean(GNSC.ENABLE_DISKMAP)
-    			|| 
-    			// in-memory DB force-implies DiskMap
-    			Config.getGlobalBoolean(GNSConfig.GNSC.IN_MEMORY_DB) ? "edu.umass.cs.gnsserver.database.DiskMapRecords"
-    					: Config.getGlobalString(AppConfig.NOSQL_RECORDS_CLASS));
-    }
-    return noSqlRecordsclass;
-  }
-
-  // FIXME: Port the rest of these to the config style above
   // "Global" parameters
   /**
    * The port used by Mongo.
@@ -204,10 +128,6 @@ public class AppReconfigurableNodeOptions {
    * GNS_SERVER_IP
    */
   public static final String GNS_SERVER_IP = "gnsServerIP";
-//  /**
-//   * DISABLE_EMAIL_VERIFICATION
-//   */
-//  public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
 
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
@@ -226,16 +146,11 @@ public class AppReconfigurableNodeOptions {
     Option help = new Option("help", "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     Option nodeId = new Option(ID, true, "Node ID");
-    //Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
-    //Option test = new Option(TEST, "Runs multiple test nodes on one machine");
-    //Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
-    // for CCP
+
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
-    //Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
 
-    // for CS
     Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
     Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
             + "information of GNS");
@@ -244,14 +159,10 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(help);
     commandLineOptions.addOption(nodeId);
-    //commandLineOptions.addOption(nsFile);
-    //commandLineOptions.addOption(test);
-    //commandLineOptions.addOption(standAlone);
-    // for CCP
+
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
     commandLineOptions.addOption(gnsServerIP);
-    //commandLineOptions.addOption(disableEmailVerification);
 
     //context service options
     commandLineOptions.addOption(enableContextService);
