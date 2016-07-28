@@ -20,13 +20,14 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
-import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Util;
 
+import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -103,6 +104,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    * @throws JSONException
    */
   public CommandValueReturnPacket(JSONObject json) throws JSONException {
+    //GNSConfig.getLogger().log(Level.SEVERE, "JSON = " + json.toString());
     this.type = Packet.getPacketType(json);
     this.clientRequestId = json.getLong(CLIENTREQUESTID);
     if (json.has(LNSREQUESTID)) {
@@ -113,7 +115,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     this.serviceName = json.getString(SERVICENAME);
     this.returnValue = json.getString(RETURNVALUE);
     if (json.has(ERRORCODE)) {
-      this.errorCode = GNSResponseCode.getResponseCode(json.getInt(ERRORCODE));
+      this.errorCode = GNSResponseCode.getResponseCode(json.getInt(ERRORCODE)); 
     } else {
       this.errorCode = GNSResponseCode.NO_ERROR;
     }
@@ -205,7 +207,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
                 + ":"
                 + getRequestID()
                 + ":"
-                + getErrorCode()  
+                + getErrorCode()
                 + ":"
                 + Util.truncate(getReturnValue(), 64, 64);
       }

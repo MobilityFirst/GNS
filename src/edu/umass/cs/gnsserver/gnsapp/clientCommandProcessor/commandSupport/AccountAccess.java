@@ -467,6 +467,7 @@ public class AccountAccess {
 
     CommandResponse response;
     String verifyCode = createVerificationCode(name); // make this even if
+    //GNSConfig.getLogger().log(Level.INFO, "VERIFICATION CODE= {0}", verifyCode);
     // we don't need it
     if ((response = addAccount(name, guid, publicKey, password,
             GNSConfig.GNSC.isEmailAuthenticationEnabled(),
@@ -530,7 +531,7 @@ public class AccountAccess {
   private static String createVerificationCode(String name) {
     return ByteUtils.toHex(Arrays.copyOf(ShaOneHashFunction
             .getInstance().hash(name + SECRET
-                    // Add additional salt unless email verification is disabled or salt is disabled.
+                    // Add salt unless email verification is disabled or salt is disabled.
                     + (GNSConfig.GNSC.isEmailAuthenticationEnabled()
                             && GNSConfig.GNSC.isEmailAuthenticationSaltEnabled()
                             ? new String(
