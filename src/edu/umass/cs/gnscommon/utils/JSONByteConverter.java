@@ -159,6 +159,7 @@ public class JSONByteConverter {
 		while (iterator.hasNext()){
 			String key = iterator.next();
 			Object value = json.get(key);
+			packJSONValue(key, packer);
 			packJSONValue(value,packer);
 		}
 	}
