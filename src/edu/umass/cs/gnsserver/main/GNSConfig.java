@@ -33,7 +33,7 @@ import edu.umass.cs.utils.Config;
  * Client properties are {@link GNSClientConfig}.
  */
 public class GNSConfig {
-
+	
   /**
    *
    */
@@ -60,15 +60,64 @@ public class GNSConfig {
      * Code-breaking if enabled. Meant only for instrumentation.
      */
     EXECUTE_NOOP_ENABLED(false),
-    /**
-     * A secret shared between the server and client in order to circumvent
-     * account verification. Must be changed using properties file if manual
-     * verification is disabled.
-     */
-    VERIFICATION_SECRET(
-            "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
-            + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri"),
     
+    
+    	/**
+		 * A secret shared between the server and a trusted client in order to circumvent
+		 * account verification. Must be changed using properties file if manual
+		 * verification is disabled.
+		 * 
+		 * Security requirements:
+		 * 
+		 * (1) The security of the account verification depends on the secrecy of
+		 * this secret, so the default value must be changed via the properties
+		 * file in a production setting.
+		 * 
+		 * (2) SERVER_AUTH SSL must be enabled between clients and servers.
+		 */
+    VERIFICATION_SECRET(
+            "EXPOSED_SECRET"),
+           
+            
+		/**
+		 * Secret inserted into commands that normally need authentication
+		 * but are being issued by a trusted internal server. We need this
+		 * because a server can not generate a signature on behalf of a client
+		 * because only the client has the private key, so if a client issues a
+		 * multi-step transactional operation that needs to be conducted by an
+		 * active replica server, the server needs to use this mechanism.
+		 * 
+		 * Security requirements:
+		 * 
+		 * (1) The security of most everything in the GNS depends on the secrecy of
+		 * this secret, so the default value must be changed via the properties
+		 * file in a production setting.
+		 * 
+		 * (2) MUTUAL_AUTH SSL must be enabled between the servers.
+		 * 
+		 * TODO: We might as well set this at bootstrap time to a hash of the 
+		 * contents of keyStore.jks as the contents of that file are meant to
+		 * be secret anyway.
+		 */
+		INTERNAL_OP_SECRET("EXPOSED_SECRET"),
+		
+		/**
+		 * This file contains secrets for authenticating admin commands issued
+		 * by a trusted client.
+		 * 
+		 * Security requirements:
+		 * 
+		 * (1) The contents of this file or the 
+		 * 
+		 * (2) The security of administrative settings (e.g., quote limits)
+		 * depends on the secrecy of this secret, so the default values of
+		 * secrets must be changed via the properties file in a production
+		 * setting.
+		 * 
+		 * (3) SERVER_AUTH SSL must be enabled between clients and servers.
+		 */
+		ADMIN_FILE("conf/admin.file"),
+
     /**
      * The class used to represent NoSQL records.
      */
@@ -92,7 +141,7 @@ public class GNSConfig {
      * The name of the application that is used when sending a verification email.
      *
      */
-    APPLICATION_NAME("an application");
+    APPLICATION_NAME("an application"),;
 
     final Object defaultValue;
 

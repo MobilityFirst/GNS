@@ -23,14 +23,16 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.utils.Config;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import java.text.ParseException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,7 +65,7 @@ public class ReadUnsigned extends Read {
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     // Tells the lookup handler that we don't need to authenticate.
     // Will be moved to the client and will something more secure in the future.
-    json.put(READER, MAGIC_STRING);
+    json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
     return super.execute(json, handler);
   }
 

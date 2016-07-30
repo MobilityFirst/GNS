@@ -93,7 +93,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = JSONByteConverter.toBytesHardcoded(testJson);
-			JSONObject testJson2 = JSONByteConverter.fromBytesHardcoded(bytes);
+			//JSONObject testJson2 = JSONByteConverter.fromBytesHardcoded(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();

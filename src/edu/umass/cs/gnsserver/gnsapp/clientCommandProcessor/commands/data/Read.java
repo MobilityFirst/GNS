@@ -27,7 +27,9 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
+import edu.umass.cs.utils.Config;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -35,8 +37,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.ArrayList;
-
 import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -89,7 +91,7 @@ public class Read extends BasicCommand {
     } else {
       timestamp = null;
     }
-    if (reader.equals(MAGIC_STRING)) {
+    if (reader.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
       reader = null;
     }
 

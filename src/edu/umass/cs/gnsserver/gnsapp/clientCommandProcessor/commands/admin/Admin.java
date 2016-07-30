@@ -23,11 +23,11 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,6 +41,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,7 +72,7 @@ public class Admin extends BasicCommand {
 	  if (adminAuthStrings==null){
 		  //Parse the file specified by admin.file for admin authorization strings.  Each line is a new string that can grant admin access if any correspond to the client provided passkey.
 		  adminAuthStrings = new ArrayList<String>();
-		  String filePath = System.getProperty("admin.file");
+		  String filePath = Config.getGlobalString(GNSConfig.GNSC.ADMIN_FILE); //System.getProperty("admin.file");
 		  if (filePath != null){
 			  filePath = Paths.get(".").toAbsolutePath().normalize().toString() + "/" + filePath;
 			  File file = new File(filePath);

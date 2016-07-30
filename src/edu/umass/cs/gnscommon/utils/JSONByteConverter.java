@@ -281,18 +281,17 @@ public class JSONByteConverter {
 	 * @throws JSONException
 	 * @throws IOException
 	 */
-	private static void byteJSONValue(Object value, ByteArrayOutputStream out) throws JSONException, IOException{
+	private static final void byteJSONValue(Object value, ByteArrayOutputStream out) throws JSONException, IOException{
 		if (value instanceof JSONArray){
 			//byteJSONArray((JSONArray)value, out);
 			JSONArray array = (JSONArray)value;
-			Integer length = array.length();
+			int length = array.length();
 			out.write(ARRAY_INDICATOR);
 			fourByteBuffer.rewind();
-			fourByteBuffer.putInt((Integer)length);
+			fourByteBuffer.putInt(length);
 			out.write(fourByteBuffer.array());
 			for (int i = 0; i < length; i++){
-				Object item = array.get(i);
-				byteJSONValue(item,out);
+				byteJSONValue(array.get(i),out);
 			}
 		}
 		else if (value instanceof Integer){
@@ -333,9 +332,9 @@ public class JSONByteConverter {
 		else if (value instanceof String){
 			byte[] stringBytes = ((String)value).getBytes();
 			out.write(STRING_INDICATOR);
-			Integer length = stringBytes.length;
+			int length = stringBytes.length;
 			fourByteBuffer.rewind();
-			fourByteBuffer.putInt((Integer)length);
+			fourByteBuffer.putInt(length);
 			out.write(fourByteBuffer.array());
 			out.write(stringBytes);
 		}
@@ -344,10 +343,10 @@ public class JSONByteConverter {
 			JSONObject json = (JSONObject) value;
 			@SuppressWarnings("unchecked") // Assumption: All keys in the json are strings.
 			Iterator<String> iterator = json.keys();
-			Integer length = json.length();
+			int length = json.length();
 			out.write(MAP_INDICATOR);
 			fourByteBuffer.rewind();
-			fourByteBuffer.putInt((Integer)length);
+			fourByteBuffer.putInt(length);
 			out.write(fourByteBuffer.array());
 			while (iterator.hasNext()){
 				String key = iterator.next();
@@ -360,6 +359,64 @@ public class JSONByteConverter {
 			throw new JSONException("UNKNOWN TYPE IN JSON!");
 		}
 	}
+	
+	private static final void byteJSONValue(Object value, ByteBuffer out) throws JSONException, IOException{
+		if (value instanceof JSONArray){
+			//byteJSONArray((JSONArray)value, out);
+			JSONArray array = (JSONArray)value;
+			int length = array.length();
+			out.put(ARRAY_INDICATOR);
+			out.putInt(length);
+			for (int i = 0; i < length; i++){
+				byteJSONValue(array.get(i),out);
+			}
+		}
+		else if (value instanceof Integer){
+			out.put(INTEGER_INDICATOR);
+			out.putInt((Integer)value);
+		}
+		else if (value instanceof Long){
+			out.put(LONG_INDICATOR);
+			out.putLong((Long)value);
+			
+		}
+		else if (value instanceof Boolean){
+			out.put(BOOLEAN_INDICATOR);
+			if ((Boolean)value){
+				out.put((byte)1);
+			}
+			else{
+				out.put((byte)0);
+			}
+			
+		}
+		else if (value instanceof String){
+			byte[] stringBytes = ((String)value).getBytes();
+			out.put(STRING_INDICATOR);
+			int length = stringBytes.length;
+			out.putInt(length);
+			out.put(stringBytes);
+		}
+		else if (value instanceof JSONObject){
+			//byteJSONObject((JSONObject)value, out);
+			JSONObject json = (JSONObject) value;
+			@SuppressWarnings("unchecked") // Assumption: All keys in the json are strings.
+			Iterator<String> iterator = json.keys();
+			int length = json.length();
+			out.put(MAP_INDICATOR);
+			out.putInt(length);
+			while (iterator.hasNext()){
+				String key = iterator.next();
+				Object val = json.get(key);
+				byteJSONValue(key,out);
+				byteJSONValue(val,out);
+			}
+		}
+		else{
+			throw new JSONException("UNKNOWN TYPE IN JSON!");
+		}
+	}
+
 	/**
 	 * Converts a JSONObject to bytes recursively.
 	 * @param json The JSONObject to be converted to bytes.
@@ -367,11 +424,14 @@ public class JSONByteConverter {
 	 * @throws JSONException
 	 * @throws IOException
 	 */
-	public static byte[] toBytesHardcoded(JSONObject json) throws JSONException, IOException{
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+	public static final byte[] toBytesHardcoded(JSONObject json) throws JSONException, IOException{
+		ByteArrayOutputStream out = new ByteArrayOutputStream(1200);
+//		ByteBuffer bbuf = ByteBuffer.wrap(new byte[1200]);
+//		byteJSONValue(json, bbuf);
+//		byte[] bytes= bbuf.array();
 		byteJSONValue(json, out);
-		byte[] bytes= out.toByteArray();
 		out.close();
+		byte[] bytes = out.toByteArray();
 		return bytes;
 	}
 	
