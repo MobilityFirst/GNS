@@ -311,7 +311,7 @@ public class GNSClient extends AbstractGNSClient
 		}
 
 		@Override
-		public Request getRequest(byte[] bytes, NIOHeader header) {
+		public Request getRequest(byte[] bytes, NIOHeader header) throws RequestParseException {
 			return GNSApp.getRequestStatic(bytes, header, unstringer);
 		}
 	}

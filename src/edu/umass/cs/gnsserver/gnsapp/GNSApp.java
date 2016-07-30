@@ -39,11 +39,14 @@ import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gnsserver.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler;
@@ -66,6 +69,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageExtractor;
+import edu.umass.cs.nio.interfaces.Byteable;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.nio.interfaces.Stringifiable;
@@ -426,31 +430,46 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    * @param header
    * @param unstringer
    * @return Request constructed from msgBytes.
+ * @throws RequestParseException 
    */
   public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
-          Stringifiable<String> unstringer) {
+          Stringifiable<String> unstringer) throws RequestParseException {
     Request request = null;
     try {
       long t = System.nanoTime();
-      JSONObject json = new JSONObject(
-              JSONPacket.couldBeJSON(msgBytes) ? new String(msgBytes,
-              NIOHeader.CHARSET) : new String(msgBytes,
-              Integer.BYTES, msgBytes.length - Integer.BYTES,
-              NIOHeader.CHARSET));
-      MessageExtractor.stampAddressIntoJSONObject(header.sndr,
-              header.rcvr, json);
-      request = (Request) Packet.createInstance(json, unstringer);
+      if(JSONPacket.couldBeJSON(msgBytes)) {
+    	  JSONObject json = new JSONObject(
+    			  new String(msgBytes,
+    					  NIOHeader.CHARSET));
+    	  MessageExtractor.stampAddressIntoJSONObject(header.sndr,
+    			  header.rcvr, json);
+    	  request = (Request) Packet.createInstance(json, unstringer);
+      } else {
+    	  // parse non-JSON byteified form
+    	  return fromBytes(msgBytes);
+      }
       if (Util.oneIn(100)) {
         DelayProfiler.updateDelayNano("getRequest." + request.getRequestType(), t);
       }
     } catch (JSONException | UnsupportedEncodingException e) {
-      e.printStackTrace();
+    	throw new RequestParseException(e);
     }
     return request;
   }
+  
+  /** This method should invert the implementation of the {@link Byteable#toBytes()}
+   * method for GNSApp packets.
+   * 
+   * @param msgBytes
+   * @return
+   * @throws RequestParseException
+   */
+  private static Request fromBytes(byte[] msgBytes) throws RequestParseException {
+	  throw new RequestParseException(new RuntimeException("Unimplemented"));
+  }
 
   @Override
-  public Request getRequest(byte[] msgBytes, NIOHeader header) {
+  public Request getRequest(byte[] msgBytes, NIOHeader header) throws RequestParseException {
     return getRequestStatic(msgBytes, header, nodeConfig);
   }
 

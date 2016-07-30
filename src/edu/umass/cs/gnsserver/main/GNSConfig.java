@@ -97,7 +97,7 @@ public class GNSConfig {
 		 * 
 		 * TODO: We might as well set this at bootstrap time to a hash of the 
 		 * contents of keyStore.jks as the contents of that file are meant to
-		 * be secret anyway.
+		 * be secret anyway and the two have the exact same trust relationship.
 		 */
 		INTERNAL_OP_SECRET("EXPOSED_SECRET"),
 		

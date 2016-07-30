@@ -28,6 +28,7 @@ import java.io.IOException;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.DisabledClasses;
 
 /**
  * This class defines an extension to AbstractGnrsClient to communicate with a GNS instance
@@ -36,6 +37,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
+@Deprecated
 public class UniversalHttpClientExtended extends UniversalHttpClient {
 
   /**

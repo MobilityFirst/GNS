@@ -48,6 +48,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.DisabledClasses;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
@@ -71,10 +72,15 @@ import java.util.logging.Level;
  * over HTTP. This class works on both Android and Desktop platforms.
  * This class contains a subset of all available server operations.
  * For a more complete set see UniversalGnsClientExtended.
- *
+ * 
+ *  arun: This class is deprecated. It is unclear who if anyone is using it anyway. 
+ *  This class does does not satisfy the security and fault-tolerance requirements
+ *  of a GNS client.
+ *  
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
+@Deprecated
 public class UniversalHttpClient implements GNSClientInterface {
 
   /**
@@ -116,6 +122,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param port Port number of the GNS instance
    */
   public UniversalHttpClient(String host, int port) {
+	
+	  // arun: disabled
+	  DisabledClasses.checkDisabled(getClass());
     this.host = host;
     this.port = port;
   }
