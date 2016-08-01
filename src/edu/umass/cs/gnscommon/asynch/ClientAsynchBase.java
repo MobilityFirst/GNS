@@ -63,12 +63,14 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery.RequestCallbackWithRequest;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -636,7 +638,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
             GUID, guid,
             USER_JSON, json.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -657,7 +659,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -678,7 +680,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -700,7 +702,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.RemoveUnsigned,
             GUID, guid,
             FIELD, field, VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -722,7 +724,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.RemoveListUnsigned,
             GUID, guid,
             FIELD, field, VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -742,7 +744,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
             GUID, guid,
             USER_JSON, json.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**

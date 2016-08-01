@@ -28,7 +28,9 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
+import edu.umass.cs.utils.Config;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -77,7 +79,7 @@ public abstract class AbstractUpdate extends BasicCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp = json.has(TIMESTAMP) ? 
             Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    if (writer.equals(MAGIC_STRING)) {
+    if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
       writer = null;
     }
 

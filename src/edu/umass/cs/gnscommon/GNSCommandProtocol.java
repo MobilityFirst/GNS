@@ -368,12 +368,15 @@ public class GNSCommandProtocol {
    * The message that was signed field in a command packet.
    */
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
-  /**
-   * The magic string field in a command packet. The magic string indicates to the
-   * server that this command packet was sent by another server and does not
-   * need to be authenticated.
-   */
-  public final static String MAGIC_STRING = "magic";
+
+  /* arun: a static final MAGIC_STRING is a security hole. No can do.
+  
+//  /**
+//   * The magic string field in a command packet. The magic string indicates to the
+//   * server that this command packet was sent by another server and does not
+//   * need to be authenticated.
+//   */
+//  public final static String MAGIC_STRING = "magic";
 
   // Special fields for ACL
   public final static String GROUP_ACL = "+GROUP_ACL+";

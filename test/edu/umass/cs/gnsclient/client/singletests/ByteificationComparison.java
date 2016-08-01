@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -91,7 +93,7 @@ public class ByteificationComparison {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = JSONByteConverter.toBytesHardcoded(testJson);
-			JSONObject testJson2 = JSONByteConverter.fromBytesHardcoded(bytes);
+			//JSONObject testJson2 = JSONByteConverter.fromBytesHardcoded(bytes);
 			//assert(testJson.equals(testJson2));
 		}
 		long endTime = System.nanoTime();
@@ -125,7 +127,7 @@ public class ByteificationComparison {
 		//assert(testJson.toString().equals(testJson2.toString()));
 	}
 	
-	/*@Test
+	@Test
 	public void test_04_msgpack() throws IOException, JSONException{
 		long startTime = System.nanoTime();
 		JSONObject testJson2;
@@ -136,14 +138,14 @@ public class ByteificationComparison {
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
-		System.out.println("Average byteification time Jackson was " + avg + " nanoseconds.");
+		System.out.println("Average byteification time Msgpack Contrived was " + avg + " nanoseconds.");
 		byte[] bytes = JSONByteConverter.toBytesMsgpack(testJson);
 		testJson2 = JSONByteConverter.fromBytesMsgpack(bytes);
 
-		System.out.println("JSON1: \n" + testJson.toString());
-		System.out.println("JSON2: \n" + testJson2.toString());
+		//System.out.println("JSON1: \n" + testJson.toString());
+		//System.out.println("JSON2: \n" + testJson2.toString());
 		assert(testJson.toString().equals(testJson2.toString()));
-	}*/
+	}
 	
 	@Test
 	public void test_05_hardcoded_request_128() throws JSONException, IOException {
@@ -205,8 +207,49 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 		
 	}
+	
 	@Test
-	public void test_08_hardcoded_request_1024() throws JSONException, IOException {
+	public void test_071_msgpack_request_128() throws JSONException, IOException {
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			JSONObject json128 = packet128.toJSONObject();
+			byte[] bytes = JSONByteConverter.toBytesMsgpack(json128);
+			JSONObject testJson2 = JSONByteConverter.fromBytesMsgpack(bytes);
+			//assert(testJson.equals(testJson2));
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time Msgpack 128B was " + avg + " nanoseconds.");
+		JSONObject json128 = packet128.toJSONObject();
+		byte[] bytes = JSONByteConverter.toBytesMsgpack(json128);
+		JSONObject testJson2 = JSONByteConverter.fromBytesMsgpack(bytes);
+		assert(json128.toString().equals(testJson2.toString()));
+		//System.out.println("JSON1: \n" + testJson.toString());
+		//System.out.println("JSON2: \n" + testJson2.toString());
+	}
+	
+	@Test
+	public void test_08_PacketToBytes_128() throws JSONException, UnsupportedEncodingException, UnknownHostException {
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet128.toBytesInstrument();
+			RequestPacket packet = new RequestPacket(bytes);
+			//assert(testJson.equals(testJson2));
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time PacketToBytes 128B was " + avg + " nanoseconds.");
+		byte[] bytes = packet128.toBytesInstrument();
+		RequestPacket packet = new RequestPacket(bytes);
+		JSONObject testJson2 = packet.toJSONObject();
+		assert(packet128.toJSONObject().toString().equals(testJson2.toString()));
+		//System.out.println("JSON1: \n" + testJson.toString());
+		//System.out.println("JSON2: \n" + testJson2.toString());
+		
+	}
+	
+	@Test
+	public void test_09_hardcoded_request_1024() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json1024 = packet1024.toJSONObject();
@@ -226,7 +269,7 @@ public class ByteificationComparison {
 	}
 	
 	@Test
-	public void test_09_jackson_request_1024() throws JSONException, IOException {
+	public void test_10_jackson_request_1024() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json1024 = packet1024.toJSONObject();
@@ -247,7 +290,7 @@ public class ByteificationComparison {
 
 	
 	@Test
-	public void test_10_JSON_Default_1024() throws JSONException {
+	public void test_11_JSON_Default_1024() throws JSONException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			JSONObject json1024 = packet1024.toJSONObject();
@@ -265,6 +308,45 @@ public class ByteificationComparison {
 		//System.out.println("JSON1: \n" + testJson.toString());
 		//System.out.println("JSON2: \n" + testJson2.toString());
 		
+	}
+	
+	@Test
+	public void test_12_PacketToBytes_1024() throws JSONException, UnsupportedEncodingException, UnknownHostException {
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet1024.toBytesInstrument();
+			RequestPacket packet = new RequestPacket(bytes);
+			//assert(testJson.equals(testJson2));
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time PacketToBytes 1024B was " + avg + " nanoseconds.");
+		byte[] bytes = packet1024.toBytesInstrument();
+		RequestPacket packet = new RequestPacket(bytes);
+		JSONObject testJson2 = packet.toJSONObject();
+		assert(packet1024.toJSONObject().toString().equals(testJson2.toString()));
+		//System.out.println("JSON1: \n" + testJson.toString());
+		//System.out.println("JSON2: \n" + testJson2.toString());
+		
+	}
+	@Test
+	public void test_13_msgpack_request_1024() throws JSONException, IOException {
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			JSONObject json1024 = packet1024.toJSONObject();
+			byte[] bytes = JSONByteConverter.toBytesMsgpack(json1024);
+			JSONObject testJson2 = JSONByteConverter.fromBytesMsgpack(bytes);
+			//assert(testJson.equals(testJson2));
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time Msgpack 1024B was " + avg + " nanoseconds.");
+		JSONObject json1024 = packet1024.toJSONObject();
+		byte[] bytes = JSONByteConverter.toBytesMsgpack(json1024);
+		JSONObject testJson2 = JSONByteConverter.fromBytesMsgpack(bytes);
+		assert(json1024.toString().equals(testJson2.toString()));
+		//System.out.println("JSON1: \n" + testJson.toString());
+		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
 	
 	

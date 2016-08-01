@@ -28,7 +28,9 @@ import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
+import edu.umass.cs.utils.Config;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -80,7 +82,7 @@ public abstract class AbstractUpdateList extends BasicCommand {
       timestamp = null;
     }
     GNSResponseCode responseCode;
-    if (writer.equals(MAGIC_STRING)) {
+    if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
       writer = null;
     }
 

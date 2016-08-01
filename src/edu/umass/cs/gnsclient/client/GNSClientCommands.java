@@ -2133,6 +2133,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @return ???
    * @throws Exception
    */
+  @Deprecated
   public String adminEnable(String passkey) throws Exception {
     return getResponse(CommandType.Admin, PASSKEY, passkey);
   }
@@ -2142,6 +2143,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @param value
    * @throws Exception
    */
+  @Deprecated
   public void parameterSet(String name, Object value) throws Exception {
     getResponse(CommandType.SetParameter, NAME, name,
             VALUE, value);
@@ -2151,7 +2153,9 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @param name
    * @return ???
    * @throws Exception
+   * 
    */
+  @Deprecated
   public String parameterGet(String name) throws Exception {
     return getResponse(CommandType.GetParameter, NAME, name);
   }
