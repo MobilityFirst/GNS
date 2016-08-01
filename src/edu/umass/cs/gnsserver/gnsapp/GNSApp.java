@@ -74,6 +74,7 @@ import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.SSLMessenger;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOHeader;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
 import edu.umass.cs.reconfiguration.interfaces.Reconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
@@ -674,7 +675,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   @Override
   // Currently only used by Select
   public void sendToID(String id, JSONObject msg) throws IOException {
-    messenger.sendToID(id, msg);
+	  // arun: active replica accepts app packets only on client-facing port
+    messenger.sendToAddress(new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
+    		ReconfigurationConfig.getClientFacingPort(this.nodeConfig.getNodePort(id))),
+    		msg);
   }
 
   @Override

@@ -311,16 +311,19 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getPort();
     }
-    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
-    if (nodeInfo != null) {
-      return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_TCP_PORT.getOffset();
-      // Special case for ActiveReplica
-    } else if ((nodeInfo = getActiveReplicaInfo(id)) != null) {
+    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id), copy = nodeInfo;
+    if ((nodeInfo = getActiveReplicaInfo(id)) != null) {
       return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.ACTIVE_REPLICA_PORT.getOffset();
       // Special case for Reconfigurator
     } else if ((nodeInfo = getReconfiguratorInfo(id)) != null) {
       return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.RECONFIGURATOR_PORT.getOffset();
-    } else {
+    }
+    // arun: the above takes precedence
+    else if ((nodeInfo=copy) != null) {
+        return nodeInfo.getStartingPortNumber() + GNSConfig.PortType.NS_TCP_PORT.getOffset();
+        // Special case for ActiveReplica
+      } 
+    else {
       GNSConfig.getLogger().log(Level.WARNING, "NodeId {0} not a valid Id!", id.toString());
       return INVALID_PORT;
     }

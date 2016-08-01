@@ -164,6 +164,10 @@ public class RemoteQuery extends ClientAsynchBase {
           throws ClientException, ActiveReplicaException {
     return waitForReplicaResponse(id, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT);
   }
+  private ClientRequest waitForReplicaResponse(long id, Object monitor, RequestCallbackWithRequest callback)
+          throws ClientException, ActiveReplicaException {
+    return waitForReplicaResponse(id, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT);
+  }
 
   private ClientRequest waitForReplicaResponse(long id, Object monitor, RequestCallbackWithRequest callback, long timeout)
           throws ClientException, ActiveReplicaException {
@@ -182,7 +186,7 @@ public class RemoteQuery extends ClientAsynchBase {
           // TODO: arun
           ClientException e = new ClientException(
                   this + ": Timed out on active replica response after waiting for "
-                  + timeout + "ms for response packet for response for " + (callback !=null ? callback.getResponse().getSummary() : id));
+                  + timeout + "ms for response packet for response for " + (callback !=null ? callback.getRequest().getSummary() : id));
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
@@ -607,10 +611,11 @@ public class RemoteQuery extends ClientAsynchBase {
     }
 
     Object monitor = new Object();
-    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
+    RequestCallbackWithRequest callback = null;
+    long requestId = sendSelectPacket(packet, callback=this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket
-            = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
+            = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
     if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
@@ -635,9 +640,10 @@ public class RemoteQuery extends ClientAsynchBase {
     }
 
     Object monitor = new Object();
-    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
+    RequestCallbackWithRequest callback = null;
+    long requestId = sendSelectPacket(packet, callback=this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
+    SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
     if (ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
       return reponsePacket.getGuids();
     } else {
@@ -666,9 +672,10 @@ public class RemoteQuery extends ClientAsynchBase {
     }
 
     Object monitor = new Object();
-    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
+    RequestCallbackWithRequest callback = null;
+    long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
     if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
@@ -706,9 +713,10 @@ public class RemoteQuery extends ClientAsynchBase {
     	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
     }
     Object monitor = new Object();
-    long requestId = sendSelectPacket(packet, this.getRequestCallback(monitor));
+    RequestCallbackWithRequest callback = null;
+    long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
-    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor);
+    SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
     if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
