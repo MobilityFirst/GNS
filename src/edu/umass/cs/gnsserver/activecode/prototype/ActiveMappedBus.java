@@ -1,9 +1,12 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
-import java.io.EOFException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
-import edu.umass.cs.gnsserver.activecode.prototype.interfaces.ActiveChannel;
+import org.json.JSONException;
+
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 import io.mappedbus.MappedBusReader;
 import io.mappedbus.MappedBusWriter;
 
@@ -11,12 +14,17 @@ import io.mappedbus.MappedBusWriter;
  * @author gaozy
  *
  */
-public class ActiveMappedBus implements ActiveChannel{
+public class ActiveMappedBus implements Channel{
 	private MappedBusReader reader;
 	private MappedBusWriter writer;
 	
-	final static long fullSize = 800000000L;
-	final static int msgSize = 16;
+	byte[] buffer = new byte[msgSize];
+	
+	// The size of the random access file is 1mB
+	final static long fullSize = 1000000000L;
+	
+	// The maximal size of the message is 4KB
+	final static int msgSize = 1024;
 	/**
 	 * @param rfile
 	 * @param wfile
@@ -33,44 +41,48 @@ public class ActiveMappedBus implements ActiveChannel{
 		}
 	}
 	
-	public int read(byte[] buffer){
-		int length = -1;
+	@Override
+	public void sendMessage(Message msg) throws IOException {
+		byte[] buf = msg.toBytes();
+		int length = buf.length;
 		try {
-			if(reader.next()){
-				length = reader.readBuffer(buffer, 0);
+			writer.write(buf, 0, length);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	@Override
+	public Message receiveMessage() throws IOException {
+		Message am = null;
+		
+		if(reader.next()){
+			try {
+				reader.readBuffer(buffer, 0);
+				am = new ActiveMessage(buffer);
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
-		} catch (EOFException e) {
-			e.printStackTrace();
 		}
-		return length;
+		
+		return am;
 	}
 	
-	public boolean write(byte[] buffer, int offset, int length){
-		boolean wSuccess = false;
-		try {
-			writer.write(buffer, offset, length);
-			wSuccess = true;
-		} catch (EOFException e) {
-			e.printStackTrace();
-		}
-		return wSuccess;
-	}
-	
-	
-	public void shutdown(){
-		if(reader != null){
+	@Override
+	public void shutdown() {
+		if(reader != null)
 			try {
 				reader.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
-		if(writer != null){
+		if(writer != null)
 			try {
 				writer.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
 	}
+	
+	
 }
