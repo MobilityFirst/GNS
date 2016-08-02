@@ -23,6 +23,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
+import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.utils.Util;
@@ -348,6 +350,39 @@ public class ByteificationComparison {
 		//System.out.println("JSON1: \n" + testJson.toString());
 		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
+	
+	@Test
+	public void test_14_CommandValueReturnPacket_128B() throws UnsupportedEncodingException, JSONException{
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet.toBytes();
+			CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time CommandValueReturnPacket 128B was " + avg + " nanoseconds.");
+		byte[] bytes = packet.toBytes();
+		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+	}
+	
+	@Test
+	public void test_15_CommandValueReturnPacket_1024B_Strings() throws UnsupportedEncodingException, JSONException{
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet.toBytes();
+			CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time CommandValueReturnPacket 1024B was " + avg + " nanoseconds.");
+		byte[] bytes = packet.toBytes();
+		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+	}
+	
 	
 	
 	
