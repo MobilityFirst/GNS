@@ -172,11 +172,15 @@ public class GNSClient extends AbstractGNSClient
 			throws IOException {
 		Long requestID = null;
 		ClientRequest request = packet.setForceCoordinatedReads(isForceCoordinatedReads());
-
-		if (isAnycast(packet))
+                
+                InetSocketAddress lnsAddress;
+                if ((lnsAddress = getLnsAddress()) != null) {
+                        requestID = this.asyncClient.sendRequest(request, lnsAddress, callback);
+                } else if (isAnycast(packet)) {
 			requestID = this.asyncClient.sendRequestAnycast(request, callback);
-		else
+                } else {
 			requestID = this.asyncClient.sendRequest(request, callback);
+                }
 		if (requestID == null)
 			/* Can only happen under remote node failure and extreme congestion
 			 * as otherwise NIO will buffer the packet for future delivery
