@@ -62,6 +62,7 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpServer;
+import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONPacket;
@@ -108,20 +109,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    */
   private SSLMessenger<String, JSONObject> messenger;
   private ClientRequestHandlerInterface requestHandler;
-
-  // Keep track of commands that are coming in
-  /**
-   * arun: I am not sure {@link #outStandingQueries} is really needed. It is
-   * only being used in CommandHandler.handleCommandReturnValuePacketForApp
-   * that invokes sendClient, but sendClient internally uses
-   * {@link #outstanding} below that only needs the response, nothing else. If
-   * you need to preserve the !DELEGATE_CLIENT_MESSAGING options, you could
-   * read from {@link #outstanding} instead; it is designed to
-   * auto-garbage-collect.
-   */
-//  @Deprecated
-//  public final ConcurrentMap<Long, CommandRequestInfo> outStandingQueries
-//          = new ConcurrentHashMap<>(10, 0.75f, 3);
   private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
   private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<>(
           new GCConcurrentHashMapCallback() {
@@ -165,12 +152,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     try {
       Class<?> clazz = GNSC.getNoSqlRecordsClass();
       Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
-      noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, AppReconfigurableNodeOptions.mongoPort);
+      noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
       GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
       // fallback plan
       GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
-      noSqlRecords = new MongoRecords(nodeID, AppReconfigurableNodeOptions.mongoPort);
+      noSqlRecords = new MongoRecords(nodeID, Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
     }
     this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
     GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
@@ -190,10 +177,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     ccpListenerAdmin.start();
     admintercessor.setListenerAdmin(ccpListenerAdmin);
     new AppAdmin(this, gnsNodeConfig).start();
-    GNSConfig.getLogger().log(Level.INFO,
-            "{0} Admin thread initialized", nodeID);
+    GNSConfig.getLogger().log(Level.INFO, "{0} Admin thread initialized", nodeID);
     // Should add this to the shutdown method - do we have a shutdown method?
     GNSHttpServer httpServer = new GNSHttpServer(requestHandler);
+    if (Config.getGlobalBoolean(GNSConfig.GNSC.START_LOCAL_NAME_SERVER)) {
+      LocalNameServer localNameServer = new LocalNameServer();
+    }
     this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(this,
             AppReconfigurableNodeOptions.activeCodeWorkerCount,
             AppReconfigurableNodeOptions.activeCodeBlacklistSeconds) : null;
@@ -227,32 +216,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     }
   }
 
-	private static PacketType[] types = { PacketType.COMMAND,
-
-	PacketType.SELECT_REQUEST,
-
-	PacketType.SELECT_RESPONSE,
-
-	/* arun: It is a security flaw to frivolously register packets that are unexpected as they
-	 * can halt the state machine as execute(.) returns false as the default behavior when an
-	 * unexpected packet is received.
-	 */
-	
-	// STOP and NOOP are no longer needed.
-	// PacketType.STOP,
-	// PacketType.NOOP,
-
-	/* arun: Unclear why we expect COMMAND_RETURN_VALUE.
-	 * 
-	 * Notes:
-	 * 
-	 * (1) responses to RemoteQuery requests don't come via GNSApp.execute(.) as
-	 * they are directly processed by their callback.
-	 * 
-	 * (2) Local name servers unlike GNSApp servers should expect
-	 * COMMAND_RETURN_VALUE as they are proxying for end-clients. */
-	// PacketType.COMMAND_RETURN_VALUE
-	};
+  private static PacketType[] types = {
+    PacketType.COMMAND,
+    PacketType.SELECT_REQUEST,
+    PacketType.SELECT_RESPONSE,};
 
   /**
    * arun: The code below {@link #incrResponseCount(ClientRequest)} and
@@ -317,13 +284,13 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               new Object[]{this, request.getSummary()});
       Request prev = null;
       // arun: enqueue request, dequeue before returning
-      if (request instanceof RequestIdentifier)
-    	  prev = this.outstanding.putIfAbsent(
-    			  ((RequestIdentifier) request).getRequestID(), request);
-      else
-    	  assert (false) : this
-    	  + " should not be getting requests that do not implement "
-    	  + RequestIdentifier.class;
+      if (request instanceof RequestIdentifier) {
+        prev = this.outstanding.putIfAbsent(
+                ((RequestIdentifier) request).getRequestID(), request);
+      } else {
+        assert (false) : this + " should not be getting requests that do not implement "
+                + RequestIdentifier.class;
+      }
 
       switch (packetType) {
         case SELECT_REQUEST:
@@ -342,36 +309,31 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
                   (CommandPacket) request, doNotReplyToClient, this);
           break;
 
-          /* arun: COMMAND_RETURN_VALUE should never have been an expected
+        /* arun: COMMAND_RETURN_VALUE should never have been an expected
            * type here as GNSApp should never be getting responses. STOP and
            * NOOP are no longer necessary. */
         case COMMAND_RETURN_VALUE:
-        	// CommandHandler.handleCommandReturnValuePacketForApp((CommandValueReturnPacket)
-        	// request, doNotReplyToClient, this);
+        // CommandHandler.handleCommandReturnValuePacketForApp((CommandValueReturnPacket)
+        // request, doNotReplyToClient, this);
         case STOP:
         case NOOP:
         default:
-        	assert(false) :  (this + " should not be getting packets of type " + packetType + "; exiting");
-        	GNSConfig.getLogger().log(Level.SEVERE,
-        			" Packet type not found: {0}", request.getSummary());
+          assert (false) : (this + " should not be getting packets of type " + packetType + "; exiting");
+          GNSConfig.getLogger().log(Level.SEVERE,
+                  " Packet type not found: {0}", request.getSummary());
           return false;
       }
       executed = true;
 
       // arun: always clean up all created state upon exiting
       if (request instanceof RequestIdentifier && prev == null) {
-				GNSConfig
-						.getLogger()
-						.log(Level.FINE,
-								"{0} dequeueing request {1}; response={2}",
-								new Object[] {
-										this,
-										request.getSummary(),
-										request instanceof ClientRequest
-												&& ((ClientRequest) request)
-														.getResponse() != null ? ((ClientRequest) request)
-												.getResponse().getSummary()
-												: null });
+        GNSConfig.getLogger().log(Level.FINE, "{0} dequeueing request {1}; response={2}",
+                new Object[]{this,
+                  request.getSummary(),
+                  request instanceof ClientRequest
+                  && ((ClientRequest) request).getResponse() != null
+                          ? ((ClientRequest) request).getResponse().getSummary()
+                          : null});
         this.outstanding.remove(request);
       }
 
@@ -393,7 +355,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
     return executed;
   }
-  
+
   // For InterfaceApplication
   @Override
   public Request getRequest(String string)
@@ -468,7 +430,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
   static {
     curValueRequestFields.add(NameRecord.VALUES_MAP);
-    //curValueRequestFields.add(NameRecord.TIME_TO_LIVE);
   }
 
   @Override
@@ -480,7 +441,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
               new Object[]{this, name, nameRecord.getValuesMap().getSummary()});
       return nameRecord.getValuesMap().toString();
     } catch (RecordNotFoundException e) {
-      // normal result
+      // the above RecordNotFoundException is a normal result
     } catch (FieldNotFoundException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Field not found exception: {0}", e.getMessage());
       e.printStackTrace();
@@ -509,8 +470,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else //state does not equal null so we either create a new record or update the existing one
-      {
-        if (!NameRecord.containsRecord(nameRecordDB, name)) {
+       if (!NameRecord.containsRecord(nameRecordDB, name)) {
           // create a new record
           try {
             ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
@@ -527,7 +487,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         }
-      }
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Failed update exception: {0}", e.getMessage());
@@ -545,12 +504,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    */
   @Override
   public ReconfigurableRequest getStopRequest(String name, int epoch) {
-	  /* arun: reconfiguration has long had support for creating
-	   * a default stop request if the app returns null, so a nontrivial
-	   * stop request is not needed unless the app wants to do specific
-	   * cleanup activities in case of a stop. The default action of
-	   * restoring state to null is automatically done by gigapaxos.
-	   */
+    /*
+     * A nontrivial stop request is not needed unless the app wants to do specific
+     * cleanup activities in case of a stop. The default action of
+     * restoring state to null is automatically done by gigapaxos.
+     */
     return null; // new StopPacket(name, epoch);
   }
 
@@ -623,28 +581,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
                 .getClientAddress(), originalRequest.getSummary()});
       return;
     } // else
-
-    /* arun: FIXED: You have just ignored the doNotReplyToClient flag
-		 * here, which is against the spec of the implementation of the
-		 * Replicable.execute(.) method. Alternatively, you could just delegate 
-		 * client messaging to gigapaxos, but you are not doing that either.
-		 * The current implementation will unnecessarily incur 3x client
-		 * messaging overhead and can potentially cause bugs if clients rapidly 
-		 * open and close connections.
-		 * 
-		 * 
-		 * Alternatively, delegate client messaging to gigapaxos and you don't
-		 * have to worry about keeping track of sender or listening addresses.
-		 * For that we need the corresponding request here so that we can invoke
-		 * request.setResponse(response) here. */
-//    if (!disableSSL) {
-//      GNSConfig.getLogger().log(Level.FINE,
-//              "{0} sending back response to client {1} -> {2}",
-//              new Object[]{this, response.getSummary(), isa});
-//      messenger.getSSLClientMessenger().sendToAddress(isa, responseJSON);
-//    } else {
-//      messenger.getClientMessenger().sendToAddress(isa, responseJSON);
-//    }
   }
 
   @Override

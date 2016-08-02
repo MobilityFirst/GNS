@@ -39,7 +39,6 @@ import edu.umass.cs.utils.Config;
  */
 public class GNSClient extends AbstractGNSClient 
 {
-
 	// initialized from properties file
 	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
 			.getReconfiguratorAddresses();

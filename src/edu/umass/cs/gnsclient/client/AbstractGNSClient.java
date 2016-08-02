@@ -41,16 +41,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnscommon.utils.CanonicalJSON;
-import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.CommandType;
-
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.SignatureException;
-import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -107,16 +98,7 @@ public abstract class AbstractGNSClient {
   private static final String DEFAULT_INSTANCE = "server.gns.name";
 
   /**
-   */
-  @Deprecated
-  public AbstractGNSClient() {
-    this(null);
-    GNSClientConfig.getLogger().warning(
-            "Initializing a GNS client without a reconfigurator address is deprecated");
-  }
-
-  /**
-   * Creates a new <code>BasicUniversalTcpClient</code> object
+   * Creates a new <code>AbstractGNSClient</code> object
    * Optionally disables SSL if disableSSL is true.
    *
    * @param anyReconfigurator

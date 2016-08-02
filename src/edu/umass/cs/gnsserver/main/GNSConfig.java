@@ -33,7 +33,7 @@ import edu.umass.cs.utils.Config;
  * Client properties are {@link GNSClientConfig}.
  */
 public class GNSConfig {
-	
+
   /**
    *
    */
@@ -60,64 +60,62 @@ public class GNSConfig {
      * Code-breaking if enabled. Meant only for instrumentation.
      */
     EXECUTE_NOOP_ENABLED(false),
-    
-    
-    	/**
-		 * A secret shared between the server and a trusted client in order to circumvent
-		 * account verification. Must be changed using properties file if manual
-		 * verification is disabled.
-		 * 
-		 * Security requirements:
-		 * 
-		 * (1) The security of the account verification depends on the secrecy of
-		 * this secret, so the default value must be changed via the properties
-		 * file in a production setting.
-		 * 
-		 * (2) SERVER_AUTH SSL must be enabled between clients and servers.
-		 */
+    /**
+     * A secret shared between the server and a trusted client in order to circumvent
+     * account verification. Must be changed using properties file if manual
+     * verification is disabled.
+     *
+     * Security requirements:
+     *
+     * (1) The security of the account verification depends on the secrecy of
+     * this secret, so the default value must be changed via the properties
+     * file in a production setting.
+     *
+     * (2) SERVER_AUTH SSL must be enabled between clients and servers.
+     */
     VERIFICATION_SECRET(
             "EXPOSED_SECRET"),
-           
-            
-		/**
-		 * Secret inserted into commands that normally need authentication
-		 * but are being issued by a trusted internal server. We need this
-		 * because a server can not generate a signature on behalf of a client
-		 * because only the client has the private key, so if a client issues a
-		 * multi-step transactional operation that needs to be conducted by an
-		 * active replica server, the server needs to use this mechanism.
-		 * 
-		 * Security requirements:
-		 * 
-		 * (1) The security of most everything in the GNS depends on the secrecy of
-		 * this secret, so the default value must be changed via the properties
-		 * file in a production setting.
-		 * 
-		 * (2) MUTUAL_AUTH SSL must be enabled between the servers.
-		 * 
-		 * TODO: We might as well set this at bootstrap time to a hash of the 
-		 * contents of keyStore.jks as the contents of that file are meant to
-		 * be secret anyway.
-		 */
-		INTERNAL_OP_SECRET("EXPOSED_SECRET"),
-		
-		/**
-		 * This file contains secrets for authenticating admin commands issued
-		 * by a trusted client.
-		 * 
-		 * Security requirements:
-		 * 
-		 * (1) The contents of this file or the 
-		 * 
-		 * (2) The security of administrative settings (e.g., quote limits)
-		 * depends on the secrecy of this secret, so the default values of
-		 * secrets must be changed via the properties file in a production
-		 * setting.
-		 * 
-		 * (3) SERVER_AUTH SSL must be enabled between clients and servers.
-		 */
-		ADMIN_FILE("conf/admin.file"),
-
+    /**
+     * Secret inserted into commands that normally need authentication
+     * but are being issued by a trusted internal server. We need this
+     * because a server can not generate a signature on behalf of a client
+     * because only the client has the private key, so if a client issues a
+     * multi-step transactional operation that needs to be conducted by an
+     * active replica server, the server needs to use this mechanism.
+     *
+     * Security requirements:
+     *
+     * (1) The security of most everything in the GNS depends on the secrecy of
+     * this secret, so the default value must be changed via the properties
+     * file in a production setting.
+     *
+     * (2) MUTUAL_AUTH SSL must be enabled between the servers.
+     *
+     * TODO: We might as well set this at bootstrap time to a hash of the
+     * contents of keyStore.jks as the contents of that file are meant to
+     * be secret anyway.
+     */
+    INTERNAL_OP_SECRET("EXPOSED_SECRET"),
+    /**
+     * This file contains secrets for authenticating admin commands issued
+     * by a trusted client.
+     *
+     * Security requirements:
+     *
+     * (1) The contents of this file or the
+     *
+     * (2) The security of administrative settings (e.g., quote limits)
+     * depends on the secrecy of this secret, so the default values of
+     * secrets must be changed via the properties file in a production
+     * setting.
+     *
+     * (3) SERVER_AUTH SSL must be enabled between clients and servers.
+     */
+    ADMIN_FILE("conf/admin.file"),
+    /**
+     * The default port used by mongo. 27017 is the default mongo uses.
+     */
+    MONGO_PORT(27017),
     /**
      * The class used to represent NoSQL records.
      */
@@ -128,7 +126,7 @@ public class GNSConfig {
     ENABLE_EMAIL_VERIFICATION(true),
     /**
      * If enabled, email salt will be added to the EMAIL_VERIFICATION code.
-     * This is needed so we can disable salting in the case where we're using email verification and 
+     * This is needed so we can disable salting in the case where we're using email verification and
      * shared secret verification simultaneously.
      */
     ENABLE_EMAIL_VERIFICATION_SALT(true),
@@ -139,9 +137,13 @@ public class GNSConfig {
     DONT_TRY_LOCAL_EMAIL(false),
     /**
      * The name of the application that is used when sending a verification email.
-     *
      */
-    APPLICATION_NAME("an application"),;
+    APPLICATION_NAME("an application"),
+    /**
+     * Start an instance of the LocalNameServer when the app starts.
+     */
+    START_LOCAL_NAME_SERVER(false)
+    ;
 
     final Object defaultValue;
 
@@ -155,15 +157,15 @@ public class GNSConfig {
     }
 
     /**
-     * 
+     *
      * @return true if email verfication will be used when account guids are created
      */
     public static boolean isEmailAuthenticationEnabled() {
       return Config.getGlobalBoolean(GNSC.ENABLE_EMAIL_VERIFICATION);
     }
-    
+
     /**
-     * 
+     *
      * @return true if email salt will be added to the EMAIL_VERIFICATION code.
      */
     public static boolean isEmailAuthenticationSaltEnabled() {
@@ -171,7 +173,7 @@ public class GNSConfig {
     }
 
     /**
-     * 
+     *
      * @return true if the use of the local mailer is disabled when sending verification messages
      */
     public static boolean isDontTryLocalEmail() {
@@ -179,7 +181,7 @@ public class GNSConfig {
     }
 
     /**
-     * 
+     *
      * @return the application name (currently used by the verification mailer)
      */
     public static String getApplicationName() {

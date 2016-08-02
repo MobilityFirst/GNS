@@ -19,24 +19,17 @@
  */
 package edu.umass.cs.gnsserver.gnsapp;
 
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
-import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
-import static edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions.*;
-
 import java.io.IOException;
-
 import edu.umass.cs.gnsserver.utils.ParametersAndOptions;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.printOptions;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Instantiates the replicas and reconfigurators. Also parses
@@ -61,44 +54,44 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     super(nodeID, nc);
   }
 
-  private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
-    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, nodeID);
-    System.out.println("********* Starting active replica. *********");
-    ALL_NODES.add(new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig));
-    System.out.println("********* Starting reconfigurator. *********");
-    ALL_NODES.add(new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig));
-    printRCConfig();
-    System.out.println("********* Nodes have started. Server is ready. *********");
-  }
-
-  private static void startStandalone(String nodeConfigFilename) throws IOException {
-    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, true);
-    String nodeID = nodeConfig.getActiveReplicas().iterator().next();
-    GNSConfig.getLogger().log(Level.INFO, "Starting standalone node {0}", nodeID);
-    ALL_NODES.add(new AppReconfigurableNode(nodeID, nodeConfig));
-  }
-
-  private static void startTestNodes(String nodeConfigFilename) throws IOException {
-    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, true);
-    try {
-      for (String activeID : nodeConfig.getActiveReplicas()) {
-        System.out.println("########### Multi-node test #############");
-        System.out.println("###################################");
-        System.out.println("############# Setting up active replica " + activeID);
-        ALL_NODES.add(new AppReconfigurableNode(activeID, nodeConfig));
-      }
-      for (String rcID : nodeConfig.getReconfigurators()) {
-        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
-        System.out.println("$$$$$$$$$$$$$$$$ Setting up reconfigurator " + rcID);
-        ALL_NODES.add(new AppReconfigurableNode(rcID, nodeConfig));
-      }
-      printRCConfig();
-      System.out.println("********* Nodes have started. Server is ready. *********");
-
-    } catch (IOException ioe) {
-      ioe.printStackTrace();
-    }
-  }
+//  private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
+//    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, nodeID);
+//    System.out.println("********* Starting active replica. *********");
+//    ALL_NODES.add(new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig));
+//    System.out.println("********* Starting reconfigurator. *********");
+//    ALL_NODES.add(new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig));
+//    printRCConfig();
+//    System.out.println("********* Nodes have started. Server is ready. *********");
+//  }
+//
+//  private static void startStandalone(String nodeConfigFilename) throws IOException {
+//    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, true);
+//    String nodeID = nodeConfig.getActiveReplicas().iterator().next();
+//    GNSConfig.getLogger().log(Level.INFO, "Starting standalone node {0}", nodeID);
+//    ALL_NODES.add(new AppReconfigurableNode(nodeID, nodeConfig));
+//  }
+//
+//  private static void startTestNodes(String nodeConfigFilename) throws IOException {
+//    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<>(nodeConfigFilename, true);
+//    try {
+//      for (String activeID : nodeConfig.getActiveReplicas()) {
+//        System.out.println("########### Multi-node test #############");
+//        System.out.println("###################################");
+//        System.out.println("############# Setting up active replica " + activeID);
+//        ALL_NODES.add(new AppReconfigurableNode(activeID, nodeConfig));
+//      }
+//      for (String rcID : nodeConfig.getReconfigurators()) {
+//        System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
+//        System.out.println("$$$$$$$$$$$$$$$$ Setting up reconfigurator " + rcID);
+//        ALL_NODES.add(new AppReconfigurableNode(rcID, nodeConfig));
+//      }
+//      printRCConfig();
+//      System.out.println("********* Nodes have started. Server is ready. *********");
+//
+//    } catch (IOException ioe) {
+//      ioe.printStackTrace();
+//    }
+//  }
 
   protected static Map<String, String> initOptions(String[] args)
           throws IOException {

@@ -36,25 +36,23 @@ import org.apache.commons.cli.Options;
 @Deprecated
 public class AppReconfigurableNodeOptions {
 
-  
-  // "Global" parameters
-  /**
-   * The port used by Mongo.
-   */
-  public static int mongoPort = 27017;
+  //FIXME: The code that implements this has disappeared. See MOB-803
   /**
    * Controls whether DNS reads can read fields from group guids.
    */
   public static boolean allowGroupGuidIndirection = true;
 
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
   /**
    * The minimum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
   public static int minReplica = 3;
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
   /**
    * The maximum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
   public static int maxReplica = 100;
+  //FIXME: Do this have an equivalent in gigapaxos we can use.
   /**
    * Determines the number of replicas based on ratio of lookups to writes.
    * Used by {@link LocationBasedDemandProfile}.
@@ -78,14 +76,17 @@ public class AppReconfigurableNodeOptions {
    */
   public static boolean standAloneApp = false;
 
+  //FIXME: The owner of this should move it into GNSConfig
   /**
    * Enable active code.
    */
   public static boolean enableActiveCode = false;
+  //FIXME: The owner of this should move it into GNSConfig
   /**
    * Number of active code worker.
    */
   public static int activeCodeWorkerCount = 1;
+  //FIXME: The owner of this should move it into GNSConfig
   /**
    * How long (in seconds) to blacklist active code.
    */
@@ -94,15 +95,16 @@ public class AppReconfigurableNodeOptions {
   // context service options
   public static boolean enableContextService = false;
 
+  //FIXME: The owner of this should move it into GNSConfig
   // ip port of one node read from config files.
   public static String contextServiceIpPort = "";
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
-  /**
-   * ID
-   */
-  public static final String ID = "id";
+//  /**
+//   * ID
+//   */
+//  public static final String ID = "id";
 //  /**
 //   * NS_FILE
 //   */
@@ -145,7 +147,7 @@ public class AppReconfigurableNodeOptions {
   public static Options getAllOptions() {
     Option help = new Option("help", "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
-    Option nodeId = new Option(ID, true, "Node ID");
+    //Option nodeId = new Option(ID, true, "Node ID");
 
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
@@ -158,7 +160,7 @@ public class AppReconfigurableNodeOptions {
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(help);
-    commandLineOptions.addOption(nodeId);
+    //commandLineOptions.addOption(nodeId);
 
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
