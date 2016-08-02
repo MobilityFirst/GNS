@@ -58,7 +58,7 @@ public class SetParameter extends BasicCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, VALUE};
+    return new String[]{FIELD, VALUE};
   }
 
 //  @Override
@@ -68,7 +68,7 @@ public class SetParameter extends BasicCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String parameterString = json.getString(NAME);
+    String parameterString = json.getString(FIELD);
     String value = json.getString(VALUE);
     if (module.isAdminMode()) {
   	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
