@@ -27,6 +27,8 @@ import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Util;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -120,6 +122,24 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
       this.errorCode = GNSResponseCode.NO_ERROR;
     }
   }
+  
+  /**
+ * This method is used by fromBytes to recreate a CommandValueReturnPacket from a byte array.
+ * @param requestId
+ * @param CCPRequestId
+ * @param errorNumber
+ * @param serviceName
+ * @param responseValue
+ */
+  public CommandValueReturnPacket(long requestId, long CCPRequestId, int errorNumber, String serviceName,
+        String responseValue) {
+  this.setType(PacketType.COMMAND_RETURN_VALUE);
+  this.clientRequestId = requestId;
+  this.LNSRequestId = CCPRequestId;
+  this.serviceName = serviceName;
+  this.returnValue = responseValue;
+  this.errorCode = GNSResponseCode.getResponseCode(errorNumber);
+}
 
   /**
    * Converts the command object into a JSONObject.
@@ -144,6 +164,63 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
     }
     return json;
   }
+  
+  /**
+   * Converts the CommandValueReturnPacket to a byte array.
+   * @return The byte array
+   * @throws UnsupportedEncodingException 
+   */
+  public byte[] toBytes() throws UnsupportedEncodingException{
+
+	  // We need to include the following fields in our byte array:
+	  
+		// private long clientRequestId; - 8 bytes
+	  	//private long LNSRequestId; - 8 bytes
+	  	// private final GNSResponseCode errorCode; - Represented by an integer - 4 bytes
+	  	//serviceName String's length - an int - 4 bytes
+		// private final String serviceName; - variable length
+	  	// returnValue String's length - ant int - 4 bytes
+		// private final String returnValue; - variable length
+	  int errorCodeInt = errorCode.getCodeValue();
+	  byte[] serviceNameBytes = serviceName.getBytes("ISO-8859-1");
+	  byte[] returnValueBytes = returnValue.getBytes("ISO-8859-1");
+
+
+	  ByteBuffer buf = ByteBuffer.allocate(8 + 8 + 4 + 4 + serviceNameBytes.length + 4 + returnValueBytes.length);
+	  buf.putLong(clientRequestId);
+	  buf.putLong(LNSRequestId);
+	  buf.putInt(errorCodeInt);
+	  buf.putInt(serviceNameBytes.length);
+	  buf.put(serviceNameBytes);
+	  buf.putInt(returnValueBytes.length);
+	  buf.put(returnValueBytes);
+	  return buf.array();
+	  
+  }
+
+    /**
+   * Constructs a CommandValueReturnPacket from a byte array.
+   * @param bytes The byte array created by the toBytes method of a CommandValueReturnPacket
+   * @return The CommandValueReturnPacket represented by the bytes
+   * @throws UnsupportedEncodingException
+   */
+  public static final CommandValueReturnPacket fromBytes(byte[] bytes) throws UnsupportedEncodingException{
+	  ByteBuffer buf = ByteBuffer.wrap(bytes);
+	  long clientReqId = buf.getLong();
+	  long LNSReqId = buf.getLong();
+	  int errorCodeInt = buf.getInt();
+	  int serviceNameLength = buf.getInt();
+	  byte[] serviceNameBytes = new byte[serviceNameLength];
+	  buf.get(serviceNameBytes);
+	  String serviceNameString = new String(serviceNameBytes, "ISO-8859-1");
+	  int returnValueLength = buf.getInt();
+	  byte[] returnValueBytes = new byte[returnValueLength];
+	  buf.get(returnValueBytes);
+	  String returnValueString = new String(returnValueBytes, "ISO-8859-1");
+	  return new CommandValueReturnPacket(clientReqId, LNSReqId, errorCodeInt, serviceNameString, returnValueString);
+  }
+  
+
 
   /**
    * Get the client request id.

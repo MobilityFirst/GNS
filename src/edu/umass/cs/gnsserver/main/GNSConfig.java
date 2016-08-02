@@ -73,8 +73,7 @@ public class GNSConfig {
      *
      * (2) SERVER_AUTH SSL must be enabled between clients and servers.
      */
-    VERIFICATION_SECRET(
-            "EXPOSED_SECRET"),
+    VERIFICATION_SECRET("EXPOSED_SECRET"),
     /**
      * Secret inserted into commands that normally need authentication
      * but are being issued by a trusted internal server. We need this
@@ -93,7 +92,7 @@ public class GNSConfig {
      *
      * TODO: We might as well set this at bootstrap time to a hash of the
      * contents of keyStore.jks as the contents of that file are meant to
-     * be secret anyway.
+     * be secret anyway and the two have the exact same trust relationship.
      */
     INTERNAL_OP_SECRET("EXPOSED_SECRET"),
     /**
@@ -142,8 +141,7 @@ public class GNSConfig {
     /**
      * Start an instance of the LocalNameServer when the app starts.
      */
-    START_LOCAL_NAME_SERVER(false)
-    ;
+    START_LOCAL_NAME_SERVER(false);
 
     final Object defaultValue;
 
