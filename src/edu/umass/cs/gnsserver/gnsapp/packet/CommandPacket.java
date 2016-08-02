@@ -722,10 +722,15 @@ private final byte[] toBytesExpanding(byte[] startingArray) throws JSONException
  * @throws JSONException
  * @throws UnsupportedEncodingException
  */
-public final byte[] toBytes() throws JSONException, UnsupportedEncodingException{
+public final byte[] toBytes() {
 	ByteBuffer buf = ByteBuffer.allocate(1024); //We assume it will be less than 1024 length to start, and will grow if needed.
 	
-	PacketType packetTypeInstance = getPacketType(command);
+	PacketType packetTypeInstance;
+	try {
+		packetTypeInstance = getPacketType(command);
+	} catch (JSONException e) {
+		throw new RuntimeException(e);
+	}
 	int packetType = packetTypeInstance.getInt();
     long clientReqId = (Long) command.remove(CLIENTREQUESTID);
     long lnsReqId;
@@ -761,16 +766,26 @@ public final byte[] toBytes() throws JSONException, UnsupportedEncodingException
 	} 
 	catch(BufferOverflowException boe){
 		//Use the slower expanding buffer method.
-		output = this.toBytesExpanding(buf.array());
+		try {
+			output = this.toBytesExpanding(buf.array());
+		} catch (UnsupportedEncodingException | JSONException e) {
+			throw new RuntimeException(e);
+		}
+	} catch (UnsupportedEncodingException | JSONException e) {
+		throw new RuntimeException(e);
 	}
 	finally{
 		//This stops the toBytes method form being destructive.
-		command.put(GNSCommandProtocol.COMMAND_INT, commandType); 
+		try {
+			command.put(GNSCommandProtocol.COMMAND_INT, commandType);
 		Packet.putPacketType(command, packetTypeInstance);
 		command.put(CLIENTREQUESTID, clientReqId);
 		command.put(LNSREQUESTID, lnsReqId);
 		command.put(SENDERPORT, senderPort);
 		output = buf.array();
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		} 
 	}
 	
 	return output;

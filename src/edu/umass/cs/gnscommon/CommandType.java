@@ -382,7 +382,19 @@ public enum CommandType {
 			throw new RuntimeException("Can set command chain exactly once");
 	}
 
-	// Westy: please fill these in
+	/* Westy: please fill these in. The chain of any command must contain a list
+	 * of all commands that the execution of that command MAY invoke. For
+	 * example, if AddGuid may (not necessarily every time) invoke LookupGuid as
+	 * a step, LookupGuid belongs to AddGuid's chain. The list interpretation is
+	 * somewhat loose as the call chain is really a DAG, but it is good to
+	 * flatten the DAG in breadth-first order, e.g., if A->B and B->C and B->D
+	 * and D->E, where "->" means "invokes", the chain of A is {B,C,D,E}. It is
+	 * okay to stop recursively unraveling a chain, e.g., stop at A->B, if what
+	 * follows is identical to B's chain.
+	 * 
+	 * Hopefully there are no cycles in these chains. Assume standard execution
+	 * for all commands, i.e., with no active code enabled, while listing chains.
+	 */
 	static {
 		Read.setChain(ReadUnsigned);
 		AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned); // what else?
