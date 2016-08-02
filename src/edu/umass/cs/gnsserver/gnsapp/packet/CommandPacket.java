@@ -356,10 +356,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
         if (command.has(GNSCommandProtocol.NAME)) {
           return command.getString(GNSCommandProtocol.NAME);
         }
-        int commandInt = command.getInt(GNSCommandProtocol.COMMAND_INT);
-        if (commandInt == CommandType.Admin.getInt() || commandInt == CommandType.GetParameter.getInt() || commandInt == CommandType.SetParameter.getInt()){
-        	return (String) RC.BROADCAST_NAME.getDefaultValue();
-        }
       }
     } catch (JSONException e) {
       // Just ignore it

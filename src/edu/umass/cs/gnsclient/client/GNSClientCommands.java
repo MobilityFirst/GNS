@@ -77,6 +77,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
@@ -2135,7 +2136,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   @Deprecated
   public String adminEnable(String passkey) throws Exception {
-    return getResponse(CommandType.Admin, PASSKEY, passkey);
+    return getResponse(CommandType.Admin, NAME, RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);
   }
 
   /**
@@ -2145,8 +2146,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @throws Exception
    */
   @Deprecated
-  public void parameterSet(String name, Object value, String passkey) throws Exception {
-    getResponse(CommandType.SetParameter, FIELD, name,
+  public void parameterSet(String field, Object value, String passkey) throws Exception {
+    getResponse(CommandType.SetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(), FIELD, field,
             VALUE, value, PASSKEY, passkey);
   }
 
@@ -2158,7 +2159,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   @Deprecated
   public String parameterGet(String name, String passkey) throws Exception {
-    return getResponse(CommandType.GetParameter, FIELD, name, PASSKEY, passkey);
+    return getResponse(CommandType.GetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(),FIELD, name, PASSKEY, passkey);
   }
   
 
