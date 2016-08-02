@@ -23,8 +23,12 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
+import edu.umass.cs.gnsclient.client.CommandUtils;
+import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.utils.Util;
@@ -382,6 +386,40 @@ public class ByteificationComparison {
 		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
+	
+	
+	@Test
+	public void test_16_CommandPacket_128B() throws UnsupportedEncodingException, JSONException, ClientException{
+		CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(64)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(64))));
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet.toBytes();
+			CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time CommandValueReturnPacket 128B was " + avg + " nanoseconds.");
+		byte[] bytes = packet.toBytes();
+		CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+	}
+	
+	@Test
+	public void test_17_CommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException{
+		CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet.toBytes();
+			CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time CommandValueReturnPacket 128B was " + avg + " nanoseconds.");
+		byte[] bytes = packet.toBytes();
+		CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+	}
+
 	
 	
 	
