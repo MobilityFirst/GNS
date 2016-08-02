@@ -20,7 +20,10 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnscommon.CommandType;
@@ -34,6 +37,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.interfaces.Byteable;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReplicableClientRequest;
 
@@ -351,6 +355,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
         }
         if (command.has(GNSCommandProtocol.NAME)) {
           return command.getString(GNSCommandProtocol.NAME);
+        }
+        int commandInt = command.getInt(GNSCommandProtocol.COMMAND_INT);
+        if (commandInt == CommandType.Admin.getInt() || commandInt == CommandType.GetParameter.getInt() || commandInt == CommandType.SetParameter.getInt()){
+        	return (String) RC.BROADCAST_NAME.getDefaultValue();
         }
       }
     } catch (JSONException e) {
@@ -678,64 +686,134 @@ public CommandType getCommandType() {
       }
     };
   }
+/**
+ * Converts the CommandPacket to bytes. Assumes that all fields other than GNSCommandProtocol.COMMAND_INT have strings for values. Automatically expands the output buffer as needed.
+ * @return
+ * @throws JSONException
+ * @throws UnsupportedEncodingException
+ */
+private final byte[] toBytesExpanding(byte[] startingArray) throws JSONException, UnsupportedEncodingException{
+	ByteBuffer buf = ByteBuffer.allocate(2048); //We assume it will be less than 2048 length to start, and will grow if needed.
+	buf.put(startingArray, 0, 4+4+8+8+4); //Accounts for the values we already put into the array for the commandType, packetType, clientReqId, lnsReqId, senderPort
+	@SuppressWarnings("unchecked") //We assume all keys and values are strings.
+	Iterator<String> keys = command.keys();
+	while (keys.hasNext()){
+		String key = keys.next();
+		byte[] keyBytes = key.getBytes("ISO-8859-1");
+		String value = command.getString(key);
+		byte[] valueBytes = value.getBytes("ISO-8859-1");
+		//Grow the buffer if needed.
+		if (buf.remaining() < (4 + keyBytes.length + 4 + valueBytes.length)){
+			ByteBuffer newBuf = ByteBuffer.allocate(buf.capacity()*2 + 4 + keyBytes.length + 4 + valueBytes.length);
+			newBuf.put(buf);
+			buf = newBuf;
+		}
+		buf.putInt(keyBytes.length);
+		buf.put(keyBytes);
+		buf.putInt(valueBytes.length);
+		buf.put(valueBytes);
+	}
+	return buf.array();
+}
 
-@SuppressWarnings("unchecked")
-public byte[] toBytes() {
+/**
+ * Converts the CommandPacket to bytes. Assumes that all fields other than GNSCommandProtocol.COMMAND_INT have strings for values.
+ * @return
+ * @throws JSONException
+ * @throws UnsupportedEncodingException
+ */
+public final byte[] toBytes() throws JSONException, UnsupportedEncodingException{
+	ByteBuffer buf = ByteBuffer.allocate(1024); //We assume it will be less than 1024 length to start, and will grow if needed.
+	
+	PacketType packetTypeInstance = getPacketType(command);
+	int packetType = packetTypeInstance.getInt();
+    long clientReqId = (Long) command.remove(CLIENTREQUESTID);
+    long lnsReqId;
+    if (command.has(LNSREQUESTID)) {
+    	lnsReqId = (Long) command.remove(LNSREQUESTID);
+    } else {
+    	lnsReqId= clientReqId;
+    }
+    int senderPort = command.has(SENDERPORT) ? (int) command.remove(SENDERPORT) : -1;
+	
+	int commandType = (int) command.remove(GNSCommandProtocol.COMMAND_INT); //TODO: Confirm that this cast works as expected.
+	buf.putInt(commandType);
+	buf.putInt(packetType);
+	buf.putLong(clientReqId);
+	buf.putLong(lnsReqId);
+	buf.putInt(senderPort);
+	byte[] output;
+	@SuppressWarnings("unchecked") //We assume all keys and values are strings.
+	Iterator<String> keys = command.keys();
+	try{
+		while (keys.hasNext()){
+			String key = keys.next();
+			byte[] keyBytes = key.getBytes("ISO-8859-1");
+			String value = command.getString(key);
+			byte[] valueBytes = value.getBytes("ISO-8859-1");
+			buf.putInt(keyBytes.length);
+			buf.put(keyBytes);
+			buf.putInt(valueBytes.length);
+			buf.put(valueBytes);
+		}
+		
 
-	  /*
-	   * The JSON form of the command. Always includes a COMMANDNAME field.
-	   * Almost always has a GUID field or NAME (for HRN records) field.
-	   */
-	 // private final JSONObject command;
-	  byte[] bytes = null;
-	  try{
-		  MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
-		  packer.packLong(clientRequestId);
-		  packer.packBoolean(needsCoordination);
-		  packer.packBoolean(needsCoordinationExplicitlySet);
-		  
-			//Pack JSONObjct command
-		  	JSONObject json = command;
-			//Need to know number of elements in order to pack the MapHeader. Maybe add a "size" field to improve performance?
-			Iterator<String> iterator =(Iterator<String>) json.keys();
-			int size = 0;
-			while (iterator.hasNext()){
-				size++;
-			}
-			
-			iterator = (Iterator<String>) json.keys();
-			packer.packMapHeader(size);
-			while (iterator.hasNext()){
-				String key = iterator.next();
-				Object value = json.get(key);
-				packer.packString(key);
-				if (value instanceof String){
-					packer.packString((String)value);
-				}
-				else if (value instanceof Integer){
-					packer.packInt(((Integer)value).intValue());
-				}
-				/*else if (value instanceof int){
-					packer.packInt((int)value);
-				}*/
-			/*	else if (value instanceof boolean){
-					packer.packBoolean((boolean)value);
-				}*/
-				else if (value instanceof Boolean){
-					packer.packBoolean(((Boolean)value).booleanValue());
-				}
-				
-			}
-		  
-		  
-		  bytes = packer.toByteArray();
-		  packer.close();
-	  }
-	  catch(IOException | JSONException ie){
-		  GNSConfig.getLogger().log(Level.INFO, "Failed to pack CommandPacket into byte array.", this);
-	  }
+	} 
+	catch(BufferOverflowException boe){
+		//Use the slower expanding buffer method.
+		output = this.toBytesExpanding(buf.array());
+	}
+	finally{
+		//This stops the toBytes method form being destructive.
+		command.put(GNSCommandProtocol.COMMAND_INT, commandType); 
+		Packet.putPacketType(command, packetTypeInstance);
+		command.put(CLIENTREQUESTID, clientReqId);
+		command.put(LNSREQUESTID, lnsReqId);
+		command.put(SENDERPORT, senderPort);
+		output = buf.array();
+	}
+	
+	return output;
+}
 
-	  return bytes;
+/**
+ * Reconstructs a CommandPacket from a given byte array.
+ * @param bytes The bytes given by the toBytes method.
+ * @return The reconstructed CommandPacket
+ * @throws JSONException
+ * @throws UnsupportedEncodingException
+ */
+public static final CommandPacket fromBytes(byte[] bytes) throws JSONException, UnsupportedEncodingException{
+	JSONObject cmd = new JSONObject();
+	ByteBuffer buf = ByteBuffer.wrap(bytes);
+	int commandType = buf.getInt();
+	int packetType = buf.getInt();
+	long clientReqId = buf.getLong();
+	long lnsReqId = buf.getLong();
+	int senderPort = buf.getInt();
+	
+	//Put in the fixed fields.
+	cmd.put(GNSCommandProtocol.COMMAND_INT, commandType); 
+	Packet.putPacketType(cmd, Packet.getPacketType(packetType));
+	cmd.put(CLIENTREQUESTID, clientReqId);
+	cmd.put(LNSREQUESTID, lnsReqId);
+	cmd.put(SENDERPORT, senderPort);
+	
+	//Put in the variable length fields.
+	while(buf.hasRemaining()){
+		int keyLength = buf.getInt();
+		if (keyLength == 0){ //Need this conditionalto handle empty extra bytes since the toBytes method guesses a size and leaves the remainder blank.
+			break;
+		}
+		byte[] keyBytes = new byte[keyLength];
+		String key = new String(keyBytes, "ISO-8859-1");
+		int valueLength = buf.getInt();
+		byte[] valueBytes = new byte[valueLength];
+		String value = new String(valueBytes, "ISO-8859-1");
+		cmd.put(key, value);
+	}
+	
+	return new CommandPacket(cmd);
 }
 
 }
