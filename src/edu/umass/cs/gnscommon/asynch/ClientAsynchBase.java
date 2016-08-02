@@ -21,6 +21,7 @@ package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
@@ -92,7 +93,7 @@ import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
  * @author Westy
  */
 // FIXME: This might be redundant with the AsyncClient internal class used in GNSClient.
-public class ClientAsynchBase extends ReconfigurableAppClientAsync {
+public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
 
   public static final Set<IntegerPacketType> CLIENT_PACKET_TYPES
           = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND,
@@ -194,10 +195,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, command);
     ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
-    return sendRequest(
+     sendRequest(
     		packet,
     		(callback instanceof RequestCallbackWithRequest) ? ((RequestCallbackWithRequest) callback)
     				.setRequest(packet) : callback);
+     return packet.getRequestID();
   }
 
   /**
@@ -632,7 +634,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     packet.setRequestId(id);
     ClientSupportConfig.getLogger().log(Level.FINE, "{0} sending select packet {1}",
             new Object[]{this, packet.getSummary()});
-    return sendRequest(packet, callback);
+    sendRequest(packet, callback);
+    return packet.getRequestID();
   }
 
   /**

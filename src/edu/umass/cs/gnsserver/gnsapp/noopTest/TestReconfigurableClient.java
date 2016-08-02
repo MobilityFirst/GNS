@@ -38,6 +38,7 @@ import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
@@ -157,7 +158,7 @@ public class TestReconfigurableClient {
     }
 
     @Override
-    public boolean handleMessage(JSONObject json) {
+    public boolean handleMessage(JSONObject json, NIOHeader header) {
       log.log(Level.FINEST, MyLogger.FORMAT[1], new Object[]{
         "Client received: ", json});
       try {

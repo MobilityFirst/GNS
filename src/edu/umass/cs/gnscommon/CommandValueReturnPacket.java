@@ -170,7 +170,8 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
    * @return The byte array
    * @throws UnsupportedEncodingException 
    */
-  public byte[] toBytes() throws UnsupportedEncodingException{
+  public byte[] toBytes() {
+	  try {
 
 	  // We need to include the following fields in our byte array:
 	  
@@ -195,6 +196,9 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress imple
 	  buf.putInt(returnValueBytes.length);
 	  buf.put(returnValueBytes);
 	  return buf.array();
+	  } catch(UnsupportedEncodingException e) {
+		  throw new RuntimeException(e);
+	  }
 	  
   }
 

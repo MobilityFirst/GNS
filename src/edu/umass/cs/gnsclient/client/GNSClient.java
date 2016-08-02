@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.async.RequestCallbackFuture;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
@@ -148,7 +149,7 @@ public class GNSClient extends AbstractGNSClient
 	 * @return Long request ID if successfully sent, else null.
 	 * @throws IOException
 	 */
-	public Long sendAsync(CommandPacket packet,
+	public edu.umass.cs.gigapaxos.interfaces.RequestFuture<?>  sendAsync(CommandPacket packet,
 			final GNSCommandCallback callback) throws IOException {
 		return this.sendAsync(packet, new RequestCallback() {
 			@Override
@@ -168,26 +169,18 @@ public class GNSClient extends AbstractGNSClient
 	 * @return Long request ID if successfully sent, else null.
 	 * @throws IOException
 	 */
-	protected Long sendAsync(CommandPacket packet, final RequestCallback callback)
+	protected edu.umass.cs.gigapaxos.interfaces.RequestFuture<Request>  sendAsync(CommandPacket packet, final RequestCallback callback)
 			throws IOException {
-		Long requestID = null;
 		ClientRequest request = packet.setForceCoordinatedReads(isForceCoordinatedReads());
-                
+
                 InetSocketAddress lnsAddress;
                 if ((lnsAddress = getLnsAddress()) != null) {
-                        requestID = this.asyncClient.sendRequest(request, lnsAddress, callback);
+                        return this.asyncClient.sendRequest(request, lnsAddress, callback);
                 } else if (isAnycast(packet)) {
-			requestID = this.asyncClient.sendRequestAnycast(request, callback);
+			return this.asyncClient.sendRequestAnycast(request, callback);
                 } else {
-			requestID = this.asyncClient.sendRequest(request, callback);
+			return  this.asyncClient.sendRequest(request, callback);
                 }
-		if (requestID == null)
-			/* Can only happen under remote node failure and extreme congestion
-			 * as otherwise NIO will buffer the packet for future delivery
-			 * attempts. */
-			LOG.log(Level.WARNING, "Request ID is null after send for {0}",
-					new Object[] { request.getSummary() });
-		return requestID;
 	}
 	
 	private static final CommandValueReturnPacket defaultHandleResponse(Request response) {
@@ -257,7 +250,7 @@ public class GNSClient extends AbstractGNSClient
 	 * Straightforward async client implementation that expects only one packet
 	 * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
 	 */
-	static class AsyncClient extends ReconfigurableAppClientAsync implements
+	static class AsyncClient extends ReconfigurableAppClientAsync<Request> implements
 			AppRequestParserBytes {
 
 		private static Stringifiable<String> unstringer = new StringifiableDefault<>(
