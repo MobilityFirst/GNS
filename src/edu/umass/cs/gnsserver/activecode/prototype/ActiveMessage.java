@@ -501,6 +501,7 @@ public class ActiveMessage implements Message{
 				+ ",guid:"+ ((guid != null)?guid:"null")
 				+",field:"+((field!=null)?field:"null")
 				+",value:"+((value!=null)?value:"null")
+				+",error:"+((error!=null)?error:"null")
 				+"]";
 	}
 	
