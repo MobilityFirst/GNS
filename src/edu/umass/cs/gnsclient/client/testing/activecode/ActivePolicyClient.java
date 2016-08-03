@@ -162,7 +162,7 @@ public class ActivePolicyClient {
 		System.out.println(arr);
 		
 		String codeFile = "scripts/activeCode/load-balance-cost.js";
-		codeFile = "scripts/activeCode/noop.js";
+		//codeFile = "scripts/activeCode/noop.js";
 		
 		String code = new String(Files.readAllBytes(Paths.get(codeFile)));;
 		code = code.replace("HOSTS", records.toString());
@@ -171,8 +171,13 @@ public class ActivePolicyClient {
 		
 		if(toUpdate){
 			client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
-			//client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
+			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 		}
+		
+		
+		JSONArray jarray = client.fieldReadArray(entry.getGuid(), "LOAD", entry);
+		String result = client.fieldRead(entry, "54.152.247.187");
+		System.out.println("The load field is "+jarray+", cost field is "+result);
 		
 		System.exit(0);
 	}

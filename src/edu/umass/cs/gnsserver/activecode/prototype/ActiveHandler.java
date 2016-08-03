@@ -120,7 +120,7 @@ public class ActiveHandler {
 	 * @throws ActiveException 
 	 */
 	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ActiveException{
-		System.out.println("Start running code "+code+" with ttl "+ttl+" for "+guid+" on field "+field+" and "+value.toString());
+		//System.out.println("Start running code "+code+" with ttl "+ttl+" for "+guid+" on field "+field+" and "+value.toString());
 		return clientPool[counter.getAndIncrement()%numProcess].runCode(guid, field, code, value, ttl);
 	}
 	

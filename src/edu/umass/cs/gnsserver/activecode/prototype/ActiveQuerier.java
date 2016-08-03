@@ -108,6 +108,7 @@ public class ActiveQuerier implements Querier {
 			try {
 				channel.sendMessage(am);
 				ActiveMessage response = (ActiveMessage) channel.receiveMessage();
+				System.out.println("The response is "+response);
 				if (response.getError() != null){
 					throw new ActiveException();
 				}
