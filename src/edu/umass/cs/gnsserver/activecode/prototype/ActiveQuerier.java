@@ -70,7 +70,7 @@ public class ActiveQuerier implements Querier {
 	 * @throws ActiveException
 	 */
 	@Override
-	public void writeGuid(String queriedGuid, String field, Object value) throws ActiveException{
+	public void writeGuid(String queriedGuid, String field, ValuesMap value) throws ActiveException{
 		if(currentTTL <=0)
 			throw new ActiveException(); //"Out of query limit"
 		if(queriedGuid==null)
@@ -94,18 +94,11 @@ public class ActiveQuerier implements Querier {
 		return value;
 	}
 
-	private void writeValueIntoField(String querierGuid, String queriedGuid, String field, Object value, int ttl)
+	private void writeValueIntoField(String querierGuid, String queriedGuid, String field, ValuesMap value, int ttl)
 			throws ActiveException {
 		
-			ValuesMap map = new ValuesMap();
-			try {
-				map.put(field, value);
-			} catch (JSONException e) {
-				e.printStackTrace();
-				throw new ActiveException();
-			}
 			
-			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, map);
+			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, value);
 			try {
 				System.out.println("Querier sends request "+am);
 				channel.sendMessage(am);

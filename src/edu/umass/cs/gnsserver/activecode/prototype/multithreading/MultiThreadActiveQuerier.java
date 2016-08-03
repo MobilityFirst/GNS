@@ -53,7 +53,7 @@ public class MultiThreadActiveQuerier implements Querier{
 	}
 
 	@Override
-	public void writeGuid(String queriedGuid, String field, Object value) throws ActiveException {
+	public void writeGuid(String queriedGuid, String field, ValuesMap value) throws ActiveException {
 		if(currentTTL <=0)
 			throw new ActiveException(); //"Out of query limit"
 		if(queriedGuid==null)
