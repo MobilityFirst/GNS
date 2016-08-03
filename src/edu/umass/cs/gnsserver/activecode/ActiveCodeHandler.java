@@ -174,6 +174,7 @@ public class ActiveCodeHandler {
 					nameRecord.updateNameRecord(field, null, null, 0, value,
 					         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 					
+					System.out.println("The updated name record is:"+nameRecord);
 				} catch (Exception e) {
 					e.printStackTrace();
 					return false;
