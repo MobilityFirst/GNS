@@ -170,7 +170,8 @@ public class ActivePolicyClient {
 		//System.out.println(code);
 		
 		if(toUpdate){
-			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
+			client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
+			//client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 		}
 		
 		System.exit(0);
