@@ -168,8 +168,12 @@ public class ActiveCodeHandler {
 				try {
 					NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), 
 							guid, ColumnFieldType.USER_JSON, field);
+					
+					System.out.println("The retrieved name record is:"+nameRecord);
+					
 					nameRecord.updateNameRecord(field, null, null, 0, value,
 					         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 					return false;
@@ -188,7 +192,7 @@ public class ActiveCodeHandler {
 					 *  Do a common write here
 					 *  <p> GNSCommand.fieldWrite
 					 */
-					
+					System.out.println("The code should not be here for remote write !");
 				}
 				return wSuccess;
 			}
