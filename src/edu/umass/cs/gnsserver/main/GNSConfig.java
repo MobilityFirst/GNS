@@ -139,9 +139,26 @@ public class GNSConfig {
      */
     APPLICATION_NAME("an application"),
     /**
-     * Start an instance of the LocalNameServer when the app starts.
+     * Set to true if you want to start an instance of the LocalNameServer when the app starts.
      */
-    START_LOCAL_NAME_SERVER(false);
+    START_LOCAL_NAME_SERVER(false),
+    /**
+     * Set to true if you want to start the DNS server when the app starts.
+     */
+    START_DNS_SERVER(false),
+    /**
+     * Set to true if you want the DNS server to not lookup 
+     * records using DNS (will only lookup records in the GNS).
+     */
+    DNS_GNS_ONLY(false),
+    /**
+     * Name of the GNS server to forward GNS requests.
+     */
+    GNS_SERVER_IP("none"),
+    /**
+     * Set to true if you want the DNS server to forward requests to DNS and GNS servers.
+     */
+    DNS_ONLY(false);
 
     final Object defaultValue;
 

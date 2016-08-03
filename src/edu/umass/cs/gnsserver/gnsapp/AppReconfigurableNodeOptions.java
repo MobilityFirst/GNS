@@ -38,7 +38,7 @@ public class AppReconfigurableNodeOptions {
 
   //FIXME: The code that implements this has disappeared. See MOB-803
   /**
-   * Controls whether DNS reads can read fields from group guids.
+   * Controls whether reads can read fields from group guids.
    */
   public static boolean allowGroupGuidIndirection = true;
 
@@ -59,18 +59,18 @@ public class AppReconfigurableNodeOptions {
    */
   public static double normalizingConstant = 0.5;
   
-  /**
-   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
-   */
-  public static boolean dnsGnsOnly = false;
-  /**
-   * Name of the GNS server to forward GNS requests for Local Name server.
-   */
-  public static String gnsServerIP = null;
-  /**
-   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
-   */
-  public static boolean dnsOnly = false;
+//  /**
+//   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
+//   */
+//  public static boolean dnsGnsOnly = false;
+//  /**
+//   * Name of the GNS server to forward GNS requests for Local Name server.
+//   */
+//  public static String gnsServerIP = null;
+//  /**
+//   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
+//   */
+//  public static boolean dnsOnly = false;
   /**
    * If this is true the app will handle all operations locally (ie., it won't send request to reconfigurators).
    */
@@ -121,15 +121,15 @@ public class AppReconfigurableNodeOptions {
   /**
    * DNS_GNS_ONLY
    */
-  public static final String DNS_GNS_ONLY = "dnsGnsOnly";
-  /**
-   * DNS_ONLY
-   */
-  public static final String DNS_ONLY = "dnsOnly";
-  /**
-   * GNS_SERVER_IP
-   */
-  public static final String GNS_SERVER_IP = "gnsServerIP";
+//  public static final String DNS_GNS_ONLY = "dnsGnsOnly";
+//  /**
+//   * DNS_ONLY
+//   */
+//  public static final String DNS_ONLY = "dnsOnly";
+//  /**
+//   * GNS_SERVER_IP
+//   */
+//  public static final String GNS_SERVER_IP = "gnsServerIP";
 
   private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
@@ -149,9 +149,9 @@ public class AppReconfigurableNodeOptions {
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
     //Option nodeId = new Option(ID, true, "Node ID");
 
-    Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
-    Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
-    Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
+//    Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
+//    Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
+//    Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
 
     Option enableContextService = new Option(ENABLE_CONTEXT_SERVICE, "if true enables context service on nameserver. Set in ns properties file");
     Option contextServiceHostPort = new Option(CONTEXT_SERVICE_IP_PORT, "must be set if enableContextService is set to true. It gives the host port information of one context service node. Similar to LNS "
@@ -162,9 +162,9 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(help);
     //commandLineOptions.addOption(nodeId);
 
-    commandLineOptions.addOption(dnsGnsOnly);
-    commandLineOptions.addOption(dnsOnly);
-    commandLineOptions.addOption(gnsServerIP);
+//    commandLineOptions.addOption(dnsGnsOnly);
+//    commandLineOptions.addOption(dnsOnly);
+//    commandLineOptions.addOption(gnsServerIP);
 
     //context service options
     commandLineOptions.addOption(enableContextService);
@@ -197,16 +197,16 @@ public class AppReconfigurableNodeOptions {
 //      GNSConfig.enableEmailAccountVerification = false;
 //    }
 
-    // APP options
-    if (allValues.containsKey(DNS_GNS_ONLY)) {
-      dnsGnsOnly = true;
-    }
-    if (allValues.containsKey(DNS_ONLY)) {
-      dnsOnly = true;
-    }
-    if (allValues.containsKey(GNS_SERVER_IP)) {
-      gnsServerIP = allValues.get(GNS_SERVER_IP);
-    }
+//    // APP options
+//    if (allValues.containsKey(DNS_GNS_ONLY)) {
+//      dnsGnsOnly = true;
+//    }
+//    if (allValues.containsKey(DNS_ONLY)) {
+//      dnsOnly = true;
+//    }
+//    if (allValues.containsKey(GNS_SERVER_IP)) {
+//      gnsServerIP = allValues.get(GNS_SERVER_IP);
+//    }
 
     if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
       activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));

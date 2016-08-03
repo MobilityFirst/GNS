@@ -78,7 +78,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
   public void run() {
     int numRequest = 0;
     ClientCommandProcessorConfig.getLogger().log(Level.INFO,
-            "CPP Node {0} starting Admin Server on port {1}", new Object[]{handler.getNodeAddress(), serverSocket.getLocalPort()});
+            "Server Node {0} starting Admin Server on port {1}", new Object[]{handler.getNodeAddress(), serverSocket.getLocalPort()});
     while (true) {
       Socket socket;
       JSONObject incomingJSON;
