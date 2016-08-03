@@ -15,6 +15,7 @@ import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
@@ -44,7 +45,7 @@ public class GNSClient extends AbstractGNSClient
 	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
 			.getReconfiguratorAddresses();
 
-	// initialized upon contsruction
+	// initialized upon contstruction
 	private final Set<InetSocketAddress> reconfigurators;
 	private final AsyncClient asyncClient;
 
@@ -149,7 +150,7 @@ public class GNSClient extends AbstractGNSClient
 	 * @return Long request ID if successfully sent, else null.
 	 * @throws IOException
 	 */
-	public edu.umass.cs.gigapaxos.interfaces.RequestFuture<?>  sendAsync(CommandPacket packet,
+	public RequestFuture<?>  sendAsync(CommandPacket packet,
 			final GNSCommandCallback callback) throws IOException {
 		return this.sendAsync(packet, new RequestCallback() {
 			@Override
@@ -169,7 +170,7 @@ public class GNSClient extends AbstractGNSClient
 	 * @return Long request ID if successfully sent, else null.
 	 * @throws IOException
 	 */
-	protected edu.umass.cs.gigapaxos.interfaces.RequestFuture<Request>  sendAsync(CommandPacket packet, final RequestCallback callback)
+	protected RequestFuture<Request>  sendAsync(CommandPacket packet, final RequestCallback callback)
 			throws IOException {
 		ClientRequest request = packet.setForceCoordinatedReads(isForceCoordinatedReads());
 
