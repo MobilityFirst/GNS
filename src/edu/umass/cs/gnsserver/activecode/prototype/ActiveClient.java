@@ -65,7 +65,7 @@ public class ActiveClient implements Client{
 			e.printStackTrace();
 		}
 		channel = new ActiveNamedPipe(ifile, ofile);				
-		//System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
+		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 		
 		queryHandler = new ActiveQueryHandler(app);
 		
