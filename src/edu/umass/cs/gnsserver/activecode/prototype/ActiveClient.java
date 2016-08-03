@@ -242,7 +242,7 @@ public class ActiveClient implements Client{
 				// this is the response
 				break;
 			}else{
-				System.out.println("GUID "+guid+" tries to operate on the value of field "+response.getField()+" from "+response.getTargetGuid());
+				System.out.println("GUID "+guid+" tries to operate on the value "+response.getValue()+" of field "+response.getField()+" from "+response.getTargetGuid());
 				//FIXME: for test only
 				if(response.getField().equals("nextGuid")){
 					ValuesMap map = new ValuesMap();
