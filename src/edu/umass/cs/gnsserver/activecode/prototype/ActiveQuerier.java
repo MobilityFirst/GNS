@@ -104,7 +104,8 @@ public class ActiveQuerier implements Querier {
 				e.printStackTrace();
 				throw new ActiveException();
 			}
-			ActiveMessage am = new ActiveMessage(ttl, querierGuid, queriedGuid, field, map);
+			
+			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, map);
 			try {
 				System.out.println("Querier sends request "+am);
 				channel.sendMessage(am);
