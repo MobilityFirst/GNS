@@ -1,10 +1,6 @@
-/*
- * Copyright (C) 2015
- * University of Massachusetts
- * All Rights Reserved 
- *
- * Initial developer(s): Westy.
- */
+/* Copyright (C) 2015 University of Massachusetts All Rights Reserved
+ * 
+ * Initial developer(s): Westy. */
 package edu.umass.cs.gnsclient.client.integrationtests;
 
 import java.io.BufferedReader;
@@ -12,73 +8,131 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * For integration testing.
  * 
- * @author westy
+ * @author westy, arun
  */
 public class RunServer {
 
-  /**
-   * Returns null if it failed for some reason.
-   *
-   * @param cmdline
-   * @param directory
-   * @return
-   */
-  public static ArrayList<String> command(final String cmdline,
-          final String directory) {
-    try {
-      Process process
-              = new ProcessBuilder(new String[]{"bash", "-c", cmdline})
-              .redirectErrorStream(true)
-              .directory(new File(directory))
-              .start();
+	private static final Timer timer = new Timer(true);
+	private static final int MAX_LINES = 1024;
+	private static final long PROCESS_WAIT_TIMEOUT = 10;
 
-      ArrayList<String> output = new ArrayList<>();
-      BufferedReader br = new BufferedReader(
-              new InputStreamReader(process.getInputStream()));
-      String line = null;
-      while ((line = br.readLine()) != null) {
-        output.add(line);
-      }
+	/**
+	 * @param cmdline
+	 * @param directory
+	 * @return Output
+	 */
+	public static ArrayList<String> command(final String cmdline,
+			final String directory) {
+		return command(cmdline, directory, "true".equals(System.getProperty("inheritIO")));
+	}
 
-      //There should really be a timeout here.
-      if (0 != process.waitFor()) {
-        return null;
-      }
+	/**
+	 * Returns null if it failed for some reason.
+	 *
+	 * @param cmdline
+	 * @param directory
+	 * @param inheritIO 
+	 * @return Output
+	 */
+	public static ArrayList<String> command(final String cmdline,
+			final String directory, boolean inheritIO) {
+		try {
+			ProcessBuilder processBuilder = new ProcessBuilder(new String[] {
+					"bash", "-c", cmdline });
+			if (inheritIO)
+				processBuilder.inheritIO()
+				;
 
-      return output;
+			Process process = processBuilder.redirectErrorStream(true)
+					.directory(new File(directory)).start();
 
-    } catch (IOException | InterruptedException e) {
-      //Warning: doing this is no good in high quality applications.
-      //Instead, present appropriate error messages to the user.
-      //But it's perfectly fine for prototyping.
+			if (!inheritIO)
+				return gatherOutput(process);
 
-      return null;
-    }
-  }
+			// There should really be a timeout here.
+			if (process.waitFor(PROCESS_WAIT_TIMEOUT, TimeUnit.SECONDS)) 
+				return new ArrayList<String>(); 
+			else
+				throw new RuntimeException("Process initiated by [" + cmdline
+						+ "] timed out");
 
-  public static void main(String[] args) {
-    test("which bash");
-    test("pwd");
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
-//    test("find . -type f -printf '%T@\\\\t%p\\\\n' "
-//            + "| sort -n | cut -f 2- | "
-//            + "sed -e 's/ /\\\\\\\\ /g' | xargs ls -halt");
+	private static ArrayList<String> gatherOutput(Process process)
+			throws IOException {
+		ArrayList<String> output = new ArrayList<>();
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				process.getInputStream()));
+		String line = null;
+		while ((line = br.readLine()) != null && output.size() < MAX_LINES) {
+			output.add(line);
+		}
+		return output;
+	}
 
-  }
+	private static void spawnStream(Process process, int stream)
+			throws IOException {
+		if (!(stream == 1 || stream == 2))
+			throw new IOException("Unable to attach to stream " + stream);
 
-  static void test(String cmdline) {
-    ArrayList<String> output = command(cmdline, ".");
-    if (null == output) {
-      System.out.println("\n\n\t\tCOMMAND FAILED: " + cmdline);
-    } else {
-      for (String line : output) {
-        System.out.println(line);
-      }
-    }
+		timer.schedule(new TimerTask() {
+			public void run() {
+				BufferedReader br = null;
+				try {
+					br = stream == 1 ? new BufferedReader(
+							new InputStreamReader(process.getInputStream()))
+							: new BufferedReader(new InputStreamReader(process
+									.getErrorStream()));
+					String line = null;
+					while ((line = br.readLine()) != null) {
+						(stream == 1 ? System.out : System.err).println(line);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						br.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}, 0);
+	}
 
-  }
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		test("which bash");
+		test("pwd");
+
+		// test("find . -type f -printf '%T@\\\\t%p\\\\n' "
+		// + "| sort -n | cut -f 2- | "
+		// + "sed -e 's/ /\\\\\\\\ /g' | xargs ls -halt");
+
+	}
+
+	static void test(String cmdline) {
+		ArrayList<String> output = command(cmdline, ".");
+		if (null == output) {
+			System.out.println("\n\n\t\tCOMMAND FAILED: " + cmdline);
+		} else {
+			for (String line : output) {
+				System.out.println(line);
+			}
+		}
+
+	}
 }
