@@ -106,6 +106,7 @@ public class ActiveQuerier implements Querier {
 			}
 			ActiveMessage am = new ActiveMessage(ttl, querierGuid, queriedGuid, field, map);
 			try {
+				System.out.println("Querier sends request "+am);
 				channel.sendMessage(am);
 				ActiveMessage response = (ActiveMessage) channel.receiveMessage();
 				System.out.println("The response is "+response);
