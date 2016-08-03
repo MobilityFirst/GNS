@@ -424,8 +424,7 @@ public class ActiveMessage implements Message{
 			codeBytes = new byte[length];
 			bbuf.get(codeBytes);
 			code = new String(codeBytes, CHARSET);
-			
-			
+						
 			// get valuesMap
 			length = bbuf.getInt();
 			valueBytes = new byte[length];
@@ -452,6 +451,7 @@ public class ActiveMessage implements Message{
 			bbuf.get(targetGuidBytes);
 			targetGuid = new String(targetGuidBytes, CHARSET);
 			break;
+			
 		case WRITE_QUERY:
 			ttl = bbuf.getInt();
 			// get guid
@@ -471,8 +471,14 @@ public class ActiveMessage implements Message{
 			targetGuidBytes = new byte[length];
 			bbuf.get(targetGuidBytes);
 			targetGuid = new String(targetGuidBytes, CHARSET);
+			
+			// get valuesMap
+			length = bbuf.getInt();
+			valueBytes = new byte[length];
+			bbuf.get(valueBytes);
+			value = new ValuesMap(new JSONObject(new String(valueBytes, CHARSET)));
 			break;
-						
+			
 		case RESPONSE:
 			// get valuesMap
 			length = bbuf.getInt();
