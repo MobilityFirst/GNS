@@ -172,8 +172,7 @@ public class ActivePolicyClient {
 		if(toUpdate){
 			client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
 			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
-		}
-		
+		}		
 		
 		JSONArray jarray = client.fieldReadArray(entry.getGuid(), "LOAD", entry);
 		String result = client.fieldRead(entry, "54.152.247.187");
