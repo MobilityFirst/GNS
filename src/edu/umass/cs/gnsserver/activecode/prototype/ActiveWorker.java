@@ -14,6 +14,7 @@ import javax.script.ScriptException;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -24,11 +25,6 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveWorker {
 	
-	//private ScriptEngine engine;
-	//private Invocable invocable;
-	
-	//private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
-	//private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
 	private final ActiveRunner runner;
 	private final Channel channel;
@@ -50,9 +46,6 @@ public class ActiveWorker {
 	 */
 	protected ActiveWorker(int port, int serverPort, int id, int numThread){
 		this.id = id;
-		
-		//engine = new ScriptEngineManager().getEngineByName("nashorn");
-		//invocable = (Invocable) engine;
 		
 		
 		if(numThread>1){
@@ -146,20 +139,24 @@ public class ActiveWorker {
 	}
 
 	
-	private void runWorker(int numThread) throws JSONException, IOException {
-		
+	private void runWorker(int numThread) throws JSONException, IOException {		
 		
 		ActiveMessage msg = null;
 		while((msg = (ActiveMessage) channel.receiveMessage()) != null){
 			if(numThread == 1){
-				ActiveMessage response;
-				try {
-					response = new ActiveMessage(msg.getId(), runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
-				} catch (NoSuchMethodException | ScriptException e) {
-					response = new ActiveMessage(msg.getId(), null, e.getMessage());
-					e.printStackTrace();
-				}				
-				channel.sendMessage(response);
+				if(msg.type == Type.REQUEST){
+					System.out.println(this+" receives a request "+msg);
+					ActiveMessage response;
+					try {
+						response = new ActiveMessage(msg.getId(), runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
+					} catch (NoSuchMethodException | ScriptException e) {
+						response = new ActiveMessage(msg.getId(), null, e.getMessage());
+						e.printStackTrace();
+					}				
+					channel.sendMessage(response);
+				} else if (msg.type == Type.RESPONSE ){
+					System.out.println("This is a response message");
+				}
 			} else{
 				// This is a test
 				ValuesMap value = null;

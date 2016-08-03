@@ -234,6 +234,8 @@ public class ActiveClient implements Client{
 	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		sendMessage(msg);
+		System.out.println("Message "+msg.toString()+" has been sent to worker by "+this);
+		
 		ActiveMessage response;
 		while((response = receiveMessage()) != null){			
 			if(response.type==Type.RESPONSE){

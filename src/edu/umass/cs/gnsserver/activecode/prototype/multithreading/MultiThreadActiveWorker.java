@@ -85,7 +85,7 @@ public class MultiThreadActiveWorker implements Runnable {
 						submitTask(message);
 					}else{
 						if(message.type == Type.RESPONSE){
-							// invoke the 
+							// invoke the querier here
 						}
 					}
 				}
