@@ -169,12 +169,12 @@ public class ActiveCodeHandler {
 					NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), 
 							guid, ColumnFieldType.USER_JSON, field);
 					
-					System.out.println("The retrieved name record is:"+nameRecord+", with the target valuesMap is "+value);
+					//System.out.println("The retrieved name record is:"+nameRecord+", with the target valuesMap is "+value);
 										
 					nameRecord.updateNameRecord(field, null, null, 0, value,
 					         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
 					
-					System.out.println("The updated name record is:"+nameRecord);
+					//System.out.println("The updated name record is:"+nameRecord);
 					
 				} catch (Exception e) {
 					e.printStackTrace();

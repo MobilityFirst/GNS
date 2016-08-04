@@ -155,7 +155,7 @@ public class ActiveWorker {
 					}				
 					channel.sendMessage(response);
 				} else if (msg.type == Type.RESPONSE ){
-					System.out.println("This is a response message");
+					System.out.println("This is a response message, the execution should not be here!");
 				}
 			} else{
 				// This is a test
