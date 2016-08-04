@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gnsclient.client.CommandUtils;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
@@ -387,26 +388,41 @@ public class ByteificationComparison {
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
-	
 	@Test
-	public void test_16_CommandPacket_128B() throws UnsupportedEncodingException, JSONException, ClientException{
-		CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(64)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(64))));
+	public void test_16_CommandValueReturnPacket_toBytes_128B() throws UnsupportedEncodingException, JSONException{
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
-			CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
-		System.out.println("Average byteification time CommandValueReturnPacket 128B was " + avg + " nanoseconds.");
+		System.out.println("Average byteification time CommandValueReturnPacket toBytes 128B was " + avg + " nanoseconds.");
 		byte[] bytes = packet.toBytes();
-		CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
 	@Test
-	public void test_17_CommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException{
-		CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+	public void test_17_CommandValueReturnPacket_toBytes_1024B_Strings() throws UnsupportedEncodingException, JSONException{
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet.toBytes();
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time CommandValueReturnPacket toBytes 1024B was " + avg + " nanoseconds.");
+		byte[] bytes = packet.toBytes();
+		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+	}
+	
+	
+	@Test
+	public void test_18_CommandPacket_128B() throws UnsupportedEncodingException, JSONException, ClientException{
+		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)), null);
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(64)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(64))));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -414,10 +430,60 @@ public class ByteificationComparison {
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
-		System.out.println("Average byteification time CommandValueReturnPacket 128B was " + avg + " nanoseconds.");
+		System.out.println("Average byteification time CommandPacket 128B was " + avg + " nanoseconds.");
 		byte[] bytes = packet.toBytes();
 		CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
-		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+		//System.out.println(packet.toJSONObject().toString());
+		//System.out.println(outputPacket.toJSONObject().toString());
+	}
+	
+	@Test
+	public void test_19_CommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException{
+		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)), null);
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			byte[] bytes = packet.toBytes();
+			CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average byteification time CommandPacket 1024B was " + avg + " nanoseconds.");
+		byte[] bytes = packet.toBytes();
+		CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+	}
+	
+	@Test
+	public void test_20_FromCommandPacket_128B() throws UnsupportedEncodingException, JSONException, ClientException{
+		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)), null);
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		byte[] bytes = packet.toBytes();
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			CommandPacket outputPacket = new CommandPacket(bytes);
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average time CommandPacket from bytes 128B was " + avg + " nanoseconds.");
+		//CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
+	}
+	@Test
+	public void test_21_FromCommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException{
+		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)), null);
+		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
+		byte[] bytes = packet.toBytes();
+		long startTime = System.nanoTime();
+		for (int i = 0; i < TEST_RUNS; i++){
+			CommandPacket outputPacket = new CommandPacket(bytes);
+		}
+		long endTime = System.nanoTime();
+		double avg = (endTime - startTime) / (TEST_RUNS);
+		System.out.println("Average time CommandPacket from bytes 1024B was " + avg + " nanoseconds.");
+		//CommandPacket outputPacket = CommandPacket.fromBytes(bytes);
+		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 
 	
