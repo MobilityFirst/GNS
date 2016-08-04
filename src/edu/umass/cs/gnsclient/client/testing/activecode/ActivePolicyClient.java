@@ -81,8 +81,13 @@ public class ActivePolicyClient {
 				arr.put(avg);
 				map.put(i, map.get(i)==null?avg:map.get(i)+avg);
 			}
-			if(toUpdate)
-				client.fieldCreateList(entry, host, arr);
+			arr.put(-1);
+			
+			if(toUpdate){
+				for(int i=0; i<10; i++){
+					client.fieldCreateList(entry, host+"-"+i, arr);
+				}
+			}
 			reader.close();
 		}
 		
@@ -135,9 +140,11 @@ public class ActivePolicyClient {
 		
 		JSONArray cost = new JSONArray();
 		JSONArray load = new JSONArray();
+		JSONArray newCost = new JSONArray();
 		for (int i=0; i<records.length(); i++){
 			cost.put(0);
 			load.put(0);
+			newCost.put(0);
 		}
 		
 		System.out.println("cost:"+cost);
@@ -156,6 +163,7 @@ public class ActivePolicyClient {
 						
 			client.fieldCreateList(entry, "COST", cost);
 			client.fieldCreateList(entry, "LOAD", load);
+			client.fieldCreateList(entry, "REALCOST", newCost);
 		}
 		
 		JSONArray arr = new JSONArray(initializeField(folder));
@@ -172,11 +180,7 @@ public class ActivePolicyClient {
 		if(toUpdate){
 			client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
 			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
-		}		
-		
-		JSONArray jarray = client.fieldReadArray(entry.getGuid(), "LOAD", entry);
-		String result = client.fieldRead(entry, "54.152.247.187");
-		System.out.println("The load field is "+jarray+", cost field is "+result);
+		}
 		
 		System.exit(0);
 	}

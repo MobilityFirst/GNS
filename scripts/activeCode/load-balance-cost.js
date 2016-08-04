@@ -10,6 +10,7 @@ function run(value, field, querier) {
 	}
 	
 	var lat = value.get(field);
+	var last_assigned = lat.get(4);
 	 
 	var host = HOSTS;
 	var region_latency = PERFORMANCE;
@@ -22,9 +23,13 @@ function run(value, field, querier) {
 	var cost = costMap.get("COST");
 	var loadMap = querier.readGuid(null, "LOAD");
 	var load = loadMap.get("LOAD");
+	if(last_assigned != -1){
+		load = load.put(last_assigned, load.get(last_assigned)-numRequestPerQuery);
+		cost = cost.put(last_assigned, cost.get(last_assigned)-numRequestPerQuery*60);
+	}
+	
 	var numRequestPerQuery = 10;
 	var candidate = [];
-	
 	var sections = [];
 	var estimates = [];
 	
@@ -69,7 +74,7 @@ function run(value, field, querier) {
 	var newCost = cost.put(index, cost.get(index)+numRequestPerQuery*60);
 	querier.writeGuid(null, "LOAD", loadMap.put("LOAD",newLoad) );
 	querier.writeGuid(null, "COST", costMap.put("COST",newCost) );
-
+	querier.writeGuid(null, field, value.put(field, lat.put(4, index)) );
 	
 	return value.put(field, host[index]);
 }
