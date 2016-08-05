@@ -72,16 +72,17 @@ public class ActiveRunner {
 	 * @return ValuesMap result 
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
-	 * @throws RuntimeException 
+	 * @throws Exception 
 	 */
-	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException, RuntimeException {		
+	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException, Exception {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
 		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl);
 		ValuesMap valuesMap = null;
 		try{
 			valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
-		} catch(RuntimeException e){
+		} catch(Exception e){
+			e.printStackTrace();
 			throw e;
 		}
 		return valuesMap;
@@ -166,7 +167,7 @@ public class ActiveRunner {
 			runner.runCode(guid, field, chain_code, value, 0);
 			// fail here
 			assert(false):"The code should not be here";
-		} catch (NoSuchMethodException | ScriptException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		

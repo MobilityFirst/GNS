@@ -131,11 +131,9 @@ public class ActiveWorker {
 	 * @param value
 	 * @param ttl
 	 * @return ValuesMap result 
-	 * @throws ScriptException
-	 * @throws NoSuchMethodException
-	 * @throws RuntimeException 
+	 * @throws Exception 
 	 */
-	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException, RuntimeException {	
+	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws Exception {	
 		return runner.runCode(guid, field, code, value, ttl);
 	}
 
@@ -150,7 +148,7 @@ public class ActiveWorker {
 					ActiveMessage response;
 					try {
 						response = new ActiveMessage(msg.getId(), runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
-					} catch (NoSuchMethodException | ScriptException e) {
+					} catch (Exception e) {
 						response = new ActiveMessage(msg.getId(), null, e.getMessage());
 						//e.printStackTrace();
 					}				
