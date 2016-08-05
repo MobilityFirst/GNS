@@ -151,7 +151,7 @@ public class ActiveWorker {
 						response = new ActiveMessage(msg.getId(), runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);
 					} catch (NoSuchMethodException | ScriptException e) {
 						response = new ActiveMessage(msg.getId(), null, e.getMessage());
-						e.printStackTrace();
+						//e.printStackTrace();
 					}				
 					channel.sendMessage(response);
 				} else if (msg.type == Type.RESPONSE ){

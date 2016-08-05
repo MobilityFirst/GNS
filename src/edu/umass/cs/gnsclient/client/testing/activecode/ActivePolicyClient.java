@@ -14,12 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 
 /**
@@ -42,7 +40,7 @@ public class ActivePolicyClient {
 	private static GuidEntry entry;
 	private static GNSClientCommands client;
 	
-	private static List<Double> initializeField(String folder) throws IOException, JSONException, ClientException{
+	private static List<Double> initializeField(String folder) throws Exception{
 		File dir = new File(folder+"/latency");
 		if( !dir.exists()){
 			// If the folder does not exist with an error
@@ -164,6 +162,7 @@ public class ActivePolicyClient {
 			client.fieldCreateList(entry, "COST", cost);
 			client.fieldCreateList(entry, "LOAD", load);
 			client.fieldCreateList(entry, "REALCOST", newCost);
+			//client.fieldSetElement(entry.getGuid(), "COST", "0", 0, entry);
 		}
 		
 		JSONArray arr = new JSONArray(initializeField(folder));
@@ -177,10 +176,17 @@ public class ActivePolicyClient {
 		code = code.replace("PERFORMANCE", arr.toString());
 		//System.out.println(code);
 		
+		
+		
+		System.out.println(client.fieldRead(entry, "COST"));
+		System.out.println(client.fieldRead(entry, "REALCOST"));
+		System.out.println(client.fieldRead(entry, "LOAD"));
+		
 		if(toUpdate){
 			client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
 			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 		}
+		System.out.println(client.fieldRead(entry, "54.152.247.187-0"));
 		
 		System.exit(0);
 	}

@@ -258,6 +258,13 @@ public class ActiveClient implements Client{
 				sendMessage(am);
 			}
 		}
+		
+		
+		if(response.getError() != null){
+			System.out.println(response.getError());
+			return valuesMap;
+		}
+		// FIXME: potential NullPointerException
 		return response.getValue();
 	}
 	
