@@ -133,8 +133,9 @@ public class ActiveWorker {
 	 * @return ValuesMap result 
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
+	 * @throws RuntimeException 
 	 */
-	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {	
+	public ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException, RuntimeException {	
 		return runner.runCode(guid, field, code, value, ttl);
 	}
 

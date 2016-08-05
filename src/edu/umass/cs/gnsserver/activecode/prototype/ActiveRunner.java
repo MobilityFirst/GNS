@@ -72,12 +72,19 @@ public class ActiveRunner {
 	 * @return ValuesMap result 
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
+	 * @throws RuntimeException 
 	 */
-	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {		
+	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException, RuntimeException {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
 		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl);
-		return (ValuesMap) invocable.invokeFunction("run", value, field, querier);
+		ValuesMap valuesMap = null;
+		try{
+			valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
+		} catch(RuntimeException e){
+			throw e;
+		}
+		return valuesMap;
 	}
 	
 	private static class SimpleTask implements Callable<ValuesMap>{
