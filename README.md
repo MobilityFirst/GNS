@@ -43,6 +43,11 @@ This code changes the original value of the field, and returns a new value as a 
 >Before the code is deployed, the value of field(someField) is someValue
 >After the code is deployed, the value of field(someField) is hello world!
 
+## Performance Test
+You could use another client to test ActiveGNS throughput as:
+```bash
+./scripts/client/runActiveLocalClient edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest true
+```
 
 ## More active code examples
 The active code supported by ActiveGNS should be written in Javascript, and it must implement the following function:
