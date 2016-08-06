@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="lib/jline-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jmapviewer.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/SizeOf.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.51.jar"/>
@@ -49,19 +48,12 @@
 	<classpathentry kind="lib" path="lib/jackson-core-2.6.6.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-databind-2.6.6.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-dataformat-cbor-2.6.6.jar"/>
-	<classpathentry kind="lib" path="lib/javax.mail-api-1.4.6.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/spring-beans-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring-context-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring-core-3.0.7.RELEASE.jar"/>
 	<classpathentry kind="lib" path="lib/spring-test-3.0.7.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/fst-2.47-javadoc.jar"/>
-	<classpathentry kind="lib" path="lib/fst-2.47-sources.jar"/>
-	<classpathentry kind="lib" path="lib/fst-2.47.jar"/>
 	<classpathentry kind="lib" path="lib/mappedbus-0.5.jar"/>
-	<classpathentry kind="lib" path="lib/gigapaxos-1.0.05.jar"/>
-	<classpathentry kind="lib" path="lib/gigapaxos-nio-src.jar"/>
-	<classpathentry kind="lib" path="lib/nio-1.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/chronicle-bytes-1.7.3-SNAPSHOT-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/chronicle-bytes-1.7.3-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/chronicle-bytes-1.7.3-SNAPSHOT.jar"/>
@@ -77,5 +69,8 @@
 	<classpathentry kind="lib" path="lib/chronicle-wire-1.7.5-SNAPSHOT-javadoc.jar"/>
 	<classpathentry kind="lib" path="lib/chronicle-wire-1.7.5-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="lib/chronicle-wire-1.7.5-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/javax.mail-1.5.5.jar"/>
+	<classpathentry kind="lib" path="lib/gigapaxos-1.0.05.jar"/>
+	<classpathentry kind="lib" path="lib/gigapaxos-nio-src.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

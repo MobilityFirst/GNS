@@ -14,7 +14,8 @@ import java.util.concurrent.Executors;
 import org.json.JSONArray;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 /**
  * @author gaozy
@@ -41,7 +42,7 @@ public class ActiveUpdaterForLoadBalancing implements Runnable {
 			ObjectInputStream input = new ObjectInputStream(new FileInputStream(new File(filename)));
 			guidEntry = new GuidEntry(input);
 			input.close();
-		} catch (IOException e) {		
+		} catch (IOException | EncryptionException e) {		
 			e.printStackTrace();
 		}
 		

@@ -142,7 +142,8 @@ public class ActiveCodeHandler {
 					String response = CommandUtils.checkResponse(client.sendCommandAndWait( CommandUtils.createCommand(CommandType.Read, 
 									GNSCommandProtocol.GUID, queriedGuid, 
 									GNSCommandProtocol.FIELD, field, 
-									GNSCommandProtocol.READER, GNSCommandProtocol.MAGIC_STRING)));
+									GNSCommandProtocol.READER, "")));
+									//GNSCommandProtocol.READER, GNSCommandProtocol.MAGIC_STRING)));
 					System.out.println(this+" receives response from remote GNS "+response);
 					value = new ValuesMap(new JSONObject(response));
 				} catch (Exception e){

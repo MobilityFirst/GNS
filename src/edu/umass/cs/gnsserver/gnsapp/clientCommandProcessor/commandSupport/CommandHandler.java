@@ -200,7 +200,7 @@ public class CommandHandler {
 								+ " - Don't understand " + json.toString());
 			}
 		} catch (JSONException e) {
-			// e.printStackTrace();
+			e.printStackTrace();
 			return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR,
 					BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
 							+ " while executing command.");

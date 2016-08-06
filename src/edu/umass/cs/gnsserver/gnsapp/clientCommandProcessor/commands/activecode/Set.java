@@ -76,6 +76,7 @@ public class Set extends BasicCommand {
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
+	  
     String accountGuid = json.getString(GUID);
     String writer = json.getString(WRITER);
     String action = json.getString(AC_ACTION);
