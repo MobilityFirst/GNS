@@ -46,7 +46,10 @@ This code changes the original value of the field, and returns a new value as a 
 ## Performance Test
 You could use another client to test ActiveGNS throughput as:
 ```bash
-./scripts/client/runActiveLocalClient edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest true
+./scripts/client/runClientSingleNode \
+-DtestingConfig=testing_conf/SomeReadsEncryptionFails.properties \
+edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest \
+NUM_CLIENTS=40 NUM_REQUESTS=400000
 ```
 
 ## More active code examples
