@@ -32,7 +32,7 @@ public class MultiThreadActiveTask implements Runnable {
 			ValuesMap value = runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl());
 			response = new ActiveMessage(am.getId(), value, null);
 			channel.sendMessage(response);
-		} catch (NoSuchMethodException | ScriptException | IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();	
 		}
 		

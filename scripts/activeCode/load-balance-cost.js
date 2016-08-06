@@ -14,7 +14,7 @@ function run(value, field, querier) {
 	 
 	var host = HOSTS;
 	var region_latency = PERFORMANCE;
-	var performance_thres = 150;
+	var performance_thres = 50;
 	var replica_performance = [0,1,1,2,5,24,10000];
 	var replica_thres = 1250;
 	var interval = 250;
@@ -25,8 +25,9 @@ function run(value, field, querier) {
 	var loadMap = querier.readGuid(null, "LOAD");
 	var load = loadMap.get("LOAD");
 	
-	if(last_assigned >= 0){
-		load = load.put(last_assigned, Number(load.get(last_assigned)-numRequestPerQuery));
+	
+	if(last_assigned != -1){
+		load = load.put(last_assigned, Number(load.get(last_assigned))-numRequestPerQuery);
 	}
 		
 	var candidate = [];
@@ -44,7 +45,7 @@ function run(value, field, querier) {
 	var index = -1;
 	
 	if(candidate.length == 0){
-		var ind = region_latency.indexOf(Math.min(region_latency));
+		var ind = region_latency.indexOf(Math.min.apply(Math, region_latency));
 		for(i=0;i<2;i++){
 			if((load[i+ind*2]+numRequestPerQuery) < replica_thres){
 				index = i+ind*2;
@@ -66,8 +67,8 @@ function run(value, field, querier) {
 		index = Math.floor(Math.random()*host.length);
 	}
 	
-	var newLoad = load.put(index, Number(load.get(index)+numRequestPerQuery));
-	var newCost = cost.put(index, Number(cost.get(index)+numRequestPerQuery*60));
+	var newLoad = load.put(index, Number(load.get(index))+numRequestPerQuery);
+	var newCost = cost.put(index, Number(cost.get(index))+numRequestPerQuery*60);
 	querier.writeGuid(null, "LOAD", loadMap.put("LOAD",newLoad) );
 	querier.writeGuid(null, "COST", costMap.put("COST",newCost) );
 	querier.writeGuid(null, field, value.put(field, lat.put(4, index)) );

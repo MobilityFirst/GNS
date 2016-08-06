@@ -139,6 +139,7 @@ public class ActivePolicyClient {
 		JSONArray cost = new JSONArray();
 		JSONArray load = new JSONArray();
 		JSONArray newCost = new JSONArray();
+		JSONArray selected = new JSONArray();
 		for (int i=0; i<records.length(); i++){
 			cost.put(0);
 			load.put(0);
@@ -162,19 +163,21 @@ public class ActivePolicyClient {
 			client.fieldCreateList(entry, "COST", cost);
 			client.fieldCreateList(entry, "LOAD", load);
 			client.fieldCreateList(entry, "REALCOST", newCost);
-			//client.fieldSetElement(entry.getGuid(), "COST", "0", 0, entry);
+			client.fieldCreateList(entry, "SELECTED", selected);
 		}
 		
 		JSONArray arr = new JSONArray(initializeField(folder));
 		System.out.println(arr);
 		
-		String codeFile = "scripts/activeCode/load-balance-cost.js";
+		//"scripts/activeCode/load-balance-cost.js"
+		String codeFile = "scripts/activeCode/load-balance-performance.js";
+		
 		//codeFile = "scripts/activeCode/noop.js";
 		
 		String code = new String(Files.readAllBytes(Paths.get(codeFile)));;
 		code = code.replace("HOSTS", records.toString());
 		code = code.replace("PERFORMANCE", arr.toString());
-		//System.out.println(code);
+		System.out.println("PERFORMANCE:"+arr);
 		
 		
 		

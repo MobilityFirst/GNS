@@ -72,19 +72,15 @@ public class ActiveRunner {
 	 * @return ValuesMap result 
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
-	 * @throws Exception 
 	 */
-	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException, Exception {		
+	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
 		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl);
 		ValuesMap valuesMap = null;
-		try{
-			valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
-		} catch(Exception e){
-			e.printStackTrace();
-			throw e;
-		}
+
+		valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
+		
 		return valuesMap;
 	}
 	
@@ -153,13 +149,15 @@ public class ActiveRunner {
 		System.out.println("The throughput is "+n*1000.0/elapsed);
 		
 		
+		
 		/**
 		 * Test runner's protected method
 		 */
 		ActiveRunner runner = new ActiveRunner(new ActiveQuerier(null));
 		String chain_code = null;
 		try {
-			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
+			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
+			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

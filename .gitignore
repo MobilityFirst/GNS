@@ -56,10 +56,6 @@ build.number
 /nbbuild.xml
 /private.xml
 /clientKeyDB/
-<<<<<<< HEAD
-/bin/
-=======
 /bin/gpClient.sh
 /bin/gpServer.sh
 .paxos_logs
->>>>>>> upstream/master
