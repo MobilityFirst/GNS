@@ -76,7 +76,6 @@ public class Set extends BasicCommand {
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
-	  
     String accountGuid = json.getString(GUID);
     String writer = json.getString(WRITER);
     String action = json.getString(AC_ACTION);
@@ -86,7 +85,7 @@ public class Set extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     GNSResponseCode response = ActiveCode.setCode(accountGuid, action,
             code, writer, signature, message, timestamp, handler);
-
+    
     if (response.isExceptionOrError()) {
       return new CommandResponse(response, BAD_RESPONSE + " " + response.getProtocolCode());
     } else {

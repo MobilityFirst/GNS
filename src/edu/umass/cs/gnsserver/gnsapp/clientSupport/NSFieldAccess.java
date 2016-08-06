@@ -295,7 +295,7 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-	  System.out.println(">>>>>>>>>>>>>>> read filed "+ field +" for guid "+guid+" with original value "+ originalValues);
+	  //System.out.println(">>>>>>>>>>>>>>> read filed "+ field +" for guid "+guid+" with original value "+ originalValues);
 	  
 	  long start = System.nanoTime();
 	  if(!AppReconfigurableNodeOptions.enableActiveCode) return originalValues;

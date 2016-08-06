@@ -56,10 +56,12 @@ public class ActiveCodeHelloWorldExample {
 		final String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		
 		// set up the code for on read operation
-		client.activeCodeSet(entry.getGuid(), ActiveCode.ON_READ, code, entry);
+		client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 		
 		// get the value of the field again
 		response = client.fieldRead(entry, field);
 		System.out.println("After the code is deployed, the value of field("+field+") is "+response);
+		
+		System.exit(0);
 	}
 }
