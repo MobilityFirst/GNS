@@ -36,9 +36,9 @@ public abstract class BasicPacketWithReturnAddress extends BasicPacketWithClient
   private final static String RETURN_ADDRESS = "returnAddress";
 
   /**
-   * ccpPort
+   * returnPort
    */
-  private final static String RETURN_PORT = "ccpPort";
+  private final static String RETURN_PORT = "returnPort";
 
   /**
    * An invalid port.
@@ -66,14 +66,14 @@ public abstract class BasicPacketWithReturnAddress extends BasicPacketWithClient
   }
   
   /**
-   * Creates a BasicPacketWithCCPAddress with a null CPP address.
+   * Creates a BasicPacketWithCCPAddress with a null return address.
    */
   public BasicPacketWithReturnAddress() {
     this.returnAddress = null;
   }
   
   /**
-   * Creates a BasicPacketWithReturnAddress using address as the CPP address.
+   * Creates a BasicPacketWithReturnAddress using address as the return address.
    *
    * @param address
    */

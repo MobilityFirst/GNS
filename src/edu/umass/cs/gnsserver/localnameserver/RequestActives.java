@@ -127,20 +127,18 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
             lnsRequestInfo.getCommandType().isCreateDelete()
-            //GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(lnsRequestInfo.getCommandName())
-            ? Config.getGlobalString(RC.SPECIAL_NAME)
-            : lnsRequestInfo.getServiceName(), 0);
+                    //GNSCommandProtocol.CREATE_DELETE_COMMANDS.contains(lnsRequestInfo.getCommandName())
+                    ? Config.getGlobalString(RC.SPECIAL_NAME)
+                    : lnsRequestInfo.getServiceName(), 0);
 
     int reconfigIndex = requestCount % reconfigurators.size();
-    LOG.log(Level.FINE, 
-            "~~~~~~~~~~~~~~~~~~~~~~~~{0} Sending to {1} {2}", 
+    LOG.log(Level.FINE,
+            "~~~~~~~~~~~~~~~~~~~~~~~~{0} Sending to {1} {2}",
             new Object[]{this.refreshKey(), reconfigurators.get(reconfigIndex), packet});
     InetSocketAddress reconfiguratorAddress = reconfigurators.get(reconfigIndex);
-    if (!LocalNameServerOptions.disableSSL) {
-      // Use the client facing port for Server Auth
-      reconfiguratorAddress = new InetSocketAddress(reconfiguratorAddress.getAddress(),
-              ActiveReplica.getClientFacingPort(reconfiguratorAddress.getPort()));
-    }
+    reconfiguratorAddress = new InetSocketAddress(reconfiguratorAddress.getAddress(),
+            ActiveReplica.getClientFacingPort(reconfiguratorAddress.getPort()));
+
     GenericMessagingTask<InetSocketAddress, ?> mtasks[] = new GenericMessagingTask<>(reconfiguratorAddress, packet).toArray();
     requestCount++;
     return mtasks;

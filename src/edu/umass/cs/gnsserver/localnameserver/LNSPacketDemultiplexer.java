@@ -22,13 +22,13 @@ package edu.umass.cs.gnsserver.localnameserver;
 import edu.umass.cs.gigapaxos.interfaces.NearestServerSelector;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
@@ -56,14 +56,14 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   private final RequestHandlerInterface handler;
   private final Random random = new Random();
 
-  final ReconfigurableAppClientAsync asyncLNSClient;
+  final ReconfigurableAppClientAsync<Request> asyncLNSClient;
 
   /**
    * Create an instance of the LNSPacketDemultiplexer.
    *
    * @param handler
    */
-  public LNSPacketDemultiplexer(RequestHandlerInterface handler, ReconfigurableAppClientAsync asyncClient) {
+  public LNSPacketDemultiplexer(RequestHandlerInterface handler, ReconfigurableAppClientAsync<Request> asyncClient) {
     this.handler = handler;
     this.asyncLNSClient = asyncClient;
     register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
@@ -81,7 +81,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * @return false if an invalid packet type is received
    */
   @Override
-  public boolean handleMessage(JSONObject json) {
+  public boolean handleMessage(JSONObject json, NIOHeader header) {
     GNSConfig.getLogger().log(Level.INFO, ">>>>>>>>>>>>>>>>>>>>> Incoming packet: {0}", json);
     boolean isPacketTypeFound = true;
     try {
@@ -163,7 +163,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(),
             packet);
     handler.addRequestInfo(packet.getRequestID(), requestInfo);
-    packet = packet.removeSenderInfo();
+    packet = removeSenderInfo(json);
 
     if (requestInfo.getCommandType().isCreateDelete()
             || requestInfo.getCommandType().isSelect()) {
@@ -173,6 +173,12 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     } else {
       this.asyncLNSClient.sendRequest(packet, callback, redirector);
     }
+  }
+  
+  private static CommandPacket removeSenderInfo(JSONObject json) throws JSONException {
+	  json.remove(MessageNIOTransport.SNDR_IP_FIELD);
+	  json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
+	  return new CommandPacket(json);
   }
 
   /**

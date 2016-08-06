@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.List;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 

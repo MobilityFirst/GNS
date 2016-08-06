@@ -19,12 +19,12 @@
  */
 package edu.umass.cs.gnsclient.examples;
 
-import edu.umass.cs.gnsclient.client.BasicGuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GNSClientInterface;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
+import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
+import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;

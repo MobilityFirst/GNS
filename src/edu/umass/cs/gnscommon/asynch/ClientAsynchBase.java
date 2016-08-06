@@ -21,10 +21,10 @@ package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,6 +38,7 @@ import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
@@ -55,7 +56,6 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
 import edu.umass.cs.gnsserver.utils.ResultValue;
-import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
@@ -63,12 +63,14 @@ import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery.RequestCallbackWithRequest;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -84,69 +86,6 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
@@ -154,7 +93,7 @@ import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
  * @author Westy
  */
 // FIXME: This might be redundant with the AsyncClient internal class used in GNSClient.
-public class ClientAsynchBase extends ReconfigurableAppClientAsync {
+public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
 
   public static final Set<IntegerPacketType> CLIENT_PACKET_TYPES
           = new HashSet<>(Arrays.asList(Packet.PacketType.COMMAND,
@@ -256,10 +195,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, command);
     ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
-    return sendRequest(
+     sendRequest(
     		packet,
     		(callback instanceof RequestCallbackWithRequest) ? ((RequestCallbackWithRequest) callback)
     				.setRequest(packet) : callback);
+     return packet.getRequestID();
   }
 
   /**
@@ -572,7 +512,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
             GUID, guid,
             USER_JSON, json.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -593,7 +533,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -614,7 +554,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
             GUID, guid,
             FIELD, field,
             VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -636,7 +576,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.RemoveUnsigned,
             GUID, guid,
             FIELD, field, VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -658,7 +598,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.RemoveListUnsigned,
             GUID, guid,
             FIELD, field, VALUE, value.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -678,7 +618,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     return sendCommandAsynch(createCommand(CommandType.ReplaceUserJSONUnsigned,
             GUID, guid,
             USER_JSON, json.toString(),
-            WRITER, MAGIC_STRING), callback);
+            WRITER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -694,7 +634,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync {
     packet.setRequestId(id);
     ClientSupportConfig.getLogger().log(Level.FINE, "{0} sending select packet {1}",
             new Object[]{this, packet.getSummary()});
-    return sendRequest(packet, callback);
+    sendRequest(packet, callback);
+    return packet.getRequestID();
   }
 
   /**

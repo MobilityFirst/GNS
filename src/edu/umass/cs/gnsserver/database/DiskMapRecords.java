@@ -99,10 +99,11 @@ public class DiskMapRecords implements NoSQLRecords {
    */
   protected static JSONObject recursiveCopyJSONObject(JSONObject record)
           throws JSONException {
+	String[] keys = JSONObject.getNames(record);
     JSONObject copy = new JSONObject();
-    for (String key : JSONObject.getNames(record)) {
-      copy.put(key, recursiveCopyObject(record.get(key)));
-    }
+    if(keys!=null) // oddly, empty returns null
+    	for (String key : JSONObject.getNames(record)) 
+    		copy.put(key, recursiveCopyObject(record.get(key)));
     return copy;
   }
 

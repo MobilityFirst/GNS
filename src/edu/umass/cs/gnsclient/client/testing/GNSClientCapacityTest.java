@@ -28,8 +28,8 @@ import edu.umass.cs.gigapaxos.testing.TESTPaxosMain;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
@@ -242,7 +242,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_02_SequentialSignedReadCapacity() throws Exception {
-		int numReads = Math.min(Integer.MAX_VALUE, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS)/10;
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();
@@ -260,7 +260,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_02_SequentialUnsignedReadCapacity() throws Exception {
-		int numReads = Math.min(1000, Config.getGlobalInt(TC.NUM_REQUESTS));
+		int numReads = (Config.getGlobalInt(TC.NUM_REQUESTS)/2);
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();

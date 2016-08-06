@@ -397,7 +397,7 @@ public class GNSInstaller {
               //              + nsId.toString() + " "
               + "-nsfile "
               + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
-              + "-disableEmailVerification" + " "
+              //+ "-disableEmailVerification" + " "
               // Nodes to start (FIXME: hacked node names)
               + nsId + "_recon" + " " 
               + nsId + "_repl" + " "

@@ -10,10 +10,12 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.async.RequestCallbackFuture;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
@@ -39,12 +41,11 @@ import edu.umass.cs.utils.Config;
  */
 public class GNSClient extends AbstractGNSClient 
 {
-
 	// initialized from properties file
 	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
 			.getReconfiguratorAddresses();
 
-	// initialized upon contsruction
+	// initialized upon contstruction
 	private final Set<InetSocketAddress> reconfigurators;
 	private final AsyncClient asyncClient;
 
@@ -112,8 +113,7 @@ public class GNSClient extends AbstractGNSClient
 			@Override
 			public void handleResponse(Request response) {
 				try {
-					GNSClient.this.handleCommandValueReturnPacket(response,
-							System.currentTimeMillis());
+					GNSClient.this.handleCommandValueReturnPacket(response);
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
@@ -145,6 +145,23 @@ public class GNSClient extends AbstractGNSClient
 	}
 
 	/**
+	 * @param packet
+	 * @param callback
+	 * @return Long request ID if successfully sent, else null.
+	 * @throws IOException
+	 */
+	public RequestFuture<?>  sendAsync(CommandPacket packet,
+			final GNSCommandCallback callback) throws IOException {
+		return this.sendAsync(packet, new RequestCallback() {
+			@Override
+			public void handleResponse(Request response) {
+				Packet.setResult(packet, defaultHandleResponse(response));
+				callback.handleResponse(packet);
+			}
+		});
+	}
+
+	/**
 	 * All sends go ultimately go through this async send method because that is
 	 * what {@link ReconfigurableAppClientAsync} supports.
 	 * 
@@ -153,31 +170,36 @@ public class GNSClient extends AbstractGNSClient
 	 * @return Long request ID if successfully sent, else null.
 	 * @throws IOException
 	 */
-	public Long sendAsync(CommandPacket packet, RequestCallback callback)
+	protected RequestFuture<Request>  sendAsync(CommandPacket packet, final RequestCallback callback)
 			throws IOException {
-		Long requestID = null;
 		ClientRequest request = packet.setForceCoordinatedReads(isForceCoordinatedReads());
 
-		if (isAnycast(packet))
-			requestID = this.asyncClient.sendRequestAnycast(request, callback);
-		else
-			requestID = this.asyncClient.sendRequest(request, callback);
-		if (requestID == null)
-			/* Can only happen under remote node failure and extreme congestion
-			 * as otherwise NIO will buffer the packet for future delivery
-			 * attempts. */
-			LOG.log(Level.WARNING, "Request ID is null after send for {0}",
-					new Object[] { request.getSummary() });
-		return requestID;
+                InetSocketAddress lnsAddress;
+                if ((lnsAddress = getLnsAddress()) != null) {
+                        return this.asyncClient.sendRequest(request, lnsAddress, callback);
+                } else if (isAnycast(packet)) {
+			return this.asyncClient.sendRequestAnycast(request, callback);
+                } else {
+			return  this.asyncClient.sendRequest(request, callback);
+                }
 	}
-
+	
+	private static final CommandValueReturnPacket defaultHandleResponse(Request response) {
+		return response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
+				: new CommandValueReturnPacket(response.getServiceName(),
+						((ActiveReplicaError) response).getRequestID(),
+						GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
+						((ActiveReplicaError) response)
+								.getResponseMessage());
+	}
+	
 	/**
 	 * @param packet
 	 * @param timeout
 	 * @return Response from the server or null if the timeout expires.
 	 * @throws IOException
 	 */
-	public CommandValueReturnPacket sendSync(CommandPacket packet, Long timeout)
+	protected CommandValueReturnPacket sendSync(CommandPacket packet, Long timeout)
 			throws IOException {
 		Object monitor = new Object();
 		CommandValueReturnPacket[] retval = new CommandValueReturnPacket[1];
@@ -186,13 +208,7 @@ public class GNSClient extends AbstractGNSClient
 		this.sendAsync(packet, new RequestCallback() {
 			@Override
 			public void handleResponse(Request response) {
-				retval[0] = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
-						: new CommandValueReturnPacket(response.getServiceName(),
-								((ActiveReplicaError) response).getRequestID(),
-								GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
-								((ActiveReplicaError) response)
-										.getResponseMessage());
-
+				retval[0] = defaultHandleResponse(response);
 				assert(retval[0].getErrorCode()!=null);
 				synchronized (monitor) {
 					monitor.notify();
@@ -226,7 +242,7 @@ public class GNSClient extends AbstractGNSClient
 	 *
 	 * @throws IOException
 	 */
-	public CommandValueReturnPacket sendSync(CommandPacket packet)
+	 CommandValueReturnPacket sendSync(CommandPacket packet)
 			throws IOException {
 		return this.sendSync(packet, null);
 	}
@@ -235,7 +251,7 @@ public class GNSClient extends AbstractGNSClient
 	 * Straightforward async client implementation that expects only one packet
 	 * type, {@link Packet.PacketType.COMMAND_RETURN_VALUE}.
 	 */
-	static class AsyncClient extends ReconfigurableAppClientAsync implements
+	static class AsyncClient extends ReconfigurableAppClientAsync<Request> implements
 			AppRequestParserBytes {
 
 		private static Stringifiable<String> unstringer = new StringifiableDefault<>(
@@ -293,19 +309,10 @@ public class GNSClient extends AbstractGNSClient
 		}
 
 		@Override
-		public Request getRequest(byte[] bytes, NIOHeader header) {
+		public Request getRequest(byte[] bytes, NIOHeader header) throws RequestParseException {
 			return GNSApp.getRequestStatic(bytes, header, unstringer);
 		}
 	}
-
-	/**
-	 * @param args
-	 * @throws IOException
-	 */
-	public static void main(String[] args) throws IOException {
-		GNSClient client = new GNSClient(null);
-		client.close();
-		System.out
-				.println("Client created, successfully checked connectivity, and closing");
-	}
+	
+	/* **************** Start of execute methods ****************** */
 }

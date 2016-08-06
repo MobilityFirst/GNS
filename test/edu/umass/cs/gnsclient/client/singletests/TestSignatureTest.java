@@ -22,17 +22,24 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
+
 import java.security.PrivateKey;
 import java.security.PublicKey;
+
 import org.json.JSONObject;
+
 import static org.junit.Assert.*;
+
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+
 import java.io.IOException;
 
 /**
@@ -47,7 +54,7 @@ public class TestSignatureTest {
   private static GNSClientCommands client;
   private static GuidEntry guid;
 
-  public TestSignatureTest() {
+  public TestSignatureTest() throws EncryptionException {
     if (client == null) {
        try {
         client = new GNSClientCommands();

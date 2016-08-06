@@ -17,17 +17,25 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.deprecated;
 
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+
 import java.io.IOException;
+
 import org.json.JSONObject;
 
 /**
  * The interface all the various GNS client classes should implement.
+ * 
+ * arun: This interface is deprecated because it is an arbitrary collection of
+ * methods. Unclear why a GNS client implementation should support just these
+ * or even all of these methods.
  *
  * @author westy, arun
  */
+@Deprecated
 public interface GNSClientInterface {
 
   /**

@@ -20,13 +20,17 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
+
 import java.io.IOException;
 import java.util.ArrayList;
+
 import org.json.JSONArray;
+
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 public class PerformanceTest {

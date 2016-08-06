@@ -227,6 +227,10 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
     <pathelement location="${lib.dir}/gigapaxos-1.0.05.jar"/>
     <pathelement location="${lib.dir}/context-client-GNS.jar"/>
     <pathelement location="${lib.dir}/mongo-java-driver-2.12.1.jar"/>
+    <pathelement location="${lib.dir}/jackson-databind-2.6.6.jar"/>
+    <pathelement location="${lib.dir}/jackson-annotations-2.6.0.jar"/>
+    <pathelement location="${lib.dir}/jackson-core-2.6.6.jar"/>
+    <pathelement location="${lib.dir}/jackson-dataformat-cbor-2.6.6.jar"/>
     <pathelement location="${conf.dir}"/>
     <pathelement location="${db-props-file}" />
   </path>
@@ -316,7 +320,8 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
-      <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
+      <jvmarg value="-DinheritIO=true"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.unittest.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.properties"/>
       <jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>
       <classpath>
@@ -385,18 +390,18 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
 
   <target name="testFailures" description="Runs the default integration test against a 3 node server" 
           depends="compile, compiletest">
-          <property name="integrationTestThreads" value="50"/>
+          <property name="failureTestThreads" value="50"/>
+          <property name="failureTestRoundTime" value="10"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerFailureTests"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-DstartServer=true"/>
-      <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
-      <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
+      <jvmarg value="-DfailureTest.threads=${failureTestThreads}"/>
+      <jvmarg value="-DfailureTest.roundTime=${failureTestRoundTime}"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.unittest.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
-      <jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
@@ -429,16 +434,16 @@ integration tests sequentially"
   </target>
 
      <target name="testThreaded" description="Runs the default integration tests in parallel" 
-          depends="jar, compiletest">
-    <property name="integrationTestRuns" value="30"/>
-    <property name="integrationTestThreads" value="50"/>
+          depends="compile, compiletest">
+    <property name="integrationTestRuns" value="5"/>
+    <property name="integrationTestThreads" value="3"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTestThreaded"/>
       <formatter type="plain" usefile="false"/>
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.1local.properties"/>

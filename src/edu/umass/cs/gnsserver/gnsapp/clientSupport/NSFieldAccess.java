@@ -221,7 +221,7 @@ public class NSFieldAccess {
   /**
    * Looks up the value of an old-style list field in the guid.
    * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
-   * sends a DNS query from this Name Server to a Local Name Server.
+   * sends a read query from this Name Server to a Local Name Server.
    * Returns the value of a field in a GUID as a ResultValue.
    *
    * @param guid
@@ -259,7 +259,7 @@ public class NSFieldAccess {
   /**
    * Looks up the value of a field in the guid.
    * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
-   * sends a DNS query from this Name Server to a Local Name Server.
+   * sends a read query from this Name Server to a Local Name Server.
    * Returns the value of a field in a GUID as a ResultValue.
    *
    * @param guid

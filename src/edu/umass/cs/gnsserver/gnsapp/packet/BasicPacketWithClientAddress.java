@@ -67,8 +67,11 @@ public abstract class BasicPacketWithClientAddress extends BasicPacket {
  * @return {@code this}
  */
 public BasicPacketWithClientAddress setResponse(ClientRequest response) {
-	  this.response = response;
-	  return this;
+	synchronized(this) {
+		if(this.response!=null) throw new RuntimeException("Can set response for ClientRequest at most once");
+		this.response = response;
+		return this;
+	}
   }
 
   @Override

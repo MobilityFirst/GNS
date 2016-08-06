@@ -48,8 +48,8 @@ import jline.SimpleCompletor;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.msocket.proxy.ProxyPublisher;

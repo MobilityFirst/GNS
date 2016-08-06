@@ -30,13 +30,12 @@ import org.junit.runners.MethodSorters;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.nio.JSONDelayEmulator;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author Brendan
@@ -48,6 +47,7 @@ import edu.umass.cs.utils.Util;
 public class ServerFailureTests {
 
 	private static final String DEFAULT_ACCOUNT_ALIAS = "support@gns.name";
+	private static final boolean EMULATING_DELAYS = false;
 
 	private static String accountAlias = DEFAULT_ACCOUNT_ALIAS; // REPLACE																// ALIAS
 	private static final String PASSWORD = "password";
@@ -56,78 +56,17 @@ public class ServerFailureTests {
 	private static ServerFailureTests suite = new ServerFailureTests();
 	private static double startClock;
 	private static double endClock;
-	private static int TEST_TIME = 10000; //Time in ms to run each phase of the testing.
+	private static int TEST_TIME; //Time in ms to run each phase of the testing.
 	private static String gpPropDir;
 	private static String execString;
+	private static int numServers;
 	
 	private ArrayList<String> serverNameArray = new ArrayList<String>();
 	private ArrayList<String> serverDownNameArray = new ArrayList<String>();
 	private int numRequestsSuccessful = 0;
+	private int roundNumber = 0;
 	
-	  private static final String HOME=System.getProperty("user.home");
-	  private static final String GNS_DIR = "GNS";
-	  private static final String GNS_HOME = HOME + "/" + GNS_DIR+"/";
-	  
-		private static final String SCRIPTS_SERVER="scripts/3nodeslocal/reset_and_restart.sh";
-		private static final String SCRIPTS_OPTIONS=" 2>/tmp/log";
-		
-		private static final String GP_SERVER = "bin/gpServer.sh";
-		private static final String GP_OPTIONS = getGigaPaxosOptions()
-				+ " restart all";
-		private static final boolean USE_GP_SCRIPTS = true;
-		private static final String OPTIONS = USE_GP_SCRIPTS ? GP_OPTIONS : SCRIPTS_OPTIONS;
-	
-	private static final void setProperties() {
-		for(DefaultProps prop : DefaultProps.values()) 
-			if(System.getProperty(prop.key)==null)
-				System.setProperty(prop.key, prop.isFile ? getPath(prop.value) : prop.value);
-	}
-	// this static block must be above GP_OPTIONS
-	static {
-		setProperties();
-	}
-	
-	private static final String getPath(String filename) {
-		if (new File(filename).exists())
-			return filename;
-		if (new File(GNS_HOME + filename).exists())
-			return GNS_HOME + filename;
-		else
-			Util.suicide("Can not find server startup script: " + filename);
-		return null;
-	}
-	
-	
-	private static enum DefaultProps {
-		SERVER_COMMAND("server.command", USE_GP_SCRIPTS ? GP_SERVER : SCRIPTS_SERVER, true),
-		GIGAPAXOS_CONFIG("gigapaxosConfig", "conf/gnsserver.3local.properties", true),
-		KEYSTORE("javax.net.ssl.keyStore","conf/trustStore/node100.jks", true),
-		KEYSTORE_PASSWORD("javax.net.ssl.keyStorePassword","qwerty"),
-		TRUSTSTORE("javax.net.ssl.trustStore","conf/trustStore/node100.jks", true),
-		TRUSTSTORE_PASSWORD("javax.net.ssl.trustStorePassword","qwerty"),
-		START_SERVER("startServer", "true"),
-		;
-
-		final String key; 
-		final String value;
-		final boolean isFile;
-
-		DefaultProps(String key, String value, boolean isFile) {
-			this.key = key;
-			this.value = value;
-			this.isFile = isFile;
-		}
-		DefaultProps(String key, String value) {
-			this(key, value, false);
-		}
-	}
-
-	  private static final String getGigaPaxosOptions() {
-		  String gpOptions="";
-		  for(DefaultProps prop : DefaultProps.values()) 
-			  gpOptions += " -D" + prop.key + "=" + System.getProperty(prop.key);
-		  return gpOptions;
-	  }
+	private final int EXPECTED_MIN_THROUGHPUT = 1000; //If throughput is below this when a majority of replicas are up, the test fails.
 	
 	public static void causeRandomServerFailure() throws IOException, InterruptedException{
 		//Get the GNS directory
@@ -188,10 +127,6 @@ public class ServerFailureTests {
 					// There's not much to be done if the process gets interrupted here
 					e.printStackTrace();
 				}
-				/*RunServer.command(
-						System.getProperty(DefaultProps.SERVER_COMMAND.key)
-						+ " " + getGigaPaxosOptions()
-						+ " restart " + serverName, ".");*/
 				
 				System.out.println(serverName +" restarting.");
 				toRestart.add(serverName);
@@ -207,7 +142,17 @@ public class ServerFailureTests {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		String topDir = Paths.get(".").toAbsolutePath().normalize().toString();
-
+		
+		//Set the running time (in seconds) for each round of throughput testing.
+		String inputRoundTime = System.getProperty("failureTest.roundTime");
+		if (inputRoundTime != null){
+			TEST_TIME = Integer.parseInt(inputRoundTime) * 1000;
+		}
+		else{
+			TEST_TIME = 10000; //Default to 10,000 ms
+		}
+		
+		
 		//Parse gigapaxos.properties file for the active replica names
 		String gpPropPath = System.getProperty("gigapaxosConfig");
 		System.out.println("Using gigapaxos config: " + gpPropPath);
@@ -225,6 +170,7 @@ public class ServerFailureTests {
 			line = reader.readLine();
 		}
 		reader.close();
+		numServers = suite.serverNameArray.size();
 		System.out.println("Active Replicas to be used: " + suite.serverNameArray.toString());
 		
 		//Kill any running servers
@@ -266,30 +212,6 @@ public class ServerFailureTests {
 		startProcess.waitFor();
 		System.out.println("Servers started.");
 		
-		/*RunServer
-		.command(
-				"kill -s TERM `ps -ef | grep GNS.jar | grep -v grep | grep -v ServerIntegrationTest  | grep -v \"context\" | awk '{print $2}'`",
-				".");
-		System.out.println(System.getProperty(DefaultProps.SERVER_COMMAND.key)
-				+ " " + getGigaPaxosOptions()
-				+ " forceclear all");
-
-		RunServer.command(
-				System.getProperty(DefaultProps.SERVER_COMMAND.key)
-				+ " " + getGigaPaxosOptions()
-				+ " forceclear all", ".");
-
-		System.out.println(System.getProperty(DefaultProps.SERVER_COMMAND.key) + " " + OPTIONS);
-		ArrayList<String> output = RunServer.command(
-				System.getProperty(DefaultProps.SERVER_COMMAND.key) + " " + OPTIONS, ".");
-		if (output != null) {
-			for (String nextLine : output) {
-				System.out.println(nextLine);
-			}
-		} else {
-			fail("Server command failure: ; aborting all tests.");
-		}
-		*/
 		Thread.sleep(5000);
 		 System.out.println("Starting client");
 		    
@@ -320,30 +242,19 @@ public class ServerFailureTests {
 		      fail("Failure setting up account guid; aborting all tests.");
 		    }
 		
-		//Begin emulating transport delays
-		//JSONDelayEmulator.emulateDelays();
+		//Begin emulating transport delays -- This was causing timeouts on everything so it's unused out for now.
+		if (EMULATING_DELAYS){
+		    JSONDelayEmulator.emulateDelays();
+		}
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		/*
-		ArrayList<String> output = RunServer.command(
-				new File(System
-						.getProperty(DefaultProps.SERVER_COMMAND.key))
-				.getParent()
-				+ "/shutdown.sh", ".");
-		if (output != null) {
-			for (String line : output) {
-				System.out.println(line);
-			}
-		} else {
-			System.out.println("SHUTDOWN SERVER COMMAND FAILED!");
-		}*/
-		
-		RunServer.command(
-				System.getProperty(DefaultProps.SERVER_COMMAND.key)
-				+ " " + getGigaPaxosOptions()
-				+ " stop all", ".");
+
+		System.out.println("Stopping and clearing all replicas.");
+		Process stop = Runtime.getRuntime().exec(execString + "stop all");
+		stop.waitFor();
+		Runtime.getRuntime().exec(execString + "forceclear all");
 		if (client != null) {
 			client.close();
 		}
@@ -377,7 +288,7 @@ public class ServerFailureTests {
 
 	@Test
 	public void test_010_Throughput() throws Exception {
-		String threadString = System.getProperty("integrationTest.threads");
+		String threadString = System.getProperty("failureTest.threads");
 		int numThreads = 20;
 		if (threadString != null){
 			numThreads=Integer.parseInt(threadString);
@@ -402,14 +313,20 @@ public class ServerFailureTests {
 				public void run(){
 					try {
 						//Reads the guidEntry continuously until the thread is interrupted.
-						while(!Thread.interrupted()){
+						while(true){
+							if (Thread.interrupted()){
+								return;
+							}
 						    try {
+						    	  final int roundNumber = suite.roundNumber;
 							      assertEquals(masterGuid.getGuid(), client.lookupPrimaryGuid(testGuid.getGuid()));
 							      //We spawn a new thread that will sequentially increment the number of requests that have been successful so we don't have to block this thread.
 							      Thread increment = new Thread(){
 							    	  public void run(){
 							    		  synchronized(suite){
-							    			  suite.numRequestsSuccessful++;
+							    			  if (suite.roundNumber == roundNumber){ //If the testing has moved on to a new failure phase, then don't count this request since it was started before.
+							    				  suite.numRequestsSuccessful++;
+							    			  }
 							    		  }
 							    	  }
 							      };
@@ -431,9 +348,13 @@ public class ServerFailureTests {
 	    System.out.println("Client threads all spawned.");
 	    //Wait TEST_TIME ms before ending the test phase.
 	    int requestCount = 0;
-	    int NUM_FAILURES=2;
+	    int NUM_FAILURES = (numServers / 2) + 1; //Cause a majority of servers to fail.  So if there are 5 servers it will fail 0, 1, 2, 3 servers and expect throughput to hit 0 on the 4th round of testing.
 	    endClock=System.currentTimeMillis();
+	    double throughput = 0;
 	    for (int i = 0; i <= NUM_FAILURES; i++){
+	    	synchronized(suite){
+	    		suite.roundNumber = i; //This is used so we don't end up counting throughput from requests of the previous phase.
+	    	}
 	    	//Bring all servers back up
 	    	recoverAllServers();
 	    	//Start with 0 failures, then 1, then 2, etc.
@@ -449,10 +370,23 @@ public class ServerFailureTests {
 	    		Thread.sleep(1000);
 	    		endClock = System.currentTimeMillis();
 	    		requestCount = suite.numRequestsSuccessful;
-	    		System.out.println("Average read throughput: " + Double.toString(requestCount / (endClock - startClock)));
+	    		throughput = 1000*requestCount / (endClock - startClock);
+	    		System.out.println("Average read throughput: " + Double.toString(throughput));
 	    	}
-
+	    	if (i < NUM_FAILURES){
+	    		if (throughput < EXPECTED_MIN_THROUGHPUT){
+	    			fail("The measured throughput of " + Double.toString(throughput) + " requests/second was below the expected minimum throughput of " + Integer.toString(EXPECTED_MIN_THROUGHPUT) + " requests/second.");
+	    		}
+	    	}
+	    	else{
+	    	    //This checks that the throughput was 0 on the last round, which is when a majority of replicas were down.
+	    	    if (throughput > 0){
+	    	    	fail("When a majority of " + Integer.toString(NUM_FAILURES) + " out of " + Integer.toString(numServers) + " active replicas were down some requests were still handled!");
+	    	    }
+	    	}
 	    }
+
+	    
 	    //Stop all the threads.
 	    for (int i = 0; i < numThreads; i++){
 	    	threads[i].interrupt();

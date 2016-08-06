@@ -22,8 +22,7 @@ package edu.umass.cs.gnsserver.utils;
 import edu.umass.cs.gnscommon.utils.Format;
 import com.sun.mail.smtp.SMTPTransport;
 import com.sun.mail.util.MailSSLSocketFactory;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.main.GNSConfig.GNSC;
 import java.security.GeneralSecurityException;
 import java.util.Date;
 import javax.mail.Message;
@@ -34,6 +33,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.mail.MessagingException;
 
 /**
@@ -42,6 +42,15 @@ import javax.mail.MessagingException;
  * @author westy
  */
 public class Email {
+  
+  private static final Logger LOG = Logger.getLogger(Email.class.getName());
+
+  /**
+   * @return Logger used by most of the client support package.
+   */
+  public static final Logger getLogger() {
+    return LOG;
+  }
 
   /**
    * Attempts using a few different methods to send email to the recipient.
@@ -52,7 +61,7 @@ public class Email {
    * @return true if successful
    */
   public static boolean email(String subject, String recipient, String text) {
-    if (emailLocal(subject, recipient, text, true)) {
+      if (!GNSC.isDontTryLocalEmail() && emailLocal(subject, recipient, text, true)) {
       return true;
     } else if (simpleMail(subject, recipient, text, true)) {
       return true;
@@ -60,8 +69,8 @@ public class Email {
       return true;
     } else if (emailTLS(subject, recipient, text, true)) {
       return true;
-      // now run it again with error messages turned on
-    } else if (emailLocal(subject, recipient, text, false)) {
+      //now run it again with error messages turned on
+    } else if (!GNSC.isDontTryLocalEmail() && emailLocal(subject, recipient, text, false)) {
       return true;
     } else if (simpleMail(subject, recipient, text, false)) {
       return true;
@@ -70,7 +79,7 @@ public class Email {
     } else if (emailTLS(subject, recipient, text, false)) {
       return true;
     } else {
-      GNSConfig.getLogger().log(Level.WARNING, "Unable to send email to {0}", recipient);
+      getLogger().log(Level.WARNING, "Unable to send email to {0}", recipient);
       return false;
     }
   }
@@ -119,15 +128,15 @@ public class Email {
       try {
         t.connect(SMTP_HOST, ACCOUNT_CONTACT_EMAIL, CONTACT);
         t.sendMessage(message, message.getAllRecipients());
-        GNSConfig.getLogger().log(Level.FINE, "Email response: {0}", t.getLastServerResponse());
+        getLogger().log(Level.FINE, "Email response: {0}", t.getLastServerResponse());
       } finally {
         t.close();
       }
-      GNSConfig.getLogger().log(Level.FINE, "Successfully sent email to {0} with message: {1}", new Object[]{recipient, text});
+      getLogger().log(Level.FINE, "Successfully sent email to {0} with message: {1}", new Object[]{recipient, text});
       return true;
     } catch (GeneralSecurityException | MessagingException e) {
       if (!suppressWarning) {
-        GNSConfig.getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
+        getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
       }
       return false;
     }
@@ -156,9 +165,6 @@ public class Email {
    * @return true if the message was sent
    */
   public static boolean emailSSL(String subject, String recipient, String text, boolean suppressWarning) {
-    if (AppReconfigurableNodeOptions.noEmail) {
-      return true;
-    }
     try {
       Properties props = new Properties();
       props.put("mail.smtp.host", SMTP_HOST);
@@ -184,13 +190,13 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      GNSConfig.getLogger().log(Level.FINE,
+      getLogger().log(Level.FINE,
               "Successfully sent email to {0} with message: {1}", new Object[]{recipient, text});
       return true;
 
     } catch (Exception e) {
       if (!suppressWarning) {
-        GNSConfig.getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
+        getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
       }
       return false;
     }
@@ -246,13 +252,13 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      GNSConfig.getLogger().log(Level.INFO,
+      getLogger().log(Level.INFO,
               "Successfully sent email to {0} with message: {1}", new Object[]{recipient, text});
       return true;
 
     } catch (Exception e) {
       if (!suppressWarning) {
-        GNSConfig.getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
+        getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
       }
       return false;
     }
@@ -310,17 +316,17 @@ public class Email {
 
       // Send message
       Transport.send(message);
-      GNSConfig.getLogger().log(Level.FINE, "Successfully sent email to {0} with message: {1}", new Object[]{recipient, text});
+      getLogger().log(Level.FINE, "Successfully sent email to {0} with message: {1}", new Object[]{recipient, text});
       return true;
     } catch (Exception e) {
       if (!suppressWarning) {
-        GNSConfig.getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
+        getLogger().log(Level.WARNING, "Unable to send email: {0}", e);
       }
       return false;
     }
   }
 
   public static void main(String[] args) {
-    simpleMail("hello", "support@gns.name", "this is another test on " + Format.formatPrettyDateUTC(new Date()));
+      email("hello", "westy@cs.umass.edu", "this is another test on " + Format.formatPrettyDateUTC(new Date()));
   }
 }

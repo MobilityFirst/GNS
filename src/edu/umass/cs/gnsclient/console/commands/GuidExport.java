@@ -24,7 +24,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 

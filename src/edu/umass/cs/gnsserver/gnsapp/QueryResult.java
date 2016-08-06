@@ -29,7 +29,7 @@ import java.util.Iterator;
 
 /**
  * Either a ValuesMap or an Error. Used to represent values returned
- * from a DNS query. See also {@link GNSResponseCode} which is used to
+ * from a read query. See also {@link GNSResponseCode} which is used to
  * represent errors in this class.
  *
  * Also has some instrumentation for round trip times and what server responded.
