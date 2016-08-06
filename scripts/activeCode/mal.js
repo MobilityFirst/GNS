@@ -3,6 +3,6 @@
  */
 
 function run(value, field, querier) {
-    new Array(Number.MAX_VALUE/1.0e300);
+    new Array(1000000000);
     return value;
 }

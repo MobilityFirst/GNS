@@ -174,7 +174,7 @@ public class ActivePolicyClient {
 		
 		//codeFile = "scripts/activeCode/noop.js";
 		
-		String code = new String(Files.readAllBytes(Paths.get(codeFile)));;
+		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		code = code.replace("HOSTS", records.toString());
 		code = code.replace("PERFORMANCE", arr.toString());
 		System.out.println("PERFORMANCE:"+arr);
