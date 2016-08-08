@@ -83,7 +83,7 @@ public class AddMultipleGuids extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
 
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
+    if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
       return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {

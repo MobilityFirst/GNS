@@ -16,7 +16,6 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsclient.client.GNSCommand;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,27 +31,6 @@ import java.util.logging.Level;
 // put the classes in the enum
 // once we upgrade older clients to not use the old command strings.
 public enum CommandType {
-  //
-  // Data Commands
-  //
-//
-  // Data Commands
-  //
-//
-  // Data Commands
-  //
-//
-  // Data Commands
-  //
-//
-  // Data Commands
-  //
-//
-  // Data Commands
-  //
-//
-  // Data Commands
-  //
 //
   // Data Commands
   //
@@ -60,183 +38,251 @@ public enum CommandType {
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Append.class,
           GNSCommand.ResultType.NULL, true, false),
   AppendList(111, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendListSelf(112, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendListUnsigned(113, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendListWithDuplication(114, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendListWithDuplicationSelf(115, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendListWithDuplicationUnsigned(116, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   AppendOrCreate(120, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreate.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreate.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateList(121, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateListSelf(122, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateListUnsigned(123, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateSelf(124, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateUnsigned(125, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateUnsigned.class),
   //
   AppendSelf(130, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendUnsigned(131, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendWithDuplication(132, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendWithDuplicationSelf(133, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AppendWithDuplicationUnsigned(134, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
-
   Clear(140, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear.class,
+          GNSCommand.ResultType.NULL, true, false),
   ClearSelf(141, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   ClearUnsigned(142, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   Create(150, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create.class,
+          GNSCommand.ResultType.NULL, true, false),
   CreateEmpty(151, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmpty.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmpty.class,
+          GNSCommand.ResultType.NULL, true, false),
   CreateEmptySelf(152, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmptySelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmptySelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   CreateList(153, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList.class,
+          GNSCommand.ResultType.NULL, true, false),
   CreateListSelf(154, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateListSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateListSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   CreateSelf(155, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   Read(160, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Read.class,
           GNSCommand.ResultType.MAP, true, false),
   ReadSelf(161, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadSelf.class,
-          GNSCommand.ResultType.MAP),
+          GNSCommand.ResultType.MAP, true, false),
   ReadUnsigned(162, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned.class,
-          GNSCommand.ResultType.MAP),
+          GNSCommand.ResultType.MAP, true, false),
   ReadMultiField(163, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiField.class,
-          GNSCommand.ResultType.MAP),
+          GNSCommand.ResultType.MAP, true, false),
   ReadMultiFieldUnsigned(164, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadMultiFieldUnsigned.class,
-          GNSCommand.ResultType.MAP),
+          GNSCommand.ResultType.MAP, true, false),
   //
   ReadArray(170, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArray.class,
-          GNSCommand.ResultType.MAP),
+          GNSCommand.ResultType.LIST, true, false),
   ReadArrayOne(171, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne.class,
+          GNSCommand.ResultType.STRING, true, false),
   ReadArrayOneSelf(172, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneSelf.class,
+          GNSCommand.ResultType.STRING, true, false),
   ReadArrayOneUnsigned(173, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned.class,
+          GNSCommand.ResultType.STRING, true, false),
   ReadArraySelf(174, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArraySelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArraySelf.class,
+          GNSCommand.ResultType.LIST, true, false),
   ReadArrayUnsigned(175, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned.class,
+          GNSCommand.ResultType.LIST, true, false),
   //
   Remove(180, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Remove.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Remove.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveList(181, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveListSelf(182, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveListUnsigned(183, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveSelf(184, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveUnsigned(185, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   Replace(190, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Replace.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Replace.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceList(191, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceListSelf(192, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceListUnsigned(193, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   ReplaceOrCreate(210, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreate.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreate.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceOrCreateList(211, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceOrCreateListSelf(212, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceOrCreateListUnsigned(213, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceOrCreateSelf(214, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceOrCreateUnsigned(215, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceSelf(216, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceUnsigned(217, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   ReplaceUserJSON(220, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSON.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSON.class,
+          GNSCommand.ResultType.NULL, true, false),
   ReplaceUserJSONUnsigned(221, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUserJSONUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   CreateIndex(230, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex.class),
   //
   Substitute(231, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute.class,
+          GNSCommand.ResultType.NULL, true, false),
   SubstituteList(232, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList.class,
+          GNSCommand.ResultType.NULL, true, false),
   SubstituteListSelf(233, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   SubstituteListUnsigned(234, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   SubstituteSelf(235, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   SubstituteUnsigned(236, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   RemoveField(240, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveFieldSelf(241, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveFieldUnsigned(242, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   Set(250, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set.class,
+          GNSCommand.ResultType.NULL, true, false),
   SetSelf(251, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   SetFieldNull(252, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNull.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNull.class,
+          GNSCommand.ResultType.NULL, true, false),
   SetFieldNullSelf(253, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNullSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNullSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   // Select Commands
   //
   Select(310, Type.SELECT,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select.class,
+          GNSCommand.ResultType.LIST),
   SelectGroupLookupQuery(311, Type.SELECT,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery.class,
+          GNSCommand.ResultType.LIST),
   SelectGroupSetupQuery(312, Type.SELECT,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery.class,
+          GNSCommand.ResultType.LIST),
   SelectGroupSetupQueryWithGuid(313, Type.SELECT,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid.class,
+          GNSCommand.ResultType.LIST),
   SelectGroupSetupQueryWithGuidAndInterval(314, Type.SELECT,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval.class,
+          GNSCommand.ResultType.LIST),
   SelectGroupSetupQueryWithInterval(315, Type.SELECT,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval.class,
+          GNSCommand.ResultType.LIST),
   //
   SelectNear(320, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear.class,
@@ -245,7 +291,8 @@ public enum CommandType {
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin.class,
           GNSCommand.ResultType.LIST),
   SelectQuery(322, Type.SELECT,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery.class,
+          GNSCommand.ResultType.LIST),
   //
   // Account Commands
   //
@@ -298,6 +345,8 @@ public enum CommandType {
   ResetKey(460, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResetKey.class),
   // ACL
+  // AclAdd (and friends) does a potentially remote lookup of the guid that we are granting access
+  // then does a local update of the guid which will be accessed, updating the appropriate ACL list.
   AclAdd(510, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAdd.class),
   AclAddSelf(511, Type.UPDATE,
@@ -444,19 +493,10 @@ public enum CommandType {
     READ, UPDATE, CREATE_DELETE, SELECT, OTHER
   }
 
-//  private CommandType(int number, Type category) {
-//    this(number, category, GNSCommand.ResultType.STRING);
-//  }
   private CommandType(int number, Type category, Class<?> commandClass) {
     this(number, category, commandClass, GNSCommand.ResultType.STRING);
   }
 
-//  private CommandType(int number, Type category,
-//          GNSCommand.ResultType returnType) {
-//    this(number, category, GNSCommand.ResultType.STRING,
-//            category == Type.READ || category == Type.UPDATE, false);
-//
-//  }
   private CommandType(int number, Type category, Class<?> commandClass,
           GNSCommand.ResultType returnType) {
     this(number, category, commandClass, GNSCommand.ResultType.STRING,
@@ -464,19 +504,6 @@ public enum CommandType {
 
   }
 
-//  private CommandType(int number, Type category,
-//          GNSCommand.ResultType returnType, boolean canBeSafelyCoordinated,
-//          boolean notForRogueClients) {
-//    this.number = number;
-//    this.category = category;
-//    this.returnType = returnType;
-//
-//    this.canBeSafelyCoordinated = canBeSafelyCoordinated;
-//
-//    // presumably every command is currently available to thugs
-//    this.notForRogueClients = notForRogueClients;
-//
-//  }
   private CommandType(int number, Type category, Class<?> commandClass,
           GNSCommand.ResultType returnType, boolean canBeSafelyCoordinated,
           boolean notForRogueClients) {

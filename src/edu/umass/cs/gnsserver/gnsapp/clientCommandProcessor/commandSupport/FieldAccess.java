@@ -33,6 +33,7 @@ import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfoAnywhere;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
@@ -54,7 +55,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.lang3.time.DateUtils;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 
 /**
  * Provides static methods for sending and retrieve data values to and from the
@@ -93,7 +93,7 @@ public class FieldAccess {
   /* false means that even single field queries will return a JSONObject response
    * with a single key and value. The client code has been modified accordingly.
    * The server-side modifications involve changes to AccountAccess to handle
-   * lookupGuid and lookupPrimaryGuid differently.
+   * lookupGuidLocally and lookupPrimaryGuid differently.
    */
   protected static final boolean SINGLE_FIELD_VALUE_ONLY = false;//true;
 
@@ -602,11 +602,11 @@ public class FieldAccess {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
-    if (lookupGuidInfo(guid, handler, true) == null) {
+    if (lookupGuidInfoAnywhere(guid, handler) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
         return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);

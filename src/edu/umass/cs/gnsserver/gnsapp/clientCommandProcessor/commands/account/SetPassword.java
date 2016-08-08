@@ -74,7 +74,7 @@ public class SetPassword extends BasicCommand {
     String password = json.getString(PASSWORD);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (accountInfo == null) {
       return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);

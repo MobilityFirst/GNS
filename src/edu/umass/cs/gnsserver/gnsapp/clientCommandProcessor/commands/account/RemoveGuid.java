@@ -80,11 +80,11 @@ public class RemoveGuid extends BasicCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
-    if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler, true)) == null) {
+    if ((guidInfoToRemove = AccountAccess.lookupGuidInfoAnywhere(guidToRemove, handler)) == null) {
       return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guidToRemove);
     }
     if (accountGuid != null) {
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler, true)) == null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
         return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
     }

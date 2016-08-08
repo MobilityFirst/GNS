@@ -75,7 +75,7 @@ public class RemoveAlias extends BasicCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    if (AccountAccess.lookupGuidInfo(guid, handler, true) == null) {
+    if (AccountAccess.lookupGuidInfoAnywhere(guid, handler) == null) {
       return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler, true);

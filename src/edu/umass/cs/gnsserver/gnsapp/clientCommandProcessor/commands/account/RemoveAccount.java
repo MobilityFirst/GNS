@@ -77,7 +77,7 @@ public class RemoveAccount extends BasicCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler, true)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
       return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     try {
