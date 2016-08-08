@@ -45,20 +45,20 @@ import java.util.Date;
  * The command to clear the active code for the specified GUID and action.
  *
  */
-public class Clear extends BasicCommand {
+public class ClearCode extends BasicCommand {
 
   /**
    * Creates a Clear instance.
    *
    * @param module
    */
-  public Clear(CommandModule module) {
+  public ClearCode(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.ClearActiveCode;
+    return CommandType.ClearCode;
   }
 
   @Override

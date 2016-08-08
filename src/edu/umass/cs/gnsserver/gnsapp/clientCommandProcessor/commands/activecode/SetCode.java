@@ -23,8 +23,10 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -34,6 +36,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+
 import java.text.ParseException;
 import java.util.Date;
 
@@ -41,30 +44,31 @@ import java.util.Date;
  * The command to retrieve the active code for the specified GUID and action.
  *
  */
-public class Get extends BasicCommand {
+public class SetCode extends BasicCommand {
 
   /**
-   * Creates a Get instance.
+   * Create the set instance.
    *
    * @param module
    */
-  public Get(CommandModule module) {
+  public SetCode(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.GetActiveCode;
+    return CommandType.SetCode;
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, READER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
+    // TODO Auto-generated method stub
+    return new String[]{GUID, WRITER, AC_ACTION, AC_CODE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return AC_GET;
+//    return AC_SET;
 //  }
 
   @Override
@@ -73,20 +77,27 @@ public class Get extends BasicCommand {
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
     String accountGuid = json.getString(GUID);
-    String reader = json.getString(READER);
+    String writer = json.getString(WRITER);
     String action = json.getString(AC_ACTION);
+    String code = json.getString(AC_CODE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    GNSResponseCode response = ActiveCode.setCode(accountGuid, action,
+            code, writer, signature, message, timestamp, handler);
 
-    return new CommandResponse(GNSResponseCode.NO_ERROR, ActiveCode.getCode(accountGuid, action,
-            reader, signature, message, timestamp, handler));
+    if (response.isExceptionOrError()) {
+      return new CommandResponse(response, BAD_RESPONSE + " " + response.getProtocolCode());
+    } else {
+      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+    }
   }
 
   @Override
   public String getCommandDescription() {
-    return "Returns the active code for the specified action,"
-            + "ensuring the reader has permission";
+    // TODO Auto-generated method stub
+    return "Sets the given active code for the specified GUID and action,"
+            + "ensuring the writer has permission";
   }
 
 }

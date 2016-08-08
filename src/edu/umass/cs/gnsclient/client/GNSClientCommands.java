@@ -1257,16 +1257,20 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           throws UnsupportedEncodingException, IOException, ClientException,
           InvalidGuidException, NoSuchAlgorithmException {
     long startTime = System.currentTimeMillis();
-    String result = password != null ? getResponse(
-            CommandType.RegisterAccount, guidEntry, NAME, alias,
-            PUBLIC_KEY, Base64.encodeToString(
-                    guidEntry.publicKey.getEncoded(), false), PASSWORD,
-            Base64.encodeToString(
-                    Password.encryptPassword(password, alias), false))
-            : getResponse(CommandType.RegisterAccountSansPassword,
-                    guidEntry.getPrivateKey(), guidEntry.publicKey, NAME,
-                    alias, PUBLIC_KEY, Base64.encodeToString(
-                            guidEntry.publicKey.getEncoded(), false));
+    String result
+            = //password != null ? 
+            getResponse(
+                    CommandType.RegisterAccount, guidEntry, NAME, alias,
+                    PUBLIC_KEY, Base64.encodeToString(
+                            guidEntry.publicKey.getEncoded(), false), PASSWORD,
+                    password != null
+                            ? Base64.encodeToString(
+                                    Password.encryptPassword(password, alias), false)
+                            : "");
+//            : getResponse(CommandType.RegisterAccountSansPassword,
+//                    guidEntry.getPrivateKey(), guidEntry.publicKey, NAME,
+//                    alias, PUBLIC_KEY, Base64.encodeToString(
+//                            guidEntry.publicKey.getEncoded(), false));
     DelayProfiler.updateDelay("accountGuidCreate", startTime);
     return result;
   }
@@ -1632,7 +1636,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   // Active Code
   public void activeCodeClear(String guid, String action, GuidEntry writerGuid)
           throws ClientException, IOException {
-    getResponse(CommandType.ClearActiveCode, writerGuid, GUID, guid,
+    getResponse(CommandType.ClearCode, writerGuid, GUID, guid,
             AC_ACTION, action, WRITER, writerGuid.getGuid());
   }
 
@@ -1646,7 +1650,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void activeCodeSet(String guid, String action, byte[] code,
           GuidEntry writerGuid) throws ClientException, IOException {
-    getResponse(CommandType.SetActiveCode, writerGuid, GUID, guid,
+    getResponse(CommandType.SetCode, writerGuid, GUID, guid,
             AC_ACTION, action, AC_CODE, Base64.encodeToString(code, true),
             WRITER, writerGuid.getGuid());
   }
@@ -1660,7 +1664,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public byte[] activeCodeGet(String guid, String action, GuidEntry readerGuid)
           throws Exception {
-    String code64String = getResponse(CommandType.GetActiveCode,
+    String code64String = getResponse(CommandType.GetCode,
             readerGuid, GUID, guid, AC_ACTION, action, READER,
             readerGuid.getGuid());
     return code64String != null ? Base64.decode(code64String) : null;
@@ -2142,7 +2146,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   /**
    * @param name
    * @param value
- * @param string 
+   * @param string
    * @throws Exception
    */
   @Deprecated
@@ -2155,14 +2159,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @param name
    * @return ???
    * @throws Exception
-   * 
+   *
    */
   @Deprecated
   public String parameterGet(String name, String passkey) throws Exception {
-    return getResponse(CommandType.GetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(),FIELD, name, PASSKEY, passkey);
+    return getResponse(CommandType.GetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY, passkey);
   }
-  
-
 
   @Override
   public void close() {
