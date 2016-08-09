@@ -389,10 +389,7 @@ public class TestMultiThreadNamedPipeAndDatagram {
 					executor.execute(new PipeServer(sfile+i, cfile+i));
 				}
 			}
-		}.start();;
-		//System.out.println("All servers started!");
-		
-		
+		}.start();		
 		
 		// start all clients
 		PipeClient[] clients = new PipeClient[numServers];

@@ -44,13 +44,14 @@ This code changes the original value of the field, and returns a new value as a 
 >After the code is deployed, the value of field(someField) is hello world!
 
 ## Performance Test
-You could use another client to test ActiveGNS throughput as:
+A peer to peer throughput test for ActiveGNS can be run as 
 ```bash
 ./scripts/client/runClientSingleNode \
 -DtestingConfig=testing_conf/SomeReadsEncryptionFails.properties \
 edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest \
 NUM_CLIENTS=40 NUM_REQUESTS=400000
 ```
+Its output shows you the performance for different kinds of operations.
 
 ## More active code examples
 The active code supported by ActiveGNS should be written in Javascript, and it must implement the following function:

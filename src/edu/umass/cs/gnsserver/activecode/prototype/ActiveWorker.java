@@ -144,7 +144,7 @@ public class ActiveWorker {
 		while((msg = (ActiveMessage) channel.receiveMessage()) != null){
 			if(numThread == 1){
 				if(msg.type == Type.REQUEST){
-					//System.out.println(this+" receives a request "+msg);
+					// System.out.println(this+" receives a request "+msg);
 					ActiveMessage response;
 					try {
 						response = new ActiveMessage(msg.getId(), runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl()), null);

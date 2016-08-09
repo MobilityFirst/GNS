@@ -20,7 +20,7 @@ public class TestNamedPipe implements Runnable{
 	private InputStream reader;
 	
 	private final static int bufferSize = 2048;
-	protected static int total = 100000;
+	protected static int total = 1000000;
 			
 	private String ifile;
 	private String ofile;
