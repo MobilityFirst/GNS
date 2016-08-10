@@ -74,7 +74,7 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
  * Packet format sent from a client and handled by a local name server.
  *
  */
-public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest {
+public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest{
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";
@@ -198,8 +198,8 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    */
   public CommandPacket(byte[] bytes) throws JSONException, UnsupportedEncodingException{
   	ByteBuffer buf = ByteBuffer.wrap(bytes);
-  	int commandType = buf.getInt();
   	int packetType = buf.getInt();
+  	int commandType = buf.getInt();
   	this.clientRequestId = buf.getLong();
   	long cmdClientReqId = buf.getLong();
   	this.LNSRequestId = buf.getLong();
@@ -783,8 +783,8 @@ public final byte[] toBytes() {
 		int senderPort = command.has(SENDERPORT) ? (int) command.remove(SENDERPORT) : -1;
 
 		int commandType = (int) command.remove(GNSCommandProtocol.COMMAND_INT);
-		buf.putInt(commandType);
 		buf.putInt(packetType);
+		buf.putInt(commandType);
 		buf.putLong(clientRedId);
 		buf.putLong(cmdClientReqId);
 		buf.putLong(lnsReqId);
