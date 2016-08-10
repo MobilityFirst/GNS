@@ -598,7 +598,7 @@ public CommandType getCommandType() {
 			return json;
 		} catch (JSONException e) {
 			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
-					e.getMessage());
+					e.getMessage() + " while parsing response string " + responseStr);
 		}
 	}
 	

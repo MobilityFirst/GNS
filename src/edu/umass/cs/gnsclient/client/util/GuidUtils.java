@@ -19,8 +19,12 @@
  */
 package edu.umass.cs.gnsclient.client.util;
 
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.RSA_ALGORITHM;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
@@ -35,6 +39,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.logging.Level;
 
 /**
  *
@@ -50,7 +55,7 @@ public class GuidUtils {
           = Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
-  private static boolean guidExists(GNSClientInterface client, GuidEntry guid) throws IOException {
+  private static boolean guidExists(GNSClientCommands client, GuidEntry guid) throws IOException {
     try {
       client.lookupGuidRecord(guid.getGuid());
     } catch (ClientException e) {
@@ -58,6 +63,14 @@ public class GuidUtils {
     }
     return true;
   }
+  private static boolean guidExists(GNSClient client, GuidEntry guid) throws IOException {
+	    try {
+	      client.execute(GNSCommand.lookupGUID(guid.getGuid())).getResultJSONObject();
+	    } catch (ClientException e) {
+	      return false;
+	    }
+	    return true;
+	  }
 
   public static GuidEntry registerGuidWithTestTag(GNSClientInterface client, GuidEntry masterGuid, String entityName) throws Exception {
     return registerGuidWithTag(client, masterGuid, entityName, JUNIT_TEST_TAG);
@@ -72,7 +85,7 @@ public class GuidUtils {
    * @return
    * @throws Exception
    */
-  public static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client, String name,
+  public static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client, String name,
           String password) throws Exception {
     return lookupOrCreateAccountGuid(client, name, password, false);
   }
@@ -81,7 +94,121 @@ public class GuidUtils {
 
   private static final int NUM_VERIFICATION_ATTEMPTS = 3;
 
-  public static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client, String name, String password,
+	protected static final GuidEntry generateAndSaveKeyPair(String gnsInstance, String alias)
+			throws NoSuchAlgorithmException, EncryptionException {
+		KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
+				.generateKeyPair();
+		String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
+				.getPublic().getEncoded());
+		// Squirrel this away now just in case the call below times out.
+		KeyPairUtils.saveKeyPair(gnsInstance, alias, guid, keyPair);
+		return new GuidEntry(alias, guid, keyPair.getPublic(),
+				keyPair.getPrivate());
+	}
+
+	/**
+	 * @param client
+	 * @param name
+	 * @param password
+	 * @return Refer {@link #lookupOrCreateAccountGuid(GNSClient, String, String, boolean)}.
+	 * @throws Exception
+	 */
+	public static GuidEntry lookupOrCreateAccountGuid(GNSClient client,
+			String name, String password) throws Exception {
+		return lookupOrCreateAccountGuid(client, name, password, false);
+	}
+	/**
+	 * @param client
+	 * @param name
+	 * @param password
+	 * @param verbose
+	 * @return Created {@link GuidEntry}
+	 * @throws Exception
+	 */
+	public static GuidEntry lookupOrCreateAccountGuid(GNSClient client,
+			String name, String password, boolean verbose) throws Exception {
+		GuidEntry guid = lookupGuidEntryFromDatabase(client.getGNSInstance(),
+				name);
+		if (guid == null || !guidExists(client, guid)) {
+			if (verbose) {
+				if (guid == null) {
+					if (verbose)
+						System.out.println("  Creating a new account GUID for "
+								+ name);
+					GNSClientConfig.getLogger().log(Level.INFO,
+							"Creating a new account GUID for {0}",
+							new Object[] { name });
+					guid = generateAndSaveKeyPair(client.getGNSInstance(), name);
+				} else {
+					if (verbose)
+						System.out
+								.println("  Old account GUID "
+										+ guid
+										+ " found locally is invalid, creating a new one.");
+					GNSClientConfig
+							.getLogger()
+							.log(Level.INFO,
+									" Old account GUID {0} found locally is invalid, creating a new one",
+									new Object[] { name });
+				}
+			}
+			try {
+				client.execute(GNSCommand.accountGuidCreateHelper(name, guid,
+						password));
+			} catch (DuplicateNameException e) {
+				// ignore as it is most likely because of a seemingly failed
+				// creation operation that actually succeeded.
+				if (verbose)
+					System.out
+							.println("  Account GUID " + guid
+									+ " aready exists on the server; "
+									+ e.getMessage());
+			}
+			int attempts = 0;
+			// rethrow all but already verified exceptions
+			while (true) {
+				try {
+					client.execute(
+							GNSCommand.accountGuidVerify(guid,
+									createVerificationCode(name)))
+							.getResultString();
+				} catch (ClientException e) {
+					// FIXME: change to using error code
+					if (!e.getMessage().contains(
+							GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION)) {
+						if (attempts++ >= NUM_VERIFICATION_ATTEMPTS) {
+							e.printStackTrace();
+							throw e;
+						}
+					} else {
+						if (verbose)
+							System.out
+									.println("  Caught and ignored \"Account already verified\" error for "
+											+ guid);
+						GNSClientConfig
+								.getLogger()
+								.log(Level.INFO,
+										"Caught and ignored \"Account already verified\" error for {0}",
+										new Object[] { guid });
+						break;
+					}
+				}
+			}
+			if (verbose) {
+				System.out.println("  Created and verified account GUID "
+						+ guid);
+			}
+			return guid;
+		} else {
+			if (verbose) {
+				System.out.println("Found account guid for "
+						+ guid.getEntityName() + " (" + guid.getGuid() + ")");
+			}
+			return guid;
+		}
+	}
+  
+  public static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client, String name, String password,
           boolean verbose) throws Exception {
     GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
     // If we didn't find the guid or the entry in the database is obsolete we
@@ -149,7 +276,7 @@ public class GuidUtils {
    * @return
    * @throws Exception
    */
-  public static GuidEntry lookupOrCreateGuid(GNSClientInterface client, GuidEntry accountGuid, String name) throws Exception {
+  public static GuidEntry lookupOrCreateGuid(GNSClientCommands client, GuidEntry accountGuid, String name) throws Exception {
     return lookupOrCreateGuid(client, accountGuid, name, false);
   }
 
@@ -163,7 +290,7 @@ public class GuidUtils {
    * @return
    * @throws Exception
    */
-  public static GuidEntry lookupOrCreateGuid(GNSClientInterface client, GuidEntry accountGuid, String name, boolean verbose) throws Exception {
+  public static GuidEntry lookupOrCreateGuid(GNSClientCommands client, GuidEntry accountGuid, String name, boolean verbose) throws Exception {
     GuidEntry guid = lookupGuidEntryFromDatabase(client, name);
     // If we didn't find the guid or the entry in the database is obsolete we
     // create a new guid.
@@ -175,7 +302,6 @@ public class GuidUtils {
           System.out.println("Old guid for " + name + " is invalid. Creating a new one.");
         }
       }
-      //Util.suicide("here");
       guid = client.guidCreate(accountGuid, name);
       return guid;
     } else {
