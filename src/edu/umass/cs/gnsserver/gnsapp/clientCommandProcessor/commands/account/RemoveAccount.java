@@ -65,24 +65,24 @@ public class RemoveAccount extends BasicCommand {
     return new String[]{NAME, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return REMOVE_ACCOUNT;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
+    // The name of the account we are removing.
     String name = json.getString(NAME);
+    // The guid of that wants to remove this account.
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
+    // Fixme: verify that we might need to look remotely for this.
     if ((guidInfo = AccountAccess.lookupGuidInfoAnywhere(guid, handler)) == null) {
       return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     try {
       if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler, true);
+        // Fixme: verify that we might need to look remotely for this.
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromNameAnywhere(name, handler);
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
         } else {

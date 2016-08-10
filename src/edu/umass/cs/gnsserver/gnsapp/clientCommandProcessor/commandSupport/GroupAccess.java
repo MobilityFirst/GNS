@@ -71,7 +71,7 @@ public class GroupAccess {
    */
   public static GNSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws IOException, JSONException, ClientException {
-
+    // Fixme: This isn't doing any kind of signature or acl check!
     handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
     handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
     return GNSResponseCode.NO_ERROR;
@@ -93,6 +93,7 @@ public class GroupAccess {
    */
   public static GNSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+    // Fixme: This isn't doing any kind of signature or acl check!
     handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
     for (String memberGuid : members.toStringSet()) {
       handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
@@ -116,6 +117,7 @@ public class GroupAccess {
    */
   public static GNSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+    // Fixme: This isn't doing any kind of signature or acl check!
     handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
     handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     return GNSResponseCode.NO_ERROR;
@@ -137,6 +139,7 @@ public class GroupAccess {
    */
   public static GNSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+    // Fixme: This isn't doing any kind of signature or acl check!
     handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
     for (String memberGuid : members.toStringSet()) {
       handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);

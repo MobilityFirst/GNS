@@ -62,24 +62,19 @@ public class GetCode extends BasicCommand {
     return new String[]{GUID, READER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return AC_GET;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
-    String accountGuid = json.getString(GUID);
+    String guid = json.getString(GUID);
     String reader = json.getString(READER);
     String action = json.getString(AC_ACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
 
-    return new CommandResponse(GNSResponseCode.NO_ERROR, ActiveCode.getCode(accountGuid, action,
+    return new CommandResponse(GNSResponseCode.NO_ERROR, ActiveCode.getCode(guid, action,
             reader, signature, message, timestamp, handler));
   }
 

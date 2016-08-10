@@ -62,28 +62,22 @@ public class SetCode extends BasicCommand {
 
   @Override
   public String[] getCommandParameters() {
-    // TODO Auto-generated method stub
     return new String[]{GUID, WRITER, AC_ACTION, AC_CODE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return AC_SET;
-//  }
 
   @Override
   public CommandResponse execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
-    String accountGuid = json.getString(GUID);
+    String guid = json.getString(GUID);
     String writer = json.getString(WRITER);
     String action = json.getString(AC_ACTION);
     String code = json.getString(AC_CODE);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    GNSResponseCode response = ActiveCode.setCode(accountGuid, action,
+    GNSResponseCode response = ActiveCode.setCode(guid, action,
             code, writer, signature, message, timestamp, handler);
 
     if (response.isExceptionOrError()) {
@@ -95,7 +89,6 @@ public class SetCode extends BasicCommand {
 
   @Override
   public String getCommandDescription() {
-    // TODO Auto-generated method stub
     return "Sets the given active code for the specified GUID and action,"
             + "ensuring the writer has permission";
   }

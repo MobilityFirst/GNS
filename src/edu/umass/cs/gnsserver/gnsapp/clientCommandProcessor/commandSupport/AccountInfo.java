@@ -46,8 +46,8 @@ import java.util.Set;
  */
 public class AccountInfo {
 
-  private String primaryName;
-  private String primaryGuid;
+  private String name;
+  private String guid;
   // This is reserved for future use.
   private String type;
   private Set<String> aliases;
@@ -75,13 +75,13 @@ public class AccountInfo {
    * conversion to the format which can be store in the database.
    *
    * @author westy
-   * @param userName
+   * @param name
    * @param password
-   * @param primaryGUID
+   * @param guid
    */
-  public AccountInfo(String userName, String primaryGUID, String password) {
-    this.primaryName = userName;
-    this.primaryGuid = primaryGUID;
+  public AccountInfo(String name, String guid, String password) {
+    this.name = name;
+    this.guid = guid;
     this.type = "DEFAULT"; // huh? :-)
     this.aliases = new HashSet<String>();
     this.guids = new HashSet<String>();
@@ -99,8 +99,8 @@ public class AccountInfo {
    *
    * @return a string
    */
-  public String getPrimaryName() {
-    return primaryName;
+  public String getName() {
+    return name;
   }
 
   /**
@@ -108,8 +108,8 @@ public class AccountInfo {
    *
    * @return a string
    */
-  public String getPrimaryGuid() {
-    return primaryGuid;
+  public String getGuid() {
+    return guid;
   }
 
   /**
@@ -298,8 +298,8 @@ public class AccountInfo {
    * @throws ParseException
    */
   public AccountInfo(JSONObject json) throws JSONException, ParseException {
-    this.primaryName = json.getString(USERNAME);
-    this.primaryGuid = json.getString(GUID);
+    this.name = json.getString(USERNAME);
+    this.guid = json.getString(GUID);
     this.type = json.getString(TYPE);
     this.aliases = JSONUtils.JSONArrayToHashSet(json.getJSONArray(ALIASES));
     this.guids = JSONUtils.JSONArrayToHashSet(json.getJSONArray(GUIDS));
@@ -332,8 +332,8 @@ public class AccountInfo {
    */
   public JSONObject toJSONObject(boolean forClient) throws JSONException {
     JSONObject json = new JSONObject();
-    json.put(USERNAME, primaryName);
-    json.put(GUID, primaryGuid);
+    json.put(USERNAME, name);
+    json.put(GUID, guid);
     json.put(TYPE, type);
     json.put(ALIASES, new JSONArray(aliases));
     if (forClient && guids.size() > TOO_MANY_GUIDS) {
@@ -364,7 +364,7 @@ public class AccountInfo {
     try {
       return toJSONObject().toString();
     } catch (JSONException e) {
-      return "AccountInfo{" + primaryGuid + "}";
+      return "AccountInfo{" + guid + "}";
     }
   }
 }
