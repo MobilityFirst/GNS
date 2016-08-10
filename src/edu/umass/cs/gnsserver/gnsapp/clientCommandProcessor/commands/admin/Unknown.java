@@ -55,7 +55,7 @@ public class Unknown extends BasicCommand {
 
   @Override
   public String[] getCommandParameters() {
-    throw new UnsupportedOperationException("No implementation.");
+    return new String[]{};
   }
 
   @Override
@@ -67,7 +67,7 @@ public class Unknown extends BasicCommand {
 
   @Override
   public String getCommandDescription() {
-    throw new UnsupportedOperationException("No implementation.");
+    return "Null command";
   }
 
 }
