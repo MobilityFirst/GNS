@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
  *
  * @author arun, westy
  */
+@Deprecated
 public class CommandDefs {
 
   private static final Class<?>[] COMMANDS = new Class<?>[]{

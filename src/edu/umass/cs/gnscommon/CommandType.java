@@ -18,8 +18,11 @@ package edu.umass.cs.gnscommon;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * All the commands supported by the GNS server are listed here.
@@ -72,7 +75,8 @@ public enum CommandType {
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateSelf.class,
           GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateUnsigned(125, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateUnsigned.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   AppendSelf(130, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendSelf.class,
@@ -219,7 +223,8 @@ public enum CommandType {
           GNSCommand.ResultType.NULL, true, false),
   //
   CreateIndex(230, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex.class,
+          GNSCommand.ResultType.NULL, true, false),
   //
   Substitute(231, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Substitute.class,
@@ -263,179 +268,238 @@ public enum CommandType {
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNullSelf.class,
           GNSCommand.ResultType.NULL, true, false),
   //
-  // Select Commands
+  // Select Commands - not sure about the coordination of any of the select commands
   //
   Select(310, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.Select.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   SelectGroupLookupQuery(311, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupLookupQuery.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   SelectGroupSetupQuery(312, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQuery.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   SelectGroupSetupQueryWithGuid(313, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuid.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   SelectGroupSetupQueryWithGuidAndInterval(314, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithGuidAndInterval.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   SelectGroupSetupQueryWithInterval(315, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectGroupSetupQueryWithInterval.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   //
   SelectNear(320, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectNear.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   SelectWithin(321, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectWithin.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   SelectQuery(322, Type.SELECT,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.select.SelectQuery.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, false, false),
   //
-  // Account Commands
+  // Account Commands - also not sure about coordination for these
   //
   AddAlias(410, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddAlias.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddAlias.class,
+          GNSCommand.ResultType.NULL, false, false),
   AddGuid(411, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddGuid.class,
+          GNSCommand.ResultType.NULL, false, false),
   AddMultipleGuids(412, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuids.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuids.class,
+          GNSCommand.ResultType.NULL, false, false),
   AddMultipleGuidsFast(413, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFast.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFast.class,
+          GNSCommand.ResultType.NULL, false, false),
   AddMultipleGuidsFastRandom(414, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom.class),
-  //
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom.class,
+          GNSCommand.ResultType.NULL, false, false),
+  // These should all be coordinatable.
   LookupAccountRecord(420, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
+          GNSCommand.ResultType.MAP, true, false),
   LookupRandomGuids(421, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class), // for testing
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
+          GNSCommand.ResultType.LIST, true, false), // for testing
 
   LookupGuid(422, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
+          GNSCommand.ResultType.STRING, true, false),
   LookupPrimaryGuid(423, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
+          GNSCommand.ResultType.STRING, true, false),
   LookupGuidRecord(424, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
+          GNSCommand.ResultType.MAP, true, false),
   //
   RegisterAccount(430, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class),
-  //RegisterAccountSansPassword(431, Type.CREATE_DELETE),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccount.class,
+          GNSCommand.ResultType.NULL, false, false),
   RegisterAccountUnsigned(432, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountUnsigned.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RegisterAccountUnsigned.class,
+          GNSCommand.ResultType.NULL, false, false),
   //
   RemoveAccount(440, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccount.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAccount.class,
+          GNSCommand.ResultType.NULL, false, false),
   RemoveAlias(441, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveAlias.class,
+          GNSCommand.ResultType.NULL, false, false),
   RemoveGuid(442, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuid.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuid.class,
+          GNSCommand.ResultType.NULL, false, false),
   RemoveGuidNoAccount(443, Type.CREATE_DELETE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount.class,
+          GNSCommand.ResultType.NULL, false, false),
   RetrieveAliases(444, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, true, false),
   //
   SetPassword(450, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.SetPassword.class,
+          GNSCommand.ResultType.NULL, true, false),
   VerifyAccount(451, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.VerifyAccount.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.VerifyAccount.class,
+          GNSCommand.ResultType.STRING, true, false),
   //
   ResetKey(460, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResetKey.class),
-  // ACL
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.ResetKey.class,
+          GNSCommand.ResultType.NULL, true, false),
+  // ACL - these should all be safe to coordinate
   // AclAdd (and friends) does a potentially remote lookup of the guid that we are granting access
   // then does a local update of the guid which will be accessed, updating the appropriate ACL list.
   AclAdd(510, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAdd.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAdd.class,
+          GNSCommand.ResultType.NULL, true, false),
   AclAddSelf(511, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclAddSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AclRemove(512, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemove.class,
+          GNSCommand.ResultType.NULL, true, false),
   AclRemoveSelf(513, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRemoveSelf.class,
+          GNSCommand.ResultType.NULL, true, false),
   AclRetrieve(514, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieve.class,
+          GNSCommand.ResultType.LIST, true, false),
   AclRetrieveSelf(515, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.acl.AclRetrieveSelf.class,
+          GNSCommand.ResultType.LIST, true, false),
+  // Given the remote query calls all the setters below make
+  // it currently appears that they cannot be coordinated.
   // Group
   AddMembersToGroup(610, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class,
+          GNSCommand.ResultType.NULL, false, false),
   AddMembersToGroupSelf(611, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroupSelf.class,
+          GNSCommand.ResultType.NULL, false, false),
   AddToGroup(612, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroup.class,
+          GNSCommand.ResultType.NULL, false, false),
   AddToGroupSelf(613, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
+          GNSCommand.ResultType.NULL, false, false),
+  //
   GetGroupMembers(614, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, true, false),
   GetGroupMembersSelf(615, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
+          GNSCommand.ResultType.LIST, true, false),
   GetGroups(616, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class,
-          GNSCommand.ResultType.LIST),
+          GNSCommand.ResultType.LIST, true, false),
   GetGroupsSelf(617, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
+          GNSCommand.ResultType.LIST, true, false),
   //
   RemoveFromGroup(620, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroup.class,
+          GNSCommand.ResultType.NULL, false, false),
   RemoveFromGroupSelf(621, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveFromGroupSelf.class,
+          GNSCommand.ResultType.NULL, false, false),
   RemoveMembersFromGroup(622, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroup.class,
+          GNSCommand.ResultType.NULL, false, false),
   RemoveMembersFromGroupSelf(623, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf.class,
+          GNSCommand.ResultType.NULL, false, false),
   // Admin
   Help(710, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Help.class,
+          GNSCommand.ResultType.STRING, true, false),
   HelpTcp(711, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcp.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcp.class,
+          GNSCommand.ResultType.STRING, true, false),
   HelpTcpWiki(712, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcpWiki.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcpWiki.class,
+          GNSCommand.ResultType.STRING, true, false),
   Admin(715, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
+          GNSCommand.ResultType.NULL, true, true),
   Dump(716, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
+          GNSCommand.ResultType.STRING, true, true),
   //
   GetParameter(720, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
+          GNSCommand.ResultType.STRING, true, true),
   SetParameter(721, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
+          GNSCommand.ResultType.NULL, true, true),
   ListParameters(722, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
+          GNSCommand.ResultType.STRING, true, true),
   DeleteAllRecords(723, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DeleteAllRecords.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DeleteAllRecords.class,
+          GNSCommand.ResultType.NULL, true, true),
   ResetDatabase(724, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ResetDatabase.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ResetDatabase.class,
+          GNSCommand.ResultType.NULL, true, true),
   ClearCache(725, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
+          GNSCommand.ResultType.NULL, true, true),
   DumpCache(726, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
+          GNSCommand.ResultType.STRING, true, false),
   //
   ChangeLogLevel(730, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ChangeLogLevel.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ChangeLogLevel.class,
+          GNSCommand.ResultType.NULL, true, true),
   AddTag(731, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.AddTag.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.AddTag.class,
+          GNSCommand.ResultType.NULL, true, false),
   RemoveTag(732, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RemoveTag.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RemoveTag.class,
+          GNSCommand.ResultType.NULL, true, false),
   ClearTagged(733, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearTagged.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearTagged.class,
+          GNSCommand.ResultType.NULL, true, false),
   GetTagged(734, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetTagged.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetTagged.class,
+          GNSCommand.ResultType.STRING, true, false),
   ConnectionCheck(737, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class,
+          GNSCommand.ResultType.STRING, true, false),
   // Active code
   SetCode(810, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
+          GNSCommand.ResultType.NULL, true, false),
   ClearCode(811, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
+          GNSCommand.ResultType.NULL, true, false),
   GetCode(812, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class),
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class,
+          GNSCommand.ResultType.STRING, true, false),
   // Catch all for parsing errors
   Unknown(999, Type.OTHER,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Unknown.class);
+          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Unknown.class,
+          GNSCommand.ResultType.NULL, true, true);
 
   private final int number;
   private final Type category;
@@ -491,17 +555,6 @@ public enum CommandType {
 
   public enum Type {
     READ, UPDATE, CREATE_DELETE, SELECT, OTHER
-  }
-
-  private CommandType(int number, Type category, Class<?> commandClass) {
-    this(number, category, commandClass, GNSCommand.ResultType.STRING);
-  }
-
-  private CommandType(int number, Type category, Class<?> commandClass,
-          GNSCommand.ResultType returnType) {
-    this(number, category, commandClass, GNSCommand.ResultType.STRING,
-            category == Type.READ || category == Type.UPDATE, false);
-
   }
 
   private CommandType(int number, Type category, Class<?> commandClass,
@@ -567,6 +620,14 @@ public enum CommandType {
 
   public Class<?> getCommandClass() {
     return commandClass;
+  }
+  
+  public static Class<?>[] getCommandClassesArray() {
+    return (Class<?>[]) Stream.of(values()).map(CommandType::getCommandClass).toArray();
+  }
+  
+  public static List<Class<?>> getCommandClasses() {
+    return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }
 
   public GNSCommand.ResultType getResultType() {
