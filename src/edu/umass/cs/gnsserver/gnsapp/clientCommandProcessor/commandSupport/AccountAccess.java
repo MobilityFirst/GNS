@@ -568,7 +568,7 @@ public class AccountAccess {
               GNSResponseCode.ALREADY_VERIFIED_EXCEPTION,
               GNSCommandProtocol.BAD_RESPONSE + " "
               + GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION
-              + " " + GuidUtils.ACCOUNT_ALREADY_VERIFIED);
+              + " " + GNSCommandProtocol.ACCOUNT_ALREADY_VERIFIED);
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
       return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR,

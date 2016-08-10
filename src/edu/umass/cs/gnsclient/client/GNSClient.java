@@ -131,7 +131,7 @@ public class GNSClient extends AbstractGNSClient {
 	 * @return Long request ID if successfully sent, else null.
 	 * @throws IOException
 	 */
-	public RequestFuture<?> sendAsync(CommandPacket packet,
+	protected RequestFuture<?> sendAsync(CommandPacket packet,
 			final GNSCommandCallback callback) throws IOException {
 		return this.sendAsync(packet, (response) -> {
 			defaultHandleResponse(packet, response);
