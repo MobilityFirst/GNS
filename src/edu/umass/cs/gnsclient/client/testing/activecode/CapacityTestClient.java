@@ -12,9 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -66,7 +64,7 @@ public class CapacityTestClient extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	@Before
+	@BeforeClass
 	public static void setup() throws Exception {
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		
@@ -196,7 +194,7 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws FileNotFoundException
 	 * @throws InterruptedException 
 	 */
-	@After
+	@AfterClass
 	public static void cleanup() throws FileNotFoundException, InterruptedException{
 		Thread.sleep(1000);
 		
