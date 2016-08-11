@@ -118,7 +118,7 @@ public class CapacityTestClient extends DefaultTest {
 		}
 		
 		try {
-			executor.awaitTermination(DURATION+1000, TimeUnit.MILLISECONDS);
+			executor.awaitTermination(DURATION+2000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -146,12 +146,18 @@ public class CapacityTestClient extends DefaultTest {
 		public void run() {
 			RateLimiter rateLimiter = new RateLimiter(rate);
 			/**
-			 * Run two rounds for experiment, the first round is for warming up
+			 * warm up
 			 */
-			System.out.println("round 1");
-			for (int i=0; i<total; i++){
-				executor.submit(new ReadTask(client, entry, withSignature));
+			for (int i=0; i<1000; i++){
+				executor.submit(new ReadTask(client, entry, withSignature, false));
 				rateLimiter.record();
+			}
+			
+			for (int i=0; i<total; i++){
+				if(!executor.isShutdown()){
+					executor.submit(new ReadTask(client, entry, withSignature, true));
+					rateLimiter.record();
+				}
 			}
 		}		
 	}
@@ -160,11 +166,13 @@ public class CapacityTestClient extends DefaultTest {
 		private final GNSClientCommands client;
 		private final GuidEntry guid;
 		private final boolean signed;
+		private final boolean log;
 		
-		ReadTask(GNSClientCommands client, GuidEntry guid, boolean signed){
+		ReadTask(GNSClientCommands client, GuidEntry guid, boolean signed, boolean log){
 			this.client = client;
 			this.guid = guid;
 			this.signed = signed;
+			this.log = log;
 		}
 		
 		@Override
@@ -178,7 +186,8 @@ public class CapacityTestClient extends DefaultTest {
 							someField, null);
 
 				//latency.add(System.currentTimeMillis() - t);
-				increaseLatency((System.nanoTime() - t)/1000);
+				if(log)
+					increaseLatency((System.nanoTime() - t)/1000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -208,6 +217,7 @@ public class CapacityTestClient extends DefaultTest {
 		writer.write(total+" "+elapsed/total+"\n");
 		writer.flush();
 		writer.close();
+		System.out.println("There are "+total+" requests, and average latency is "+elapsed/total+"us");
 	}
 	
 	/**
