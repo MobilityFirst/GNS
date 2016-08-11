@@ -20,6 +20,7 @@ import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author gaozy
@@ -205,23 +206,12 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception{
-		/*
 		Util.assertAssertionsEnabled();
 		processArgs(args);
 		
 		setup();
 		latency_test();
 		dump();
-		*/
-		
-		System.out.println("start");
-		int n = 1000000;
-		long t = System.currentTimeMillis();
-		for (int i=0; i<n; i++){
-			latency.add(0L);
-		}
-		long elapsed = System.currentTimeMillis() - t;
-		System.out.println(elapsed);
 		
 		System.exit(0);
 	}
