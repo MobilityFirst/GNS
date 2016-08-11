@@ -62,7 +62,10 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws Exception
 	 */
 	public static void setup() throws Exception {
-		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
+		numClients = 10;
+		if(System.getProperty("numClients") != null){
+			numClients = Integer.parseInt(System.getProperty("numClients"));
+		}
 		System.out.println("There are "+numClients+" clients.");
 		
 		someField = "someField";
@@ -128,7 +131,7 @@ public class CapacityTestClient extends DefaultTest {
 			this.client = client;
 			this.entry = entry;
 			this.rate = rate;
-			executor = Executors.newScheduledThreadPool(1);
+			executor = Executors.newScheduledThreadPool(50);
 		}
 		
 		@Override
