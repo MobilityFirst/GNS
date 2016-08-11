@@ -63,6 +63,7 @@ public class CapacityTestClient extends DefaultTest {
 	 */
 	public static void setup() throws Exception {
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
+		System.out.println("There are "+numClients+" clients.");
 		
 		someField = "someField";
 		if(System.getProperty("field")!=null){
@@ -74,9 +75,9 @@ public class CapacityTestClient extends DefaultTest {
 			withSigniture = Boolean.parseBoolean(System.getProperty("withSigniture"));
 		}
 		
-		RATE = 10;
+		RATE = 10.0;
 		if(System.getProperty("rate")!=null){
-			RATE = Double.parseDouble(System.getProperty("rate"));
+			RATE = 1000.0/Double.parseDouble(System.getProperty("rate"));
 		}
 		
 		String keyFile = "guid";
@@ -106,7 +107,7 @@ public class CapacityTestClient extends DefaultTest {
 		}
 		
 		try {
-			executor.awaitTermination(DURATION+2000, TimeUnit.MILLISECONDS);
+			executor.awaitTermination(DURATION+1000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -132,7 +133,8 @@ public class CapacityTestClient extends DefaultTest {
 		
 		@Override
 		public void run() {
-			executor.scheduleAtFixedRate(new ReadTask(client, entry, withSigniture), 0, ((Double) (1000.0/rate)).longValue(), TimeUnit.MILLISECONDS);			
+			executor.scheduleAtFixedRate(new ReadTask(client, entry, withSigniture), 0, ((Double) rate).longValue(), TimeUnit.MILLISECONDS);
+			
 		}		
 	}
 	
