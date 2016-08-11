@@ -76,7 +76,7 @@ public class CapacityTestClient extends DefaultTest {
 		
 		RATE = 10;
 		if(System.getProperty("rate")!=null){
-			RATE = Long.parseLong(System.getProperty("rate"));
+			RATE = Double.parseDouble(System.getProperty("rate"));
 		}
 		
 		String keyFile = "guid";
