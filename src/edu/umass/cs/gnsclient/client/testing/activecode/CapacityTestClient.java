@@ -98,6 +98,7 @@ public class CapacityTestClient extends DefaultTest {
 		
 		executor = Executors.newFixedThreadPool(numClients);
 		
+		clients = new GNSClientCommands[numClients];
 		for (int i=0; i<numClients; i++){
 			clients[i] = new GNSClientCommands();
 		}
@@ -121,7 +122,6 @@ public class CapacityTestClient extends DefaultTest {
 			e.printStackTrace();
 		}
 		
-		cleanup();
 	}
 	
 	private static void processArgs(String[] args) throws IOException {
@@ -197,6 +197,7 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws FileNotFoundException
 	 * @throws InterruptedException 
 	 */
+	@AfterClass
 	public static void cleanup() throws FileNotFoundException, InterruptedException{
 		Thread.sleep(1000);
 		
