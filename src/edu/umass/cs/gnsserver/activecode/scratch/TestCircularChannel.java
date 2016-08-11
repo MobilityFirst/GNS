@@ -2,12 +2,13 @@ package edu.umass.cs.gnsserver.activecode.scratch;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
@@ -24,15 +25,15 @@ import edu.umass.cs.gnsserver.activecode.prototype.utils.CircularBufferedRandomA
  */
 public class TestCircularChannel {
 	private static int numServers = 1;
-	final static int length = 512;
-	final static int totalReqs = 1000000;
+	final static int length = 128;
+	final static int totalReqs = 100000;
 	
 	
 	static class CircularChannel {
 		CircularBufferedRandomAccessFile reader;
 		CircularBufferedRandomAccessFile writer;
 		
-		CircularChannel(String ifile, String ofile){
+		CircularChannel(String ifile, String ofile, String id){
 			reader = new CircularBufferedRandomAccessFile(ifile);
 			writer = new CircularBufferedRandomAccessFile(ofile);
 		}
@@ -56,7 +57,7 @@ public class TestCircularChannel {
 		CircularChannel channel;
 		
 		CircularServer(String ifile, String ofile){
-			channel = new CircularChannel(ifile, ofile);
+			channel = new CircularChannel(ifile, ofile, "Server");
 		}
 		
 		@Override
@@ -69,6 +70,7 @@ public class TestCircularChannel {
 					e.printStackTrace();
 				}
 				if(data != null){
+					//System.out.println("Server received:"+(new String(data)));
 					try {
 						channel.write(data);
 					} catch (IOException e) {
@@ -89,11 +91,12 @@ public class TestCircularChannel {
 		CircularChannel channel;
 		final int total;
 		private final AtomicInteger counter = new AtomicInteger();
-		private final AtomicLong timeSpent = new AtomicLong();
+		private final ArrayList<Long> sent = new ArrayList<Long>();
+		private final ArrayList<Long> received = new ArrayList<Long>();
 		
 		CircularClient(String ifile, String ofile, int total){
 			this.total = total;
-			channel = new CircularChannel(ifile, ofile);			
+			channel = new CircularChannel(ifile, ofile, "Client");			
 		}
 		
 		@Override
@@ -103,23 +106,26 @@ public class TestCircularChannel {
 				byte[] data = null;
 				try {
 					data = channel.read();
+					
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				if( data != null){
-					timeSpent.addAndGet(System.nanoTime());
-					counter.incrementAndGet();					
+					//received.add(System.nanoTime());
+					counter.incrementAndGet();	
+					//System.out.println("Client received:"+new String(data));
 				}
 			}
 		}
 		
 		public boolean isFinished(){
+			//System.out.println(counter.get());
 			return counter.get() == total;
 		}
 		
 		public void sendData(byte[] buf){
-			timeSpent.addAndGet(-System.nanoTime());
+			//sent.add(System.nanoTime());
 			try {
 				channel.write(buf);
 			} catch (IOException e) {
@@ -128,7 +134,14 @@ public class TestCircularChannel {
 		}
 		
 		public double getLatnecy(){
-			return timeSpent.get()/((double) total);
+			long sum =0;
+			for(long lat:received){
+				sum += lat;
+			}
+			for(long lat:sent){
+				sum -= lat;
+			}
+			return sum/((double) total);
 		}
 		
 		public void close(){
@@ -137,10 +150,11 @@ public class TestCircularChannel {
 	}
 	
 	/**
+	 * @throws InterruptedException 
 	 * 
 	 */
 	@Test
-	public void test_ParallelCircularChannelThroughput(){
+	public void test_ParallelCircularChannelThroughput() throws InterruptedException{
 		final String cfile = "/tmp/client";
 		final String sfile = "/tmp/server";
 		
@@ -179,12 +193,14 @@ public class TestCircularChannel {
 		// start send all requests
 		for (int k=0; k<reqsPerClient; k++){
 			for (int i=0; i<numServers; i++){
-				clients[i].sendData(buf);
+				byte[] buffer = ("hello world!"+k).getBytes();
+				clients[i].sendData(buffer);
 			}
 		}
 				
 		for(int i=0; i<numServers; i++){
 			while(!clients[i].isFinished()){
+				//Thread.sleep(1000);
 				;
 			}
 		}
@@ -197,20 +213,41 @@ public class TestCircularChannel {
 			lat += clients[i].getLatnecy();
 			//System.out.println("The average latency is "+clients[i].getLatnecy());
 		}
-		//System.out.println("The average latency is "+lat/1000.0/numServers+"us");
-		executor.shutdown();
-		
-		try {
-			executor.awaitTermination(1, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		// System.out.println("The average latency is "+lat/1000.0/numServers+"us");
+		// executor.shutdown();
 		
 		for(int i=0; i<numServers; i++){
 			new File(cfile+i).delete();
 			new File(sfile+i).delete();
 		}
 		
+	}
+	
+	/**
+	 * This test shows that the byte being read by {@code RandomAccessFile} will
+	 * not be reset. 
+	 * @throws IOException 
+	 */
+	//@Test
+	public void test_RandomAccessFileRead() throws IOException{
+		RandomAccessFile raf = new  RandomAccessFile(new File("/tmp/test"),"rw");
+		for(int i=0; i<10; i++){
+			byte[] buf = ("hello world "+i).getBytes();
+			raf.write(buf, 0, buf.length);
+		}
+		
+		raf.seek(0);
+		byte[] buffer = new byte[13];
+		raf.read(buffer);
+		System.out.println("The first byte is "+new String(buffer));
+		
+		raf.seek(0);
+		
+		buffer = new byte[13];
+		raf.read(buffer);
+		System.out.println("The first byte is "+new String(buffer));
+		
+		raf.close();
 	}
 	
 	/**

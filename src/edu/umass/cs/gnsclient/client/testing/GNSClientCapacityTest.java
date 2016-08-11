@@ -300,7 +300,29 @@ public class GNSClientCapacityTest extends DefaultTest {
 			}
 		});
 	}
+	
+	
+	private void blockingWrite(int clientIndex, GuidEntry guid, boolean signed) {
+		executor.submit(new Runnable() {
+			public void run() {
+				try {
+					if (signed)
+						clients[clientIndex].fieldUpdate(guid, someField, someValue);
+					else
+						clients[clientIndex].fieldUpdate(guid.getGuid(),
+								someField, someValue, null);
 
+					incrFinishedReads();
+				} catch (Exception e) {
+					log.severe("Client " + clientIndex + " failed to read "
+							+ guid);
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	
+	
 	/**
 	 * @throws Exception
 	 */

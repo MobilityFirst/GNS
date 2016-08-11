@@ -1,6 +1,9 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -61,6 +64,11 @@ public class ActiveCodeHelloWorldExample {
 		// get the value of the field again
 		response = client.fieldRead(entry, field);
 		System.out.println("After the code is deployed, the value of field("+field+") is "+response);
+		
+		ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream(new File("guid")));
+		entry.writeObject(output);
+		output.flush();
+		output.close();
 		
 		System.exit(0);
 	}

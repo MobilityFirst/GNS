@@ -59,6 +59,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -142,8 +143,8 @@ public class ActiveCodeHandler {
 					String response = CommandUtils.checkResponse(client.sendCommandAndWait( CommandUtils.createCommand(CommandType.Read, 
 									GNSCommandProtocol.GUID, queriedGuid, 
 									GNSCommandProtocol.FIELD, field, 
-									GNSCommandProtocol.READER, "")));
-									//GNSCommandProtocol.READER, GNSCommandProtocol.MAGIC_STRING)));
+									GNSCommandProtocol.READER, GNSConfig.GNSC.INTERNAL_OP_SECRET)));
+
 					System.out.println(this+" receives response from remote GNS "+response);
 					value = new ValuesMap(new JSONObject(response));
 				} catch (Exception e){
