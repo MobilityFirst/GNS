@@ -69,8 +69,17 @@ public class ClientACLExample {
     System.out.println("[Client connected to GNS]\n");
 
     try {
+      /**
+       * Create an account GUID if one doesn't already exists. The true
+       * flag makes it verbosely print out what it is doing. The password
+       * is for future use and is needed mainly if the keypair is
+       * generated on the server in order to retrieve the private key.
+       * lookupOrCreateAccountGuid "cheats" by bypassing email-based or
+       * other verification mechanisms using a shared secret between the
+       * server and the client.
+       * */
       System.out
-          .println("// Account GUID creation\n"
+          .println("// account GUID creation\n"
               + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
               + " \"password\", true)");
       myGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
@@ -121,7 +130,8 @@ public class ClientACLExample {
     System.out.println("\n// Remove phoneGuid from read and write list");
     client.aclRemove(AclAccessType.READ_WHITELIST, myGuid, GNSCommandProtocol.ALL_FIELDS, phoneGuid.getGuid());
     client.aclRemove(AclAccessType.WRITE_WHITELIST, myGuid, "location", phoneGuid.getGuid());
-    // Verify
+
+    // Verify phoneGuid can't read myGuid
     try {
       result = client.read(myGuid.getGuid(), phoneGuid);
       System.out.println("\n// phoneGuid read from myGuid (unexpected): " + result);
@@ -131,9 +141,11 @@ public class ClientACLExample {
     } catch (Exception e) {
       System.out.println("\n// phoneGuid failed to read from myGuid (expected)");
     }
+    
+    // Verify phoneGuid can't write to "location" field of myGuid 
     try {
-      System.out.println("\n// Use phoneGuid to update \"location\" field of myGuid");
       client.fieldUpdate(myGuid.getGuid(), "location", "vacation", phoneGuid);
+      System.out.println("\n// Use phoneGuid to update \"location\" field of myGuid (unexpected)");
       System.out.println("\nFAIL");
       client.close();
       System.exit(1);
