@@ -47,10 +47,12 @@ public class CapacityTestClient extends DefaultTest {
 	
 	private static int numClients;
 	private static String someField;
+	private static String someValue = "someValue";
 	private static boolean withSignature; 	
 	private static int RATE;
 	private static String resultFile;
 	private static int TOTAL;
+	private static boolean isRead;
 	
 	private static GuidEntry entry;
 	private static GNSClientCommands[] clients;
@@ -90,6 +92,11 @@ public class CapacityTestClient extends DefaultTest {
 			RATE = Integer.parseInt(System.getProperty("rate"));
 		}
 		TOTAL = RATE*DURATION/1000;
+		
+		isRead = true;
+		if(System.getProperty("isRead")!=null){
+			isRead = Boolean.parseBoolean(System.getProperty("isRead"));
+		}
 		
 		String keyFile = "guid";
 		if(System.getProperty("keyFile")!= null){
@@ -149,13 +156,13 @@ public class CapacityTestClient extends DefaultTest {
 			 * warm up
 			 */
 			for (int i=0; i<rate; i++){
-				executor.submit(new ReadTask(client, entry, withSignature, false));
+				executor.submit(isRead?new ReadTask(client, entry, withSignature, false):null);
 				rateLimiter.record();
 			}
 			
 			for (int i=0; i<total; i++){
 				if(!executor.isShutdown()){
-					executor.submit(new ReadTask(client, entry, withSignature, true));
+					executor.submit(isRead?new ReadTask(client, entry, withSignature, true):null);
 					rateLimiter.record();
 				}
 			}
@@ -184,6 +191,39 @@ public class CapacityTestClient extends DefaultTest {
 				else
 					client.fieldRead(guid.getGuid(),
 							someField, null);
+
+				//latency.add(System.currentTimeMillis() - t);
+				if(log)
+					increaseLatency((System.nanoTime() - t)/1000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	static class WriteTask implements Runnable {
+		private final GNSClientCommands client;
+		private final GuidEntry guid;
+		private final boolean signed;
+		private final boolean log;
+		
+		WriteTask(GNSClientCommands client, GuidEntry guid, boolean signed, boolean log){
+			this.client = client;
+			this.guid = guid;
+			this.signed = signed;
+			this.log = log;
+		}
+		
+		@Override
+		public void run() {
+			long t = System.nanoTime();
+			try {
+				if (signed)
+					client.fieldUpdate(guid, someField, someValue);
+				else
+					client.fieldUpdate(guid.getGuid(),
+							someField, someValue, null);
 
 				//latency.add(System.currentTimeMillis() - t);
 				if(log)

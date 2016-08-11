@@ -95,8 +95,10 @@ public class GNSClientCapacityTest extends DefaultTest {
 				(int) Math.ceil(numGuids * 1.0 / numGuidsPerAccount), 1);
 		accountGuidEntries = new GuidEntry[numAccountGuids];
 		guidEntries = new GuidEntry[numGuids];
-		if(System.getProperty("isRead")!=null)
+		if(System.getProperty("isRead")!=null){
 			isRead = Boolean.parseBoolean(System.getProperty("isRead"));
+			System.out.println("Set to write operation!");
+		}
 		
 	}
 
