@@ -225,8 +225,13 @@ public class GNSClientCapacityTest extends DefaultTest {
 			clients[0].fieldUpdate(guid, someField, someValue);
 			clients[0].fieldUpdate(guid, activeField, activeValue);
 			// prepare for active code
-			clients[0].activeCodeClear(guid.getGuid(), ActiveCode.READ_ACTION, guid);
-			clients[0].activeCodeSet(guid.getGuid(), ActiveCode.READ_ACTION, code, guid);
+			if(isRead){
+				clients[0].activeCodeClear(guid.getGuid(), ActiveCode.READ_ACTION, guid);
+				clients[0].activeCodeSet(guid.getGuid(), ActiveCode.READ_ACTION, code, guid);
+			}else{
+				clients[0].activeCodeClear(guid.getGuid(), ActiveCode.WRITE_ACTION, guid);
+				clients[0].activeCodeSet(guid.getGuid(), ActiveCode.WRITE_ACTION, code, guid);
+			}
 			// verify written value
 			Assert.assertEquals(clients[0].fieldRead(guid, someField),
 					(someValue));

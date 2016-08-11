@@ -213,7 +213,7 @@ public class ActiveMessage implements Message{
 			length = 6*Integer.BYTES // type, ttl, guid length, field length, code length, valuesMap size 
 			+ Long.BYTES // id
 			+ guid.length() // guid
-			+ field.length() // field
+			+ field!=null?field.length():0 // field
 			+ code.length();
 			break;
 			
