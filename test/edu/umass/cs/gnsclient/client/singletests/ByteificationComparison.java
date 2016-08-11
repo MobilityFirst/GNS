@@ -85,7 +85,7 @@ public class ByteificationComparison {
 	}
 
 	
-	//@Test
+	@Test
 	public void test_01_JSON_Default() throws JSONException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -105,7 +105,7 @@ public class ByteificationComparison {
 		
 	}
 	
-	//@Test
+	@Test
 	public void test_02_hardcoded() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -124,7 +124,7 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
 	
-	//@Test
+	@Test
 	public void test_03_jackson() throws IOException, JSONException{
 		long startTime = System.nanoTime();
 		JSONObject testJson2;
@@ -144,7 +144,7 @@ public class ByteificationComparison {
 		//assert(testJson.toString().equals(testJson2.toString()));
 	}
 	
-	//@Test
+	@Test
 	public void test_04_msgpack() throws IOException, JSONException{
 		long startTime = System.nanoTime();
 		JSONObject testJson2;
@@ -164,7 +164,7 @@ public class ByteificationComparison {
 		assert(testJson.toString().equals(testJson2.toString()));
 	}
 	
-	//@Test
+	@Test
 	public void test_05_hardcoded_request_128() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -184,7 +184,7 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
 	
-	//@Test
+	@Test
 	public void test_06_jackson_request_128() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -204,7 +204,7 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
 	
-	//@Test
+	@Test
 	public void test_07_JSON_Default_128() throws JSONException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -225,7 +225,7 @@ public class ByteificationComparison {
 		
 	}
 	
-	//@Test
+	@Test
 	public void test_071_msgpack_request_128() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -245,7 +245,7 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
 	
-	//@Test
+	@Test
 	public void test_08_PacketToBytes_128() throws JSONException, UnsupportedEncodingException, UnknownHostException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -265,7 +265,7 @@ public class ByteificationComparison {
 		
 	}
 	
-	//@Test
+	@Test
 	public void test_09_hardcoded_request_1024() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -285,7 +285,7 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
 	
-	//@Test
+	@Test
 	public void test_10_jackson_request_1024() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -306,7 +306,7 @@ public class ByteificationComparison {
 	}
 
 	
-	//@Test
+	@Test
 	public void test_11_JSON_Default_1024() throws JSONException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -327,7 +327,7 @@ public class ByteificationComparison {
 		
 	}
 	
-	//@Test
+	@Test
 	public void test_12_PacketToBytes_1024() throws JSONException, UnsupportedEncodingException, UnknownHostException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -346,7 +346,7 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 		
 	}
-	//@Test
+	@Test
 	public void test_13_msgpack_request_1024() throws JSONException, IOException {
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
@@ -366,7 +366,7 @@ public class ByteificationComparison {
 		//System.out.println("JSON2: \n" + testJson2.toString());
 	}
 	
-	//@Test
+	@Test
 	public void test_14_CommandValueReturnPacket_128B() throws UnsupportedEncodingException, JSONException{
 		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
@@ -382,7 +382,7 @@ public class ByteificationComparison {
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
-	//@Test
+	@Test
 	public void test_15_CommandValueReturnPacket_1024B_Strings() throws UnsupportedEncodingException, JSONException{
 		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
 		long startTime = System.nanoTime();
@@ -398,7 +398,7 @@ public class ByteificationComparison {
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
-	//@Test
+	@Test
 	public void test_16_CommandValueReturnPacket_toBytes_128B() throws UnsupportedEncodingException, JSONException{
 		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
@@ -413,7 +413,7 @@ public class ByteificationComparison {
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
-	//@Test
+	@Test
 	public void test_17_CommandValueReturnPacket_toBytes_1024B_Strings() throws UnsupportedEncodingException, JSONException{
 		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
 		long startTime = System.nanoTime();
@@ -429,7 +429,7 @@ public class ByteificationComparison {
 	}
 	
 	
-	//@Test
+	@Test
 	public void test_18_CommandPacket_128B() throws UnsupportedEncodingException, JSONException, ClientException{
 		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)), null);
 		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(64)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(64))));
@@ -449,7 +449,7 @@ public class ByteificationComparison {
 		//System.out.println(outputPacket.toJSONObject().toString());
 	}
 	
-	//@Test
+	@Test
 	public void test_19_CommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException{
 		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)), null);
 		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
@@ -497,7 +497,7 @@ public class ByteificationComparison {
 		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
-	//@Test
+	@Test
 	public void test_201_FromCommandPacket_128B_Signed() throws UnsupportedEncodingException, JSONException, ClientException, NoSuchAlgorithmException{
 		//GuidEntry querier = KeyPairUtils.getGuidEntry("testName", "testUser");
 		KeyPair keyPair = KeyPairGenerator.getInstance(RSA_ALGORITHM)
@@ -534,7 +534,7 @@ public class ByteificationComparison {
 		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
-	//@Test
+	@Test
 	public void test_21_FromCommandPacket_1024B() throws UnsupportedEncodingException, JSONException, ClientException, NoSuchAlgorithmException{
 		CommandPacket packet = GNSCommand.fieldRead(new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)), null);
 		//CommandPacket packet = new CommandPacket(CommandUtils.createCommand(CommandType.ReadArrayOneUnsigned, "", GNSCommandProtocol.GUID, new String(Util.getRandomAlphanumericBytes(512)), GNSCommandProtocol.FIELD,new String(Util.getRandomAlphanumericBytes(512))));
