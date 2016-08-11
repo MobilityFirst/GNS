@@ -84,7 +84,7 @@ public class ClientACLExample {
 
     // Write out the JSON Object
     client.update(guid, json);
-    System.out.println("\n// Record update\n"
+    System.out.println("\n// Update guid record\n"
         + "client.update(guid, record) // record=" + json);
     
     // Remove default read access from guid
