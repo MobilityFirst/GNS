@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -17,12 +16,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.FixMethodOrder;
 
-import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author gaozy
@@ -56,7 +53,15 @@ public class CapacityTestClient extends DefaultTest {
 	private static GuidEntry entry;
 	private static GNSClientCommands[] clients;
 	private static List<Long> latency = new CopyOnWriteArrayList<Long>();
+	
 	private static ExecutorService executor;
+	
+	private static int total = 0;
+	private static long elapsed = 0;
+	static synchronized void increaseLatency(long lat){
+		total++;
+		elapsed += lat;
+	}
 	
 	/**
 	 * @throws Exception
@@ -162,7 +167,8 @@ public class CapacityTestClient extends DefaultTest {
 					client.fieldRead(guid.getGuid(),
 							someField, null);
 
-				latency.add(System.currentTimeMillis() - t);
+				//latency.add(System.currentTimeMillis() - t);
+				increaseLatency(System.currentTimeMillis() - t);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -185,9 +191,11 @@ public class CapacityTestClient extends DefaultTest {
 		System.out.println("Start dumping the result to file "+resultFile);
 		
 		PrintWriter writer = new PrintWriter(resultFile);
+		/*
 		for (long lat:latency){
 			writer.write(lat+"\n");			
-		}
+		}*/
+		writer.write(elapsed/total+"\n");
 		writer.flush();
 		writer.close();
 	}
@@ -197,12 +205,23 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception{
+		/*
 		Util.assertAssertionsEnabled();
 		processArgs(args);
 		
 		setup();
 		latency_test();
 		dump();
+		*/
+		
+		System.out.println("start");
+		int n = 1000000;
+		long t = System.currentTimeMillis();
+		for (int i=0; i<n; i++){
+			latency.add(0L);
+		}
+		long elapsed = System.currentTimeMillis() - t;
+		System.out.println(elapsed);
 		
 		System.exit(0);
 	}
