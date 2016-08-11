@@ -196,7 +196,7 @@ public class CapacityTestClient extends DefaultTest {
 		for (long lat:latency){
 			writer.write(lat+"\n");			
 		}*/
-		writer.write(elapsed/total+"\n");
+		writer.write(total+" "+elapsed/total+"\n");
 		writer.flush();
 		writer.close();
 	}
