@@ -97,11 +97,10 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws InterruptedException 
 	 * @throws FileNotFoundException 
 	 * 
-	 */
-	
+	 */	
 	public static void latency_test() throws FileNotFoundException, InterruptedException{
 		for(int i=0; i<numClients; i++){
-			executor.execute(new SingleGNSClientTask(clients[i], entry, DURATION, RATE));
+			executor.execute(new SingleGNSClientTask(clients[i], entry, RATE));
 		}
 		executor.shutdown();
 		
@@ -121,27 +120,18 @@ public class CapacityTestClient extends DefaultTest {
 		private final GNSClientCommands client;
 		private final GuidEntry entry;
 		private final ScheduledExecutorService executor ;
-		private final long duration;
 		private final double rate;
 		
-		SingleGNSClientTask(GNSClientCommands client, GuidEntry entry, long duration, double rate){
+		SingleGNSClientTask(GNSClientCommands client, GuidEntry entry, double rate){
 			this.client = client;
-			this.entry = entry;			
-			this.duration = duration;
+			this.entry = entry;
 			this.rate = rate;
-			executor = Executors.newScheduledThreadPool(10);
+			executor = Executors.newScheduledThreadPool(1);
 		}
 		
 		@Override
 		public void run() {
-			executor.scheduleAtFixedRate(new ReadTask(client, entry, withSigniture), 0, ((Double) (1000.0/rate)).longValue(), TimeUnit.MILLISECONDS);
-			
-			executor.shutdown();
-			try {
-				executor.awaitTermination(duration+1000, TimeUnit.MILLISECONDS);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			executor.scheduleAtFixedRate(new ReadTask(client, entry, withSigniture), 0, ((Double) (1000.0/rate)).longValue(), TimeUnit.MILLISECONDS);			
 		}		
 	}
 	
@@ -208,5 +198,6 @@ public class CapacityTestClient extends DefaultTest {
 		latency_test();
 		dump();
 		
+		System.exit(0);
 	}
 }
