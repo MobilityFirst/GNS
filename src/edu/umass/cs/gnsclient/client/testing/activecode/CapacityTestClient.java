@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -23,13 +24,15 @@ import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
 /**
  * @author gaozy
  *
  */
-public class CapacityTestClient {
+@FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
+public class CapacityTestClient extends DefaultTest {
 	
 	final static Random random = new Random();
 	
