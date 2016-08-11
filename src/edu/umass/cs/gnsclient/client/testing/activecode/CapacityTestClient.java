@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
@@ -68,11 +69,6 @@ public class CapacityTestClient extends DefaultTest {
 	public static void setup() throws Exception {
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		
-		resultFile = "result";
-		if(System.getProperty("resultFile")!= null){
-			resultFile = System.getProperty("resultFile");
-		}
-		
 		someField = "someField";
 		if(System.getProperty("field")!=null){
 			someField = System.getProperty("field");
@@ -117,7 +113,7 @@ public class CapacityTestClient extends DefaultTest {
 		executor.shutdown();
 		
 		try {
-			executor.awaitTermination(DURATION+1, TimeUnit.SECONDS);
+			executor.awaitTermination(DURATION+5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -131,7 +127,7 @@ public class CapacityTestClient extends DefaultTest {
 	static class SingleGNSClientTask implements Runnable{
 		private final GNSClientCommands client;
 		private final GuidEntry entry;
-		private final ExecutorService executor;
+		private final ScheduledExecutorService executor ;
 		private final long duration;
 		private final double rate;
 		
@@ -140,24 +136,16 @@ public class CapacityTestClient extends DefaultTest {
 			this.entry = entry;			
 			this.duration = duration;
 			this.rate = rate;
-			executor = Executors.newFixedThreadPool(10);
+			executor = Executors.newScheduledThreadPool(10);
 		}
 		
 		@Override
 		public void run() {
-			long begin = System.currentTimeMillis();
-			while(System.currentTimeMillis() - begin < duration ){
-				executor.submit(new ReadTask(client, entry, withSigniture));
-				long delay = getInterval(rate).longValue();
-				try {
-					Thread.sleep(delay);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			executor.scheduleAtFixedRate(new ReadTask(client, entry, withSigniture), 0, ((Double) (1000.0/rate)).longValue(), TimeUnit.MILLISECONDS);
+			
 			executor.shutdown();
 			try {
-				executor.awaitTermination(1, TimeUnit.SECONDS);
+				executor.awaitTermination(duration+1, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -177,7 +165,7 @@ public class CapacityTestClient extends DefaultTest {
 		
 		@Override
 		public void run() {
-			long t = System.nanoTime();
+			long t = System.currentTimeMillis();
 			try {
 				if (signed)
 					client.fieldRead(guid, someField);
@@ -185,7 +173,7 @@ public class CapacityTestClient extends DefaultTest {
 					client.fieldRead(guid.getGuid(),
 							someField, null);
 
-				latency.add(System.nanoTime() - t);
+				latency.add(System.currentTimeMillis() - t);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -200,6 +188,11 @@ public class CapacityTestClient extends DefaultTest {
 	@AfterClass
 	public static void cleanup() throws FileNotFoundException, InterruptedException{
 		Thread.sleep(1000);
+		
+		resultFile = "result";
+		if(System.getProperty("resultFile")!= null){
+			resultFile = System.getProperty("resultFile");
+		}
 		
 		System.out.println("Start dumping the result to file "+resultFile);
 		
