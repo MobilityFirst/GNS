@@ -315,8 +315,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 					if (signed)
 						clients[clientIndex].fieldUpdate(guid, someField, someValue);
 					else
-						clients[clientIndex].fieldUpdate(guid.getGuid(),
-								someField, someValue, null);
+						clients[clientIndex].fieldUpdate(guid, someField, someValue);
 
 					incrFinishedReads();
 				} catch (Exception e) {
