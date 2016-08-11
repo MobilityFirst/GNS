@@ -34,6 +34,11 @@ public class ActiveCodeHelloWorldExample {
 			update = Boolean.parseBoolean(System.getProperty("update"));
 		}
 		
+		boolean isRead = true;
+		if(System.getProperty("isRead")!=null){
+			isRead = Boolean.parseBoolean(System.getProperty("isRead"));
+		}
+		
 		String codeFile = "scripts/activeCode/noop.js";
 		if(args.length > 0){
 			codeFile = args[0];
@@ -63,11 +68,15 @@ public class ActiveCodeHelloWorldExample {
 		final String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		
 		// set up the code for on read operation
-		
-		client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
-		if(update)
-			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
-		
+		if(isRead){
+			client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
+			if(update)
+				client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
+		} else {
+			client.activeCodeClear(entry.getGuid(), ActiveCode.WRITE_ACTION, entry);
+			if(update)
+				client.activeCodeSet(entry.getGuid(), ActiveCode.WRITE_ACTION, code, entry);
+		}
 		// get the value of the field again
 		response = client.fieldRead(entry, field);
 		System.out.println("After the code is deployed, the value of field("+field+") is "+response);
