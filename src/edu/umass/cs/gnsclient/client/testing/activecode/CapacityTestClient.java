@@ -13,13 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
-import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -65,7 +59,6 @@ public class CapacityTestClient extends DefaultTest {
 	/**
 	 * @throws Exception
 	 */
-	@BeforeClass
 	public static void setup() throws Exception {
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		
@@ -105,20 +98,19 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws FileNotFoundException 
 	 * 
 	 */
-	@Test
-	public void latency_test() throws FileNotFoundException, InterruptedException{
+	
+	public static void latency_test() throws FileNotFoundException, InterruptedException{
 		for(int i=0; i<numClients; i++){
 			executor.execute(new SingleGNSClientTask(clients[i], entry, DURATION, RATE));
 		}
 		executor.shutdown();
 		
 		try {
-			executor.awaitTermination(DURATION+5000, TimeUnit.MILLISECONDS);
+			executor.awaitTermination(DURATION+2000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
-		cleanup();
 	}
 	
 	private static void processArgs(String[] args) throws IOException {
@@ -186,7 +178,7 @@ public class CapacityTestClient extends DefaultTest {
 	 * @throws FileNotFoundException
 	 * @throws InterruptedException 
 	 */
-	public static void cleanup() throws FileNotFoundException, InterruptedException{
+	public static void dump() throws FileNotFoundException, InterruptedException{
 		Thread.sleep(1000);
 		
 		resultFile = "result";
@@ -206,15 +198,15 @@ public class CapacityTestClient extends DefaultTest {
 	
 	/**
 	 * @param args
-	 * @throws IOException 
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws Exception{
 		Util.assertAssertionsEnabled();
 		processArgs(args);
-		Result result = JUnitCore.runClasses(CapacityTestClient.class);
-		for (Failure failure : result.getFailures()) {
-			System.out.println(failure.getMessage());
-			failure.getException().printStackTrace();
-		}
+		
+		setup();
+		latency_test();
+		dump();
+		
 	}
 }
