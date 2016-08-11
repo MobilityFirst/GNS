@@ -21,7 +21,6 @@ import org.junit.runner.notification.Failure;
 
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
@@ -66,7 +65,7 @@ public class CapacityTestClient {
 	public static void setup() throws Exception {
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
 		
-		resultFile = "ActiveGNS/result";
+		resultFile = "result";
 		if(System.getProperty("resultFile")!= null){
 			resultFile = System.getProperty("resultFile");
 		}
@@ -86,7 +85,7 @@ public class CapacityTestClient {
 			RATE = Long.parseLong(System.getProperty("rate"));
 		}
 		
-		String keyFile = "ActiveGNS/guid";
+		String keyFile = "guid";
 		if(System.getProperty("keyFile")!= null){
 			keyFile = System.getProperty("keyFile");
 		}
@@ -193,7 +192,7 @@ public class CapacityTestClient {
 	 * @throws InterruptedException 
 	 */
 	@AfterClass
-	public void cleanup() throws FileNotFoundException, InterruptedException{
+	public static void cleanup() throws FileNotFoundException, InterruptedException{
 		Thread.sleep(1000);
 		
 		System.out.println("Start dumping the result to file "+resultFile);
