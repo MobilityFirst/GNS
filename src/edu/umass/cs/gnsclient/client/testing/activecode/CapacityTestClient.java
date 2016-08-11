@@ -220,10 +220,10 @@ public class CapacityTestClient extends DefaultTest {
 			long t = System.nanoTime();
 			try {
 				if (signed)
-					client.fieldUpdate(guid, someField, someValue);
+					client.fieldUpdate(guid.getGuid(), someField, someValue, guid);
 				else
-					client.fieldUpdate(guid,
-							someField, someValue);
+					client.fieldUpdate(guid.getGuid(),
+							someField, someValue, guid);
 
 				//latency.add(System.currentTimeMillis() - t);
 				if(log)
