@@ -29,6 +29,11 @@ public class ActiveCodeHelloWorldExample {
 	 */
 	public static void main(String[] args) throws Exception {
 		
+		boolean update = true;
+		if(System.getProperty("update")!=null){
+			update = Boolean.parseBoolean(System.getProperty("update"));
+		}
+		
 		String codeFile = "scripts/activeCode/noop.js";
 		if(args.length > 0){
 			codeFile = args[0];
@@ -58,8 +63,10 @@ public class ActiveCodeHelloWorldExample {
 		final String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		
 		// set up the code for on read operation
+		
 		client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
-		//client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
+		if(update)
+			client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 		
 		// get the value of the field again
 		response = client.fieldRead(entry, field);
