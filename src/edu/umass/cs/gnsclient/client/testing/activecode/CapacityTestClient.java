@@ -160,7 +160,7 @@ public class CapacityTestClient extends DefaultTest {
 		
 		@Override
 		public void run() {
-			long t = System.currentTimeMillis();
+			long t = System.nanoTime();
 			try {
 				if (signed)
 					client.fieldRead(guid, someField);
@@ -169,7 +169,7 @@ public class CapacityTestClient extends DefaultTest {
 							someField, null);
 
 				//latency.add(System.currentTimeMillis() - t);
-				increaseLatency(System.currentTimeMillis() - t);
+				increaseLatency((System.nanoTime() - t)/1000);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
