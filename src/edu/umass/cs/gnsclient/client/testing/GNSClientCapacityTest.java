@@ -66,7 +66,8 @@ public class GNSClientCapacityTest extends DefaultTest {
 	private static GuidEntry[] guidEntries;
 	private static GNSClientCommands[] clients;
 	private static ScheduledThreadPoolExecutor executor;
-
+	private static boolean isRead = true;
+	
 	private static Logger log = GNSClientConfig.getLogger();
 
 	/**
@@ -94,6 +95,9 @@ public class GNSClientCapacityTest extends DefaultTest {
 				(int) Math.ceil(numGuids * 1.0 / numGuidsPerAccount), 1);
 		accountGuidEntries = new GuidEntry[numAccountGuids];
 		guidEntries = new GuidEntry[numGuids];
+		if(System.getProperty("isRead")!=null)
+			isRead = Boolean.parseBoolean(System.getProperty("isRead"));
+		
 	}
 
 	private static void setupClientsAndGuids() throws Exception {
@@ -195,7 +199,6 @@ public class GNSClientCapacityTest extends DefaultTest {
 	private static final String someField = "someField";
 	private static final String someValue = "someValue";
 	private static final String activeField ="activeField";
-
 	
 	/**
 	 * Verifies a single write is successful.
@@ -212,6 +215,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 		
 		if(codeFile == null)
 			codeFile = "scripts/activeCode/noop.js";
+		
 		
 		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 
@@ -333,7 +337,11 @@ public class GNSClientCapacityTest extends DefaultTest {
 				Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			blockingRead(numReads % numClients, guidEntries[0], true);
+			if(isRead){
+				blockingRead(numReads % numClients, guidEntries[0], true);
+			}else{
+				blockingWrite(numReads % numClients, guidEntries[0], true);
+			}
 		}
 		System.out.print("[total_reads=" + numReads+": ");
 		int lastCount = 0;
@@ -366,7 +374,11 @@ public class GNSClientCapacityTest extends DefaultTest {
 		reset();
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			blockingRead(numReads % numClients, guidEntries[0], false);
+			if(isRead){
+				blockingRead(numReads % numClients, guidEntries[0], false);
+			} else{
+				blockingWrite(numReads % numClients, guidEntries[0], false);
+			}
 		}
 		int j = 1;
 		System.out.print("[total_reads=" + numReads+": ");
