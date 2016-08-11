@@ -89,7 +89,7 @@ public class CapacityTestClient extends DefaultTest {
 		if(System.getProperty("rate")!=null){
 			RATE = Integer.parseInt(System.getProperty("rate"));
 		}
-		TOTAL = RATE*DURATION;
+		TOTAL = RATE*DURATION/1000;
 		
 		String keyFile = "guid";
 		if(System.getProperty("keyFile")!= null){
