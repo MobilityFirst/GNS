@@ -11,11 +11,11 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.FixMethodOrder;
 
+import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.utils.Config;
@@ -43,13 +43,14 @@ public class CapacityTestClient extends DefaultTest {
 	/**
 	 * Test for 1 min
 	 */
-	private final static long DURATION = 60*1000;
+	private final static int DURATION = 60*1000;
 	
 	private static int numClients;
 	private static String someField;
-	private static boolean withSigniture; 	
-	private static double RATE;
+	private static boolean withSignature; 	
+	private static int RATE;
 	private static String resultFile;
+	private static int TOTAL;
 	
 	private static GuidEntry entry;
 	private static GNSClientCommands[] clients;
@@ -79,15 +80,16 @@ public class CapacityTestClient extends DefaultTest {
 			someField = System.getProperty("field");
 		}
 		
-		withSigniture = false;
+		withSignature = false;
 		if(System.getProperty("withSigniture")!= null){
-			withSigniture = Boolean.parseBoolean(System.getProperty("withSigniture"));
+			withSignature = Boolean.parseBoolean(System.getProperty("withSigniture"));
 		}
 		
-		RATE = 10.0;
+		RATE = 10;
 		if(System.getProperty("rate")!=null){
-			RATE = 1000.0/Double.parseDouble(System.getProperty("rate"));
+			RATE = Integer.parseInt(System.getProperty("rate"));
 		}
+		TOTAL = RATE*DURATION;
 		
 		String keyFile = "guid";
 		if(System.getProperty("keyFile")!= null){
@@ -97,7 +99,7 @@ public class CapacityTestClient extends DefaultTest {
 		entry = new GuidEntry(input);
 		assert(entry != null);
 		
-		executor = Executors.newFixedThreadPool(numClients);
+		executor = Executors.newFixedThreadPool(numClients*10);
 		
 		clients = new GNSClientCommands[numClients];
 		for (int i=0; i<numClients; i++){
@@ -112,7 +114,7 @@ public class CapacityTestClient extends DefaultTest {
 	 */	
 	public static void latency_test() throws FileNotFoundException, InterruptedException{
 		for(int i=0; i<numClients; i++){
-			executor.execute(new SingleGNSClientTask(clients[i], entry, RATE));
+			executor.execute(new SingleGNSClientTask(clients[i], entry, ((Integer) RATE).doubleValue(), TOTAL));
 		}
 		
 		try {
@@ -130,20 +132,27 @@ public class CapacityTestClient extends DefaultTest {
 	static class SingleGNSClientTask implements Runnable{
 		private final GNSClientCommands client;
 		private final GuidEntry entry;
-		private final ScheduledExecutorService executor ;
 		private final double rate;
+		private final int total;
 		
-		SingleGNSClientTask(GNSClientCommands client, GuidEntry entry, double rate){
+		SingleGNSClientTask(GNSClientCommands client, GuidEntry entry, double rate, int total){
 			this.client = client;
 			this.entry = entry;
 			this.rate = rate;
-			executor = Executors.newScheduledThreadPool(50);
+			this.total = total;
 		}
 		
 		@Override
 		public void run() {
-			executor.scheduleAtFixedRate(new ReadTask(client, entry, withSigniture), 0, ((Double) rate).longValue(), TimeUnit.MILLISECONDS);
-			
+			RateLimiter rateLimiter = new RateLimiter(rate);
+			/**
+			 * Run two rounds for experiment, the first round is for warming up
+			 */
+			System.out.println("round 1");
+			for (int i=0; i<total; i++){
+				executor.submit(new ReadTask(client, entry, withSignature));
+				rateLimiter.record();
+			}
 		}		
 	}
 	
