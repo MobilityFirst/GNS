@@ -280,9 +280,9 @@ public class ActiveMessage implements Message{
 			exactLength += (Integer.BYTES + guidBytes.length);
 			
 			// put field, can't be null, ~100ns
-			assert(field != null):"field can't be null for active request";
-			fieldBytes = field.getBytes(CHARSET);
-			bbuf.putInt(fieldBytes.length);
+			// assert(field != null):"field can't be null for active request";
+			fieldBytes = (field!=null)?field.getBytes(CHARSET):new byte[0];
+			bbuf.putInt((field!=null)?fieldBytes.length:0);
 			bbuf.put(fieldBytes);
 			exactLength += (Integer.BYTES + fieldBytes.length);
 			
@@ -415,9 +415,11 @@ public class ActiveMessage implements Message{
 			
 			// get field
 			length = bbuf.getInt();
-			fieldBytes = new byte[length];
-			bbuf.get(fieldBytes);
-			field = new String(fieldBytes, CHARSET);
+			if(length>0){
+				fieldBytes = new byte[length];
+				bbuf.get(fieldBytes);
+				field = new String(fieldBytes, CHARSET);
+			}
 			
 			// get code
 			length = bbuf.getInt();
