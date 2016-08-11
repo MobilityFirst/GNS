@@ -314,6 +314,16 @@ public class GNSClient extends AbstractGNSClient {
 		public Set<IntegerPacketType> getRequestTypes() {
 			return clientPacketTypes;
 		}
+		
+		/** FIXME: This should return a separate packet type meant for 
+		 * admin commands that is different from {@link Packet.PacketType#COMMAND}
+		 * and carries {@link CommandType} types corresponding to admin commands.
+		 */
+		@SuppressWarnings("javadoc")
+		@Override
+		public Set<IntegerPacketType> getMutualAuthRequestTypes() {
+			return null;
+		}
 
 		@Override
 		public Request getRequest(byte[] bytes, NIOHeader header)
