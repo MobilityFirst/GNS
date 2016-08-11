@@ -213,7 +213,7 @@ public class CapacityTestClient {
 	public static void main(String[] args) throws IOException{
 		Util.assertAssertionsEnabled();
 		processArgs(args);
-		Result result = JUnitCore.runClasses(GNSClientCapacityTest.class);
+		Result result = JUnitCore.runClasses(CapacityTestClient.class);
 		for (Failure failure : result.getFailures()) {
 			System.out.println(failure.getMessage());
 			failure.getException().printStackTrace();
