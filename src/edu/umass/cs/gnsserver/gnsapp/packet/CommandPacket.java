@@ -211,7 +211,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   	
   	this.command = new JSONObject();
   	this.command.put(GNSCommandProtocol.COMMAND_INT, commandType); 
-  	this.command.put(GNSCommandProtocol.SEQUENCE_NUMBER, seqNum);
+  	if (seqNum != -1){
+  		this.command.put(GNSCommandProtocol.SEQUENCE_NUMBER, seqNum);
+  	}
   	
   	
   	//Put in the variable length fields.
@@ -734,7 +736,7 @@ public final byte[] toBytes() {
 		PacketType packetTypeInstance;
 		packetTypeInstance = this.getType();//getPacketType(command);
 		int packetType = packetTypeInstance.getInt();
-		long seqNum = (long) command.remove(GNSCommandProtocol.SEQUENCE_NUMBER);
+		long seqNum = command.has(GNSCommandProtocol.SEQUENCE_NUMBER) ?(long) command.remove(GNSCommandProtocol.SEQUENCE_NUMBER) : -1;
 		int commandType = (int) command.remove(GNSCommandProtocol.COMMAND_INT);
 		buf.putInt(packetType);
 		buf.putInt(commandType);
@@ -782,7 +784,9 @@ public final byte[] toBytes() {
 				//command.put(CLIENTREQUESTID, cmdClientReqId);
 				//command.put(LNSREQUESTID, lnsReqId);
 				//command.put(SENDERPORT, senderPort);
-				command.put(GNSCommandProtocol.SEQUENCE_NUMBER,seqNum);
+				if (seqNum != -1){
+					command.put(GNSCommandProtocol.SEQUENCE_NUMBER,seqNum);
+				}
 			} catch (JSONException e) {
 				throw new RuntimeException(e);
 			} 
