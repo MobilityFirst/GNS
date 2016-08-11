@@ -46,7 +46,7 @@ public class CapacityTestClient extends DefaultTest {
 	private final static int DURATION = 60*1000;
 	
 	private static int numClients;
-	private static String someField;
+	private static String someField = "someField";
 	private static String someValue = "someValue";
 	private static boolean withSignature; 	
 	private static int RATE;
