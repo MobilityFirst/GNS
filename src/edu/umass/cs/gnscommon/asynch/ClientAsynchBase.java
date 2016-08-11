@@ -21,21 +21,17 @@ package edu.umass.cs.gnscommon.asynch;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.util.Random;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -71,7 +67,6 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery.RequestCallbackWithRequest;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -84,7 +79,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 
 /**
@@ -133,14 +130,13 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   public ClientAsynchBase(Set<InetSocketAddress> addresses) throws IOException {
     //super(addresses);
-	  
+
     // will use above code once we get rid of  ReconfigurationConfig accessors
     super(addresses, ReconfigurationConfig.getClientSSLMode(),
             ReconfigurationConfig.getClientPortOffset(), false);
 
-		// for MUTUAL_AUTH here instead (but it's no more secure)
-		//	  super(addresses, SSL_MODES.MUTUAL_AUTH, 0);
-
+    // for MUTUAL_AUTH here instead (but it's no more secure)
+    //	  super(addresses, SSL_MODES.MUTUAL_AUTH, 0);
     ClientSupportConfig.getLogger().log(Level.INFO, "Reconfigurators {0}", addresses);
     ClientSupportConfig.getLogger().log(Level.INFO, "Client port offset {0}", ReconfigurationConfig.getClientPortOffset());
     ClientSupportConfig.getLogger().log(Level.INFO, "SSL Mode is {0}", ReconfigurationConfig.getClientSSLMode());
@@ -195,11 +191,11 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     long id = generateNextRequestID();
     CommandPacket packet = new CommandPacket(id, command);
     ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
-     sendRequest(
-    		packet,
-    		(callback instanceof RequestCallbackWithRequest) ? ((RequestCallbackWithRequest) callback)
-    				.setRequest(packet) : callback);
-     return packet.getRequestID();
+    sendRequest(
+            packet,
+            (callback instanceof RequestCallbackWithRequest) ? ((RequestCallbackWithRequest) callback)
+                    .setRequest(packet) : callback);
+    return packet.getRequestID();
   }
 
   /**
@@ -252,7 +248,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    * @throws Exception
    */
   public long accountGuidVerify(GuidEntry guid, String code, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount, 
+    return sendCommandAsynch(createAndSignCommand(CommandType.VerifyAccount,
             guid.getPrivateKey(), GUID, guid.getGuid(),
             CODE, code), callback);
   }
@@ -266,7 +262,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    * @throws Exception
    */
   public long accountGuidRemove(GuidEntry guid, RequestCallback callback) throws Exception {
-    return sendCommandAsynch(createAndSignCommand(CommandType.RemoveAccount, 
+    return sendCommandAsynch(createAndSignCommand(CommandType.RemoveAccount,
             guid.getPrivateKey(), GUID, guid.getGuid(),
             NAME, guid.getEntityName()), callback);
   }
@@ -671,8 +667,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   /**
    * Creates a command object from the given action string and a variable
    * number of key and value pairs.
-   * 
+   *
    * Note: Same as the version in CommandUtils but it forces coordinated reads.
+   *
    * @param commandType
    * @param keysAndValues
    * @return the query string

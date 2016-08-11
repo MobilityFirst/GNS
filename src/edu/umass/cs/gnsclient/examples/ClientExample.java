@@ -15,10 +15,13 @@
  * Initial developer(s): Westy */
 package edu.umass.cs.gnsclient.examples;
 
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -45,7 +48,7 @@ public class ClientExample {
 
 	// replace with your account alias
 	private static String ACCOUNT_ALIAS = "admin@gns.name";
-	private static GNSClientCommands client;
+	private static GNSClient client;
 	private static GuidEntry guid;
 
 	/**
@@ -64,7 +67,7 @@ public class ClientExample {
 
 		/* Create the client that connects to a default reconfigurator as
 		 * specified in gigapaxos properties file. */
-		client = new GNSClientCommands();
+		client = new GNSClient();
 		System.out.println("[Client connected to GNS]\n");
 
 		try {
@@ -96,42 +99,44 @@ public class ClientExample {
 				+ "\"location\":\"work\",\"name\":\"frank\"}");
 
 		// Write out the JSON Object
-		client.update(guid, json);
+		client.execute(GNSCommand.update(guid, json));
 		System.out.println("\n// record update\n"
 				+ "client.update(GUID, record) // record=" + json);
 
 		// and read the entire object back in
-		JSONObject result = client.read(guid);
+		JSONObject result = client.execute(GNSCommand.read(guid))
+				.getResultJSONObject();
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Change a field
-		client.update(guid, new JSONObject(
-				"{\"occupation\":\"rocket scientist\"}"));
+		client.execute(GNSCommand.update(guid, new JSONObject(
+				"{\"occupation\":\"rocket scientist\"}")));
 		System.out
 				.println("\n// field update\n"
 						+ "client.update(GUID, fieldKeyValue) // fieldKeyValue={\"occupation\":\"rocket scientist\"}");
 
 		// and read the entire object back in
-		result = client.read(guid);
+		result = client.execute(GNSCommand.read(guid)).getResultJSONObject();
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Add a field
-		client.update(guid, new JSONObject("{\"ip address\":\"127.0.0.1\"}"));
+		client.execute(GNSCommand.update(guid, new JSONObject(
+				"{\"ip address\":\"127.0.0.1\"}")));
 		System.out
 				.println("\n// field add\n"
 						+ "client.update(GUID, fieldKeyValue) // fieldKeyValue= {\"ip address\":\"127.0.0.1\"}");
 
 		// and read the entire object back in
-		result = client.read(guid);
+		result = client.execute(GNSCommand.read(guid)).getResultJSONObject();
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Remove a field
-		client.fieldRemove(guid.getGuid(), "gibberish", guid);
+		client.execute(GNSCommand.fieldRemove(guid.getGuid(), "gibberish", guid));
 		System.out.println("\n// field remove\n"
 				+ "client.fieldRemove(GUID, \"gibberish\")");
 
 		// and read the entire object back in
-		result = client.read(guid);
+		result = client.execute(GNSCommand.read(guid)).getResultJSONObject();
 		System.out.println("client.read(GUID) -> " + result.toString());
 
 		// Add some more stuff to read back
@@ -144,17 +149,20 @@ public class ClientExample {
 		subsubJson.put("left", "eight");
 		subJson.put("sally", subsubJson);
 		newJson.put("flapjack", subJson);
-		client.update(guid, newJson);
+		client.execute(GNSCommand.update(guid, newJson));
 		System.out.println("\n// field add with JSON value\n"
 				+ "client.update(GUID, fieldKeyValue) // fieldKeyValue="
 				+ newJson);
 
 		// Read a single field at the top level
-		String resultString = client.fieldRead(guid, "flapjack");
+		String resultString = client.execute(
+				GNSCommand.fieldRead(guid, "flapjack")).getResultString();
 		System.out.println("client.fieldRead(\"flapjack\") -> " + resultString);
 
 		// Read a single field using dot notation
-		resultString = client.fieldRead(guid, "flapjack.sally.right");
+		resultString = client.execute(
+				GNSCommand.fieldRead(guid, "flapjack.sally.right"))
+				.getResultString();
 		System.out.println("\n// dotted field read\n"
 				+ "client.fieldRead(GUID, \"flapjack.sally.right\") -> "
 				+ resultString);
@@ -162,35 +170,38 @@ public class ClientExample {
 		// Update a field using dot notation
 		JSONArray newValue = new JSONArray(
 				Arrays.asList("One", "Ready", "Frap"));
-		client.fieldUpdate(guid, "flapjack.sammy", newValue);
+		client.execute(GNSCommand.fieldUpdate(guid, "flapjack.sammy", newValue));
 		System.out.println("\n// dotted field update\n"
 				+ "client.fieldUpdate(GUID, \"flapjack.sammy\", " + newValue);
 
 		// Read the same field using dot notation
-		resultString = client.fieldRead(guid, "flapjack.sammy");
+		result = client.execute(GNSCommand.fieldRead(guid, "flapjack.sammy"))
+				.getResultJSONObject();
 		System.out.println("client.fieldRead(GUID, \"flapjack.sammy\") -> "
-				+ resultString);
+				+ result);
 
 		// Read two fields at a time
-		resultString = client.fieldRead(guid,
-				new ArrayList<String>(Arrays.asList("name", "occupation")));
+		result = client.execute(
+				GNSCommand.fieldRead(
+						guid,
+						new ArrayList<String>(Arrays.asList("name",
+								"occupation")))).getResultJSONObject();
 		System.out.println("\n// multi-field read\n"
 				+ "client.fieldRead(GUID, [\"name\",\"occupation\"] -> "
-				+ resultString);
+				+ result);
 
 		// Read the entire object back in
-		result = client.read(guid);
+		result = client.execute(GNSCommand.read(guid)).getResultJSONObject();
 		System.out.println("\nclient.read(GUID) -> " + result.toString());
 
-		
 		// Delete created GUID
-		client.accountGuidRemove(guid);
+		client.execute(GNSCommand.accountGuidRemove(guid));
 		System.out.println("\n// GUID delete\n"
 				+ "client.accountGuidRemove(GUID) // GUID=" + guid);
 
-		// Try read the entire record
+		// Try read the entire record after deleting (expecting to fail)
 		try {
-			result = client.read(guid);
+			result = client.execute(GNSCommand.read(guid)).getResultJSONObject();
 		} catch (Exception e) {
 			System.out.println("\n// non-existent GUID error (expected)\n"
 					+ "client.read(GUID) // GUID= " + guid + "\n  "

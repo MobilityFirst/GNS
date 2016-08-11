@@ -138,22 +138,25 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
   private ContextServiceGNSInterface contextServiceGNSClient;
 
   /**
-   * 
+   *
    */
-  GNSHttpServer httpServer;
+  GNSHttpServer httpServer = null;
   /**
-   * 
+   *
    */
-  LocalNameServer localNameServer;
+  LocalNameServer localNameServer = null;
   /**
    * The UdpDnsServer that serves DNS requests through UDP.
    */
-  private UdpDnsServer udpDnsServer;
+  private UdpDnsServer udpDnsServer = null;
   /**
    * The DnsTranslator that serves DNS requests through UDP.
    */
-  private DnsTranslator dnsTranslator;
-  
+  private DnsTranslator dnsTranslator = null;
+
+  // Which one doesn't need to exists anymore?
+  ListenerAdmin ccpListenerAdmin = null;
+  AppAdmin appAdmin = null;
 
   /**
    * Constructor invoked via reflection by gigapaxos.
@@ -175,6 +178,12 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     }
     if (dnsTranslator != null) {
       dnsTranslator.shutdown();
+    }
+    if (ccpListenerAdmin != null) {
+      ccpListenerAdmin.shutdown();
+    }
+    if (appAdmin != null) {
+      appAdmin.shutdown();
     }
   }
 
@@ -215,10 +224,11 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             nodeID, this,
             gnsNodeConfig);
     // Finish admin setup
-    ListenerAdmin ccpListenerAdmin = new ListenerAdmin(requestHandler);
+    ccpListenerAdmin = new ListenerAdmin(requestHandler);
     ccpListenerAdmin.start();
     admintercessor.setListenerAdmin(ccpListenerAdmin);
-    new AppAdmin(this, gnsNodeConfig).start();
+    appAdmin = new AppAdmin(this, gnsNodeConfig);
+    appAdmin.start();
     GNSConfig.getLogger().log(Level.INFO, "{0} Admin thread initialized", nodeID);
     // Start up some servers
     httpServer = new GNSHttpServer(requestHandler);
@@ -531,8 +541,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else //state does not equal null so we either create a new record or update the existing one
-      {
-        if (!NameRecord.containsRecord(nameRecordDB, name)) {
+       if (!NameRecord.containsRecord(nameRecordDB, name)) {
           // create a new record
           try {
             ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
@@ -549,7 +558,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             GNSConfig.getLogger().log(Level.SEVERE, "Problem updating state: {0}", e.getMessage());
           }
         }
-      }
       return true;
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Failed update exception: {0}", e.getMessage());

@@ -487,6 +487,12 @@ public class GNSCommandProtocol {
    * The prefix used to hide GNS internal fields.
    */
   public static final String INTERNAL_PREFIX = "_GNS_";
+  
+  /**
+   * The error message used to indicate that an account is already verified.
+   */
+  @Deprecated
+  public static final String ACCOUNT_ALREADY_VERIFIED = "Account already verified";
 
   /**
    * Creates a GNS field that is hidden from the user.

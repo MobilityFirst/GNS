@@ -64,7 +64,7 @@ public class LookupGuidRecord extends BasicCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
       return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (guidInfo != null) {

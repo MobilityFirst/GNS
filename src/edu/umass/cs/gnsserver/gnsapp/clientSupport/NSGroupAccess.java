@@ -90,7 +90,7 @@ public class NSGroupAccess {
 //            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about this when we get transactions working.
-   
+
     if (response.equals(GNSCommandProtocol.OK_RESPONSE)) {
       //if (!groupResponse.isAnError()) {
       // This is probably a bad idea to update every member
@@ -168,16 +168,10 @@ public class NSGroupAccess {
           ClientRequestHandlerInterface handler) {
     try {
       handler.getRemoteQuery().fieldRemove(groupGuid, GroupAccess.GROUP, memberGuid);
-//    NSResponseCode groupResponse = LNSUpdateHandler.sendUpdate(groupGuid, GroupAccess.GROUP,
-//            new ResultValue(Arrays.asList(memberGuid)),
-//            UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
       // We could roll back the above operation if the one below gets an error, but we don't
       // We'll worry about this when we get transactions working.
       handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, groupGuid);
-//    if (!groupResponse.isAnError()) {
-//      LNSUpdateHandler.sendUpdate(memberGuid, GroupAccess.GROUPS, new ResultValue(Arrays.asList(groupGuid)),
-//              UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
-//    }
+      // FIXME: Don't ignore errors in above code.
       return GNSResponseCode.NO_ERROR;
     } catch (IOException | JSONException | ClientException e) {
       return GNSResponseCode.UNSPECIFIED_ERROR;
@@ -212,12 +206,7 @@ public class NSGroupAccess {
    */
   public static void updateLastUpdate(String guid, Date lastUpdate, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException {
-    //ClientSupportConfig.getLogger().info("RQ: ");
-
     handler.getRemoteQuery().fieldUpdate(guid, GROUP_LAST_UPDATE, lastUpdate.getTime());
-
-//    LNSUpdateHandler.sendUpdate(guid, GROUP_LAST_UPDATE, new ResultValue(Arrays.asList(Long.toString(lastUpdate.getTime()))),
-//            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
   }
 
   /**
@@ -231,11 +220,7 @@ public class NSGroupAccess {
    */
   public static void updateMinRefresh(String guid, int minRefresh, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException {
-    //ClientSupportConfig.getLogger().info("RQ: ");
-
     handler.getRemoteQuery().fieldUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, minRefresh);
-//    LNSUpdateHandler.sendUpdate(guid, GROUP_MIN_REFRESH_INTERVAL, new ResultValue(Arrays.asList(Integer.toString(minRefresh))),
-//            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
   }
 
   /**
@@ -250,11 +235,7 @@ public class NSGroupAccess {
    */
   public static void updateQueryString(String guid, String queryString, ClientRequestHandlerInterface handler)
           throws ClientException, IOException, JSONException {
-    //ClientSupportConfig.getLogger().info("RQ: ");
-
     handler.getRemoteQuery().fieldUpdate(guid, GROUP_QUERY_STRING, queryString);
-//    LNSUpdateHandler.sendUpdate(guid, GROUP_QUERY_STRING, new ResultValue(Arrays.asList(queryString)),
-//            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
   }
 
   /**

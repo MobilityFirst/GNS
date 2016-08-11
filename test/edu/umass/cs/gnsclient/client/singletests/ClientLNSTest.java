@@ -52,7 +52,7 @@ public class ClientLNSTest {
     if (client == null) {
       try {
         client = new GNSClientCommands();
-        client.setUseLNS(new InetSocketAddress("127.0.0.1", 24598));
+        client.setGNSProxy(new InetSocketAddress("127.0.0.1", 24598));
         client.setForceCoordinatedReads(true);
       } catch (IOException e) {
         fail("Exception creating client: " + e);

@@ -21,6 +21,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
  *
  * @author arun, westy
  */
+@Deprecated
 public class CommandDefs {
 
   private static final Class<?>[] COMMANDS = new Class<?>[]{
@@ -170,9 +171,9 @@ public class CommandDefs {
     edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
     edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class,
     // Active code
-    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Set.class,
-    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Clear.class,
-    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.Get.class
+    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.SetCode.class,
+    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.ClearCode.class,
+    edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.activecode.GetCode.class
 
   };
 

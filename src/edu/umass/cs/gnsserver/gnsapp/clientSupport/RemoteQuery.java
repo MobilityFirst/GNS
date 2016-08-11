@@ -81,67 +81,70 @@ public class RemoteQuery extends ClientAsynchBase {
     return super.toString()
             + (this.myID != null ? ":" + this.myID : "");
   }
-  
+
   public static interface RequestCallbackWithRequest extends RequestCallback {
-	  public RequestCallbackWithRequest setRequest(CommandPacket request);
-	  public CommandPacket getRequest();
-	  public Request getResponse();
+
+    public RequestCallbackWithRequest setRequest(CommandPacket request);
+
+    public CommandPacket getRequest();
+
+    public Request getResponse();
   }
 
   /**
    * A callback that notifys any waits and records the response from a replica.
-   * 
-   * arun: a hack to know the damned request, not just the ID, when a timeout happens. This 
+   *
+   * arun: a hack to know the damned request, not just the ID, when a timeout happens. This
    * whole RemoteQuery/ClientAsyncBase crap needs a major cleanup just like GNSClient and
    * ideally just reuse GNSClient.
    */
-	private final RequestCallback replicaCommandCallback = (Request response) -> {
+  private final RequestCallback replicaCommandCallback = (Request response) -> {
 
-		long requestId;
-		if (response instanceof ActiveReplicaError) {
-			requestId = ((ActiveReplicaError) response).getRequestID();
-		} else if (response instanceof ClientRequest) {
-			requestId = ((RequestIdentifier) response).getRequestID();
-		} else {
-			ClientSupportConfig.getLogger().log(Level.SEVERE,
-					"Bad response type: {0}", response.getClass());
-			return;
-		}
+    long requestId;
+    if (response instanceof ActiveReplicaError) {
+      requestId = ((ActiveReplicaError) response).getRequestID();
+    } else if (response instanceof ClientRequest) {
+      requestId = ((RequestIdentifier) response).getRequestID();
+    } else {
+      ClientSupportConfig.getLogger().log(Level.SEVERE,
+              "Bad response type: {0}", response.getClass());
+      return;
+    }
 
-		replicaResultMap.put(requestId, response);
-	};
+    replicaResultMap.put(requestId, response);
+  };
 
-	private RequestCallbackWithRequest getRequestCallback(Object monitor) {
-		return new RequestCallbackWithRequest() {
-			CommandPacket request = null;
-			Request response = null;
+  private RequestCallbackWithRequest getRequestCallback(Object monitor) {
+    return new RequestCallbackWithRequest() {
+      CommandPacket request = null;
+      Request response = null;
 
-			public void handleResponse(Request response) {
-				this.response = response;
-				replicaCommandCallback.handleResponse(response);
-				synchronized (monitor) {
-					monitor.notifyAll();
-				}
-			}
+      public void handleResponse(Request response) {
+        this.response = response;
+        replicaCommandCallback.handleResponse(response);
+        synchronized (monitor) {
+          monitor.notifyAll();
+        }
+      }
 
-			@Override
-			public RequestCallbackWithRequest setRequest(CommandPacket request) {
-				 this.request = request;
-				 return this;
-			}
+      @Override
+      public RequestCallbackWithRequest setRequest(CommandPacket request) {
+        this.request = request;
+        return this;
+      }
 
-			@Override
-			public CommandPacket getRequest() {
-				return this.request;
-			}
+      @Override
+      public CommandPacket getRequest() {
+        return this.request;
+      }
 
-			@Override
-			public Request getResponse() {
-				return this.response;
-			}
+      @Override
+      public Request getResponse() {
+        return this.response;
+      }
 
-		};
-	}
+    };
+  }
 
   /**
    * A callback that notifys any waits and records the response from a reconfigurator.
@@ -164,6 +167,7 @@ public class RemoteQuery extends ClientAsynchBase {
           throws ClientException, ActiveReplicaException {
     return waitForReplicaResponse(id, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT);
   }
+
   private ClientRequest waitForReplicaResponse(long id, Object monitor, RequestCallbackWithRequest callback)
           throws ClientException, ActiveReplicaException {
     return waitForReplicaResponse(id, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT);
@@ -174,7 +178,7 @@ public class RemoteQuery extends ClientAsynchBase {
     try {
       synchronized (monitor) {
         long monitorStartTime = System.currentTimeMillis();
-        while (!replicaResultMap.containsKey(id) && (callback==null || callback.getResponse()==null)
+        while (!replicaResultMap.containsKey(id) && (callback == null || callback.getResponse() == null)
                 && (timeout == 0 || System.currentTimeMillis()
                 - monitorStartTime < timeout)) {
           ClientSupportConfig.getLogger().log(Level.FINE, "{0} waiting for id {1} with a timeout of {2}ms",
@@ -186,7 +190,7 @@ public class RemoteQuery extends ClientAsynchBase {
           // TODO: arun
           ClientException e = new ClientException(
                   this + ": Timed out on active replica response after waiting for "
-                  + timeout + "ms for response packet for response for " + (callback !=null ? callback.getRequest().getSummary() : id));
+                  + timeout + "ms for response packet for response for " + (callback != null ? callback.getRequest().getSummary() : id));
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
@@ -200,11 +204,11 @@ public class RemoteQuery extends ClientAsynchBase {
       throw new ClientException("Wait for return packet was interrupted " + x);
     }
     Request response = replicaResultMap.remove(id);
-    assert(!(response instanceof CommandPacket) || response.equals(callback!=null ? callback.getResponse() : null));
-    
+    assert (!(response instanceof CommandPacket) || response.equals(callback != null ? callback.getResponse() : null));
+
     if (response instanceof ActiveReplicaError) {
       throw new ActiveReplicaException("ActiveReplicaException incurred for "
-              + response.getServiceName() + " " + (callback!=null ? callback.getRequest() : ""));
+              + response.getServiceName() + " " + (callback != null ? callback.getRequest() : ""));
     } else if (response instanceof ClientRequest) {
       return (ClientRequest) response;
     } else { // shouldn't ever get here because callback can't find a request id
@@ -215,7 +219,7 @@ public class RemoteQuery extends ClientAsynchBase {
   private ClientReconfigurationPacket waitForReconResponse(Request request, Object monitor) throws ClientException {
     return waitForReconResponse(request, monitor, DEFAULT_RECON_TIMEOUT);
   }
-  
+
   private static final long WAIT_TIMESTEP = 1000;
 
   private ClientReconfigurationPacket waitForReconResponse(Request request, Object monitor, long timeout)
@@ -225,9 +229,9 @@ public class RemoteQuery extends ClientAsynchBase {
         long monitorStartTime = System.currentTimeMillis();
         while (!reconResultMap.containsKey(request.getServiceName())
                 && (timeout == 0 || System.currentTimeMillis() - monitorStartTime < timeout)) {
-					ClientSupportConfig.getLogger().log(Level.FINE,
-							"{0} waiting for next time step for request {1}",
-							new Object[] { this, request.getSummary() });
+          ClientSupportConfig.getLogger().log(Level.FINE,
+                  "{0} waiting for next time step for request {1}",
+                  new Object[]{this, request.getSummary()});
           monitor.wait(WAIT_TIMESTEP);
         }
         if (timeout != 0 && System.currentTimeMillis() - monitorStartTime >= timeout) {
@@ -273,14 +277,14 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   }
 
-	/**
-	 * Creates a record at an appropriate reconfigurator.
-	 *
-	 * @param name
-	 * @param value
-	 * @return a NSResponseCode
-	 * @throws ClientException
-	 */
+  /**
+   * Creates a record at an appropriate reconfigurator.
+   *
+   * @param name
+   * @param value
+   * @return a NSResponseCode
+   * @throws ClientException
+   */
   public GNSResponseCode createRecord(String name, JSONObject value) throws ClientException {
     try {
       CreateServiceName packet = new CreateServiceName(name, value.toString());
@@ -352,7 +356,7 @@ public class RemoteQuery extends ClientAsynchBase {
    *
    * @param name
    * @return GNSResponseCode
- * @throws ClientException 
+   * @throws ClientException
    */
   public GNSResponseCode deleteRecord(String name) throws ClientException {
     try {
@@ -365,24 +369,24 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   }
 
-	/**
-	 * @param name
-	 * @return GNSResponse code
-	 * @throws ClientException
-	 */
-	public GNSResponseCode deleteRecordSuppressExceptions(String name)
-			throws ClientException {
-		try {
-			DeleteServiceName packet = new DeleteServiceName(name);
-			return sendReconRequest(packet);
-		} catch (IOException e) {
-			ClientSupportConfig.getLogger().log(Level.SEVERE,
-					"Problem creating {0} :{1}", new Object[] { name, e });
-			return GNSResponseCode.UNSPECIFIED_ERROR.setMessage(e.getMessage());
-		} catch (ClientException ce) {
-			return ce.getCode().setMessage(ce.getMessage());
-		}
-	}
+  /**
+   * @param name
+   * @return GNSResponse code
+   * @throws ClientException
+   */
+  public GNSResponseCode deleteRecordSuppressExceptions(String name)
+          throws ClientException {
+    try {
+      DeleteServiceName packet = new DeleteServiceName(name);
+      return sendReconRequest(packet);
+    } catch (IOException e) {
+      ClientSupportConfig.getLogger().log(Level.SEVERE,
+              "Problem creating {0} :{1}", new Object[]{name, e});
+      return GNSResponseCode.UNSPECIFIED_ERROR.setMessage(e.getMessage());
+    } catch (ClientException ce) {
+      return ce.getCode().setMessage(ce.getMessage());
+    }
+  }
 
   /**
    * Handles the reponse from some query with a default timeout period.
@@ -396,8 +400,10 @@ public class RemoteQuery extends ClientAsynchBase {
   private String handleQueryResponse(long requestId, Object monitor, String notFoundReponse) throws ClientException {
     return handleQueryResponse(requestId, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
   }
-  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, String notFoundReponse) throws ClientException {
-	  return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
+
+  private String handleQueryResponse(long requestId, Object monitor, 
+          RequestCallbackWithRequest callback, String notFoundReponse) throws ClientException {
+    return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
   }
 
   /**
@@ -410,8 +416,8 @@ public class RemoteQuery extends ClientAsynchBase {
    * @return the response from the query
    * @throws ClientException
    */
-  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, long timeout,
-          String notFoundReponse) throws ClientException {
+  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, 
+          long timeout, String notFoundReponse) throws ClientException {
     try {
       CommandValueReturnPacket packet
               = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, callback, timeout);
@@ -605,14 +611,14 @@ public class RemoteQuery extends ClientAsynchBase {
     SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
             SelectGroupBehavior.NONE, key, value, otherValue);
     try {
-    createRecord(packet.getServiceName(), new JSONObject());
-    } catch(Exception e) {
-    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+      createRecord(packet.getServiceName(), new JSONObject());
+    } catch (Exception e) {
+      GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
     }
 
     Object monitor = new Object();
     RequestCallbackWithRequest callback = null;
-    long requestId = sendSelectPacket(packet, callback=this.getRequestCallback(monitor));
+    long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket
             = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
@@ -634,14 +640,14 @@ public class RemoteQuery extends ClientAsynchBase {
   public JSONArray sendSelectQuery(String query) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
     try {
-    createRecord(packet.getServiceName(), new JSONObject());
-    } catch(Exception e) {
-    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+      createRecord(packet.getServiceName(), new JSONObject());
+    } catch (Exception e) {
+      GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
     }
 
     Object monitor = new Object();
     RequestCallbackWithRequest callback = null;
-    long requestId = sendSelectPacket(packet, callback=this.getRequestCallback(monitor));
+    long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
     if (ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
@@ -666,9 +672,9 @@ public class RemoteQuery extends ClientAsynchBase {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
             query, guid, interval);
     try {
-    createRecord(packet.getServiceName(), new JSONObject());
-    } catch(Exception e) {
-    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+      createRecord(packet.getServiceName(), new JSONObject());
+    } catch (Exception e) {
+      GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
     }
 
     Object monitor = new Object();
@@ -708,9 +714,9 @@ public class RemoteQuery extends ClientAsynchBase {
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
     try {
-    	createRecord(packet.getServiceName(), new JSONObject());
-    } catch(Exception e) {
-    	GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+      createRecord(packet.getServiceName(), new JSONObject());
+    } catch (Exception e) {
+      GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
     }
     Object monitor = new Object();
     RequestCallbackWithRequest callback = null;
