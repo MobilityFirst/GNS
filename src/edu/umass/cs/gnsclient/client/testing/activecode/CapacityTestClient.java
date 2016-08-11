@@ -156,13 +156,13 @@ public class CapacityTestClient extends DefaultTest {
 			 * warm up
 			 */
 			for (int i=0; i<rate; i++){
-				executor.submit(isRead?new ReadTask(client, entry, withSignature, false):null);
+				executor.submit(isRead?new ReadTask(client, entry, withSignature, false):new WriteTask(client, entry, withSignature, false));
 				rateLimiter.record();
 			}
 			
 			for (int i=0; i<total; i++){
 				if(!executor.isShutdown()){
-					executor.submit(isRead?new ReadTask(client, entry, withSignature, true):null);
+					executor.submit(isRead?new ReadTask(client, entry, withSignature, true):new WriteTask(client, entry, withSignature, true));
 					rateLimiter.record();
 				}
 			}
@@ -222,8 +222,8 @@ public class CapacityTestClient extends DefaultTest {
 				if (signed)
 					client.fieldUpdate(guid, someField, someValue);
 				else
-					client.fieldUpdate(guid.getGuid(),
-							someField, someValue, null);
+					client.fieldUpdate(guid,
+							someField, someValue);
 
 				//latency.add(System.currentTimeMillis() - t);
 				if(log)
