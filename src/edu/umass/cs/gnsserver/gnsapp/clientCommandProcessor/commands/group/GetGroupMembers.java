@@ -62,10 +62,6 @@ public class GetGroupMembers extends BasicCommand {
     return new String[]{GUID, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return GET_GROUP_MEMBERS;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {

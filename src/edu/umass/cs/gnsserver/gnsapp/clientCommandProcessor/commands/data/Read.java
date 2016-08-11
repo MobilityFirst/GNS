@@ -66,11 +66,6 @@ public class Read extends BasicCommand {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return READ;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {

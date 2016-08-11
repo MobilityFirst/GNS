@@ -66,23 +66,18 @@ public class ClearCode extends BasicCommand {
     return new String[]{GUID, WRITER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return AC_CLEAR;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json,
           ClientRequestHandlerInterface handler) throws InvalidKeyException,
           InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
           SignatureException, ParseException {
-    String accountGuid = json.getString(GUID);
+    String guid = json.getString(GUID);
     String writer = json.getString(WRITER);
     String action = json.getString(AC_ACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    GNSResponseCode response = ActiveCode.clearCode(accountGuid, action,
+    GNSResponseCode response = ActiveCode.clearCode(guid, action,
             writer, signature, message, timestamp, handler);
 
     if (response.isExceptionOrError()) {

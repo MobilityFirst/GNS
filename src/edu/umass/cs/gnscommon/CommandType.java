@@ -525,11 +525,11 @@ public enum CommandType {
    * Other commands that may be remote-query-invoked by this command.
    * Non-final only because we can not name enums before they are defined.
    */
-  private CommandType[] commandTypes;
+  private CommandType[] invokedCommands;
 
-  private void setChain(CommandType... commandTypes) {
-    if (this.commandTypes == null) {
-      this.commandTypes = commandTypes;
+  private void setChain(CommandType... invokedCommands) {
+    if (this.invokedCommands == null) {
+      this.invokedCommands = invokedCommands;
     } else {
       throw new RuntimeException("Can set command chain exactly once");
     }
@@ -550,7 +550,23 @@ public enum CommandType {
    */
   static {
     Read.setChain(ReadUnsigned);
-    AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned); // what else?
+    AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned); // what else?
+    RemoveGuid.setChain(ReadUnsigned);
+    RemoveAccount.setChain(ReadUnsigned);
+    SelectGroupSetupQuery.setChain(ReadUnsigned);
+    VerifyAccount.setChain(ReplaceUserJSONUnsigned);
+    AclRetrieve.setChain(ReadUnsigned);
+    AclRemove.setChain(ReadUnsigned);
+    AddMembersToGroup.setChain(AppendListUnsigned);
+    AddToGroup.setChain(AppendListUnsigned);
+    GetGroupMembers.setChain(ReadUnsigned);
+    GetGroups.setChain(ReadUnsigned);
+    RemoveFromGroup.setChain(RemoveUnsigned);
+    RemoveMembersFromGroup.setChain(RemoveUnsigned);
+    SetCode.setChain(RemoveUnsigned);
+    ClearCode.setChain(RemoveUnsigned);
+    GetCode.setChain(RemoveUnsigned);
+
   }
 
   public enum Type {
@@ -621,11 +637,11 @@ public enum CommandType {
   public Class<?> getCommandClass() {
     return commandClass;
   }
-  
+
   public static Class<?>[] getCommandClassesArray() {
     return (Class<?>[]) Stream.of(values()).map(CommandType::getCommandClass).toArray();
   }
-  
+
   public static List<Class<?>> getCommandClasses() {
     return Stream.of(values()).map(CommandType::getCommandClass).collect(Collectors.toList());
   }

@@ -33,7 +33,6 @@ import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfoAnywhere;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
@@ -89,7 +88,7 @@ public class FieldAccess {
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
     return GNSCommandProtocol.ALL_FIELDS.equals(field) || !isKeyDotNotation(field);
   }
-  
+
   /* false means that even single field queries will return a JSONObject response
    * with a single key and value. The client code has been modified accordingly.
    * The server-side modifications involve changes to AccountAccess to handle
@@ -129,20 +128,21 @@ public class FieldAccess {
         valuesMap = valuesMap.removeInternalFields();
       }
       if (valuesMap != null) {
-    	  /* arun: changed to not rely on JSONException. The previous code was relying
-    	   * on valuesMap.getString() throwing a JSONException and conveying a JSON_PARSE_ERROR, 
-    	   * which is incorrect in this case because it should give a FIELD_NOT_FOUND_EXCEPTION
-    	   * to the client.
-    	   */
-				return valuesMap.isNull(field) ? new CommandResponse(
-						GNSResponseCode.FIELD_NOT_FOUND_EXCEPTION,
-						GNSCommandProtocol.BAD_RESPONSE + " "
-								+ GNSCommandProtocol.FIELD_NOT_FOUND + " ")
-				// arun: added support for SINGLE_FIELD_VALUE_ONLY flag
-						: new CommandResponse(GNSResponseCode.NO_ERROR,
-								SINGLE_FIELD_VALUE_ONLY ? valuesMap
-										.getString(field) : valuesMap
-										.toString());
+        /* arun: changed to not rely on JSONException. The previous code was relying
+    	   on valuesMap.getString() throwing a JSONException and conveying a JSON_PARSE_ERROR, 
+    	   which is incorrect in this case because it should give a FIELD_NOT_FOUND_EXCEPTION
+    	   to the client.
+         */
+        if (valuesMap.isNull(field)) {
+          return new CommandResponse(GNSResponseCode.FIELD_NOT_FOUND_EXCEPTION,
+                  GNSCommandProtocol.BAD_RESPONSE + " "
+                  + GNSCommandProtocol.FIELD_NOT_FOUND + " ");
+        } else {
+          // arun: added support for SINGLE_FIELD_VALUE_ONLY flag
+          return new CommandResponse(GNSResponseCode.NO_ERROR,
+                  SINGLE_FIELD_VALUE_ONLY ? valuesMap.getString(field)
+                          : valuesMap.toString());
+        }
       } else {
         return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_STRING);
       }
@@ -224,18 +224,18 @@ public class FieldAccess {
     ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
       //resultString = new JSONArray(value).toString();
-    	try {
-			resultString = new JSONObject().put(field, value).toString();
-		} catch (JSONException e) {
-		      return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + GNSResponseCode.JSON_PARSE_ERROR);
-		}
+      try {
+        resultString = new JSONObject().put(field, value).toString();
+      } catch (JSONException e) {
+        return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, BAD_RESPONSE + " " + GNSResponseCode.JSON_PARSE_ERROR);
+      }
     } else {
       //resultString = EMPTY_JSON_ARRAY_STRING;
-    	resultString = new JSONObject().toString();
+      resultString = new JSONObject().toString();
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
   }
-  
+
   /**
    * Reads the value of all the fields in a guid.
    * Doesn't return internal system fields.
@@ -602,14 +602,14 @@ public class FieldAccess {
     String guid = SharedGuidUtils.createGuidStringFromBase64PublicKey(publicKey);
     //String guid = SharedGuidUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
-    if (lookupGuidInfoAnywhere(guid, handler) == null) {
+    if (AccountAccess.lookupGuidInfoAnywhere(guid, handler) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
         return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accountGuid);
       }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler, true);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
       if (accountInfo == null) {
         return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + accountGuid);
       }
