@@ -24,8 +24,6 @@ import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-//import static edu.umass.cs.gnscommon.GNSCommandProtocol.HELP;
-import static edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig.INVALID_PING_LATENCY;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
@@ -47,7 +45,6 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -106,7 +103,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public LocalNameServer() throws IOException {
     this(new InetSocketAddress(usePublicIP ? NetworkUtils.getLocalHostLANAddress().getHostAddress()
             : "127.0.0.1",
-            // make this a gigpaxos config option
+            // Fixme: make this a gigpaxos config option
             DEFAULT_LNS_TCP_PORT),
             new LNSNodeConfig());
   }
@@ -121,21 +118,9 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public LocalNameServer(InetSocketAddress originalNodeAddress, LNSNodeConfig nodeConfig) throws IOException {
     SSLDataProcessingWorker.SSL_MODES sslMode;
     InetSocketAddress convertedNodeAddress;
-    //if (!LocalNameServerOptions.disableSSL) {
-    //sslMode = SERVER_AUTH;
-    // ReconfigurationConfig.setClientPortOffset(100);
-    // Set up a SERVER_AUTH address the client can use
-    //nodeAddress = new InetSocketAddress(nodeAddress.getAddress(), nodeAddress.getPort() + 100);
     sslMode = ReconfigurationConfig.getClientSSLMode();
     convertedNodeAddress = new InetSocketAddress(originalNodeAddress.getAddress(),
             ReconfigurationConfig.getClientFacingSSLPort(originalNodeAddress.getPort()));
-//    } else {
-//      sslMode = CLEAR;
-//      convertedNodeAddress = new InetSocketAddress(originalNodeAddress.getAddress(),
-//              ReconfigurationConfig.getClientFacingClearPort(originalNodeAddress.getPort()));
-//      //ReconfigurationConfig.setClientPortOffset(0);  // arun: illegal
-//    }
-
     this.address = convertedNodeAddress;
     LOG.log(Level.INFO, "LNS: SSL Mode is {0}; listening on {1}",
             new Object[]{sslMode.name(), address});
@@ -155,20 +140,12 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       JSONNIOTransport<InetSocketAddress> gnsNiot = new JSONNIOTransport<>(
               address, crNodeConfig, demultiplexer, sslMode);
       messenger = new JSONMessenger<>(gnsNiot);
-      //this.sslServer = new JSONMessenger<InetSocketAddress>(
-      //	new JSONNIOTransport<>(address, crNodeConfig,
-      //		sslDemultiplexer, sslMode));
-
       this.protocolExecutor = new ProtocolExecutor<>(messenger);
     } catch (IOException e) {
       LOG.log(Level.INFO, "Unabled to start LNS listener: {0}", e);
       System.exit(0);
     }
     LOG.log(Level.INFO, "Started LNS listener on {0}", address);
-//    if (!LocalNameServerOptions.disableSSL) {
-//      messenger.setClientMessenger(initClientMessenger());
-//    }
-    //LOG.info("LNS running at " + originalNodeAddress.getHostString() + " started Ping manager.");
   }
 
   /**
@@ -319,7 +296,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
     return result;
   }
 
-  static class AsyncLNSClient extends ReconfigurableAppClientAsync {
+  static class AsyncLNSClient extends ReconfigurableAppClientAsync<Request> {
 
     private static Stringifiable<String> unstringer = new StringifiableDefault<String>(
             "");
@@ -395,7 +372,7 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
         continue;
       }
       long pingLatency = nodeConfig.getPingLatency(serverId);
-      if (pingLatency != INVALID_PING_LATENCY && pingLatency < lowestLatency) {
+      if (pingLatency != LNSNodeConfig.INVALID_PING_LATENCY && pingLatency < lowestLatency) {
         lowestLatency = pingLatency;
         serverAddress = serverId;
       }
