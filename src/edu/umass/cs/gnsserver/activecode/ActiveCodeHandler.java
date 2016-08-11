@@ -286,7 +286,6 @@ public class ActiveCodeHandler {
 	 * @return executed result
 	 */
 	public static ValuesMap runCode(String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
-		System.out.println("Field is "+field+" with value "+valuesMap);
 		try {
 			return handler.runCode(guid, field, code, valuesMap, activeCodeTTL);
 		} catch (Exception e) {
