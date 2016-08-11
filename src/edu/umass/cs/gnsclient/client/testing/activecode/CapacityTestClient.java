@@ -104,14 +104,13 @@ public class CapacityTestClient extends DefaultTest {
 		for(int i=0; i<numClients; i++){
 			executor.execute(new SingleGNSClientTask(clients[i], entry, RATE));
 		}
-		executor.shutdown();
 		
 		try {
 			executor.awaitTermination(DURATION+2000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+		executor.shutdown();
 	}
 	
 	private static void processArgs(String[] args) throws IOException {
