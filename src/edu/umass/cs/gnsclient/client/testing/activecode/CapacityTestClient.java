@@ -113,7 +113,7 @@ public class CapacityTestClient extends DefaultTest {
 		executor.shutdown();
 		
 		try {
-			executor.awaitTermination(DURATION+5, TimeUnit.SECONDS);
+			executor.awaitTermination(DURATION+5000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -146,7 +146,7 @@ public class CapacityTestClient extends DefaultTest {
 			
 			executor.shutdown();
 			try {
-				executor.awaitTermination(duration+1, TimeUnit.SECONDS);
+				executor.awaitTermination(duration+1000, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
