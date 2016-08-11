@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,7 +55,7 @@ public class CapacityTestClient extends DefaultTest {
 	
 	private static GuidEntry entry;
 	private static GNSClientCommands[] clients;
-	private static ArrayList<Long> latency = new ArrayList<Long>();
+	private static List<Long> latency = new CopyOnWriteArrayList<Long>();
 	private static ExecutorService executor;
 	
 	/**
