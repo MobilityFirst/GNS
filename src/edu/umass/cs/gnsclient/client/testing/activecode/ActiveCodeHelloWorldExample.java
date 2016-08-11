@@ -21,8 +21,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Activ
  *
  */
 public class ActiveCodeHelloWorldExample {
-	
-	
+		
 	
 	/**
 	 * @param args
@@ -59,7 +58,8 @@ public class ActiveCodeHelloWorldExample {
 		final String code = new String(Files.readAllBytes(Paths.get(codeFile)));
 		
 		// set up the code for on read operation
-		client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
+		client.activeCodeClear(entry.getGuid(), ActiveCode.READ_ACTION, entry);
+		//client.activeCodeSet(entry.getGuid(), ActiveCode.READ_ACTION, code, entry);
 		
 		// get the value of the field again
 		response = client.fieldRead(entry, field);
