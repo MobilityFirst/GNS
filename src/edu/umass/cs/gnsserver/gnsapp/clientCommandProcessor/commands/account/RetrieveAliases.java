@@ -76,11 +76,11 @@ public class RetrieveAliases extends BasicCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
       return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
     if (NSAccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler);
       if (accountInfo == null) {
         return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
       } else if (!accountInfo.isVerified()) {

@@ -58,6 +58,13 @@ import org.msgpack.value.Value;
 import org.msgpack.value.ValueType;
 
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 
 
@@ -67,7 +74,7 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
  * Packet format sent from a client and handled by a local name server.
  *
  */
-public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest {
+public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest{
 
   private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";
@@ -191,20 +198,22 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    */
   public CommandPacket(byte[] bytes) throws JSONException, UnsupportedEncodingException{
   	ByteBuffer buf = ByteBuffer.wrap(bytes);
-  	int commandType = buf.getInt();
   	int packetType = buf.getInt();
+  	int commandType = buf.getInt();
   	this.clientRequestId = buf.getLong();
-  	long cmdClientReqId = buf.getLong();
   	this.LNSRequestId = buf.getLong();
   	this.senderPort = buf.getInt();
+  	long seqNum = buf.getLong();
   	this.senderAddress = null;	
   	this.setType(Packet.getPacketType(packetType));
   	
+  	
+  	
   	this.command = new JSONObject();
   	this.command.put(GNSCommandProtocol.COMMAND_INT, commandType); 
-  	this.command.put(CLIENTREQUESTID, cmdClientReqId);
-  	//cmd.put(LNSREQUESTID, lnsReqId);
-  	//this.command.put(SENDERPORT, senderPort);
+  	if (seqNum != -1){
+  		this.command.put(GNSCommandProtocol.SEQUENCE_NUMBER, seqNum);
+  	}
   	
   	
   	//Put in the variable length fields.
@@ -221,49 +230,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   	}
   }
 
-  /**
-   * Reconstructs a CommandPacket from a given byte array.
-   * @param bytes The bytes given by the toBytes method.
-   * @return The reconstructed CommandPacket
-   * @throws JSONException
-   * @throws UnsupportedEncodingException
-   */
-  public static final CommandPacket fromBytes(byte[] bytes) throws JSONException, UnsupportedEncodingException{
-  	JSONObject commandPacketJSON = new JSONObject();
-  	ByteBuffer buf = ByteBuffer.wrap(bytes);
-  	int commandType = buf.getInt();
-  	int packetType = buf.getInt();
-  	long clientReqId = buf.getLong();
-  	long cmdClientReqId = buf.getLong();
-  	long lnsReqId = buf.getLong();
-  	int senderPort = buf.getInt();
-  	
-  	//Put in the fixed fields.
-  	commandPacketJSON.put(CLIENTREQUESTID, clientReqId);
-  	Packet.putPacketType(commandPacketJSON, Packet.getPacketType(packetType));
-  	
-  	JSONObject cmd = new JSONObject();
-  	cmd.put(GNSCommandProtocol.COMMAND_INT, commandType); 
-  	cmd.put(CLIENTREQUESTID, cmdClientReqId);
-  	cmd.put(LNSREQUESTID, lnsReqId);
-  	cmd.put(SENDERPORT, senderPort);
-  	
-  	
-  	//Put in the variable length fields.
-  	while(buf.hasRemaining()){
-  		int keyLength = buf.getInt();
-  		byte[] keyBytes = new byte[keyLength];
-  		buf.get(keyBytes);
-  		String key = new String(keyBytes, "ISO-8859-1");
-  		int valueLength = buf.getInt();
-  		byte[] valueBytes = new byte[valueLength];
-  		buf.get(valueBytes);
-  		String value = new String(valueBytes, "ISO-8859-1");
-  		cmd.put(key, value);
-  	}
-  	commandPacketJSON.put("command", cmd);
-  	return new CommandPacket(commandPacketJSON);
-  }
   
   /**
    * Converts the command object into a JSONObject.
@@ -591,7 +557,7 @@ public CommandType getCommandType() {
 			return json;
 		} catch (JSONException e) {
 			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
-					e.getMessage());
+					e.getMessage() + " while parsing response string " + responseStr);
 		}
 	}
 	
@@ -731,7 +697,7 @@ public CommandType getCommandType() {
  */
 private final byte[] toBytesExpanding(byte[] startingArray) throws JSONException, UnsupportedEncodingException{
 	ByteBuffer buf = ByteBuffer.allocate(2048); //We assume it will be less than 2048 length to start, and will grow if needed.
-	buf.put(startingArray, 0, 4+4+8+8+8+4); //Accounts for the values we already put into the array for the commandType, packetType, clientReqId, lnsReqId, senderPort
+	buf.put(startingArray, 0, 4+4+8+8+4+8); //Accounts for the values we already put into the array for the commandType, packetType, clientReqId, lnsReqId, senderPort
 	@SuppressWarnings("unchecked") //We assume all keys and values are strings.
 	Iterator<String> keys = command.keys();
 	while (keys.hasNext()){
@@ -770,18 +736,14 @@ public final byte[] toBytes() {
 		PacketType packetTypeInstance;
 		packetTypeInstance = this.getType();//getPacketType(command);
 		int packetType = packetTypeInstance.getInt();
-		long clientRedId = this.clientRequestId;
-		long cmdClientReqId = command.has(CLIENTREQUESTID) ? (Long) command.remove(CLIENTREQUESTID) : -1;
-		long lnsReqId = command.has(LNSREQUESTID) ? (Long) command.remove(LNSREQUESTID) : cmdClientReqId;
-		int senderPort = command.has(SENDERPORT) ? (int) command.remove(SENDERPORT) : -1;
-
+		long seqNum = command.has(GNSCommandProtocol.SEQUENCE_NUMBER) ?(long) command.remove(GNSCommandProtocol.SEQUENCE_NUMBER) : -1;
 		int commandType = (int) command.remove(GNSCommandProtocol.COMMAND_INT);
-		buf.putInt(commandType);
 		buf.putInt(packetType);
-		buf.putLong(clientRedId);
-		buf.putLong(cmdClientReqId);
-		buf.putLong(lnsReqId);
-		buf.putInt(senderPort);
+		buf.putInt(commandType);
+		buf.putLong(this.clientRequestId);
+		buf.putLong(this.LNSRequestId);
+		buf.putInt(this.senderPort);
+		buf.putLong(seqNum);
 		byte[] output;
 		@SuppressWarnings("unchecked") //We assume all keys and values are strings.
 		Iterator<String> keys = command.keys();
@@ -818,11 +780,13 @@ public final byte[] toBytes() {
 			//This stops the toBytes method form being destructive.
 			try {
 				command.put(GNSCommandProtocol.COMMAND_INT, commandType);
-				Packet.putPacketType(command, packetTypeInstance);
-				command.put(CLIENTREQUESTID, cmdClientReqId);
-				command.put(LNSREQUESTID, lnsReqId);
-				command.put(SENDERPORT, senderPort);
-				
+				//Packet.putPacketType(command, packetTypeInstance);
+				//command.put(CLIENTREQUESTID, cmdClientReqId);
+				//command.put(LNSREQUESTID, lnsReqId);
+				//command.put(SENDERPORT, senderPort);
+				if (seqNum != -1){
+					command.put(GNSCommandProtocol.SEQUENCE_NUMBER,seqNum);
+				}
 			} catch (JSONException e) {
 				throw new RuntimeException(e);
 			} 

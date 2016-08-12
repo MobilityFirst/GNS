@@ -28,7 +28,10 @@ import java.util.concurrent.ConcurrentMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.interfaces.Callback;
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
+import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.android.AndroidNIOTask;
@@ -42,6 +45,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.CommandType;
+
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -95,9 +99,6 @@ public abstract class AbstractGNSClient {
 
   private static boolean forceCoordinatedReads = false;
   
-  // none-null means contact the LNS for all requests; null means use the normal method
-  private InetSocketAddress lnsAddress = null;
-
   private static final String DEFAULT_INSTANCE = "server.gns.name";
 
   /**
@@ -111,34 +112,6 @@ public abstract class AbstractGNSClient {
     resetInstrumentation();
   }
 
-  /**
-   * Creates a command object from the given command type and a variable
-   * number of key and value pairs.
-   *
-   * @param commandType
-   * @param keysAndValues
-   * @return the query string
-   * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
-   */
-  public static JSONObject createCommand(CommandType commandType, Object... keysAndValues)
-          throws ClientException {
-    try {
-      long t = System.nanoTime();
-      JSONObject result = new JSONObject();
-      String key;
-      Object value;
-      result.put(GNSCommandProtocol.COMMAND_INT, commandType.getInt());
-      for (int i = 0; i < keysAndValues.length; i = i + 2) {
-        key = (String) keysAndValues[i];
-        value = keysAndValues[i + 1];
-        result.put(key, value);
-      }
-      DelayProfiler.updateDelayNano("createCommand", t);
-      return result;
-    } catch (JSONException e) {
-      throw new ClientException("Error encoding message", e);
-    }
-  }
 
   protected JSONObject setForceCoordinatedReads(JSONObject command) {
     try {
@@ -150,20 +123,6 @@ public abstract class AbstractGNSClient {
       return command;
     }
   }
-
-  public InetSocketAddress getLnsAddress() {
-    return this.lnsAddress;
-  }
-
-  public void setUseLNS(InetSocketAddress lnsAddress) {
-    this.lnsAddress = lnsAddress;
-  }
-  
-  public void unsetUseLNS() {
-    this.lnsAddress = null;
-  }
-  
-  
 
   /**
    * Check that the connectivity with the host:port can be established
@@ -247,7 +206,7 @@ public abstract class AbstractGNSClient {
       }
 
       if (readTimeout != 0 && System.currentTimeMillis() - monitorStartTime >= readTimeout) {
-        return this.getTimeoutResponse(commandPacket);
+        return getTimeoutResponse(this, commandPacket);
       }
       GNSClientConfig.getLogger().log(Level.FINE,
               "Response received for query {0}", new Object[]{id + ""});
@@ -267,14 +226,13 @@ public abstract class AbstractGNSClient {
                     ((ActiveReplicaError) result).getResponseMessage());
   }
 
-  protected CommandValueReturnPacket getTimeoutResponse(CommandPacket commandPacket) {
+  protected static CommandValueReturnPacket getTimeoutResponse(AbstractGNSClient me, CommandPacket commandPacket) {
     GNSClientConfig.getLogger().log(Level.INFO,
             "{0} timed out after {1}ms on {2}: {3}",
-            new Object[]{this, readTimeout, commandPacket.getClientRequestId() + "", commandPacket.getSummary()});
+            new Object[]{me, me.readTimeout, commandPacket.getClientRequestId() + "", commandPacket.getSummary()});
     /* FIXME: Remove use of string reponse codes */
     return new CommandValueReturnPacket(commandPacket.getServiceName(), commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT,
             GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT + " for command " + commandPacket.getSummary());
-
   }
 
   private CommandPacket desktopSendCommmandNoWait(JSONObject command) throws IOException {
@@ -283,7 +241,10 @@ public abstract class AbstractGNSClient {
 
   private CommandPacket desktopSendCommmandNoWait(JSONObject command, long id) throws IOException {
     long startTime = System.currentTimeMillis();
-    CommandPacket packet = new CommandPacket(id, command);
+    CommandPacket packet = new GNSCommand(
+//    		CommandPacket(
+    		id, 
+    				command);
     /* arun: moved this here from createCommand. This is the right place to
 		 * put it because it is not easy to change "command" once it has been
 		 * signed, and the command creation methods are and should be static. */
@@ -327,7 +288,7 @@ public abstract class AbstractGNSClient {
    * @throws JSONException
    */
   protected void handleCommandValueReturnPacket(Request response
-  ) throws JSONException {
+  )  {
     long methodStartTime = System.currentTimeMillis(), receivedTime = System.currentTimeMillis();
     CommandValueReturnPacket packet = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
             : null;
@@ -484,7 +445,30 @@ public abstract class AbstractGNSClient {
     fieldUpdateAsynch(targetGuid.getGuid(), field, value, targetGuid);
   }
 
-  protected abstract void sendCommandPacket(CommandPacket packet) throws IOException;
+  //protected abstract void sendCommandPacket(CommandPacket packet) throws IOException;
+  
+	// arun: Made sendAsync abstract instead of sendCommandPacket
+	protected abstract RequestFuture<CommandPacket> sendAsync(CommandPacket packet,
+			Callback<Request,CommandPacket> callback) throws IOException;
+
+//	private RequestCallback defaultCallback = (response) -> {
+//		this.handleCommandValueReturnPacket(response);
+//	};
+
+	/**
+	 * Overrides older implementation of
+	 * {@link #sendCommandPacket(CommandPacket)} with simpler async
+	 * implementation.
+	 *
+	 * @param packet
+	 * @throws IOException
+	 */
+	protected void sendCommandPacket(CommandPacket packet) throws IOException {
+		this.sendAsync(packet, (response) -> {
+			this.handleCommandValueReturnPacket(response);
+			return packet;
+		});
+	}
 
   /**
    *

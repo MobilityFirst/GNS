@@ -64,7 +64,7 @@ public class LookupAccountRecord extends BasicCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     AccountInfo acccountInfo;
-    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
+    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuidLocally(guid, handler)) == null) {
       return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, BAD_RESPONSE + " " + BAD_ACCOUNT + " " + guid);
     }
     if (acccountInfo != null) {

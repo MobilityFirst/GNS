@@ -134,55 +134,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
   protected static final boolean USE_OLD_SEND = false;
 
-  /**
-   * @param command
-   * @return True upon successful execution of a query without a return value
-   * or a query with a boolean return value returning true; false
-   * otherwise .
-   * @throws ClientException
-   * @throws IOException
-   */
-  public boolean execute(CommandPacket command) throws ClientException, IOException {
-    /**
-     * arun: We use a static Packet.setResult in order to not expose a public method
-     * in CommandPacket as it is meant to be used only by internal system methods.
-     */
-    return Packet.setResult(command, CommandUtils
-            .checkResponse(this.sendSync(command), command)).hasResult();
-  }
 
   /**
    * Invariant: A single CommandPacket should have complete information about
    * how to handle the command.
    */
-  /**
-   *
-   * @param command
-   * @return Query result as JSONObject
-   * @throws ClientException
-   * @throws IOException
-   */
-  /*public*/ JSONObject executeMapQuery(CommandPacket command) throws ClientException,
-          IOException {
-    try {
-      // TODO: check that this is a map query first
-      return new JSONObject(CommandUtils.checkResponse(this.sendSync(command,
-              (long) this.readTimeout)));
-    } catch (JSONException e) {
-      throw new ClientException(e);
-    }
-  }
 
-  /*public*/ JSONArray executeListQuery(CommandPacket command)
-          throws ClientException, IOException {
-    try {
-      // check that this is an array query first
-      return new JSONArray(CommandUtils.checkResponse(this.sendSync(
-              command, (long) this.readTimeout)));
-    } catch (JSONException e) {
-      throw new ClientException(e);
-    }
-  }
 
   /**
    * arun: All occurrences of checkResponse( createAndSignCommand have been
@@ -193,7 +150,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   private String getResponse(CommandType commandType, GuidEntry querier,
           Object... keysAndValues) throws ClientException, IOException {
-    CommandPacket commandPacket = null;
+	  GNSCommand commandPacket = null;
     return record(// just instrumentation
             commandType,
             USE_OLD_SEND ? CommandUtils
@@ -202,7 +159,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
                                     keysAndValues)))
                     // new send
                     : CommandUtils.checkResponse(this
-                            .sendSync(
+                            .getCommandValueReturnPacket(
                                     commandPacket = getCommand(commandType,
                                             querier, keysAndValues),
                                     (long) this.readTimeout), commandPacket));
@@ -255,9 +212,10 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @return Constructed CommandPacket
    * @throws ClientException
    */
-  public static CommandPacket getCommand(CommandType type, GuidEntry querier,
+  public static GNSCommand getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
-    CommandPacket packet = new CommandPacket(randomLong(),
+	  GNSCommand packet = new GNSCommand(
+    		//CommandPacket(randomLong(),
             CommandUtils.createAndSignCommand(type, querier, keysAndValues));
     return packet;
   }
@@ -1257,16 +1215,20 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           throws UnsupportedEncodingException, IOException, ClientException,
           InvalidGuidException, NoSuchAlgorithmException {
     long startTime = System.currentTimeMillis();
-    String result = password != null ? getResponse(
-            CommandType.RegisterAccount, guidEntry, NAME, alias,
-            PUBLIC_KEY, Base64.encodeToString(
-                    guidEntry.publicKey.getEncoded(), false), PASSWORD,
-            Base64.encodeToString(
-                    Password.encryptPassword(password, alias), false))
-            : getResponse(CommandType.RegisterAccountSansPassword,
-                    guidEntry.getPrivateKey(), guidEntry.publicKey, NAME,
-                    alias, PUBLIC_KEY, Base64.encodeToString(
-                            guidEntry.publicKey.getEncoded(), false));
+    String result
+            = //password != null ? 
+            getResponse(
+                    CommandType.RegisterAccount, guidEntry, NAME, alias,
+                    PUBLIC_KEY, Base64.encodeToString(
+                            guidEntry.publicKey.getEncoded(), false), PASSWORD,
+                    password != null
+                            ? Base64.encodeToString(
+                                    Password.encryptPassword(password, alias), false)
+                            : "");
+//            : getResponse(CommandType.RegisterAccountSansPassword,
+//                    guidEntry.getPrivateKey(), guidEntry.publicKey, NAME,
+//                    alias, PUBLIC_KEY, Base64.encodeToString(
+//                            guidEntry.publicKey.getEncoded(), false));
     DelayProfiler.updateDelay("accountGuidCreate", startTime);
     return result;
   }
@@ -1632,7 +1594,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   // Active Code
   public void activeCodeClear(String guid, String action, GuidEntry writerGuid)
           throws ClientException, IOException {
-    getResponse(CommandType.ClearActiveCode, writerGuid, GUID, guid,
+    getResponse(CommandType.ClearCode, writerGuid, GUID, guid,
             AC_ACTION, action, WRITER, writerGuid.getGuid());
   }
 
@@ -1646,7 +1608,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public void activeCodeSet(String guid, String action, String code,
           GuidEntry writerGuid) throws ClientException, IOException {
-    getResponse(CommandType.SetActiveCode, writerGuid, GUID, guid,
+    getResponse(CommandType.SetCode, writerGuid, GUID, guid,
             AC_ACTION, action, AC_CODE, code,
             WRITER, writerGuid.getGuid());
   }
@@ -1660,7 +1622,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   public String activeCodeGet(String guid, String action, GuidEntry readerGuid)
           throws Exception {
-    String code64String = getResponse(CommandType.GetActiveCode,
+    String code64String = getResponse(CommandType.GetCode,
             readerGuid, GUID, guid, AC_ACTION, action, READER,
             readerGuid.getGuid());
     return code64String;
@@ -2142,7 +2104,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   /**
    * @param name
    * @param value
- * @param string 
+   * @param string
    * @throws Exception
    */
   @Deprecated
@@ -2155,14 +2117,12 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @param name
    * @return ???
    * @throws Exception
-   * 
+   *
    */
   @Deprecated
   public String parameterGet(String name, String passkey) throws Exception {
-    return getResponse(CommandType.GetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(),FIELD, name, PASSKEY, passkey);
+    return getResponse(CommandType.GetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY, passkey);
   }
-  
-
 
   @Override
   public void close() {

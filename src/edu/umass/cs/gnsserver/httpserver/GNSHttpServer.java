@@ -27,8 +27,11 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -38,6 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
+
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
@@ -47,16 +51,19 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+
 import java.util.Date;
 import java.util.Map;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.json.JSONObject;
 
@@ -208,6 +215,18 @@ public class GNSHttpServer {
     //BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler);
   }
+  
+	private CommandPacket getResponseUsingGNSClient(GNSClient client,
+			JSONObject jsonFormattedCommand) throws ClientException, IOException {
+		CommandPacket commandPacket = client.execute(new CommandPacket(
+				(long) (Math.random() * Long.MAX_VALUE), jsonFormattedCommand));
+		/**
+		 * Can also invoke getResponse(), getResponseString(), getResponseJSONObject()
+		 * etc. on {@link CommandPacket} as documented in {@link GNSCommand}.
+		 */
+		return commandPacket;
+
+	}
 
   /**
    * Returns info about the server.

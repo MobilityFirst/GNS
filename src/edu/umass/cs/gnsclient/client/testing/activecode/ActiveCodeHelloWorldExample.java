@@ -2,7 +2,6 @@ package edu.umass.cs.gnsclient.client.testing.activecode;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;

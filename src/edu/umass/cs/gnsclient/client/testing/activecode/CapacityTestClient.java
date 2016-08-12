@@ -6,9 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
-import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,15 +30,6 @@ public class CapacityTestClient extends DefaultTest {
 	final static Random random = new Random();
 	
 	/**
-	 * Generate a random interval following Poisson process
-	 * @param rate
-	 * @return
-	 */
-	private static Double getInterval(double rate){
-		return -Math.log(1-random.nextDouble())/ rate;
-	}
-	
-	/**
 	 * Test for 1 min
 	 */
 	private final static int DURATION = 60*1000;
@@ -56,7 +45,6 @@ public class CapacityTestClient extends DefaultTest {
 	
 	private static GuidEntry entry;
 	private static GNSClientCommands[] clients;
-	private static List<Long> latency = new CopyOnWriteArrayList<Long>();
 	
 	private static ExecutorService executor;
 	

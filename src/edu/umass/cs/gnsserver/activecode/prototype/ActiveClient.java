@@ -264,7 +264,7 @@ public class ActiveClient implements Client{
 			System.out.println(response.getError());
 			return valuesMap;
 		}
-		// FIXME: potential NullPointerException
+		
 		return response.getValue();
 	}
 	
@@ -310,7 +310,6 @@ public class ActiveClient implements Client{
 		value.put("string", "hello world!");	
 		
 		int n = 1000000;
-		//ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value, 0);
 		
 		long t1 = System.currentTimeMillis();
 		
