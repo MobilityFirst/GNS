@@ -390,7 +390,6 @@ public static GuidEntry lookupGuidEntryFromDatabase(String gnsInstance, String n
 	 * @throws NoSuchAlgorithmException
 	 * @throws EncryptionException
 	 */
-	@Deprecated
 	public static GuidEntry createAndSaveGuidEntry(String alias, String hostport)
 			throws NoSuchAlgorithmException, EncryptionException {
 		return generateAndSaveKeyPairForGuidAlias(hostport, alias);
