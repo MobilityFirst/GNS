@@ -359,7 +359,7 @@ public class GNSCommandProtocol {
   /**
    * The sequence number field in a command packet.
    */
-  public final static String SEQUENCE_NUMBER = "seqnum";
+  public final static String NONCE = "seqnum";
   /**
    * The passkey number field in a command packet.
    */

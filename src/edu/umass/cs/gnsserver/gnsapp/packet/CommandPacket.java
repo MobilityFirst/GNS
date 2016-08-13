@@ -94,6 +94,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * Almost always has a GUID field or NAME (for HRN records) field.
    */
   private final JSONObject command;
+
   /**
    * The stop requests needsCoordination() method must return true by default.
    */
@@ -108,26 +109,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * Create a CommandPacket instance.
    *
    * @param requestId
-   * @param senderAddress
    * @param command
-   * @param senderPort
    */
-  private CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
+  public CommandPacket(long requestId, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.clientRequestId = requestId;
     this.command = command;
 
-  }
-
-  /**
-   * Creates a command packet with a null host and -1 port which will be
-   * filled in when the packet is sent out.
-   *
-   * @param requestId
-   * @param command
-   */
-  public CommandPacket(long requestId, JSONObject command) {
-    this(requestId, null, -1, command);
   }
   
   protected CommandPacket() {
@@ -150,7 +138,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   /**
    * Reconstructs a CommandPacket from a given byte array.
    * @param bytes The bytes given by the toBytes method.
-   * @return The reconstructed CommandPacket
    * @throws JSONException
    * @throws UnsupportedEncodingException
    */
@@ -167,7 +154,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   	this.command = new JSONObject();
   	this.command.put(GNSCommandProtocol.COMMAND_INT, commandType); 
   	if (seqNum != -1){
-  		this.command.put(GNSCommandProtocol.SEQUENCE_NUMBER, seqNum);
+  		this.command.put(GNSCommandProtocol.NONCE, seqNum);
   	}
   	
   	
@@ -643,7 +630,7 @@ public final byte[] toBytes() {
 		PacketType packetTypeInstance;
 		packetTypeInstance = this.getType();//getPacketType(command);
 		int packetType = packetTypeInstance.getInt();
-		long seqNum = command.has(GNSCommandProtocol.SEQUENCE_NUMBER) ?(long) command.remove(GNSCommandProtocol.SEQUENCE_NUMBER) : -1;
+		long seqNum = command.has(GNSCommandProtocol.NONCE) ?(long) command.remove(GNSCommandProtocol.NONCE) : -1;
 		int commandType = (int) command.remove(GNSCommandProtocol.COMMAND_INT);
 		buf.putInt(packetType);
 		buf.putInt(commandType);
@@ -686,7 +673,7 @@ public final byte[] toBytes() {
 			try {
 				command.put(GNSCommandProtocol.COMMAND_INT, commandType);
 				if (seqNum != -1){
-					command.put(GNSCommandProtocol.SEQUENCE_NUMBER,seqNum);
+					command.put(GNSCommandProtocol.NONCE,seqNum);
 				}
 			} catch (JSONException e) {
 				throw new RuntimeException(e);

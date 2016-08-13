@@ -24,6 +24,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
+import edu.umass.cs.utils.Util;
 
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -179,7 +180,8 @@ public class ReplicaLatencyTest {
    */
   public void updateOperation() {
     try {
-      client.fieldUpdateAsynch(subGuidEntry, "environment", random.nextInt(100));
+    	Util.suicide("Disabled");
+      //client.fieldUpdateAsynch(subGuidEntry, "environment", random.nextInt(100));
       //System.out.print(".");
     } catch (Exception e) {
       System.out.println("Problem running field update: " + e);

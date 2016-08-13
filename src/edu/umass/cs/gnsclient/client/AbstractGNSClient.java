@@ -407,53 +407,10 @@ public abstract class AbstractGNSClient {
     DelayProfiler.updateDelay("sendAsynchTestCommand", startTime);
   }
 
-  /**
-   * Updates the field in the targetGuid without waiting for a response.
-   * The writer is the guid
-   * of the user attempting access. Signs the query using
-   * the private key of the writer guid.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @param writer
-   * @throws IOException
-   * @throws ClientException
-   * @throws JSONException
-   */
-  public void fieldUpdateAsynch(String targetGuid, String field, Object value, GuidEntry writer) throws ClientException, IOException, JSONException {
-    JSONObject json = new JSONObject();
-    json.put(field, value);
-    JSONObject command = CommandUtils.createAndSignCommand(CommandType.ReplaceUserJSON,
-            writer.getPrivateKey(), GNSCommandProtocol.GUID,
-            targetGuid, GNSCommandProtocol.USER_JSON, json.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
-    sendCommandNoWait(command);
-  }
-
-  /**
-   * Updates the field in the targetGuid without waiting for a response.
-   * Signs the query using the private key of the given guid.
-   *
-   * @param targetGuid
-   * @param field
-   * @param value
-   * @throws IOException
-   * @throws ClientException
-   * @throws JSONException
-   */
-  public void fieldUpdateAsynch(GuidEntry targetGuid, String field, Object value) throws ClientException, IOException, JSONException {
-    fieldUpdateAsynch(targetGuid.getGuid(), field, value, targetGuid);
-  }
-
-  //protected abstract void sendCommandPacket(CommandPacket packet) throws IOException;
   
 	// arun: Made sendAsync abstract instead of sendCommandPacket
 	protected abstract RequestFuture<CommandPacket> sendAsync(CommandPacket packet,
 			Callback<Request,CommandPacket> callback) throws IOException;
-
-//	private RequestCallback defaultCallback = (response) -> {
-//		this.handleCommandValueReturnPacket(response);
-//	};
 
 	/**
 	 * Overrides older implementation of

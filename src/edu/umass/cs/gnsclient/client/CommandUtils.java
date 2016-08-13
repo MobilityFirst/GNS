@@ -137,10 +137,8 @@ public class CommandUtils {
 	}
 
 	/**
-	 * Creates a command object from the given action string and a variable
-	 * number of key and value pairs with a signature parameter. The signature
-	 * is generated from the query signed by the given guid.
-	 *
+	 * Disabled. 
+	 * 
 	 * @param commandType
 	 * @param privateKey
 	 * @param keysAndValues
@@ -150,26 +148,8 @@ public class CommandUtils {
 	public static JSONObject createAndSignCommand(CommandType commandType,
 			PrivateKey privateKey, Object... keysAndValues)
 			throws ClientException {
-		try {
-			JSONObject result = createCommand(commandType, keysAndValues);
-			result.put(GNSCommandProtocol.TIMESTAMP,
-					Format.formatDateISO8601UTC(new Date()));
-			result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
-			String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-			long t = System.nanoTime();
-			String signatureString = signDigestOfMessage(privateKey,
-					canonicalJSON);
-			result.put(GNSCommandProtocol.SIGNATURE, signatureString);
-			if (edu.umass.cs.utils.Util.oneIn(10)) {
-				DelayProfiler.updateDelayNano("signing", t);
-			}
-
-			return result;
-		} catch (NoSuchAlgorithmException
-				| InvalidKeyException | SignatureException | JSONException
-				| UnsupportedEncodingException e) {
-			throw new ClientException("Error encoding message", e);
-		}
+		Util.suicide("This method is disabled: ");
+		return null;
 	}
 
 	/**
@@ -486,8 +466,8 @@ public class CommandUtils {
 	/**
 	 * @return Random long.
 	 */
-	public static long getRandomRequestId() {
-		return random.nextLong();
+	public static String getRandomRequestNonce() {
+		return (random.nextLong()+"").toString();
 	}
 
 	/**
@@ -505,7 +485,7 @@ public class CommandUtils {
 			JSONObject result = createCommand(commandType, keysAndValues);
 			result.put(GNSCommandProtocol.TIMESTAMP,
 					Format.formatDateISO8601UTC(new Date()));
-			result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+			result.put(GNSCommandProtocol.NONCE, getRandomRequestNonce());
 
 			String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
 			String signatureString = null;

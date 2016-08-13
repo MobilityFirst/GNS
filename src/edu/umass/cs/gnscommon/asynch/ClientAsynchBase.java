@@ -22,7 +22,6 @@ package edu.umass.cs.gnscommon.asynch;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.CommandUtils;
-import static edu.umass.cs.gnsclient.client.CommandUtils.getRandomRequestId;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -653,7 +652,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     try {
       JSONObject result = createCommand(commandType, keysAndValues);
       result.put(GNSCommandProtocol.TIMESTAMP, Format.formatDateISO8601UTC(new Date()));
-      result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+      result.put(GNSCommandProtocol.NONCE, CommandUtils.getRandomRequestNonce());
 
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
       String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
