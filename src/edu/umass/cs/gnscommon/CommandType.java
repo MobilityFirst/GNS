@@ -391,6 +391,7 @@ public enum CommandType {
   // Given the remote query calls all the setters below make
   // it currently appears that they cannot be coordinated.
   // Group
+  // Fixme: None of these are currently doing authentication.
   AddMembersToGroup(610, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddMembersToGroup.class,
           GNSCommand.ResultType.NULL, false, false),
@@ -550,22 +551,159 @@ public enum CommandType {
    */
   static {
     Read.setChain(ReadUnsigned);
+    ReadSelf.setChain(ReadUnsigned);
+    ReadUnsigned.setChain();
+    ReadMultiField.setChain(ReadUnsigned);
+    ReadMultiFieldUnsigned.setChain(ReadUnsigned);
+    ReadArray.setChain(ReadUnsigned);
+    ReadArrayOne.setChain(ReadUnsigned);
+    ReadArrayOneSelf.setChain(ReadUnsigned);
+    ReadArrayOneUnsigned.setChain();
+    ReadArraySelf.setChain(ReadUnsigned);
+    ReadArrayUnsigned.setChain();
+    // Every command that is a subclass of AbstractUpdate could potentially call ReadUnsigned 
+    // because of the group guid check in NSAuthentication.signatureAndACLCheck.
+    // Add to that all the other commands that call NSAuthentication.signatureAndACLCheck
+    // which is most of them.
+    Append.setChain(ReadUnsigned);
+    AppendList.setChain(ReadUnsigned);
+    AppendListSelf.setChain(ReadUnsigned);
+    AppendListUnsigned.setChain(ReadUnsigned);
+    AppendListWithDuplication.setChain(ReadUnsigned);
+    AppendListWithDuplicationSelf.setChain(ReadUnsigned);
+    AppendListWithDuplicationUnsigned.setChain(ReadUnsigned);
+    AppendOrCreate.setChain(ReadUnsigned);
+    AppendOrCreateList.setChain(ReadUnsigned);
+    AppendOrCreateListSelf.setChain(ReadUnsigned);
+    AppendOrCreateListUnsigned.setChain(ReadUnsigned);
+    AppendOrCreateSelf.setChain(ReadUnsigned);
+    AppendOrCreateUnsigned.setChain(ReadUnsigned);
+    AppendSelf.setChain(ReadUnsigned);
+    AppendUnsigned.setChain(ReadUnsigned);
+    AppendWithDuplication.setChain(ReadUnsigned);
+    AppendWithDuplicationSelf.setChain(ReadUnsigned);
+    AppendWithDuplicationUnsigned.setChain(ReadUnsigned);
+    Clear.setChain(ReadUnsigned);
+    ClearSelf.setChain(ReadUnsigned);
+    ClearUnsigned.setChain(ReadUnsigned);
+    Create.setChain(ReadUnsigned);
+    CreateEmpty.setChain(ReadUnsigned);
+    CreateEmptySelf.setChain(ReadUnsigned);
+    CreateList.setChain(ReadUnsigned);
+    CreateListSelf.setChain(ReadUnsigned);
+    CreateSelf.setChain(ReadUnsigned);
+    Remove.setChain(ReadUnsigned);
+    RemoveList.setChain(ReadUnsigned);
+    RemoveListSelf.setChain(ReadUnsigned);
+    RemoveListUnsigned.setChain(ReadUnsigned);
+    RemoveSelf.setChain(ReadUnsigned);
+    RemoveUnsigned.setChain(ReadUnsigned);
+    Replace.setChain(ReadUnsigned);
+    ReplaceList.setChain(ReadUnsigned);
+    ReplaceListSelf.setChain(ReadUnsigned);
+    ReplaceListUnsigned.setChain(ReadUnsigned);
+    ReplaceOrCreate.setChain(ReadUnsigned);
+    ReplaceOrCreateList.setChain(ReadUnsigned);
+    ReplaceOrCreateListSelf.setChain(ReadUnsigned);
+    ReplaceOrCreateListUnsigned.setChain(ReadUnsigned);
+    ReplaceOrCreateSelf.setChain(ReadUnsigned);
+    ReplaceOrCreateUnsigned.setChain(ReadUnsigned);
+    ReplaceSelf.setChain(ReadUnsigned);
+    ReplaceUnsigned.setChain(ReadUnsigned);
+    ReplaceUserJSON.setChain(ReadUnsigned);
+    ReplaceUserJSONUnsigned.setChain(ReadUnsigned);
+    CreateIndex.setChain(ReadUnsigned);
+    Substitute.setChain(ReadUnsigned);
+    SubstituteList.setChain(ReadUnsigned);
+    SubstituteListSelf.setChain(ReadUnsigned);
+    SubstituteListUnsigned.setChain(ReadUnsigned);
+    SubstituteSelf.setChain(ReadUnsigned);
+    SubstituteUnsigned.setChain(ReadUnsigned);
+    RemoveField.setChain(ReadUnsigned);
+    RemoveFieldSelf.setChain(ReadUnsigned);
+    RemoveFieldUnsigned.setChain(ReadUnsigned);
+    Set.setChain(ReadUnsigned);
+    SetSelf.setChain(ReadUnsigned);
+    SetFieldNull.setChain(ReadUnsigned);
+    SetFieldNullSelf.setChain(ReadUnsigned);
+    //
+    Select.setChain();
+    SelectGroupLookupQuery.setChain();
+    SelectGroupSetupQueryWithGuid.setChain();
+    SelectGroupSetupQueryWithGuidAndInterval.setChain();
+    SelectGroupSetupQueryWithInterval.setChain();
+    SelectNear.setChain();
+    SelectWithin.setChain();
+    SelectQuery.setChain();
+    //
     AddGuid.setChain(LookupGuid, ReplaceUserJSONUnsigned, ReadUnsigned); // what else?
     RemoveGuid.setChain(ReadUnsigned);
     RemoveAccount.setChain(ReadUnsigned);
     SelectGroupSetupQuery.setChain(ReadUnsigned);
     VerifyAccount.setChain(ReplaceUserJSONUnsigned);
+    
+    AddAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+    AddMultipleGuids.setChain(ReadUnsigned);
+    AddMultipleGuidsFast.setChain(ReadUnsigned);
+    AddMultipleGuidsFastRandom.setChain(ReadUnsigned);
+    // Fixme: Some inconsistencies in the way these account commands are implmented
+    // insofar as whether they go remote or not.
+    LookupAccountRecord.setChain();
+    LookupRandomGuids.setChain();
+    LookupGuid.setChain();
+    LookupPrimaryGuid.setChain(ReadUnsigned); 
+    LookupGuidRecord.setChain();
+    RegisterAccount.setChain(ReadUnsigned);
+    RegisterAccountUnsigned.setChain(ReadUnsigned);
+    RemoveAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+    RemoveGuidNoAccount.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+    RetrieveAliases.setChain(ReadUnsigned);
+    SetPassword.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+    ResetKey.setChain(ReadUnsigned);
+    //
+    AclAdd.setChain(ReadUnsigned);
+    AclAddSelf.setChain(ReadUnsigned);
+    AclRemoveSelf.setChain(ReadUnsigned);
+    AclRetrieveSelf.setChain(ReadUnsigned);
     AclRetrieve.setChain(ReadUnsigned);
     AclRemove.setChain(ReadUnsigned);
+    //
     AddMembersToGroup.setChain(AppendListUnsigned);
+    AddMembersToGroupSelf.setChain(AppendListUnsigned);
     AddToGroup.setChain(AppendListUnsigned);
+    AddToGroupSelf.setChain(ReadUnsigned);
     GetGroupMembers.setChain(ReadUnsigned);
+    GetGroupMembersSelf.setChain(ReadUnsigned);
+    GetGroupsSelf.setChain(ReadUnsigned);
     GetGroups.setChain(ReadUnsigned);
     RemoveFromGroup.setChain(RemoveUnsigned);
     RemoveMembersFromGroup.setChain(RemoveUnsigned);
+    RemoveFromGroupSelf.setChain(ReadUnsigned);
+    RemoveMembersFromGroupSelf.setChain(ReadUnsigned);
+    //
     SetCode.setChain(RemoveUnsigned);
     ClearCode.setChain(RemoveUnsigned);
     GetCode.setChain(RemoveUnsigned);
+    // admin
+    Help.setChain();
+    HelpTcp.setChain();
+    HelpTcpWiki.setChain();
+    Admin.setChain();
+    Dump.setChain();
+    GetParameter.setChain();
+    SetParameter.setChain();
+    ListParameters.setChain();
+    DeleteAllRecords.setChain();
+    ResetDatabase.setChain();
+    ClearCache.setChain();
+    DumpCache.setChain();
+    ChangeLogLevel.setChain();
+    AddTag.setChain();
+    RemoveTag.setChain();
+    ClearTagged.setChain();
+    GetTagged.setChain();
+    ConnectionCheck.setChain();
+    Unknown.setChain();
 
   }
 
@@ -678,8 +816,21 @@ public enum CommandType {
     return result.toString();
   }
 
-  public static void main(String args[]) {
-    System.out.println(generateSwiftConstants());
+  private static String generateEmptySetChains() {
+    StringBuilder result = new StringBuilder();
+    for (CommandType commandType : CommandType.values()) {
+      if (commandType.invokedCommands == null) {
+        result.append("    ");
+        result.append(commandType.name());
+        result.append(".setChain(ReadUnsigned);");
+        result.append("\n");
+      }
+    }
+    return result.toString();
+  }
 
+  public static void main(String args[]) {
+    System.out.println(generateEmptySetChains());
+    //System.out.println(generateSwiftConstants());
   }
 }
