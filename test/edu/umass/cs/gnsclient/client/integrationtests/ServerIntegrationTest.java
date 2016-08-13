@@ -207,7 +207,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-                assert(false);
+                //assert(false);
 		// Run the server.
 		if (System.getProperty("startServer") != null
 				&& System.getProperty("startServer").equals("true")) {

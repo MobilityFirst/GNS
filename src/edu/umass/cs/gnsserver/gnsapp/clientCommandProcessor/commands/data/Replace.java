@@ -53,11 +53,6 @@ public class Replace extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return REPLACE;
-//  }
-
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
