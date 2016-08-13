@@ -76,9 +76,7 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
  */
 public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest{
 
-  private final static String CLIENTREQUESTID = "clientreqID";
-  private final static String SENDERADDRESS = MessageNIOTransport.SNDR_IP_FIELD;
-  private final static String SENDERPORT = MessageNIOTransport.SNDR_PORT_FIELD;
+  private final static String CLIENTREQUESTID = "qid";
   private final static String COMMAND = "command";
 
   /**
@@ -90,20 +88,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * Identifier of the request on the client.
    */
   private final long clientRequestId;
-  /**
-   * The IP address of the sender as a string.
-   * 
-   * arun: This does not have to be maintained in this class.
-   */
-  @Deprecated
-  private final String senderAddress;
-  /**
-   * The TCP port of the sender as an int.
-   * 
-   * arun: This does not have to be maintained in this class.
-   */
-  @Deprecated
-  private final int senderPort;
 
   /**
    * The JSON form of the command. Always includes a COMMANDNAME field.
@@ -131,13 +115,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   private CommandPacket(long requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
     this.clientRequestId = requestId;
-    /* arun: can only come here via public constructor with no sender address.
-     * In preparation of removing sender address altogether from the stringified
-     * form.
-     */
-    assert(senderAddress==null && senderPort==-1);
-    this.senderAddress = senderAddress;
-    this.senderPort = senderPort;
     this.command = command;
 
   }
@@ -166,8 +143,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   public CommandPacket(JSONObject json) throws JSONException {
     this.type = getPacketType(json);
     this.clientRequestId = json.getLong(CLIENTREQUESTID);
-    this.senderAddress = json.optString(SENDERADDRESS, null);
-    this.senderPort = json.has(SENDERPORT) ? json.getInt(SENDERPORT) : -1;
     this.command = json.getJSONObject(COMMAND);
 
   }
@@ -184,9 +159,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   	int packetType = buf.getInt();
   	int commandType = buf.getInt();
   	this.clientRequestId = buf.getLong();
-  	this.senderPort = buf.getInt();
   	long seqNum = buf.getLong();
-  	this.senderAddress = null;	
   	this.setType(Packet.getPacketType(packetType));
   	
   	
@@ -225,17 +198,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     putPacketType(json, getType());
     json.put(CLIENTREQUESTID, this.clientRequestId);
     json.put(COMMAND, this.command);
-    /* arun: serializing sender address should never be needed. These 
-     * are needed if at all at local name servers to remember the 
-     * original sender. Even that could be done by remembering the
-     * sender address outside of this class.
-     */
-    if (senderAddress != null) {
-      //json.put(SENDERADDRESS, this.senderAddress);
-    }
-    if (senderPort != -1) {
-      //json.put(SENDERPORT, this.senderPort);
-    }
     return json;
   }
 
@@ -284,23 +246,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return this.retransmissions;
   }
 
-  /**
-   * Return the sender address.
-   *
-   * @return a string
-   */
-  public String getSenderAddress() {
-    return senderAddress;
-  }
-
-  /**
-   * Return the sender port.
-   *
-   * @return the sender port
-   */
-  public int getSenderPort() {
-    return senderPort;
-  }
 
   /**
    * Return the command.
@@ -659,7 +604,7 @@ public CommandType getCommandType() {
  */
 private final byte[] toBytesExpanding(byte[] startingArray) throws JSONException, UnsupportedEncodingException{
 	ByteBuffer buf = ByteBuffer.allocate(2048); //We assume it will be less than 2048 length to start, and will grow if needed.
-	buf.put(startingArray, 0, 4+4+8+4+8); //Accounts for the values we already put into the array for the commandType, packetType, clientReqId, senderPort
+	buf.put(startingArray, 0, 4+4+8+8); //Accounts for the values we already put into the array for the commandType, packetType, clientReqId, seqnum
 	@SuppressWarnings("unchecked") //We assume all keys and values are strings.
 	Iterator<String> keys = command.keys();
 	while (keys.hasNext()){
@@ -703,7 +648,6 @@ public final byte[] toBytes() {
 		buf.putInt(packetType);
 		buf.putInt(commandType);
 		buf.putLong(this.clientRequestId);
-		buf.putInt(this.senderPort);
 		buf.putLong(seqNum);
 		byte[] output;
 		@SuppressWarnings("unchecked") //We assume all keys and values are strings.

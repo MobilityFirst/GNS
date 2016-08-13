@@ -98,7 +98,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         switch (Packet.getPacketType(json)) {
           case COMMAND:
             if (USE_NEW_LNS_COMMAND_HANDLER) {
-              handleCommandPacket(json);
+              handleCommandPacket(json, header);
             } else {
               handleCommandPacketOld(json);
             }
@@ -156,12 +156,12 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * @throws JSONException
    * @throws IOException
    */
-  public void handleCommandPacket(JSONObject json) throws JSONException,
+  public void handleCommandPacket(JSONObject json, NIOHeader header) throws JSONException,
           IOException {
 
     CommandPacket packet = new CommandPacket(json);
     LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(),
-            packet);
+            packet, header.sndr);
     handler.addRequestInfo(packet.getRequestID(), requestInfo);
     packet = removeSenderInfo(json);
 
@@ -194,7 +194,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     int requestId = random.nextInt();
 //    packet.setLNSRequestId(requestId);
     // Squirrel away the host and port so we know where to send the command return value
-    LNSRequestInfo requestInfo = new LNSRequestInfo(requestId, packet);
+    LNSRequestInfo requestInfo = new LNSRequestInfo(requestId, packet, null);
     handler.addRequestInfo(requestId, requestInfo);
 
     // Send it to the client command handler
