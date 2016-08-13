@@ -94,14 +94,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * Almost always has a GUID field or NAME (for HRN records) field.
    */
   private final JSONObject command;
-
-  /**
-   * The stop requests needsCoordination() method must return true by default.
-   */
-  private boolean needsCoordination = true;
-  private boolean needsCoordinationExplicitlySet = false;
-
-  private int retransmissions = 0;
   
   private Object result=null;
   
@@ -116,10 +108,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.clientRequestId = requestId;
     this.command = command;
 
-  }
-  
-  protected CommandPacket() {
-	  throw new RuntimeException("This method should not have been called");
   }
 
   /**
@@ -217,23 +205,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return this.response;
   }
 
-
-  /**
-   * @return {@code this}
-   */
-  public CommandPacket incrRetransmissions() {
-    this.retransmissions++;
-    return this;
-  }
-
-  /**
-   * @return Number of retransmissions.
-   */
-  public int getRetransmissions() {
-    return this.retransmissions;
-  }
-
-
   /**
    * Return the command.
    *
@@ -313,22 +284,9 @@ public CommandType getCommandType() {
 
   @Override
   public boolean needsCoordination() {
-    if (needsCoordinationExplicitlySet) {
-      if (needsCoordination) {
-        GNSConfig.getLogger().log(Level.FINER, "{0} needs coordination (set)", this);
-      }
-      return needsCoordination;
-    } else {
-      // Cache it.
-      needsCoordinationExplicitlySet = true;
       CommandType commandType = getCommandType();
-      needsCoordination = (commandType.isRead() && getCommandCoordinateReads())
+     return (commandType.isRead() && getCommandCoordinateReads())
               || commandType.isUpdate();
-      if (needsCoordination) {
-        GNSConfig.getLogger().log(Level.FINER, "{0} needs coordination", this);
-      }
-      return needsCoordination;
-    }
   }
   
 	/**
@@ -342,12 +300,6 @@ public CommandType getCommandType() {
 		// else
 		return this;
 	}
-
-  @Override
-  public void setNeedsCoordination(boolean needsCoordination) {
-    needsCoordinationExplicitlySet = true;
-    this.needsCoordination = needsCoordination;
-  }
   
 	/* ********************** Start of result-related methods **************** */
   
