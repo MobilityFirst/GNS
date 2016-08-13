@@ -77,7 +77,6 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 public class CommandPacket extends BasicPacketWithClientAddress implements ClientRequest, ReplicableRequest{
 
   private final static String CLIENTREQUESTID = "clientreqID";
-  private final static String LNSREQUESTID = "LNSreqID";
   private final static String SENDERADDRESS = MessageNIOTransport.SNDR_IP_FIELD;
   private final static String SENDERPORT = MessageNIOTransport.SNDR_PORT_FIELD;
   private final static String COMMAND = "command";
@@ -91,16 +90,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    * Identifier of the request on the client.
    */
   private final long clientRequestId;
-  /**
-   * LNS identifier - filled in at the LNS.
-   * 
-   * arun: This will go away as we don't a separate LNSRequestId in this class. We
-   * can either rely on ENABLE_ID_TRANSFORM in the async client or the LNS could 
-   * simply maintain a re-mapping table with a new CommandPacket in case of 
-   * conflicting IDs.
-   */
-  @Deprecated
-  private long LNSRequestId;
   /**
    * The IP address of the sender as a string.
    * 
@@ -151,7 +140,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     this.senderPort = senderPort;
     this.command = command;
 
-    this.LNSRequestId = -1; // this will be filled in at the LNS
   }
 
   /**
@@ -178,11 +166,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   public CommandPacket(JSONObject json) throws JSONException {
     this.type = getPacketType(json);
     this.clientRequestId = json.getLong(CLIENTREQUESTID);
-    if (json.has(LNSREQUESTID)) {
-      this.LNSRequestId = json.getLong(LNSREQUESTID);
-    } else {
-      this.LNSRequestId = json.getLong(CLIENTREQUESTID);//-1;
-    }
     this.senderAddress = json.optString(SENDERADDRESS, null);
     this.senderPort = json.has(SENDERPORT) ? json.getInt(SENDERPORT) : -1;
     this.command = json.getJSONObject(COMMAND);
@@ -201,7 +184,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
   	int packetType = buf.getInt();
   	int commandType = buf.getInt();
   	this.clientRequestId = buf.getLong();
-  	this.LNSRequestId = buf.getLong();
   	this.senderPort = buf.getInt();
   	long seqNum = buf.getLong();
   	this.senderAddress = null;	
@@ -242,9 +224,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     JSONObject json = new JSONObject();
     putPacketType(json, getType());
     json.put(CLIENTREQUESTID, this.clientRequestId);
-    if (this.LNSRequestId != -1) {
-      json.put(LNSREQUESTID, this.LNSRequestId);
-    }
     json.put(COMMAND, this.command);
     /* arun: serializing sender address should never be needed. These 
      * are needed if at all at local name servers to remember the 
@@ -289,23 +268,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
     return this.response;
   }
 
-  /**
-   * Return the LNS request id.
-   *
-   * @return the LNS request id
-   */
-  public long getLNSRequestId() {
-    return LNSRequestId;
-  }
-
-  /**
-   * Set the LNS request id.
-   *
-   * @param LNSRequestId
-   */
-  public void setLNSRequestId(int LNSRequestId) {
-    this.LNSRequestId = LNSRequestId;
-  }
 
   /**
    * @return {@code this}
@@ -345,7 +307,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements Clien
    *
    * @return the command
    */
-  public JSONObject getCommand() {
+  protected JSONObject getCommand() {
     return command;
   }
 
@@ -697,7 +659,7 @@ public CommandType getCommandType() {
  */
 private final byte[] toBytesExpanding(byte[] startingArray) throws JSONException, UnsupportedEncodingException{
 	ByteBuffer buf = ByteBuffer.allocate(2048); //We assume it will be less than 2048 length to start, and will grow if needed.
-	buf.put(startingArray, 0, 4+4+8+8+4+8); //Accounts for the values we already put into the array for the commandType, packetType, clientReqId, lnsReqId, senderPort
+	buf.put(startingArray, 0, 4+4+8+4+8); //Accounts for the values we already put into the array for the commandType, packetType, clientReqId, senderPort
 	@SuppressWarnings("unchecked") //We assume all keys and values are strings.
 	Iterator<String> keys = command.keys();
 	while (keys.hasNext()){
@@ -741,7 +703,6 @@ public final byte[] toBytes() {
 		buf.putInt(packetType);
 		buf.putInt(commandType);
 		buf.putLong(this.clientRequestId);
-		buf.putLong(this.LNSRequestId);
 		buf.putInt(this.senderPort);
 		buf.putLong(seqNum);
 		byte[] output;
@@ -780,10 +741,6 @@ public final byte[] toBytes() {
 			//This stops the toBytes method form being destructive.
 			try {
 				command.put(GNSCommandProtocol.COMMAND_INT, commandType);
-				//Packet.putPacketType(command, packetTypeInstance);
-				//command.put(CLIENTREQUESTID, cmdClientReqId);
-				//command.put(LNSREQUESTID, lnsReqId);
-				//command.put(SENDERPORT, senderPort);
 				if (seqNum != -1){
 					command.put(GNSCommandProtocol.SEQUENCE_NUMBER,seqNum);
 				}
@@ -795,10 +752,4 @@ public final byte[] toBytes() {
 	}
 
 }
-
-
-
-
-
-
 }

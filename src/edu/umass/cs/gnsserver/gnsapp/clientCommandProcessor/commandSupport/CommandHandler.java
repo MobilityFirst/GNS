@@ -23,6 +23,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
@@ -31,10 +32,13 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -68,11 +72,11 @@ public class CommandHandler {
 			UnknownHostException {
 		// Adds a field to the command to allow us to process the authentication
 		// of the signature
-		addMessageWithoutSignatureToCommand(packet.getCommand(),
+		addMessageWithoutSignatureToCommand(Packet.getCommand(packet),
 				app.getRequestHandler());
-		final BasicCommand command = commandModule.lookupCommand(packet
-				.getCommand());
-		runCommand(packet.getCommand(), command, app.getRequestHandler(),
+		final BasicCommand command = commandModule.lookupCommand(Packet.getCommand(packet
+				));
+		runCommand(Packet.getCommand(packet), command, app.getRequestHandler(),
 				packet, doNotReplyToClient, app);
 	}
 
@@ -110,7 +114,7 @@ public class CommandHandler {
 			// the last arguments here in the call below are instrumentation
 			// that the client can use to determine LNS load
 			CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(
-					packet.getClientRequestId(), packet.getLNSRequestId(),
+					packet.getClientRequestId(), packet.getClientRequestId(),//packet.getLNSRequestId(),
 					packet.getServiceName(), returnValue, 0, 0,
 					System.currentTimeMillis() - receiptTime);
 

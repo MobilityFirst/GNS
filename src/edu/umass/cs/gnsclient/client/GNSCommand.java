@@ -246,14 +246,20 @@ public class GNSCommand extends CommandPacket {
   }
 
   // converts JSONException to ClientException
-  private static JSONObject getJSONObject(String field, Object value)
-          throws ClientException {
-    try {
+  protected static JSONObject makeJSON(String field, Object value)
+          throws JSONException {
       return new JSONObject().put(field, value);
-    } catch (JSONException e) {
-      throw new ClientException(e);
-    }
   }
+
+	// converts JSONException to ClientException
+	protected static JSONObject getJSONObject(String field, Object value)
+			throws ClientException {
+		try {
+			return makeJSON(field, value);
+		} catch (JSONException e) {
+			throw new ClientException(e);
+		}
+	}
 
   /**
    * Creates an index for a field. {@code targetGUID} is only used for

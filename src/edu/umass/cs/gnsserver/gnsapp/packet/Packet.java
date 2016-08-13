@@ -523,4 +523,12 @@ public class Packet {
           CommandValueReturnPacket response) {
     return command.setResult(response);
   }
+  
+	/**
+	 * @param command
+	 * @return JSONObject command within CommandPacket {@code command}.
+	 */
+	public static JSONObject getCommand(CommandPacket command) {
+		return command.getCommand();
+	}
 }

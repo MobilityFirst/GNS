@@ -493,7 +493,7 @@ public class GNSCommandProtocol {
    */
   @Deprecated
   public static final String ACCOUNT_ALREADY_VERIFIED = "Account already verified";
-
+  
   /**
    * Creates a GNS field that is hidden from the user.
    *

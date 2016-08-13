@@ -192,7 +192,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
     CommandPacket packet = new CommandPacket(json);
     int requestId = random.nextInt();
-    packet.setLNSRequestId(requestId);
+//    packet.setLNSRequestId(requestId);
     // Squirrel away the host and port so we know where to send the command return value
     LNSRequestInfo requestInfo = new LNSRequestInfo(requestId, packet);
     handler.addRequestInfo(requestId, requestInfo);

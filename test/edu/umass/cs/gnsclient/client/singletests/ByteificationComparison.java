@@ -552,7 +552,9 @@ public class ByteificationComparison {
 		//assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 
-	
+	public static void main(String[] args) throws UnsupportedEncodingException, ClientException, JSONException {
+		new ByteificationComparison().test_19_CommandPacket_1024B();
+	}
 	
 	
 	

@@ -95,9 +95,8 @@ public class CommandUtils {
 	 * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
 	 */
 	public static JSONObject createCommand(CommandType commandType,
-			Object... keysAndValues) throws ClientException {
+			Object... keysAndValues) throws JSONException {
 		long startTime = System.currentTimeMillis();
-		try {
 			JSONObject result = new JSONObject();
 			String key;
 			Object value;
@@ -115,9 +114,6 @@ public class CommandUtils {
 
 			DelayProfiler.updateDelay("createCommand", startTime);
 			return result;
-		} catch (JSONException e) {
-			throw new ClientException("Error encoding message", e);
-		}
 	}
 
 	/**
@@ -169,7 +165,7 @@ public class CommandUtils {
 			}
 
 			return result;
-		} catch (ClientException | NoSuchAlgorithmException
+		} catch (NoSuchAlgorithmException
 				| InvalidKeyException | SignatureException | JSONException
 				| UnsupportedEncodingException e) {
 			throw new ClientException("Error encoding message", e);
@@ -542,9 +538,13 @@ public class CommandUtils {
 	 */
 	public static JSONObject createAndSignCommand(CommandType commandType,
 			GuidEntry querier, Object... keysAndValues) throws ClientException {
-		return querier != null ? createAndSignCommand(commandType,
-				querier.getPrivateKey(), querier.getPublicKey(), keysAndValues)
-				: createCommand(commandType, keysAndValues);
+		try {
+			return querier != null ? createAndSignCommand(commandType,
+					querier.getPrivateKey(), querier.getPublicKey(), keysAndValues)
+					: createCommand(commandType, keysAndValues);
+		} catch (JSONException e) {
+			throw new ClientException("Error encoding message", e);
+		}
 	}
 
 }
