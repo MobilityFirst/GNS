@@ -80,6 +80,8 @@ public abstract class AbstractUpdate extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? 
             Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
+      // This should be the only way that writer can be set to null. 
+      // If it is null no acl or signature checks will not be done.
       writer = null;
     }
 

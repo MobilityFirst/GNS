@@ -45,6 +45,7 @@ public class ActiveRunner {
 		this.querier = querier;
 		
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
+		
 		invocable = (Invocable) engine;
 	}
 	
@@ -110,7 +111,7 @@ public class ActiveRunner {
 	 */
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		
-		int numThread = 10; //Integer.parseInt(args[0]);		
+		int numThread = 10; 		
 		final ActiveRunner[] runners = new ActiveRunner[numThread];
 		for (int i=0; i<numThread; i++){
 			runners[i] = new ActiveRunner(null);
@@ -157,12 +158,13 @@ public class ActiveRunner {
 		String chain_code = null;
 		try {
 			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
-			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
+			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
+			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/testLoad.js")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		try {
-			runner.runCode(guid, field, chain_code, value, 0);
+			runner.runCode(guid, field, chain_code, value, 0);			
 			// fail here
 			assert(false):"The code should not be here";
 		} catch (Exception e) {

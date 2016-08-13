@@ -1,5 +1,9 @@
 #!/bin/bash
 #echo $PWD
+
+echo "This script is outdated and can not be used anymore."
+exit
+
 # should use matching gigapaxos properties with servers
 java -DgigapaxosConfig=conf/gigapaxos.client.local.properties \
 -Djava.util.logging.config.file=logging.gns.properties \

@@ -10,8 +10,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.script.ScriptException;
-
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
@@ -46,7 +44,6 @@ public class ActiveWorker {
 	 */
 	protected ActiveWorker(int port, int serverPort, int id, int numThread){
 		this.id = id;
-		
 		
 		if(numThread>1){
 			executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());	
@@ -84,8 +81,6 @@ public class ActiveWorker {
 	protected ActiveWorker(String ifile, String ofile, int id, int numThread, boolean isTest) {
 		this.id = id;
 		
-		//engine = new ScriptEngineManager().getEngineByName("nashorn");
-		//invocable = (Invocable) engine;
 		if(numThread>1){
 			executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());	
 			executor.prestartAllCoreThreads();
