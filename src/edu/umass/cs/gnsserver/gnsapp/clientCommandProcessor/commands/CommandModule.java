@@ -172,7 +172,7 @@ public class CommandModule {
    * @param json
    * @return the command or null if the command indicator is not valid
    */
-  public BasicCommand lookupCommand(JSONObject json) {
+  public BasicCommand lookupCommandHandler(JSONObject json) {
     BasicCommand command = null;
     if (json.has(COMMAND_INT)) {
       try {

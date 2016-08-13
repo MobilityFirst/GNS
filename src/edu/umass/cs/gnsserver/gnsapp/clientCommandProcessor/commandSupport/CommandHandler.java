@@ -28,6 +28,7 @@ import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
@@ -61,43 +62,43 @@ public class CommandHandler {
 
 	/**
 	 * Handles command packets coming in from the client.
+	 * 
+	 * @param packet
+	 * @param doNotReplyToClient
+	 * @param app
 	 *
-	 * @param incomingJSON
-	 * @param handler
 	 * @throws JSONException
 	 * @throws UnknownHostException
 	 */
-	private static void handlePacketCommandRequest(CommandPacket packet,
+	public static void handleCommandPacket(CommandPacket packet,
 			boolean doNotReplyToClient, GNSApp app) throws JSONException,
 			UnknownHostException {
-		// Adds a field to the command to allow us to process the authentication
-		// of the signature
-		addMessageWithoutSignatureToCommand(Packet.getCommand(packet),
-				app.getRequestHandler());
-		final BasicCommand command = commandModule.lookupCommand(Packet.getCommand(packet
-				));
-		runCommand(Packet.getCommand(packet), command, app.getRequestHandler(),
-				packet, doNotReplyToClient, app);
+		runCommand(
+				addMessageWithoutSignatureToCommand(packet),
+				// CommandType.commandClass instance
+				commandModule.lookupCommandHandler(Packet.getCommand(packet)),
+				app.getRequestHandler(), packet, doNotReplyToClient, app);
 	}
 
 	private static final long LONG_DELAY_THRESHOLD = 1;
 
-	private static void runCommand(JSONObject jsonFormattedCommand,
-			BasicCommand command, ClientRequestHandlerInterface handler,
+	private static void runCommand(CommandPacket commandPacket,
+			BasicCommand commandHandler, ClientRequestHandlerInterface handler,
 			CommandPacket packet, boolean doNotReplyToClient, GNSApp app) {
+		JSONObject jsonFormattedCommand = Packet.getCommand(commandPacket);
 		try {
 			long receiptTime = System.currentTimeMillis(); // instrumentation
 			final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
 			// Other than this line, one below and some catches all of this
 			// method is instrumentation.
-			CommandResponse returnValue = executeCommand(command,
+			CommandResponse returnValue = executeCommand(commandHandler,
 					jsonFormattedCommand, handler);
 
 			// instrumentation
 			DelayProfiler.updateDelay("executeCommand", executeCommandStart);
 			if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
 				DelayProfiler.updateDelay(packet.getRequestType() + "."
-						+ command.getCommandType().toString(),
+						+ commandHandler.getCommandType().toString(),
 						executeCommandStart);
 			}
 			if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
@@ -107,7 +108,7 @@ public class CommandHandler {
 								"{0} command {1} took {2}ms of execution delay (delay logging threshold={2}ms)",
 								new Object[] {
 										handler.getApp(),
-										command.getSummary(),
+										commandHandler.getSummary(),
 										(System.currentTimeMillis() - executeCommandStart),
 										LONG_DELAY_THRESHOLD });
 			}
@@ -144,16 +145,16 @@ public class CommandHandler {
 		if (AppReconfigurableNodeOptions.enableContextService) {
 			if (!doNotReplyToClient) {
 
-				if (command.getClass().getSuperclass() == AbstractUpdate.class) {
+				if (commandHandler.getClass().getSuperclass() == AbstractUpdate.class) {
 					GNSConfig
 							.getLogger()
 							.log(Level.FINE,
 									"{0} sending trigger to context service for {1}:{2}",
-									new Object[] { handler.getApp(), command,
+									new Object[] { handler.getApp(), commandHandler,
 											jsonFormattedCommand });
 
 					app.getContextServiceGNSClient().sendTiggerOnGnsCommand(
-							jsonFormattedCommand, command, false);
+							jsonFormattedCommand, commandHandler, false);
 				}
 			}
 		}
@@ -165,21 +166,53 @@ public class CommandHandler {
 	// message
 	// OR we could put the signature outside the command in the packet,
 	// but some packets don't need a signature
-	private static void addMessageWithoutSignatureToCommand(JSONObject command,
-			ClientRequestHandlerInterface handler) throws JSONException {
-		if (command.has(SIGNATURE)) {
-			String signature = command.getString(SIGNATURE);
-			command.remove(SIGNATURE);
-			String commandSansSignature = CanonicalJSON
-					.getCanonicalForm(command);
-			ClientCommandProcessorConfig.getLogger().log(Level.FINE,
-					"########CANONICAL JSON: {0} {1}",
-					new Object[] { handler.getApp(), commandSansSignature });
-			command.put(SIGNATURE, signature);
-			command.put(SIGNATUREFULLMESSAGE, commandSansSignature);
-		}
+	private static CommandPacket addMessageWithoutSignatureToCommand(
+			CommandPacket commandPacket) throws JSONException {
+		JSONObject command = Packet.getCommand(commandPacket);
+		if (!command.has(SIGNATURE))
+			return commandPacket;
+
+		String signature = command.getString(SIGNATURE);
+		command.remove(SIGNATURE);
+		String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
+		command.put(SIGNATURE, signature).put(SIGNATUREFULLMESSAGE,
+				commandSansSignature);
+		return commandPacket;
 	}
 
+	/**
+	 * 
+	 * Same as
+	 * {@link #executeCommand(BasicCommand, JSONObject, ClientRequestHandlerInterface)}
+	 * that is needed by the HTTP server, but we need this for pulling {@link CommandPacket}
+	 * all the way through for {@link InternalRequestHeader} to work correctly.
+	 * 
+	 * @param commandHandler
+	 * @param commandPacket
+	 * @param handler
+	 * @return Result of executing {@code commandPacket}.
+	 */
+	public static CommandResponse executeCommand(BasicCommand commandHandler,
+			CommandPacket commandPacket, ClientRequestHandlerInterface handler) {
+		try {
+			return (commandHandler != null) ? commandHandler.execute(
+					commandPacket, handler) : new CommandResponse(
+					GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " "
+							+ OPERATION_NOT_SUPPORTED + " - Don't understand "
+							+ Packet.getCommand(commandPacket));
+		} catch (JSONException e) {
+			// e.printStackTrace();
+			return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR,
+					BAD_RESPONSE + " " + JSON_PARSE_ERROR + " " + e
+							+ " while executing command.");
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException
+				| ParseException | SignatureException | InvalidKeyException
+				| UnsupportedEncodingException e) {
+			return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR,
+					BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
+		}
+	}
+	
 	/**
 	 * Executes the given command with the parameters supplied in the
 	 * JSONObject.
@@ -216,20 +249,6 @@ public class CommandHandler {
 		}
 	}
 
-	/**
-	 * Called when a command packet is received by the app.
-	 *
-	 * @param packet
-	 * @param doNotReplyToClient
-	 * @param app
-	 * @throws JSONException
-	 * @throws IOException
-	 */
-	public static void handleCommandPacketForApp(CommandPacket packet,
-			boolean doNotReplyToClient, GNSApp app) throws JSONException,
-			IOException {
-		handlePacketCommandRequest(packet, doNotReplyToClient, app);
-	}
 
 	private static long lastStatsTime = 0;
 

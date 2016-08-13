@@ -360,7 +360,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
                   (SelectResponsePacket<String>) request, this);
           break;
         case COMMAND:
-          CommandHandler.handleCommandPacketForApp(
+          CommandHandler.handleCommandPacket(
                   (CommandPacket) request, doNotReplyToClient, this);
           break;
 

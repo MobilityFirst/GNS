@@ -19,7 +19,7 @@ public interface InternalRequestHeader {
 	 * @return The request ID corresponding to the request that originated the
 	 *         active request chain.
 	 */
-	public long getOriginatingRequestID();
+	public String getOriginatingRequestID();
 
 	/**
 	 * @return The querier GUID that originated the active request chain.
