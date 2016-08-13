@@ -1,7 +1,5 @@
 package edu.umass.cs.gnsserver.interfaces;
 
-import edu.umass.cs.gnsserver.gnsapp.activegns.ActiveRequest;
-
 /**
  * @author arun
  * 
