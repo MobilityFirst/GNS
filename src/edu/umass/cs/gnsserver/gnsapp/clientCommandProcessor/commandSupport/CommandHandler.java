@@ -94,11 +94,14 @@ public class CommandHandler {
 			CommandResponse returnValue = executeCommand(commandHandler,
 					jsonFormattedCommand, handler);
 
+			assert(packet.getRequestType()!=null);
+			assert(packet.getCommandType()!=null);
+			assert(commandHandler!=null);
 			// instrumentation
 			DelayProfiler.updateDelay("executeCommand", executeCommandStart);
 			if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
 				DelayProfiler.updateDelay(packet.getRequestType() + "."
-						+ commandHandler.getCommandType().toString(),
+						+ commandHandler.getCommandType(),
 						executeCommandStart);
 			}
 			if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {

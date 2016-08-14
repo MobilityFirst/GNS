@@ -678,7 +678,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
           Object... keysAndValues) throws ClientException {
     try {
       JSONObject result = CommandUtils.createCommand(commandType, keysAndValues);
-      result.put(COORDINATE_READS, true);
+      result.put(FORCE_COORDINATE_READS, true);
       return result;
     } catch (JSONException e) {
       throw new ClientException("Error encoding message", e);

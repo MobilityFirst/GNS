@@ -228,6 +228,13 @@ public class ServerIntegrationTest extends DefaultTest {
 						System.getProperty(DefaultProps.SERVER_COMMAND.key)
 								+ " " + getGigaPaxosOptions()
 								+ " forceclear all", ".");
+				
+				/* We need to do this to limit the number of files used by mongo.
+				 * Otherwise failed runs quickly lead to more failed runs because
+				 * index files created in previous runs are not removed.
+				 */
+				dropAllDatabases();
+				
 				options = getGigaPaxosOptions() + " restart all";
 			} else
 				options = SCRIPTS_OPTIONS;
@@ -332,10 +339,8 @@ public class ServerIntegrationTest extends DefaultTest {
 			}
 		}
 		
-		for(String server : new DefaultNodeConfig<String>(
-				PaxosConfig.getActives(),
-				ReconfigurationConfig.getReconfigurators()).getNodeIDs()) 
-			MongoRecords.dropNodeDatabase(server);
+		dropAllDatabases();
+		
 		
 		if (client != null) {
 			client.close();
@@ -345,6 +350,13 @@ public class ServerIntegrationTest extends DefaultTest {
 			System.out.println(type + " returns "
 					+ GNSClientCommands.reverseEngineer.get(type) + "; e.g., "
 					+ Util.truncate(GNSClientCommands.returnValueExample.get(type), 64, 64));
+	}
+	
+	private static void dropAllDatabases() {
+		for(String server : new DefaultNodeConfig<String>(
+				PaxosConfig.getActives(),
+				ReconfigurationConfig.getReconfigurators()).getNodeIDs()) 
+			MongoRecords.dropNodeDatabase(server);
 	}
 
 	/**

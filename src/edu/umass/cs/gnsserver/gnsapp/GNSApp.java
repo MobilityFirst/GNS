@@ -98,6 +98,7 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -478,9 +479,19 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    * @return
    * @throws RequestParseException
    */
-  private static Request fromBytes(byte[] msgBytes) throws RequestParseException {
-    throw new RequestParseException(new RuntimeException("Unimplemented"));
-  }
+	private static Request fromBytes(byte[] msgBytes)
+			throws RequestParseException {
+			switch (Packet.PacketType.getPacketType(ByteBuffer.wrap(msgBytes)
+					.getInt())) {
+			case COMMAND:
+				return new CommandPacket(msgBytes);
+				/* Currently only CommandPacket is Byteable, so we shouldn't
+				 * come here for anything else. */
+			default:
+				throw new RequestParseException(new RuntimeException(
+						"Unrecognizable request type"));
+			}
+	}
 
   @Override
   public Request getRequest(byte[] msgBytes, NIOHeader header) throws RequestParseException {

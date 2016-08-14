@@ -241,7 +241,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   public void update(String targetGuid, JSONObject json, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.ReplaceUserJSON, writer, GUID, targetGuid,
-            USER_JSON, json.toString(), WRITER, writer.getGuid());
+            USER_JSON, json, WRITER, writer.getGuid());
   }
 
   /**
@@ -275,7 +275,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           GuidEntry writer) throws IOException, ClientException,
           JSONException {
     getResponse(CommandType.ReplaceUserJSON, writer, GUID, targetGuid,
-            USER_JSON, new JSONObject().put(field, value).toString(), WRITER, writer.getGuid());
+            USER_JSON, new JSONObject().put(field, value), WRITER, writer.getGuid());
   }
 
   /**
@@ -932,7 +932,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           ClientException, InvalidKeyException, NoSuchAlgorithmException,
           SignatureException {
     getResponse(CommandType.AddMembersToGroup, writer, GUID, groupGuid,
-            MEMBERS, members.toString(), WRITER, writer.getGuid());
+            MEMBERS, members, WRITER, writer.getGuid());
   }
 
   /**
@@ -978,7 +978,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           ClientException, InvalidKeyException, NoSuchAlgorithmException,
           SignatureException {
     getResponse(CommandType.RemoveMembersFromGroup, writer, GUID, guid,
-            MEMBERS, members.toString(), WRITER, writer.getGuid());
+            MEMBERS, members, WRITER, writer.getGuid());
   }
 
   /**
@@ -1275,7 +1275,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.CreateList, writer, GUID, targetGuid, FIELD,
-            field, VALUE, value.toString(), WRITER, writer.getGuid());
+            field, VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
@@ -1293,7 +1293,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.AppendOrCreateList, writer, GUID, targetGuid,
-            FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
+            FIELD, field, VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
@@ -1311,7 +1311,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.ReplaceOrCreateList, writer, GUID, targetGuid,
-            FIELD, field, VALUE, value.toString(), WRITER, writer.getGuid());
+            FIELD, field, VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
@@ -1331,7 +1331,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   public void fieldAppend(String targetGuid, String field, JSONArray value,
           GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.AppendListWithDuplication, writer, GUID,
-            targetGuid, FIELD, field, VALUE, value.toString(), WRITER,
+            targetGuid, FIELD, field, VALUE, value, WRITER,
             writer.getGuid());
   }
 
@@ -1353,7 +1353,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.ReplaceList, writer, GUID, targetGuid, FIELD,
-            field, VALUE, value.toString(), WRITER, writer.getGuid());
+            field, VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
@@ -1373,7 +1373,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   public void fieldClear(String targetGuid, String field, JSONArray value,
           GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.RemoveList, writer, GUID, targetGuid, FIELD,
-            field, VALUE, value.toString(), WRITER, writer.getGuid());
+            field, VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
@@ -1498,7 +1498,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           throws Exception {
     return new JSONArray(getResponse(
             CommandType.SelectWithin, FIELD, field, WITHIN,
-            value.toString()));
+            value));
   }
 
   /**
@@ -1517,7 +1517,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   public JSONArray selectNear(String field, JSONArray value,
           Double maxDistance) throws Exception {
     return new JSONArray(getResponse(
-            CommandType.SelectNear, FIELD, field, NEAR, value.toString(),
+            CommandType.SelectNear, FIELD, field, NEAR, value,
             MAX_DISTANCE, Double.toString(maxDistance)));
   }
 
@@ -1847,7 +1847,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
     getResponse(CommandType.AppendList, writer, GUID, targetGuid, FIELD,
-            field, VALUE, value.toString(), WRITER, writer.getGuid());
+            field, VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
@@ -1880,7 +1880,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
   public void fieldAppendWithSetSemantics(String targetGuid, String field,
           String value, GuidEntry writer) throws IOException, ClientException {
     getResponse(CommandType.Append, writer, GUID, targetGuid, FIELD, field,
-            VALUE, value.toString(), WRITER, writer.getGuid());
+            VALUE, value, WRITER, writer.getGuid());
   }
 
   /**
@@ -2018,8 +2018,8 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           JSONArray newValue, JSONArray oldValue, GuidEntry writer)
           throws IOException, ClientException {
     getResponse(CommandType.SubstituteList, writer, GUID, targetGuid,
-            FIELD, field, VALUE, newValue.toString(), OLD_VALUE,
-            oldValue.toString(), WRITER, writer.getGuid());
+            FIELD, field, VALUE, newValue, OLD_VALUE,
+            oldValue, WRITER, writer.getGuid());
   }
 
   /**

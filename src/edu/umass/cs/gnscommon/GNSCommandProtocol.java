@@ -472,7 +472,7 @@ public class GNSCommandProtocol {
   /**
    * If this exists in a command it indicates that coordinated reads should be used.
    */
-  public final static String COORDINATE_READS = "COORDREAD";
+  public final static String FORCE_COORDINATE_READS = "COORDREAD";
 
   /**
    * This member was not documented by it's creator.

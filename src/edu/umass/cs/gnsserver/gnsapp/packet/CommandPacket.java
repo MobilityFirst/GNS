@@ -23,11 +23,13 @@ import java.nio.ByteBuffer;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.JSONByteConverter;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -37,8 +39,12 @@ import edu.umass.cs.nio.interfaces.Byteable;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReplicableClientRequest;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Util;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
@@ -55,15 +61,6 @@ import org.msgpack.value.ImmutableValue;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueType;
 
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
-
 /**
  * @author arun, westy
  *
@@ -71,7 +68,7 @@ import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
  *
  */
 public class CommandPacket extends BasicPacketWithClientAddress implements
-		ClientRequest, ReplicableRequest {
+		ClientRequest, ReplicableRequest, Byteable {
 
 	private final static String CLIENTREQUESTID = "qid";
 	private final static String COMMAND = "command";
@@ -114,7 +111,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * @throws JSONException
 	 */
 	public CommandPacket(JSONObject json) throws JSONException {
-		this.type = getPacketType(json);
+		this.type = Packet.getPacketType(json);
 		this.clientRequestId = json.getLong(CLIENTREQUESTID);
 		this.command = json.getJSONObject(COMMAND);
 
@@ -125,19 +122,38 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * 
 	 * @param bytes
 	 *            The bytes given by the toBytes method.
-	 * @throws JSONException
-	 * @throws UnsupportedEncodingException
+	 * @throws RequestParseException
 	 */
-	public CommandPacket(byte[] bytes) throws JSONException,
-			UnsupportedEncodingException {
+	public CommandPacket(byte[] bytes) throws RequestParseException {
 		ByteBuffer buf = ByteBuffer.wrap(bytes);
-		int packetType = buf.getInt();
-		int commandType = buf.getInt();
-		this.clientRequestId = buf.getLong();
-		this.setType(Packet.getPacketType(packetType));
 
-		this.command = new JSONObject();
-		this.command.put(GNSCommandProtocol.COMMAND_INT, commandType);
+		/**
+		 * We will come here only if this class implements Byteable and the
+		 * sender also implements Byteable. If the sender used toJSONObject(),
+		 * we won't come here because
+		 * {@link GNSApp#getRequest(byte[],NIOHeader)} will directly invoke
+		 * {@link Packet#createInstance(JSONObject, Stringifiable<String>)}
+		 */
+		// packet type
+		this.setType(Packet.getPacketType(buf.getInt()));
+		// requestID
+		this.clientRequestId = buf.getLong();
+
+		// JSON command
+		this.command = getJSONObject(buf, ByteMode.byteModeMap.get(
+		// ByteMode
+				(int) buf.get()));
+	}
+
+	private static JSONObject fromBytesStringerHack(ByteBuffer buf)
+			throws UnsupportedEncodingException, JSONException {
+		JSONObject json = new JSONObject();
+		json
+		// query type
+		.put(GNSCommandProtocol.COMMAND_INT, buf.getInt())
+		// force coordination flag
+				.putOpt(GNSCommandProtocol.FORCE_COORDINATE_READS,
+						buf.get() == 1 ? true : null);
 
 		// Put in the variable length fields.
 		while (buf.hasRemaining()) {
@@ -151,60 +167,52 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 			buf.get(valueBytes);
 			String value = new String(valueBytes,
 					MessageNIOTransport.NIO_CHARSET_ENCODING);
-			this.command.put(key, value);
+			json.put(key, value);
 		}
+		return json;
 	}
 
-	/**
-	 * Converts the CommandPacket to bytes. Assumes that all fields other than
-	 * GNSCommandProtocol.COMMAND_INT have strings for values. Automatically
-	 * expands the output buffer as needed.
-	 * 
-	 * @return
-	 * @throws JSONException
-	 * @throws UnsupportedEncodingException
-	 */
-	private final byte[] toBytesExpanding(byte[] startingArray)
-			throws JSONException, UnsupportedEncodingException {
-		/* We assume it will be less than 2048 length to start, and will grow if
-		 * needed. */
-		ByteBuffer buf = ByteBuffer.allocate(2048);
-		buf.put(startingArray, 0, Integer.BYTES // commandType
-				+ Integer.BYTES // packetType
-				+ Long.BYTES // requestID
-		);
-
-		/* We assume all remaining keys and values are strings. If not, we would
-		 * never come here. */
-		@SuppressWarnings("unchecked")
-		Iterator<String> keys = command.keys();
-		while (keys.hasNext()) {
-			String key = keys.next();
-			byte[] keyBytes = key
-					.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
-			String value = command.getString(key);
-			byte[] valueBytes = value
-					.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
-			// Grow the buffer if needed.
-			if (buf.remaining() < (Integer.BYTES + keyBytes.length
-					+ Integer.BYTES + valueBytes.length)) {
-				ByteBuffer newBuf = ByteBuffer.allocate(buf.capacity() * 2
-						+ Integer.BYTES + keyBytes.length + Integer.BYTES
-						+ valueBytes.length);
-				newBuf.put(buf);
-				buf = newBuf;
+	private static JSONObject getJSONObject(ByteBuffer bbuf, ByteMode mode)
+			throws RequestParseException {
+		try {
+			switch (mode) {
+			case ORG_JSON:
+				throw new RuntimeException("Should never come here");
+			case HOMEBREW:
+				return JSONByteConverter.fromBytesHardcoded(bbuf);
+			case JACKSON:
+				return JSONByteConverter.fromBytesJackson(bbuf);
+			case MSGPACK:
+				return JSONByteConverter.fromBytesMsgpack(bbuf);
+			case STRING_WING:
+				return fromBytesStringerHack(bbuf);
+			default:
+				throw new RuntimeException("Unrecognized byteification mode");
 			}
-			buf.putInt(keyBytes.length);
-			buf.put(keyBytes);
-			buf.putInt(valueBytes.length);
-			buf.put(valueBytes);
+		} catch (IOException | JSONException e) {
+			throw new RequestParseException(e);
 		}
-		// Trim any unused buffer space.
-		byte[] outByteArray = new byte[buf.position()];
-		ByteBuffer outputBuffer = ByteBuffer.wrap(outByteArray);
-		outputBuffer.put(buf.array(), 0, outByteArray.length);
-		return outputBuffer.array();
 	}
+
+	private static enum ByteMode {
+		ORG_JSON(0), HOMEBREW(1), JACKSON(2), MSGPACK(3), STRING_WING(4);
+
+		private final int val;
+
+		ByteMode(int val) {
+			this.val = val;
+		}
+
+		private static final Map<Integer, ByteMode> byteModeMap = new HashMap<Integer, ByteMode>();
+		static {
+			for (ByteMode mode : ByteMode.values())
+				byteModeMap.put(mode.val, mode);
+		}
+	}
+
+	// used only at sender; receiver reads from packet
+	private static final ByteMode byteMode = ByteMode.byteModeMap.get(Config
+			.getGlobalInt(GNSClientConfig.GNSCC.BYTE_MODE));
 
 	/**
 	 * Converts the CommandPacket to bytes. Assumes that all fields other than
@@ -213,77 +221,148 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * @return Refer {@link Byteable#toBytes()}
 	 */
 	public final byte[] toBytes() {
-		/* We assume it will be less than 1024 length to start, and will grow if
-		 * needed. */
-		ByteBuffer buf = ByteBuffer.allocate(1024);
-
-		synchronized (command) {
-			PacketType packetTypeInstance;
-			packetTypeInstance = this.getType();
-			int packetType = packetTypeInstance.getInt();
-			int commandType = (int) command
-					.remove(GNSCommandProtocol.COMMAND_INT);
-			buf.putInt(packetType);
-			buf.putInt(commandType);
-			buf.putLong(this.clientRequestId);
-			byte[] output;
-
-			// We assume all remaining keys and values are strings.
-			@SuppressWarnings("unchecked")
-			Iterator<String> keys = command.keys();
-			try {
-				while (keys.hasNext()) {
-					String key = keys.next();
-					byte[] keyBytes = key
-							.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
-					Object objVal = command.get(key);
-					/* We rely on the assumption that if it's not a String, it
-					 * will throw a ClassCastException */
-					String value = (String) objVal;
-					byte[] valueBytes = value
-							.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
-					buf.putInt(keyBytes.length);
-					buf.put(keyBytes);
-					buf.putInt(valueBytes.length);
-					buf.put(valueBytes);
-				}
-				// Trim any unused buffer space.
-				byte[] outByteArray = new byte[buf.position()];
-				ByteBuffer outputBuffer = ByteBuffer.wrap(outByteArray);
-				outputBuffer.put(buf.array(), 0, outByteArray.length);
-				output = outputBuffer.array();
-
-			} catch (BufferOverflowException boe) {
-				// Use the slower expanding buffer method.
-				try {
-					output = this.toBytesExpanding(buf.array());
-				} catch (UnsupportedEncodingException | JSONException
-						| ClassCastException e) {
-					return this.handleSerializationException(e);
-				}
-			} catch (UnsupportedEncodingException | JSONException
-					| ClassCastException e) {
-				return this.handleSerializationException(e);
-			} finally {
-				// This stops the toBytes method form being destructive.
-				try {
-					command.put(GNSCommandProtocol.COMMAND_INT, commandType);
-				} catch (JSONException e) {
-					return this.handleSerializationException(e);
-				}
+		try {
+			switch (byteMode) {
+			/* There is little point in using JSON just for this.command instead
+			 * of the default toJSONObject() method, so we just do that. */
+			case ORG_JSON:
+				return this.toJSONObject().toString()
+						.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
+			case HOMEBREW:
+				return this.appendByteifiedInnerJSONCommand(this.toByteBufferWithOuterFields(), 
+						JSONByteConverter.toBytesHardcoded(this.command));
+			case JACKSON:
+				return this.appendByteifiedInnerJSONCommand(this.toByteBufferWithOuterFields(), 
+						JSONByteConverter.toBytesJackson(this.command));
+			case MSGPACK:
+				return this.appendByteifiedInnerJSONCommand(this.toByteBufferWithOuterFields(), 
+						JSONByteConverter.toBytesMsgpack(this.command));
+			case STRING_WING:
+				// different from above three
+				return this.toBytesWingItAsString(toByteBufferWithOuterFields(), this.command);
+			default:
+				throw new RuntimeException("Unrecognized byteification mode");
 			}
-			return output;
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Unable to byteify " + this);
+		}
+	}
+	
+	private ByteBuffer toByteBufferWithOuterFields() {
+		synchronized (command) {
+			return ByteBuffer.allocate(1024)
+			.putInt(
+			// packet type
+					this.getType().getInt())
+			// requestID
+					.putLong(this.clientRequestId)
+					// ByteMode
+					.put((byte) byteMode.val);
+			// JSON command next
+		}
+	}
+
+	private byte[] appendByteifiedInnerJSONCommand(ByteBuffer bbuf, byte[] inner) {
+		return bbuf.remaining() >= inner.length ? Arrays.copyOfRange(
+				bbuf.put(inner).array(), 0, bbuf.position()) : ByteBuffer
+				.allocate(bbuf.position() + inner.length)
+				.put(bbuf.array(), 0, bbuf.position()).put(inner).array();
+	}
+
+	/* This is a hack attempt that assumes that almost all values as strings.
+	 * Hack because field "values" in general are not meant to be strings and we
+	 * will just be putting the overhead elsewhere if we try to ensure that they
+	 * are strings. But this still works and is useful for instrumentation
+	 * purposes. */
+	private byte[] toBytesWingItAsString(ByteBuffer buf, JSONObject json) {
+		// can we still get integer-less packets from iOS devices?
+		Integer commandType = (Integer) command
+				.remove(GNSCommandProtocol.COMMAND_INT);
+		assert (commandType != null);
+		boolean forceCoordinated = this.removeForceCoordinated();
+
+		// query type
+		buf.putInt(commandType != null ? commandType : -1)
+		// force coordination
+				.put(forceCoordinated ? (byte) 1 : (byte) 0);
+
+		// We assume all remaining keys and values are strings.
+		@SuppressWarnings("unchecked")
+		Iterator<String> keys = command.keys();
+		Object objVal = null;
+		String key = null;
+		try {
+			while (keys.hasNext()) {
+				key = keys.next();
+				byte[] keyBytes = key
+						.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
+				objVal = command.get(key);
+				/* We rely on the assumption that if it's not a String, it will
+				 * throw a ClassCastException */
+				byte[] valueBytes = ((String) objVal)
+						.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
+
+				// Grow the buffer if needed.
+				if (buf.remaining() < (Integer.BYTES + keyBytes.length
+						+ Integer.BYTES + valueBytes.length))
+					buf = ByteBuffer.allocate(
+							buf.capacity() * 2 + Integer.BYTES
+									+ keyBytes.length + Integer.BYTES
+									+ valueBytes.length)
+					// arun: Fixed bug here that was missing the flip
+							.put((ByteBuffer) buf.flip());
+
+				buf.putInt(keyBytes.length).put(keyBytes)
+						.putInt(valueBytes.length).put(valueBytes);
+			}
+			// Trim any unused buffer space.
+			return ByteBuffer.wrap(new byte[buf.position()])
+					.put(buf.array(), 0, buf.position()).array();
+
+		} catch (UnsupportedEncodingException | JSONException
+				| ClassCastException e) {
+			/* arun: Uncomment to check with "ant test" that many values are not
+			 * strings. This usually does not break code because the server
+			 * decodes the strings correctly, but it is unwise to rely on that
+			 * behavior and difficult to correctly maintain in code. */
+			// System.err.println(e + " for " + key + ":" + objVal);
+			return this.handleSerializationException(e, commandType,
+					forceCoordinated);
+		} finally {
+			// This stops the toBytes method form being destructive.
+			try {
+				this.putBackRemoved(commandType, forceCoordinated);
+			} catch (JSONException e) {
+				return this.handleSerializationException(e, commandType,
+						forceCoordinated);
+			}
 		}
 
 	}
 
-	private byte[] handleSerializationException(Exception e) {
+	private void putBackRemoved(Integer commandType, boolean forceCoordinated)
+			throws JSONException {
+		if (commandType != null)
+			this.command.put(GNSCommandProtocol.COMMAND_INT, commandType);
+		if (forceCoordinated)
+			this.command.put(GNSCommandProtocol.FORCE_COORDINATE_READS,
+					forceCoordinated);
+	}
+
+	private byte[] handleSerializationException(Exception e,
+			Integer commandType, boolean forceCoordinated) {
 		// testing => scream
 		if (Config.getGlobalBoolean(PC.ENABLE_INSTRUMENTATION))
 			throw new RuntimeException(e);
 		// production => try slow path
-		else
-			return toJSONBytes();
+		try {
+			this.command.put(GNSCommandProtocol.COMMAND_INT, commandType);
+		} catch (JSONException e1) {
+			throw new RuntimeException(e1);
+
+		}
+		return toJSONBytes();
 	}
 
 	private byte[] toJSONBytes() {
@@ -377,12 +456,19 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		try {
 			// arun: optBoolean is inefficient (~6us)
 			return command != null
-					&& command.has(GNSCommandProtocol.COORDINATE_READS)
-					&& command.getBoolean(GNSCommandProtocol.COORDINATE_READS);
+					&& command.has(GNSCommandProtocol.FORCE_COORDINATE_READS)
+					&& command
+							.getBoolean(GNSCommandProtocol.FORCE_COORDINATE_READS);
 		} catch (JSONException e) {
 			;
 		}
 		return false;
+	}
+
+	private boolean removeForceCoordinated() {
+		return this.command.has(GNSCommandProtocol.FORCE_COORDINATE_READS)
+				&& (Boolean) this.command
+						.remove(GNSCommandProtocol.FORCE_COORDINATE_READS);
 	}
 
 	/**

@@ -116,7 +116,7 @@ public abstract class AbstractGNSClient {
   protected JSONObject setForceCoordinatedReads(JSONObject command) {
     try {
       return forceCoordinatedReads ? command.put(
-              GNSCommandProtocol.COORDINATE_READS, true) : command;
+              GNSCommandProtocol.FORCE_COORDINATE_READS, true) : command;
     } catch (JSONException e) {
       e.printStackTrace();
       // return command; this exception will never happen anyway

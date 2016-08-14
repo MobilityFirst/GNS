@@ -92,7 +92,7 @@ public class CommandUtils {
 	 *
 	 * @param keysAndValues
 	 * @return the query string
-	 * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+	 * @throws JSONException 
 	 */
 	public static JSONObject createCommand(CommandType commandType,
 			Object... keysAndValues) throws JSONException {
@@ -110,7 +110,7 @@ public class CommandUtils {
 			// arun: made this static for now
 			if (GNSClientCommands.USE_OLD_SEND)
 				if (AbstractGNSClient.isForceCoordinatedReads())
-					result.put(GNSCommandProtocol.COORDINATE_READS, true);
+					result.put(GNSCommandProtocol.FORCE_COORDINATE_READS, true);
 
 			DelayProfiler.updateDelay("createCommand", startTime);
 			return result;

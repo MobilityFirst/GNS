@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,7 +94,27 @@ public class JSONByteConverter {
 		JSONObject json = objectMapperJackson.readValue(bytes, jsonClass);
 		return json;
 	}
-	
+
+	/**
+	 * Isn't there a way to give readValue either (byte[], offset, length) or a ByteBuffer
+	 * without having to Arrays.copyOfRange?
+	 * 
+	 * @param bbuf
+	 * @return JSONObject from {@link ByteBuffer}.
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	public static JSONObject fromBytesJackson(ByteBuffer bbuf)
+			throws JsonParseException, JsonMappingException, IOException,
+			JSONException {
+		return objectMapperJackson
+				.readValue(
+						Arrays.copyOfRange(bbuf.array(), bbuf.position(),
+								bbuf.limit()), jsonClass);
+	}
+
 	/**
 	 * Checks the type of the value object and either packs it or recursively packs its elements.
 	 * @param value The value to be parsed recursively and packed into the byte array.
@@ -273,7 +294,10 @@ public class JSONByteConverter {
 		JSONObject json = unpackMap(value.asMapValue(), unpacker);
 		return json;
 	}
-	
+	// FIXME: eliminate copyOfRange
+	public static JSONObject fromBytesMsgpack(ByteBuffer bbuf) throws JsonParseException, JsonMappingException, IOException, JSONException{
+		return fromBytesMsgpack(Arrays.copyOfRange(bbuf.array(), bbuf.position(), bbuf.limit())); 
+	}
 	/**
 	 * Checks the type of the value object and either converts it to bytes or recursively handles its elements.
 	 * @param value The value to be parsed recursively and packed into the byte array.
@@ -590,6 +614,9 @@ public class JSONByteConverter {
 		//byteBuffer.rewind();
 		JSONObject obj = (JSONObject) valueFromBytes(byteBuffer);
 		return obj;
+	}
+	public static JSONObject fromBytesHardcoded(ByteBuffer bbuf) throws JSONException{
+		return (JSONObject)valueFromBytes(bbuf);
 	}
 
 }

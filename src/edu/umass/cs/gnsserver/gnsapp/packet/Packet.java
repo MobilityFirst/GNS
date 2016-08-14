@@ -162,7 +162,9 @@ public class Packet {
      * @return the packet type
      */
     public static PacketType getPacketType(int number) {
-      return map.get(number);
+      PacketType t = map.get(number);
+      assert(t!=null) : number;
+      return t;
     }
   }
 

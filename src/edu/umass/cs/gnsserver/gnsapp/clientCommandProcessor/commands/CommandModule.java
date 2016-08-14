@@ -189,14 +189,15 @@ public class CommandModule {
         }
         if (command != null && !JSONContains(json, command.getCommandParameters())) {
           ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
-                  "For {0} missing parameter {1}",
-                  new Object[]{commandName, JSONMissing(json, command.getCommandParameters())});
+                  "For command {0} missing parameter {1}",
+                  new Object[]{command.getCommandType(), JSONMissing(json, command.getCommandParameters())});
           command = null;
         }
       } catch (JSONException e) {
         // do nothing
       }
     }
+    else ClientCommandProcessorConfig.getLogger().warning("No command int in command " + json);
     if (command != null) {
       ClientCommandProcessorConfig.getLogger().log(Level.FINE,
               "Found {0} using table lookup", command);
@@ -221,7 +222,7 @@ public class CommandModule {
       action = json.getString(COMMANDNAME);
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
-              "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
+              "Unable to find " + COMMANDNAME + " key in JSON command: {0} : {1}", new Object[]{json, e});
       return null;
     }
     return lookupCommand(action);
