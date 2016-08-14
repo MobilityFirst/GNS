@@ -16,13 +16,13 @@ import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.Config;
@@ -282,7 +282,7 @@ public class CommandUtils {
 	 * @return Response
 	 * @throws ClientException
 	 */
-	public static CommandValueReturnPacket oldCheckResponse(CommandValueReturnPacket cvrp) throws ClientException {
+	public static ResponsePacket oldCheckResponse(ResponsePacket cvrp) throws ClientException {
 		oldCheckResponse(cvrp.getReturnValue());
 		return cvrp;
 	}
@@ -385,7 +385,7 @@ public class CommandUtils {
 	 * @return Response as String
 	 * @throws ClientException
 	 */
-	public static String checkResponse(CommandValueReturnPacket response)
+	public static String checkResponse(ResponsePacket response)
 			throws ClientException {
 		return checkResponse(response, null).getReturnValue();
 	}
@@ -402,8 +402,8 @@ public class CommandUtils {
 	 * @return Response as a string.
 	 * @throws ClientException
 	 */
-	public static CommandValueReturnPacket checkResponse(
-			CommandValueReturnPacket responsePacket, CommandPacket command) throws ClientException {
+	public static ResponsePacket checkResponse(
+			ResponsePacket responsePacket, CommandPacket command) throws ClientException {
 		if (USE_OLD_CHECK_RESPONSE) 
 			return oldCheckResponse(responsePacket);
 

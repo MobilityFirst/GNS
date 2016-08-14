@@ -13,9 +13,11 @@
  * the License.
  * 
  * Initial developer(s): Westy, arun */
-package edu.umass.cs.gnscommon;
+package edu.umass.cs.gnscommon.packets;
 
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
+import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
@@ -37,7 +39,7 @@ import org.json.JSONObject;
  * plus a possible error code (could be null) plus instrumentation.
  *
  */
-public class CommandValueReturnPacket extends BasicPacketWithClientAddress
+public class ResponsePacket extends BasicPacketWithClientAddress
 		implements ClientRequest {
 
 	private final static String QID = GNSProtocol.REQUEST_ID.toString();
@@ -74,7 +76,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 	 * @param requestRate
 	 * @param cppProccessingTime
 	 */
-	public CommandValueReturnPacket(long requestId, String serviceName,
+	public ResponsePacket(long requestId, String serviceName,
 			CommandResponse response, long requestCnt, int requestRate,
 			long cppProccessingTime) {
 		this.setType(PacketType.COMMAND_RETURN_VALUE);
@@ -90,7 +92,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 	 * @param code
 	 * @param returnValue
 	 */
-	public CommandValueReturnPacket(String serviceName, long requestId,
+	public ResponsePacket(String serviceName, long requestId,
 			GNSResponseCode code, String returnValue) {
 		this.setType(PacketType.COMMAND_RETURN_VALUE);
 		this.clientRequestId = requestId;
@@ -105,7 +107,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 	 * @param json
 	 * @throws JSONException
 	 */
-	public CommandValueReturnPacket(JSONObject json) throws JSONException {
+	public ResponsePacket(JSONObject json) throws JSONException {
 		this.type = Packet.getPacketType(json);
 		this.clientRequestId = json.getLong(QID);
 		this.serviceName = json.getString(NAME);
@@ -127,7 +129,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 	 * @param serviceName
 	 * @param responseValue
 	 */
-	public CommandValueReturnPacket(long requestId, int errorNumber,
+	public ResponsePacket(long requestId, int errorNumber,
 			String serviceName, String responseValue) {
 		this.setType(PacketType.COMMAND_RETURN_VALUE);
 		this.clientRequestId = requestId;
@@ -229,7 +231,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 	 * @return The CommandValueReturnPacket represented by the bytes
 	 * @throws UnsupportedEncodingException
 	 */
-	public static final CommandValueReturnPacket fromBytes(byte[] bytes)
+	public static final ResponsePacket fromBytes(byte[] bytes)
 			throws UnsupportedEncodingException {
 		ByteBuffer buf = ByteBuffer.wrap(bytes);
 		long clientReqId = buf.getLong();
@@ -244,7 +246,7 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 		buf.get(returnValueBytes);
 		String returnValueString = new String(returnValueBytes,
 				MessageNIOTransport.NIO_CHARSET_ENCODING);
-		return new CommandValueReturnPacket(clientReqId, errorCodeInt,
+		return new ResponsePacket(clientReqId, errorCodeInt,
 				serviceNameString, returnValueString);
 
 	}

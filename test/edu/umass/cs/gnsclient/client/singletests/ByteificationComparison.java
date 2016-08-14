@@ -34,15 +34,15 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.SessionKeys;
@@ -373,39 +373,39 @@ public class ByteificationComparison {
 	
 	@Test
 	public void test_14_CommandValueReturnPacket_128B() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
+		ResponsePacket packet = new ResponsePacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
-			CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+			ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
 		System.out.println("Average byteification time CommandValueReturnPacket 128B was " + avg + " nanoseconds.");
 		byte[] bytes = packet.toBytes();
-		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
 	@Test
 	public void test_15_CommandValueReturnPacket_1024B_Strings() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
+		ResponsePacket packet = new ResponsePacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
-			CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+			ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
 		}
 		long endTime = System.nanoTime();
 		double avg = (endTime - startTime) / (TEST_RUNS);
 		System.out.println("Average byteification time CommandValueReturnPacket 1024B was " + avg + " nanoseconds.");
 		byte[] bytes = packet.toBytes();
-		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
 	@Test
 	public void test_16_CommandValueReturnPacket_toBytes_128B() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
+		ResponsePacket packet = new ResponsePacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -414,13 +414,13 @@ public class ByteificationComparison {
 		double avg = (endTime - startTime) / (TEST_RUNS);
 		System.out.println("Average byteification time CommandValueReturnPacket toBytes 128B was " + avg + " nanoseconds.");
 		byte[] bytes = packet.toBytes();
-		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	
 	@Test
 	public void test_17_CommandValueReturnPacket_toBytes_1024B_Strings() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
+		ResponsePacket packet = new ResponsePacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -429,7 +429,7 @@ public class ByteificationComparison {
 		double avg = (endTime - startTime) / (TEST_RUNS);
 		System.out.println("Average byteification time CommandValueReturnPacket toBytes 1024B was " + avg + " nanoseconds.");
 		byte[] bytes = packet.toBytes();
-		CommandValueReturnPacket outputPacket = CommandValueReturnPacket.fromBytes(bytes);
+		ResponsePacket outputPacket = ResponsePacket.fromBytes(bytes);
 		assert(packet.toJSONObject().toString().equals(outputPacket.toJSONObject().toString()));
 	}
 	

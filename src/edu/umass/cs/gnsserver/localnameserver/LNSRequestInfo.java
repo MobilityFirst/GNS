@@ -22,7 +22,7 @@ package edu.umass.cs.gnsserver.localnameserver;
 import java.net.InetSocketAddress;
 
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  * Class represents the abstract class in which LNS stores info for each ongoing request,

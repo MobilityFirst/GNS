@@ -23,8 +23,8 @@ import edu.umass.cs.gigapaxos.interfaces.NearestServerSelector;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.MessageNIOTransport;
@@ -235,7 +235,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    */
   public void handleCommandReturnValuePacket(JSONObject json)
           throws JSONException, IOException {
-    this.handleCommandReturnValuePacket(new CommandValueReturnPacket(json), json);
+    this.handleCommandReturnValuePacket(new ResponsePacket(json), json);
   }
 
   /**
@@ -247,7 +247,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    */
   private void handleCommandReturnValuePacket(Request response,
           JSONObject json) throws JSONException, IOException {
-    CommandValueReturnPacket returnPacket = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
+    ResponsePacket returnPacket = response instanceof ResponsePacket ? (ResponsePacket) response
             : null;
     ActiveReplicaError error = response instanceof ActiveReplicaError ? (ActiveReplicaError) response
             : null;

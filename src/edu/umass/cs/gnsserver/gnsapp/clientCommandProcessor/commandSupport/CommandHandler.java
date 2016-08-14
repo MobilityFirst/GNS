@@ -22,10 +22,10 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -76,7 +76,7 @@ public class CommandHandler {
 		runCommand(
 				addMessageWithoutSignatureToCommand(packet),
 				// CommandType.commandClass instance
-				commandModule.lookupCommandHandler(Packet.getCommand(packet)),
+				commandModule.lookupCommandHandler(PacketUtils.getCommand(packet)),
 				app.getRequestHandler(), packet, doNotReplyToClient, app);
 	}
 
@@ -85,7 +85,7 @@ public class CommandHandler {
 	private static void runCommand(CommandPacket commandPacket,
 			BasicCommand commandHandler, ClientRequestHandlerInterface handler,
 			CommandPacket packet, boolean doNotReplyToClient, GNSApp app) {
-		JSONObject jsonFormattedCommand = Packet.getCommand(commandPacket);
+		JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
 		try {
 			long receiptTime = System.currentTimeMillis(); // instrumentation
 			final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
@@ -117,7 +117,7 @@ public class CommandHandler {
 			}
 			// the last arguments here in the call below are instrumentation
 			// that the client can use to determine LNS load
-			CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(
+			ResponsePacket returnPacket = new ResponsePacket(
 					packet.getClientRequestId(), 
 					packet.getServiceName(), returnValue, 0, 0,
 					System.currentTimeMillis() - receiptTime);
@@ -171,7 +171,7 @@ public class CommandHandler {
 	// but some packets don't need a signature
 	private static CommandPacket addMessageWithoutSignatureToCommand(
 			CommandPacket commandPacket) throws JSONException {
-		JSONObject command = Packet.getCommand(commandPacket);
+		JSONObject command = PacketUtils.getCommand(commandPacket);
 		if (!command.has(SIGNATURE))
 			return commandPacket;
 
@@ -202,7 +202,7 @@ public class CommandHandler {
 					commandPacket, handler) : new CommandResponse(
 					GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " "
 							+ OPERATION_NOT_SUPPORTED + " - Don't understand "
-							+ Packet.getCommand(commandPacket));
+							+ PacketUtils.getCommand(commandPacket));
 		} catch (JSONException e) {
 			// e.printStackTrace();
 			return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR,
@@ -266,7 +266,7 @@ public class CommandHandler {
 	 * @throws IOException
 	 */
 	public static void handleCommandReturnValuePacketForApp(
-			CommandValueReturnPacket returnPacket, boolean doNotReplyToClient,
+			ResponsePacket returnPacket, boolean doNotReplyToClient,
 			GNSApp app) throws JSONException, IOException {
 		if (!doNotReplyToClient)
 			app.sendToClient(returnPacket, returnPacket.toJSONObject());

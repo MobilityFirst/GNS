@@ -13,7 +13,7 @@
  * the License.
  * 
  * Initial developer(s): Westy */
-package edu.umass.cs.gnsserver.gnsapp.packet;
+package edu.umass.cs.gnscommon.packets;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -25,12 +25,13 @@ import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
+import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
+import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -551,7 +552,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	private String getRespStr() {
 		this.finish();
 		if (this.result != null)
-			return ((CommandValueReturnPacket) this.result).getReturnValue();
+			return ((ResponsePacket) this.result).getReturnValue();
 		else
 			return null;
 	}
@@ -565,7 +566,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * @param responseStr
 	 * @return this
 	 */
-	CommandPacket setResult(CommandValueReturnPacket responsePacket) {
+	CommandPacket setResult(ResponsePacket responsePacket) {
 		// Note: this method has nothing to do with setResponse(ClientRequest)
 		synchronized (this) {
 			if (this.result == null) {

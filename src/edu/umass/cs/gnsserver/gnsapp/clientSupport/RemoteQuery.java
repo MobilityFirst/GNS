@@ -17,9 +17,9 @@ import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
@@ -419,8 +419,8 @@ public class RemoteQuery extends ClientAsynchBase {
   private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, 
           long timeout, String notFoundReponse) throws ClientException {
     try {
-      CommandValueReturnPacket packet
-              = (CommandValueReturnPacket) waitForReplicaResponse(requestId, monitor, callback, timeout);
+      ResponsePacket packet
+              = (ResponsePacket) waitForReplicaResponse(requestId, monitor, callback, timeout);
       if (packet == null) {
         throw new ClientException("Packet not found in table " + requestId);
       } else {

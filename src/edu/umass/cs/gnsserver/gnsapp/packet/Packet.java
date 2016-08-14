@@ -19,7 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
@@ -70,7 +71,7 @@ public class Packet {
     /**
      * COMMAND_RETURN_VALUE
      */
-    COMMAND_RETURN_VALUE(8, CommandValueReturnPacket.class.getCanonicalName()),
+    COMMAND_RETURN_VALUE(8, ResponsePacket.class.getCanonicalName()),
     /**
      * DUMP_REQUEST
      */
@@ -242,9 +243,9 @@ public class Packet {
       switch (packetType) {
         // Client
         case COMMAND:
-          return new edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket(json);
+          return new edu.umass.cs.gnscommon.packets.CommandPacket(json);
         case COMMAND_RETURN_VALUE:
-          return new edu.umass.cs.gnscommon.CommandValueReturnPacket(json);
+          return new edu.umass.cs.gnscommon.packets.ResponsePacket(json);
         // Admin:
         case DUMP_REQUEST:
           return new edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket<>(json, unstringer);
@@ -504,33 +505,10 @@ public class Packet {
    */
   public static String getPacketTypeStringSafe(JSONObject json) {
     try {
-//      if (PaxosPacket.hasPacketTypeField(json)) {
-//        // handle Paxos packets
-//        return PaxosPacket.getPacketType(json).toString();
-//      } else {
-      // handle Regular packets
       return getPacketType(json).toString();
       //}
     } catch (JSONException e) {
       return "Unknown";
     }
   }
-
-  /**
-   * @param command
-   * @param response
-   * @return CommandPacket {@code command} with {@code response} in it.
-   */
-  public static CommandPacket setResult(CommandPacket command,
-          CommandValueReturnPacket response) {
-    return command.setResult(response);
-  }
-  
-	/**
-	 * @param command
-	 * @return JSONObject command within CommandPacket {@code command}.
-	 */
-	public static JSONObject getCommand(CommandPacket command) {
-		return command.getCommand();
-	}
 }

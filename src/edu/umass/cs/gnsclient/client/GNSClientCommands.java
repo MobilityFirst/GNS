@@ -70,10 +70,10 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
@@ -146,7 +146,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * replaced by this getResponse method.
    *
    * The response here is converted to a String for legacy reasons. Otherwise,
-   * all responses should be of type {@link CommandValueReturnPacket}.
+   * all responses should be of type {@link ResponsePacket}.
    */
   private String getResponse(CommandType commandType, GuidEntry querier,
           Object... keysAndValues) throws ClientException, IOException {
@@ -179,7 +179,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     if (!RECORD_ENABLED || responseObj == null) {
       return (String) responseObj;
     }
-    String response = responseObj instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket) responseObj).getReturnValue()
+    String response = responseObj instanceof ResponsePacket ? ((ResponsePacket) responseObj).getReturnValue()
             : responseObj.toString();
     if (reverseEngineer.get(type) == null) {
       reverseEngineer.put(type, new HashSet<String>());

@@ -1,6 +1,6 @@
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 /**

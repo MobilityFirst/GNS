@@ -35,6 +35,8 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
@@ -53,8 +55,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnamed.DnsTranslator;
 import edu.umass.cs.gnsserver.gnamed.UdpDnsServer;
 import edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket;
@@ -287,10 +287,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
   private synchronized void incrResponseCount(ClientRequest response) {
     if (responseCount++ > RESPONSE_COUNT_THRESHOLD
-            && response instanceof CommandValueReturnPacket
+            && response instanceof ResponsePacket
             && (!doneOnce && (doneOnce = true))) {
       try {
-        this.cachedResponse = ((CommandValueReturnPacket) response)
+        this.cachedResponse = ((ResponsePacket) response)
                 .toJSONObject();
       } catch (JSONException e) {
         // TODO Auto-generated catch block
@@ -313,7 +313,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             ) {
       try {
         ((BasicPacketWithClientAddress) request)
-                .setResponse(new CommandValueReturnPacket(cachedResponse)
+                .setResponse(new ResponsePacket(cachedResponse)
                         .setClientRequestAndLNSIds(((ClientRequest) request)
                                 .getRequestID()));
       } catch (JSONException e) {

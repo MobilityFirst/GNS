@@ -20,12 +20,12 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import static edu.umass.cs.gnsserver.httpserver.Defs.*;
 
@@ -151,7 +151,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
 			ClientRequestHandlerInterface handler) throws InvalidKeyException,
 			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
 			SignatureException, UnsupportedEncodingException, ParseException {
-		return this.execute(Packet.getCommand(commandPacket), handler);
+		return this.execute(PacketUtils.getCommand(commandPacket), handler);
 	}
 
   /**

@@ -36,11 +36,11 @@ import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.android.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
@@ -143,7 +143,7 @@ public abstract class AbstractGNSClient {
    * @return Result as CommandValueReturnPacket; or String if Android (FIXME)
    * @throws IOException if an error occurs
    */
-  public CommandValueReturnPacket sendCommandAndWait(JSONObject command) throws IOException {
+  public ResponsePacket sendCommandAndWait(JSONObject command) throws IOException {
     if (IS_ANDROID) {
       return androidSendCommandAndWait(command);
     } else {
@@ -175,7 +175,7 @@ public abstract class AbstractGNSClient {
   private ConcurrentHashMap<Long, Object> monitorMap = new ConcurrentHashMap<Long, Object>();
 
   // arun: changed this to return CommandValueReturnPacket
-  private CommandValueReturnPacket desktopSendCommmandAndWait(JSONObject command) throws IOException {
+  private ResponsePacket desktopSendCommmandAndWait(JSONObject command) throws IOException {
     Object myMonitor = new Object();
     long id;
     monitorMap.put(id = this.generateNextRequestID(), myMonitor);
@@ -220,18 +220,18 @@ public abstract class AbstractGNSClient {
             new Object[]{this, result.getSummary()
             });
 
-    return result instanceof CommandValueReturnPacket ? ((CommandValueReturnPacket) result)
-            : new CommandValueReturnPacket(result.getServiceName(), id,
+    return result instanceof ResponsePacket ? ((ResponsePacket) result)
+            : new ResponsePacket(result.getServiceName(), id,
                     GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
                     ((ActiveReplicaError) result).getResponseMessage());
   }
 
-  protected static CommandValueReturnPacket getTimeoutResponse(AbstractGNSClient me, CommandPacket commandPacket) {
+  protected static ResponsePacket getTimeoutResponse(AbstractGNSClient me, CommandPacket commandPacket) {
     GNSClientConfig.getLogger().log(Level.INFO,
             "{0} timed out after {1}ms on {2}: {3}",
             new Object[]{me, me.readTimeout, commandPacket.getClientRequestId() + "", commandPacket.getSummary()});
     /* FIXME: Remove use of string reponse codes */
-    return new CommandValueReturnPacket(commandPacket.getServiceName(), commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT,
+    return new ResponsePacket(commandPacket.getServiceName(), commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT,
             GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT + " for command " + commandPacket.getSummary());
   }
 
@@ -257,10 +257,10 @@ public abstract class AbstractGNSClient {
     return packet;
   }
 
-  private CommandValueReturnPacket androidSendCommandAndWait(JSONObject command) throws IOException {
+  private ResponsePacket androidSendCommandAndWait(JSONObject command) throws IOException {
     final AndroidNIOTask sendTask = androidSendCommandNoWait(command);
     try {
-      return new CommandValueReturnPacket(new JSONObject(sendTask.get()));
+      return new ResponsePacket(new JSONObject(sendTask.get()));
     } catch (InterruptedException | ExecutionException | JSONException e) {
       throw new IOException(e);
     }
@@ -290,7 +290,7 @@ public abstract class AbstractGNSClient {
   protected void handleCommandValueReturnPacket(Request response
   )  {
     long methodStartTime = System.currentTimeMillis(), receivedTime = System.currentTimeMillis();
-    CommandValueReturnPacket packet = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
+    ResponsePacket packet = response instanceof ResponsePacket ? (ResponsePacket) response
             : null;
     ActiveReplicaError error = response instanceof ActiveReplicaError ? (ActiveReplicaError) response
             : null;
