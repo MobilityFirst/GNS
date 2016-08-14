@@ -40,10 +40,10 @@ import org.json.JSONObject;
 public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 		implements ClientRequest {
 
-	private final static String CLIENTREQUESTID = GNSProtocol.REQUEST_ID.toString();
-	private final static String SERVICENAME = GNSProtocol.SERVICE_NAME.toString();
-	private final static String RETURNVALUE = GNSProtocol.RETURN_VALUE.toString();
-	private final static String ERRORCODE = GNSProtocol.ERROR_CODE.toString();
+	private final static String QID = GNSProtocol.REQUEST_ID.toString();
+	private final static String NAME = GNSProtocol.SERVICE_NAME.toString();
+	private final static String RETVAL = GNSProtocol.RETURN_VALUE.toString();
+	private final static String ERRCODE = GNSProtocol.ERROR_CODE.toString();
 
 	/**
 	 * Identifier of the request.
@@ -107,12 +107,12 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 	 */
 	public CommandValueReturnPacket(JSONObject json) throws JSONException {
 		this.type = Packet.getPacketType(json);
-		this.clientRequestId = json.getLong(CLIENTREQUESTID);
-		this.serviceName = json.getString(SERVICENAME);
-		this.returnValue = json.getString(RETURNVALUE);
-		if (json.has(ERRORCODE)) {
+		this.clientRequestId = json.getLong(QID);
+		this.serviceName = json.getString(NAME);
+		this.returnValue = json.getString(RETVAL);
+		if (json.has(ERRCODE)) {
 			this.errorCode = GNSResponseCode.getResponseCode(json
-					.getInt(ERRORCODE));
+					.getInt(ERRCODE));
 		} else {
 			this.errorCode = GNSResponseCode.NO_ERROR;
 		}
@@ -146,13 +146,13 @@ public class CommandValueReturnPacket extends BasicPacketWithClientAddress
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject json = new JSONObject();
 		Packet.putPacketType(json, getType());
-		json.put(CLIENTREQUESTID, this.clientRequestId);
-		json.put(SERVICENAME, this.serviceName);
-		json.put(RETURNVALUE, returnValue);
+		json.put(QID, this.clientRequestId);
+		json.put(NAME, this.serviceName);
+		json.put(RETVAL, returnValue);
 		if (errorCode != null) {
-			json.put(ERRORCODE, errorCode.getCodeValue());
+			json.put(ERRCODE, errorCode.getCodeValue());
 		} else {
-			json.put(ERRORCODE, GNSResponseCode.NO_ERROR.getCodeValue());
+			json.put(ERRCODE, GNSResponseCode.NO_ERROR.getCodeValue());
 		}
 		return json;
 	}
