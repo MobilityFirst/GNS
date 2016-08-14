@@ -16,12 +16,13 @@ import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author gaozy
  *
  */
-public class ActiveClient implements Client{
+public class ActiveClientWithNamedPipe implements Runnable,Client {
 	
 	private ActiveQueryHandler queryHandler;
 	
@@ -36,9 +37,6 @@ public class ActiveClient implements Client{
 	
 	private static int heapSize = 64;
 	
-	/************** Test Only ******************/
-	final ActiveWorker worker;	
-	
 	/**
 	 * @param app 
 	 * @param ifile
@@ -46,7 +44,7 @@ public class ActiveClient implements Client{
 	 * @param id 
 	 * @param workerNumThread 
 	 */
-	public ActiveClient(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
+	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
@@ -69,7 +67,6 @@ public class ActiveClient implements Client{
 		
 		queryHandler = new ActiveQueryHandler(app);
 		
-		worker = new ActiveWorker(null, null, 0, 1, true);
 	}
 	
 	/**
@@ -80,7 +77,7 @@ public class ActiveClient implements Client{
 	 * @param id
 	 * @param workerNumThread
 	 */
-	public ActiveClient(ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
+	public ActiveClientWithNamedPipe(ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
 		this.pipeEnable = false;
 		this.id = id;
 		
@@ -94,7 +91,6 @@ public class ActiveClient implements Client{
 		channel = new ActiveDatagramChannel(port, serverPort);
 		queryHandler = new ActiveQueryHandler(app);
 		
-		worker = new ActiveWorker(null, null, 0, 1, true);
 	}
 	
 	/**
@@ -102,9 +98,19 @@ public class ActiveClient implements Client{
 	 * @param ifile
 	 * @param ofile
 	 */
-	public ActiveClient(ActiveDBInterface app, String ifile, String ofile){
+	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile){
 		this(app, ifile, ofile, 0, 1);
 	}
+	
+	@Override
+	public void run() {
+		/**
+		 * This thread is used to poll the worker process status.
+		 * If the worker is crashed, initialize a new one.
+		 */
+		
+	}
+
 	
 	/**
 	 * Destroy the worker process if it's still running,
@@ -232,10 +238,12 @@ public class ActiveClient implements Client{
 	 */
 	@Override
 	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
+		long t1 =System.nanoTime();
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		sendMessage(msg);
-		//System.out.println("Message "+msg.toString()+" has been sent to worker by "+this);
+		DelayProfiler.updateDelayNano("activeSendMessage", t1);
 		
+		long t2 = System.nanoTime();
 		ActiveMessage response;
 		while((response = receiveMessage()) != null){			
 			if(response.type==Type.RESPONSE){
@@ -243,27 +251,16 @@ public class ActiveClient implements Client{
 				break;
 			}else{
 				//System.out.println("GUID "+guid+" tries to operate on the value "+response.getValue()+" of field "+response.getField()+" from "+response.getTargetGuid());
-				//FIXME: for test only
-				if(response.getField().equals("nextGuid")){
-					ValuesMap map = new ValuesMap();
-					try {
-						map.put("nextGuid", "");
-						sendMessage(new ActiveMessage(response.getId(), map, null));
-						continue;
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-				}
 				ActiveMessage am = queryHandler.handleQuery(response);
 				sendMessage(am);
 			}
 		}
-		
-		
+				
 		if(response.getError() != null){
-			System.out.println(response.getError());
-			return valuesMap;
+			throw new ActiveException();
 		}
+		
+		DelayProfiler.updateDelayNano("activeGetResult", t2);
 		
 		return response.getValue();
 	}
@@ -280,48 +277,7 @@ public class ActiveClient implements Client{
 	 */
 	public static void main(String[] args) throws InterruptedException, JSONException, ActiveException{
 		
-		String suffix = "";
-		/*
-		if (args.length == 1)
-			suffix = args[0];
-		if (args.length == 2) {
-			suffix = args[0];
-			heapSize = Integer.parseInt(args[1]);
-		}*/
-		int numThread = 1; //Integer.parseInt(args[0]);
 		
-		
-		String cfile = "/tmp/client"+suffix;
-		String sfile = "/tmp/server"+suffix;		
-		/**
-		 * Test client performance with named pipe channel
-		 */
-		ActiveClient client = new ActiveClient(null, cfile, sfile, 0, numThread);
-		
-		String guid = "guid";
-		String field = "name";
-		String noop_code = "";
-		try {
-			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-		ValuesMap value = new ValuesMap();
-		value.put("string", "hello world!");	
-		
-		int n = 1000000;
-		
-		long t1 = System.currentTimeMillis();
-		
-		for (int i=0; i<n; i++){
-			client.runCode(guid, field, noop_code, value, 0);
-		}
-		
-		long elapsed = System.currentTimeMillis() - t1;
-		System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
-		System.out.println("The average throughput is "+(n*1000.0/elapsed)*numThread);
-		client.shutdown();
 	}
-
 	
 }

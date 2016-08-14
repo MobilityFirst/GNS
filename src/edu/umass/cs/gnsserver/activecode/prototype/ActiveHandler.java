@@ -1,4 +1,4 @@
-	package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.prototype;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,12 +66,12 @@ public class ActiveHandler {
 		
 		if(numThread == 1){
 			// initialize single threaded clients and workers
-			clientPool = new ActiveClient[numProcess];
+			clientPool = new ActiveClientWithNamedPipe[numProcess];
 			for (int i=0; i<numProcess; i++){
 				if(pipeEnable){
-					clientPool[i] = new ActiveClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
+					clientPool[i] = new ActiveClientWithNamedPipe(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
 				} else {
-					clientPool[i] = new ActiveClient(app, clientPort+i, workerPort+i, i, 1);
+					clientPool[i] = new ActiveClientWithNamedPipe(app, clientPort+i, workerPort+i, i, 1);
 				}
 			}
 		} else {

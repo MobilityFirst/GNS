@@ -295,7 +295,6 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-	  //System.out.println(">>>>>>>>>>>>>>> read filed "+ field +" for guid "+guid+" with original value "+ originalValues);
 	  
 	  long start = System.nanoTime();
 	  if(!AppReconfigurableNodeOptions.enableActiveCode) return originalValues;
@@ -322,25 +321,21 @@ public class NSFieldAccess {
 		try {
 			hasCode = gnsApp.getActiveCodeHandler().hasCode(codeRecord.getValuesMap(), ActiveCode.READ_ACTION);
 		} catch (FieldNotFoundException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
               && hasCode) {
         try {
-          //t = System.nanoTime();
           String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);          
           
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
                   new Object[]{guid, field, originalValues.toString()});
-          //DelayProfiler.updateDelayNano("activeGetCodeString", t);
+         
           
-          //t = System.nanoTime();
           newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field,
                   "read", originalValues, hopLimit);          
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
                   newResult.toString());
-          //DelayProfiler.updateDelayNano("activeRunCode", t);
           
         } catch (Exception e) {
           ClientSupportConfig.getLogger().log(Level.FINE, "Active code error: {0}",

@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author gaozy
@@ -253,6 +254,8 @@ public class ActiveMessage implements Message{
 	 */
 	@Override
 	public byte[] toBytes() throws UnsupportedEncodingException{
+		long t = System.nanoTime();
+		
 		// First convert ValuesMap to String, as it is costly
 		String valuesMapString = (value == null)?null:value.toString();
 		
@@ -381,6 +384,8 @@ public class ActiveMessage implements Message{
 		assert (bbuf.remaining() == exactLength) : bbuf.remaining() + " != " + exactLength;
 		
 		bbuf.get(exactBytes);
+		
+		DelayProfiler.updateDelayNano("activeToByte", t);
 		return exactBytes;
 	}
 	
@@ -399,6 +404,8 @@ public class ActiveMessage implements Message{
 	 * @throws JSONException 
 	 */
 	public ActiveMessage(ByteBuffer bbuf) throws UnsupportedEncodingException, JSONException {
+		long t = System.nanoTime();
+		
 		this.type = Type.values()[bbuf.getInt()];	
 		this.id = bbuf.getLong();
 		int length = 0;
@@ -500,6 +507,8 @@ public class ActiveMessage implements Message{
 			break;
 			
 		}
+		
+		DelayProfiler.updateDelayNano("activeFromByte", t);
 	}
 	
 	@Override
