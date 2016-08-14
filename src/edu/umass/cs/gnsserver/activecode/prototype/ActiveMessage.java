@@ -122,9 +122,10 @@ public class ActiveMessage implements Message{
 	 * @param guid
 	 * @param field
 	 * @param targetGuid
+	 * @param id 
 	 */
-	public ActiveMessage(int ttl, String guid, String field, String targetGuid){
-		this(Type.READ_QUERY, counter.getAndIncrement(), ttl, guid, field, null, null, targetGuid, null);
+	public ActiveMessage(int ttl, String guid, String field, String targetGuid, long id){
+		this(Type.READ_QUERY, id, ttl, guid, field, null, null, targetGuid, null);
 	}
 	
 	
@@ -135,9 +136,10 @@ public class ActiveMessage implements Message{
 	 * @param field
 	 * @param targetGuid
 	 * @param value
+	 * @param id 
 	 */
-	public ActiveMessage(int ttl, String guid, String field, String targetGuid, ValuesMap value){
-		this(Type.WRITE_QUERY, counter.getAndIncrement(), ttl, guid, field, null, value, targetGuid, null);
+	public ActiveMessage(int ttl, String guid, String field, String targetGuid, ValuesMap value, long id){
+		this(Type.WRITE_QUERY, id, ttl, guid, field, null, value, targetGuid, null);
 	}
 	
 	/**
@@ -580,7 +582,7 @@ public class ActiveMessage implements Message{
 		t = System.currentTimeMillis();
 		for (int i=0; i<k; i++){
 			rmsg = new ActiveMessage(amsg.toBytes());
-			byte[] buf = new ActiveMessage(ttl, querierGuid, field, queriedGuid).toBytes();
+			byte[] buf = new ActiveMessage(ttl, querierGuid, field, queriedGuid, 0).toBytes();
 			new ActiveMessage(buf);
 		}
 		elapsed = System.currentTimeMillis() - t;

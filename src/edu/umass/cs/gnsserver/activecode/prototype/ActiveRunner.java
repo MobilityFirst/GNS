@@ -70,14 +70,15 @@ public class ActiveRunner {
 	 * @param code
 	 * @param value
 	 * @param ttl
+	 * @param id 
 	 * @return ValuesMap result 
 	 * @throws ScriptException
 	 * @throws NoSuchMethodException
 	 */
-	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl) throws ScriptException, NoSuchMethodException {		
+	public synchronized ValuesMap runCode(String guid, String field, String code, ValuesMap value, int ttl, long id) throws ScriptException, NoSuchMethodException {		
 		updateCache(guid, code);
 		engine.setContext(contexts.get(guid));
-		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl);
+		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl, id);
 		ValuesMap valuesMap = null;
 
 		valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
@@ -97,7 +98,7 @@ public class ActiveRunner {
 		
 		@Override
 		public ValuesMap call() throws Exception {
-			return runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl());
+			return runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl(), am.getId());
 		}
 		
 	}
@@ -158,13 +159,13 @@ public class ActiveRunner {
 		String chain_code = null;
 		try {
 			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/permissionTest.js")));
-			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
-			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/testLoad.js")));
+			chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
+			//chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/testLoad.js")));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		try {
-			runner.runCode(guid, field, chain_code, value, 0);			
+			runner.runCode(guid, field, chain_code, value, 0, 0);			
 			// fail here
 			assert(false):"The code should not be here";
 		} catch (Exception e) {

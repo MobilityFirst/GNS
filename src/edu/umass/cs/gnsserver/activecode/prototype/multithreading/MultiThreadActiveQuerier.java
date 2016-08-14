@@ -20,27 +20,30 @@ public class MultiThreadActiveQuerier implements Querier{
 	private Channel channel;
 	private int currentTTL;
 	private String currentGuid;
+	private long currentID;
 	
-	protected MultiThreadActiveQuerier(Channel channel, int ttl, String guid){
+	protected MultiThreadActiveQuerier(Channel channel, int ttl, String guid, long id){
 		this.channel = channel;
 		this.currentTTL = ttl;
 		this.currentGuid = guid;
+		this.currentID = id;
 	}
 	
 	/**
 	 * @param channel
 	 */
 	public MultiThreadActiveQuerier(Channel channel){
-		this(channel, 0, null);
+		this(channel, 0, null, 0);
 	}
 	
 	/**
 	 * @param guid
 	 * @param ttl
 	 */
-	protected void resetQuerier(String guid, int ttl){
+	protected void resetQuerier(String guid, int ttl, long id){
 		this.currentGuid = guid;
 		this.currentTTL = ttl;
+		this.currentID = id;
 	}
 	
 	@Override
@@ -67,7 +70,7 @@ public class MultiThreadActiveQuerier implements Querier{
 			throws ActiveException {
 		ValuesMap value = null;
 		try{
-			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid);
+			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, currentID);
 			channel.sendMessage(am);
 			ActiveMessage response = (ActiveMessage) channel.receiveMessage();
 			value = response.getValue();
@@ -87,7 +90,7 @@ public class MultiThreadActiveQuerier implements Querier{
 				e.printStackTrace();
 				throw new ActiveException();
 			}
-			ActiveMessage am = new ActiveMessage(ttl, querierGuid, queriedGuid, field, map);
+			ActiveMessage am = new ActiveMessage(ttl, querierGuid, queriedGuid, field, map, currentID);
 			try {
 				channel.sendMessage(am);
 				ActiveMessage response = (ActiveMessage) channel.receiveMessage();

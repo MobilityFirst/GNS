@@ -47,7 +47,6 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveClientWithNamedPipe;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveHandler;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;

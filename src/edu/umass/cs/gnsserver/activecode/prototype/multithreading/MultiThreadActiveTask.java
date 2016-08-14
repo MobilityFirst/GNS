@@ -29,7 +29,7 @@ public class MultiThreadActiveTask implements Runnable {
 	public void run() {
 		ActiveMessage response = null;
 		try {
-			ValuesMap value = runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl());
+			ValuesMap value = runner.runCode(am.getGuid(), am.getField(), am.getCode(), am.getValue(), am.getTtl(), am.getId());
 			response = new ActiveMessage(am.getId(), value, null);
 			channel.sendMessage(response);
 		} catch (Exception e) {

@@ -2,8 +2,6 @@ package edu.umass.cs.gnsserver.activecode.prototype;
 
 import java.io.IOException;
 
-import org.json.JSONException;
-
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -19,6 +17,7 @@ public class ActiveQuerier implements Querier {
 	private Channel channel;
 	private int currentTTL;
 	private String currentGuid;
+	private long currentID;
 	
 	/**
 	 * @param channel
@@ -43,9 +42,10 @@ public class ActiveQuerier implements Querier {
 	 * @param guid
 	 * @param ttl
 	 */
-	protected void resetQuerier(String guid, int ttl){
+	protected void resetQuerier(String guid, int ttl, long id){
 		this.currentGuid = guid;
 		this.currentTTL = ttl;
+		this.currentID = id;
 	}
 	
 	/**
@@ -84,7 +84,7 @@ public class ActiveQuerier implements Querier {
 			throws ActiveException {
 		ValuesMap value = null;
 		try{
-			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid);
+			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, currentID);
 			channel.sendMessage(am);
 			ActiveMessage response = (ActiveMessage) channel.receiveMessage();
 			value = response.getValue();
@@ -97,8 +97,7 @@ public class ActiveQuerier implements Querier {
 	private void writeValueIntoField(String querierGuid, String queriedGuid, String field, ValuesMap value, int ttl)
 			throws ActiveException {
 		
-			
-			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, value);
+			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, value, currentID);
 			try {
 				//System.out.println("Querier sends request "+am);
 				channel.sendMessage(am);
@@ -123,7 +122,7 @@ public class ActiveQuerier implements Querier {
 		int n = 1000000;		
 		long t1 = System.currentTimeMillis();		
 		for(int i=0; i<n; i++){
-			querier.resetQuerier(guid, ttl);
+			querier.resetQuerier(guid, ttl, 0);
 		}		
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
