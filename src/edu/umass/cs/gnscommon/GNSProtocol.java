@@ -1,5 +1,8 @@
 package edu.umass.cs.gnscommon;
 
+import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
+import edu.umass.cs.gigapaxos.interfaces.Request;
 /**
  * @author arun
  *
@@ -32,14 +35,43 @@ public enum GNSProtocol {
 	 */
 	REQUEST_TTL("QTTL"),
 
+	/**
+	 * Long client request ID in every {@link CommandPacket}.
+	 */
+	REQUEST_ID("QID"),
+
+	/**
+	 * String return value carried in every {@link CommandValueReturnPacket}.
+	 */
+	RETURN_VALUE("RVAL"),
+
+	/**
+	 * The query carried in every {@link CommandPacket}.
+	 */
+	QUERY("QVAL"),
+
+	/**
+	 * Name or HRN or GUID, whatever is used in {@link Request#getServiceName()}.
+	 */
+	SERVICE_NAME("NAME"),
+	/**
+	 * The name carried in requests not directed to any particular GUID.
+	 */
+	UNKNOWN_NAME("unknown"), 
+	
+	/**
+	 * Error code carried in {@link CommandValueReturnPacket}.
+	 */
+	ERROR_CODE("ECODE"),
+
 	;
 
 	final String label;
 
 	GNSProtocol(String label) {
-		this.label = label!=null ? label : this.name();
+		this.label = label != null ? label : this.name();
 	}
-	
+
 	public String toString() {
 		return this.label;
 	}

@@ -258,7 +258,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
               this,
               returnPacket != null ? returnPacket : error.getSummary()});
     assert (returnPacket != null || error != null);
-    long id = returnPacket != null ? returnPacket.getLNSRequestId() : error.getRequestID();
+    long id = returnPacket != null ? returnPacket.getRequestID() : error.getRequestID();
     String serviceName = returnPacket != null ? returnPacket.getServiceName() : error.getServiceName();
     LNSRequestInfo sentInfo;
     GNSConfig.getLogger().log(Level.INFO, "{0} matching {1} with {2}",

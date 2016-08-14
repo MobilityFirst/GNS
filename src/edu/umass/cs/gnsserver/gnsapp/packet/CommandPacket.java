@@ -27,6 +27,7 @@ import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.utils.JSONByteConverter;
@@ -70,13 +71,14 @@ import org.msgpack.value.ValueType;
 public class CommandPacket extends BasicPacketWithClientAddress implements
 		ClientRequest, ReplicableRequest, Byteable {
 
-	private final static String CLIENTREQUESTID = "qid";
-	private final static String COMMAND = "command";
-
+	private final static String CLIENTREQUESTID = GNSProtocol.REQUEST_ID
+			.toString();
+	private final static String COMMAND = GNSProtocol.QUERY.toString();
 	/**
-	 * bogus service name
+	 * Refer {@link GNSProtocol#UNKNOWN_NAME}.
 	 */
-	public final static String BOGUS_SERVICE_NAME = "unknown";
+	public final static String BOGUS_SERVICE_NAME = GNSProtocol.UNKNOWN_NAME
+			.toString();
 
 	/**
 	 * Identifier of the request on the client.
@@ -229,17 +231,21 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 				return this.toJSONObject().toString()
 						.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING);
 			case HOMEBREW:
-				return this.appendByteifiedInnerJSONCommand(this.toByteBufferWithOuterFields(), 
+				return this.appendByteifiedInnerJSONCommand(
+						this.toByteBufferWithOuterFields(),
 						JSONByteConverter.toBytesHardcoded(this.command));
 			case JACKSON:
-				return this.appendByteifiedInnerJSONCommand(this.toByteBufferWithOuterFields(), 
+				return this.appendByteifiedInnerJSONCommand(
+						this.toByteBufferWithOuterFields(),
 						JSONByteConverter.toBytesJackson(this.command));
 			case MSGPACK:
-				return this.appendByteifiedInnerJSONCommand(this.toByteBufferWithOuterFields(), 
+				return this.appendByteifiedInnerJSONCommand(
+						this.toByteBufferWithOuterFields(),
 						JSONByteConverter.toBytesMsgpack(this.command));
 			case STRING_WING:
 				// different from above three
-				return this.toBytesWingItAsString(toByteBufferWithOuterFields(), this.command);
+				return this.toBytesWingItAsString(
+						toByteBufferWithOuterFields(), this.command);
 			default:
 				throw new RuntimeException("Unrecognized byteification mode");
 			}
@@ -248,11 +254,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 			throw new RuntimeException("Unable to byteify " + this);
 		}
 	}
-	
+
 	private ByteBuffer toByteBufferWithOuterFields() {
 		synchronized (command) {
-			return ByteBuffer.allocate(1024)
-			.putInt(
+			return ByteBuffer.allocate(1024).putInt(
 			// packet type
 					this.getType().getInt())
 			// requestID

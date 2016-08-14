@@ -118,7 +118,7 @@ public class CommandHandler {
 			// the last arguments here in the call below are instrumentation
 			// that the client can use to determine LNS load
 			CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(
-					packet.getClientRequestId(), packet.getClientRequestId(),//packet.getLNSRequestId(),
+					packet.getClientRequestId(), 
 					packet.getServiceName(), returnValue, 0, 0,
 					System.currentTimeMillis() - receiptTime);
 

@@ -373,7 +373,7 @@ public class ByteificationComparison {
 	
 	@Test
 	public void test_14_CommandValueReturnPacket_128B() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -389,7 +389,7 @@ public class ByteificationComparison {
 	
 	@Test
 	public void test_15_CommandValueReturnPacket_1024B_Strings() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -405,7 +405,7 @@ public class ByteificationComparison {
 	
 	@Test
 	public void test_16_CommandValueReturnPacket_toBytes_128B() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(64)), new String(Util.getRandomAlphanumericBytes(64)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
@@ -420,7 +420,7 @@ public class ByteificationComparison {
 	
 	@Test
 	public void test_17_CommandValueReturnPacket_toBytes_1024B_Strings() throws UnsupportedEncodingException, JSONException{
-		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, 1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
+		CommandValueReturnPacket packet = new CommandValueReturnPacket(1, GNSResponseCode.NO_ERROR.getCodeValue(), new String(Util.getRandomAlphanumericBytes(512)), new String(Util.getRandomAlphanumericBytes(512)));
 		long startTime = System.nanoTime();
 		for (int i = 0; i < TEST_RUNS; i++){
 			byte[] bytes = packet.toBytes();
