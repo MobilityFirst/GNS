@@ -164,7 +164,7 @@ public class AccountAccess {
   private static AccountInfo lookupAccountInfoFromGuid(String guid,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
-      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid,
               ACCOUNT_INFO, handler.getApp(), false);
       GNSConfig.getLogger().log(
               Level.FINE,
@@ -227,7 +227,7 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
 
     try {
-      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid,
               PRIMARY_GUID, handler.getApp(), false);
       GNSConfig.getLogger().log(Level.FINE,
               "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}",
@@ -316,7 +316,7 @@ public class AccountAccess {
   private static String lookupGuid(String name,
           ClientRequestHandlerInterface handler, boolean allowRemoteLookup) {
     try {
-      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(name,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, name,
               HRN_GUID, handler.getApp(), false);
       GNSConfig.getLogger().log(Level.FINE,
               "XXXXXXXXXXXXXXXXXXXXX ValuesMap for {0} / {1}: {2}",
@@ -400,7 +400,7 @@ public class AccountAccess {
             allowRemoteLookup);
 
     try {
-      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid,
               GUID_INFO, handler.getApp(), false);
       GNSConfig.getLogger().log(
               Level.FINE,
@@ -1479,7 +1479,7 @@ public class AccountAccess {
         // Do the update locally.
         JSONObject json = new JSONObject();
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-        response = FieldAccess.updateUserJSON(guid, json, writer,
+        response = FieldAccess.updateUserJSON(null, guid, json, writer,
                 signature, message, timestamp, handler);
       }
       return response;
@@ -1504,7 +1504,7 @@ public class AccountAccess {
     try {
       JSONObject json = new JSONObject();
       json.put(GUID_INFO, guidInfo.toJSONObject());
-      GNSResponseCode response = FieldAccess.updateUserJSON(
+      GNSResponseCode response = FieldAccess.updateUserJSON(null, 
               guidInfo.getGuid(), json, writer, signature, message,
               timestamp, handler);
       return response;

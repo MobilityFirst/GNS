@@ -20,6 +20,8 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
@@ -27,6 +29,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.utils.Config;
@@ -66,16 +69,19 @@ public class Read extends BasicCommand {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-  @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
-    String guid = json.getString(GUID);
+	@Override
+  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    String guid = json.getString(GUID);    
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(FIELD, null);
     ArrayList<String> fields = json.has(FIELDS) ? 
             JSONUtils.JSONArrayToArrayListString(json.getJSONArray(FIELDS)) : null;
-    // reader might be same as guid
-    String reader = json.optString(READER, guid);
+            
+		// reader might be same as guid
+		String reader = json.optString(READER, guid);
+		assert (!(this instanceof ReadUnsigned) || (!json.has(READER)));
+    
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
@@ -87,17 +93,18 @@ public class Read extends BasicCommand {
       timestamp = null;
     }
     if (reader.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
+    	if(this instanceof ReadUnsigned)
       reader = null;
     }
 
     if (ALL_FIELDS.equals(field)) {
-      return FieldAccess.lookupMultipleValues(guid, reader,
+      return FieldAccess.lookupMultipleValues(internalHeader, guid, reader,
               signature, message, timestamp, handler);
     } else if (field != null) {
-      return FieldAccess.lookupSingleField(guid, field, reader, signature,
+      return FieldAccess.lookupSingleField( guid, field, reader, signature,
               message, timestamp, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookupMultipleFields(guid, fields, reader, signature,
+      return FieldAccess.lookupMultipleFields( guid, fields, reader, signature,
               message, timestamp, handler);
     }
   }

@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.utils.Config;
 
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -62,7 +63,9 @@ public class ReadUnsigned extends Read {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+          JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
+	  // arun: disabled because this is a serious security bug
+	  if(true) throw new RuntimeException("This method is disabled");
     // Tells the lookup handler that we don't need to authenticate.
     // Will be moved to the client and will something more secure in the future.
     json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));

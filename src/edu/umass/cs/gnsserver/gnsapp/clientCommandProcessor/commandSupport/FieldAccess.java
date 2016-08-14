@@ -38,6 +38,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSUpdateSupport;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -45,14 +46,20 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.UnsupportedEncodingException;
+
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
+
 import org.apache.commons.lang3.time.DateUtils;
 
 /**
@@ -121,7 +128,7 @@ public class FieldAccess {
     }
     ValuesMap valuesMap;
     try {
-      valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, field, handler.getApp());
+      valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid, field, handler.getApp());
       if (reader != null) {
         // read is null means a magic internal request so we
         // only strip internal fields when read is not null
@@ -247,7 +254,7 @@ public class FieldAccess {
    * @param handler
    * @return a command response
    */
-  public static CommandResponse lookupMultipleValues(String guid,
+  public static CommandResponse lookupMultipleValues(InternalRequestHeader header, String guid,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 
@@ -261,7 +268,7 @@ public class FieldAccess {
     String resultString;
     GNSResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, GNSCommandProtocol.ALL_FIELDS, handler.getApp());
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(header, guid, GNSCommandProtocol.ALL_FIELDS, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toString();
         responseCode = GNSResponseCode.NO_ERROR;
@@ -336,7 +343,7 @@ public class FieldAccess {
     String resultString;
     GNSResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid,
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid,
               GNSCommandProtocol.ALL_FIELDS, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toJSONObjectFirstOnes().toString();
@@ -375,12 +382,12 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static GNSResponseCode update(String guid, String key, String value, String oldValue,
+  public static GNSResponseCode update(InternalRequestHeader header, String guid, String key, String value, String oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp,
           ClientRequestHandlerInterface handler) {
-    return update(guid, key,
+    return update(header, guid, key,
             new ResultValue(Arrays.asList(value)),
             oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
             argument,
@@ -407,14 +414,14 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static GNSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue,
+  public static GNSResponseCode update(InternalRequestHeader header, String guid, String key, ResultValue value, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp,
           ClientRequestHandlerInterface handler) {
 
     try {
-      return NSUpdateSupport.executeUpdateLocal(guid, key, writer, signature, message,
+      return NSUpdateSupport.executeUpdateLocal(header, guid, key, writer, signature, message,
               timestamp,
               operation,
               value, oldValue, argument, null, handler.getApp(), false);
@@ -444,11 +451,11 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  private static GNSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
+  private static GNSResponseCode update(InternalRequestHeader header, String guid, JSONObject json, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
     try {
-      return NSUpdateSupport.executeUpdateLocal(guid, null,
+      return NSUpdateSupport.executeUpdateLocal(header, guid, null,
               writer, signature, message, timestamp, operation,
               null, null, -1, new ValuesMap(json), handler.getApp(), false);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException |
@@ -474,10 +481,10 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  public static GNSResponseCode updateUserJSON(String guid, JSONObject json,
+  public static GNSResponseCode updateUserJSON(InternalRequestHeader header, String guid, JSONObject json,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(guid, new ValuesMap(json),
+    return FieldAccess.update(header, guid, new ValuesMap(json),
             UpdateOperation.USER_JSON_REPLACE,
             writer, signature, message, timestamp, handler);
   }
@@ -499,10 +506,10 @@ public class FieldAccess {
    * @param handler
    * @return a {@link GNSResponseCode}
    */
-  public static GNSResponseCode create(String guid, String key, ResultValue value,
+  public static GNSResponseCode create(InternalRequestHeader header, String guid, String key, ResultValue value,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
-    return update(guid, key, value, null, -1,
+    return update(header, guid, key, value, null, -1,
             UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message,
             timestamp, handler);
   }

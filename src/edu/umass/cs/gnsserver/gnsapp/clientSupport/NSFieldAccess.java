@@ -32,6 +32,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Activ
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -57,6 +58,7 @@ public class NSFieldAccess {
    * Active code is automatically handled during this call.
    *
    * Returns the value of a field in a GUID as a ValuesMap.
+ * @param header 
    *
    * @param guid
    * @param field
@@ -64,10 +66,10 @@ public class NSFieldAccess {
    * @return ResultValue
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
+  public static ValuesMap lookupJSONFieldLocalNoAuth(InternalRequestHeader header, String guid, String field,
           GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
-    return lookupJSONFieldLocalNoAuth(guid, field, gnsApp, true);
+    return lookupJSONFieldLocalNoAuth(header, guid, field, gnsApp, true);
   }
 
   /**
@@ -83,12 +85,12 @@ public class NSFieldAccess {
    * @return ResultValue
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupJSONFieldLocalNoAuth(String guid, String field,
+  public static ValuesMap lookupJSONFieldLocalNoAuth(InternalRequestHeader header, String guid, String field,
           GNSApplicationInterface<String> gnsApp, boolean handleActiveCode)
           throws FailedDBOperationException {
     ValuesMap valuesMap = lookupFieldLocalNoAuth(guid, field, ColumnFieldType.USER_JSON, gnsApp.getDB());
     if (handleActiveCode) {
-      valuesMap = NSFieldAccess.handleActiveCode(field, guid, valuesMap, gnsApp);
+      valuesMap = NSFieldAccess.handleActiveCode(header, field, guid, valuesMap, gnsApp);
     }
     return valuesMap;
   }
@@ -270,7 +272,7 @@ public class NSFieldAccess {
    */
   public static ValuesMap lookupJSONFieldAnywhere(String guid, String field,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
-    ValuesMap result = lookupJSONFieldLocalNoAuth(guid, field, gnsApp);
+    ValuesMap result = lookupJSONFieldLocalNoAuth(null, guid, field, gnsApp);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {
@@ -292,7 +294,7 @@ public class NSFieldAccess {
     return result;
   }
 
-  private static ValuesMap handleActiveCode(String field, String guid,
+  private static ValuesMap handleActiveCode(InternalRequestHeader header, String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
 	  if(!AppReconfigurableNodeOptions.enableActiveCode) return originalValues;
@@ -317,7 +319,7 @@ public class NSFieldAccess {
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
                   new Object[]{guid, field, originalValues.toString()});
 
-          newResult = gnsApp.getActiveCodeHandler().runCode(code64, guid, field,
+          newResult = gnsApp.getActiveCodeHandler().runCode(header, code64, guid, field,
                   "read", originalValues, hopLimit);
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
                   newResult.toString());

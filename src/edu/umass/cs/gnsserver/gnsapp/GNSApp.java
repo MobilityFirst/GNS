@@ -27,6 +27,7 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -36,6 +37,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -66,6 +68,7 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpServer;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -369,8 +372,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
            * type here as GNSApp should never be getting responses. STOP and
            * NOOP are no longer necessary. */
         case COMMAND_RETURN_VALUE:
-        // CommandHandler.handleCommandReturnValuePacketForApp((CommandValueReturnPacket)
-        // request, doNotReplyToClient, this);
         case STOP:
         case NOOP:
         default:
@@ -723,4 +724,16 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     }
   }
 
+	public CommandPacket getOriginRequest(InternalRequestHeader header) {
+		Request request = this.outstanding.get(getOriginRequestLongID(header));
+		if (request instanceof CommandPacket)
+			return (CommandPacket) request;
+		return null;
+	}
+
+	private static final long getOriginRequestLongID(
+			InternalRequestHeader header) {
+		// return Long.valueOf(orid.split(":")[0]);
+		return header.getOriginatingRequestID();
+	}
 }

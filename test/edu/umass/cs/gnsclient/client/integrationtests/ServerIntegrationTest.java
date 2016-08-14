@@ -19,6 +19,7 @@ import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -669,6 +670,24 @@ public class ServerIntegrationTest extends DefaultTest {
 			} catch (ClientException e) {
 			} catch (Exception e) {
 				fail("Exception while Sam reading Barney' address: ", e);
+				e.printStackTrace();
+			}
+			
+			try {
+				String result = client.fieldRead(
+						barneyEntry.getGuid(), "address", null);
+				fail("Result of read of barney's address by null querier is "
+						+ result
+						+ " which is wrong because it should have been rejected.");				
+			} catch(ClientException e) {
+				if (e.getCode() == GNSResponseCode.ACCESS_ERROR)
+					System.out
+							.print("This was expected for null querier trying to ReadUnsigned "
+									+ barneyEntry.getGuid()
+									+ "'s address: "
+									+ e);
+			} catch (Exception e) {
+				fail("Unexpected exception while null querier reading Barney' address: ", e);
 				e.printStackTrace();
 			}
 

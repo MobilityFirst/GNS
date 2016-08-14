@@ -20,6 +20,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.MetaD
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -69,7 +70,7 @@ public class NSUpdateSupport {
    * @throws RecordNotFoundException
    * @throws FieldNotFoundException
    */
-  public static GNSResponseCode executeUpdateLocal(String guid, String field,
+  public static GNSResponseCode executeUpdateLocal(InternalRequestHeader header, String guid, String field,
           String writer, String signature, String message, Date timestamp,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, GNSApplicationInterface<String> app, boolean doNotReplyToClient)
@@ -109,7 +110,7 @@ public class NSUpdateSupport {
     if (!operation.equals(UpdateOperation.CREATE_INDEX)) {
       // Handle usual case
       NameRecord nameRecord = getNameRecord(guid, field, operation, app.getDB());
-      updateNameRecord(nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON,
+      updateNameRecord(header, nameRecord, guid, field, operation, updateValue, oldValue, argument, userJSON,
               app.getDB(), app.getActiveCodeHandler());
       return GNSResponseCode.NO_ERROR;
     } else // Handle special case of a create index
@@ -138,13 +139,13 @@ public class NSUpdateSupport {
       }
   }
 
-  private static void updateNameRecord(NameRecord nameRecord, String guid, String field,
+  private static void updateNameRecord(InternalRequestHeader header, NameRecord nameRecord, String guid, String field,
           UpdateOperation operation, ResultValue updateValue, ResultValue oldValue, int argument,
           ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException {
     ValuesMap newValue = null;
     if (activeCodeHandler != null) {
       try {
-        newValue = handleActiveCode(guid, field, userJSON, db, activeCodeHandler);
+        newValue = handleActiveCode(header, guid, field, userJSON, db, activeCodeHandler);
       } catch (JSONException e) {
         ClientSupportConfig.getLogger().log(Level.SEVERE,
                 "JSON problem while handling active code: {0}", e);
@@ -164,7 +165,7 @@ public class NSUpdateSupport {
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
   }
 
-  private static ValuesMap handleActiveCode(String guid, String field, ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException, JSONException {
+  private static ValuesMap handleActiveCode(InternalRequestHeader header, String guid, String field, ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException, JSONException {
     // Only do active field handling for user fields.
     if (field == null || !InternalField.isInternalField(field)) {
       NameRecord activeCodeNameRecord = null;
@@ -182,7 +183,7 @@ public class NSUpdateSupport {
         String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
         ValuesMap packetValuesMap = userJSON;
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}", new Object[]{guid, field, packetValuesMap.toReasonableString()});
-        return activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
+        return activeCodeHandler.runCode(header, code64, guid, field, "write", packetValuesMap, hopLimit);
       }
     }
     return null;

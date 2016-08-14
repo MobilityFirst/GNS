@@ -13,6 +13,7 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -22,9 +23,10 @@ import edu.umass.cs.utils.Config;
  * @author arun
  *
  */
-public class GNSCommandInternal extends GNSCommand {
-	protected GNSCommandInternal(JSONObject command) {
-		super(command);
+public class GNSCommandInternal extends InternalCommandPacket {
+	protected GNSCommandInternal(InternalRequestHeader header,
+			JSONObject command) throws JSONException {
+		super(header, command);
 	}
 
 	/**
@@ -48,16 +50,22 @@ public class GNSCommandInternal extends GNSCommand {
 				.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
 	}
 
-	private static GNSCommand getCommand(CommandType type,
+	private static GNSCommandInternal getCommand(CommandType type,
 			InternalRequestHeader header, Object... keysAndValues)
 			throws JSONException {
-		return new GNSCommandInternal(makeInternal(type,
-				CommandUtils.createCommand(type, null, keysAndValues,
+		return new GNSCommandInternal(header, makeInternal(
+				type,
+				CommandUtils
+						.createCommand(type, keysAndValues)
 
-				GNSProtocol.ORIGINATING_GUID, header.getOriginatingRequestID(),
-						GNSProtocol.ORIGINATING_QID,
-						header.getOriginatingRequestID(),
-						GNSProtocol.REQUEST_TTL, header.getTTL())));
+						.put(GNSProtocol.ORIGINATING_GUID.toString(),
+								header.getOriginatingGUID())
+
+						.put(GNSProtocol.ORIGINATING_QID.toString(),
+								header.getOriginatingRequestID())
+
+						.put(GNSProtocol.REQUEST_TTL.toString(),
+								header.getTTL())));
 	}
 
 	/**
@@ -77,7 +85,7 @@ public class GNSCommandInternal extends GNSCommand {
 	 * @return Refer {@link GNSCommand#fieldRead(String, String, GuidEntry)}.
 	 * @throws JSONException
 	 */
-	public static final CommandPacket fieldRead(String targetGUID,
+	public static final InternalCommandPacket fieldRead(String targetGUID,
 			String field, InternalRequestHeader header) throws JSONException {
 		return getCommand(CommandType.ReadUnsigned, header,
 				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
@@ -124,7 +132,7 @@ public class GNSCommandInternal extends GNSCommand {
 			throws JSONException {
 		return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
 				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
-				field, GNSCommandProtocol.USER_JSON, makeJSON(field, value)
-						.toString());
+				field, GNSCommandProtocol.USER_JSON,
+				new JSONObject().put(field, value).toString());
 	}
 }

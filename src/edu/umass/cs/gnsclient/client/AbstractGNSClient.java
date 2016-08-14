@@ -467,7 +467,7 @@ public abstract class AbstractGNSClient {
    *
    * @return true if the client is forcing read operations to be coordinated
    */
-  public static boolean isForceCoordinatedReads() {
+  public boolean isForceCoordinatedReads() {
     return forceCoordinatedReads;
   }
 
@@ -476,7 +476,7 @@ public abstract class AbstractGNSClient {
    *
    * @param forceCoordinatedReads
    */
-  public static void setForceCoordinatedReads(boolean forceCoordinatedReads) {
+  public void setForceCoordinatedReads(boolean forceCoordinatedReads) {
     AbstractGNSClient.forceCoordinatedReads = forceCoordinatedReads;
   }
 

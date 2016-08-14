@@ -20,6 +20,8 @@
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.CommandType;
+
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
@@ -72,6 +74,14 @@ public class Packet {
      * COMMAND_RETURN_VALUE
      */
     COMMAND_RETURN_VALUE(8, ResponsePacket.class.getCanonicalName()),
+    
+    /**
+     * A variant of {@link CommandPacket} that is meant to be used for
+     * internal requests spawned by chains in {@link CommandType}.
+     */
+    INTERNAL_COMMAND(9, InternalCommandPacket.class.getCanonicalName()),
+
+    
     /**
      * DUMP_REQUEST
      */
@@ -246,6 +256,9 @@ public class Packet {
           return new edu.umass.cs.gnscommon.packets.CommandPacket(json);
         case COMMAND_RETURN_VALUE:
           return new edu.umass.cs.gnscommon.packets.ResponsePacket(json);
+        case INTERNAL_COMMAND:
+        	return new edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket(json);
+        	
         // Admin:
         case DUMP_REQUEST:
           return new edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket<>(json, unstringer);

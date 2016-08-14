@@ -132,8 +132,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     super(anyReconfigurator);
   }
 
-  protected static final boolean USE_OLD_SEND = false;
-
 
   /**
    * Invariant: A single CommandPacket should have complete information about
@@ -153,12 +151,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 	  GNSCommand commandPacket = null;
     return record(// just instrumentation
             commandType,
-            USE_OLD_SEND ? CommandUtils
-                    .checkResponse(sendCommandAndWait(CommandUtils
-                            .createAndSignCommand(commandType, querier,
-                                    keysAndValues)))
-                    // new send
-                    : CommandUtils.checkResponse(this
+            CommandUtils.checkResponse(this
                             .getCommandValueReturnPacket(
                                     commandPacket = getCommand(commandType,
                                             querier, keysAndValues),

@@ -22,7 +22,9 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
@@ -77,14 +79,14 @@ public class CommandHandler {
 				addMessageWithoutSignatureToCommand(packet),
 				// CommandType.commandClass instance
 				commandModule.lookupCommandHandler(PacketUtils.getCommand(packet)),
-				app.getRequestHandler(), packet, doNotReplyToClient, app);
+				app.getRequestHandler(), doNotReplyToClient, app);
 	}
 
 	private static final long LONG_DELAY_THRESHOLD = 1;
 
 	private static void runCommand(CommandPacket commandPacket,
 			BasicCommand commandHandler, ClientRequestHandlerInterface handler,
-			CommandPacket packet, boolean doNotReplyToClient, GNSApp app) {
+			boolean doNotReplyToClient, GNSApp app) {
 		JSONObject jsonFormattedCommand = PacketUtils.getCommand(commandPacket);
 		try {
 			long receiptTime = System.currentTimeMillis(); // instrumentation
@@ -92,15 +94,15 @@ public class CommandHandler {
 			// Other than this line, one below and some catches all of this
 			// method is instrumentation.
 			CommandResponse returnValue = executeCommand(commandHandler,
-					jsonFormattedCommand, handler);
+					commandPacket, handler);
 
-			assert(packet.getRequestType()!=null);
-			assert(packet.getCommandType()!=null);
+			assert(commandPacket.getRequestType()!=null);
+			assert(commandPacket.getCommandType()!=null);
 			assert(commandHandler!=null);
 			// instrumentation
 			DelayProfiler.updateDelay("executeCommand", executeCommandStart);
 			if (System.currentTimeMillis() - executeCommandStart > LONG_DELAY_THRESHOLD) {
-				DelayProfiler.updateDelay(packet.getRequestType() + "."
+				DelayProfiler.updateDelay(commandPacket.getRequestType() + "."
 						+ commandHandler.getCommandType(),
 						executeCommandStart);
 			}
@@ -118,8 +120,8 @@ public class CommandHandler {
 			// the last arguments here in the call below are instrumentation
 			// that the client can use to determine LNS load
 			ResponsePacket returnPacket = new ResponsePacket(
-					packet.getClientRequestId(), 
-					packet.getServiceName(), returnValue, 0, 0,
+					commandPacket.getClientRequestId(), 
+					commandPacket.getServiceName(), returnValue, 0, 0,
 					System.currentTimeMillis() - receiptTime);
 
 			try {
@@ -199,7 +201,9 @@ public class CommandHandler {
 			CommandPacket commandPacket, ClientRequestHandlerInterface handler) {
 		try {
 			return (commandHandler != null) ? commandHandler.execute(
-					commandPacket, handler) : new CommandResponse(
+					getInternalHeaderAfterEnforcingChecks(commandPacket,
+							handler), PacketUtils.getCommand(commandPacket),
+					handler) : new CommandResponse(
 					GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " "
 							+ OPERATION_NOT_SUPPORTED + " - Don't understand "
 							+ PacketUtils.getCommand(commandPacket));
@@ -213,12 +217,48 @@ public class CommandHandler {
 				| UnsupportedEncodingException e) {
 			return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR,
 					BAD_RESPONSE + " " + QUERY_PROCESSING_ERROR + " " + e);
+		} catch (InternalRequestException e) {
+			return new CommandResponse(e.getCode(), BAD_RESPONSE + " "
+					+ GNSResponseCode.INTERNAL_REQUEST_EXCEPTION + " " + e);
 		}
 	}
 	
+	private static InternalRequestHeader getInternalHeaderAfterEnforcingChecks(
+			CommandPacket commandPacket, ClientRequestHandlerInterface handler)
+			throws InternalRequestException {
+		InternalRequestHeader header = PacketUtils
+				.getInternalRequestHeader(commandPacket);
+		if (header == null)
+			return header;
+		
+		// TTL expiration
+		if (header.getTTL() == 0)
+			throw new InternalRequestException(
+					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
+
+		
+		// cycle detection
+		CommandPacket originRequest = handler.getOriginRequest(header);
+		// this will always be true and should be asserted
+		assert (originRequest.getRequestID() == commandPacket
+				.getClientRequestId());
+		// same origin GUID and origin request ID => cycle
+		if (header.getOriginatingGUID().equals(
+				PacketUtils.getCommand((CommandPacket) originRequest)
+						.optString(GNSCommandProtocol.READER)))
+			throw new InternalRequestException(
+					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION,
+					"Cyclic internal request");
+
+		// nothing suspicious detected
+		return header;
+	}
+
 	/**
 	 * Executes the given command with the parameters supplied in the
-	 * JSONObject.
+	 * JSONObject. Same as
+	 * {@link #executeCommand(BasicCommand, JSONObject, ClientRequestHandlerInterface)}
+	 * but this is used by the HTTP server that doesn't get {@link CommandPacket}.
 	 *
 	 * @param command
 	 * @param json

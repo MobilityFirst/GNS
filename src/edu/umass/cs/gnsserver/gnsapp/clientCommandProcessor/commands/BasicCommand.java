@@ -126,17 +126,20 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    * @throws java.io.UnsupportedEncodingException
    * @throws java.text.ParseException
    */
-  public abstract CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
-          UnsupportedEncodingException, ParseException;
+          UnsupportedEncodingException, ParseException {
+	  throw new RuntimeException("This method should never have been called");
+  }
 
   /**
    * 
    * This method by default simply calls {@link #execute(JSONObject, ClientRequestHandlerInterface)}
    * but Read and Update queries need to be adapted to drag {@link CommandPacket} for longer to use
    * {@link InternalRequestHeader} information inside them.
+ * @param internalHeader 
+ * @param command 
    * 
-   * @param commandPacket
    * @param handler
    * @return Result of executing {@code commandPacket}
    * @throws InvalidKeyException
@@ -147,11 +150,11 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    * @throws UnsupportedEncodingException
    * @throws ParseException
    */
-	public CommandResponse execute(CommandPacket commandPacket,
+	public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
 			ClientRequestHandlerInterface handler) throws InvalidKeyException,
 			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
 			SignatureException, UnsupportedEncodingException, ParseException {
-		return this.execute(PacketUtils.getCommand(commandPacket), handler);
+		return this.execute(command, handler);
 	}
 
   /**

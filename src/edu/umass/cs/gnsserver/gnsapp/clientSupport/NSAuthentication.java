@@ -162,6 +162,7 @@ public class NSAuthentication {
       }
     }
     if (aclResult == null) {
+    	assert(false) : "Should never come here";
       // Something went wrong above, but we shouldn't really get here.
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});

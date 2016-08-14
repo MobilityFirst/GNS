@@ -62,7 +62,12 @@ public enum GNSProtocol {
 	/**
 	 * Error code carried in {@link CommandValueReturnPacket}.
 	 */
-	ERROR_CODE("ECODE"),
+	ERROR_CODE("ECODE"), 
+	
+	/**
+	 * Internal request exception message string.
+	 */
+	INTERNAL_REQUEST_EXCEPTION("+INTERNAL_REQUEST_EXCEPTION+"),
 
 	;
 
