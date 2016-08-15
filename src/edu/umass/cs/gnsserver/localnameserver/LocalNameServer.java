@@ -22,8 +22,10 @@ package edu.umass.cs.gnsserver.localnameserver;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSNodeConfig;
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
@@ -38,11 +40,13 @@ import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.interfaces.IntegerPacketType;
 import edu.umass.cs.nio.interfaces.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.StringifiableDefault;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -53,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -234,10 +239,10 @@ edu.umass.cs.gnsserver.localnameserver.LocalNameServer
    * @param requestInfo
    */
   @Override
-  public void addRequestInfo(long id, LNSRequestInfo requestInfo) {
+  public void addRequestInfo(long id, LNSRequestInfo requestInfo, NIOHeader header) {
     LOG.log(Level.INFO,
-            "{0} inserting outgoing request {1}:{2}",
-            new Object[]{this, id + "", requestInfo});
+            "{0} inserting outgoing request {1}:{2} with header {3}",
+            new Object[]{this, id + "", requestInfo, header});
     outstandingRequests.put(id, requestInfo);
     assert (outstandingRequests.get(id) != null);
   }
