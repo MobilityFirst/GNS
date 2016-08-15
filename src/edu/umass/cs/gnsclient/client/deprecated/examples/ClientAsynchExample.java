@@ -21,8 +21,6 @@ package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsclient.client.AbstractGNSClient;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -31,6 +29,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 
@@ -134,8 +134,8 @@ public class ClientAsynchExample {
         if (client.isAsynchResponseReceived(id)) {
           pendingIds.remove(id);
           Request removed = client.removeAsynchResponse(id);
-          if(removed instanceof CommandValueReturnPacket) {
-        	  CommandValueReturnPacket commandResult = ((CommandValueReturnPacket)removed);
+          if(removed instanceof ResponsePacket) {
+        	  ResponsePacket commandResult = ((ResponsePacket)removed);
           System.out.println("commandResult for  " + id + " is "
                   + (commandResult.getErrorCode().equals(GNSResponseCode.NO_ERROR)
                   ? commandResult.getReturnValue()

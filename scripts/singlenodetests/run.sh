@@ -1,4 +1,8 @@
 #!/bin/bash
+
+echo "This script is outdated and can not be used anymore."
+exit
+
 SCRIPTS="`dirname \"$0\"`"
 GNS=$SCRIPTS/../..
 # to use IDE auto-build instead of ant

@@ -701,6 +701,12 @@ public class MongoRecords implements NoSQLRecords {
 		}
 		String dbName = DBROOTNAME + sanitizeDBName(nodeID);
 		mongoClient.dropDatabase(dbName);
+
+		List<String> names = mongoClient.getDatabaseNames();
+	    for (String name : names) 
+	      if (name.startsWith(dbName)) 
+	    	  mongoClient.dropDatabase(name);
+
 		System.out.println("Dropped DB " + dbName);
 	}
 

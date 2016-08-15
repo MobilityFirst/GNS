@@ -20,11 +20,14 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor;
 
 import static edu.umass.cs.gnscommon.utils.NetworkUtils.getLocalHostLANAddress;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -139,5 +142,10 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     // job done
     return getLocalHostLANAddress().getHostAddress() + ":" + httpServerPort;
   }
+
+	@Override
+	public CommandPacket getOriginRequest(InternalRequestHeader header) {
+		return this.app.getOriginRequest(header);
+	}
 
 }

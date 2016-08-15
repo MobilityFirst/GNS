@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModu
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
 import java.security.InvalidKeyException;
@@ -70,7 +71,7 @@ public class Create extends BasicCommand {
 //    return CREATE;
 //  }
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -88,7 +89,7 @@ public class Create extends BasicCommand {
       timestamp = null;
     }
     GNSResponseCode responseCode;
-    if (!(responseCode = FieldAccess.create(guid, field,
+    if (!(responseCode = FieldAccess.create(header, guid, field,
             (value == null ? new ResultValue() : new ResultValue(Arrays.asList(value))),
             writer, signature, message, timestamp, handler)).isExceptionOrError()) {
       return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);

@@ -35,6 +35,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -137,7 +138,7 @@ public class ActiveCodeHandler {
    * @param activeCodeTTL the remaining active code TTL
    * @return a Valuesmap
    */
-  public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
+  public ValuesMap runCode(InternalRequestHeader header, String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
     String code = new String(Base64.decodeBase64(code64));
     String values = valuesMap.toString();
     ValuesMap result = null;

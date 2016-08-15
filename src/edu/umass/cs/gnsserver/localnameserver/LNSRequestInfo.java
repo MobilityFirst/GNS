@@ -19,8 +19,10 @@
  */
 package edu.umass.cs.gnsserver.localnameserver;
 
+import java.net.InetSocketAddress;
+
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 
 /**
  * Class represents the abstract class in which LNS stores info for each ongoing request,
@@ -54,16 +56,20 @@ public class LNSRequestInfo {
    * Whether requests is finally successful or not.
    */
   private boolean success = false;
+  
+  private final InetSocketAddress sender;
 
   /**
    *
    * @param lnsReqId
    * @param commandPacket
    */
-  public LNSRequestInfo(long lnsReqId, CommandPacket commandPacket) {
+  public LNSRequestInfo(long lnsReqId, CommandPacket commandPacket, InetSocketAddress sender) {
     this.lnsReqID = lnsReqId;
     this.startTime = System.currentTimeMillis();
     this.commandPacket = commandPacket;
+    this.sender = sender;
+    if(sender==null) throw new RuntimeException("Can not instantiate LNSRequestInfo with null sender");
   }
 
   /**
@@ -100,7 +106,7 @@ public class LNSRequestInfo {
    * @return the host
    */
   public String getHost() {
-    return commandPacket.getSenderAddress();
+    return this.sender.getAddress().toString();//commandPacket.getSenderAddress();
   }
 
   /**
@@ -109,7 +115,7 @@ public class LNSRequestInfo {
    * @return the port
    */
   public int getPort() {
-    return commandPacket.getSenderPort();
+    return this.sender.getPort();//commandPacket.getSenderPort();
   }
 
   /**

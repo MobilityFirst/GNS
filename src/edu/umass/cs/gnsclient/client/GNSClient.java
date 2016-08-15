@@ -18,10 +18,12 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
+import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
@@ -51,7 +53,7 @@ public class GNSClient extends AbstractGNSClient {
 	private final AsyncClient asyncClient;
 
 	private InetSocketAddress GNSProxy = null;
-
+	
 	private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
 
 	/**
@@ -184,10 +186,10 @@ public class GNSClient extends AbstractGNSClient {
 		return this.sendSync(packet, 0);
 	}
 
-	private static final CommandValueReturnPacket defaultHandleResponse(
+	private static final ResponsePacket defaultHandleResponse(
 			Request response) {
-		return response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
-				: new CommandValueReturnPacket(response.getServiceName(),
+		return response instanceof ResponsePacket ? (ResponsePacket) response
+				: new ResponsePacket(response.getServiceName(),
 						((ActiveReplicaError) response).getRequestID(),
 						GNSResponseCode.ACTIVE_REPLICA_EXCEPTION,
 						((ActiveReplicaError) response).getResponseMessage());
@@ -195,14 +197,14 @@ public class GNSClient extends AbstractGNSClient {
 
 	private static final CommandPacket defaultHandleResponse(
 			CommandPacket commandPacket, Request response) {
-		return Packet.setResult(commandPacket, defaultHandleResponse(response));
+		return PacketUtils.setResult(commandPacket, defaultHandleResponse(response));
 	}
 
 	private static final CommandPacket defaultHandleAndCheckResponse(
 			CommandPacket commandPacket, Request response)
 			throws ClientException {
-		CommandValueReturnPacket cvrp = null;
-		Packet.setResult(commandPacket, cvrp = defaultHandleResponse(response));
+		ResponsePacket cvrp = null;
+		PacketUtils.setResult(commandPacket, cvrp = defaultHandleResponse(response));
 		CommandUtils.checkResponse(cvrp, commandPacket);
 		return commandPacket;
 	}
@@ -213,10 +215,10 @@ public class GNSClient extends AbstractGNSClient {
 	 * @return Response from the server or null if the timeout expires.
 	 * @throws IOException
 	 */
-	protected CommandValueReturnPacket getCommandValueReturnPacket(
+	protected ResponsePacket getCommandValueReturnPacket(
 			CommandPacket packet, long timeout) throws IOException {
 		Object monitor = new Object();
-		CommandValueReturnPacket[] retval = new CommandValueReturnPacket[1];
+		ResponsePacket[] retval = new ResponsePacket[1];
 
 		// send sync also internally sends async first
 		this.sendAsync(packet, (response) -> {
@@ -249,7 +251,7 @@ public class GNSClient extends AbstractGNSClient {
 	 *
 	 * @throws IOException
 	 */
-	protected CommandValueReturnPacket getCommandValueReturnPacket(
+	protected ResponsePacket getCommandValueReturnPacket(
 			CommandPacket packet) throws IOException {
 		return this.getCommandValueReturnPacket(packet, 0);
 	}
@@ -322,7 +324,11 @@ public class GNSClient extends AbstractGNSClient {
 		@SuppressWarnings("javadoc")
 		@Override
 		public Set<IntegerPacketType> getMutualAuthRequestTypes() {
-			return null;
+			Set<IntegerPacketType> types = new HashSet<IntegerPacketType>(
+					Arrays.asList(Packet.PacketType.ADMIN_REQUEST));
+			if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE)
+				types.add(Packet.PacketType.INTERNAL_COMMAND);
+			return types;
 		}
 
 		@Override

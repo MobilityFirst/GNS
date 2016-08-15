@@ -28,6 +28,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.utils.Config;
@@ -65,7 +66,7 @@ public abstract class AbstractUpdate extends BasicCommand {
   public abstract UpdateOperation getUpdateOperation();
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.optString(FIELD, null);
@@ -87,7 +88,7 @@ public abstract class AbstractUpdate extends BasicCommand {
 
     GNSResponseCode responseCode;
     if (field == null) {
-      responseCode = FieldAccess.updateUserJSON(guid, userJSON, 
+      responseCode = FieldAccess.updateUserJSON(header, guid, userJSON, 
               writer, signature, message, timestamp, handler);
       if (!responseCode.isExceptionOrError()) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
@@ -96,7 +97,7 @@ public abstract class AbstractUpdate extends BasicCommand {
       }
     } else {
       // single field update
-      if (!(responseCode = FieldAccess.update(guid, field,
+      if (!(responseCode = FieldAccess.update(header, guid, field,
               // special case for the ops which do not need a value
               value != null ? new ResultValue(Arrays.asList(value)) : new ResultValue(),
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,

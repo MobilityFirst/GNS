@@ -68,8 +68,8 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -246,14 +246,20 @@ public class GNSCommand extends CommandPacket {
   }
 
   // converts JSONException to ClientException
-  private static JSONObject getJSONObject(String field, Object value)
-          throws ClientException {
-    try {
+  protected static JSONObject makeJSON(String field, Object value)
+          throws JSONException {
       return new JSONObject().put(field, value);
-    } catch (JSONException e) {
-      throw new ClientException(e);
-    }
   }
+
+	// converts JSONException to ClientException
+	protected static JSONObject getJSONObject(String field, Object value)
+			throws ClientException {
+		try {
+			return makeJSON(field, value);
+		} catch (JSONException e) {
+			throw new ClientException(e);
+		}
+	}
 
   /**
    * Creates an index for a field. {@code targetGUID} is only used for
