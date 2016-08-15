@@ -46,7 +46,7 @@ public class GNSClient extends AbstractGNSClient {
 	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
 			.getReconfiguratorAddresses();
 
-	// initialized upon contstruction
+	// initialized upon construction
 	private final Set<InetSocketAddress> reconfigurators;
 	private final AsyncClient asyncClient;
 
