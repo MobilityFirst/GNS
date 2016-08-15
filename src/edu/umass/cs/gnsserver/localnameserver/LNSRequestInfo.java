@@ -106,7 +106,7 @@ public class LNSRequestInfo {
    * @return the host
    */
   public String getHost() {
-    return this.sender.getAddress().toString();//commandPacket.getSenderAddress();
+    return this.sender.getAddress().getHostAddress();//commandPacket.getSenderAddress();
   }
 
   /**

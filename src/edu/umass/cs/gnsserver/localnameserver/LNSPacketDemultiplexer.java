@@ -162,6 +162,9 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     CommandPacket packet = new CommandPacket(json);
     LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(),
             packet, header.sndr);
+    GNSConfig.getLogger().log(Level.INFO,
+            "{0} inserting outgoing request {1} with header {2}",
+            new Object[]{this, json,  header});
     handler.addRequestInfo(packet.getRequestID(), requestInfo, header);
     packet = removeSenderInfo(json);
 
