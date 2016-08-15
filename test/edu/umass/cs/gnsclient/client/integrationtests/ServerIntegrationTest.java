@@ -19,6 +19,7 @@ import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
@@ -228,6 +229,13 @@ public class ServerIntegrationTest extends DefaultTest {
 						System.getProperty(DefaultProps.SERVER_COMMAND.key)
 								+ " " + getGigaPaxosOptions()
 								+ " forceclear all", ".");
+				
+				/* We need to do this to limit the number of files used by mongo.
+				 * Otherwise failed runs quickly lead to more failed runs because
+				 * index files created in previous runs are not removed.
+				 */
+				dropAllDatabases();
+				
 				options = getGigaPaxosOptions() + " restart all";
 			} else
 				options = SCRIPTS_OPTIONS;
@@ -332,10 +340,8 @@ public class ServerIntegrationTest extends DefaultTest {
 			}
 		}
 		
-		for(String server : new DefaultNodeConfig<String>(
-				PaxosConfig.getActives(),
-				ReconfigurationConfig.getReconfigurators()).getNodeIDs()) 
-			MongoRecords.dropNodeDatabase(server);
+		dropAllDatabases();
+		
 		
 		if (client != null) {
 			client.close();
@@ -345,6 +351,13 @@ public class ServerIntegrationTest extends DefaultTest {
 			System.out.println(type + " returns "
 					+ GNSClientCommands.reverseEngineer.get(type) + "; e.g., "
 					+ Util.truncate(GNSClientCommands.returnValueExample.get(type), 64, 64));
+	}
+	
+	private static void dropAllDatabases() {
+		for(String server : new DefaultNodeConfig<String>(
+				PaxosConfig.getActives(),
+				ReconfigurationConfig.getReconfigurators()).getNodeIDs()) 
+			MongoRecords.dropNodeDatabase(server);
 	}
 
 	/**
@@ -657,6 +670,24 @@ public class ServerIntegrationTest extends DefaultTest {
 			} catch (ClientException e) {
 			} catch (Exception e) {
 				fail("Exception while Sam reading Barney' address: ", e);
+				e.printStackTrace();
+			}
+			
+			try {
+				String result = client.fieldRead(
+						barneyEntry.getGuid(), "address", null);
+				fail("Result of read of barney's address by null querier is "
+						+ result
+						+ " which is wrong because it should have been rejected.");				
+			} catch(ClientException e) {
+				if (e.getCode() == GNSResponseCode.ACCESS_ERROR)
+					System.out
+							.print("This was expected for null querier trying to ReadUnsigned "
+									+ barneyEntry.getGuid()
+									+ "'s address: "
+									+ e);
+			} catch (Exception e) {
+				fail("Unexpected exception while null querier reading Barney' address: ", e);
 				e.printStackTrace();
 			}
 

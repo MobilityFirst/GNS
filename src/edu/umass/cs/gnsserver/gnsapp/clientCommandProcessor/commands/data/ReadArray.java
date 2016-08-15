@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.utils.Config;
 
@@ -66,13 +67,13 @@ public class ReadArray extends BasicCommand {
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-
+  
 //  @Override
 //  public String getCommandName() {
 //    return READ_ARRAY;
 //  }
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -101,7 +102,7 @@ public class ReadArray extends BasicCommand {
         return FieldAccess.lookupOne(guid, field, reader, signature, message, timestamp, handler);
       }
     } else if (ALL_FIELDS.equals(field)) {
-      return FieldAccess.lookupMultipleValues(guid, reader, signature, message, timestamp, handler);
+      return FieldAccess.lookupMultipleValues(header, guid, reader, signature, message, timestamp, handler);
     } else {
       return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, timestamp, handler);
     }

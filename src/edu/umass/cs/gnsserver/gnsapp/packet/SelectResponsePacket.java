@@ -47,7 +47,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
   private final static String ERRORSTRING = "error";
 
   private long requestId;
-  private long lnsQueryId;
   private int nsQueryId;
   private JSONArray records;
   private JSONArray guids;
@@ -60,13 +59,12 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    * @param id
    * @param jsonObject
    */
-  private SelectResponsePacket(long id, InetSocketAddress lnsAddress, long lnsQueryId, int nsQueryId,
+  private SelectResponsePacket(long id, InetSocketAddress lnsAddress, int nsQueryId,
           NodeIDType nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
           String errorMessage) {
     super(nameServerID, lnsAddress);
     this.type = Packet.PacketType.SELECT_RESPONSE;
     this.requestId = id;
-    this.lnsQueryId = lnsQueryId;
     this.nsQueryId = nsQueryId;
     this.records = records;
     this.guids = guids;
@@ -89,7 +87,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
   public static SelectResponsePacket makeSuccessPacketForRecordsOnly(long id, InetSocketAddress lnsAddress,
           long lnsQueryId,
           int nsQueryId, Object nameServerID, JSONArray records) {
-    return new SelectResponsePacket<>(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, records, null,
+    return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServerID, records, null,
             ResponseCode.NOERROR, null);
   }
 
@@ -98,7 +96,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    *
    * @param id
    * @param lnsAddress
-   * @param lnsQueryId
    * @param nsQueryId
    * @param nameServerID
    * @param guids
@@ -106,9 +103,9 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    */
   @SuppressWarnings("unchecked")
   public static SelectResponsePacket makeSuccessPacketForGuidsOnly(long id,
-          InetSocketAddress lnsAddress, long lnsQueryId,
+          InetSocketAddress lnsAddress,
           int nsQueryId, Object nameServerID, JSONArray guids) {
-    return new SelectResponsePacket<>(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID,
+    return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServerID,
             null, guids, ResponseCode.NOERROR, null);
   }
 
@@ -125,8 +122,8 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    */
   @SuppressWarnings("unchecked")
   public static SelectResponsePacket makeFailPacket(long id, InetSocketAddress lnsAddress,
-          long lnsQueryId, int nsQueryId, Object nameServer, String errorMessage) {
-    return new SelectResponsePacket<>(id, lnsAddress, lnsQueryId, nsQueryId, nameServer,
+           int nsQueryId, Object nameServer, String errorMessage) {
+    return new SelectResponsePacket<>(id, lnsAddress, nsQueryId, nameServer,
             null, null, ResponseCode.ERROR, errorMessage);
   }
 
@@ -145,7 +142,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
     this.type = Packet.getPacketType(json);
     this.requestId = json.getLong(ID);
     //this.lnsID = json.getInt(LNSID);
-    this.lnsQueryId = json.getLong(LNSQUERYID);
     this.nsQueryId = json.getInt(NSQUERYID);
     //this.nameServer = new NodeIDType(json.getString(NAMESERVER));
     this.responseCode = ResponseCode.valueOf(json.getString(RESPONSECODE));
@@ -169,7 +165,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
     super.addToJSONObject(json);
     json.put(ID, requestId);
     //json.put(LNSID, lnsID);
-    json.put(LNSQUERYID, lnsQueryId);
     json.put(NSQUERYID, nsQueryId);
     //json.put(NAMESERVER, nameServer.toString());
     json.put(RESPONSECODE, responseCode.name());
@@ -210,15 +205,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
    */
   public JSONArray getGuids() {
     return guids;
-  }
-
-  /**
-   * Return the LNS query requestId.
-   *
-   * @return the LNS query requestId
-   */
-  public long getLnsQueryId() {
-    return lnsQueryId;
   }
 
   /**

@@ -239,6 +239,22 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
     <fail message="You must run this target with -Dtest=TestName"/>
   </target>
 
+  <target name="startServer" depends="compile" description="Starts a server for testing purposes.">
+	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
+	<exec executable="/bin/bash">
+		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} foreclear all"/>
+	</exec>
+	<exec executable="/bin/bash">
+		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
+	</exec>
+  </target>
+
+  <target name="endServer" depends="compile" description="Ends the servers used for testing purposes.">
+	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
+	<exec executable="/bin/bash">
+		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} stop all"/>
+	</exec>
+  </target>
   <target name="compiletest" depends="compile" description="Compile all the test files">
     <mkdir dir="${build.test.dir}" />
     <mkdir dir="${build.test.classes.dir}" />
@@ -250,6 +266,38 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
     </javac>
   </target>
   
+  <target name="runSingleTests" description="Runs all of the singletests" 
+          depends="compiletest">
+    <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->
+    <property name="alias" value=""/>
+    <property name="password" value=""/>
+    <property name="count" value=""/>
+    <property name="gigapaxosConfig" value="conf/gnsclient.3local.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.junit.properties"/>
+    <junit printsummary="withOutAndErr" fork="yes" showoutput="yes"> 
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-Dalias=${alias}"/>
+      <jvmarg value="-Dpassword=${password}"/>
+      <jvmarg value="-Dcount=${count}"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
+      <!-- add this if you want SSL debugging enabled -->
+      <!--      <jvmarg value="-Djavax.net.debug=ssl"/>-->
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+      <formatter type="plain" usefile="false"/>
+      <batchtest>
+        <fileset dir="${test.dir}">
+		<include name="**/singletests/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
   <target name="runtest" description="Runs the test you specify on the command line with -Dtest=" 
           depends="compiletest, ensure-test-name">
     <!-- Allows us to pass in some standard args from command line using things like -Dalias=fred/>-->

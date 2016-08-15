@@ -2,8 +2,8 @@ package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 
 /**
  * @author arun
@@ -25,7 +25,7 @@ public abstract class GNSCommandCallback implements RequestCallback {
 	/**
 	 * 
 	 * This constructor is only meant to be invoked by internal classes and
-	 * exists so that we can translate a {@link CommandValueReturnPacket} based
+	 * exists so that we can translate a {@link ResponsePacket} based
 	 * callback to a {@link CommandPacket} based callback as the latter is more
 	 * intuitive to applications and obviates dealing with the former.
 	 * 

@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeInternalRequestHeader;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -41,7 +43,6 @@ public class ActiveQueryHandler {
 			response = handleReadQuery(am);
 		else
 			response = handleWriteQuery(am);
-		//System.out.println("Response is "+response);
 		return response;
 	}
 	
@@ -53,8 +54,16 @@ public class ActiveQueryHandler {
 	 * @return the response ActiveMessage
 	 */
 	public ActiveMessage handleReadQuery(ActiveMessage am) {
-		ValuesMap value = app.read(am.getGuid(), am.getTargetGuid(), am.getField());
-		ActiveMessage resp = new ActiveMessage(am.getId(), value, null);
+		ActiveMessage resp = null;
+		try {
+			//FIXME: no need to cast to ValuesMap, just use JSONObject
+			ValuesMap value = (ValuesMap) app.read(new ActiveCodeInternalRequestHeader(), am.getTargetGuid(), am.getField());
+			resp = new ActiveMessage(am.getId(), value, null);
+		} catch (ClientException e) {
+			e.printStackTrace();
+			resp = new ActiveMessage(am.getId(), null, "Read failed");
+		} 
+		
 		return resp;
 	}
 
@@ -66,13 +75,15 @@ public class ActiveQueryHandler {
 	 * @return the response ActiveMessage
 	 */
 	public ActiveMessage handleWriteQuery(ActiveMessage am) {
-		boolean wSuccess = app.write(am.getGuid(), am.getTargetGuid(), am.getField(), am.getValue());
 		ActiveMessage resp;
-		if(wSuccess){
+		try {
+			app.write(new ActiveCodeInternalRequestHeader(), am.getTargetGuid(), am.getField(), am.getValue());
 			resp = new ActiveMessage(am.getId(), new ValuesMap(), null);
-		}else{
+		} catch (ClientException e) {
+			e.printStackTrace();
 			resp = new ActiveMessage(am.getId(), null, "Write failed");
-		}
+		} 
+				
 		return resp;
 	}
 	
@@ -101,7 +112,7 @@ public class ActiveQueryHandler {
 		long t1 = System.currentTimeMillis();
 		
 		for(int i=0; i<n; i++){
-			handler.runCode(guid, field, depth_code, value, 0);
+			handler.runCode(null, guid, field, depth_code, value, 0);
 		}
 		
 		

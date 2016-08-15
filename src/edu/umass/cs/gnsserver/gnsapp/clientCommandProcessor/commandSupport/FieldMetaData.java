@@ -63,7 +63,7 @@ public class FieldMetaData {
   public static GNSResponseCode add(MetaDataTypeName type, String guid,
           String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    return FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
             timestamp, handler);
   }
@@ -107,7 +107,7 @@ public class FieldMetaData {
    */
   public static void add(MetaDataTypeName type, String guid,
           String key, String value, Date timestamp, ClientRequestHandlerInterface handler) {
-    FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, timestamp, handler);
   }
 
@@ -126,7 +126,7 @@ public class FieldMetaData {
    */
   public static GNSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    return FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
   }
 

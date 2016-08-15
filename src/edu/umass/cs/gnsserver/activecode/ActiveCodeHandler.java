@@ -24,41 +24,20 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.script.ScriptException;
-
-//import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.CommandUtils;
-import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GNSCommand;
-import edu.umass.cs.gnsclient.console.commands.Read;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveHandler;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker;
-import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
-import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -81,126 +60,12 @@ public class ActiveCodeHandler {
 	
 	private static final Logger logger = Logger.getLogger("ActiveGNS");
 	
-	// For instrument only, to tell whether a code is malicious or not 
-	private static String noop_code;
 	private static ActiveHandler handler;
 	
 	/**
 	 * enable debug output
 	 */
 	public static final boolean enableDebugging = false; // AppReconfigurableNodeOptions.activeCodeEnableDebugging;
-	
-
-	/**
-	 * @param gnsApp
-	 * @return an app 
-	 * @throws IOException 
-	 */
-	public static ActiveDBInterface getActiveDB(GNSApplicationInterface<?> gnsApp) throws IOException {
-		return new ActiveDBInterface() {
-				
-			GNSClientCommands client = new GNSClientCommands();
-			
-			private BasicRecordMap getDB() {
-				return gnsApp.getDB();
-			}
-			
-			@Override
-			public String toString(){
-				return this.getClass().getSimpleName();
-			}
-			
-			private ValuesMap readSomeGuidFromLocal(String guid, String field){
-				ValuesMap value = null;
-				try {
-					NameRecord record = NameRecord.getNameRecordMultiUserFields(getDB(), guid, ColumnFieldType.USER_JSON, field);
-					value = record.getValuesMap();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				return value;
-			}
-			
-			/**
-			 * The remote read doesn't mean the guid must have to be on a remote GNS, it just uses
-			 * a GNSClient to send a query a GNS which holds the record of the guid.
-			 * 
-			 * @param querierGuid
-			 * @param queriedGuid
-			 * @param field
-			 * @return
-			 */
-			private ValuesMap readSomeFieldFromRemote(String querierGuid, String queriedGuid, String field) {
-				ValuesMap value = null;
-				/**
-				 *  Do a common read here, follows the flow:
-				 *  <p> server side: GNSCommand.fieldRead(String targetGuid, String field, GuidEntry guid);
-				 *  <p> client side: GNSClientCommands.fieldRead -> CommandUtils.specialCaseSingleField -> 
-				 *  GNSClientCommands.getResponse -> CommandUtils.checkResponse -> 
-				 */
-				try{
-					String response = CommandUtils.checkResponse(client.sendCommandAndWait( CommandUtils.createCommand(CommandType.Read, 
-									GNSCommandProtocol.GUID, queriedGuid, 
-									GNSCommandProtocol.FIELD, field, 
-									GNSCommandProtocol.READER, GNSConfig.GNSC.INTERNAL_OP_SECRET)));
-
-					System.out.println(this+" receives response from remote GNS "+response);
-					value = new ValuesMap(new JSONObject(response));
-				} catch (Exception e){
-					e.printStackTrace();
-				}
-				
-				return value;
-			}
-			
-			
-			@Override
-			public ValuesMap read(String querierGuid, String queriedGuid, String field) {
-				ValuesMap value = null;
-				if(querierGuid.equals(queriedGuid)){
-					value = readSomeGuidFromLocal(queriedGuid, field);
-				}else{				
-					value = readSomeFieldFromRemote(querierGuid, queriedGuid, field);
-				}
-				return value;
-			}
-			
-			private boolean writeSomeGuidToLocal(String guid, String field, ValuesMap value){
-				try {
-					NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), 
-							guid, ColumnFieldType.USER_JSON, field);
-					
-					//System.out.println("The retrieved name record is:"+nameRecord+", with the target valuesMap is "+value);
-										
-					nameRecord.updateNameRecord(field, null, null, 0, value,
-					         UpdateOperation.USER_JSON_REPLACE_OR_CREATE);
-					
-					//System.out.println("The updated name record is:"+nameRecord);
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-					return false;
-				}
-				return true;
-			}
-			
-			@Override
-			public boolean write(String querierGuid, String queriedGuid, String field, ValuesMap valuesMap) {
-				boolean wSuccess = false;
-				if(querierGuid.equals(queriedGuid)){
-					wSuccess = writeSomeGuidToLocal(queriedGuid, field, valuesMap);
-				}else{
-					/**
-					 * TODO: 
-					 *  Do a common write here
-					 *  <p> GNSCommand.fieldWrite
-					 */
-					System.out.println("The code should not be here for remote write !");
-				}
-				return wSuccess;
-			}
-		};
-	}
 	
 	/**
 	 * Initializes an ActiveCodeHandler
@@ -220,11 +85,6 @@ public class ActiveCodeHandler {
 		
 		handler = new ActiveHandler(app, ActiveCodeConfig.activeCodeWorkerCount, ActiveCodeConfig.activeWorkerThreads);
 		
-		try {
-			noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js")));
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
 		
 		/*
 		logger.setLevel(Level.INFO); 
@@ -276,6 +136,7 @@ public class ActiveCodeHandler {
 	
 	
 	/**
+	 * @param header 
 	 * @param code
 	 * @param guid
 	 * @param field
@@ -284,9 +145,9 @@ public class ActiveCodeHandler {
 	 * @param activeCodeTTL current default is 10
 	 * @return executed result
 	 */
-	public static ValuesMap runCode(String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
+	public static ValuesMap runCode(InternalRequestHeader header, String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
 		try {
-			return handler.runCode(guid, field, code, valuesMap, activeCodeTTL);
+			return handler.runCode(header, guid, field, code, valuesMap, activeCodeTTL);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -312,9 +173,6 @@ public class ActiveCodeHandler {
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
 		ActiveCodeFutureTask futureTask = new ActiveCodeFutureTask(new ActiveCodeTask(acp));
-		if(!noop_code.equals(code)){
-			futureTask.setMalicious(true);
-		}
 		
 		DelayProfiler.updateDelayNano("activeHandlerPrepare", startTime);		
 
@@ -423,6 +281,13 @@ public class ActiveCodeHandler {
 	}
 	
 	/***************************** TEST CODE *********************/
+	/**
+	 * @param args 
+	 * @throws InterruptedException 
+	 * @throws ExecutionException 
+	 * @throws IOException 
+	 * @throws JSONException 
+	 */
 	public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException {
 		new ActiveCodeHandler(null);
 		
@@ -436,12 +301,12 @@ public class ActiveCodeHandler {
 		
 		String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
 		String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
-		ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+		ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 		
 		int n = 1000000;
 		long t = System.currentTimeMillis();
 		for(int i=0; i<n; i++){
-			ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 		}
 		long elapsed = System.currentTimeMillis() - t;
 		System.out.println(String.format("it takes %d ms, avg_latency = %f us", elapsed, elapsed*1000.0/n));
@@ -479,7 +344,7 @@ public class ActiveCodeHandler {
 			String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
 			String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
 			
-			ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			ValuesMap result = ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			Thread.sleep(2000);
 			System.out.println("Active count number is "+executor.getActiveCount()+
@@ -499,9 +364,9 @@ public class ActiveCodeHandler {
 			String mal_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
 			String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 					
-			result = ActiveCodeHandler.runCode(mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
 			completed++;
-			result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			Thread.sleep(2000);
 			
@@ -515,10 +380,10 @@ public class ActiveCodeHandler {
 			String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain-test.js")));
 			String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
 					
-			result = ActiveCodeHandler.runCode(chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
 			completed++;
 			completed++;
-			result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			
 			int count = 0;
@@ -543,19 +408,4 @@ public class ActiveCodeHandler {
 		System.exit(0);
 	}
 
-
-	/**
-	 * @return gnsApp
-	 */
-	public ActiveDBInterface getGnsApp() {
-		return gnsApp;
-	}
-
-
-	/**
-	 * @param gnsApp
-	 */
-	public void setGnsApp(ActiveDBInterface gnsApp) {
-		this.gnsApp = gnsApp;
-	}
 }

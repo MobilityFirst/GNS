@@ -359,7 +359,7 @@ public class GNSCommandProtocol {
   /**
    * The sequence number field in a command packet.
    */
-  public final static String SEQUENCE_NUMBER = "seqnum";
+  public final static String NONCE = "seqnum";
   /**
    * The passkey number field in a command packet.
    */
@@ -472,7 +472,7 @@ public class GNSCommandProtocol {
   /**
    * If this exists in a command it indicates that coordinated reads should be used.
    */
-  public final static String COORDINATE_READS = "COORDREAD";
+  public final static String FORCE_COORDINATE_READS = "COORDREAD";
 
   /**
    * This member was not documented by it's creator.
@@ -493,7 +493,7 @@ public class GNSCommandProtocol {
    */
   @Deprecated
   public static final String ACCOUNT_ALREADY_VERIFIED = "Account already verified";
-
+  
   /**
    * Creates a GNS field that is hidden from the user.
    *

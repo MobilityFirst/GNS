@@ -27,7 +27,9 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeDB;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.MongoRecords;
@@ -35,6 +37,9 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
@@ -53,8 +58,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import edu.umass.cs.gnsserver.gnamed.DnsTranslator;
 import edu.umass.cs.gnsserver.gnamed.UdpDnsServer;
 import edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket;
@@ -66,6 +69,7 @@ import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.GNSRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.httpserver.GNSHttpServer;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.localnameserver.LocalNameServer;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -98,6 +102,7 @@ import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
@@ -239,7 +244,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     if (Config.getGlobalBoolean(GNSConfig.GNSC.START_DNS_SERVER)) {
       startDNS();
     }
-    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(ActiveCodeHandler.getActiveDB(this)) : null;
+    this.activeCodeHandler = AppReconfigurableNodeOptions.enableActiveCode ? new ActiveCodeHandler(new ActiveCodeDB(this)) : null;
 
 
     // context service init
@@ -287,10 +292,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
 
   private synchronized void incrResponseCount(ClientRequest response) {
     if (responseCount++ > RESPONSE_COUNT_THRESHOLD
-            && response instanceof CommandValueReturnPacket
+            && response instanceof ResponsePacket
             && (!doneOnce && (doneOnce = true))) {
       try {
-        this.cachedResponse = ((CommandValueReturnPacket) response)
+        this.cachedResponse = ((ResponsePacket) response)
                 .toJSONObject();
       } catch (JSONException e) {
         // TODO Auto-generated catch block
@@ -313,7 +318,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
             ) {
       try {
         ((BasicPacketWithClientAddress) request)
-                .setResponse(new CommandValueReturnPacket(cachedResponse)
+                .setResponse(new ResponsePacket(cachedResponse)
                         .setClientRequestAndLNSIds(((ClientRequest) request)
                                 .getRequestID()));
       } catch (JSONException e) {
@@ -361,7 +366,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
                   (SelectResponsePacket<String>) request, this);
           break;
         case COMMAND:
-          CommandHandler.handleCommandPacketForApp(
+          CommandHandler.handleCommandPacket(
                   (CommandPacket) request, doNotReplyToClient, this);
           break;
 
@@ -369,8 +374,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
            * type here as GNSApp should never be getting responses. STOP and
            * NOOP are no longer necessary. */
         case COMMAND_RETURN_VALUE:
-        // CommandHandler.handleCommandReturnValuePacketForApp((CommandValueReturnPacket)
-        // request, doNotReplyToClient, this);
         case STOP:
         case NOOP:
         default:
@@ -479,9 +482,19 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
    * @return
    * @throws RequestParseException
    */
-  private static Request fromBytes(byte[] msgBytes) throws RequestParseException {
-    throw new RequestParseException(new RuntimeException("Unimplemented"));
-  }
+	private static Request fromBytes(byte[] msgBytes)
+			throws RequestParseException {
+			switch (Packet.PacketType.getPacketType(ByteBuffer.wrap(msgBytes)
+					.getInt())) {
+			case COMMAND:
+				return new CommandPacket(msgBytes);
+				/* Currently only CommandPacket is Byteable, so we shouldn't
+				 * come here for anything else. */
+			default:
+				throw new RequestParseException(new RuntimeException(
+						"Unrecognizable request type"));
+			}
+	}
 
   @Override
   public Request getRequest(byte[] msgBytes, NIOHeader header) throws RequestParseException {
@@ -713,4 +726,16 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String>
     }
   }
 
+	public CommandPacket getOriginRequest(InternalRequestHeader header) {
+		Request request = this.outstanding.get(getOriginRequestLongID(header));
+		if (request instanceof CommandPacket)
+			return (CommandPacket) request;
+		return null;
+	}
+
+	private static final long getOriginRequestLongID(
+			InternalRequestHeader header) {
+		// return Long.valueOf(orid.split(":")[0]);
+		return header.getOriginatingRequestID();
+	}
 }

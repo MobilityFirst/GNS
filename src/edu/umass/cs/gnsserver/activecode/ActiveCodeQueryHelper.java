@@ -156,8 +156,8 @@ public class ActiveCodeQueryHelper {
 							*/
 							
 							//Read the record and code from DB
-							ValuesMap val = app.read(currentGuid, targetGuid, field);	
-							ValuesMap code = app.read(currentGuid, targetGuid, ActiveCode.ON_READ);
+							ValuesMap val = null; //app.read(currentGuid, targetGuid, field);	
+							ValuesMap code = null; //app.read(currentGuid, targetGuid, ActiveCode.ON_READ);
 							
 							//set the response value to the code before running the active code
 							acqr = new ActiveCodeQueryResponse(true, val.toString());
@@ -168,7 +168,7 @@ public class ActiveCodeQueryHelper {
 								ValuesMap originalValues = val;
 								ValuesMap newResult = null;
 								//System.out.println("Ready to do this external query for "+targetGuid+" on field "+field+" with the original value "+originalValues.toString());
-								newResult = ActiveCodeHandler.runCode(code64, targetGuid, field, "read", originalValues, hopLimit);
+								newResult = ActiveCodeHandler.runCode(null, code64, targetGuid, field, "read", originalValues, hopLimit);
 								
 								if (newResult != null){
 									acqr = new ActiveCodeQueryResponse(true, newResult.toString());
@@ -191,7 +191,7 @@ public class ActiveCodeQueryHelper {
 							String mal_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
 							String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 							ValuesMap newResult = null;
-							newResult = ActiveCodeHandler.runCode(mal_code64, guid2, field2, "read", valuesMap, 100);
+							newResult = ActiveCodeHandler.runCode(null, mal_code64, guid2, field2, "read", valuesMap, 100);
 							
 							if (newResult != null){
 								acqr = new ActiveCodeQueryResponse(true, newResult.toString());
@@ -229,7 +229,7 @@ public class ActiveCodeQueryHelper {
 						*/
 						
 						// read the code from DB
- 						ValuesMap code = app.read(currentGuid, targetGuid, ActiveCode.ON_WRITE);
+ 						ValuesMap code = null; // app.read(currentGuid, targetGuid, ActiveCode.ON_WRITE);
 				                  
 						DelayProfiler.updateDelayNano("activeCodeCheckDBForRecord", start);
 						
@@ -238,7 +238,7 @@ public class ActiveCodeQueryHelper {
 							String code64 = code.getString(ActiveCode.ON_WRITE);
 							ValuesMap userJSON = new ValuesMap(new JSONObject(acqreq.getValuesMapString()));
 							app.write(currentGuid, targetGuid, field,  userJSON);
-							ActiveCodeHandler.runCode(code64, targetGuid, field, "write", userJSON, hopLimit);
+							ActiveCodeHandler.runCode(null, code64, targetGuid, field, "write", userJSON, hopLimit);
 							acqr = new ActiveCodeQueryResponse(true, null);
 						}
 						DelayProfiler.updateDelayNano("activeCodeQuerierWriteExecution", start);

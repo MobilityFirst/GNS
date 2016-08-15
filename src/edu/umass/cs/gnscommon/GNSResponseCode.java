@@ -203,7 +203,16 @@ public enum GNSResponseCode implements Serializable {
   /**
    * A remote query failed on the server side.
    */
-  REMOTE_QUERY_EXCEPTION(410, GNSCommandProtocol.REMOTE_QUERY_EXCEPTION, TYPE.EXCEPTION),;
+  REMOTE_QUERY_EXCEPTION(410, GNSCommandProtocol.REMOTE_QUERY_EXCEPTION, TYPE.EXCEPTION),
+  
+	/**
+	 * An internal request, possibly an active request, failed probably because the TTL expired
+	 * or it was attempting to cause a cycle.
+	 */
+	INTERNAL_REQUEST_EXCEPTION(411, GNSProtocol.INTERNAL_REQUEST_EXCEPTION
+			.toString(), TYPE.EXCEPTION),
+  
+  ;
 
   // stash the codes in a lookup table
   private static final Map<Integer, GNSResponseCode> responseCodes = new HashMap<>();

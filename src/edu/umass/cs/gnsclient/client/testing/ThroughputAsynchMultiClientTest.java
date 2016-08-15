@@ -22,7 +22,7 @@ package edu.umass.cs.gnsclient.client.testing;
 import edu.umass.cs.gnsclient.client.AbstractGNSClient;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
