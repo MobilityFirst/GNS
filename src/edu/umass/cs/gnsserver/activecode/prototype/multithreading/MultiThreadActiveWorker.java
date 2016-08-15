@@ -9,10 +9,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveNamedPipe;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveQuerier;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
+import edu.umass.cs.gnsserver.activecode.prototype.worker.ActiveQuerier;
+import edu.umass.cs.gnsserver.activecode.prototype.worker.ActiveRunner;
 
 /**
  * @author gaozy
@@ -53,7 +53,8 @@ public class MultiThreadActiveWorker implements Runnable {
 		for (int i=0; i<numThread; i++){
 			Querier querier = new MultiThreadActiveQuerier(channel);
 			queriers[i] = querier;
-			runners[i] = new ActiveRunner(querier);
+			// FIXME: this is a fault cast and this code should be not useful anymore.
+			runners[i] = new ActiveRunner((ActiveQuerier) querier);
 		}
 		
 	}

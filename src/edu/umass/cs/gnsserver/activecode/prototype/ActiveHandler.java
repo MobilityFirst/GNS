@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
-import edu.umass.cs.gnsserver.activecode.prototype.multithreading.MultiThreadActiveClient;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -26,7 +25,7 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  */
 public class ActiveHandler {
 	
-	private final Client[] clientPool;
+	private static Client[] clientPool;
 	
 	private final static String cfilePrefix = "/tmp/client_";
 	private final static String sfilePrefix = "/tmp/server_";
@@ -42,8 +41,6 @@ public class ActiveHandler {
 	private final int numProcess;
 	final AtomicInteger counter = new AtomicInteger();
 	
-	/****************** Test only ******************/
-	private static ThreadPoolExecutor executor;
 	
 	/**
 	 * Initialize handler with multi-process multi-threaded workers.
@@ -54,39 +51,27 @@ public class ActiveHandler {
 	public ActiveHandler(ActiveDBInterface app, int numProcess, int numThread){
 		final String fileTestForPipe = "/tmp/test";
 		try {
-			Runtime.getRuntime().exec("mkfifo "+fileTestForPipe);
-			new File(fileTestForPipe).delete();
+			Runtime.getRuntime().exec("mkfifo "+fileTestForPipe);			
 		} catch (IOException e) {
 			pipeEnable = false;
 			e.printStackTrace();			
+		} finally{
+			new File(fileTestForPipe).delete();
 		}
 		
 		System.out.println(ActiveHandler.class.getName()+" start running "+numProcess+" workers with "+numThread+" threads ...");
 		
 		this.numProcess = numProcess;
 		
-		if(numThread == 1){
-			// initialize single threaded clients and workers
-			clientPool = new ActiveClientWithNamedPipe[numProcess];
-			for (int i=0; i<numProcess; i++){
-				if(pipeEnable){
-					clientPool[i] = new ActiveClientWithNamedPipe(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, 1);
-				} else {
-					clientPool[i] = new ActiveClientWithNamedPipe(app, clientPort+i, workerPort+i, i, 1);
-				}
+		// initialize single clients and workers
+		clientPool = new ActiveClientWithNamedPipe[numProcess];
+		for (int i=0; i<numProcess; i++){
+			if(pipeEnable){
+				clientPool[i] = new ActiveClientWithNamedPipe(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, numThread);
+			} else {
+				clientPool[i] = new ActiveClientWithNamedPipe(app, clientPort+i, workerPort+i, i, numThread);
 			}
-		} else {
-			// initialize multi-threaded clients and workers
-			clientPool = new MultiThreadActiveClient[numProcess];
-			for (int i=0; i<numProcess; i++){
-				if(pipeEnable){
-					clientPool[i] = new MultiThreadActiveClient(app, numThread, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i);
-					new Thread((MultiThreadActiveClient) clientPool[i]).start();
-				} else {
-					clientPool[i] = new MultiThreadActiveClient(app, numThread, clientPort+i, workerPort+i, i);
-					new Thread((MultiThreadActiveClient) clientPool[i]).start();
-				}
-			}
+			new Thread((ActiveClientWithNamedPipe) clientPool[i]).start();
 		}
 		
 	}
@@ -121,17 +106,11 @@ public class ActiveHandler {
 	 * @throws ActiveException 
 	 */
 	public ValuesMap runCode(InternalRequestHeader header, String guid, String field, String code, ValuesMap value, int ttl) throws ActiveException{
-		//System.out.println("Start running code "+code+" with ttl "+ttl+" for "+guid+" on field "+field+" and "+value.toString());
+		System.out.println("Start running code "+code+" with ttl "+ttl+" for "+guid+" on field "+field+" and "+value.toString());
 		return clientPool[counter.getAndIncrement()%numProcess].runCode(guid, field, code, value, ttl);
 	}
 	
 	/***************** Test methods ****************/
-	private Future<ValuesMap> submitTask(String guid, String field, String code, ValuesMap value, int ttl){
-		Client client = clientPool[ttl%numProcess];
-		return executor.submit(new ActiveTask(client, guid, field, code, value, ttl));
-	}
-	
-	
 	
 	/**
 	 * @param args
@@ -142,19 +121,16 @@ public class ActiveHandler {
 	public static void main(String[] args) throws JSONException, InterruptedException, ExecutionException{
 		int numProcess = Integer.parseInt(args[0]);
 		int numThread = Integer.parseInt(args[1]);
-		int factor = 10;
-		if(args.length > 2)
-			factor = Integer.parseInt(args[2]);
+
 		if(numProcess <= 0){
 			System.out.println("Number of clients must be larger than 0.");
 			System.exit(0);
 		}
 		
-		if(numThread == 1){
-			executor = new ThreadPoolExecutor(numProcess, numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-		}else{
-			executor = new ThreadPoolExecutor(factor*numProcess, factor*numProcess, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-		}
+		
+		final ThreadPoolExecutor executor;		
+		
+		executor = new ThreadPoolExecutor(numProcess*numThread, numProcess*numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());		
 		executor.prestartAllCoreThreads();
 		
 		String guid = "zhaoyu";
@@ -168,7 +144,7 @@ public class ActiveHandler {
 		ValuesMap value = new ValuesMap();
 		value.put("string", "hello world");
 		
-		// initialize a multithreaded client
+		// initialize a handler
 		ActiveHandler handler = new ActiveHandler(null, numProcess, numThread);
 		ArrayList<Future<ValuesMap>> tasks = new ArrayList<Future<ValuesMap>>();
 		
@@ -177,7 +153,7 @@ public class ActiveHandler {
 		long t1 = System.currentTimeMillis();
 		
 		for(int i=0; i<n; i++){
-			tasks.add(handler.submitTask(guid, field+i, noop_code, value, i));
+			tasks.add(executor.submit(new ActiveTask(clientPool[i%numProcess], guid, field, noop_code, value, 0)));
 		}
 		for(Future<ValuesMap> task:tasks){
 			task.get();
@@ -188,7 +164,6 @@ public class ActiveHandler {
 		System.out.println("The throughput is "+n*1000.0/elapsed);
 		handler.shutdown();
 		
-		System.exit(0);
 	}
 	
 }

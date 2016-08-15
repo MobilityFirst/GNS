@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.prototype.worker;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,6 +21,7 @@ import javax.script.SimpleScriptContext;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -36,12 +37,12 @@ public class ActiveRunner {
 	private final HashMap<String, ScriptContext> contexts = new HashMap<String, ScriptContext>();
 	private final HashMap<String, Integer> codeHashes = new HashMap<String, Integer>();
 	
-	private Querier querier;
+	private ActiveQuerier querier;
 	
 	/**
 	 * @param querier
 	 */
-	public ActiveRunner(Querier querier){
+	public ActiveRunner(ActiveQuerier querier){
 		this.querier = querier;
 		
 		engine = new ScriptEngineManager().getEngineByName("nashorn");
@@ -84,6 +85,10 @@ public class ActiveRunner {
 		valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
 		
 		return valuesMap;
+	}
+	
+	protected void release(ActiveMessage am){
+		querier.release(am, true);
 	}
 	
 	private static class SimpleTask implements Callable<ValuesMap>{
@@ -134,7 +139,7 @@ public class ActiveRunner {
 		ValuesMap value = new ValuesMap();
 		value.put("string", "hello world");
 		
-		ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value, 0);
+		ActiveMessage msg = new ActiveMessage(guid, field, noop_code, value, 0, 500);
 		int n = 1000000;
 		
 		long t1 = System.currentTimeMillis();

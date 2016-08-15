@@ -28,7 +28,8 @@ public class ActiveMessage implements Message{
 	 */
 	public Type type;
 	private long id;
-	private int ttl;	
+	private int ttl;
+	private long budget;
 	private String guid;
 	private String field;
 	private String code;
@@ -88,14 +89,16 @@ public class ActiveMessage implements Message{
 	 * @param field
 	 * @param code
 	 * @param ttl
+	 * @param budget 
 	 * @param value  
 	 * @param targetGuid 
 	 * @param error 
 	 */
-	public ActiveMessage(Type type, long id, int ttl, String guid, String field, String code, ValuesMap value, String targetGuid, String error){
+	public ActiveMessage(Type type, long id, int ttl, long budget, String guid, String field, String code, ValuesMap value, String targetGuid, String error){
 		this.type = type;
 		this.id = id;
 		this.ttl = ttl;
+		this.budget = budget;
 		this.guid = guid;
 		this.field = field;
 		this.code = code;		
@@ -111,9 +114,10 @@ public class ActiveMessage implements Message{
 	 * @param code
 	 * @param value
 	 * @param ttl
+	 * @param budget 
 	 */
-	public ActiveMessage(String guid, String field, String code, ValuesMap value, int ttl){
-		this(Type.REQUEST, counter.getAndIncrement(), ttl, guid, field, code, value, null, null);
+	public ActiveMessage(String guid, String field, String code, ValuesMap value, int ttl, long budget){
+		this(Type.REQUEST, counter.getAndIncrement(), ttl, budget, guid, field, code, value, null, null);
 	}
 	
 	/**
@@ -125,7 +129,7 @@ public class ActiveMessage implements Message{
 	 * @param id 
 	 */
 	public ActiveMessage(int ttl, String guid, String field, String targetGuid, long id){
-		this(Type.READ_QUERY, id, ttl, guid, field, null, null, targetGuid, null);
+		this(Type.READ_QUERY, id, ttl, 0, guid, field, null, null, targetGuid, null);
 	}
 	
 	
@@ -139,7 +143,7 @@ public class ActiveMessage implements Message{
 	 * @param id 
 	 */
 	public ActiveMessage(int ttl, String guid, String field, String targetGuid, ValuesMap value, long id){
-		this(Type.WRITE_QUERY, id, ttl, guid, field, null, value, targetGuid, null);
+		this(Type.WRITE_QUERY, id, ttl, 0, guid, field, null, value, targetGuid, null);
 	}
 	
 	/**
@@ -149,7 +153,7 @@ public class ActiveMessage implements Message{
 	 * @param error
 	 */
 	public ActiveMessage(long id, ValuesMap value, String error){
-		this(Type.RESPONSE, id, 0, null, null, null, value, null, error);
+		this(Type.RESPONSE, id, 0, 0, null, null, null, value, null, error);
 	}
 	
 	/**
@@ -208,13 +212,19 @@ public class ActiveMessage implements Message{
 		return id;
 	}
 		
+	/**
+	 * @return the budget in terms of millisecond, i.e., the code can only run this amount of time
+	 */
+	public long getBudget() {
+		return budget;
+	}
 	
 	private int getEstimatedLengthExceptForValuesMap(){
 		int length = 0;
 		switch(type){
 		case REQUEST:
 			length = 6*Integer.BYTES // type, ttl, guid length, field length, code length, valuesMap size 
-			+ Long.BYTES // id
+			+ 2*Long.BYTES // id, budget
 			+ guid.length() // guid
 			+ (field!=null?field.length():0) // field
 			+ code.length();
@@ -276,6 +286,9 @@ public class ActiveMessage implements Message{
 			// put ttl 
 			bbuf.putInt(ttl);
 			exactLength += Integer.BYTES;
+			
+			bbuf.putLong(budget);
+			exactLength += Long.BYTES;
 			
 			// put guid, can't be null, ~100ns
 			assert(guid != null):"guid can't be null for active request";
@@ -415,7 +428,9 @@ public class ActiveMessage implements Message{
 		
 		switch(type){
 		case REQUEST:
-			ttl = bbuf.getInt();			
+			ttl = bbuf.getInt();
+			budget = bbuf.getLong();
+			
 			// get guid
 			length = bbuf.getInt();
 			guidBytes = new byte[length];
@@ -548,12 +563,13 @@ public class ActiveMessage implements Message{
 		int n = 1000000;
 		long t = System.currentTimeMillis();	
 		for (int i=0; i<n; i++){
-			new ActiveMessage(guid, field, noop_code, value, 0);
+			// budget is set to 500
+			new ActiveMessage(guid, field, noop_code, value, 0, 500);
 		}
 		long elapsed = System.currentTimeMillis() - t;		
 		System.out.println("It takes "+elapsed+"ms for create 1m REQUEST ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");
 		
-		ActiveMessage amsg = new ActiveMessage(guid, field, noop_code, value, 0);
+		ActiveMessage amsg = new ActiveMessage(guid, field, noop_code, value, 0, 500);
 		ActiveMessage rmsg = null;
 		
 		t = System.currentTimeMillis();

@@ -26,6 +26,7 @@ public class ActiveNamedPipe implements Channel {
 	byte[] readerLengthBuffer = new byte[Integer.BYTES];
 	byte[] writerLengthBuffer = new byte[Integer.BYTES];
 	
+	private boolean isReady = false;
 	/**
 	 * @param ifile 
 	 * @param ofile 
@@ -53,10 +54,12 @@ public class ActiveNamedPipe implements Channel {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
+		isReady = true;
 	}
 	
 	@Override
-	public void sendMessage(Message msg) throws IOException {
+	public synchronized void sendMessage(Message msg) throws IOException {
 		byte[] buf = msg.toBytes();
 		int length = buf.length;
 		try {
@@ -98,5 +101,8 @@ public class ActiveNamedPipe implements Channel {
 			e.printStackTrace();
 		}
 	}
-
+	
+	public boolean getReady(){
+		return isReady;
+	}
 }

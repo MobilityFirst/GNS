@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.JSONException;
 
@@ -36,11 +35,14 @@ import edu.umass.cs.utils.DelayProfiler;
  */
 public class ActiveClientWithNamedPipe implements Runnable,Client {
 	
+	private final static int DEFAULT_HEAP_SIZE = 128;
+	
 	private ActiveQueryHandler queryHandler;
 	
 	private Channel channel;
-	private String ifile;
-	private String ofile;
+	private final String ifile;
+	private final String ofile;
+	private final int workerNumThread;
 	
 	private ConcurrentHashMap<Long, Monitor> tasks = new ConcurrentHashMap<Long, Monitor>();
 	
@@ -48,7 +50,8 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	final private int id;
 	final private boolean pipeEnable;
 	
-	private static int heapSize = 64;
+	private final int heapSize;
+	
 	
 	private AtomicBoolean isRestarting = new AtomicBoolean();
 	
@@ -60,8 +63,12 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		return workerProc;
 	}
 	
-	private AtomicInteger counter = new AtomicInteger();
+	private AtomicInteger counter = new AtomicInteger(0);
 	
+	/**
+	 * 
+	 * @return the total number of received responses
+	 */
 	public int getRecv(){
 		return counter.get();
 	}
@@ -72,17 +79,31 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 * @param ofile
 	 * @param id 
 	 * @param workerNumThread 
+	 * @param heapSize 
 	 */
-	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
+	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread, int heapSize){
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
 		this.pipeEnable = true;
+		this.workerNumThread = workerNumThread;
+		this.heapSize = heapSize;
 		
 		initializeChannelAndStartWorker();
 		
 		queryHandler = new ActiveQueryHandler(app);
 		
+	}
+	
+	/**
+	 * @param app
+	 * @param ifile
+	 * @param ofile
+	 * @param id
+	 * @param workerNumThread
+	 */
+	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
+		this(app, ifile, ofile, id, workerNumThread, DEFAULT_HEAP_SIZE);
 	}
 	
 	private void initializeChannelAndStartWorker(){
@@ -113,6 +134,10 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	public ActiveClientWithNamedPipe(ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
 		this.pipeEnable = false;
 		this.id = id;
+		this.workerNumThread = workerNumThread;
+		this.ifile = null;
+		this.ofile = null;
+		this.heapSize = DEFAULT_HEAP_SIZE;
 		
 		try {
 			// reverse the order of port and serverPort, so that worker 
@@ -151,6 +176,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 				if( (response = (ActiveMessage) channel.receiveMessage()) != null){
 					long id = response.getId();
 					Monitor monitor = tasks.get(id);
+					assert(monitor != null):"the corresponding monitor is null!";
 					monitor.setResult(response, response.type == Type.RESPONSE);
 				} else {
 					System.out.println("Restart the work");
@@ -177,7 +203,8 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 */
 	@Override
 	public void shutdown(){
-		if(workerProc != null && workerProc.isAlive()){		
+		
+		if(workerProc != null){		
 			//FIXME: forcibly kill the worker
 			workerProc.destroyForcibly();						
 		}
@@ -207,10 +234,11 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	    command.add("-Xmx"+heapSize+"m");
 	    command.add("-cp");
 	    command.add(classpath);
-	    command.add("edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker");
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.worker.ActiveWorker");
 	    command.add(ifile);
 	    command.add(ofile);
 	    command.add(""+id);
+	    command.add(""+workerNumThread);
 	    command.add(Boolean.toString(pipeEnable));
 	    
 	    ProcessBuilder builder = new ProcessBuilder(command);
@@ -240,10 +268,11 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	    command.add("-Xmx"+heapSize+"m");
 	    command.add("-cp");
 	    command.add(classpath);
-	    command.add("edu.umass.cs.gnsserver.activecode.prototype.ActiveWorker");
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.worker.ActiveWorker");
 	    command.add(""+port1);
 	    command.add(""+port2);
 	    command.add(""+id);
+	    command.add(""+workerNumThread);
 		command.add(Boolean.toString(pipeEnable));
 		
 	    ProcessBuilder builder = new ProcessBuilder(command);
@@ -292,23 +321,31 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	@Override
 	public ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
 		long t1 =System.nanoTime();
-		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
+		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl, 1000);
 		Monitor monitor = new Monitor();
-		tasks.put(msg.getId(), monitor);
-		sendMessage(msg);
-		DelayProfiler.updateDelayNano("activeSendMessage", t1);
 		
-		long t2 = System.nanoTime();
+		//sendMessage(msg);
+		
+		
+		long t2 = 0;
 		ActiveMessage response = null;
 		
 		while( !monitor.getDone() ){
 			synchronized(monitor){
 				try {
+					if(!monitor.getWait()){
+						tasks.put(msg.getId(), monitor);
+						sendMessage(msg);
+						DelayProfiler.updateDelayNano("activeSendMessage", t1);
+						monitor.setWait();
+					}					
 					monitor.wait();
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			}
+			
+			t2 = System.nanoTime();
 			response = monitor.getResult();
 			//System.out.println("After setting response, the response is "+response);
 			
@@ -326,7 +363,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		}		
 		
 		response = monitor.getResult();
-		//System.out.println("The responded result is "+counter.getAndIncrement()+" "+response);
+		//System.out.println("The responded result is "+counter.get()+" "+response);
 		
 		if(response.getError() != null){
 			throw new ActiveException();
@@ -345,9 +382,11 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	private static class Monitor {
 		boolean isDone;
 		ActiveMessage response;
+		boolean waited;
 		
 		Monitor(){
 			this.isDone = false;
+			this.waited = false;
 		}
 		
 		boolean getDone(){
@@ -357,12 +396,20 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		synchronized void setResult(ActiveMessage response, boolean isDone){
 			//System.out.println("response is set to "+response);
 			this.response = response;
-			this.isDone = isDone;	
+			this.isDone = isDone;
 			notifyAll();
 		}
 		
 		ActiveMessage getResult(){
 			return response;
+		}
+		
+		void setWait(){
+			waited = true;
+		}
+		
+		boolean getWait(){
+			return waited;
 		}
 	}
 	

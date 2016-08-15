@@ -1,7 +1,10 @@
-package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.prototype.worker;
 
 import java.io.IOException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Querier;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -19,6 +22,8 @@ public class ActiveQuerier implements Querier {
 	private String currentGuid;
 	private long currentID;
 	
+	private Monitor monitor;
+	
 	/**
 	 * @param channel
 	 * @param ttl 
@@ -28,6 +33,8 @@ public class ActiveQuerier implements Querier {
 		this.channel = channel;
 		this.currentTTL = ttl;
 		this.currentGuid = guid;
+		
+		monitor = new Monitor();
 	}
 	
 	
@@ -85,8 +92,22 @@ public class ActiveQuerier implements Querier {
 		ValuesMap value = null;
 		try{
 			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, currentID);
-			channel.sendMessage(am);
-			ActiveMessage response = (ActiveMessage) channel.receiveMessage();
+			
+			while(!monitor.getDone()){
+				synchronized(monitor){
+					try {
+						channel.sendMessage(am);
+						monitor.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+			ActiveMessage response = monitor.getResult();
+			if (response.getError() != null){
+				throw new ActiveException();
+			}
 			value = response.getValue();
 		} catch(IOException e) {
 			throw new ActiveException();
@@ -99,16 +120,53 @@ public class ActiveQuerier implements Querier {
 		
 			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, value, currentID);
 			try {
-				//System.out.println("Querier sends request "+am);
-				channel.sendMessage(am);
-				ActiveMessage response = (ActiveMessage) channel.receiveMessage();
-				//System.out.println("The response is "+response);
+				
+				while(!monitor.getDone()){
+					synchronized(monitor){
+						try {
+							channel.sendMessage(am);
+							monitor.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+				ActiveMessage response = monitor.getResult();
 				if (response.getError() != null){
 					throw new ActiveException();
 				}
 			} catch (IOException e) {
 				throw new ActiveException();
 			}
+	}
+	
+	protected void release(ActiveMessage response, boolean isDone){
+		monitor.setResult(response, isDone);
+	}
+	
+	private static class Monitor {
+		boolean isDone;
+		ActiveMessage response;
+		
+		Monitor(){
+			this.isDone = false;
+		}
+		
+		boolean getDone(){
+			return isDone;
+		}
+		
+		synchronized void setResult(ActiveMessage response, boolean isDone){
+			assert(response.type == Type.RESPONSE):"This is not a response!";
+			this.response = response;
+			this.isDone = isDone;	
+			notifyAll();
+		}
+		
+		ActiveMessage getResult(){
+			return response;
+		}
 	}
 	
 	/**

@@ -5,8 +5,8 @@ import java.io.IOException;
 import javax.script.ScriptException;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveRunner;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
+import edu.umass.cs.gnsserver.activecode.prototype.worker.ActiveRunner;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**

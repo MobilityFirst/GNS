@@ -161,7 +161,7 @@ public class MultiThreadActiveClient implements Client, Runnable{
 	public ValuesMap runCode(String guid, String field, String code, ValuesMap valuesMap, int ttl)
 			throws ActiveException {
 
-		ActiveMessage am = new ActiveMessage(guid, field, code, valuesMap, ttl);
+		ActiveMessage am = new ActiveMessage(guid, field, code, valuesMap, ttl, 1000);
 		long id = am.getId();
 		
 		pendingMap.put(id, am);
@@ -222,7 +222,7 @@ public class MultiThreadActiveClient implements Client, Runnable{
 	 * @param ttl
 	 */
 	protected void sendRequest( String guid, String field, String code, ValuesMap valuesMap, int ttl){
-		sendMessage(new ActiveMessage(guid, field, code, valuesMap, ttl));
+		sendMessage(new ActiveMessage(guid, field, code, valuesMap, ttl, 1000));
 	}
 
 	@Override

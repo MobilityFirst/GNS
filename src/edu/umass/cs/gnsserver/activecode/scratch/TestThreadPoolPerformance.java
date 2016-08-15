@@ -52,7 +52,7 @@ public class TestThreadPoolPerformance {
 		} 
 		ValuesMap value = new ValuesMap();
 		value.put("string", "hello world");
-		ActiveMessage am = new ActiveMessage(guid, field, noop_code, value, 0);
+		ActiveMessage am = new ActiveMessage(guid, field, noop_code, value, 0, 500);
 		
 		ThreadPoolExecutor executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		executor.prestartAllCoreThreads();
