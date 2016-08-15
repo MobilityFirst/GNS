@@ -142,8 +142,9 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       messenger = new JSONMessenger<>(gnsNiot);
       this.protocolExecutor = new ProtocolExecutor<>(messenger);
     } catch (IOException e) {
-      LOG.log(Level.INFO, "Unabled to start LNS listener: {0}", e);
-      System.exit(0);
+      LOG.log(Level.INFO, "Unabled to start LNS listener: " + e + "...ignoring.");
+      // Just ignore this error for now... probably means we're running on a single machine.
+      return;
     }
     LOG.log(Level.INFO, "Started LNS listener on {0}", address);
   }

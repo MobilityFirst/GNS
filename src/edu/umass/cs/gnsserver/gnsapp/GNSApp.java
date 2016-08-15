@@ -172,107 +172,6 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 	}
 
 	@Override
-	public void shutdown() {
-		if (localNameServer != null) {
-			localNameServer.shutdown();
-		}
-		if (udpDnsServer != null) {
-			udpDnsServer.shutdown();
-		}
-		if (dnsTranslator != null) {
-			dnsTranslator.shutdown();
-		}
-		if (ccpListenerAdmin != null) {
-			ccpListenerAdmin.shutdown();
-		}
-		if (appAdmin != null) {
-			appAdmin.shutdown();
-		}
-	}
-
-	/**
-	 * Actually creates the application. This strange way of constructing the
-	 * application is because of legacy code that used the createAppCoordinator
-	 * interface.
-	 *
-	 * @param messenger
-	 * @throws java.io.IOException
-	 */
-	@SuppressWarnings("deprecation")
-	private void GnsAppConstructor(JSONMessenger<String> messenger)
-			throws IOException {
-		this.nodeID = messenger.getMyID();
-		GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>();
-		this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(
-				gnsNodeConfig);
-
-		NoSQLRecords noSqlRecords;
-		try {
-			Class<?> clazz = GNSConfig.GNSC.getNoSqlRecordsClass();
-			Constructor<?> constructor = clazz.getConstructor(String.class,
-					int.class);
-			noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID,
-					Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
-			GNSConfig.getLogger().info(
-					"Created noSqlRecords class: " + clazz.getName());
-		} catch (NoSuchMethodException | SecurityException
-				| IllegalAccessException | IllegalArgumentException
-				| InstantiationException | InvocationTargetException e) {
-			// fallback plan
-			GNSConfig.getLogger().warning(
-					"Problem creating noSqlRecords from config:" + e);
-			noSqlRecords = new MongoRecords(nodeID,
-					Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
-		}
-		this.nameRecordDB = new GNSRecordMap<>(noSqlRecords,
-				MongoRecords.DBNAMERECORD);
-		GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
-				new Object[] { nodeID, nameRecordDB });
-		this.messenger = messenger;
-		// Create the admin object
-		Admintercessor admintercessor = new Admintercessor();
-		// Create the request handler
-		this.requestHandler = new ClientRequestHandler(admintercessor,
-				new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID),
-						this.nodeConfig.getCcpPort(this.nodeID)), nodeID, this,
-				gnsNodeConfig);
-		// Finish admin setup
-		ccpListenerAdmin = new ListenerAdmin(requestHandler);
-		ccpListenerAdmin.start();
-		admintercessor.setListenerAdmin(ccpListenerAdmin);
-		appAdmin = new AppAdmin(this, gnsNodeConfig);
-		appAdmin.start();
-		GNSConfig.getLogger().log(Level.INFO, "{0} Admin thread initialized",
-				nodeID);
-		// Start up some servers
-		httpServer = new GNSHttpServer(requestHandler);
-		if (Config.getGlobalBoolean(GNSConfig.GNSC.START_LOCAL_NAME_SERVER)) {
-			localNameServer = new LocalNameServer();
-		}
-		if (Config.getGlobalBoolean(GNSConfig.GNSC.START_DNS_SERVER)) {
-			startDNS();
-		}
-		this.activeCodeHandler = AppOptionsOld.enableActiveCode ? new ActiveCodeHandler(
-				this, AppOptionsOld.activeCodeWorkerCount,
-				AppOptionsOld.activeCodeBlacklistSeconds) : null;
-
-		// context service init
-		if (AppOptionsOld.enableContextService) {
-			String[] parsed = AppOptionsOld.contextServiceIpPort
-					.split(":");
-			String host = parsed[0];
-			int port = Integer.parseInt(parsed[1]);
-			GNSConfig.getLogger().fine(
-					"ContextServiceGNSClient initialization started");
-			contextServiceGNSClient = new ContextServiceGNSClient(host, port);
-			GNSConfig.getLogger().fine(
-					"ContextServiceGNSClient initialization completed");
-		}
-
-		constructed = true;
-	}
-
-	@Override
 	@SuppressWarnings("unchecked")
 	public void setClientMessenger(SSLMessenger<?, JSONObject> messenger) {
 		this.messenger = (SSLMessenger<String, JSONObject>) messenger;
@@ -430,6 +329,95 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
 		return executed;
 	}
+
+  @Override
+  public void shutdown() {
+    if (localNameServer != null) {
+      localNameServer.shutdown();
+    }
+    if (udpDnsServer != null) {
+      udpDnsServer.shutdown();
+    }
+    if (dnsTranslator != null) {
+      dnsTranslator.shutdown();
+    }
+    if (ccpListenerAdmin != null) {
+      ccpListenerAdmin.shutdown();
+    }
+    if (appAdmin != null) {
+      appAdmin.shutdown();
+    }
+  }
+
+  /**
+   * Actually creates the application. This strange way of constructing the application
+   * is because of legacy code that used the createAppCoordinator interface.
+   *
+   * @param messenger
+   * @throws java.io.IOException
+   */
+  private void GnsAppConstructor(JSONMessenger<String> messenger) throws IOException {
+    this.nodeID = messenger.getMyID();
+    GNSNodeConfig<String> gnsNodeConfig = new GNSNodeConfig<>();
+    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(gnsNodeConfig);
+
+    NoSQLRecords noSqlRecords;
+    try {
+      Class<?> clazz = GNSConfig.GNSC.getNoSqlRecordsClass();
+      Constructor<?> constructor = clazz.getConstructor(String.class, int.class);
+      noSqlRecords = (NoSQLRecords) constructor.newInstance(nodeID, Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
+      GNSConfig.getLogger().info("Created noSqlRecords class: " + clazz.getName());
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InstantiationException | InvocationTargetException e) {
+      // fallback plan
+      GNSConfig.getLogger().warning("Problem creating noSqlRecords from config:" + e);
+      noSqlRecords = new MongoRecords(nodeID, Config.getGlobalInt(GNSConfig.GNSC.MONGO_PORT));
+    }
+    this.nameRecordDB = new GNSRecordMap<>(noSqlRecords, MongoRecords.DBNAMERECORD);
+    GNSConfig.getLogger().log(Level.FINE, "App {0} created {1}",
+            new Object[]{nodeID, nameRecordDB});
+    this.messenger = messenger;
+    // Create the admin object
+    Admintercessor admintercessor = new Admintercessor();
+    // Create the request handler
+    this.requestHandler = new ClientRequestHandler(
+            admintercessor,
+            new InetSocketAddress(nodeConfig.getBindAddress(this.nodeID),
+                    this.nodeConfig.getCcpPort(this.nodeID)),
+            nodeID, this,
+            gnsNodeConfig);
+    // Finish admin setup
+    ccpListenerAdmin = new ListenerAdmin(requestHandler);
+    ccpListenerAdmin.start();
+    admintercessor.setListenerAdmin(ccpListenerAdmin);
+    appAdmin = new AppAdmin(this, gnsNodeConfig);
+    appAdmin.start();
+    GNSConfig.getLogger().log(Level.INFO, "{0} Admin thread initialized", nodeID);
+    // Start up some servers
+    httpServer = new GNSHttpServer(requestHandler);
+    if (Config.getGlobalString(GNSConfig.GNSC.LOCAL_NAME_SERVER_NODES).contains("all")
+            || Config.getGlobalString(GNSConfig.GNSC.LOCAL_NAME_SERVER_NODES).contains(nodeID)) {
+      localNameServer = new LocalNameServer();
+    }
+    if (Config.getGlobalString(GNSConfig.GNSC.DNS_SERVER_NODES).contains("all")
+            || Config.getGlobalString(GNSConfig.GNSC.DNS_SERVER_NODES).contains(nodeID)) {
+      startDNS();
+    }
+    this.activeCodeHandler = AppOptionsOld.enableActiveCode ? new ActiveCodeHandler(this,
+    		AppOptionsOld.activeCodeWorkerCount,
+    		AppOptionsOld.activeCodeBlacklistSeconds) : null;
+
+    // context service init
+    if (AppOptionsOld.enableContextService) {
+      String[] parsed = AppOptionsOld.contextServiceIpPort.split(":");
+      String host = parsed[0];
+      int port = Integer.parseInt(parsed[1]);
+      GNSConfig.getLogger().fine("ContextServiceGNSClient initialization started");
+      contextServiceGNSClient = new ContextServiceGNSClient(host, port);
+      GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
+    }
+
+    constructed = true;
+  }
 
 	// For InterfaceApplication
 	@Override

@@ -43,6 +43,34 @@ public class GNSConfig {
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
+     *//**
+     * Enables secret key communication that is ~180x faster at signing and
+     * ~8x faster at verification. True by default as there is no reason to
+     * not support it at the server.
      */
     ENABLE_SECRET_KEY(true),
     /**
@@ -139,13 +167,13 @@ public class GNSConfig {
      */
     APPLICATION_NAME("an application"),
     /**
-     * Set to true if you want to start an instance of the LocalNameServer when the app starts.
+     * Set to"all" or a node id if you want to start an instance of the LocalNameServer when the app starts.
      */
-    START_LOCAL_NAME_SERVER(false),
+    LOCAL_NAME_SERVER_NODES("none"),
     /**
-     * Set to true if you want to start the DNS server when the app starts.
+     * Set to "all" or a node id if you want to start the DNS server when the app starts.
      */
-    START_DNS_SERVER(false),
+    DNS_SERVER_NODES("none"),
     /**
      * Set to true if you want the DNS server to not lookup 
      * records using DNS (will only lookup records in the GNS).
