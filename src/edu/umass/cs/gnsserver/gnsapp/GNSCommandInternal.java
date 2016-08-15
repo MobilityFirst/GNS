@@ -13,6 +13,7 @@ import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -50,6 +51,15 @@ public class GNSCommandInternal extends InternalCommandPacket {
 				.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
 	}
 
+	/** The querier is always null in internal commands as it is implicitly
+	 * a trusted server or client.
+	 * 
+	 * @param type
+	 * @param header
+	 * @param keysAndValues
+	 * @return GNSCommandInternal 
+	 * @throws JSONException
+	 */
 	private static GNSCommandInternal getCommand(CommandType type,
 			InternalRequestHeader header, Object... keysAndValues)
 			throws JSONException {
@@ -98,10 +108,10 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	 *            The queried fields.
 	 * @param header
 	 *            The internal request header.
-	 * @return Refer {@link GNSCommand#fieldRead(String, ArrayList, GuidEntry)}.
+	 * @return InternalCommandPacket
 	 * @throws JSONException
 	 */
-	public static final CommandPacket fieldRead(String targetGUID,
+	public static final InternalCommandPacket fieldRead(String targetGUID,
 			ArrayList<String> fields, InternalRequestHeader header)
 			throws JSONException {
 		return getCommand(CommandType.ReadUnsigned, header,
@@ -112,7 +122,7 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	/**
 	 * Identical to
 	 * {@link GNSCommand#fieldUpdate(String, String, Object, GuidEntry)} except
-	 * that the last {@code querierGUID} argument is a String. For internal
+	 * that the last {@code querierGUID} argument is an InternalRequestHeader. For internal
 	 * operations, we need the identity of {@code querierGUID} to perform ACL
 	 * checks or to "charge" it an operation for accounting purposes, but we
 	 * don't need to generate or verify its signatures.
@@ -122,17 +132,16 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	 * @param field
 	 * @param value
 	 * @param targetGUID
-	 * @return Refer
-	 *         {@link GNSCommand#fieldUpdate(String, String, Object, GuidEntry)}
-	 *         .
+	 * @return InternalCommandPacket
+	 *         
 	 * @throws JSONException
 	 */
-	public static CommandPacket fieldUpdate(String targetGUID, String field,
+	public static InternalCommandPacket fieldUpdate(String targetGUID, String field,
 			JSONObject value, InternalRequestHeader header)
 			throws JSONException {
 		return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
 				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
 				field, GNSCommandProtocol.USER_JSON,
-				new JSONObject().put(field, value).toString());
+				new JSONObject().put(field, value));
 	}
 }

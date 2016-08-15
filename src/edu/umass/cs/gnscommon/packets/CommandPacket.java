@@ -652,7 +652,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	public Map<String, ?> getResultMap() throws ClientException {
 		String responseStr = this.getRespStr();
 		try {
-			Map<String, ?> map = JSONObjectToMap(new JSONObject(responseStr));
+			Map<String, ?> map = Util.JSONObjectToMap(new JSONObject(responseStr));
 			return map;
 		} catch (JSONException e) {
 			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
@@ -667,7 +667,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	public List<?> getResultList() throws ClientException {
 		String responseStr = this.getRespStr();
 		try {
-			List<?> list = JSONArrayToList(new JSONArray(responseStr));
+			List<?> list = Util.JSONArrayToList(new JSONArray(responseStr));
 			return list;
 		} catch (JSONException e) {
 			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
@@ -675,53 +675,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		}
 	}
 
-	/* arun: This method will be a utility method to convert a JSONArray to an
-	 * ArrayList while recursively converting the elements to JSONObject or
-	 * JSONArray as needed. */
-	private static List<?> JSONArrayToList(JSONArray jsonArray)
-			throws JSONException {
-		if (jsonArray == null)
-			return null;
-		ArrayList<Object> list = new ArrayList<Object>();
-		Object val = null;
-
-		if (jsonArray.length() > 0)
-			for (int i = 0; i < jsonArray.length(); i++)
-				if ((val = jsonArray.get(i)) instanceof JSONObject)
-					list.add(JSONObjectToMap((JSONObject) val));
-
-				else if (val instanceof JSONArray)
-					list.add(JSONArrayToList((JSONArray) val));
-
-				else
-					// primitive type object
-					list.add(val);
-		return list;
-	}
-
-	/* arun: This method will be a utility method to convert a JSONObject to a
-	 * Map<String,?> while recursively converting the values to JSONObject or
-	 * JSONArray as needed. */
-	private static Map<String, ?> JSONObjectToMap(JSONObject json)
-			throws JSONException {
-		if (json == null)
-			return null;
-		String[] keys = JSONObject.getNames(json);
-		if (keys != null) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			for (String key : keys)
-				if (json.get(key) instanceof JSONObject)
-					map.put(key, JSONObjectToMap(json.getJSONObject(key)));
-				else if (json.get(key) instanceof JSONArray)
-					map.put(key, JSONArrayToList(json.getJSONArray(key)));
-
-				else
-					// primitive type object
-					map.put(key, json.get(key));
-			return map;
-		}
-		return null;
-	}
 
 	/**
 	 * @return The JSONArray result of executing this command.
@@ -819,47 +772,4 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		};
 	}
 
-	/**
-	 * Unit testing.
-	 */
-	public static class CommandPacketTest extends DefaultTest {
-		/**
-		 * @throws JSONException
-		 */
-		@SuppressWarnings("unchecked")
-		@Test
-		public void test_01_JSONObjectToMap() throws JSONException {
-			Util.assertAssertionsEnabled();
-			Map<String, ?> map = (JSONObjectToMap(new JSONObject()
-					.put("hello", "world")
-					.put("collField", Arrays.asList("hello", "world", 123))
-					.put("jsonField", new JSONObject().put("foo", true))));
-			System.out.println(map);
-			org.junit.Assert.assertTrue(map.get("jsonField") instanceof Map
-					&& (Boolean) ((Map<String, ?>) map.get("jsonField"))
-							.get("foo"));
-
-		}
-
-		/**
-		 * @throws JSONException
-		 */
-		@SuppressWarnings("unchecked")
-		@Test
-		public void test_01_JSONArrayToMap() throws JSONException {
-			Util.assertAssertionsEnabled();
-			List<?> list = (JSONArrayToList(new JSONArray()
-
-			.put("hello") // 0
-
-					.put(Arrays.asList("hello", "world", 123)) // 1
-
-					.put(new JSONObject().put("foo", true)))); // 2
-
-			System.out.println(list);
-			org.junit.Assert.assertTrue(list.get(2) instanceof Map
-					&& (Boolean) ((Map<String, ?>) list.get(2)).get("foo"));
-
-		}
-	}
 }
