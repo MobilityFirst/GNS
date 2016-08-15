@@ -60,11 +60,12 @@ public class ActiveNamedPipe implements Channel {
 		byte[] buf = msg.toBytes();
 		int length = buf.length;
 		try {
-			// write the length of byte array first then send the content			
+			// write the length of byte array first then send the content
+			
 			writer.write(ByteBuffer.allocate(Integer.BYTES+length).putInt(length).put(buf).array());
 			writer.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException e) {			
+			//e.printStackTrace();
 		}
 	}
 

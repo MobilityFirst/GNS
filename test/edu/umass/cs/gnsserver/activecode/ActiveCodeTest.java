@@ -49,7 +49,7 @@ public class ActiveCodeTest {
 			String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
 			String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
 			
-			ValuesMap result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			ValuesMap result = ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			//Thread.sleep(2000);
 			System.out.println("Active count number is "+executor.getActiveCount()+
@@ -69,9 +69,9 @@ public class ActiveCodeTest {
 			String mal_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/mal.js")));
 			String mal_code64 = Base64.encodeToString(mal_code.getBytes("utf-8"), true);
 					
-			result = ActiveCodeHandler.runCode(mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, mal_code64, "guid1", "testGuid", "read", valuesMap, 100);
 			completed++;
-			result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			//Thread.sleep(2000);
 			
@@ -85,10 +85,10 @@ public class ActiveCodeTest {
 			String chain_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/chain-test.js")));
 			String chain_code64 = Base64.encodeToString(chain_code.getBytes("utf-8"), true);
 					
-			result = ActiveCodeHandler.runCode(chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, chain_code64, "guid1", "testGuid", "read", valuesMap, 100);
 			completed++;
 			completed++;
-			result = ActiveCodeHandler.runCode(noop_code64, guid1, field1, read_action, valuesMap, 100);
+			result = ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
 			completed++;
 			
 			int count = 0;

@@ -1,6 +1,7 @@
 package edu.umass.cs.gnsserver.activecode.prototype;
 
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONException;
 
@@ -16,34 +17,14 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveWorker {
 	
 	
+	//private final ActiveRunner[] runners;
 	private final ActiveRunner runner;
 	private final Channel channel;
 	private final int id;
+	private final ConcurrentHashMap<Integer, Object> map = new ConcurrentHashMap<Integer, Object>();
 	
+	//private Querier[] queriers;
 	private Querier querier;
-		
-	/**
-	 * Initialize a worker with a UDP channel
-	 * @param port
-	 * @param id
-	 * @param numThread
-	 */
-	protected ActiveWorker(int port, int serverPort, int id){
-		this.id = id;
-		
-		channel = new ActiveDatagramChannel(port, serverPort);
-		querier = new ActiveQuerier(channel);
-		runner = new ActiveRunner(querier);
-		
-		try {
-			runWorker();
-		} catch (Exception e){
-			e.printStackTrace();
-		} finally {
-			channel.shutdown();
-		}
-	}
-	
 	/**
 	 * Initialize a worker with a named pipe
 	 * @param ifile
@@ -52,25 +33,23 @@ public class ActiveWorker {
 	 * @param numThread 
 	 * @param isTest
 	 */
-	protected ActiveWorker(String ifile, String ofile, int id, boolean isTest) {
+	protected ActiveWorker(String ifile, String ofile, int id) {
 		this.id = id;
 		
-		if(!isTest){
-			channel = new ActiveNamedPipe(ifile, ofile);
-			querier = new ActiveQuerier(channel);
-			runner = new ActiveRunner(querier);
-			
-			try {
-				runWorker();
-			} catch (Exception e){
-				e.printStackTrace();
-			} finally {
-				channel.shutdown();
-			}
-		} else {
-			channel = null;
-			runner = null;
+		channel = new ActiveNamedPipe(ifile, ofile);
+		//queriers = new ActiveQuerier[];
+		
+		querier = new ActiveQuerier(channel);
+		runner = new ActiveRunner(querier);
+		
+		try {
+			runWorker();
+		} catch (Exception e){
+			//e.printStackTrace();
+		} finally {
+			channel.shutdown();
 		}
+		
 	}
 	
 	/**
@@ -78,7 +57,7 @@ public class ActiveWorker {
 	 * @param ofile
 	 */
 	public ActiveWorker(String ifile, String ofile){
-		this(ifile, ofile, 0, false);
+		this(ifile, ofile, 0);
 	}
 	
 	/**
@@ -102,7 +81,6 @@ public class ActiveWorker {
 		while((msg = (ActiveMessage) channel.receiveMessage()) != null){
 			
 			if(msg.type == Type.REQUEST){
-				//System.out.println(this+" receives a request "+msg);
 				ActiveMessage response;
 				try {
 					response = new ActiveMessage(msg.getId(), runCode(msg.getGuid(), msg.getField(), msg.getCode(), msg.getValue(), msg.getTtl(), msg.getId()), null);
@@ -112,7 +90,7 @@ public class ActiveWorker {
 				}				
 				channel.sendMessage(response);
 			} else if (msg.type == Type.RESPONSE ){
-				System.out.println("This is a response message, the execution should not be here!");
+				
 			}
 			
 		}
@@ -134,14 +112,7 @@ public class ActiveWorker {
 			String sfile = args[1];
 			int id = Integer.parseInt(args[2]);
 			
-			new ActiveWorker(cfile, sfile, id, false);
-		}
-		else {
-			int port = Integer.parseInt(args[0]);
-			int serverPort = Integer.parseInt(args[1]);
-			int id = Integer.parseInt(args[2]);
-			
-			new ActiveWorker(port, serverPort, id);
+			new ActiveWorker(cfile, sfile, id);
 		}
 	}
 }

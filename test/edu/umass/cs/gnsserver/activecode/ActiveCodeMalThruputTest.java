@@ -98,7 +98,7 @@ public class ActiveCodeMalThruputTest {
 		@Override
 		public void run() {
 			for (int i=0; i<numReq; i++){
-				ActiveCodeHandler.runCode(code64, guid, field, action, valuesMap, 100);
+				ActiveCodeHandler.runCode(null, code64, guid, field, action, valuesMap, 100);
 				ActiveCodeMalThruputTest.incr();
 			}			
 		}

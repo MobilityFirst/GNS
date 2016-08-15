@@ -7,6 +7,9 @@ import java.lang.ProcessBuilder.Redirect;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.JSONException;
 
@@ -47,6 +50,22 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	
 	private static int heapSize = 64;
 	
+	private AtomicBoolean isRestarting = new AtomicBoolean();
+	
+	/********************* For test **********************/
+	/**
+	 * @return current worker process
+	 */
+	public Process getWorker(){
+		return workerProc;
+	}
+	
+	private AtomicInteger counter = new AtomicInteger();
+	
+	public int getRecv(){
+		return counter.get();
+	}
+	
 	/**
 	 * @param app 
 	 * @param ifile
@@ -60,6 +79,13 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		this.ofile = ofile;
 		this.pipeEnable = true;
 		
+		initializeChannelAndStartWorker();
+		
+		queryHandler = new ActiveQueryHandler(app);
+		
+	}
+	
+	private void initializeChannelAndStartWorker(){
 		Runtime runtime = Runtime.getRuntime();
 		try {
 			runtime.exec("mkfifo "+ifile);
@@ -74,9 +100,6 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		}
 		channel = new ActiveNamedPipe(ifile, ofile);				
 		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
-		
-		queryHandler = new ActiveQueryHandler(app);
-		
 	}
 	
 	/**
@@ -130,7 +153,17 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 					Monitor monitor = tasks.get(id);
 					monitor.setResult(response, response.type == Type.RESPONSE);
 				} else {
-					// restart the worker
+					System.out.println("Restart the work");
+					if(!isRestarting.getAndSet(true)){
+						// restart the worker
+						shutdown();
+						initializeChannelAndStartWorker();
+						// resend all the requests that failed
+						for(Monitor monitor:tasks.values()){
+							monitor.setResult(null, false);
+						}
+						isRestarting.set(false);
+					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -144,8 +177,9 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 */
 	@Override
 	public void shutdown(){
-		if(workerProc != null){
-			workerProc.destroy();
+		if(workerProc != null && workerProc.isAlive()){		
+			//FIXME: forcibly kill the worker
+			workerProc.destroyForcibly();						
 		}
 		
 		if(pipeEnable){
@@ -228,27 +262,22 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		try {
 			am = (ActiveMessage) channel.receiveMessage();
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return am;
 	}
 	
-	protected void sendMessage(ActiveMessage am){
+	protected synchronized void sendMessage(ActiveMessage am){
 		try {
 			channel.sendMessage(am);
 		} catch (IOException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 	
 	static int numReq = 0;
 	synchronized int incr(){
 		return ++numReq;
-	}
-	
-	static int received = 0;
-	synchronized int getRcv(){
-		return ++received;
 	}
 	
 	/**
@@ -261,7 +290,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 * @return executed result sent back from worker
 	 */
 	@Override
-	public synchronized ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
+	public ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
 		long t1 =System.nanoTime();
 		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl);
 		Monitor monitor = new Monitor();
@@ -271,6 +300,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		
 		long t2 = System.nanoTime();
 		ActiveMessage response = null;
+		
 		while( !monitor.getDone() ){
 			synchronized(monitor){
 				try {
@@ -281,6 +311,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 			}
 			response = monitor.getResult();
 			//System.out.println("After setting response, the response is "+response);
+			
 			if(response == null){
 				/**
 				 *  The worker is crashed, resend the request
@@ -295,13 +326,13 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		}		
 		
 		response = monitor.getResult();
-		//System.out.println("The responded result is "+response);
+		//System.out.println("The responded result is "+counter.getAndIncrement()+" "+response);
 		
 		if(response.getError() != null){
 			throw new ActiveException();
 		}
-		
-		tasks.remove(response.getId());
+		counter.getAndIncrement();
+		tasks.remove(response.getId());		
 		DelayProfiler.updateDelayNano("activeGetResult", t2);
 		
 		return response.getValue();
@@ -334,15 +365,6 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 			return response;
 		}
 	}
-	
-	/********************* For test **********************/
-	/**
-	 * @return current worker process
-	 */
-	public Process getWorker(){
-		return workerProc;
-	}
-	
 	
 	/**
 	 * @param args
