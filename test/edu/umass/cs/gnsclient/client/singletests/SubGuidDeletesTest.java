@@ -84,7 +84,7 @@ public class SubGuidDeletesTest extends DefaultTest {
 		clients = new GNSClientCommands[numClients];
 		for (int i = 0; i < numClients; i++)
 			clients[i] = new GNSClientCommands();
-		String gnsInstance = clients[0].getGNSInstance();
+		String gnsInstance = clients[0].getGNSProvider();
 		accountGuidEntries = new GuidEntry[numAccountGuids];
 
 		for (int i = 0; i < numAccountGuids; i++) {

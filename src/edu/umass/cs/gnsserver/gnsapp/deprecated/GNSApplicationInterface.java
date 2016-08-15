@@ -17,14 +17,16 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp;
+package edu.umass.cs.gnsserver.gnsapp.deprecated;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableNodeConfig;
+
 import java.io.IOException;
+
 import org.json.JSONObject;
 
 /**

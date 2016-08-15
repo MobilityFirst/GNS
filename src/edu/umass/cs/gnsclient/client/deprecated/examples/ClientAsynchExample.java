@@ -20,7 +20,8 @@
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
-import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
+import edu.umass.cs.gnsclient.client.deprecated.AbstractGNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -30,6 +31,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
@@ -95,11 +97,13 @@ public class ClientAsynchExample {
               + "\"location\":\"work\",\"name\":\"frank\"}");
       command = createAndSignCommand(CommandType.ReplaceUserJSON,
               accountGuidEntry.getPrivateKey(),
+              accountGuidEntry.getPublicKey(),
               GUID, accountGuidEntry.getGuid(), USER_JSON, json.toString(),
               WRITER, accountGuidEntry.getGuid());
     } else {
       command = createAndSignCommand(CommandType.Read,
               accountGuidEntry.getPrivateKey(),
+              accountGuidEntry.getPublicKey(),
               GUID, accountGuidEntry.getGuid(), FIELD, "occupation",
               READER, accountGuidEntry.getGuid());
     }
@@ -119,21 +123,27 @@ public class ClientAsynchExample {
       //commandPacket.setClientRequestId(id);
       // Record what we're sending
       pendingIds.add(commandPacket.getRequestID());
+      // arun: disabled
+      if(true) throw new RuntimeException("disabled");
       // Actually send out the packet
-      client.sendCommandPacketAsynch(commandPacket);
+      //client.sendCommandPacketAsynch(commandPacket);
       ThreadUtils.sleep(100); // if you generate them too fast you'll clog things up 
     }
   }
 
   // Not saying this is the best way to handle responses, but it works for this example.
-  private static void lookForResponses(AbstractGNSClient client, Set<Long> pendingIds) {
+  private static void lookForResponses(GNSClient client, Set<Long> pendingIds) {
     while (true) {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent
       for (Long id : pendingIds) {
-        if (client.isAsynchResponseReceived(id)) {
+        if (true
+        		//client.isAsynchResponseReceived(id)
+        		) {
+        	// arun: disabled
+        	if(true) throw new RuntimeException("disabled");
           pendingIds.remove(id);
-          Request removed = client.removeAsynchResponse(id);
+          Request removed = null;//client.removeAsynchResponse(id);
           if(removed instanceof ResponsePacket) {
         	  ResponsePacket commandResult = ((ResponsePacket)removed);
           System.out.println("commandResult for  " + id + " is "

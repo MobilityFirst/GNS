@@ -54,6 +54,12 @@ public class InternalCommandPacket extends CommandPacket implements
 	 */
 	private final long originatingRequestID;
 
+	/**
+	 * The only place where this flag is set to false. After this point, it can
+	 * only ever be changed to true.
+	 */
+	private boolean hasBeenCoordinatedOnce = false;
+
 	// not sure whether to store inside or outside, maybe doesn't matter
 	private static final boolean STORE_INSIDE = true;
 
@@ -103,6 +109,7 @@ public class InternalCommandPacket extends CommandPacket implements
 		this.ttl = ttl;
 		this.originatingGUID = oGUID;
 		this.originatingRequestID = oqid;
+		// hasBeenCoordinatedOnce already initialized
 	}
 
 	protected InternalCommandPacket(InternalRequestHeader header,
@@ -126,11 +133,13 @@ public class InternalCommandPacket extends CommandPacket implements
 					// decrementing TTL at sender
 				json.put(GNSProtocol.REQUEST_TTL.toString(),
 						this.ttl - (decrementTTL ? 1 : 0))
-						// put the other two header fields as well
+						// put the other header fields as well
 						.put(GNSProtocol.ORIGINATING_GUID.toString(),
 								this.originatingGUID)
 						.put(GNSProtocol.ORIGINATING_QID.toString(),
-								this.originatingRequestID);
+								this.originatingRequestID)
+						.put(GNSProtocol.COORD1.toString(),
+								this.hasBeenCoordinatedOnce);
 	}
 
 	/**
@@ -149,6 +158,8 @@ public class InternalCommandPacket extends CommandPacket implements
 		Object id = getInOrOutside(GNSProtocol.ORIGINATING_QID.toString(), json);
 		this.originatingRequestID = id instanceof Integer ? ((Integer) id)
 				.longValue() : ((Long) id).longValue();
+		this.hasBeenCoordinatedOnce = (Boolean) getInOrOutside(
+				GNSProtocol.COORD1.toString(), json);
 	}
 
 	private static final Object getInOrOutside(String key, JSONObject outerJSON)
@@ -172,6 +183,11 @@ public class InternalCommandPacket extends CommandPacket implements
 		return this.ttl;
 	}
 
+	@Override
+	public boolean hasBeenCoordinatedOnce() {
+		return false;
+	}
+
 	private static InternalRequestHeader getTestHeader(int ttl, String GUID,
 			long qid) {
 		return new InternalRequestHeader() {
@@ -189,6 +205,11 @@ public class InternalCommandPacket extends CommandPacket implements
 			@Override
 			public int getTTL() {
 				return ttl;
+			}
+
+			@Override
+			public boolean hasBeenCoordinatedOnce() {
+				return false;
 			}
 
 		};
@@ -215,5 +236,4 @@ public class InternalCommandPacket extends CommandPacket implements
 			org.junit.Assert.assertEquals(s1, s2);
 		}
 	}
-
 }

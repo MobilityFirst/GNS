@@ -31,7 +31,11 @@ public class PacketUtils {
 		return command.getCommand();
 	}
 
-	private static String getOriginatingGUID(CommandPacket commandPacket) {
+	/**
+	 * @param commandPacket
+	 * @return The originatingGUID for {@code CommandPacket}.
+	 */
+	public static String getOriginatingGUID(CommandPacket commandPacket) {
 		String oguid = null;
 		JSONObject command = commandPacket.getCommand();
 		try {
@@ -89,10 +93,24 @@ public class PacketUtils {
 					@Override
 					public int getTTL() {
 						try {
-							return commandPacket.getCommand().getInt(
-									GNSProtocol.REQUEST_TTL.toString());
+							return commandPacket.getCommand().has(GNSProtocol.REQUEST_TTL.toString())
+									? 
+											commandPacket.getCommand().getInt(
+									GNSProtocol.REQUEST_TTL.toString())
+									: InternalRequestHeader.DEFAULT_TTL;
 						} catch (JSONException e) {
 							return InternalRequestHeader.DEFAULT_TTL;
+						}
+					}
+
+					@Override
+					public boolean hasBeenCoordinatedOnce() {
+						try {
+							return commandPacket.getCommand().has(GNSProtocol.COORD1.toString())
+									? commandPacket.getCommand().getBoolean(GNSProtocol.COORD1.toString())
+											: commandPacket.needsCoordination();
+						} catch (JSONException e) {
+							return commandPacket.needsCoordination();
 						}
 					}
 				}

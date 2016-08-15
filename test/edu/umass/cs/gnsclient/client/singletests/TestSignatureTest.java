@@ -103,6 +103,7 @@ public class TestSignatureTest {
     try {
       JSONObject command = CommandUtils.createAndSignCommand(
               CommandType.ReadArrayUnsigned, guid.getPrivateKey(),
+              guid.getPublicKey(),
               GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.FIELD, "joe");
       System.out.println(command);
     } catch (Exception e) {

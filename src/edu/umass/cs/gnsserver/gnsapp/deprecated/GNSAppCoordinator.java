@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp;
+package edu.umass.cs.gnsserver.gnsapp.deprecated;
 
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.nio.JSONMessenger;

@@ -1383,7 +1383,7 @@ public class ClientCoreTest {
       aliases.add("testGUID" + RandomString.randomString(6));
     }
     String result = null;
-    int oldTimeout = client.getReadTimeout();
+    long oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(15 * 1000); // 30 seconds
       result = client.guidBatchCreate(accountGuidForBatch, aliases);

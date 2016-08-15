@@ -17,7 +17,9 @@ package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -30,9 +32,6 @@ import java.util.stream.Stream;
  * Each one of these has a corresponding method in an array defined in
  * edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandDefs
  */
-// We could probably dispense with the CommandDefs array (see above) and just
-// put the classes in the enum
-// once we upgrade older clients to not use the old command strings.
 public enum CommandType {
 //
   // Data Commands
@@ -704,7 +703,7 @@ public enum CommandType {
     GetTagged.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
-
+    
   }
 
   public enum Type {

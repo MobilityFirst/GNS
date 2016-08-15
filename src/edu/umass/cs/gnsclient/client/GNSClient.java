@@ -18,6 +18,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -43,16 +44,20 @@ import edu.umass.cs.utils.Config;
  *
  *         Cleaner implementation of a GNS client using gigapaxos' async client.
  */
-public class GNSClient extends AbstractGNSClient {
+public class GNSClient {
 	// initialized from properties file
 	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
 			.getReconfiguratorAddresses();
 
-	// initialized upon contstruction
+	// initialized upon construction
 	private final Set<InetSocketAddress> reconfigurators;
+	// ReconfigurableAppClientAsync instance
 	private final AsyncClient asyncClient;
-
+	// local name server
 	private InetSocketAddress GNSProxy = null;
+
+	
+
 	
 	private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
 
@@ -65,6 +70,7 @@ public class GNSClient extends AbstractGNSClient {
 				.iterator().next() : null);
 	}
 
+
 	/**
 	 * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
 	 * The client can enquire and know of other reconfigurator addresses from
@@ -75,7 +81,6 @@ public class GNSClient extends AbstractGNSClient {
 	 * @throws IOException
 	 */
 	public GNSClient(InetSocketAddress anyReconfigurator) throws IOException {
-		super(anyReconfigurator);
 		this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
 		if (this.reconfigurators == null || this.reconfigurators.isEmpty()) {
 			throw new IOException(
@@ -104,6 +109,29 @@ public class GNSClient extends AbstractGNSClient {
 		return this.asyncClient.toString();
 	}
 
+
+
+	private static final String GNS_KEY = "GNS";
+	
+	/**
+	 * This name represents the service to which this client connects. Currently
+	 * this name is unused as the reconfigurator(s) are read from a properties
+	 * file, but it is conceivable also to use a well known service to query for
+	 * the reconfigurators given this name. This name is currently also used by
+	 * the client key database to distinguish between stores corresponding to
+	 * different GNS services.
+	 * 
+	 * <p>
+	 * 
+	 * This name can be changed by setting the system property "GNS" as "-DGNS=".
+	 *
+	 * @return GNS service instance
+	 */
+	public String getGNSProvider() {
+		return System.getProperty(GNS_KEY) != null ? System.getProperty(GNS_KEY)
+				: "gns.name";
+	}
+	  
 	private static boolean isAnycast(CommandPacket packet) {
 		return packet.getCommandType().isCreateDelete()
 				|| packet.getCommandType().isSelect()
@@ -114,33 +142,37 @@ public class GNSClient extends AbstractGNSClient {
 	/**
 	 * @throws IOException
 	 */
-	@Override
 	public void checkConnectivity() throws IOException {
 		this.asyncClient.checkConnectivity();
 	}
 
 	/**
+	 * Returns true if the client is forcing read operations to be coordinated.
+	 *
+	 * @return true if the client is forcing read operations to be coordinated
+	 */
+	protected boolean isForceCoordinatedReads() {
+		return this.forceCoordinatedReads;
+	}
+
+	private boolean forceCoordinatedReads = false;
+
+	/**
+	 * Sets the value of forcing read operations to be coordinated.
+	 *
+	 * @param forceCoordinatedReads
+	 */
+	public void setForceCoordinatedReads(boolean forceCoordinatedReads) {
+		this.forceCoordinatedReads = forceCoordinatedReads;
+	}
+	
+	/**
 	 * Closes the underlying async client.
 	 */
-	@Override
 	public void close() {
 		this.asyncClient.close();
 	}
 
-	/**
-	 * @param packet
-	 * @param callback
-	 * @return Long request ID if successfully sent, else null.
-	 * @throws IOException
-	 */
-	protected RequestFuture<?> sendAsync(CommandPacket packet,
-			final GNSCommandCallback callback) throws IOException {
-		return this.sendAsync(packet, (response) -> {
-			defaultHandleResponse(packet, response);
-			callback.handleResponse(packet);
-			return packet;
-		});
-	}
 
 	/**
 	 * All sends go ultimately go through this async send method because that is
@@ -210,24 +242,24 @@ public class GNSClient extends AbstractGNSClient {
 	}
 
 	/**
-	 * @param packet
+	 * @param commandPacket
 	 * @param timeout
 	 * @return Response from the server or null if the timeout expires.
 	 * @throws IOException
 	 */
 	protected ResponsePacket getCommandValueReturnPacket(
-			CommandPacket packet, long timeout) throws IOException {
+			CommandPacket commandPacket, long timeout) throws IOException {
 		Object monitor = new Object();
 		ResponsePacket[] retval = new ResponsePacket[1];
 
 		// send sync also internally sends async first
-		this.sendAsync(packet, (response) -> {
+		this.sendAsync(commandPacket, (response) -> {
 			retval[0] = defaultHandleResponse(response);
 			assert (retval[0].getErrorCode() != null);
 			synchronized (monitor) {
 				monitor.notify();
 			}
-			return packet;
+			return commandPacket;
 		});
 
 		try {
@@ -239,9 +271,13 @@ public class GNSClient extends AbstractGNSClient {
 		} catch (InterruptedException e) {
 			throw new IOException(
 					"sendSync interrupted while waiting for a response for "
-							+ packet.getSummary());
+							+ commandPacket.getSummary());
 		}
-		return retval[0] != null ? retval[0] : getTimeoutResponse(this, packet);
+		return retval[0] != null ? retval[0] : new ResponsePacket(commandPacket.getServiceName(),
+				commandPacket.getRequestID(), GNSResponseCode.TIMEOUT,
+				GNSCommandProtocol.BAD_RESPONSE + " "
+						+ GNSCommandProtocol.TIMEOUT + " for command "
+						+ commandPacket.getSummary());
 	}
 
 	/**
@@ -370,6 +406,18 @@ public class GNSClient extends AbstractGNSClient {
 	public GNSCommand execute(CommandPacket command) throws IOException,
 			ClientException {
 		return (GNSCommand) this.sendSync(command);
+	}
+
+	/**
+	 * @param command
+	 * @param timeout
+	 * @return GNSCommand after execution containing the result if any.
+	 * @throws IOException
+	 * @throws ClientException
+	 */
+	public GNSCommand execute(CommandPacket command, long timeout) throws IOException,
+			ClientException {
+		return (GNSCommand) this.sendSync(command, timeout);
 	}
 
 	/**

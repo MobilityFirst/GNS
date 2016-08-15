@@ -73,7 +73,7 @@ public interface ClientRequestHandlerInterface {
   /**
    * Returns the id of the co-located active replica.
    *
-   * @return
+   * @return Active replica name.
    */
   public String getActiveReplicaID();
 
@@ -94,7 +94,7 @@ public interface ClientRequestHandlerInterface {
   /**
    * Returns the port associated with the HTTP server running on this node.
    *
-   * @return
+   * @return HTTP server port.
    */
   public int getHttpServerPort();
 
@@ -109,10 +109,14 @@ public interface ClientRequestHandlerInterface {
    * *
    * Returns a string of the form inetaddress:port for the http server.
    *
-   * @return
+   * @return HTTP server:port
    * @throws java.net.UnknownHostException
    */
   public String getHTTPServerHostPortString() throws UnknownHostException;
 
+/**
+ * @param header
+ * @return The originating request corresponding to {@code header}.
+ */
 public CommandPacket getOriginRequest(InternalRequestHeader header);
 }

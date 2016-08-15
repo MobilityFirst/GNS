@@ -282,8 +282,6 @@ public class Packet {
           return null;
         case STOP:
           return new edu.umass.cs.gnsserver.gnsapp.packet.StopPacket(json);
-        case NOOP:
-          return new edu.umass.cs.gnsserver.gnsapp.packet.NoopPacket(json);
         case TEST_NOOP:
           return null;
         default:

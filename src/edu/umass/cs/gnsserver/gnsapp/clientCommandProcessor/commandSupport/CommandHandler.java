@@ -18,9 +18,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
@@ -30,6 +28,8 @@ import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
@@ -120,7 +120,7 @@ public class CommandHandler {
 			// the last arguments here in the call below are instrumentation
 			// that the client can use to determine LNS load
 			ResponsePacket returnPacket = new ResponsePacket(
-					commandPacket.getClientRequestId(), 
+					commandPacket.getRequestID(), 
 					commandPacket.getServiceName(), returnValue, 0, 0,
 					System.currentTimeMillis() - receiptTime);
 
@@ -147,7 +147,7 @@ public class CommandHandler {
 		// reply to client is true, this means this is the active replica
 		// that recvd the request from the gnsClient. So, let's check for
 		// sending trigger to Context service here.
-		if (AppReconfigurableNodeOptions.enableContextService) {
+		if (AppOptionsOld.enableContextService) {
 			if (!doNotReplyToClient) {
 
 				if (commandHandler.getClass().getSuperclass() == AbstractUpdate.class) {
@@ -237,15 +237,24 @@ public class CommandHandler {
 					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
 
 		
-		// cycle detection
+		/* Cycle detection: This is a somewhat pointless check as it only checks
+		 * to see if both the current request and the origin request are
+		 * coordinated, but that is not sufficient to ensure exactly once
+		 * coordination semantics. Unclear if there is any useful checks to do
+		 * upon receipt of a CommandPacket. */
 		CommandPacket originRequest = handler.getOriginRequest(header);
-		// this will always be true and should be asserted
-		assert (originRequest.getRequestID() == commandPacket
-				.getClientRequestId());
+		// coz we used the requestID to pull it out in the first place
+		assert (originRequest.getRequestID() == commandPacket.getRequestID());
 		// same origin GUID and origin request ID => cycle
-		if (header.getOriginatingGUID().equals(
-				PacketUtils.getCommand((CommandPacket) originRequest)
-						.optString(GNSCommandProtocol.READER)))
+		if (originRequest != commandPacket
+				&& header
+						.getOriginatingGUID()
+						.equals(PacketUtils
+								.getOriginatingGUID((CommandPacket) originRequest))
+
+				&& originRequest.needsCoordination()
+				&& commandPacket.needsCoordination())
+
 			throw new InternalRequestException(
 					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION,
 					"Cyclic internal request");

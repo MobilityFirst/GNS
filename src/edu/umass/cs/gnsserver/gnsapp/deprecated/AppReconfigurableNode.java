@@ -17,16 +17,19 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp;
+package edu.umass.cs.gnsserver.gnsapp.deprecated;
 
 import edu.umass.cs.gnsserver.nodeconfig.GNSInterfaceNodeConfig;
+
 import java.io.IOException;
+
 import edu.umass.cs.gnsserver.utils.ParametersAndOptions;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.printOptions;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.utils.Config;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,7 @@ import java.util.Map;
  *
  * @author Westy
  */
+@Deprecated
 public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
   private final static List<AppReconfigurableNode> ALL_NODES = new ArrayList<>();
@@ -93,13 +97,13 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
 //    }
 //  }
 
-  protected static Map<String, String> initOptions(String[] args)
+  public static Map<String, String> initOptions(String[] args)
           throws IOException {
     Map<String, String> options = ParametersAndOptions
             .getParametersAsHashMap(
                     AppReconfigurableNode.class.getCanonicalName(),
-                    AppReconfigurableNodeOptions.getAllOptions(), args);
-    AppReconfigurableNodeOptions.initializeFromOptions(options);
+                    AppOptionsOld.getAllOptions(), args);
+    AppOptionsOld.initializeFromOptions(options);
     printOptions(options);
     return options;
   }

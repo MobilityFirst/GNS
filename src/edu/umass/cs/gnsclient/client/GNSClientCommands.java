@@ -22,7 +22,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.Arrays;
 
-import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
@@ -104,7 +103,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
 
 /**
  * This class defines a client to communicate with a GNS instance over TCP. This
- * class adds single field list based commands to the {@link AbstractGNSClient}
+ * class adds single field list based commands to the {@link GNSClient}
  * 's JSONObject based commands.
  *
  * This class contains a concise subset of all available server operations.
@@ -112,7 +111,8 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_GUIDS;
  * @author arun, <a href="mailto:westy@cs.umass.edu">Westy</a>
  * @version 1.0
  */
-public class GNSClientCommands extends GNSClient implements GNSClientInterface {
+public class GNSClientCommands extends GNSClient //implements GNSClientInterface 
+{
 
   /**
    * @throws IOException
@@ -131,6 +131,28 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
           throws IOException {
     super(anyReconfigurator);
   }
+  
+	private long readTimeout = 8000;
+	/**
+	 * Returns the timeout value (milliseconds) used when sending commands to
+	 * the server.
+	 *
+	 * @return value in milliseconds
+	 */
+	public long getReadTimeout() {
+		return readTimeout;
+	}
+
+	/**
+	 * Sets the timeout value (milliseconds) used when sending commands to the
+	 * server.
+	 *
+	 * @param readTimeout
+	 *            in milliseconds
+	 */
+	public void setReadTimeout(long readTimeout) {
+		this.readTimeout = readTimeout;
+	}
 
 
   /**
@@ -155,7 +177,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
                             .getCommandValueReturnPacket(
                                     commandPacket = getCommand(commandType,
                                             querier, keysAndValues),
-                                    (long) this.readTimeout), commandPacket));
+                                    (long) this.getReadTimeout()), commandPacket));
   }
 
   private static final boolean RECORD_ENABLED = true;
@@ -205,7 +227,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @return Constructed CommandPacket
    * @throws ClientException
    */
-  public static GNSCommand getCommand(CommandType type, GuidEntry querier,
+  private static GNSCommand getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
 	  GNSCommand packet = new GNSCommand(
     		//CommandPacket(randomLong(),
@@ -213,9 +235,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     return packet;
   }
 
-  private static long randomLong() {
-    return (long) (Math.random() * Long.MAX_VALUE);
-  }
 
   // READ AND WRITE COMMANDS
   /**
@@ -582,7 +601,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @throws IOException
    * @throws ClientException
    */
-  @Override
+  
   public JSONObject lookupGuidRecord(String guid) throws IOException,
           ClientException {
     try {
@@ -660,19 +679,19 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
 
   }
 
-  /**
-   * Register a new account guid with the corresponding alias on the GNS
-   * server. This generates a new guid and a public / private key pair.
-   * Returns a GuidEntry for the new account which contains all of this
-   * information.
-   *
-   * @param alias
-   * - a human readable alias to the guid - usually an email
-   * address
-   * @return GuidEntry for {@code alias}
-   * @throws Exception
-   */
-  @Override
+  	/**
+	 * Register a new account guid with the corresponding alias on the GNS
+	 * server. This generates a new guid and a public / private key pair.
+	 * Returns a GuidEntry for the new account which contains all of this
+	 * information.
+	 *
+	 * @param alias
+	 *            - a human readable alias to the guid - usually an email
+	 *            address
+	 * @param password
+	 * @return GuidEntry for {@code alias}
+	 * @throws Exception
+	 */
   public GuidEntry accountGuidCreate(String alias, String password)
           throws Exception {
 
@@ -689,7 +708,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
       String guid = SharedGuidUtils.createGuidStringFromPublicKey(keyPair
               .getPublic().getEncoded());
       // Squirrel this away now just in case the call below times out.
-      KeyPairUtils.saveKeyPair(getGNSInstance(), alias, guid, keyPair);
+      KeyPairUtils.saveKeyPair(getGNSProvider(), alias, guid, keyPair);
       entry = new GuidEntry(alias, guid, keyPair.getPublic(),
               keyPair.getPrivate());
     }
@@ -719,7 +738,6 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @return ?
    * @throws Exception
    */
-  @Override
   public String accountGuidVerify(GuidEntry guid, String code)
           throws Exception {
     //GNSClientConfig.getLogger().log(Level.INFO, "VERIFICATION CODE= {0}", code);
@@ -748,13 +766,13 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    * @return the newly created GUID entry
    * @throws Exception
    */
-  @Override
+  
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
           throws Exception {
 
     long startTime = System.currentTimeMillis();
     GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-            getGNSInstance());
+            getGNSProvider());
     DelayProfiler.updateDelay("updatePreferences", startTime);
     String returnedGuid = guidCreateHelper(accountGuid, alias,
             entry.getPublicKey());
@@ -790,7 +808,7 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
     for (String alias : aliasList) {
       long singleEntrystartTime = System.currentTimeMillis();
       GuidEntry entry = GuidUtils.createAndSaveGuidEntry(alias,
-              getGNSInstance());
+              getGNSProvider());
       DelayProfiler.updateDelay("updateOnePreference",
               singleEntrystartTime);
       byte[] publicKeyBytes = entry.getPublicKey().getEncoded();
@@ -2091,30 +2109,36 @@ public class GNSClientCommands extends GNSClient implements GNSClientInterface {
    */
   @Deprecated
   public String adminEnable(String passkey) throws Exception {
-    return getResponse(CommandType.Admin, NAME, RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);
+	  return getResponse(CommandType.Admin, NAME,
+			  RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);
   }
 
   /**
-   * @param name
+   * @param field
    * @param value
-   * @param string
+   * @param passkey
    * @throws Exception
    */
   @Deprecated
-  public void parameterSet(String field, Object value, String passkey) throws Exception {
-    getResponse(CommandType.SetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(), FIELD, field,
-            VALUE, value, PASSKEY, passkey);
+  public void parameterSet(String field, Object value, String passkey)
+		  throws Exception {
+	  getResponse(CommandType.SetParameter, NAME,
+			  RC.BROADCAST_NAME.getDefaultValue(), FIELD, field, VALUE,
+			  value, PASSKEY, passkey);
   }
 
   /**
    * @param name
+   * @param passkey
    * @return ???
    * @throws Exception
    *
    */
   @Deprecated
   public String parameterGet(String name, String passkey) throws Exception {
-    return getResponse(CommandType.GetParameter, NAME, RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY, passkey);
+	  return getResponse(CommandType.GetParameter, NAME,
+			  RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY,
+			  passkey);
   }
 
   @Override

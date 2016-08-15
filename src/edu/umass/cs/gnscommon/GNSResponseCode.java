@@ -16,9 +16,10 @@
  */
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnsserver.gnsapp.QueryResult;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.QueryResult;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -320,7 +321,7 @@ public enum GNSResponseCode implements Serializable {
    * Is this NOT an exception or error code.
    * Convenience method. See {@link #isExceptionOrError()}.
    *
-   * @return
+   * @return True if no exception or error.
    */
   public boolean isOKResult() {
     return !isExceptionOrError();

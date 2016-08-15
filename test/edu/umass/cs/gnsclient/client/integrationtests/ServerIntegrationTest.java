@@ -68,7 +68,7 @@ import org.junit.runners.MethodSorters;
 
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.DefaultTest;
@@ -1903,7 +1903,7 @@ public class ServerIntegrationTest extends DefaultTest {
 			aliases.add("testGUID" + RandomString.randomString(12));
 		}
 		String result = null;
-		int oldTimeout = client.getReadTimeout();
+		long oldTimeout = client.getReadTimeout();
 		try {
 			client.setReadTimeout(15 * 1000); // 30 seconds
 			result = client.guidBatchCreate(accountGuidForBatch, aliases);
@@ -2063,12 +2063,12 @@ public class ServerIntegrationTest extends DefaultTest {
 		boolean enableContextService = false;
 		String csIPPort = "";
 		if (propMap
-				.containsKey(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE)) {
+				.containsKey(AppOptionsOld.ENABLE_CONTEXT_SERVICE)) {
 			enableContextService = Boolean.parseBoolean(propMap
-					.get(AppReconfigurableNodeOptions.ENABLE_CONTEXT_SERVICE));
+					.get(AppOptionsOld.ENABLE_CONTEXT_SERVICE));
 
 			csIPPort = propMap
-					.get(AppReconfigurableNodeOptions.CONTEXT_SERVICE_IP_PORT);
+					.get(AppOptionsOld.CONTEXT_SERVICE_IP_PORT);
 		}
 
 		if (enableContextService) {

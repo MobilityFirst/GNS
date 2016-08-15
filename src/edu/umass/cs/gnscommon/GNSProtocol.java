@@ -1,6 +1,7 @@
 package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 /**
@@ -41,7 +42,7 @@ public enum GNSProtocol {
 	REQUEST_ID("QID"),
 
 	/**
-	 * String return value carried in every {@link CommandValueReturnPacket}.
+	 * String return value carried in every {@link ResponsePacket}.
 	 */
 	RETURN_VALUE("RVAL"),
 
@@ -60,7 +61,7 @@ public enum GNSProtocol {
 	UNKNOWN_NAME("unknown"), 
 	
 	/**
-	 * Error code carried in {@link CommandValueReturnPacket}.
+	 * Error code carried in {@link ResponsePacket}.
 	 */
 	ERROR_CODE("ECODE"), 
 	
@@ -68,6 +69,11 @@ public enum GNSProtocol {
 	 * Internal request exception message string.
 	 */
 	INTERNAL_REQUEST_EXCEPTION("+INTERNAL_REQUEST_EXCEPTION+"),
+	
+	/**
+	 * Whether an internal request was previously coordinated (at most once).
+	 */
+	COORD1("COORD1"),
 
 	;
 

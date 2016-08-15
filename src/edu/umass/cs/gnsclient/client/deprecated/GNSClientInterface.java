@@ -52,7 +52,7 @@ public interface GNSClientInterface {
    * 
    * @return a string representing the GNS server
    */
-  public String getGNSInstance();
+  public String getGNSProvider();
 
   /**
    * Returns a JSON object containing all of the guid information

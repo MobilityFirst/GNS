@@ -45,6 +45,22 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithReturnAddre
   private final static String NSQUERYID = "nsQueryId";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
+  
+
+  /**
+   * The possible response codes for select packets.
+   */
+  public enum ResponseCode {
+    /**
+     * NOERROR
+     */
+    NOERROR, 
+    /**
+     * ERROR
+     */
+    ERROR
+
+  }
 
   private long requestId;
   private int nsQueryId;
