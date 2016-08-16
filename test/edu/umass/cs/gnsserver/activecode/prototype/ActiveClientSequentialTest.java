@@ -5,24 +5,26 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.json.JSONException;
 import org.junit.Test;
 
-import edu.umass.cs.gnsserver.activecode.prototype.ActiveClientThroughputTest.SimpleTask;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+/**
+ * @author gaozy
+ *
+ */
 public class ActiveClientSequentialTest {
 
 	
+	/**
+	 * @throws JSONException
+	 * @throws ActiveException
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
 	@Test
 	public void test_sequentialRequestThroughput() throws JSONException, ActiveException, InterruptedException, ExecutionException {
 		
@@ -33,17 +35,17 @@ public class ActiveClientSequentialTest {
 			numThread = Integer.parseInt(System.getProperty("numThread"));
 		}
 		
-		long budget = 500;
+		long budget = 50;
 		if(System.getProperty("budget")!= null){
 			budget = Long.parseLong(System.getProperty("budget"));
 		}
 		
-		long executionTime = 1000;
+		long executionTime = 100;
 		if(System.getProperty("executionTime")!=null){
 			executionTime = Long.parseLong(System.getProperty("executionTime"));
 		}
 		
-		String codeFile = "./scripts/activeCode/takeTime.js";
+		String codeFile = "./scripts/activeCode/wasteTime.js";
 		if(System.getProperty("codeFile")!=null){
 			codeFile = System.getProperty("codeFile");
 		}
@@ -67,13 +69,13 @@ public class ActiveClientSequentialTest {
 		} 
 		ValuesMap value = new ValuesMap();
 		value.put(field, executionTime);	
-		ValuesMap result = client.runCode(null, guid, field, code, value, 0, budget);
+		ValuesMap result = client.runCode(null, guid, field, code, value, 0, 1000);
 
 		assertEquals(result.toString(), value.toString());
 		
 		int initial = client.getRecv();
 		
-		int n = 1000000;
+		int n = 1000;
 		
 		long t1 = System.currentTimeMillis();
 		
@@ -85,7 +87,7 @@ public class ActiveClientSequentialTest {
 		long elapsed = System.currentTimeMillis() - t1;
 		System.out.println("It takes "+elapsed+"ms");
 		System.out.println("The average time for each task is "+elapsed/n+"ms.");
-		
+		assert(elapsed/n-budget<budget*0.1);
 		assert(client.getRecv()-initial == n):"the number of responses is not the same as the number of requests";
 		
 		System.out.println("Sequential throughput test succeeds.");
