@@ -153,7 +153,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return Returns the host.
    */
   @Override
-  public String getGNSInstance() {
+  public String getGNSProvider() {
     return host + ":" + port;
   }
 

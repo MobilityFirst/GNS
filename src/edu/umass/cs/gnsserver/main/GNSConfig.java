@@ -139,13 +139,13 @@ public class GNSConfig {
      */
     APPLICATION_NAME("an application"),
     /**
-     * Set to true if you want to start an instance of the LocalNameServer when the app starts.
+     * Set to"all" or a node id if you want to start an instance of the LocalNameServer when the app starts.
      */
-    START_LOCAL_NAME_SERVER(false),
+    LOCAL_NAME_SERVER_NODES("none"),
     /**
-     * Set to true if you want to start the DNS server when the app starts.
+     * Set to "all" or a node id if you want to start the DNS server when the app starts.
      */
-    START_DNS_SERVER(false),
+    DNS_SERVER_NODES("none"),
     /**
      * Set to true if you want the DNS server to not lookup 
      * records using DNS (will only lookup records in the GNS).
@@ -357,6 +357,11 @@ public class GNSConfig {
 
   private final static Logger LOG = Logger.getLogger(GNSConfig.class
           .getName());
+  
+	/**
+	 * The default reconfigurator server port number.
+	 */
+	public static final int DEFAULT_RECONFIGURATOR_PORT = 2178;
 
   /**
    * Returns the master GNS logger.

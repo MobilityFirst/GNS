@@ -690,7 +690,7 @@ public class ConsoleModule {
     if (gnsClient == null) {
       return null;
     } else {
-      return gnsClient.getGNSInstance();
+      return gnsClient.getGNSProvider();
     }
   }
 

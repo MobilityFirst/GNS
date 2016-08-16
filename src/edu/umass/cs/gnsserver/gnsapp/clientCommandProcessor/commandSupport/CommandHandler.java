@@ -18,9 +18,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
@@ -30,6 +28,8 @@ import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
@@ -120,7 +120,7 @@ public class CommandHandler {
 			// the last arguments here in the call below are instrumentation
 			// that the client can use to determine LNS load
 			ResponsePacket returnPacket = new ResponsePacket(
-					commandPacket.getClientRequestId(), 
+					commandPacket.getRequestID(), 
 					commandPacket.getServiceName(), returnValue, 0, 0,
 					System.currentTimeMillis() - receiptTime);
 
@@ -147,7 +147,7 @@ public class CommandHandler {
 		// reply to client is true, this means this is the active replica
 		// that recvd the request from the gnsClient. So, let's check for
 		// sending trigger to Context service here.
-		if (AppReconfigurableNodeOptions.enableContextService) {
+		if (AppOptionsOld.enableContextService) {
 			if (!doNotReplyToClient) {
 
 				if (commandHandler.getClass().getSuperclass() == AbstractUpdate.class) {
@@ -230,26 +230,45 @@ public class CommandHandler {
 				.getInternalRequestHeader(commandPacket);
 		if (header == null)
 			return header;
+		// The checks below are unnecessary and are only expositionary.
 		
-		// TTL expiration
+		/* TTL expiration, but should never expire here as the sender would
+		 * have not sent an expiring request in the first place.
+		 */
 		if (header.getTTL() == 0)
 			throw new InternalRequestException(
 					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
 
+		/* Note: It is pointless to try to check whether a previous request in this
+		 * chain was already coordinated and this request is also coordinated
+		 * because if we are here, it is too late. This check must be done at
+		 * the sender side. Indeed most any reasonable check we can do to restrict
+		 * the capabilities of active code at the receiver might as well be
+		 * done at the sender. We can not detect node cycles at the sender
+		 * but it is unclear that we even care to prevent node cycles. 
+		 * 
+		 * It is unclear how to disallow targetGUID cycles unless we carry the
+		 * entire chain information, which seems like too much work given that
+		 * we already have TTLs to limit cycles. */
 		
-		// cycle detection
 		CommandPacket originRequest = handler.getOriginRequest(header);
-		// this will always be true and should be asserted
-		assert (originRequest.getRequestID() == commandPacket
-				.getClientRequestId());
-		// same origin GUID and origin request ID => cycle
-		if (header.getOriginatingGUID().equals(
-				PacketUtils.getCommand((CommandPacket) originRequest)
-						.optString(GNSCommandProtocol.READER)))
-			throw new InternalRequestException(
-					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION,
-					"Cyclic internal request");
-
+		// coz we used the requestID to pull it out in the first place
+		assert (originRequest.getRequestID() == commandPacket.getRequestID());
+		// same origin GUID and origin request ID => node cycle
+		if (originRequest != commandPacket
+				&& header
+						.getOriginatingGUID()
+						.equals(PacketUtils
+								.getOriginatingGUID((CommandPacket) originRequest)))
+			GNSConfig
+					.getLogger()
+					.log(Level.INFO,
+							"Node {0} revisited by active request chain {1} at hop {2}",
+							new Object[] {
+									handler.getApp(),
+									header,
+									InternalRequestHeader.DEFAULT_TTL
+											- header.getTTL() });
 		// nothing suspicious detected
 		return header;
 	}

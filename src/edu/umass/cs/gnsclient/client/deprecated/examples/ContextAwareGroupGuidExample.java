@@ -212,9 +212,9 @@ public class ContextAwareGroupGuidExample {
    * @return
    * @throws Exception
    */
-  private static GuidEntry lookupOrCreateAccountGuid(GNSClientInterface client,
+  private static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client,
           String name, String password) throws Exception {
-    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSInstance(), name);
+    GuidEntry guidEntry = KeyPairUtils.getGuidEntry(client.getGNSProvider(), name);
     if (guidEntry == null || !guidExists(client, guidEntry)) { // also handle case where it has been deleted from database
       guidEntry = client.accountGuidCreate(name, password);
       client.accountGuidVerify(guidEntry, createVerificationCode(name));
@@ -224,7 +224,7 @@ public class ContextAwareGroupGuidExample {
     }
   }
 
-  private static boolean guidExists(GNSClientInterface client, GuidEntry guidEntry)
+  private static boolean guidExists(GNSClientCommands client, GuidEntry guidEntry)
           throws IOException {
     try {
       client.lookupGuidRecord(guidEntry.getGuid());
@@ -235,7 +235,7 @@ public class ContextAwareGroupGuidExample {
   }
 
   private static final int VERIFICATION_CODE_LENGTH = 3; // Three hex characters
-  // this is so we can mimic the verification code the server is generting
+  // this is so we can mimic the verification code the server is generating
   // AKA we're cheating... if the SECRET changes on the server side 
   // you'll need to change it here as well
   private static final String SECRET = Config.getGlobalString(GNSClientConfig.GNSCC.VERIFICATION_SECRET);

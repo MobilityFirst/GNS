@@ -52,8 +52,8 @@ public class JSONByteConverter {
 	private static final byte DOUBLE_INDICATOR = 6;
 	private static final byte BOOLEAN_INDICATOR = 7;
 	
-	private static ByteBuffer fourByteBuffer = ByteBuffer.allocate(4);
-	private static ByteBuffer eightByteBuffer = ByteBuffer.allocate(8);
+	//private static ByteBuffer fourByteBuffer = ByteBuffer.allocate(4);
+	//private static ByteBuffer eightByteBuffer = ByteBuffer.allocate(8);
 	
 	
 	/**
@@ -306,6 +306,8 @@ public class JSONByteConverter {
 	 * @throws IOException
 	 */
 	private static final void byteJSONValue(Object value, ByteArrayOutputStream out) throws JSONException, IOException{
+		ByteBuffer fourByteBuffer = ByteBuffer.allocate(4);
+		ByteBuffer eightByteBuffer = ByteBuffer.allocate(8);
 		if (value instanceof JSONArray){
 			//byteJSONArray((JSONArray)value, out);
 			JSONArray array = (JSONArray)value;

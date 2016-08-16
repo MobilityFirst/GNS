@@ -31,7 +31,6 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
@@ -54,6 +53,7 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 
 import java.util.Date;

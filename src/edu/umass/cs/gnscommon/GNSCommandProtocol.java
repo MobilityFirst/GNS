@@ -369,16 +369,11 @@ public class GNSCommandProtocol {
    */
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
 
-  /* arun: a static final MAGIC_STRING is a security hole. No can do.
-  
-//  /**
-//   * The magic string field in a command packet. The magic string indicates to the
-//   * server that this command packet was sent by another server and does not
-//   * need to be authenticated.
-//   */
-//  public final static String MAGIC_STRING = "magic";
 
   // Special fields for ACL
+  /**
+   * 
+   */
   public final static String GROUP_ACL = "+GROUP_ACL+";
   // Field names in guid record JSON Object
   /**
@@ -498,7 +493,7 @@ public class GNSCommandProtocol {
    * Creates a GNS field that is hidden from the user.
    *
    * @param string
-   * @return
+   * @return Hidden field
    */
   public static String makeInternalField(String string) {
     return INTERNAL_PREFIX + string;
@@ -508,7 +503,7 @@ public class GNSCommandProtocol {
    * Returns true if field is a GNS field that is hidden from the user.
    *
    * @param key
-   * @return
+   * @return True if hidden field
    */
   public static boolean isInternalField(String key) {
     return key.startsWith(INTERNAL_PREFIX);

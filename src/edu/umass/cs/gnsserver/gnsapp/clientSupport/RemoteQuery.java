@@ -20,7 +20,6 @@ import edu.umass.cs.gnscommon.exceptions.client.ActiveReplicaException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
@@ -426,7 +425,7 @@ public class RemoteQuery extends ClientAsynchBase {
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} received {1}", new Object[]{this, packet.getSummary()});
-        return CommandUtils.checkResponse(packet);
+        return CommandUtils.checkResponse(packet, callback.getRequest()).getReturnValue();
       }
     } catch (ActiveReplicaException e) {
       return notFoundReponse;
@@ -622,7 +621,7 @@ public class RemoteQuery extends ClientAsynchBase {
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket
             = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
-    if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
       return null;
@@ -650,7 +649,7 @@ public class RemoteQuery extends ClientAsynchBase {
     long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
-    if (ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
       return reponsePacket.getGuids();
     } else {
       return null;
@@ -682,7 +681,7 @@ public class RemoteQuery extends ClientAsynchBase {
     long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
-    if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
       return null;
@@ -723,7 +722,7 @@ public class RemoteQuery extends ClientAsynchBase {
     long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> responsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
-    if (ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
       return responsePacket.getGuids();
     } else {
       return null;

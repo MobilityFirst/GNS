@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode.prototype.worker;
+package edu.umass.cs.gnsserver.activecode.prototype.unblockingworker;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;

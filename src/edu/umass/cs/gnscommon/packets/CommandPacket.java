@@ -69,7 +69,7 @@ import org.msgpack.value.Value;
 import org.msgpack.value.ValueType;
 
 /**
- * @author arun, westy
+ * @author arun
  *
  *         Packet format sent from a client and handled by a local name server.
  *
@@ -77,7 +77,7 @@ import org.msgpack.value.ValueType;
 public class CommandPacket extends BasicPacketWithClientAddress implements
 		ClientRequest, ReplicableRequest, Byteable {
 
-	private final static String CLIENTREQUESTID = GNSProtocol.REQUEST_ID
+	private final static String QID = GNSProtocol.REQUEST_ID
 			.toString();
 	private final static String COMMAND = GNSProtocol.QUERY.toString();
 	/**
@@ -86,17 +86,24 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	public final static String BOGUS_SERVICE_NAME = GNSProtocol.UNKNOWN_NAME
 			.toString();
 
+	
 	/**
-	 * Identifier of the request on the client.
+	 * Identifier of the request on the client. Serialized.
 	 */
 	private final long clientRequestId;
 
 	/**
 	 * The JSON form of the command. Always includes a COMMANDNAME field. Almost
-	 * always has a GUID field or NAME (for HRN records) field.
+	 * always has a GUID field or NAME (for HRN records) field. Serialized.
 	 */
 	private final JSONObject command;
+	
+	/**
+	 * True means that this request should be forcibly coordinated.
+	 */
+	private boolean forceCoordination = false;
 
+	// never serialized
 	private Object result = null;
 
 	/**
@@ -120,8 +127,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 */
 	public CommandPacket(JSONObject json) throws JSONException {
 		this.type = Packet.getPacketType(json);
-		this.clientRequestId = json.getLong(CLIENTREQUESTID);
+		this.clientRequestId = json.getLong(QID);
 		this.command = json.getJSONObject(COMMAND);
+		this.forceCoordination = json.has(GNSCommandProtocol.FORCE_COORDINATE_READS) ? 
+				json.getBoolean(GNSCommandProtocol.FORCE_COORDINATE_READS) : false;
 
 	}
 
@@ -146,11 +155,13 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		this.setType(Packet.getPacketType(buf.getInt()));
 		// requestID
 		this.clientRequestId = buf.getLong();
-
-		// JSON command
-		this.command = getJSONObject(buf, ByteMode.byteModeMap.get(
+		// forceCoordination
+		this.forceCoordination = (buf.get()==1);
 		// ByteMode
-				(int) buf.get()));
+		ByteMode mode = ByteMode.byteModeMap.get(
+				(int) buf.get());
+		// JSON command
+		this.command = getJSONObject(buf, mode);
 	}
 
 	private static JSONObject fromBytesStringerHack(ByteBuffer buf)
@@ -159,9 +170,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		json
 		// query type
 		.put(GNSCommandProtocol.COMMAND_INT, buf.getInt())
-		// force coordination flag
-				.putOpt(GNSCommandProtocol.FORCE_COORDINATE_READS,
-						buf.get() == 1 ? true : null);
+		;
 
 		// Put in the variable length fields.
 		while (buf.hasRemaining()) {
@@ -263,14 +272,16 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
 	private ByteBuffer toByteBufferWithOuterFields() {
 		synchronized (command) {
-			return ByteBuffer.allocate(1024).putInt(
+			return ByteBuffer.allocate(512).putInt(
 			// packet type
 					this.getType().getInt())
 			// requestID
 					.putLong(this.clientRequestId)
+					// forceCoordination
+					.put(this.forceCoordination?(byte)1:(byte)0)
 					// ByteMode
 					.put((byte) byteMode.val);
-			// JSON command next
+			// JSON command coming next
 		}
 	}
 
@@ -291,12 +302,11 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		Integer commandType = (Integer) command
 				.remove(GNSCommandProtocol.COMMAND_INT);
 		assert (commandType != null);
-		boolean forceCoordinated = this.removeForceCoordinated();
 
 		// query type
 		buf.putInt(commandType != null ? commandType : -1)
-		// force coordination
-				.put(forceCoordinated ? (byte) 1 : (byte) 0);
+		
+		;
 
 		// We assume all remaining keys and values are strings.
 		@SuppressWarnings("unchecked")
@@ -338,31 +348,26 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 			 * decodes the strings correctly, but it is unwise to rely on that
 			 * behavior and difficult to correctly maintain in code. */
 			// System.err.println(e + " for " + key + ":" + objVal);
-			return this.handleSerializationException(e, commandType,
-					forceCoordinated);
+			return this.handleSerializationException(e, commandType);
 		} finally {
 			// This stops the toBytes method form being destructive.
 			try {
-				this.putBackRemoved(commandType, forceCoordinated);
+				this.putBackRemoved(commandType);
 			} catch (JSONException e) {
-				return this.handleSerializationException(e, commandType,
-						forceCoordinated);
+				return this.handleSerializationException(e, commandType);
 			}
 		}
 
 	}
 
-	private void putBackRemoved(Integer commandType, boolean forceCoordinated)
-			throws JSONException {
+	private void putBackRemoved(Integer commandType) throws JSONException {
 		if (commandType != null)
 			this.command.put(GNSCommandProtocol.COMMAND_INT, commandType);
-		if (forceCoordinated)
-			this.command.put(GNSCommandProtocol.FORCE_COORDINATE_READS,
-					forceCoordinated);
+		;
 	}
 
 	private byte[] handleSerializationException(Exception e,
-			Integer commandType, boolean forceCoordinated) {
+			Integer commandType) {
 		// testing => scream
 		if (Config.getGlobalBoolean(PC.ENABLE_INSTRUMENTATION))
 			throw new RuntimeException(e);
@@ -395,18 +400,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject json = new JSONObject();
 		putPacketType(json, getType());
-		json.put(CLIENTREQUESTID, this.clientRequestId);
+		json.put(QID, this.clientRequestId);
 		json.put(COMMAND, this.command);
+		if(this.forceCoordination) json.put(GNSCommandProtocol.FORCE_COORDINATE_READS, this.forceCoordination);
 		return json;
-	}
-
-	/**
-	 * Return the client request id.
-	 *
-	 * @return the client request id
-	 */
-	public long getClientRequestId() {
-		return clientRequestId;
 	}
 
 	/**
@@ -460,29 +457,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	}
 
 	/**
-	 * @return True if this command needs to be coordinated at servers or
-	 *         executed locally.
-	 */
-	public boolean getCommandCoordinateReads() {
-		try {
-			// arun: optBoolean is inefficient (~6us)
-			return command != null
-					&& command.has(GNSCommandProtocol.FORCE_COORDINATE_READS)
-					&& command
-							.getBoolean(GNSCommandProtocol.FORCE_COORDINATE_READS);
-		} catch (JSONException e) {
-			;
-		}
-		return false;
-	}
-
-	private boolean removeForceCoordinated() {
-		return this.command.has(GNSCommandProtocol.FORCE_COORDINATE_READS)
-				&& (Boolean) this.command
-						.remove(GNSCommandProtocol.FORCE_COORDINATE_READS);
-	}
-
-	/**
 	 * @return CommandType as Integer.
 	 */
 	public int getCommandInteger() {
@@ -519,9 +493,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 
 	@Override
 	public boolean needsCoordination() {
-		CommandType commandType = getCommandType();
-		return (commandType.isRead() && getCommandCoordinateReads())
-				|| commandType.isUpdate();
+		return this.forceCoordination || getCommandType().isUpdate();
 	}
 
 	/**
@@ -529,8 +501,10 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * @return Set coordination mode to true if this is a read command.
 	 */
 	public ClientRequest setForceCoordinatedReads(boolean force) {
-		if (force && getCommandType().isRead())
-			// make forcibly coordinated
+		if (force && getCommandType().isRead()
+				&& (this.forceCoordination = true))
+			/* The wrap makes it forcibly coordinated but it not necessary, so
+			 * it is okay to comment out the first return clause below. */
 			return ReplicableClientRequest.wrap(this, true);
 		// else
 		return this;
@@ -652,7 +626,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	public Map<String, ?> getResultMap() throws ClientException {
 		String responseStr = this.getRespStr();
 		try {
-			Map<String, ?> map = JSONObjectToMap(new JSONObject(responseStr));
+			Map<String, ?> map = Util.JSONObjectToMap(new JSONObject(responseStr));
 			return map;
 		} catch (JSONException e) {
 			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
@@ -667,7 +641,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	public List<?> getResultList() throws ClientException {
 		String responseStr = this.getRespStr();
 		try {
-			List<?> list = JSONArrayToList(new JSONArray(responseStr));
+			List<?> list = Util.JSONArrayToList(new JSONArray(responseStr));
 			return list;
 		} catch (JSONException e) {
 			throw new ClientException(GNSResponseCode.JSON_PARSE_ERROR,
@@ -675,53 +649,6 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		}
 	}
 
-	/* arun: This method will be a utility method to convert a JSONArray to an
-	 * ArrayList while recursively converting the elements to JSONObject or
-	 * JSONArray as needed. */
-	private static List<?> JSONArrayToList(JSONArray jsonArray)
-			throws JSONException {
-		if (jsonArray == null)
-			return null;
-		ArrayList<Object> list = new ArrayList<Object>();
-		Object val = null;
-
-		if (jsonArray.length() > 0)
-			for (int i = 0; i < jsonArray.length(); i++)
-				if ((val = jsonArray.get(i)) instanceof JSONObject)
-					list.add(JSONObjectToMap((JSONObject) val));
-
-				else if (val instanceof JSONArray)
-					list.add(JSONArrayToList((JSONArray) val));
-
-				else
-					// primitive type object
-					list.add(val);
-		return list;
-	}
-
-	/* arun: This method will be a utility method to convert a JSONObject to a
-	 * Map<String,?> while recursively converting the values to JSONObject or
-	 * JSONArray as needed. */
-	private static Map<String, ?> JSONObjectToMap(JSONObject json)
-			throws JSONException {
-		if (json == null)
-			return null;
-		String[] keys = JSONObject.getNames(json);
-		if (keys != null) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			for (String key : keys)
-				if (json.get(key) instanceof JSONObject)
-					map.put(key, JSONObjectToMap(json.getJSONObject(key)));
-				else if (json.get(key) instanceof JSONArray)
-					map.put(key, JSONArrayToList(json.getJSONArray(key)));
-
-				else
-					// primitive type object
-					map.put(key, json.get(key));
-			return map;
-		}
-		return null;
-	}
 
 	/**
 	 * @return The JSONArray result of executing this command.
@@ -819,47 +746,4 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		};
 	}
 
-	/**
-	 * Unit testing.
-	 */
-	public static class CommandPacketTest extends DefaultTest {
-		/**
-		 * @throws JSONException
-		 */
-		@SuppressWarnings("unchecked")
-		@Test
-		public void test_01_JSONObjectToMap() throws JSONException {
-			Util.assertAssertionsEnabled();
-			Map<String, ?> map = (JSONObjectToMap(new JSONObject()
-					.put("hello", "world")
-					.put("collField", Arrays.asList("hello", "world", 123))
-					.put("jsonField", new JSONObject().put("foo", true))));
-			System.out.println(map);
-			org.junit.Assert.assertTrue(map.get("jsonField") instanceof Map
-					&& (Boolean) ((Map<String, ?>) map.get("jsonField"))
-							.get("foo"));
-
-		}
-
-		/**
-		 * @throws JSONException
-		 */
-		@SuppressWarnings("unchecked")
-		@Test
-		public void test_01_JSONArrayToMap() throws JSONException {
-			Util.assertAssertionsEnabled();
-			List<?> list = (JSONArrayToList(new JSONArray()
-
-			.put("hello") // 0
-
-					.put(Arrays.asList("hello", "world", 123)) // 1
-
-					.put(new JSONObject().put("foo", true)))); // 2
-
-			System.out.println(list);
-			org.junit.Assert.assertTrue(list.get(2) instanceof Map
-					&& (Boolean) ((Map<String, ?>) list.get(2)).get("foo"));
-
-		}
-	}
 }

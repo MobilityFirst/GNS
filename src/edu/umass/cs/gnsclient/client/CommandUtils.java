@@ -56,7 +56,7 @@ import org.json.JSONObject;
 
 /**
  *
- * @author westy, arun
+ * @author arun, westy
  */
 public class CommandUtils {
 
@@ -118,7 +118,7 @@ public class CommandUtils {
 	 * @return Single value string if response is JSONObject with a single
 	 *         key-value piar.
 	 */
-	public static String specialCaseSingleField(String response) {
+	protected static String specialCaseSingleField(String response) {
 		if (JSONPacket.couldBeJSON(response) && response.startsWith("{"))
 			try {
 				JSONObject json = new JSONObject(response);
@@ -129,22 +129,6 @@ public class CommandUtils {
 				e.printStackTrace();
 			}
 		return response;
-	}
-
-	/**
-	 * Disabled. 
-	 * 
-	 * @param commandType
-	 * @param privateKey
-	 * @param keysAndValues
-	 * @return the query string
-	 * @throws ClientException
-	 */
-	public static JSONObject createAndSignCommand(CommandType commandType,
-			PrivateKey privateKey, Object... keysAndValues)
-			throws ClientException {
-		Util.suicide("This method is disabled: ");
-		return null;
 	}
 
 	/**
@@ -232,7 +216,7 @@ public class CommandUtils {
 	 * @throws BadPaddingException
 	 * @throws NoSuchPaddingException
 	 */
-	public static String signDigestOfMessage(PrivateKey privateKey,
+	private static String signDigestOfMessage(PrivateKey privateKey,
 			PublicKey publicKey, String message)
 			throws NoSuchAlgorithmException, InvalidKeyException,
 			SignatureException, UnsupportedEncodingException,
@@ -277,13 +261,14 @@ public class CommandUtils {
 	 * @return Response
 	 * @throws ClientException
 	 */
-	public static ResponsePacket oldCheckResponse(ResponsePacket cvrp) throws ClientException {
+	protected static ResponsePacket oldCheckResponse(ResponsePacket cvrp) throws ClientException {
 		oldCheckResponse(cvrp.getReturnValue());
 		return cvrp;
 	}
 	/**
 	 * Checks the response from a command request for proper syntax as well as
 	 * converting error responses into the appropriate thrown GNS exceptions.
+	 * This method is only used by the HTTP server. 
 	 *
 	 * In the original protocol the string response was modeled after other
 	 * simple string-based response protocols. Responses were either:<br>
@@ -375,21 +360,8 @@ public class CommandUtils {
 		}
 	}
 
-	/**
-	 * @param response
-	 * @return Response as String
-	 * @throws ClientException
-	 */
-	public static String checkResponse(ResponsePacket response)
-			throws ClientException {
-		return checkResponse(response, null).getReturnValue();
-	}
-
-	private static final boolean USE_OLD_CHECK_RESPONSE = false;
 
 	/**
-	 * arun: This checkResponse method will replace the old one. There is no
-	 * reason to not directly use the received CommandValueReturnPacket.
 	 * 
 	 * @param command
 	 *
@@ -399,8 +371,6 @@ public class CommandUtils {
 	 */
 	public static ResponsePacket checkResponse(
 			ResponsePacket responsePacket, CommandPacket command) throws ClientException {
-		if (USE_OLD_CHECK_RESPONSE) 
-			return oldCheckResponse(responsePacket);
 
 		GNSResponseCode code = responsePacket.getErrorCode();
 		String returnValue = responsePacket.getReturnValue();
@@ -521,5 +491,4 @@ public class CommandUtils {
 			throw new ClientException("Error encoding message", e);
 		}
 	}
-
 }

@@ -93,7 +93,7 @@ public class StartLocation extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for location service  " + serviceName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), serviceName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSProvider(), serviceName);
 
       if (myGuid == null)
       {

@@ -34,8 +34,11 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveHandler;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -50,8 +53,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author Zhaoyu Gao, Westy
  */
 
-public class ActiveCodeHandler {	
-	private ActiveDBInterface gnsApp;
+public class ActiveCodeHandler {
 	private static ClientPool clientPool;
 	private static ThreadFactory threadFactory;
 	private static ActiveCodeExecutor executorPool;
@@ -72,7 +74,7 @@ public class ActiveCodeHandler {
 	 * @param app
 	 */
 	public ActiveCodeHandler(ActiveDBInterface app) {
-		String configFile = System.getProperty(AppReconfigurableNodeOptions.activeConfigFile);
+		String configFile = System.getProperty(AppOptionsOld.activeConfigFile);
 		if(configFile != null){
 			try {
 				new ActiveCodeConfig(configFile);

@@ -87,6 +87,34 @@ import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
+import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
 
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
@@ -196,7 +224,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
     CommandPacket packet = new CommandPacket(id, command);
     ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     sendRequest(
-            packet,
+            packet.setForceCoordinatedReads(true),
             (callback instanceof RequestCallbackWithRequest) ? ((RequestCallbackWithRequest) callback)
                     .setRequest(packet) : callback);
     return packet.getRequestID();
@@ -683,7 +711,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
           Object... keysAndValues) throws ClientException {
     try {
       JSONObject result = CommandUtils.createCommand(commandType, keysAndValues);
-      result.put(FORCE_COORDINATE_READS, true);
+      //result.put(FORCE_COORDINATE_READS, true);
       return result;
     } catch (JSONException e) {
       throw new ClientException("Error encoding message", e);

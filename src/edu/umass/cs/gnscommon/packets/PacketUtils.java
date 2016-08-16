@@ -3,6 +3,7 @@ package edu.umass.cs.gnscommon.packets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
@@ -30,15 +31,22 @@ public class PacketUtils {
 		return command.getCommand();
 	}
 
-	private static String getOriginatingGUID(CommandPacket commandPacket) {
+	/**
+	 * @param commandPacket
+	 * @return The originatingGUID for {@code CommandPacket}.
+	 */
+	public static String getOriginatingGUID(CommandPacket commandPacket) {
 		String oguid = null;
+		JSONObject command = commandPacket.getCommand();
 		try {
-			return commandPacket.getCommand().has(
-					GNSProtocol.ORIGINATING_GUID.toString())
-					&& !(oguid = commandPacket.getCommand().getString(
-							GNSProtocol.ORIGINATING_GUID.toString()))
-							.equals(GNSProtocol.UNKNOWN_NAME.toString()) ? oguid
-					: null;
+			return command.has(GNSProtocol.ORIGINATING_GUID.toString())
+					&& !(oguid = command.getString(GNSProtocol.ORIGINATING_GUID
+							.toString())).equals(GNSProtocol.UNKNOWN_NAME
+							.toString()) ? oguid : command
+					.has(GNSCommandProtocol.READER) ? command
+					.getString(GNSCommandProtocol.READER) : command
+					.has(GNSCommandProtocol.WRITER) ? command
+					.getString(GNSCommandProtocol.WRITER) : null;
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -53,7 +61,15 @@ public class PacketUtils {
 	public static InternalRequestHeader getInternalRequestHeader(
 			CommandPacket commandPacket) {
 		return commandPacket instanceof InternalRequestHeader ? (InternalRequestHeader) commandPacket
-				: getOriginatingGUID(commandPacket) != null ? new InternalRequestHeader() {
+				/* originatingGUID must be non-null for internal commands to
+				 * make sense because it is important for internal commands to
+				 * be chargeable to someone; that someone is the originating
+				 * GUID. This is especially important for active requests where
+				 * the request chain is computed dynamically and is not known a
+				 * priori. */
+				: getOriginatingGUID(commandPacket) != null ? 
+						
+						new InternalRequestHeader() {
 
 					@Override
 					public long getOriginatingRequestID() {
@@ -77,10 +93,24 @@ public class PacketUtils {
 					@Override
 					public int getTTL() {
 						try {
-							return commandPacket.getCommand().getInt(
-									GNSProtocol.REQUEST_TTL.toString());
+							return commandPacket.getCommand().has(GNSProtocol.REQUEST_TTL.toString())
+									? 
+											commandPacket.getCommand().getInt(
+									GNSProtocol.REQUEST_TTL.toString())
+									: InternalRequestHeader.DEFAULT_TTL;
 						} catch (JSONException e) {
 							return InternalRequestHeader.DEFAULT_TTL;
+						}
+					}
+
+					@Override
+					public boolean hasBeenCoordinatedOnce() {
+						try {
+							return commandPacket.getCommand().has(GNSProtocol.COORD1.toString())
+									? commandPacket.getCommand().getBoolean(GNSProtocol.COORD1.toString())
+											: commandPacket.needsCoordination();
+						} catch (JSONException e) {
+							return commandPacket.needsCoordination();
 						}
 					}
 				}

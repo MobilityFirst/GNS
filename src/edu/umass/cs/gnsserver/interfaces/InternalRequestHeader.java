@@ -35,4 +35,21 @@ public interface InternalRequestHeader {
 	 * @return The number of hops remaining before the active request expires.
 	 */
 	public int getTTL();
+
+	/**
+	 * This information is needed to ensure that any request chain involves a
+	 * coordinated request at most once. Ensuring this invariant makes reasoning
+	 * about the functional semantics as well as resource usage easier. Not
+	 * ensuring this invariant can result in deadlocks if a coordinated request
+	 * spawns another coordinated request for the same name. It is also
+	 * nontrivial to otherwise ensure that each request in the chain is executed
+	 * exactly once as coordinated requests involve replicated execution; not
+	 * ensuring this condition risks an exponential blowup in resource usage
+	 * with increasing depth. Ensuring this invariant is sufficient (but not
+	 * necessary) to avoid these problems, so it is a design choice favoring
+	 * simplicity over flexibility.
+	 * 
+	 * @return True if any request in this chain was coordinated, false otherwise.
+	 */
+	public boolean hasBeenCoordinatedOnce();
 }

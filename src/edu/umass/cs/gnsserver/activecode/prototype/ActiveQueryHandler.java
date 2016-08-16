@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import org.json.JSONException;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -60,7 +61,7 @@ public class ActiveQueryHandler {
 		try {
 			ValuesMap value = new ValuesMap(app.read(header, am.getTargetGuid(), am.getField()));
 			resp = new ActiveMessage(am.getId(), value, null);
-		} catch (ClientException e) {
+		} catch (InternalRequestException | ClientException e) {
 			e.printStackTrace();
 			resp = new ActiveMessage(am.getId(), null, "Read failed");
 		} 
@@ -81,7 +82,7 @@ public class ActiveQueryHandler {
 		try {
 			app.write(header, am.getTargetGuid(), am.getField(), am.getValue());
 			resp = new ActiveMessage(am.getId(), new ValuesMap(), null);
-		} catch (ClientException e) {
+		} catch (ClientException | InternalRequestException e) {
 			e.printStackTrace();
 			resp = new ActiveMessage(am.getId(), null, "Write failed");
 		} 

@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, arun, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client;
+package edu.umass.cs.gnsclient.client.deprecated;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -33,6 +33,8 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.utils.Util;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
+import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
 import edu.umass.cs.gnsclient.client.android.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -51,8 +53,11 @@ import java.util.logging.Level;
 
 /**
  * The base for all GNS clients.
+ * 
+ * This class is almost useless and will be completely removed soon.
  *
  */
+@Deprecated
 public abstract class AbstractGNSClient {
 
   /**
@@ -61,80 +66,32 @@ public abstract class AbstractGNSClient {
   public static final boolean IS_ANDROID
           = System.getProperty("java.vm.name").equalsIgnoreCase("Dalvik");
 
-  /**
-   * A string representing the GNS Server that we are connecting to.
-   * NOTE THAT THIS STRING SHOULD BE DIFFERENT FOR DIFFERENT SERVERS (say
-   * a local test server vs the one on EC2 otherwise the key pair storage
-   * code overwrite keys with the same name that are being used for
-   * different servers. This generally is only a problem during testing
-   * when private keys might be created, deleted and recreated for the same
-   * names used on multiple servers.
-   */
-  public final String GNSInstance;
 
   /**
    * The length of time we will wait for a command response from the server
    * before giving up.
    */
-  // FIXME: We might need a separate timeout just for certain ops like 
-  // gui creation that sometimes take a while
-  // 10 seconds is too short on EC2 
-  protected int readTimeout = 8000; // 20 seconds... was 40 seconds
+  protected long readTimeout = 8000; // 20 seconds... was 40 seconds
 
   /* Keeps track of requests that are sent out and the reponses to them */
   private final ConcurrentMap<Long, Request> resultMap = new ConcurrentHashMap<Long, Request>(
           10, 0.75f, 3);
-  /* Instrumentation: Keeps track of transmission start times */
-  private final ConcurrentMap<Long, Long> queryTimeStamp = new ConcurrentHashMap<Long, Long>(10,
-          0.75f, 3);
-  /* Used to generate unique ids */
-  private final Random randomID = new Random();
+ 
   /* Used by the wait/notify calls */
   private final Object monitor = new Object();
 
-  // instrumentation
-  private double movingAvgLatency;
-  //private long lastLatency;
-  private int totalAsynchErrors;
-
-  private static boolean forceCoordinatedReads = false;
-  
-  private static final String DEFAULT_INSTANCE = "server.gns.name";
-
-  /**
-   * Creates a new <code>AbstractGNSClient</code> object
-   * Optionally disables SSL if disableSSL is true.
-   *
-   * @param anyReconfigurator
-   */
-  public AbstractGNSClient(InetSocketAddress anyReconfigurator) {
-    this.GNSInstance = DEFAULT_INSTANCE;
-    resetInstrumentation();
-  }
-
-
-  protected JSONObject setForceCoordinatedReads(JSONObject command) {
-    try {
-      return forceCoordinatedReads ? command.put(
-              GNSCommandProtocol.FORCE_COORDINATE_READS, true) : command;
-    } catch (JSONException e) {
-      e.printStackTrace();
-      // return command; this exception will never happen anyway
-      return command;
-    }
-  }
 
   /**
    * Check that the connectivity with the host:port can be established
    *
    * @throws IOException throws exception if a communication error occurs
    */
-  public abstract void checkConnectivity() throws IOException;
+   abstract void checkConnectivity() throws IOException;
 
   /**
    * Closes the underlying messenger.
    */
-  public abstract void close();
+   abstract void close();
 
   /**
    * Sends a command to the server and returns a response.
@@ -143,26 +100,12 @@ public abstract class AbstractGNSClient {
    * @return Result as CommandValueReturnPacket; or String if Android (FIXME)
    * @throws IOException if an error occurs
    */
-  public ResponsePacket sendCommandAndWait(JSONObject command) throws IOException {
+   @Deprecated
+   ResponsePacket sendCommandAndWait(JSONObject command) throws IOException {
     if (IS_ANDROID) {
       return androidSendCommandAndWait(command);
     } else {
       return desktopSendCommmandAndWait(command);
-    }
-  }
-
-  /**
-   * Sends a command to the server asychronously.
-   *
-   * @param command
-   * @return CommandPacket sent.
-   * @throws IOException if an error occurs
-   */
-  public CommandPacket sendCommandNoWait(JSONObject command) throws IOException {
-    if (IS_ANDROID) {
-      return androidSendCommandNoWait(command).getCommandPacket();
-    } else {
-      return desktopSendCommmandNoWait(command);
     }
   }
 
@@ -229,29 +172,29 @@ public abstract class AbstractGNSClient {
   protected static ResponsePacket getTimeoutResponse(AbstractGNSClient me, CommandPacket commandPacket) {
     GNSClientConfig.getLogger().log(Level.INFO,
             "{0} timed out after {1}ms on {2}: {3}",
-            new Object[]{me, me.readTimeout, commandPacket.getClientRequestId() + "", commandPacket.getSummary()});
+            new Object[]{me, me.readTimeout, commandPacket.getRequestID() + "", commandPacket.getSummary()});
     /* FIXME: Remove use of string reponse codes */
-    return new ResponsePacket(commandPacket.getServiceName(), commandPacket.getClientRequestId(), GNSResponseCode.TIMEOUT,
+    return new ResponsePacket(commandPacket.getServiceName(), commandPacket.getRequestID(), GNSResponseCode.TIMEOUT,
             GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.TIMEOUT + " for command " + commandPacket.getSummary());
   }
 
   private CommandPacket desktopSendCommmandNoWait(JSONObject command) throws IOException {
     return this.desktopSendCommmandNoWait(command, generateNextRequestID());
   }
+  
+  protected abstract boolean isForceCoordinatedReads();
 
   private CommandPacket desktopSendCommmandNoWait(JSONObject command, long id) throws IOException {
     long startTime = System.currentTimeMillis();
-    CommandPacket packet = new GNSCommand(
-//    		CommandPacket(
+    CommandPacket packet = new CommandPacket(
     		id, 
     				command);
     /* arun: moved this here from createCommand. This is the right place to
 		 * put it because it is not easy to change "command" once it has been
 		 * signed, and the command creation methods are and should be static. */
-    packet.setForceCoordinatedReads(forceCoordinatedReads);
+    packet.setForceCoordinatedReads(this.isForceCoordinatedReads());
     GNSClientConfig.getLogger().log(Level.FINE, "{0} sending {1}:{2}",
             new Object[]{this, id + "", packet.getSummary()});
-    queryTimeStamp.put(id, startTime);
     sendCommandPacket(packet);
     DelayProfiler.updateDelay("desktopSendCommmandNoWait", startTime);
     return packet;
@@ -270,7 +213,7 @@ public abstract class AbstractGNSClient {
     final AndroidNIOTask sendTask = new AndroidNIOTask();
     sendTask.setId(generateNextRequestID()); // so we can get it back from the task later
     sendTask.execute(command, sendTask.getId(), monitor,
-            queryTimeStamp, resultMap, readTimeout);
+             resultMap, readTimeout);
     return sendTask;
   }
 
@@ -287,9 +230,9 @@ public abstract class AbstractGNSClient {
    * @param receivedTime
    * @throws JSONException
    */
-  protected void handleCommandValueReturnPacket(Request response
+  private void handleCommandValueReturnPacket(Request response
   )  {
-    long methodStartTime = System.currentTimeMillis(), receivedTime = System.currentTimeMillis();
+    long methodStartTime = System.currentTimeMillis();
     ResponsePacket packet = response instanceof ResponsePacket ? (ResponsePacket) response
             : null;
     ActiveReplicaError error = response instanceof ActiveReplicaError ? (ActiveReplicaError) response
@@ -304,9 +247,6 @@ public abstract class AbstractGNSClient {
               packet != null
                       ? "unknown"//packet.getResponder() 
                       : error.getSender()});
-    long queryStartTime = queryTimeStamp.remove(id);
-    long latency = receivedTime - queryStartTime;
-    movingAvgLatency = Util.movingAverage(latency, movingAvgLatency);
     // store the response away
     if (packet != null) {
       resultMap.put(id, packet);
@@ -333,10 +273,6 @@ public abstract class AbstractGNSClient {
       // Handle the asynchronus packets
       // note that we have recieved the reponse
       pendingAsynchPackets.remove(id);
-      // Record errors
-      if (packet.getErrorCode().isExceptionOrError()) {
-        totalAsynchErrors++;
-      }
     }
     DelayProfiler.updateDelay("handleCommandValueReturnPacket", methodStartTime);
   }
@@ -344,35 +280,16 @@ public abstract class AbstractGNSClient {
   /**
    * @return random long not in map
    */
-  public synchronized long generateNextRequestID() {
+  private synchronized long generateNextRequestID() {
     long id;
     do {
-      id = randomID.nextLong();
+      id = (long)(Math.random()*Long.MAX_VALUE);
       // this is actually wrong because we can still generate duplicate keys
       // because the resultMap doesn't contain pending requests until they come back
     } while (resultMap.containsKey(id));
     return id;
   }
 
-  /**
-   * Returns true if a response has been received.
-   *
-   * @param id
-   * @return true if response has been received for request id
-   */
-  public boolean isAsynchResponseReceived(long id) {
-    return resultMap.containsKey(id);
-  }
-
-  /**
-   * Removes and returns the command result.
-   *
-   * @param id
-   * @return {@link ConcurrentMap#remove(Object)}
-   */
-  public Request removeAsynchResponse(long id) {
-    return resultMap.remove(id);
-  }
 
 // ASYNCHRONUS OPERATIONS
   /**
@@ -381,32 +298,6 @@ public abstract class AbstractGNSClient {
    */
   private final ConcurrentHashMap<Long, CommandPacket> pendingAsynchPackets
           = new ConcurrentHashMap<>();
-
-  /**
-   * @return number of outstanding async command packets
-   */
-  public int outstandingAsynchPacketCount() {
-    return pendingAsynchPackets.size();
-  }
-
-  /**
-   * Sends a command packet without waiting for a response.
-   * Performs bookkeeping so we can retrieve the response.
-   *
-   * @param packet
-   * @throws IOException
-   */
-  public void sendCommandPacketAsynch(CommandPacket packet) throws IOException {
-    long startTime = System.currentTimeMillis();
-    long id = packet.getClientRequestId();
-    pendingAsynchPackets.put(id, packet);
-    GNSClientConfig.getLogger().log(Level.FINE, "{0} sending request {1}:{2}",
-            new Object[]{this, id + "", packet.getSummary()});
-    queryTimeStamp.put(id, System.currentTimeMillis());
-    sendCommandPacket(packet);
-    DelayProfiler.updateDelay("sendAsynchTestCommand", startTime);
-  }
-
   
 	// arun: Made sendAsync abstract instead of sendCommandPacket
 	protected abstract RequestFuture<CommandPacket> sendAsync(CommandPacket packet,
@@ -420,83 +311,11 @@ public abstract class AbstractGNSClient {
 	 * @param packet
 	 * @throws IOException
 	 */
-	protected void sendCommandPacket(CommandPacket packet) throws IOException {
+	private void sendCommandPacket(CommandPacket packet) throws IOException {
 		this.sendAsync(packet, (response) -> {
 			this.handleCommandValueReturnPacket(response);
 			return packet;
 		});
 	}
 
-  /**
-   *
-   */
-  public final void resetInstrumentation() {
-    movingAvgLatency = 0;
-  }
-
-  /**
-   * Instrumentation. Returns the moving average of request latency
-   * as seen by the client.
-   *
-   * @return moving average of request latency
-   */
-  public double getMovingAvgLatency() {
-    return movingAvgLatency;
-  }
-
-  /**
-   * Instrumentation. Currently only valid when asynch testing.
-   *
-   * @return total number of errors
-   */
-  public int getTotalAsynchErrors() {
-    return totalAsynchErrors;
-  }
-
-  /**
-   * Return a string representing the GNS server that we are connecting to.
-   *
-   * @return GNS server instance
-   */
-  public String getGNSInstance() {
-    return GNSInstance;
-  }
-
-  /**
-   * Returns true if the client is forcing read operations to be coordinated.
-   *
-   * @return true if the client is forcing read operations to be coordinated
-   */
-  public boolean isForceCoordinatedReads() {
-    return forceCoordinatedReads;
-  }
-
-  /**
-   * Sets the value of forcing read operations to be coordinated.
-   *
-   * @param forceCoordinatedReads
-   */
-  public void setForceCoordinatedReads(boolean forceCoordinatedReads) {
-    AbstractGNSClient.forceCoordinatedReads = forceCoordinatedReads;
-  }
-
-  /**
-   * Returns the timeout value (milliseconds) used when sending commands to the
-   * server.
-   *
-   * @return value in milliseconds
-   */
-  public int getReadTimeout() {
-    return readTimeout;
-  }
-
-  /**
-   * Sets the timeout value (milliseconds) used when sending commands to the
-   * server.
-   *
-   * @param readTimeout in milliseconds
-   */
-  public void setReadTimeout(int readTimeout) {
-    this.readTimeout = readTimeout;
-  }
 }

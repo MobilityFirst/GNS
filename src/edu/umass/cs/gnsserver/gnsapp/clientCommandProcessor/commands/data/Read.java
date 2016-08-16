@@ -34,6 +34,7 @@ import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
 import edu.umass.cs.utils.Config;
 
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -71,8 +72,12 @@ public class Read extends BasicCommand {
 
 	@Override
   public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-  JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+  JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
     String guid = json.getString(GUID);    
+    /* arun: The opt get makes no sense. Why would you replace an empty reader with
+     * the targetGUID?
+     */
+    
     // the opt hair below is for the subclasses... cute, huh?
     String field = json.optString(FIELD, null);
     ArrayList<String> fields = json.has(FIELDS) ? 
@@ -80,7 +85,6 @@ public class Read extends BasicCommand {
             
 		// reader might be same as guid
 		String reader = json.optString(READER, guid);
-		assert (!(this instanceof ReadUnsigned) || (!json.has(READER)));
     
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);

@@ -83,7 +83,7 @@ public class GuidUtils {
 	 * @throws Exception
 	 */
 	@Deprecated
-	public static GuidEntry registerGuidWithTestTag(GNSClientInterface client,
+	public static GuidEntry registerGuidWithTestTag(GNSClientCommands client,
 			GuidEntry masterGuid, String entityName) throws Exception {
 		return registerGuidWithTag(client, masterGuid, entityName,
 				JUNIT_TEST_TAG);
@@ -149,7 +149,7 @@ public class GuidUtils {
 	 */
 	public static GuidEntry lookupOrCreateAccountGuid(GNSClient client,
 			String name, String password, boolean verbose) throws Exception {
-		GuidEntry guid = lookupGuidEntryFromDatabase(client.getGNSInstance(),
+		GuidEntry guid = lookupGuidEntryFromDatabase(client.getGNSProvider(),
 				name);
 		if (guid == null || !guidExists(client, guid)) {
 			if (verbose) {
@@ -160,7 +160,7 @@ public class GuidUtils {
 					GNSClientConfig.getLogger().log(Level.INFO,
 							"Creating a new account GUID for {0}",
 							new Object[] { name });
-					guid = generateAndSaveKeyPairForGuidAlias(client.getGNSInstance(), name);
+					guid = generateAndSaveKeyPairForGuidAlias(client.getGNSProvider(), name);
 				} else {
 					if (verbose)
 						System.out
@@ -175,7 +175,7 @@ public class GuidUtils {
 				}
 			}
 			try {
-				client.execute(GNSCommand.accountGuidCreate(client.getGNSInstance(), name,
+				client.execute(GNSCommand.accountGuidCreate(client.getGNSProvider(), name,
 						password));
 			} catch (DuplicateNameException e) {
 				/* Ignore duplicate name exception as it is most likely because we 
@@ -341,7 +341,7 @@ public static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client, Stri
     }
   }
 
-  private static GuidEntry registerGuidWithTag(GNSClientInterface client, GuidEntry masterGuid, String entityName, String tagName) throws Exception {
+  private static GuidEntry registerGuidWithTag(GNSClientCommands client, GuidEntry masterGuid, String entityName, String tagName) throws Exception {
     GuidEntry entry = client.guidCreate(masterGuid, entityName);
     /*
     try {
@@ -366,8 +366,8 @@ public static GuidEntry lookupOrCreateAccountGuid(GNSClientCommands client, Stri
    * @param name
    * @return {@link GuidEntry} from local key database.
    */
-  public static GuidEntry lookupGuidEntryFromDatabase(GNSClientInterface client, String name) {
-    return GuidUtils.lookupGuidEntryFromDatabase(client.getGNSInstance(), name);
+  public static GuidEntry lookupGuidEntryFromDatabase(GNSClientCommands client, String name) {
+    return GuidUtils.lookupGuidEntryFromDatabase(client.getGNSProvider(), name);
   }
 
   /**

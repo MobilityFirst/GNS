@@ -85,13 +85,6 @@ public class ClientLNSTest {
         fail("Exception while looking up account record: " + e);
       }
     }
-    if (json == null) {
-      try {
-        assertFalse(json.getBoolean(GNSCommandProtocol.ACCOUNT_RECORD_VERIFIED));
-      } catch (Exception e) {
-        fail("Exception while getting field from account record: " + e);
-      }
-    }
   }
 
 }

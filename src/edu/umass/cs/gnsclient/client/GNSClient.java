@@ -1,6 +1,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.async.RequestCallbackFuture;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Callback;
@@ -18,6 +20,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gigapaxos.interfaces.RequestFuture;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -43,67 +46,125 @@ import edu.umass.cs.utils.Config;
  *
  *         Cleaner implementation of a GNS client using gigapaxos' async client.
  */
-public class GNSClient extends AbstractGNSClient {
-	// initialized from properties file
-	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
-			.getReconfiguratorAddresses();
+public class GNSClient {
+	
+	/**
+	 * If no properties file can be found, this client will attempt to connect
+	 * to a local reconfigurator at the default port
+	 * {@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}.
+	 */
+	private static final InetSocketAddress DEFAULT_LOCAL_RECONFIGURATOR = new InetSocketAddress(
+			InetAddress.getLoopbackAddress(),
+			GNSConfig.DEFAULT_RECONFIGURATOR_PORT);
 
-	// initialized upon contstruction
-	private final Set<InetSocketAddress> reconfigurators;
+	// ReconfigurableAppClientAsync instance
 	private final AsyncClient asyncClient;
-
+	// local name server
 	private InetSocketAddress GNSProxy = null;
 	
 	private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
 
 	/**
+	 * The default constructor that expects a gigapaxos properties file that is
+	 * either at the default location,
+	 * {@link PaxosConfig#DEFAULT_GIGAPAXOS_CONFIG_FILE} relative to the current
+	 * directory, or is specified as a JVM property as
+	 * -DgigapaxosConfig=absoluteFilePath. To use {@link GNSClient} with default
+	 * properties without a properties file, use
+	 * {@link #GNSClient(InetSocketAddress)} that requires knowledge of at least
+	 * one reconfigurator address. If this default constructor is used and the
+	 * client is unable to find the properties file, it will attempt to connect
+	 * to localhost:{@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}.
+	 * 
 	 * @throws IOException
 	 */
 	public GNSClient() throws IOException {
-		this(STATIC_RECONFIGURATORS != null
-				&& !STATIC_RECONFIGURATORS.isEmpty() ? STATIC_RECONFIGURATORS
-				.iterator().next() : null);
+		this(getStaticReconfigurators());
+	}
+	
+	/**
+	 * Initialized from properties file. This constant is called
+	 * static to reinforce the fact that the set of
+	 * reconfigurators may change dynamically but this constant and for that
+	 * matter even the contents of client properties file may not.
+	 */
+	private static Set<InetSocketAddress> getStaticReconfigurators() {
+		try {
+			return ReconfigurationConfig.getReconfiguratorAddresses();
+		} catch (Exception e) {
+			System.err.println("WARNING: " + e + "\n["
+					+ GNSClient.class.getSimpleName()
+					+ " unable to find any reconfigurators; falling back to "
+					+ ((DEFAULT_LOCAL_RECONFIGURATOR))+"]");
+			return new HashSet<InetSocketAddress>(
+					Arrays.asList(DEFAULT_LOCAL_RECONFIGURATOR));
+		}
 	}
 
 	/**
 	 * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
 	 * The client can enquire and know of other reconfigurator addresses from
-	 * this reconfigurator. If it is unable to do so, it will throw an
-	 * IOException.
+	 * this reconfigurator. If the supplied argument is null, the behavior will
+	 * be identical to {@link #GNSClient()}.
 	 *
 	 * @param anyReconfigurator
 	 * @throws IOException
 	 */
 	public GNSClient(InetSocketAddress anyReconfigurator) throws IOException {
-		super(anyReconfigurator);
-		this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
-		if (this.reconfigurators == null || this.reconfigurators.isEmpty()) {
-			throw new IOException(
-					"Unable to find any reconfigurator addresses; "
-							+ "at least one needed to initialize client");
-		}
+		this(anyReconfigurator != null ? new HashSet<InetSocketAddress>(
+				Arrays.asList(anyReconfigurator)) : getStaticReconfigurators());
+	}
+	
+	private GNSClient(Set<InetSocketAddress> reconfigurators)
+			throws IOException {
 		this.asyncClient = new AsyncClient(reconfigurators,
 				ReconfigurationConfig.getClientSSLMode(),
-				ReconfigurationConfig.getClientPortOffset());
-		this.checkConnectivity();
+				ReconfigurationConfig.getClientPortOffset(), true);
+	}
+	
+	/**
+	 * Same as {@link #GNSClient(InetSocketAddress)} but with the host name
+	 * {@code anyReconfiguratorHostName} and implicitly the default
+	 * reconfigurator port {@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}. If the
+	 * supplied argument is null, the behavior will be identical to
+	 * {@link #GNSClient()}.
+	 * 
+	 * @param anyReconfiguratorHostName
+	 * @throws IOException
+	 */
+	public GNSClient(String anyReconfiguratorHostName) throws IOException {
+		this(new InetSocketAddress(anyReconfiguratorHostName, GNSConfig.DEFAULT_RECONFIGURATOR_PORT));
 	}
 
-	/**
-	 * TODO: implement request/response to know of other reconfigurators. It is
-	 * also okay to just use a single reconfigurator address if it is an anycast
-	 * address (with the TCP error caveat under route changes).
-	 */
-	private Set<InetSocketAddress> knowOtherReconfigurators(
-			InetSocketAddress anyReconfigurator) throws IOException {
-		return anyReconfigurator != null ? new HashSet<>(
-				Arrays.asList(anyReconfigurator)) : STATIC_RECONFIGURATORS;
-	}
 
 	@Override
 	public String toString() {
 		return this.asyncClient.toString();
 	}
 
+
+
+	private static final String GNS_KEY = "GNS";
+	
+	/**
+	 * This name represents the service to which this client connects. Currently
+	 * this name is unused as the reconfigurator(s) are read from a properties
+	 * file, but it is conceivable also to use a well known service to query for
+	 * the reconfigurators given this name. This name is currently also used by
+	 * the client key database to distinguish between stores corresponding to
+	 * different GNS services.
+	 * 
+	 * <p>
+	 * 
+	 * This name can be changed by setting the system property "GNS" as "-DGNS=".
+	 *
+	 * @return GNS service instance
+	 */
+	public String getGNSProvider() {
+		return System.getProperty(GNS_KEY) != null ? System.getProperty(GNS_KEY)
+				: "gns.name";
+	}
+	  
 	private static boolean isAnycast(CommandPacket packet) {
 		return packet.getCommandType().isCreateDelete()
 				|| packet.getCommandType().isSelect()
@@ -114,33 +175,37 @@ public class GNSClient extends AbstractGNSClient {
 	/**
 	 * @throws IOException
 	 */
-	@Override
 	public void checkConnectivity() throws IOException {
 		this.asyncClient.checkConnectivity();
 	}
 
 	/**
+	 * Returns true if the client is forcing read operations to be coordinated.
+	 *
+	 * @return true if the client is forcing read operations to be coordinated
+	 */
+	protected boolean isForceCoordinatedReads() {
+		return this.forceCoordinatedReads;
+	}
+
+	private boolean forceCoordinatedReads = false;
+
+	/**
+	 * Sets the value of forcing read operations to be coordinated.
+	 *
+	 * @param forceCoordinatedReads
+	 */
+	public void setForceCoordinatedReads(boolean forceCoordinatedReads) {
+		this.forceCoordinatedReads = forceCoordinatedReads;
+	}
+	
+	/**
 	 * Closes the underlying async client.
 	 */
-	@Override
 	public void close() {
 		this.asyncClient.close();
 	}
 
-	/**
-	 * @param packet
-	 * @param callback
-	 * @return Long request ID if successfully sent, else null.
-	 * @throws IOException
-	 */
-	protected RequestFuture<?> sendAsync(CommandPacket packet,
-			final GNSCommandCallback callback) throws IOException {
-		return this.sendAsync(packet, (response) -> {
-			defaultHandleResponse(packet, response);
-			callback.handleResponse(packet);
-			return packet;
-		});
-	}
 
 	/**
 	 * All sends go ultimately go through this async send method because that is
@@ -210,24 +275,26 @@ public class GNSClient extends AbstractGNSClient {
 	}
 
 	/**
-	 * @param packet
+	 * This method exists only for backwards compatibility. 
+	 * 
+	 * @param commandPacket
 	 * @param timeout
 	 * @return Response from the server or null if the timeout expires.
 	 * @throws IOException
 	 */
 	protected ResponsePacket getCommandValueReturnPacket(
-			CommandPacket packet, long timeout) throws IOException {
+			CommandPacket commandPacket, long timeout) throws IOException {
 		Object monitor = new Object();
 		ResponsePacket[] retval = new ResponsePacket[1];
 
 		// send sync also internally sends async first
-		this.sendAsync(packet, (response) -> {
+		this.sendAsync(commandPacket, (response) -> {
 			retval[0] = defaultHandleResponse(response);
 			assert (retval[0].getErrorCode() != null);
 			synchronized (monitor) {
 				monitor.notify();
 			}
-			return packet;
+			return commandPacket;
 		});
 
 		try {
@@ -239,9 +306,13 @@ public class GNSClient extends AbstractGNSClient {
 		} catch (InterruptedException e) {
 			throw new IOException(
 					"sendSync interrupted while waiting for a response for "
-							+ packet.getSummary());
+							+ commandPacket.getSummary());
 		}
-		return retval[0] != null ? retval[0] : getTimeoutResponse(this, packet);
+		return retval[0] != null ? retval[0] : new ResponsePacket(commandPacket.getServiceName(),
+				commandPacket.getRequestID(), GNSResponseCode.TIMEOUT,
+				GNSCommandProtocol.BAD_RESPONSE + " "
+						+ GNSCommandProtocol.TIMEOUT + " for command "
+						+ commandPacket.getSummary());
 	}
 
 	/**
@@ -272,7 +343,8 @@ public class GNSClient extends AbstractGNSClient {
 
 
 		public AsyncClient(Set<InetSocketAddress> reconfigurators,
-				SSL_MODES sslMode, int clientPortOffset) throws IOException {
+				SSL_MODES sslMode, int clientPortOffset,
+				boolean checkConnectivity) throws IOException {
 			super(reconfigurators, sslMode, clientPortOffset);
 			this.enableJSONPackets();
 		}
@@ -374,6 +446,18 @@ public class GNSClient extends AbstractGNSClient {
 	}
 
 	/**
+	 * @param command
+	 * @param timeout
+	 * @return GNSCommand after execution containing the result if any.
+	 * @throws IOException
+	 * @throws ClientException
+	 */
+	public GNSCommand execute(CommandPacket command, long timeout) throws IOException,
+			ClientException {
+		return (GNSCommand) this.sendSync(command, timeout);
+	}
+
+	/**
 	 * The result of the execution may be retrieved using
 	 * {@link RequestFuture#get()} on the returned future and then invoking a
 	 * suitable "getResult" method as in {@link #execute(CommandPacket)} on the
@@ -407,5 +491,13 @@ public class GNSClient extends AbstractGNSClient {
 			return callback != null ? callback.processResponse(command)
 					: command;
 		});
+	}
+
+	/** Used only for testing.
+	 * @param args 
+	 * @throws IOException 
+	 */
+	public static void main(String[] args) throws IOException {
+		new GNSClient();
 	}
 }

@@ -41,6 +41,7 @@ import org.json.JSONObject;
 
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.CommandType;
 
@@ -98,7 +99,7 @@ public class BatchCreateTest {
     String result;
     long startTime = System.currentTimeMillis();
     int guidCnt = numberToCreate;
-    int oldTimeout = client.getReadTimeout();
+    long oldTimeout = client.getReadTimeout();
     try {
       client.setReadTimeout(2 * 60 * 1000); // set the timeout to 2 minutes
 
@@ -166,7 +167,8 @@ public class BatchCreateTest {
       try {
         command = createCommand(CommandType.LookupRandomGuids,
                 GUID, masterGuid.getGuid(), GUIDCNT, writeTo);
-        result = checkResponse(client.sendCommandAndWait(command));
+        result = client.execute(new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command)).getResultString();
+        //checkResponse(client.sendCommandAndWait(command));
         if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
           randomGuids = new JSONArray(result);
           //System.out.println("Random guids " + result);

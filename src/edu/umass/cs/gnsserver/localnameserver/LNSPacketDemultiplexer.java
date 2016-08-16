@@ -100,7 +100,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
             if (USE_NEW_LNS_COMMAND_HANDLER) {
               handleCommandPacket(json, header);
             } else {
-              handleCommandPacketOld(json);
+              handleCommandPacketOld(json, header);
             }
             break;
           case COMMAND_RETURN_VALUE:
@@ -162,7 +162,10 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     CommandPacket packet = new CommandPacket(json);
     LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(),
             packet, header.sndr);
-    handler.addRequestInfo(packet.getRequestID(), requestInfo);
+    GNSConfig.getLogger().log(Level.INFO,
+            "{0} inserting outgoing request {1} with header {2}",
+            new Object[]{this, json,  header});
+    handler.addRequestInfo(packet.getRequestID(), requestInfo, header);
     packet = removeSenderInfo(json);
 
     if (requestInfo.getCommandType().isCreateDelete()
@@ -188,14 +191,14 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * @throws JSONException
    * @throws IOException
    */
-  public void handleCommandPacketOld(JSONObject json) throws JSONException, IOException {
+  public void handleCommandPacketOld(JSONObject json, NIOHeader header) throws JSONException, IOException {
 
     CommandPacket packet = new CommandPacket(json);
     int requestId = random.nextInt();
 //    packet.setLNSRequestId(requestId);
     // Squirrel away the host and port so we know where to send the command return value
     LNSRequestInfo requestInfo = new LNSRequestInfo(requestId, packet, null);
-    handler.addRequestInfo(requestId, requestInfo);
+    handler.addRequestInfo(requestId, requestInfo, header);
 
     // Send it to the client command handler
     Set<InetSocketAddress> actives;

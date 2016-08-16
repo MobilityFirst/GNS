@@ -131,7 +131,7 @@ public class StartWatchdog extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for watchdog  " + watchdogName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), watchdogName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSProvider(), watchdogName);
       final GNSClientCommands gnsClient = module.getGnsClient();
 
       if (myGuid == null)

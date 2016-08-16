@@ -23,6 +23,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.utils.Config;
@@ -62,14 +63,15 @@ public class ReadUnsigned extends Read {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
-	  // arun: disabled because this is a serious security bug
-	  if(true) throw new RuntimeException("This method is disabled");
-    // Tells the lookup handler that we don't need to authenticate.
+	
+	  // arun: This is a serious security bug
+    
+	  // Tells the lookup handler that we don't need to authenticate.
     // Will be moved to the client and will something more secure in the future.
     json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-    return super.execute(json, handler);
+    return super.execute(header, json, handler);
   }
 
   @Override

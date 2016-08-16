@@ -33,8 +33,8 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
-import edu.umass.cs.gnsserver.gnsapp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.

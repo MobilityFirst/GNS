@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp;
+package edu.umass.cs.gnsserver.gnsapp.deprecated;
 
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gnsserver.utils.ParametersAndOptions.isOptionTrue;
@@ -27,6 +27,8 @@ import java.util.Map;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
+import edu.umass.cs.gnsserver.gnsapp.LocationBasedDemandProfile;
+
 /**
  * The command line options for AppReconfigurableNode.
  *
@@ -34,7 +36,7 @@ import org.apache.commons.cli.Options;
  */
 // FIXME: Port the rest of these to the config style above or delete them if they are unused.
 @Deprecated
-public class AppReconfigurableNodeOptions {
+public class AppOptionsOld {
 
   //FIXME: The code that implements this has disappeared. See MOB-803
   /**

@@ -239,7 +239,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
     <fail message="You must run this target with -Dtest=TestName"/>
   </target>
 
-  <target name="startServer" depends="compile" description="Starts a server for testing purposes.">
+  <target name="startServer" depends="compile" description="Forceclears and (re)starts a server for testing purposes.">
 	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
 	<exec executable="/bin/bash">
 		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} foreclear all"/>
@@ -247,12 +247,16 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
 	<exec executable="/bin/bash">
 		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
 	</exec>
+	<sleep seconds="10"/>
   </target>
 
   <target name="endServer" depends="compile" description="Ends the servers used for testing purposes.">
 	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
 	<exec executable="/bin/bash">
 		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} stop all"/>
+	</exec>
+	<exec executable="/bin/bash">
+		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} foreclear all"/>
 	</exec>
   </target>
   <target name="compiletest" depends="compile" description="Compile all the test files">
@@ -358,7 +362,6 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <!--<formatter type="brief" usefile="false"/> -->
     </junit>
   </target> 
-  
   <target name="test" description="Runs the default integration test against a 3 node server" 
           depends="compile, compiletest">
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
@@ -379,7 +382,41 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <classpath refid="classpath.test" />
     </junit>
   </target>
+  
+  <target name="testAll" description="Runs the default integration test against a 3 node server (by default), the parallel test, and all the single tests." 
+          depends="compile, compiletest">
+		<property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
+		<antcall target="startServer"/> 
+		<antcall target="integrationTest">
+			<param name="integrationTest.startServer" value="false"/>
+		</antcall>
+		<antcall target="startServer"/>
+		<antcall target="testThreaded"/>
+		<antcall target="runSingleTests"/>
+		<antcall target="endServer"/>
+  </target>
 
+  <target name="integrationTest" description="Runs the default integration test against a 3 node server" 
+	  depends="compile, compiletest">
+	  <property name="integrationTest.startServer" value="true"/>
+    <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
+      <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
+      <formatter type="plain" usefile="false"/>
+      <jvmarg value="-ea"/>
+      <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
+      <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
+      <jvmarg value="-DstartServer=${integrationTest.startServer}"/>
+      <jvmarg value="-DinheritIO=true"/>
+      <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.unittest.properties"/>
+      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.properties"/>
+      <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
+      <classpath>
+        <pathelement location="${build.test.classes.dir}"/>
+      </classpath>
+      <!-- Make sure these libraries are included -->
+      <classpath refid="classpath.test" />
+    </junit>
+  </target>
   <target name="testAlwaysFail" description="This test always fails. Use for debugging what happens when tests fail." 
           depends="jar, compiletest">
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
@@ -491,7 +528,7 @@ integration tests sequentially"
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-DstartServer=true"/>
+      <jvmarg value="-DstartServer=false"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
