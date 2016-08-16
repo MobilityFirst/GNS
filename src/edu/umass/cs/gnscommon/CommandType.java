@@ -17,7 +17,10 @@ package edu.umass.cs.gnscommon;
 
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.DefaultTest;
+import edu.umass.cs.utils.Util;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +28,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.junit.Test;
 
 /**
  * All the commands supported by the GNS server are listed here.
@@ -703,7 +708,7 @@ public enum CommandType {
     GetTagged.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
-    
+ 
   }
 
   public enum Type {
@@ -725,7 +730,13 @@ public enum CommandType {
 
   }
 
-  public int getInt() {
+
+	// In general, isCoordinated is not equivalent to isUpdate()
+	private boolean isCoordinated() {
+		return this.isUpdate();
+	}
+
+public int getInt() {
     return number;
   }
 
@@ -827,8 +838,51 @@ public enum CommandType {
     }
     return result.toString();
   }
+  private static void enforceChecks() {
+	  HashSet<CommandType> curLevel, nextLevel = new HashSet<CommandType>(), cumulative = new HashSet<CommandType>();
 
+	  for (CommandType ctype : CommandType.values()) {
+		  curLevel = new HashSet<CommandType>(Arrays.asList(ctype));
+		  nextLevel.clear();
+		  cumulative.clear();
+
+		  while (!curLevel.isEmpty()) {
+			  nextLevel.clear();
+			  for (CommandType curLevelType : curLevel)
+				  nextLevel.addAll(new HashSet<CommandType>(Arrays
+						  .asList(curLevelType.invokedCommands)));
+			  curLevel = nextLevel;
+			  cumulative.addAll(nextLevel);
+			  if (curLevel.size() > 256)
+				  Util.suicide("Likely cycle in chain for command "
+						  + ctype);
+
+			  GNSConfig.getLogger().log(Level.FINE,
+					  "{0} expanding next level {1}",
+					  new Object[] { ctype, nextLevel });
+		  }
+		  GNSConfig.getLogger().log(Level.INFO,
+				  "Cumulative chain for {0} = {1}",
+				  new Object[] { ctype, cumulative });
+
+			for (CommandType downstream : cumulative)
+				if ((ctype.isUpdate() && downstream.isCoordinated()))
+					throw new RuntimeException("Coordinated " + ctype
+							+ " is invoking another coordinated command "
+							+ downstream);
+
+	  }
+  }
+
+	public static class CommandTypeTest extends DefaultTest {
+		@Test
+		public void enforceChecks() {
+			CommandType.enforceChecks();
+		}
+	}
+  
   public static void main(String args[]) {
+	  CommandType.enforceChecks();
     System.out.println(generateEmptySetChains());
     //System.out.println(generateSwiftConstants());
   }
