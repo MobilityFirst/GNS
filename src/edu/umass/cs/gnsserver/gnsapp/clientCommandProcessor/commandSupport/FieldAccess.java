@@ -107,6 +107,7 @@ public class FieldAccess {
    * Reads the value of field in a guid.
    * Field(s) is a string the naming the field(s). Field(s) can us dot
    * notation to indicate subfields.
+ * @param header 
    *
    * @param guid
    * @param field - mutually exclusive with fields
@@ -117,7 +118,7 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse lookupSingleField(String guid, String field,
+  public static CommandResponse lookupSingleField(InternalRequestHeader header, String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
 //    ClientSupportConfig.getLogger().log(Level.FINER, "Lookup: " + guid + "/" + field);
@@ -128,7 +129,7 @@ public class FieldAccess {
     }
     ValuesMap valuesMap;
     try {
-      valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid, field, handler.getApp());
+      valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(header, guid, field, handler.getApp());
       if (reader != null) {
         // read is null means a magic internal request so we
         // only strip internal fields when read is not null
@@ -168,6 +169,7 @@ public class FieldAccess {
    * Reads the value of fields in a guid.
    * Field(s) is a string the naming the field(s). Field(s) can us dot
    * notation to indicate subfields.
+ * @param header 
    *
    * @param guid
    * @param fields - mutually exclusive with field
@@ -178,7 +180,7 @@ public class FieldAccess {
    * @param handler
    * @return the value of a single field
    */
-  public static CommandResponse lookupMultipleFields(String guid, ArrayList<String> fields,
+  public static CommandResponse lookupMultipleFields(InternalRequestHeader header, String guid, ArrayList<String> fields,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, null, fields,
@@ -188,7 +190,7 @@ public class FieldAccess {
     }
     ValuesMap valuesMap;
     try {
-      valuesMap = NSFieldAccess.lookupFieldsLocalNoAuth(guid, fields, ColumnFieldType.USER_JSON, handler.getApp().getDB());
+      valuesMap = NSFieldAccess.lookupFieldsLocalNoAuth(header, guid, fields, ColumnFieldType.USER_JSON, handler);
       if (reader != null) {
         // read is null means a magic internal request so we
         // only strip internal fields when read is not null

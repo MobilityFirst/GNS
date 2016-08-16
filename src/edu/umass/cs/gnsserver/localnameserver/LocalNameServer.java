@@ -28,6 +28,7 @@ import com.google.common.cache.CacheBuilder;
 
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.utils.Shutdownable;
+import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.utils.NetworkUtils;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
@@ -91,7 +92,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   /**
    * The default LNS port for incoming requests.
    */
-  public final static int DEFAULT_LNS_TCP_PORT = 24398;
+  public final static int DEFAULT_LNS_TCP_PORT = GNSClientConfig.LNS_PORT;
 
   private static final ConcurrentMap<Long, LNSRequestInfo> outstandingRequests
           = new ConcurrentHashMap<>(10, 0.75f, 3);

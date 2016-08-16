@@ -25,6 +25,7 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
@@ -133,9 +134,15 @@ public class NSFieldAccess {
     return null;
   }
 
-  // FIXME: Active code is not handled yet in here.
-  public static ValuesMap lookupFieldsLocalNoAuth(String guid, List<String> fields,
-          ColumnFieldType returnFormat, BasicRecordMap database)
+  public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
+          ColumnFieldType returnFormat, ClientRequestHandlerInterface handler)
+          throws FailedDBOperationException {
+	  return lookupFieldsLocalNoAuth(header, guid, fields, returnFormat, handler);
+	  
+  }
+
+  public static ValuesMap lookupFieldsLocalNoAuth(InternalRequestHeader header, String guid, List<String> fields,
+          ColumnFieldType returnFormat, ClientRequestHandlerInterface handler, boolean handleActiveCode)
           throws FailedDBOperationException {
     // Try to look up the value in the database
     try {
@@ -144,10 +151,17 @@ public class NSFieldAccess {
       String[] fieldArray = new String[fields.size()];
       fieldArray = fields.toArray(fieldArray);
       // Grab the fields the user wanted
-      NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(database, guid,
+      NameRecord nameRecord = NameRecord.getNameRecordMultiUserFields(handler.getApp().getDB(), guid,
               returnFormat, fieldArray);
+      
       if (nameRecord != null) {
-        return nameRecord.getValuesMap();
+    	  // active code handling
+    	  ValuesMap valuesMap = nameRecord.getValuesMap();
+    	  if (handleActiveCode) {
+    		  valuesMap = handler.getApp().getActiveCodeHandler().handleActiveCode(header, fields,
+    				  guid, valuesMap, handler.getApp());
+    	  }
+    	  return valuesMap;
       }
     } catch (RecordNotFoundException e) {
       ClientSupportConfig.getLogger().log(Level.FINE, "Record not found for name: {0}", guid);
@@ -158,7 +172,7 @@ public class NSFieldAccess {
     return null;
   }
 
-  /**
+/**
    * Looks up the value of an old-style list field in the guid on this NameServer.
    * Returns the value of a field in a GUID as a ResultValue or
    * an empty ResultValue if field cannot be found.

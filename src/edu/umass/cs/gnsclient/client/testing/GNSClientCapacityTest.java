@@ -50,7 +50,7 @@ import edu.umass.cs.utils.Util;
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
 public class GNSClientCapacityTest extends DefaultTest {
 
-	private static final String ACCOUNT_GUID_PREFIX = "ACCOUNT_GUID";
+	private static String accountGUIDPrefix;
 	private static final String PASSWORD = "some_password";
 
 	// following can not be final if we want to initialize via command-line
@@ -82,6 +82,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	}
 
 	private static void initStaticParams() {
+		accountGUIDPrefix = Config.getGlobalString(GNSTC.ACCOUNT_GUID_PREFIX);
 		numGuidsPerAccount = Config.getGlobalInt(GNSTC.NUM_GUIDS_PER_ACCOUNT);
 		accountGuidsOnly = Config.getGlobalBoolean(GNSTC.ACCOUNT_GUIDS_ONLY);
 		numClients = Config.getGlobalInt(TC.NUM_CLIENTS);
@@ -104,19 +105,19 @@ public class GNSClientCapacityTest extends DefaultTest {
 		int numPreExisting = 0;
 		for (int i = 0; i < numAccountGuids; i++) {
 			log.log(Level.FINE, "Creating account GUID {0}",
-					new Object[] { ACCOUNT_GUID_PREFIX + i, });
+					new Object[] { accountGUIDPrefix + i, });
 			try {
 				accountGuidEntries[i] = GuidUtils.lookupOrCreateAccountGuid(
-						clients[0], ACCOUNT_GUID_PREFIX + i, PASSWORD);
+						clients[0], accountGUIDPrefix + i, PASSWORD);
 				log.log(Level.FINE, "Created account {0}",
 						new Object[] { accountGuidEntries[i] });
 				assert (accountGuidEntries[i].getGuid().equals(KeyPairUtils
-						.getGuidEntry(gnsInstance, ACCOUNT_GUID_PREFIX + i)
+						.getGuidEntry(gnsInstance, accountGUIDPrefix + i)
 						.getGuid()));
 			} catch (DuplicateNameException e) {
 				numPreExisting++;
 				accountGuidEntries[i] = KeyPairUtils.getGuidEntry(gnsInstance,
-						ACCOUNT_GUID_PREFIX + i);
+						accountGUIDPrefix + i);
 				log.log(Level.INFO, "Found that account {0} already exists",
 						new Object[] { accountGuidEntries[i] });
 			}
@@ -219,7 +220,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_02_SequentialSignedReadCapacity() throws Exception {
-		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS)/10;
+		int numReads = Config.getGlobalInt(TC.NUM_REQUESTS)/20;
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();
@@ -237,7 +238,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 	 */
 	@Test
 	public void test_02_SequentialUnsignedReadCapacity() throws Exception {
-		int numReads = (Config.getGlobalInt(TC.NUM_REQUESTS)/2);
+		int numReads = (Config.getGlobalInt(TC.NUM_REQUESTS)/40);
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
 			long t1 = System.nanoTime();
