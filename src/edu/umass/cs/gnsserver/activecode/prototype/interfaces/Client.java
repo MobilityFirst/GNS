@@ -1,6 +1,7 @@
 package edu.umass.cs.gnsserver.activecode.prototype.interfaces;
 
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveException;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /** 
@@ -20,16 +21,17 @@ public interface Client {
 	 * request failed as indicated by the response message, or 
 	 * communication channel is broken.
 	 * 
-	 * 
+	 * @param header 
 	 * @param guid
 	 * @param field
 	 * @param code
 	 * @param valuesMap
 	 * @param ttl
+	 * @param budget 
 	 * @return the executed result as an ValuesMap object
 	 * @throws ActiveException 
 	 */
-	public ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException;
+	public ValuesMap runCode(InternalRequestHeader header, String guid, String field, String code, ValuesMap valuesMap, int ttl, long budget) throws ActiveException;
 	
 	
 	/**

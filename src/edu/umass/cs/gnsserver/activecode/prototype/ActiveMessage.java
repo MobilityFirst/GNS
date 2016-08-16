@@ -585,7 +585,6 @@ public class ActiveMessage implements Message{
 			rmsg = new ActiveMessage(amsg.toBytes());
 			ActiveMessage resp = new ActiveMessage(rmsg.getId(), rmsg.getValue(), null);
 			new ActiveMessage(resp.toBytes());
-			//System.out.println(resp+" "+deserialized);
 		}
 		elapsed = System.currentTimeMillis() - t;
 		System.out.println("It takes "+elapsed+"ms for serialize and deserialize 1m REQUEST and RESPONSE ActiveMessage, and the average latency for each operation is "+(elapsed*1000.0/n)+"us");	

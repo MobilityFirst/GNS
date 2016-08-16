@@ -36,7 +36,8 @@ public class ActiveWorkerSubmittedTask implements Runnable {
 	@Override
 	public void run() {
 		ActiveMessage response = null;
-		long timeout = 0; //request
+		long timeout = request.getBudget();
+		
 		Future<ActiveMessage> future = executor.submit(new ActiveWorkerTask(runner, request));
 		
 		try {

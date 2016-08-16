@@ -41,7 +41,8 @@ public class ActiveCodeDB implements ActiveDBInterface {
 	
 	@Override
 	public JSONObject read(InternalRequestHeader header, String targetGUID, String field) throws ClientException {
-		return client.read(header, targetGUID, field);
+		JSONObject obj = client.read(header, targetGUID, field);
+		return obj;
 	}
 
 	@Override

@@ -7,8 +7,8 @@ import java.nio.file.Paths;
 import org.json.JSONException;
 
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnsserver.activecode.ActiveCodeInternalRequestHeader;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -33,16 +33,16 @@ public class ActiveQueryHandler {
 	 * This method handles the incoming requests from ActiveQuerier,
 	 * the query could be a read or write request.
 	 * 
-	 * @param am O
+	 * @param am the query to handle
+	 * @param header 
 	 * @return an ActiveMessage being sent back to worker as a response to the query
 	 */
-	public ActiveMessage handleQuery(ActiveMessage am){
+	public ActiveMessage handleQuery(ActiveMessage am, InternalRequestHeader header){
 		ActiveMessage response;
-		//System.out.println("Handle request "+am);
 		if(am.type == ActiveMessage.Type.READ_QUERY)
-			response = handleReadQuery(am);
+			response = handleReadQuery(am, header);
 		else
-			response = handleWriteQuery(am);
+			response = handleWriteQuery(am, header);
 		return response;
 	}
 	
@@ -51,13 +51,14 @@ public class ActiveQueryHandler {
 	 * This method handles read query from the worker. 
 	 * 
 	 * @param am 
+	 * @param header 
 	 * @return the response ActiveMessage
 	 */
-	public ActiveMessage handleReadQuery(ActiveMessage am) {
+	public ActiveMessage handleReadQuery(ActiveMessage am, InternalRequestHeader header) {
+		
 		ActiveMessage resp = null;
 		try {
-			//FIXME: no need to cast to ValuesMap, just use JSONObject
-			ValuesMap value = (ValuesMap) app.read(new ActiveCodeInternalRequestHeader(), am.getTargetGuid(), am.getField());
+			ValuesMap value = new ValuesMap(app.read(header, am.getTargetGuid(), am.getField()));
 			resp = new ActiveMessage(am.getId(), value, null);
 		} catch (ClientException e) {
 			e.printStackTrace();
@@ -72,12 +73,13 @@ public class ActiveQueryHandler {
 	 * This method handles write query from the worker. 
 	 * 
 	 * @param am 
+	 * @param header 
 	 * @return the response ActiveMessage
 	 */
-	public ActiveMessage handleWriteQuery(ActiveMessage am) {
+	public ActiveMessage handleWriteQuery(ActiveMessage am, InternalRequestHeader header) {
 		ActiveMessage resp;
 		try {
-			app.write(new ActiveCodeInternalRequestHeader(), am.getTargetGuid(), am.getField(), am.getValue());
+			app.write(header, am.getTargetGuid(), am.getField(), am.getValue());
 			resp = new ActiveMessage(am.getId(), new ValuesMap(), null);
 		} catch (ClientException e) {
 			e.printStackTrace();

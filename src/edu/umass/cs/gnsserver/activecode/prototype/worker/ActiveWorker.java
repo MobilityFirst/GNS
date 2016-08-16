@@ -22,7 +22,7 @@ public class ActiveWorker {
 	
 	
 	private final ActiveRunner[] runners;
-	//private final ActiveRunner runner;
+	
 	private final Channel channel;
 	private final int id;
 	private final int numThread;
@@ -30,7 +30,7 @@ public class ActiveWorker {
 	private final ThreadPoolExecutor executor;
 	private final ThreadPoolExecutor taskExecutor;
 	private final ConcurrentHashMap<Long, ActiveRunner> map = new ConcurrentHashMap<Long, ActiveRunner>();
-	private final AtomicInteger counter = new AtomicInteger(0);
+	private final AtomicInteger counter = new AtomicInteger(0);	
 	
 	
 	
@@ -56,14 +56,14 @@ public class ActiveWorker {
 		
 		for (int i=0; i<numThread; i++){
 			runners[i] = new ActiveRunner(new ActiveQuerier(channel));
-		}
-		
-		
+		}		
+
 		try {
 			runWorker();
-		} catch (Exception e){
-			throw new RuntimeException();
-		} finally {
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+			// close the channel and exit
+		}finally{
 			channel.shutdown();
 		}
 		
@@ -74,19 +74,21 @@ public class ActiveWorker {
 		while(!((ActiveNamedPipe) channel).getReady())
 			;
 		
-		System.out.println("Start running "+this);
 		ActiveMessage msg = null;
-		while((msg = (ActiveMessage) channel.receiveMessage()) != null){
-			
-			if(msg.type == Type.REQUEST){
-				ActiveRunner runner = runners[counter.getAndIncrement()%numThread];
-				map.put(msg.getId(), runner);
-				taskExecutor.submit(new ActiveWorkerSubmittedTask(executor, runner, msg, channel, map));
-				
-			} else if (msg.type == Type.RESPONSE ){
-				map.get(msg.getId()).release(msg);
+		while(!Thread.currentThread().isInterrupted()){
+			if((msg = (ActiveMessage) channel.receiveMessage()) != null){
+				if(msg.type == Type.REQUEST){
+					ActiveRunner runner = runners[counter.getAndIncrement()%numThread];
+					map.put(msg.getId(), runner);
+					taskExecutor.submit(new ActiveWorkerSubmittedTask(executor, runner, msg, channel, map));
+					
+				} else if (msg.type == Type.RESPONSE ){
+					map.get(msg.getId()).release(msg);
+				}
+			}else{
+				// The client is shutdown
+				break;
 			}
-			
 		}
 	}
 	

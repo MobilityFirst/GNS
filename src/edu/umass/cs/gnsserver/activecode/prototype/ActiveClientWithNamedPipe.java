@@ -16,6 +16,7 @@ import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage.Type;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Client;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -120,7 +121,6 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 			e.printStackTrace();
 		}
 		channel = new ActiveNamedPipe(ifile, ofile);				
-		System.out.println("Start "+this+" by listening on "+ifile+", and write to "+ofile);
 	}
 	
 	/**
@@ -166,26 +166,28 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		 * This is the receiving thread, it awakes the sending
 		 * thread if it receives the response or query from the
 		 * worker.
-		 * If a NullPointerException is caught, it means the 
-		 * worker is crashed, and we need to restart the worker.
+		 * 
+		 * If a null value is received, it means the worker is
+		 * crashed and the pipe is closed on both end. Therefore,
+		 * we need to restart the worker and establish a new
+		 * connection.
 		 */
 		
 		while(!Thread.currentThread().isInterrupted()){
 			ActiveMessage response;
 			try {
-				if( (response = (ActiveMessage) channel.receiveMessage()) != null){
+				if( (response = (ActiveMessage) channel.receiveMessage()) != null){					
 					long id = response.getId();
 					Monitor monitor = tasks.get(id);
 					assert(monitor != null):"the corresponding monitor is null!";
 					monitor.setResult(response, response.type == Type.RESPONSE);
 				} else {
-					System.out.println("Restart the work");
 					if(!isRestarting.getAndSet(true)){
 						// restart the worker
-						shutdown();
-						initializeChannelAndStartWorker();
+						this.shutdown();
+						this.initializeChannelAndStartWorker();
 						// resend all the requests that failed
-						for(Monitor monitor:tasks.values()){
+						for(Monitor monitor:this.tasks.values()){
 							monitor.setResult(null, false);
 						}
 						isRestarting.set(false);
@@ -310,6 +312,16 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	}
 	
 	/**
+	 * This runCode method sends the request to worker, and
+	 * wait for worker to finish the request. If the worker
+	 * crashed during the request execution, this method
+	 * will resend the request to a new created worker, and
+	 * the new worker will execute this request again. 
+	 * <p>If the worker fails to execute the request, it will 
+	 * send back an error to inform this method that the execution
+	 * gets accomplished with an error. This method will raise
+	 * an ActiveException, and the method which calls this method
+	 * needs to handle this exception.
 	 * 
 	 * @param guid
 	 * @param field
@@ -319,51 +331,44 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 * @return executed result sent back from worker
 	 */
 	@Override
-	public ValuesMap runCode( String guid, String field, String code, ValuesMap valuesMap, int ttl) throws ActiveException {
+	public ValuesMap runCode(InternalRequestHeader header, String guid, String field, 
+			String code, ValuesMap valuesMap, int ttl, long budget) throws ActiveException {
+		
 		long t1 =System.nanoTime();
-		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl, 1000);
+		ActiveMessage msg = new ActiveMessage(guid, field, code, valuesMap, ttl, budget);
 		Monitor monitor = new Monitor();
-		
-		//sendMessage(msg);
-		
+		tasks.put(msg.getId(), monitor);
 		
 		long t2 = 0;
 		ActiveMessage response = null;
-		
-		while( !monitor.getDone() ){
-			synchronized(monitor){
+		synchronized(monitor){
+			while( !monitor.getDone() ){				
 				try {
 					if(!monitor.getWait()){
-						tasks.put(msg.getId(), monitor);
 						sendMessage(msg);
 						DelayProfiler.updateDelayNano("activeSendMessage", t1);
 						monitor.setWait();
 					}					
 					monitor.wait();
 				} catch (InterruptedException e) {
-					//e.printStackTrace();
+					// this thread is interrupted, do nothing
+				}				
+				t2 = System.nanoTime();
+				response = monitor.getResult();	
+				
+				if(response == null){
+					/**
+					 *  The worker is crashed, resend the request.
+					 *  It would work even for the query.
+					 */
+					sendMessage(msg);
+				} else if (response.type != Type.RESPONSE){
+					ActiveMessage result = queryHandler.handleQuery(response, header);
+					sendMessage(result);
 				}
-			}
-			
-			t2 = System.nanoTime();
-			response = monitor.getResult();
-			//System.out.println("After setting response, the response is "+response);
-			
-			if(response == null){
-				/**
-				 *  The worker is crashed, resend the request
-				 *  FIXME: if it crashed during a query, this handle
-				 *  will not work
-				 */
-				sendMessage(msg);
-			} else if (response.type != Type.RESPONSE){
-				ActiveMessage result = queryHandler.handleQuery(response);
-				sendMessage(result);
-			}
-		}		
-		
+			}		
+		}
 		response = monitor.getResult();
-		//System.out.println("The responded result is "+counter.get()+" "+response);
 		
 		if(response.getError() != null){
 			throw new ActiveException();
@@ -394,7 +399,6 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 		}
 		
 		synchronized void setResult(ActiveMessage response, boolean isDone){
-			//System.out.println("response is set to "+response);
 			this.response = response;
 			this.isDone = isDone;
 			notifyAll();

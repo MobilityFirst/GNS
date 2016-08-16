@@ -46,7 +46,7 @@ public class ActiveClientThroughputTest {
 		
 		@Override
 		public ValuesMap call() throws Exception {
-			return client.runCode(guid, field, code, value, ttl);
+			return client.runCode(null, guid, field, code, value, ttl, 1000);
 		}
 		
 	}
@@ -88,8 +88,9 @@ public class ActiveClientThroughputTest {
 			e.printStackTrace();
 		} 
 		ValuesMap value = new ValuesMap();
-		value.put("string", "hello world!");	
-		ValuesMap result = client.runCode(guid, field, noop_code, value, 0);
+		value.put(field, "hello world!");	
+		ValuesMap result = client.runCode(null, guid, field, noop_code, value, 0, 10000);
+
 		assertEquals(result.toString(), value.toString());
 		
 		ExecutorService executor = new ThreadPoolExecutor(numThread, numThread, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
@@ -105,7 +106,7 @@ public class ActiveClientThroughputTest {
 			//client.runCode(guid, field, noop_code, value, 0);
 			tasks.add(executor.submit(new SimpleTask(client, guid, field, noop_code, value, 0)));
 		}
-		System.out.println("The size of tasks is "+tasks.size());
+		
 		for (Future<ValuesMap> future:tasks){
 			future.get();
 		}

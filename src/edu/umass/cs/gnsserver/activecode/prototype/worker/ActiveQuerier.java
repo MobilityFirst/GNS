@@ -92,9 +92,9 @@ public class ActiveQuerier implements Querier {
 		ValuesMap value = null;
 		try{
 			ActiveMessage am = new ActiveMessage(ttl, querierGuid, field, queriedGuid, currentID);
-			
-			while(!monitor.getDone()){
-				synchronized(monitor){
+			System.out.println("Send query message: "+am);
+			synchronized(monitor){
+				while(!monitor.getDone()){				
 					try {
 						channel.sendMessage(am);
 						monitor.wait();
@@ -103,8 +103,10 @@ public class ActiveQuerier implements Querier {
 					}
 				}
 			}
-			
+						
 			ActiveMessage response = monitor.getResult();
+			System.out.println("Get response:"+response);
+			
 			if (response.getError() != null){
 				throw new ActiveException();
 			}

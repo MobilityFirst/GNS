@@ -81,7 +81,7 @@ public class ActiveRunner {
 		engine.setContext(contexts.get(guid));
 		if(querier != null) ((ActiveQuerier) querier).resetQuerier(guid, ttl, id);
 		ValuesMap valuesMap = null;
-
+		
 		valuesMap = (ValuesMap) invocable.invokeFunction("run", value, field, querier);
 		
 		return valuesMap;

@@ -59,8 +59,6 @@ public class ActiveHandler {
 			new File(fileTestForPipe).delete();
 		}
 		
-		System.out.println(ActiveHandler.class.getName()+" start running "+numProcess+" workers with "+numThread+" threads ...");
-		
 		this.numProcess = numProcess;
 		
 		// initialize single clients and workers
@@ -97,6 +95,7 @@ public class ActiveHandler {
 	}
 	
 	/**
+	 * @param header 
 	 * @param guid
 	 * @param field
 	 * @param code
@@ -106,12 +105,10 @@ public class ActiveHandler {
 	 * @throws ActiveException 
 	 */
 	public ValuesMap runCode(InternalRequestHeader header, String guid, String field, String code, ValuesMap value, int ttl) throws ActiveException{
-		System.out.println("Start running code "+code+" with ttl "+ttl+" for "+guid+" on field "+field+" and "+value.toString());
-		return clientPool[counter.getAndIncrement()%numProcess].runCode(guid, field, code, value, ttl);
+		return clientPool[counter.getAndIncrement()%numProcess].runCode(header, guid, field, code, value, ttl, 2000);
 	}
 	
-	/***************** Test methods ****************/
-	
+	/***************** Test methods ****************/	
 	/**
 	 * @param args
 	 * @throws JSONException 

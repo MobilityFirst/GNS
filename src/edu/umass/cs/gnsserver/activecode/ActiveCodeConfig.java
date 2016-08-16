@@ -30,12 +30,12 @@ public class ActiveCodeConfig {
 	 /**
 	   * Number of active code worker.
 	   */
-	  public static int activeCodeWorkerCount = 1;
+	  public static int activeCodeWorkerCount = 4;
 	  
 	  /**
 	   * Number of threads running in each worker
 	   */
-	  public static int activeWorkerThreads = 2;
+	  public static int activeWorkerThreads = 5;
 	  
 	  /**
 	   * Number of spare workers.

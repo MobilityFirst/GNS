@@ -55,8 +55,12 @@ public class ActiveCodeHelloWorldExample {
 		String field = "someField";
 		String value = "someValue";
 		
+		String depth_field = "depthField";
+		String depth_result = "Depth query succeeds";
+		
 		// set up a field
 		client.fieldUpdate(entry,  field, value);
+		client.fieldUpdate(entry, depth_field, depth_result);
 		
 		// get the value of the field
 		String response = client.fieldRead(entry, field);

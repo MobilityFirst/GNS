@@ -28,7 +28,7 @@ public class ActiveTask implements Callable<ValuesMap> {
 	
 	@Override
 	public ValuesMap call() throws Exception {
-		return client.runCode(guid, field, code, value, ttl);
+		return client.runCode(null, guid, field, code, value, ttl, 1000);
 	}
 
 }
