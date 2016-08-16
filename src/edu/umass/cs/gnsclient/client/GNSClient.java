@@ -242,6 +242,8 @@ public class GNSClient {
 	}
 
 	/**
+	 * This method exists only for backwards compatibility. 
+	 * 
 	 * @param commandPacket
 	 * @param timeout
 	 * @return Response from the server or null if the timeout expires.
