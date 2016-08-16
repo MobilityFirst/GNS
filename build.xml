@@ -254,6 +254,9 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
 	<exec executable="/bin/bash">
 		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} stop all"/>
 	</exec>
+	<exec executable="/bin/bash">
+		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} foreclear all"/>
+	</exec>
   </target>
   <target name="compiletest" depends="compile" description="Compile all the test files">
     <mkdir dir="${build.test.dir}" />
