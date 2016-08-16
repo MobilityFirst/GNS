@@ -51,6 +51,8 @@ import org.json.JSONObject;
  * @author westy
  */
 public class Read extends BasicCommand {
+	
+	public static final String[] PARAMS = {GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
 
   /**
    *
@@ -67,7 +69,7 @@ public class Read extends BasicCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return PARAMS;
   }
 
 	@Override
