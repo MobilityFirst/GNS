@@ -17,13 +17,6 @@ import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
  *         operations, so an active request worker is expected to pass an
  *         instance of this interface to JS via the script engine.
  * 
- *         The implementer of this interface is responsible for enforcing TTL
- *         limits, detecting and breaking cycles, accounting resource usage by
- *         the GUID originating the active request, etc. It is up to the
- *         implementer whether chained active requests are issued directly from
- *         the active request worker process or tunneled via the main GNS
- *         process.
- * 
  *         This interface currently only supports simple field read and write
  *         queries. It currently does not support create, delete, select, or
  *         {@link edu.umass.cs.gnscommon.CommandType.Type#OTHER} commands or for

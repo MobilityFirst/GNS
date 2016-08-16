@@ -1,6 +1,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.async.RequestCallbackFuture;
 import edu.umass.cs.gigapaxos.interfaces.AppRequestParserBytes;
 import edu.umass.cs.gigapaxos.interfaces.Callback;
@@ -45,64 +47,95 @@ import edu.umass.cs.utils.Config;
  *         Cleaner implementation of a GNS client using gigapaxos' async client.
  */
 public class GNSClient {
-	// initialized from properties file
-	private static final Set<InetSocketAddress> STATIC_RECONFIGURATORS = ReconfigurationConfig
-			.getReconfiguratorAddresses();
+	
+	/**
+	 * If no properties file can be found, this client will attempt to connect
+	 * to a local reconfigurator at the default port
+	 * {@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}.
+	 */
+	private static final InetSocketAddress DEFAULT_LOCAL_RECONFIGURATOR = new InetSocketAddress(
+			InetAddress.getLoopbackAddress(),
+			GNSConfig.DEFAULT_RECONFIGURATOR_PORT);
 
-	// initialized upon construction
-	private final Set<InetSocketAddress> reconfigurators;
 	// ReconfigurableAppClientAsync instance
 	private final AsyncClient asyncClient;
 	// local name server
 	private InetSocketAddress GNSProxy = null;
-
-	
-
 	
 	private static final java.util.logging.Logger LOG = GNSConfig.getLogger();
 
 	/**
+	 * The default constructor that expects a gigapaxos properties file that is
+	 * either at the default location,
+	 * {@link PaxosConfig#DEFAULT_GIGAPAXOS_CONFIG_FILE} relative to the current
+	 * directory, or is specified as a JVM property as
+	 * -DgigapaxosConfig=absoluteFilePath. To use {@link GNSClient} with default
+	 * properties without a properties file, use
+	 * {@link #GNSClient(InetSocketAddress)} that requires knowledge of at least
+	 * one reconfigurator address. If this default constructor is used and the
+	 * client is unable to find the properties file, it will attempt to connect
+	 * to localhost:{@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}.
+	 * 
 	 * @throws IOException
 	 */
 	public GNSClient() throws IOException {
-		this(STATIC_RECONFIGURATORS != null
-				&& !STATIC_RECONFIGURATORS.isEmpty() ? STATIC_RECONFIGURATORS
-				.iterator().next() : null);
+		this(getStaticReconfigurators());
 	}
-
+	
+	/**
+	 * Initialized from properties file. This constant is called
+	 * static to reinforce the fact that the set of
+	 * reconfigurators may change dynamically but this constant and for that
+	 * matter even the contents of client properties file may not.
+	 */
+	private static Set<InetSocketAddress> getStaticReconfigurators() {
+		try {
+			return ReconfigurationConfig.getReconfiguratorAddresses();
+		} catch (Exception e) {
+			System.err.println("WARNING: " + e + "\n["
+					+ GNSClient.class.getSimpleName()
+					+ " unable to find any reconfigurators; falling back to "
+					+ ((DEFAULT_LOCAL_RECONFIGURATOR))+"]");
+			return new HashSet<InetSocketAddress>(
+					Arrays.asList(DEFAULT_LOCAL_RECONFIGURATOR));
+		}
+	}
 
 	/**
 	 * Bootstrap with a single, arbitrarily chosen valid reconfigurator address.
 	 * The client can enquire and know of other reconfigurator addresses from
-	 * this reconfigurator. If it is unable to do so, it will throw an
-	 * IOException.
+	 * this reconfigurator. If the supplied argument is null, the behavior will
+	 * be identical to {@link #GNSClient()}.
 	 *
 	 * @param anyReconfigurator
 	 * @throws IOException
 	 */
 	public GNSClient(InetSocketAddress anyReconfigurator) throws IOException {
-		this.reconfigurators = this.knowOtherReconfigurators(anyReconfigurator);
-		if (this.reconfigurators == null || this.reconfigurators.isEmpty()) {
-			throw new IOException(
-					"Unable to find any reconfigurator addresses; "
-							+ "at least one needed to initialize client");
-		}
+		this(anyReconfigurator != null ? new HashSet<InetSocketAddress>(
+				Arrays.asList(anyReconfigurator)) : getStaticReconfigurators());
+	}
+	
+	private GNSClient(Set<InetSocketAddress> reconfigurators)
+			throws IOException {
 		this.asyncClient = new AsyncClient(reconfigurators,
 				ReconfigurationConfig.getClientSSLMode(),
-				ReconfigurationConfig.getClientPortOffset());
-		this.checkConnectivity();
+				ReconfigurationConfig.getClientPortOffset(), true);
+	}
+	
+	/**
+	 * Same as {@link #GNSClient(InetSocketAddress)} but with the host name
+	 * {@code anyReconfiguratorHostName} and implicitly the default
+	 * reconfigurator port {@link GNSConfig#DEFAULT_RECONFIGURATOR_PORT}. If the
+	 * supplied argument is null, the behavior will be identical to
+	 * {@link #GNSClient()}.
+	 * 
+	 * @param anyReconfiguratorHostName
+	 * @throws IOException
+	 */
+	public GNSClient(String anyReconfiguratorHostName) throws IOException {
+		this(new InetSocketAddress(anyReconfiguratorHostName, GNSConfig.DEFAULT_RECONFIGURATOR_PORT));
 	}
 
-	/**
-	 * TODO: implement request/response to know of other reconfigurators. It is
-	 * also okay to just use a single reconfigurator address if it is an anycast
-	 * address (with the TCP error caveat under route changes).
-	 */
-	private Set<InetSocketAddress> knowOtherReconfigurators(
-			InetSocketAddress anyReconfigurator) throws IOException {
-		return anyReconfigurator != null ? new HashSet<>(
-				Arrays.asList(anyReconfigurator)) : STATIC_RECONFIGURATORS;
-	}
 
 	@Override
 	public String toString() {
@@ -309,7 +342,8 @@ public class GNSClient {
 				Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
 		public AsyncClient(Set<InetSocketAddress> reconfigurators,
-				SSL_MODES sslMode, int clientPortOffset) throws IOException {
+				SSL_MODES sslMode, int clientPortOffset,
+				boolean checkConnectivity) throws IOException {
 			super(reconfigurators, sslMode, clientPortOffset);
 			this.enableJSONPackets();
 		}
@@ -456,5 +490,13 @@ public class GNSClient {
 			return callback != null ? callback.processResponse(command)
 					: command;
 		});
+	}
+
+	/** Used only for testing.
+	 * @param args 
+	 * @throws IOException 
+	 */
+	public static void main(String[] args) throws IOException {
+		new GNSClient();
 	}
 }

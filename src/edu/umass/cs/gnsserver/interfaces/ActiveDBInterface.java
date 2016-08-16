@@ -6,8 +6,12 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import edu.umass.cs.gnscommon.exceptions.GNSException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.GNSCommandInternal;
+import edu.umass.cs.gnsserver.gnsapp.activegns.ActiveGNSClient;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
@@ -31,11 +35,19 @@ public interface ActiveDBInterface {
 	 * checks) by specifying {@code field} as
 	 * {@link GNSCommandProtocol#ALL_FIELDS}.
 	 * 
-	 * The implementer is expected to implement this method using
-	 * {@link GNSClient} and
+	 * The implementer is expected to implement this method and others in this
+	 * class using {@link ActiveGNSClient} and
 	 * {@link GNSCommandInternal#fieldRead(String, String, InternalRequestHeader)}
 	 * to construct and send server-internal commands with {@code querierGUID}
 	 * set to the originating GUID for the active request chain being processed.
+	 * 
+	 * A {@link ClientException} means that the implementer may (optionally)
+	 * retry the request but an {@link InternalRequestException} must be treated
+	 * as an error and it is the implementer's responsibility to ensure that it
+	 * is thrown in the thread invoking
+	 * {@link GNSApp#execute(edu.umass.cs.gigapaxos.interfaces.Request, boolean)}
+	 * .
+	 * 
 	 * 
 	 * @param header
 	 *            The header information for the current active active request
@@ -49,9 +61,10 @@ public interface ActiveDBInterface {
 	 *
 	 * @return JSONObject representation of guid.field.
 	 * @throws ClientException
+	 * @throws InternalRequestException
 	 */
 	public JSONObject read(InternalRequestHeader header, String targetGUID,
-			String field) throws ClientException;
+			String field) throws ClientException, InternalRequestException ;
 
 	/**
 	 * @param querierGUID
@@ -67,15 +80,19 @@ public interface ActiveDBInterface {
 	}
 
 	/**
+	 *  Refer {@link #read(InternalRequestHeader, String, String)} for
+	 * implementation guidelines
+	 * 
 	 * @param header
 	 * @param targetGUID
 	 * @param fields
 	 * @return JSONObject representation of values of {@code fields} of
 	 *         {@code targetGUID}.
-	 * @throws ClientException
+	 * @throws ClientException 
+	 * @throws InternalRequestException 
 	 */
 	public JSONObject read(InternalRequestHeader header, String targetGUID,
-			ArrayList<String> fields) throws ClientException;
+			ArrayList<String> fields) throws ClientException, InternalRequestException;
 
 	/**
 	 * @param querierGUID
@@ -99,8 +116,9 @@ public interface ActiveDBInterface {
 	 * @param field
 	 * @param valuesMap
 	 * @throws ClientException
+	 * @throws InternalRequestException 
 	 */
 	public void write(InternalRequestHeader header, String targetGUID,
-			String field, JSONObject valuesMap) throws ClientException;
+			String field, JSONObject valuesMap) throws ClientException, InternalRequestException;
 
 }

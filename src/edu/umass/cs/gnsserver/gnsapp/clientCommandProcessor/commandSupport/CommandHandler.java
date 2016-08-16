@@ -230,16 +230,19 @@ public class CommandHandler {
 				.getInternalRequestHeader(commandPacket);
 		if (header == null)
 			return header;
+		// The checks below are unnecessary and are only expositionary.
 		
-		// TTL expiration, but it'll never come here
+		/* TTL expiration, but should never expire here as the sender would
+		 * have not sent an expiring request in the first place.
+		 */
 		if (header.getTTL() == 0)
 			throw new InternalRequestException(
 					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
 
-		/* Note: It is pointless to check whether a previous request in this
+		/* Note: It is pointless to try to check whether a previous request in this
 		 * chain was already coordinated and this request is also coordinated
 		 * because if we are here, it is too late. This check must be done at
-		 * the sender side. Indeed any reasonable check we can do to restrict
+		 * the sender side. Indeed most any reasonable check we can do to restrict
 		 * the capabilities of active code at the receiver might as well be
 		 * done at the sender. We can not detect node cycles at the sender
 		 * but it is unclear that we even care to prevent node cycles. 

@@ -118,7 +118,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws IOException
    */
   public GNSClientCommands() throws IOException {
-    super(null);
+    super((InetSocketAddress)null);
   }
 
   /**

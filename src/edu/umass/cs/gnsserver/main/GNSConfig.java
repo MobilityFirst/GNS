@@ -43,34 +43,6 @@ public class GNSConfig {
      * Enables secret key communication that is ~180x faster at signing and
      * ~8x faster at verification. True by default as there is no reason to
      * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
-     *//**
-     * Enables secret key communication that is ~180x faster at signing and
-     * ~8x faster at verification. True by default as there is no reason to
-     * not support it at the server.
      */
     ENABLE_SECRET_KEY(true),
     /**
@@ -385,6 +357,11 @@ public class GNSConfig {
 
   private final static Logger LOG = Logger.getLogger(GNSConfig.class
           .getName());
+  
+	/**
+	 * The default reconfigurator server port number.
+	 */
+	public static final int DEFAULT_RECONFIGURATOR_PORT = 2178;
 
   /**
    * Returns the master GNS logger.

@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
@@ -222,9 +223,10 @@ public class InternalCommandPacket extends CommandPacket implements
 
 		/**
 		 * @throws JSONException
+		 * @throws InternalRequestException 
 		 */
 		@Test
-		public void test_01_serialization() throws JSONException {
+		public void test_01_serialization() throws JSONException, InternalRequestException {
 			Util.assertAssertionsEnabled();
 			decrementTTL = false;
 			InternalCommandPacket icmd = GNSCommandInternal.fieldRead("hello",

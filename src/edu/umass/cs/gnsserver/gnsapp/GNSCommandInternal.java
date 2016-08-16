@@ -11,7 +11,9 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSProtocol;
+import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnsserver.gnsapp.packet.InternalCommandPacket;
@@ -59,11 +61,12 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	 * @param keysAndValues
 	 * @return GNSCommandInternal 
 	 * @throws JSONException
+	 * @throws InternalRequestException 
 	 */
 	private static GNSCommandInternal getCommand(CommandType type,
 			InternalRequestHeader header, Object... keysAndValues)
-			throws JSONException {
-		return new GNSCommandInternal(header, makeInternal(
+			throws JSONException, InternalRequestException {
+		return enforceChecks(new GNSCommandInternal(header, makeInternal(
 				type,
 				CommandUtils
 						.createCommand(type, keysAndValues)
@@ -75,7 +78,22 @@ public class GNSCommandInternal extends InternalCommandPacket {
 								header.getOriginatingRequestID())
 
 						.put(GNSProtocol.REQUEST_TTL.toString(),
-								header.getTTL())));
+								header.getTTL()))), header);
+	}
+
+	private static GNSCommandInternal enforceChecks(
+			GNSCommandInternal gnsCommandInternal, InternalRequestHeader header)
+			throws InternalRequestException {
+		if (header.getTTL() == 0)
+			throw new InternalRequestException(
+					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION, "TTL expired");
+		if (header.hasBeenCoordinatedOnce()
+				&& gnsCommandInternal.needsCoordination())
+			throw new InternalRequestException(
+					GNSResponseCode.INTERNAL_REQUEST_EXCEPTION,
+					"Attempting a second coordinated request in a chain with "
+							+ gnsCommandInternal.getSummary());
+		return gnsCommandInternal;
 	}
 
 	/**
@@ -94,9 +112,10 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	 *            The internal request header.
 	 * @return Refer {@link GNSCommand#fieldRead(String, String, GuidEntry)}.
 	 * @throws JSONException
+	 * @throws InternalRequestException 
 	 */
 	public static final InternalCommandPacket fieldRead(String targetGUID,
-			String field, InternalRequestHeader header) throws JSONException {
+			String field, InternalRequestHeader header) throws JSONException, InternalRequestException {
 		return getCommand(CommandType.ReadUnsigned, header,
 				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
 				field);
@@ -110,10 +129,11 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	 *            The internal request header.
 	 * @return InternalCommandPacket
 	 * @throws JSONException
+	 * @throws InternalRequestException 
 	 */
 	public static final InternalCommandPacket fieldRead(String targetGUID,
 			ArrayList<String> fields, InternalRequestHeader header)
-			throws JSONException {
+			throws JSONException, InternalRequestException {
 		return getCommand(CommandType.ReadUnsigned, header,
 				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELDS,
 				fields);
@@ -135,10 +155,11 @@ public class GNSCommandInternal extends InternalCommandPacket {
 	 * @return InternalCommandPacket
 	 *         
 	 * @throws JSONException
+	 * @throws InternalRequestException 
 	 */
 	public static InternalCommandPacket fieldUpdate(String targetGUID, String field,
 			JSONObject value, InternalRequestHeader header)
-			throws JSONException {
+			throws JSONException, InternalRequestException {
 		return getCommand(CommandType.ReplaceUserJSONUnsigned, header,
 				GNSCommandProtocol.GUID, targetGUID, GNSCommandProtocol.FIELD,
 				field, GNSCommandProtocol.USER_JSON,
