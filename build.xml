@@ -238,7 +238,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
     <fail message="You must run this target with -Dtest=TestName"/>
   </target>
 
-  <target name="startServer" depends="compile" description="Starts a server for testing purposes.">
+  <target name="startServer" depends="compile" description="Forceclears and (re)starts a server for testing purposes.">
 	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
 	<exec executable="/bin/bash">
 		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} foreclear all"/>
