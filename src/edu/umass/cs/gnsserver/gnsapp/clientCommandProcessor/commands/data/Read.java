@@ -105,10 +105,10 @@ public class Read extends BasicCommand {
       return FieldAccess.lookupMultipleValues(internalHeader, guid, reader,
               signature, message, timestamp, handler);
     } else if (field != null) {
-      return FieldAccess.lookupSingleField( guid, field, reader, signature,
+      return FieldAccess.lookupSingleField(internalHeader, guid, field, reader, signature,
               message, timestamp, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookupMultipleFields( guid, fields, reader, signature,
+      return FieldAccess.lookupMultipleFields(internalHeader, guid, fields, reader, signature,
               message, timestamp, handler);
     }
   }

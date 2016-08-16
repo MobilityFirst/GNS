@@ -23,6 +23,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.CancellationException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
@@ -35,6 +38,7 @@ import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.activecode.prototype.ActiveHandler;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
@@ -410,4 +414,9 @@ public class ActiveCodeHandler {
 		System.exit(0);
 	}
 
+
+	public ValuesMap handleActiveCode(InternalRequestHeader header,
+			List<String> fields, String guid, ValuesMap valuesMap, GNSApp app) {
+		throw new RuntimeException("Unimplemented");
+	}
 }

@@ -36,21 +36,7 @@ public class PacketUtils {
 	 * @return The originatingGUID for {@code CommandPacket}.
 	 */
 	public static String getOriginatingGUID(CommandPacket commandPacket) {
-		String oguid = null;
-		JSONObject command = commandPacket.getCommand();
-		try {
-			return command.has(GNSProtocol.ORIGINATING_GUID.toString())
-					&& !(oguid = command.getString(GNSProtocol.ORIGINATING_GUID
-							.toString())).equals(GNSProtocol.UNKNOWN_NAME
-							.toString()) ? oguid : command
-					.has(GNSCommandProtocol.READER) ? command
-					.getString(GNSCommandProtocol.READER) : command
-					.has(GNSCommandProtocol.WRITER) ? command
-					.getString(GNSCommandProtocol.WRITER) : null;
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return null;
+			return commandPacket.getServiceName();
 	}
 
 	/**
@@ -67,7 +53,7 @@ public class PacketUtils {
 				 * GUID. This is especially important for active requests where
 				 * the request chain is computed dynamically and is not known a
 				 * priori. */
-				: getOriginatingGUID(commandPacket) != null ? 
+				:  
 						
 						new InternalRequestHeader() {
 
@@ -114,6 +100,6 @@ public class PacketUtils {
 						}
 					}
 				}
-						: null;
+					;
 	}
 }

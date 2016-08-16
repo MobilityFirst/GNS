@@ -252,8 +252,6 @@ public class CommandHandler {
 		 * we already have TTLs to limit cycles. */
 		
 		CommandPacket originRequest = handler.getOriginRequest(header);
-		// coz we used the requestID to pull it out in the first place
-		assert (originRequest.getRequestID() == commandPacket.getRequestID());
 		// same origin GUID and origin request ID => node cycle
 		if (originRequest != commandPacket
 				&& header

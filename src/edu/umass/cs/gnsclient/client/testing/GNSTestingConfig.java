@@ -93,6 +93,11 @@ public class GNSTestingConfig {
 		ACCOUNT_GUIDS_ONLY(false),
 		
 		/**
+		 * 
+		 */
+		ACCOUNT_GUID_PREFIX("ACCOUNT_GUID"),
+		
+		/**
 		 * If enabled, the GNS will cache and return the same value for reads. 
 		 * 
 		 * Code-breaking if enabled. Meant only for instrumentation.
