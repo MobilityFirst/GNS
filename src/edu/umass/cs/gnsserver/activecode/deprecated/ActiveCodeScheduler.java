@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 /**
@@ -145,7 +146,7 @@ public class ActiveCodeScheduler implements Runnable{
 		return removed;
 	}
 	
-	protected void submit(ActiveCodeFutureTask futureTask, String guid){
+	public void submit(ActiveCodeFutureTask futureTask, String guid){
 		/*
 		synchronized(timeMap){
 			timeMap.put(futureTask, System.nanoTime());
@@ -170,7 +171,7 @@ public class ActiveCodeScheduler implements Runnable{
 			fairQueue.remove(guid);
 	}
 	
-	protected void finish(String guid){
+	public void finish(String guid){
 		//runningGuid.remove(guid);
 		//System.out.println("ActiveCodeScheduler: finish the task for guid "+guid);
 		release();

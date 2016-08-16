@@ -27,7 +27,7 @@ public class ActiveClientRobustnessTest {
 		// initialize the client		
 		String cfile = "/tmp/client"+suffix;
 		String sfile = "/tmp/server"+suffix;		
-		ActiveClientWithNamedPipe client = new ActiveClientWithNamedPipe(null, cfile, sfile, 0, numThread, 128);
+		ActiveNonBlockingClient client = new ActiveNonBlockingClient(null, cfile, sfile, 0, numThread, 128);
 		Thread th1 = new Thread(client);
 		th1.start();
 		

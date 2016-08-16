@@ -17,7 +17,7 @@
  *  Initial developer(s): Misha Badov, Westy
  *
  */
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,8 +25,9 @@ import java.nio.file.Paths;
 import org.json.JSONObject;
 
 import edu.umass.cs.gnscommon.utils.Base64;
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryRequest;
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeQueryResponse;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.activecode.deprecated.protocol.ActiveCodeQueryRequest;
+import edu.umass.cs.gnsserver.activecode.deprecated.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;

@@ -1,10 +1,11 @@
-package edu.umass.cs.gnsserver.activecode.prototype;
+package edu.umass.cs.gnsserver.activecode.scratch;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveMessage;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Channel;
 import edu.umass.cs.gnsserver.activecode.prototype.interfaces.Message;
 import io.mappedbus.MappedBusReader;

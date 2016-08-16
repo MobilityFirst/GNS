@@ -17,7 +17,7 @@
  *  Initial developer(s): Misha Badov, Westy
  *
  */
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeConfig;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.activecode.deprecated.protocol.ActiveCodeMessage;
 import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 

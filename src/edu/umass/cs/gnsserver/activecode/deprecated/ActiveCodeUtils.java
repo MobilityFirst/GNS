@@ -17,7 +17,7 @@
  *  Initial developer(s): Misha Badov, Westy
  *
  */
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,7 +29,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Arrays;
 
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.gnsserver.activecode.deprecated.protocol.ActiveCodeMessage;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**

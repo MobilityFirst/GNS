@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -8,7 +8,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeConfig;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.activecode.deprecated.protocol.ActiveCodeMessage;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -130,7 +132,7 @@ public class ActiveCodeGuardian {
 		}
 	}
 	
-	protected static void cancelTask(ActiveCodeFutureTask task){
+	public static void cancelTask(ActiveCodeFutureTask task){
 		
 		synchronized(task){
 			ActiveCodeClient client = task.getWrappedTask().getClient();

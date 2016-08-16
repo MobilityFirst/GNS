@@ -1,4 +1,4 @@
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;

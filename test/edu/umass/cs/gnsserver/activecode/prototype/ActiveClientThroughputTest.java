@@ -28,14 +28,14 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
 public class ActiveClientThroughputTest {
 	
 	static class SimpleTask implements Callable<ValuesMap>{
-		ActiveClientWithNamedPipe client;
+		ActiveNonBlockingClient client;
 		String guid;
 		String field;
 		String code;
 		ValuesMap value;
 		int ttl;
 		
-		SimpleTask(ActiveClientWithNamedPipe client, String guid, String field, String code, ValuesMap value, int ttl){
+		SimpleTask(ActiveNonBlockingClient client, String guid, String field, String code, ValuesMap value, int ttl){
 			this.client = client;
 			this.guid = guid;
 			this.field = field;
@@ -75,7 +75,7 @@ public class ActiveClientThroughputTest {
 		/**
 		 * Test client performance with named pipe channel
 		 */
-		ActiveClientWithNamedPipe client = new ActiveClientWithNamedPipe(null, cfile, sfile, 0, numThread, 1024);
+		ActiveNonBlockingClient client = new ActiveNonBlockingClient(null, cfile, sfile, 0, numThread, 1024);
 		Thread th = new Thread(client);
 		th.start();
 		

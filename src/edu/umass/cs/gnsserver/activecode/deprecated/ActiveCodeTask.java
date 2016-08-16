@@ -17,14 +17,15 @@
  *  Initial developer(s): Misha Badov, Westy
  *
  */
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeMessage;
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
+import edu.umass.cs.gnsserver.activecode.deprecated.protocol.ActiveCodeMessage;
+import edu.umass.cs.gnsserver.activecode.deprecated.protocol.ActiveCodeParams;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
@@ -76,7 +77,8 @@ public class ActiveCodeTask implements Callable<ValuesMap> {
 	synchronized static void decrNumActiveCount() {
 		activeCount--;
 	}
-	synchronized static int getActiveCount() {
+	
+	public synchronized static int getActiveCount() {
 		return activeCount;
 	}
 

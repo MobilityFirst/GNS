@@ -34,7 +34,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * @author gaozy
  *
  */
-public class ActiveClientWithNamedPipe implements Runnable,Client {
+public class ActiveNonBlockingClient implements Runnable,Client {
 	
 	private final static int DEFAULT_HEAP_SIZE = 128;
 	
@@ -82,7 +82,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 * @param workerNumThread 
 	 * @param heapSize 
 	 */
-	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread, int heapSize){
+	public ActiveNonBlockingClient(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread, int heapSize){
 		this.id = id;
 		this.ifile = ifile;
 		this.ofile = ofile;
@@ -103,7 +103,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 * @param id
 	 * @param workerNumThread
 	 */
-	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
+	public ActiveNonBlockingClient(ActiveDBInterface app, String ifile, String ofile, int id, int workerNumThread){
 		this(app, ifile, ofile, id, workerNumThread, DEFAULT_HEAP_SIZE);
 	}
 	
@@ -131,7 +131,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 * @param id
 	 * @param workerNumThread
 	 */
-	public ActiveClientWithNamedPipe(ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
+	public ActiveNonBlockingClient(ActiveDBInterface app, int port, int serverPort, int id, int workerNumThread){
 		this.pipeEnable = false;
 		this.id = id;
 		this.workerNumThread = workerNumThread;
@@ -156,7 +156,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	 * @param ifile
 	 * @param ofile
 	 */
-	public ActiveClientWithNamedPipe(ActiveDBInterface app, String ifile, String ofile){
+	public ActiveNonBlockingClient(ActiveDBInterface app, String ifile, String ofile){
 		this(app, ifile, ofile, 0, 1);
 	}
 	

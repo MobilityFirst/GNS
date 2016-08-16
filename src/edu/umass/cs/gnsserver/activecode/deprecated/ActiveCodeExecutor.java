@@ -17,7 +17,7 @@
  *  Initial developer(s): Misha Badov, Westy
  *
  */
-package edu.umass.cs.gnsserver.activecode;
+package edu.umass.cs.gnsserver.activecode.deprecated;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -25,6 +25,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+
+import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 
 
 /**

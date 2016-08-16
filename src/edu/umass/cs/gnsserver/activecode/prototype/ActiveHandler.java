@@ -62,14 +62,14 @@ public class ActiveHandler {
 		this.numProcess = numProcess;
 		
 		// initialize single clients and workers
-		clientPool = new ActiveClientWithNamedPipe[numProcess];
+		clientPool = new ActiveNonBlockingClient[numProcess];
 		for (int i=0; i<numProcess; i++){
 			if(pipeEnable){
-				clientPool[i] = new ActiveClientWithNamedPipe(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, numThread);
+				clientPool[i] = new ActiveNonBlockingClient(app, cfilePrefix+i+suffix, sfilePrefix+i+suffix, i, numThread);
 			} else {
-				clientPool[i] = new ActiveClientWithNamedPipe(app, clientPort+i, workerPort+i, i, numThread);
+				clientPool[i] = new ActiveNonBlockingClient(app, clientPort+i, workerPort+i, i, numThread);
 			}
-			new Thread((ActiveClientWithNamedPipe) clientPool[i]).start();
+			new Thread((ActiveNonBlockingClient) clientPool[i]).start();
 		}
 		
 	}
