@@ -177,13 +177,19 @@ public class NSUpdateSupport {
       if (activeCodeNameRecord != null) {
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
       }
+      ValuesMap codeMap = null;
+		try {
+			codeMap = activeCodeNameRecord.getValuesMap();
+		} catch (FieldNotFoundException e) {
+			// do nothing
+		}
       int hopLimit = 1;
       if (activeCodeNameRecord != null
-              && activeCodeHandler.hasCode(activeCodeNameRecord, ActiveCode.WRITE_ACTION)) {
-        String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
+              && activeCodeHandler.hasCode(codeMap, ActiveCode.WRITE_ACTION)) {
+        String code = codeMap.getString(ActiveCode.ON_WRITE);
         ValuesMap packetValuesMap = userJSON;
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}", new Object[]{guid, field, packetValuesMap.toReasonableString()});
-        return activeCodeHandler.runCode(header, code64, guid, field, "write", packetValuesMap, hopLimit);
+        return activeCodeHandler.runCode(header, code, guid, field, "write", packetValuesMap, hopLimit);
       }
     }
     return null;
