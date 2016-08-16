@@ -61,7 +61,7 @@ public class ActiveClientThroughputTest {
 	 * @throws InterruptedException 
 	 */
 	@Test
-	public void test_sequentialRequestThroughput() throws JSONException, ActiveException, InterruptedException, ExecutionException {
+	public void test_parallelRequestThroughput() throws JSONException, ActiveException, InterruptedException, ExecutionException {
 		
 		final String suffix = "";
 
