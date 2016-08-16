@@ -236,7 +236,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	    command.add("-Xmx"+heapSize+"m");
 	    command.add("-cp");
 	    command.add(classpath);
-	    command.add("edu.umass.cs.gnsserver.activecode.prototype.worker.ActiveWorker");
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.unblockingworker.ActiveWorker");
 	    command.add(ifile);
 	    command.add(ofile);
 	    command.add(""+id);
@@ -270,7 +270,7 @@ public class ActiveClientWithNamedPipe implements Runnable,Client {
 	    command.add("-Xmx"+heapSize+"m");
 	    command.add("-cp");
 	    command.add(classpath);
-	    command.add("edu.umass.cs.gnsserver.activecode.prototype.worker.ActiveWorker");
+	    command.add("edu.umass.cs.gnsserver.activecode.prototype.unblockingworker.ActiveWorker");
 	    command.add(""+port1);
 	    command.add(""+port2);
 	    command.add(""+id);
