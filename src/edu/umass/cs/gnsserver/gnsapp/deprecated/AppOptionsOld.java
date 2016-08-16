@@ -82,24 +82,21 @@ public class AppOptionsOld {
   /**
    * Enable active code.
    */
-  public static boolean enableActiveCode = false;
-  //FIXME: The owner of this should move it into GNSConfig
-  /**
-   * Number of active code worker.
-   */
-  public static int activeCodeWorkerCount = 1;
-  //FIXME: The owner of this should move it into GNSConfig
-  /**
-   * How long (in seconds) to blacklist active code.
-   */
-  public static long activeCodeBlacklistSeconds = 10;
+  public static boolean enableActiveCode = true;
 
+  //FIXME: The owner of this should move it into GNSConfig
+  /**
+   * FIXME: this hardcoded path should be able to 
+   */
+  public static String activeConfigFile = "activeConfig";
+  
   // context service options
   public static boolean enableContextService = false;
 
   //FIXME: The owner of this should move it into GNSConfig
   // ip port of one node read from config files.
   public static String contextServiceIpPort = "";
+
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -133,10 +130,10 @@ public class AppOptionsOld {
 //   */
 //  public static final String GNS_SERVER_IP = "gnsServerIP";
 
-  private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
-
   private static final String ENABLE_ACTIVE_CODE = "enableActiveCode";
-
+  
+  public static final String ACTIVE_CONFIG_FILE = "activeConfigFile";
+  
   public static final String ENABLE_CONTEXT_SERVICE = "enableContextService";
 
   public static final String CONTEXT_SERVICE_IP_PORT = "contextServiceHostPort";
@@ -171,7 +168,10 @@ public class AppOptionsOld {
     //context service options
     commandLineOptions.addOption(enableContextService);
     commandLineOptions.addOption(contextServiceHostPort);
-
+    Option enableActiveCode = new Option(ENABLE_ACTIVE_CODE, "set to true to enable active code service on the server side");
+    // active code
+    commandLineOptions.addOption(enableActiveCode);
+    
     return commandLineOptions;
 
   }
@@ -209,10 +209,6 @@ public class AppOptionsOld {
 //    if (allValues.containsKey(GNS_SERVER_IP)) {
 //      gnsServerIP = allValues.get(GNS_SERVER_IP);
 //    }
-
-    if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
-      activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
-    }
 
     if (allValues.containsKey(ENABLE_ACTIVE_CODE)) {
       enableActiveCode = true;

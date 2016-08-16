@@ -19,24 +19,22 @@
  */
 package edu.umass.cs.gnsserver.activecode;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
-import org.apache.commons.codec.binary.Base64;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import edu.umass.cs.gnsserver.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.activecode.prototype.ActiveHandler;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
-import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
+import edu.umass.cs.gnsserver.interfaces.ActiveDBInterface;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
@@ -48,135 +46,121 @@ import edu.umass.cs.gnsserver.utils.ValuesMap;
  *
  * @author Zhaoyu Gao, Westy
  */
+
 public class ActiveCodeHandler {
+	
+	private static final Logger logger = Logger.getLogger("ActiveGNS");
+	
+	private static ActiveHandler handler;
+	
+	/**
+	 * enable debug output
+	 */
+	public static final boolean enableDebugging = false; 
+	
+	/**
+	 * Initializes an ActiveCodeHandler
+	 * @param app
+	 */
+	public ActiveCodeHandler(ActiveDBInterface app) {
+		String configFile = System.getProperty(AppOptionsOld.activeConfigFile);
+		if(configFile != null){
+			try {
+				new ActiveCodeConfig(configFile);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+		handler = new ActiveHandler(app, ActiveCodeConfig.activeCodeWorkerCount, ActiveCodeConfig.activeWorkerThreads);
+	}
+	
+	
+	/**
+	 * Checks to see if this guid has active code for the specified action.
+	 * @param valuesMap 
+	 * @param action can be 'read' or 'write'
+	 * @return whether or not there is active code
+	 */
+	public static boolean hasCode(ValuesMap valuesMap, String action) {
+		try {
+            return valuesMap.has(ActiveCode.getCodeField(action));
+		} catch (Exception e) {
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * @param header 
+	 * @param code
+	 * @param guid
+	 * @param field
+	 * @param action
+	 * @param valuesMap
+	 * @param activeCodeTTL current default is 10
+	 * @return executed result
+	 */
+	public static ValuesMap runCode(InternalRequestHeader header, String code, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
+		try {
+			return handler.runCode(header, guid, field, code, valuesMap, activeCodeTTL);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return valuesMap;
+	}
+	
+	/**
+	 * @return logger
+	 */
+	public static Logger getLogger(){
+		return logger;
+	}
+	
+	/***************************** TEST CODE *********************/
+	/**
+	 * @param args 
+	 * @throws InterruptedException 
+	 * @throws ExecutionException 
+	 * @throws IOException 
+	 * @throws JSONException 
+	 */
+	public static void main(String[] args) throws InterruptedException, ExecutionException, IOException, JSONException {
+		new ActiveCodeHandler(null);
+		
+		// initialize the parameters used in the test 
+		JSONObject obj = new JSONObject();
+		obj.put("testGuid", "success");
+		ValuesMap valuesMap = new ValuesMap(obj);
+		final String guid1 = "guid";
+		final String field1 = "testGuid";
+		final String read_action = "read";
+		
+		String noop_code = new String(Files.readAllBytes(Paths.get("./scripts/activeCode/noop.js"))); 
+		String noop_code64 = Base64.encodeToString(noop_code.getBytes("utf-8"), true);
+		ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
+		
+		int n = 1000000;
+		long t = System.currentTimeMillis();
+		for(int i=0; i<n; i++){
+			ActiveCodeHandler.runCode(null, noop_code64, guid1, field1, read_action, valuesMap, 100);
+		}
+		long elapsed = System.currentTimeMillis() - t;
+		System.out.println(String.format("it takes %d ms, avg_latency = %f us", elapsed, elapsed*1000.0/n));
+		
+	}
 
-  private final ClientPool clientPool;
-  private final ThreadPoolExecutor executorPool;
-  private final Map<String, Long> blacklist;
-  private final long blacklistSeconds;
 
-  protected static final int NANOSECONDS_PER_SEC = 1000000000;
-
-  /**
-   * Initializes an ActiveCodeHandler
-   *
-   * @param app
-   * @param numProcesses
-   * @param blacklistSeconds
-   */
-  public ActiveCodeHandler(GNSApplicationInterface<?> app, int numProcesses, long blacklistSeconds) {
-    clientPool = new ClientPool(app);
-    // Get the ThreadFactory implementation to use
-    ThreadFactory threadFactory = new ActiveCodeThreadFactory(clientPool);
-    // Create the ThreadPoolExecutor
-    executorPool = new ActiveCodeExecutor(numProcesses, numProcesses, 0, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(100),
-            // new SynchronousQueue<Runnable>(),
-            threadFactory, new ThreadPoolExecutor.DiscardPolicy());
-    // Start the processes
-    executorPool.prestartAllCoreThreads();
-    // Blacklist init
-    blacklist = new HashMap<>();
-    this.blacklistSeconds = blacklistSeconds;
-  }
-
-  /**
-   * Checks to see if this guid has active code for the specified action.
-   *
-   * @param nameRecord
-   * @param action can be 'read' or 'write'
-   * @return whether or not there is active code
-   */
-  public boolean hasCode(NameRecord nameRecord, String action) {
-    try {
-      return nameRecord.getValuesMap().has(ActiveCode.getCodeField(action));
-    } catch (FieldNotFoundException e) {
-      return false;
-    }
-  }
-
-  /**
-   * Checks to see if all of the workers are busy.
-   *
-   * @return true if all workers are busy
-   */
-  public boolean isPoolBusy() {
-    return executorPool.getActiveCount() == executorPool.getMaximumPoolSize();
-  }
-
-  /**
-   * Checks to see if the guid is currently blacklisted.
-   *
-   * @param guid
-   * @return true if the guid is blacklisted
-   */
-  public boolean isBlacklisted(String guid) {
-    if (!blacklist.containsKey(guid)) {
-      return false;
-    }
-
-    long blacklistedAt = blacklist.get(guid);
-
-    return (System.nanoTime() - blacklistedAt) < (blacklistSeconds * NANOSECONDS_PER_SEC);
-  }
-
-  /**
-   * Adds the guid to the blacklist
-   *
-   * @param guid
-   */
-  public void addToBlacklist(String guid) {
-    blacklist.put(guid, System.nanoTime());
-  }
-
-  /**
-   * Runs the active code. Returns a {@link ValuesMap}.
-   *
-   * @param code64 base64 encoded active code, as stored in the db
-   * @param guid the guid
-   * @param field the field
-   * @param action either 'read' or 'write'
-   * @param valuesMap
-   * @param activeCodeTTL the remaining active code TTL
-   * @return a Valuesmap
-   */
-  public ValuesMap runCode(InternalRequestHeader header, String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {
-    String code = new String(Base64.decodeBase64(code64));
-    String values = valuesMap.toString();
-    ValuesMap result = null;
-
-    ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
-    FutureTask<ValuesMap> futureTask = new FutureTask<>(new ActiveCodeTask(acp, clientPool));
-
-    // If the guid is blacklisted, just return immediately
-    if (isBlacklisted(guid)) {
-      System.out.println("Guid " + guid + " is blacklisted from running code!");
-      return valuesMap;
-    }
-
-    // Only run if there are free workers and queue space
-    // This prevents excessive CPU usage
-    if (executorPool.getPoolSize() > 0
-            && executorPool.getQueue().remainingCapacity() > 0) {
-      executorPool.execute(futureTask);
-
-      try {
-        result = futureTask.get();
-      } catch (ExecutionException e) {
-        System.out.println("Added " + guid + " to blacklist!");
-        addToBlacklist(guid);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    } else {
-      System.out.println("Rejecting task!");
-    }
-
-    return result;
-  }
-
-public ValuesMap handleActiveCode(InternalRequestHeader header,
-		List<String> fields, String guid, ValuesMap valuesMap, GNSApp app) {
-	throw new RuntimeException("Unimplemented");
-}
+	/**
+	 * @param header
+	 * @param fields
+	 * @param guid
+	 * @param valuesMap
+	 * @param app
+	 * @return
+	 */
+	public ValuesMap handleActiveCode(InternalRequestHeader header,
+			List<String> fields, String guid, ValuesMap valuesMap, GNSApp app) {
+		throw new RuntimeException("Unimplemented");
+	}
 }

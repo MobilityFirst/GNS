@@ -79,7 +79,7 @@ public class SetCode extends BasicCommand {
     Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     GNSResponseCode response = ActiveCode.setCode(guid, action,
             code, writer, signature, message, timestamp, handler);
-
+    
     if (response.isExceptionOrError()) {
       return new CommandResponse(response, BAD_RESPONSE + " " + response.getProtocolCode());
     } else {

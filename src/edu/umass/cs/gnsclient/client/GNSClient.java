@@ -341,6 +341,7 @@ public class GNSClient {
 		static final Set<IntegerPacketType> clientPacketTypes = new HashSet<>(
 				Arrays.asList(Packet.PacketType.COMMAND_RETURN_VALUE));
 
+
 		public AsyncClient(Set<InetSocketAddress> reconfigurators,
 				SSL_MODES sslMode, int clientPortOffset,
 				boolean checkConnectivity) throws IOException {

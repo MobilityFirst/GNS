@@ -311,13 +311,19 @@ public class NSFieldAccess {
   private static ValuesMap handleActiveCode(InternalRequestHeader header, String field, String guid,
           ValuesMap originalValues, GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
+	  
+	  long start = System.nanoTime();
 	  if(!AppOptionsOld.enableActiveCode) return originalValues;
 	  
-    ValuesMap newResult = originalValues;
-    // Only do this for user fields.
-    if (field == null || !InternalField.isInternalField(field)) {
-      int hopLimit = 1;
+	  ValuesMap newResult = originalValues;	  
+	  
+	  // Only do this for user fields.
+	  if (field == null || !InternalField.isInternalField(field)) {
+      int hopLimit = 10;
+            
+      
       // Grab the code because it is of a different type
+      long t = System.nanoTime();
       NameRecord codeRecord = null;
       try {
         codeRecord = NameRecord.getNameRecordMultiUserFields(gnsApp.getDB(), guid,
@@ -325,11 +331,19 @@ public class NSFieldAccess {
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
-
+      DelayProfiler.updateDelayNano("activeFetchCode", t);
+      
+      boolean hasCode = false;
+		try {
+			hasCode = gnsApp.getActiveCodeHandler().hasCode(codeRecord.getValuesMap(), ActiveCode.READ_ACTION);
+		} catch (FieldNotFoundException e1) {
+			e1.printStackTrace();
+		}
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
-              && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
+              && hasCode) {
         try {
-          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);          
+          
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
                   new Object[]{guid, field, originalValues.toString()});
 
@@ -337,13 +351,14 @@ public class NSFieldAccess {
                   "read", originalValues, hopLimit);
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
                   newResult.toString());
-
+          
         } catch (Exception e) {
           ClientSupportConfig.getLogger().log(Level.FINE, "Active code error: {0}",
                   e.getMessage());
         }
       }
     }
+	DelayProfiler.updateDelayNano("activeTotal", start);
     return newResult;
   }
 }

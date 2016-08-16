@@ -1617,10 +1617,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws ClientException
    * @throws IOException
    */
-  public void activeCodeSet(String guid, String action, byte[] code,
+  public void activeCodeSet(String guid, String action, String code,
           GuidEntry writerGuid) throws ClientException, IOException {
     getResponse(CommandType.SetCode, writerGuid, GUID, guid,
-            AC_ACTION, action, AC_CODE, Base64.encodeToString(code, true),
+            AC_ACTION, action, AC_CODE, code,
             WRITER, writerGuid.getGuid());
   }
 
@@ -1631,12 +1631,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @return Active code of {@code guid} as byte[]
    * @throws Exception
    */
-  public byte[] activeCodeGet(String guid, String action, GuidEntry readerGuid)
+  public String activeCodeGet(String guid, String action, GuidEntry readerGuid)
           throws Exception {
     String code64String = getResponse(CommandType.GetCode,
             readerGuid, GUID, guid, AC_ACTION, action, READER,
             readerGuid.getGuid());
-    return code64String != null ? Base64.decode(code64String) : null;
+    return code64String;
   }
 
   // Extended commands

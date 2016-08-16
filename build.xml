@@ -37,6 +37,7 @@ value="GNS-${build.major.number}.${build.minor.number}.${build.revision.number}"
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes.dir}"/>
     <mkdir dir="${build.test.classes.dir}"/>
+    <mkdir dir="${bin.dir}"/>
   </target>
 
   <!-- pretty much everything depends on this -->

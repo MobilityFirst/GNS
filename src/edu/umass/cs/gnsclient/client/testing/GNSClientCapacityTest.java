@@ -1,6 +1,8 @@
 package edu.umass.cs.gnsclient.client.testing;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,7 +12,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -20,9 +21,7 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
-import edu.umass.cs.gigapaxos.testing.TESTPaxosMain;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
@@ -30,11 +29,9 @@ import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
-import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig;
-import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig.TRC;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.DelayProfiler;
@@ -63,7 +60,8 @@ public class GNSClientCapacityTest extends DefaultTest {
 	private static GuidEntry[] guidEntries;
 	private static GNSClientCommands[] clients;
 	private static ScheduledThreadPoolExecutor executor;
-
+	private static boolean isRead = true;
+	
 	private static Logger log = GNSClientConfig.getLogger();
 
 	/**
@@ -91,6 +89,11 @@ public class GNSClientCapacityTest extends DefaultTest {
 				(int) Math.ceil(numGuids * 1.0 / numGuidsPerAccount), 1);
 		accountGuidEntries = new GuidEntry[numAccountGuids];
 		guidEntries = new GuidEntry[numGuids];
+		if(System.getProperty("isRead")!=null){
+			isRead = Boolean.parseBoolean(System.getProperty("isRead"));
+			System.out.println("Set to write operation!");
+		}
+		
 	}
 
 	private static void setupClientsAndGuids() throws Exception {
@@ -179,6 +182,7 @@ public class GNSClientCapacityTest extends DefaultTest {
 				subGuids.clear();
 			}
 		}
+		
 		for (GuidEntry guidEntry : accountGuidEntries)
 			assert (guidEntry != null);
 		for (GuidEntry guidEntry : guidEntries)
@@ -190,15 +194,38 @@ public class GNSClientCapacityTest extends DefaultTest {
 
 	private static final String someField = "someField";
 	private static final String someValue = "someValue";
-
+	private static final String activeField ="activeField";
+	
 	/**
 	 * Verifies a single write is successful.
+	 * @throws IOException 
 	 */
 	@Test
-	public void test_01_SingleWrite() {
+	public void test_01_SingleWrite() throws IOException {
 		GuidEntry guid = guidEntries[0];
+		String codeFile = System.getProperty("activeCode");
+		int activeValue = 0; 
+		String activeDepth = System.getProperty("activeDepth");
+		if(activeDepth != null)
+			activeValue = Integer.parseInt(activeDepth);
+		
+		if(codeFile == null)
+			codeFile = "scripts/activeCode/noop.js";
+		
+		
+		String code = new String(Files.readAllBytes(Paths.get(codeFile)));
+
 		try {
 			clients[0].fieldUpdate(guid, someField, someValue);
+			clients[0].fieldUpdate(guid, activeField, activeValue);
+			// prepare for active code
+			if(isRead){
+				clients[0].activeCodeClear(guid.getGuid(), ActiveCode.READ_ACTION, guid);
+				clients[0].activeCodeSet(guid.getGuid(), ActiveCode.READ_ACTION, code, guid);
+			}else{
+				clients[0].activeCodeClear(guid.getGuid(), ActiveCode.WRITE_ACTION, guid);
+				clients[0].activeCodeSet(guid.getGuid(), ActiveCode.WRITE_ACTION, code, guid);
+			}
 			// verify written value
 			Assert.assertEquals(clients[0].fieldRead(guid, someField),
 					(someValue));
@@ -278,7 +305,28 @@ public class GNSClientCapacityTest extends DefaultTest {
 			}
 		});
 	}
+	
+	
+	private void blockingWrite(int clientIndex, GuidEntry guid, boolean signed) {
+		executor.submit(new Runnable() {
+			public void run() {
+				try {
+					if (signed)
+						clients[clientIndex].fieldUpdate(guid, someField, someValue);
+					else
+						clients[clientIndex].fieldUpdate(guid, someField, someValue);
 
+					incrFinishedReads();
+				} catch (Exception e) {
+					log.severe("Client " + clientIndex + " failed to read "
+							+ guid);
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+	
+	
 	/**
 	 * @throws Exception
 	 */
@@ -289,7 +337,11 @@ public class GNSClientCapacityTest extends DefaultTest {
 				Config.getGlobalInt(TC.NUM_REQUESTS));
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			blockingRead(numReads % numClients, guidEntries[0], true);
+			if(isRead){
+				blockingRead(numReads % numClients, guidEntries[0], true);
+			}else{
+				blockingWrite(numReads % numClients, guidEntries[0], true);
+			}
 		}
 		System.out.print("[total_reads=" + numReads+": ");
 		int lastCount = 0;
@@ -322,7 +374,11 @@ public class GNSClientCapacityTest extends DefaultTest {
 		reset();
 		long t = System.currentTimeMillis();
 		for (int i = 0; i < numReads; i++) {
-			blockingRead(numReads % numClients, guidEntries[0], false);
+			if(isRead){
+				blockingRead(numReads % numClients, guidEntries[0], false);
+			} else{
+				blockingWrite(numReads % numClients, guidEntries[0], false);
+			}
 		}
 		int j = 1;
 		System.out.print("[total_reads=" + numReads+": ");
@@ -339,7 +395,9 @@ public class GNSClientCapacityTest extends DefaultTest {
 				+ "K/s");
 		}
 	}
+	
 
+	
 	/**
 	 * Removes all account and sub-guids created during the test.
 	 * 

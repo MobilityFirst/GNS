@@ -25,6 +25,7 @@ import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnsserver.activecode.ActiveCodeDB;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
 import edu.umass.cs.gnsserver.database.MongoRecords;
@@ -389,6 +390,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     ccpListenerAdmin = new ListenerAdmin(requestHandler);
     ccpListenerAdmin.start();
     admintercessor.setListenerAdmin(ccpListenerAdmin);
+
     appAdmin = new AppAdmin(this, gnsNodeConfig);
     appAdmin.start();
     GNSConfig.getLogger().log(Level.INFO, "{0} Admin thread initialized", nodeID);
@@ -402,9 +404,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
             || Config.getGlobalString(GNSConfig.GNSC.DNS_SERVER_NODES).contains(nodeID)) {
       startDNS();
     }
-    this.activeCodeHandler = AppOptionsOld.enableActiveCode ? new ActiveCodeHandler(this,
-    		AppOptionsOld.activeCodeWorkerCount,
-    		AppOptionsOld.activeCodeBlacklistSeconds) : null;
+    this.activeCodeHandler = AppOptionsOld.enableActiveCode ? new ActiveCodeHandler(new ActiveCodeDB()) : null;
 
     // context service init
     if (AppOptionsOld.enableContextService) {
@@ -415,6 +415,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
       contextServiceGNSClient = new ContextServiceGNSClient(host, port);
       GNSConfig.getLogger().fine("ContextServiceGNSClient initialization completed");
     }
+
 
     constructed = true;
   }

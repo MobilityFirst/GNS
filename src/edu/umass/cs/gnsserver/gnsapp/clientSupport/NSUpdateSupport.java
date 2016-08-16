@@ -165,6 +165,7 @@ public class NSUpdateSupport {
     nameRecord.updateNameRecord(field, updateValue, oldValue, argument, newValue, operation);
   }
 
+
   private static ValuesMap handleActiveCode(InternalRequestHeader header, String guid, String field, ValuesMap userJSON, BasicRecordMap db, ActiveCodeHandler activeCodeHandler) throws FailedDBOperationException, FieldNotFoundException, JSONException {
     // Only do active field handling for user fields.
     if (field == null || !InternalField.isInternalField(field)) {
@@ -177,9 +178,10 @@ public class NSUpdateSupport {
       if (activeCodeNameRecord != null) {
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
       }
-      int hopLimit = 1;
+      int hopLimit = 10;
+      boolean hasCode = activeCodeHandler.hasCode(activeCodeNameRecord.getValuesMap(), ActiveCode.WRITE_ACTION);
       if (activeCodeNameRecord != null
-              && activeCodeHandler.hasCode(activeCodeNameRecord, ActiveCode.WRITE_ACTION)) {
+              && hasCode) {
         String code64 = activeCodeNameRecord.getValuesMap().getString(ActiveCode.ON_WRITE);
         ValuesMap packetValuesMap = userJSON;
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}", new Object[]{guid, field, packetValuesMap.toReasonableString()});

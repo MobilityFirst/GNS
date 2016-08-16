@@ -372,6 +372,7 @@ public class GNSConfig {
     return LOG;
   }
 
+
   /**
    * Attempts to look for a MANIFEST file in that contains the Build-Version
    * attribute.
@@ -403,4 +404,5 @@ public class GNSConfig {
     }
     return result;
   }
+
 }

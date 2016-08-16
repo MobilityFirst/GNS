@@ -76,6 +76,7 @@ import org.json.JSONObject;
  */
 public class AccountAccess {
 
+
   /**
    * Defines the field name in an account guid where account information is
    * stored.
