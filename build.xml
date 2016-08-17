@@ -390,7 +390,9 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
 			<param name="integrationTest.startServer" value="false"/>
 		</antcall>
 		<antcall target="startServer"/>
-		<antcall target="testThreaded"/>
+		<antcall target="testThreaded">
+			<param name="integrationTest.startServer" value="false"/>
+		</antcall>
 		<antcall target="runSingleTests"/>
 		<antcall target="endServer"/>
   </target>
@@ -519,6 +521,7 @@ integration tests sequentially"
 
      <target name="testThreaded" description="Runs the default integration tests in parallel" 
           depends="compile, compiletest">
+    <property name="integrationTest.startServer" value="true"/>
     <property name="integrationTestRuns" value="5"/>
     <property name="integrationTestThreads" value="3"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
@@ -527,12 +530,12 @@ integration tests sequentially"
       <jvmarg value="-ea"/>
       <jvmarg value="-Djavax.net.ssl.trustStorePassword=qwerty"/>
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
-      <jvmarg value="-DstartServer=false"/>
+      <jvmarg value="-DstartServer=${integrationTest.startServer}"/>
       <jvmarg value="-DintegrationTest.runs=${integrationTestRuns}"/>
       <jvmarg value="-DintegrationTest.threads=${integrationTestThreads}"/>
       <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.properties"/>
       <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.anttest.properties"/>
-      <jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>
+      <!--<jvmarg value="-Dserver.command=scripts/3nodeslocal/reset_and_restart.sh"/>-->
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
       </classpath>
