@@ -66,11 +66,11 @@ public class ReadUnsigned extends Read {
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
 	
-	  // arun: This is a serious security bug
+	  // arun: This is a serious security bug, commenting it out.
     
 	  // Tells the lookup handler that we don't need to authenticate.
     // Will be moved to the client and will something more secure in the future.
-    json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
+//    json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
     return super.execute(header, json, handler);
   }
 
