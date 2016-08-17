@@ -325,15 +325,21 @@ public class NSFieldAccess {
       } catch (RecordNotFoundException e) {
         //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
-
+      
+      	ValuesMap codeMap = null;
+		try {
+			codeMap = codeRecord.getValuesMap();
+		} catch (FieldNotFoundException e) {
+			// do nothing
+		}
       if (codeRecord != null && originalValues != null && gnsApp.getActiveCodeHandler() != null
-              && gnsApp.getActiveCodeHandler().hasCode(codeRecord, ActiveCode.READ_ACTION)) {
+              && gnsApp.getActiveCodeHandler().hasCode(codeMap, ActiveCode.READ_ACTION)) {
         try {
-          String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+          String code = codeMap.getString(ActiveCode.ON_READ);
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0} {1} {2}",
                   new Object[]{guid, field, originalValues.toString()});
 
-          newResult = gnsApp.getActiveCodeHandler().runCode(header, code64, guid, field,
+          newResult = gnsApp.getActiveCodeHandler().runCode(header, code, guid, field,
                   "read", originalValues, hopLimit);
           ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}",
                   newResult.toString());

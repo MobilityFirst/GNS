@@ -81,10 +81,10 @@ public class ActiveCodeGet extends ConsoleCommand {
       }
 
       String action = st.nextToken();
-      byte[] value = gnsClient.activeCodeGet(guid, action, module.getCurrentGuid());
+      String value = gnsClient.activeCodeGet(guid, action, module.getCurrentGuid());
 
       if (value != null) {
-        console.printString(new String(value, "UTF-8"));
+        console.printString(value);
         console.printNewline();
       } else {
         console.printString("No activecode set for GUID " + guid + "for action '" + action + "'");
