@@ -361,7 +361,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <!--<formatter type="brief" usefile="false"/> -->
     </junit>
   </target> 
-  <target name="test" description="Runs the default integration test against a 3 node server" 
+  <target name="test" description="Runs the default integration test against a 3 node server." 
           depends="compile, compiletest">
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
