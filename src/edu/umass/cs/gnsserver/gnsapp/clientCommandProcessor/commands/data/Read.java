@@ -52,6 +52,9 @@ import org.json.JSONObject;
  */
 public class Read extends BasicCommand {
 	
+	/**
+	 * Necessary parameters
+	 */
 	public static final String[] PARAMS = {GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
 
   /**
