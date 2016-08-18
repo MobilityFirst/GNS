@@ -363,6 +363,8 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
   </target> 
   <target name="test" description="Runs the default integration test against a 3 node server." 
           depends="compile, compiletest">
+    <property name="gigapaxosConfig" value="conf/gnsserver.3local.unittest.properties"/>
+    <property name="java.util.logging.config.file" value="conf/logging.gns.properties"/>
     <junit printsummary="yes" fork="yes" haltonfailure="on" showoutput="yes">
       <test name="edu.umass.cs.gnsclient.client.integrationtests.ServerIntegrationTest"/>
       <formatter type="plain" usefile="false"/>
@@ -371,8 +373,8 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <jvmarg value="-Djavax.net.ssl.trustStore=conf/trustStore/node100.jks"/>
       <jvmarg value="-DstartServer=true"/>
       <jvmarg value="-DinheritIO=true"/>
-      <jvmarg value="-DgigapaxosConfig=conf/gnsserver.3local.unittest.properties"/>
-      <jvmarg value="-Djava.util.logging.config.file=conf/logging.gns.properties"/>
+      <jvmarg value="-DgigapaxosConfig=${gigapaxosConfig}"/>
+      <jvmarg value="-Djava.util.logging.config.file=${java.util.logging.config.file}"/>
       <jvmarg value="-Dserver.command=bin/gpServer.sh"/>
       <classpath>
         <pathelement location="${build.test.classes.dir}"/>
