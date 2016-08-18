@@ -67,7 +67,7 @@ public class NSFieldAccess {
    * @return ResultValue
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static ValuesMap lookupJSONFieldLocalNoAuth(InternalRequestHeader header, String guid, String field,
+  public static ValuesMap lookupJSONFieldLocally(InternalRequestHeader header, String guid, String field,
           GNSApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     return lookupJSONFieldLocalNoAuth(header, guid, field, gnsApp, true);
@@ -286,7 +286,7 @@ public class NSFieldAccess {
    */
   public static ValuesMap lookupJSONFieldAnywhere(String guid, String field,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
-    ValuesMap result = lookupJSONFieldLocalNoAuth(null, guid, field, gnsApp);
+    ValuesMap result = lookupJSONFieldLocally(null, guid, field, gnsApp);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result == null && !gnsApp.getDB().containsName(guid)) {
       try {

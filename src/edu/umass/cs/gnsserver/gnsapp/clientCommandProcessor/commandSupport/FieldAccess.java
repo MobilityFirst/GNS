@@ -124,7 +124,7 @@ public class FieldAccess {
     }
     ValuesMap valuesMap;
     try {
-      valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(header, guid, field, handler.getApp());
+      valuesMap = NSFieldAccess.lookupJSONFieldLocally(header, guid, field, handler.getApp());
       if (reader != null) {
         // read is null means a magic internal request so we
         // only strip internal fields when read is not null
@@ -266,7 +266,7 @@ public class FieldAccess {
     String resultString;
     GNSResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(header, guid, GNSCommandProtocol.ALL_FIELDS, handler.getApp());
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocally(header, guid, GNSCommandProtocol.ALL_FIELDS, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toString();
         responseCode = GNSResponseCode.NO_ERROR;
@@ -341,7 +341,7 @@ public class FieldAccess {
     String resultString;
     GNSResponseCode responseCode;
     try {
-      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid,
+      ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocally(null, guid,
               GNSCommandProtocol.ALL_FIELDS, handler.getApp());
       if (valuesMap != null) {
         resultString = valuesMap.removeInternalFields().toJSONObjectFirstOnes().toString();

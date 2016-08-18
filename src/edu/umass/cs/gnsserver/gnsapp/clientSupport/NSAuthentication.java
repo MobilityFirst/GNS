@@ -75,16 +75,22 @@ public class NSAuthentication {
   private static final Cache<String, String> PUBLIC_KEY_CACHE
           = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
 
-  private static AclResult aclCheck(String guid, String field,
+  private static AclResult aclCheck(String targetGuid, String field,
           String accessorGuid, MetaDataTypeName access,
           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
-     ClientSupportConfig.getLogger().log(Level.FINE,
-              "ACL Check guid={0} key={1} accessor={2} access={3}", new Object[]{guid, field, accessorGuid, access});
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "ACL Check guid={0} key={1} accessor={2} access={3}", new Object[]{targetGuid, field, accessorGuid, access});
+
+    // This method attempts to look up the public key as well as check for ACL access.
     String publicKey;
     boolean aclCheckPassed = false;
-    if (accessorGuid.equals(guid)) {
-      // The simple case where we're accessing our own guid
-      publicKey = lookupPublicKeyFromGuidLocallyWithCacheing(guid, gnsApp);
+    if (accessorGuid.equals(targetGuid)) {
+      // This handles the simple case where we're accessing our own guid. 
+      // Access is always allowed to our own guid so we just need to get
+      // the public key out of the guid - possibly from the cache.
+      publicKey = lookupPublicKeyFromGuidLocallyWithCacheing(targetGuid, gnsApp);
+      // Return an error immediately here because if we can't find the public key 
+      // the guid must not be local which is a problem.
       if (publicKey == null) {
         return new AclResult("", false, GNSResponseCode.BAD_GUID_ERROR);
       }
@@ -92,16 +98,17 @@ public class NSAuthentication {
     } else {
       // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
       // accesssed.
-      publicKey = lookupPublicKeyInACL(guid, field, accessorGuid, access, gnsApp);
+      publicKey = lookupPublicKeyInACL(targetGuid, field, accessorGuid, access, gnsApp);
       if (publicKey != null) {
         // If we found the public key in the lookupPublicKey call then our access control list
-        // check is done.
+        // check is done because the public key of the accessorGuid is in the given acl of targetGuid.
         aclCheckPassed = true;
-        // otherwise handle the case where the accessor is a group guid and we need to lookup the 
-        // public key from the guid record which might not be local
       } else {
+        // One final case we need to handles is when the the accessorGuid is actually in a group guid
+        // and the group guid is in the acl in which case we need to explicitly lookup the 
+        // publickey in possibly another server. 
         GuidInfo accessorGuidInfo;
-        if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp)) != null) {
+        if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(accessorGuid, gnsApp)) != null) {
           ClientSupportConfig.getLogger().log(Level.FINE,
                   "================> Catchall lookup returned: {0}", accessorGuidInfo);
           publicKey = accessorGuidInfo.getPublicKey();
@@ -109,12 +116,15 @@ public class NSAuthentication {
       }
     }
     if (publicKey == null) {
-      // If we haven't found the publicKey of the accessorGuid yet it's not allowed access
+      // If we haven't found the publicKey of the accessorGuid yet it's not allowed access.
       return new AclResult("", false, GNSResponseCode.BAD_ACCESSOR_ERROR);
     } else if (!aclCheckPassed) {
       // Otherwise, we need to find out if this accessorGuid is in a group guid that
-      // is in the acl of the field
-      aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp);
+      // is in the acl of the field.
+      // Note that this a full-blown acl check that checks all the cases, but currenly it
+      // is only used for checking the case where the accessorGuid is in a group guid
+      // that is in the acl.
+      aclCheckPassed = NSAccessSupport.verifyAccess(access, targetGuid, field, accessorGuid, gnsApp);
     }
     return new AclResult(publicKey, aclCheckPassed, GNSResponseCode.NO_ERROR);
   }
@@ -163,7 +173,7 @@ public class NSAuthentication {
       }
     }
     if (aclResult == null) {
-    	assert(false) : "Should never come here";
+      assert (false) : "Should never come here";
       // Something went wrong above, but we shouldn't really get here.
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
@@ -229,7 +239,7 @@ public class NSAuthentication {
     // because it's not going to have an entry in the ACL
     if (publicKey == null && publicKeys.contains(EVERYONE)) {
       GuidInfo accessorGuidInfo;
-      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp)) != null) {
+      if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfoAnywhere(accessorGuid, gnsApp)) != null) {
         GNSConfig.getLogger().log(Level.FINE,
                 "================> {0} lookup for EVERYONE returned {1}",
                 new Object[]{access.toString(), accessorGuidInfo});
@@ -260,5 +270,5 @@ public class NSAuthentication {
       return result;
     }
   }
-  
+
 }

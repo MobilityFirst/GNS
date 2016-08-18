@@ -112,6 +112,11 @@ public class GNSConfig {
      */
     ADMIN_FILE("conf/admin.file"),
     /**
+     * Commands older than this value (send by a client more than this 
+     * interval ago) will be rejected by the server.
+     */
+    STALE_COMMAND_INTERVAL_IN_MINUTES(30),
+    /**
      * The default port used by mongo. 27017 is the default mongo uses.
      */
     MONGO_PORT(27017),
@@ -139,24 +144,24 @@ public class GNSConfig {
      */
     APPLICATION_NAME("an application"),
     /**
-     * Set to"all" or a node id if you want to start an instance of the LocalNameServer when the app starts.
+     * Set to "all" or a node id if you want to start an instance of the LocalNameServer when the app starts.
      */
     LOCAL_NAME_SERVER_NODES("none"),
     /**
-     * Set to "all" or a node id if you want to start the DNS server when the app starts.
+     * For the DNS service set to "all" or a node id if you want to start the DNS server when the app starts.
      */
     DNS_SERVER_NODES("none"),
     /**
-     * Set to true if you want the DNS server to not lookup 
+     * For the DNS service set to true if you want the DNS server to not lookup 
      * records using DNS (will only lookup records in the GNS).
      */
     DNS_GNS_ONLY(false),
     /**
-     * Name of the GNS server to forward GNS requests.
+     * For the DNS service the name of the GNS server to forward GNS requests.
      */
     GNS_SERVER_IP("none"),
     /**
-     * Set to true if you want the DNS server to forward requests to DNS and GNS servers.
+     * For the DNS service set to true if you want the DNS server to forward requests to DNS and GNS servers.
      */
     DNS_ONLY(false);
 

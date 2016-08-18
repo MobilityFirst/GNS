@@ -81,7 +81,7 @@ public class NSAccessSupport {
         signatureInstances[i] = Signature.getInstance(SIGNATURE_ALGORITHM);
       }
     } catch (NoSuchAlgorithmException e) {
-      ClientSupportConfig.getLogger().severe("Unable to initialize for authentication:" + e);
+      ClientSupportConfig.getLogger().log(Level.SEVERE, "Unable to initialize for authentication:{0}", e);
     }
   }
 
@@ -146,13 +146,11 @@ public class NSAccessSupport {
       }
     }
 
-    //KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
     Signature sigInstance = getSignatureInstance();
     synchronized (sigInstance) {
-      // Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
       sigInstance.initVerify(publicKey);
       sigInstance.update(message.getBytes("UTF-8"));
       // FIXME CHANGE THIS TO BASE64 (below) TO SAVE SOME SPACE ONCE THE
@@ -228,11 +226,11 @@ public class NSAccessSupport {
   }
 
   /**
-   * Checks to see if the reader given in readerInfo can access the field of the user given by guidInfo.
+   * Checks to see if the accessorGuid can access the field of the guid.
    * Access type is some combo of read, and write, and blacklist or whitelist.
-   * Note: Blacklists are currently not activated.
+   * Note: Blacklists are currently not supported.
    *
-   * @param access
+   * @param accessType
    * @param guid
    * @param field
    * @param accessorGuid
@@ -240,17 +238,16 @@ public class NSAccessSupport {
    * @return true if the the reader has access
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
+  public static boolean verifyAccess(MetaDataTypeName accessType, String guid, String field,
           String accessorGuid, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
-    //String accessorGuid = SharedGuidUtils.createGuidStringFromBase64PublicKey(accessorPublicKey);
     ClientSupportConfig.getLogger().log(Level.FINE,
             "User: {0} Reader: {1} Field: {2}",
             new Object[]{guid, accessorGuid, field});
     if (guid.equals(accessorGuid)) {
       return true; // can always read your own stuff
-    } else if (hierarchicalAccessCheck(access, guid, field, accessorGuid, activeReplica)) {
+    } else if (hierarchicalAccessCheck(accessType, guid, field, accessorGuid, activeReplica)) {
       return true; // accessor can see this field
-    } else if (checkForAccess(access, guid, ALL_FIELDS, accessorGuid, activeReplica)) {
+    } else if (checkForAccess(accessType, guid, ALL_FIELDS, accessorGuid, activeReplica)) {
       return true; // accessor can see all fields
     } else {
       ClientSupportConfig.getLogger().log(Level.FINE,
@@ -264,7 +261,7 @@ public class NSAccessSupport {
    * Handles checking of fields with dot notation.
    * Checks deepest field first then backs up.
    *
-   * @param access
+   * @param accessType
    * @param guidInfo
    * @param field
    * @param accessorInfo
@@ -272,28 +269,41 @@ public class NSAccessSupport {
    * @return true if the accessor has access
    * @throws FailedDBOperationException
    */
-  private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid,
+  private static boolean hierarchicalAccessCheck(MetaDataTypeName accessType, String guid,
           String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     ClientSupportConfig.getLogger().log(Level.FINE, "###field={0}", field);
-    if (checkForAccess(access, guid, field, accessorGuid, activeReplica)) {
+    if (checkForAccess(accessType, guid, field, accessorGuid, activeReplica)) {
       return true;
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return hierarchicalAccessCheck(access, guid, field.substring(0, field.lastIndexOf(".")),
+      return hierarchicalAccessCheck(accessType, guid, field.substring(0, field.lastIndexOf(".")),
               accessorGuid, activeReplica);
     } else {
+      // check all the way up and there is no access
       return false;
     }
   }
 
-  private static boolean checkForAccess(MetaDataTypeName access, String guid, String field, String accessorGuid,
+  /**
+   * Does the access check for the given access type on field for the guid and accessorGuid.
+   * Field can be dotted and at any level.
+   * 
+   * @param accessType
+   * @param guid
+   * @param field
+   * @param accessorGuid
+   * @param activeReplica
+   * @return
+   * @throws FailedDBOperationException 
+   */
+  private static boolean checkForAccess(MetaDataTypeName accessType, String guid, String field, String accessorGuid,
           GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
       // FIXME: Tidy this mess up.
       @SuppressWarnings("unchecked")
-      Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access,
+      Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(accessType,
               guid, field, activeReplica.getDB());
       ClientSupportConfig.getLogger().log(Level.FINE, "{0} allowed users of {1} : {2}", new Object[]{guid, field, allowedusers});
       if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica)) {
@@ -315,6 +325,17 @@ public class NSAccessSupport {
     }
   }
 
+  /**
+   * Performs the ultimate check to see if guid is in the list of allowed users (which is a list of public keys).
+   * Also handles the case where one of the groups that accessorguid is in is a member of allowed users.
+   * Finally handles the case where the allowed users contains the EVERYONE symbol.
+   * 
+   * @param accessorGuid - the guid that we are checking for access
+   * @param allowedUsers - the list of publickeys that are in the acl
+   * @param activeReplica
+   * @return
+   * @throws FailedDBOperationException
+   */
   private static boolean checkAllowedUsers(String accessorGuid,
           Set<String> allowedUsers, GNSApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (SharedGuidUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
@@ -324,8 +345,7 @@ public class NSAccessSupport {
       return true;
     } else {
       // see if allowed users (the public keys for the guids and group guids that is in the ACL) 
-      // intersects with the groups that this
-      // guid is a member of (which is stored with this guid)
+      // intersects with the groups that this guid is a member of (which is stored with this guid)
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Looking up groups for {0} and check against {1}",
               new Object[]{accessorGuid, SharedGuidUtils.convertPublicKeysToGuids(allowedUsers)});

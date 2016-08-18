@@ -83,7 +83,7 @@ public class NSUpdateSupport {
             "Processing local update {0} / {1} {2} {3}",
             new Object[]{guid, field, operation, updateValue});
     GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
-    // writer will the INTERNAL_OP_SECRET for internal system reads
+    // writer will be the INTERNAL_OP_SECRET for internal system reads
     // Fixme: get rid of null writer uses
     if (writer != null && !writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
       if (field != null) {
