@@ -193,7 +193,7 @@ public class ServerIntegrationTest extends DefaultTest {
 	 * tests, i.e., every request should be retransmitted until success
 	 * assuming that any server can fail at any time.
    */
-  private static final long WAIT_TILL_ALL_SERVERS_READY = 5000;
+  private static final long WAIT_TILL_ALL_SERVERS_READY = 15000;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
