@@ -17,16 +17,18 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArray;
 
 /**
  *
  * @author westy
  */
+@Deprecated
 public class ReadArraySelf extends ReadArray {
 
   /**
@@ -39,7 +41,8 @@ public class ReadArraySelf extends ReadArray {
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.ReadArraySelf;
+    return CommandType.Unknown;
+    //return CommandType.ReadArraySelf;
   }
 
   @Override

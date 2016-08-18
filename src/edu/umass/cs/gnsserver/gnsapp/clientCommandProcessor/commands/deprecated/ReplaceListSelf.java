@@ -17,43 +17,57 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdateList;
 
 /**
  *
  * @author westy
  */
-public class CreateSelf extends Create {
+@Deprecated
+public class ReplaceListSelf extends AbstractUpdateList {
 
   /**
    *
    * @param module
    */
-  public CreateSelf(CommandModule module) {
+  public ReplaceListSelf(CommandModule module) {
     super(module);
   }
   
   @Override
   public CommandType getCommandType() {
-    return CommandType.CreateSelf;
+    return CommandType.Unknown;
+    //return CommandType.ReplaceListSelf;
   }
+
+  /**
+   * Return the update operation.
+   * 
+   * @return an {@link UpdateOperation}
+   */
+  @Override
+  public UpdateOperation getUpdateOperation() {
+    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;
+  }
+
+//  @Override
+//  public String getCommandName() {
+//    return REPLACE_LIST;
+//  }
 
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return CREATE;
-//  }
-
   @Override
   public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID.";
+    return "Replaces the current value key value pair from the GNS for the given guid with the given values.";
   }
 }

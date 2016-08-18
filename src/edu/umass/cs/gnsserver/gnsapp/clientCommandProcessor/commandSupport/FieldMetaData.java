@@ -22,8 +22,10 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
+import edu.umass.cs.utils.Config;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -108,7 +110,9 @@ public class FieldMetaData {
   public static void add(MetaDataTypeName type, String guid,
           String key, String value, Date timestamp, ClientRequestHandlerInterface handler) {
     FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, timestamp, handler);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, 
+            Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, 
+            timestamp, handler);
   }
 
   /**

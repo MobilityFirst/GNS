@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class AppendOrCreateListSelf extends AbstractUpdateList {
+@Deprecated
+public class RemoveSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public AppendOrCreateListSelf(CommandModule module) {
+  public RemoveSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.AppendOrCreateListSelf;
+    return CommandType.Unknown;
+    //return CommandType.RemoveSelf;
   }
 
   /**
@@ -50,12 +53,12 @@ public class AppendOrCreateListSelf extends AbstractUpdateList {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE;
+    return UpdateOperation.SINGLE_FIELD_REMOVE;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return APPEND_OR_CREATE_LIST;
+//    return REMOVE;
 //  }
 
   @Override
@@ -65,8 +68,7 @@ public class AppendOrCreateListSelf extends AbstractUpdateList {
 
   @Override
   public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID if it doesn not exist "
-            + "otherwise appends values onto existing value."
-            + "Value is a list of items formated as a JSON list.";
+    return "Removes the value from the key value pair for the given GUID. See below for more on the signature.";
+
   }
 }

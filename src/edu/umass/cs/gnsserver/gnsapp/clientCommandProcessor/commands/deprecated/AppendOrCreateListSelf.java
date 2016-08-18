@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdateList;
 
 /**
  *
  * @author westy
  */
-public class SetSelf extends AbstractUpdate {
+@Deprecated
+public class AppendOrCreateListSelf extends AbstractUpdateList {
 
   /**
    *
    * @param module
    */
-  public SetSelf(CommandModule module) {
+  public AppendOrCreateListSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.SetSelf;
+    return CommandType.Unknown;
+    //return CommandType.AppendOrCreateListSelf;
   }
 
   /**
@@ -50,22 +53,23 @@ public class SetSelf extends AbstractUpdate {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_SET;
+    return UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return SET;
+//    return APPEND_OR_CREATE_LIST;
 //  }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, N, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Replaces element N with newvalue in the key value pair for the given GUID. See below for more on the signature.";
-
+    return "Adds a key value pair to the GNS for the given GUID if it doesn not exist "
+            + "otherwise appends values onto existing value."
+            + "Value is a list of items formated as a JSON list.";
   }
 }

@@ -53,11 +53,6 @@ public class CreateIndex extends AbstractUpdate {
     return UpdateOperation.CREATE_INDEX;
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return CREATE_INDEX;
-//  }
-
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};

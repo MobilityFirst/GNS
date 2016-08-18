@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class SetFieldNullSelf extends AbstractUpdate {
+@Deprecated
+public class RemoveFieldSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public SetFieldNullSelf(CommandModule module) {
+  public RemoveFieldSelf(CommandModule module) {
     super(module);
   }
   
-  @Override
+   @Override
   public CommandType getCommandType() {
-    return CommandType.SetFieldNullSelf;
+    return CommandType.Unknown;
+    //return CommandType.RemoveFieldSelf;
   }
 
   /**
@@ -50,12 +53,12 @@ public class SetFieldNullSelf extends AbstractUpdate {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_SET_FIELD_NULL;
+    return UpdateOperation.SINGLE_FIELD_REMOVE_FIELD;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return SET_FIELD_NULL;
+//    return REMOVE_FIELD;
 //  }
 
   @Override
@@ -65,7 +68,7 @@ public class SetFieldNullSelf extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Sets the field to contain a null value.";
-            
+    return "Removes the key value pair from the GNS for the given guid after "
+            + "authenticating that GUID making request has access authority.";
   }
 }

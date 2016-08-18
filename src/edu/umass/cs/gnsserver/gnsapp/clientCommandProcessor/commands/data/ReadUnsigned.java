@@ -19,24 +19,9 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.utils.Config;
-
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
-import java.text.ParseException;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import edu.umass.cs.gnscommon.GNSCommandProtocol;
 
 /**
  *
@@ -59,25 +44,13 @@ public class ReadUnsigned extends Read {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD};
-  }
-
-  @Override
-  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
-	
-	  // arun: This is a serious security bug, commenting it out.
-    
-	  // Tells the lookup handler that we don't need to authenticate.
-    // Will be moved to the client and will something more secure in the future.
-//    json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-    return super.execute(header, json, handler);
+    return new String[]{GNSCommandProtocol.GUID, GNSCommandProtocol.FIELD};
   }
 
   @Override
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS. Does not require authentication but "
             + "field must be set to be readable by everyone or the magic token needs to be supplied."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields. ";
+            + " Specify " + GNSCommandProtocol.ALL_FIELDS + " as the <field> to return all fields. ";
   }
 }

@@ -1494,7 +1494,8 @@ public class AccountAccess {
           AccountInfo accountInfo, ClientRequestHandlerInterface handler,
           boolean sendToReplica) {
     return !updateAccountInfo(accountInfo.getGuid(), accountInfo,
-            null, null, null, null, handler, sendToReplica)
+            Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, 
+            null, handler, sendToReplica)
             .isExceptionOrError();
   }
 
@@ -1518,7 +1519,8 @@ public class AccountAccess {
   private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo,
           ClientRequestHandlerInterface handler) {
 
-    return !updateGuidInfo(guidInfo, null, null, null, null, handler)
+    return !updateGuidInfo(guidInfo, 
+            Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, null, handler)
             .isExceptionOrError();
   }
 

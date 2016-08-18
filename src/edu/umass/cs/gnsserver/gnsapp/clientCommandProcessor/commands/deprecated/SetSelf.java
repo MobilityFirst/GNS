@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class RemoveSelf extends AbstractUpdate {
+@Deprecated
+public class SetSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public RemoveSelf(CommandModule module) {
+  public SetSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.RemoveSelf;
+    return CommandType.Unknown;
+    //return CommandType.SetSelf;
   }
 
   /**
@@ -50,22 +53,22 @@ public class RemoveSelf extends AbstractUpdate {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_REMOVE;
+    return UpdateOperation.SINGLE_FIELD_SET;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return REMOVE;
+//    return SET;
 //  }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, VALUE, N, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Removes the value from the key value pair for the given GUID. See below for more on the signature.";
+    return "Replaces element N with newvalue in the key value pair for the given GUID. See below for more on the signature.";
 
   }
 }

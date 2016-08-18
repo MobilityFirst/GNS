@@ -95,7 +95,8 @@ public class ReadArray extends BasicCommand {
 
     if (getCommandType().equals(CommandType.ReadArrayOne)
             || getCommandType().equals(CommandType.ReadArrayOneUnsigned)
-            || getCommandType().equals(CommandType.ReadArrayOneSelf)) {
+            //|| getCommandType().equals(CommandType.ReadArrayOneSelf)
+            ) {
       if (ALL_FIELDS.equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {

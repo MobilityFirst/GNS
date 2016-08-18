@@ -17,44 +17,46 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList;
 
 /**
- * Command that adds an empty field to the GNS for the given GUID.
- * 
+ *
  * @author westy
  */
-public class CreateEmptySelf extends Create {
+@Deprecated
+public class CreateListSelf extends CreateList {
 
   /**
    *
    * @param module
    */
-  public CreateEmptySelf(CommandModule module) {
+  public CreateListSelf(CommandModule module) {
     super(module);
   }
   
   @Override
   public CommandType getCommandType() {
-    return CommandType.CreateEmptySelf;
+    return CommandType.Unknown;
+    //return CommandType.CreateListSelf;
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return CREATE;
+//    return CREATE_LIST;
 //  }
-
+  
   @Override
   public String getCommandDescription() {
-    return "Adds an empty field to the GNS for the given GUID.";
+    return "Adds a key value pair to the GNS for the given GUID. Value is a list of items formated as a JSON list.";
   }
 }

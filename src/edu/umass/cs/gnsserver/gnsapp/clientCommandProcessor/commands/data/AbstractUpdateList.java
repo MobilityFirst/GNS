@@ -83,9 +83,9 @@ public abstract class AbstractUpdateList extends BasicCommand {
       timestamp = null;
     }
     GNSResponseCode responseCode;
-    if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
-      writer = null;
-    }
+//    if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
+//      writer = null;
+//    }
 
     if (!(responseCode = FieldAccess.update(header, guid, field,
             JSONUtils.JSONArrayToResultValue(new JSONArray(value)),

@@ -118,7 +118,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws IOException
    */
   public GNSClientCommands() throws IOException {
-    super((InetSocketAddress)null);
+    super((InetSocketAddress) null);
   }
 
   /**
@@ -131,36 +131,34 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
           throws IOException {
     super(anyReconfigurator);
   }
-  
-	private long readTimeout = 8000;
-	/**
-	 * Returns the timeout value (milliseconds) used when sending commands to
-	 * the server.
-	 *
-	 * @return value in milliseconds
-	 */
-	public long getReadTimeout() {
-		return readTimeout;
-	}
 
-	/**
-	 * Sets the timeout value (milliseconds) used when sending commands to the
-	 * server.
-	 *
-	 * @param readTimeout
-	 *            in milliseconds
-	 */
-	public void setReadTimeout(long readTimeout) {
-		this.readTimeout = readTimeout;
-	}
+  private long readTimeout = 8000;
 
+  /**
+   * Returns the timeout value (milliseconds) used when sending commands to
+   * the server.
+   *
+   * @return value in milliseconds
+   */
+  public long getReadTimeout() {
+    return readTimeout;
+  }
+
+  /**
+   * Sets the timeout value (milliseconds) used when sending commands to the
+   * server.
+   *
+   * @param readTimeout
+   * in milliseconds
+   */
+  public void setReadTimeout(long readTimeout) {
+    this.readTimeout = readTimeout;
+  }
 
   /**
    * Invariant: A single CommandPacket should have complete information about
    * how to handle the command.
    */
-
-
   /**
    * arun: All occurrences of checkResponse( createAndSignCommand have been
    * replaced by this getResponse method.
@@ -170,14 +168,14 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   private String getResponse(CommandType commandType, GuidEntry querier,
           Object... keysAndValues) throws ClientException, IOException {
-	  GNSCommand commandPacket = null;
+    GNSCommand commandPacket = null;
     return record(// just instrumentation
             commandType,
             CommandUtils.checkResponse(this
-                            .getCommandValueReturnPacket(
-                                    commandPacket = getCommand(commandType,
-                                            querier, keysAndValues),
-                                    (long) this.getReadTimeout()), commandPacket));
+                    .getCommandValueReturnPacket(
+                            commandPacket = getCommand(commandType,
+                                    querier, keysAndValues),
+                            (long) this.getReadTimeout()), commandPacket));
   }
 
   private static final boolean RECORD_ENABLED = true;
@@ -229,12 +227,11 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   private static GNSCommand getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
-	  GNSCommand packet = new GNSCommand(
-    		//CommandPacket(randomLong(),
+    GNSCommand packet = new GNSCommand(
+            //CommandPacket(randomLong(),
             CommandUtils.createAndSignCommand(type, querier, keysAndValues));
     return packet;
   }
-
 
   // READ AND WRITE COMMANDS
   /**
@@ -372,10 +369,16 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   public boolean fieldExists(String targetGuid, String field, GuidEntry reader)
           throws Exception {
     try {
-      getResponse(reader != null ? CommandType.Read
-              : CommandType.ReadUnsigned, reader, GUID, targetGuid,
-              FIELD, field, READER, reader != null ? reader.getGuid()
-                      : null);
+      if (reader != null) {
+        getResponse(CommandType.Read, reader,
+                GUID, targetGuid, FIELD, field,
+                READER, reader.getGuid());
+      } else {
+        getResponse(CommandType.ReadUnsigned, reader,
+                GUID, targetGuid, FIELD, field,
+                READER, null);
+      }
+
       return true;
     } catch (FieldNotFoundException e) {
       return false;
@@ -414,9 +417,13 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   public String fieldRead(String targetGuid, String field, GuidEntry reader)
           throws Exception {
-    return CommandUtils.specialCaseSingleField(getResponse(reader != null ? CommandType.Read
-            : CommandType.ReadUnsigned, reader, GUID, targetGuid, FIELD,
-            field, READER, reader != null ? reader.getGuid() : null));
+    if (reader != null) {
+      return CommandUtils.specialCaseSingleField(getResponse(CommandType.Read, reader,
+              GUID, targetGuid, FIELD, field, READER, reader.getGuid()));
+    } else {
+      return CommandUtils.specialCaseSingleField(getResponse(CommandType.ReadUnsigned, reader,
+              GUID, targetGuid, FIELD, field, READER, null));
+    }
   }
 
   /**
@@ -601,7 +608,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws IOException
    * @throws ClientException
    */
-  
   public JSONObject lookupGuidRecord(String guid) throws IOException,
           ClientException {
     try {
@@ -679,19 +685,19 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   }
 
-  	/**
-	 * Register a new account guid with the corresponding alias on the GNS
-	 * server. This generates a new guid and a public / private key pair.
-	 * Returns a GuidEntry for the new account which contains all of this
-	 * information.
-	 *
-	 * @param alias
-	 *            - a human readable alias to the guid - usually an email
-	 *            address
-	 * @param password
-	 * @return GuidEntry for {@code alias}
-	 * @throws Exception
-	 */
+  /**
+   * Register a new account guid with the corresponding alias on the GNS
+   * server. This generates a new guid and a public / private key pair.
+   * Returns a GuidEntry for the new account which contains all of this
+   * information.
+   *
+   * @param alias
+   * - a human readable alias to the guid - usually an email
+   * address
+   * @param password
+   * @return GuidEntry for {@code alias}
+   * @throws Exception
+   */
   public GuidEntry accountGuidCreate(String alias, String password)
           throws Exception {
 
@@ -766,7 +772,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @return the newly created GUID entry
    * @throws Exception
    */
-  
   public GuidEntry guidCreate(GuidEntry accountGuid, String alias)
           throws Exception {
 
@@ -2109,8 +2114,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   @Deprecated
   public String adminEnable(String passkey) throws Exception {
-	  return getResponse(CommandType.Admin, NAME,
-			  RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);
+    return getResponse(CommandType.Admin, NAME,
+            RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);
   }
 
   /**
@@ -2121,10 +2126,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   @Deprecated
   public void parameterSet(String field, Object value, String passkey)
-		  throws Exception {
-	  getResponse(CommandType.SetParameter, NAME,
-			  RC.BROADCAST_NAME.getDefaultValue(), FIELD, field, VALUE,
-			  value, PASSKEY, passkey);
+          throws Exception {
+    getResponse(CommandType.SetParameter, NAME,
+            RC.BROADCAST_NAME.getDefaultValue(), FIELD, field, VALUE,
+            value, PASSKEY, passkey);
   }
 
   /**
@@ -2136,9 +2141,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   @Deprecated
   public String parameterGet(String name, String passkey) throws Exception {
-	  return getResponse(CommandType.GetParameter, NAME,
-			  RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY,
-			  passkey);
+    return getResponse(CommandType.GetParameter, NAME,
+            RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY,
+            passkey);
   }
 
   @Override

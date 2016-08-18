@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
+import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -223,11 +224,14 @@ public class GroupAccess {
 
     GNSConfig.getLogger().log(Level.FINE, "DELETE CLEANUP: {0}", guid);
     try {
-      // just so you know all the nulls mean we're ignoring signatures and authentication
-      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null,
+      // We're ignoring signatures and authentication
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, 
+              Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null,
               null, handler, true).toStringSet()) {
         GNSConfig.getLogger().log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
-        removeFromGroup(groupGuid, guid, null, null, null, handler);
+        removeFromGroup(groupGuid, guid,  
+                Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, 
+                handler);
       }
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);

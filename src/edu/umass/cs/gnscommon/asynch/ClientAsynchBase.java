@@ -481,7 +481,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   @Deprecated // unused except ClientAsynchTest
   protected long lookupAccountRecord(String accountGuid, RequestCallback callback)
           throws IOException, ClientException, JSONException {
-    return sendCommandAsynch(createCommand(CommandType.LookupGuidRecord, GUID, accountGuid), callback);
+    return sendCommandAsynch(createCommand(CommandType.LookupAccountRecord, GUID, accountGuid), callback);
   }
 
   /**
@@ -498,9 +498,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   public long fieldRead(String guid, String field, RequestCallback callback)
           throws IOException, JSONException, ClientException {
-    // Send a read command that doesn't need authentication.
-    // FIXME: MAGIC_STRING stuff is currently on the server.
-    return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, GUID, guid, FIELD, field), callback);
+    return sendCommandAsynch(createCommand(CommandType.ReadUnsigned, 
+            GUID, guid, FIELD, field,
+            READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**
@@ -517,8 +517,9 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
   public long fieldReadArray(String guid, String field, RequestCallback callback)
           throws IOException, JSONException, ClientException {
     // Send a read command that doesn't need authentication.
-    // FIXME: MAGIC_STRING stuff is currently on the server.
-    return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned, GUID, guid, FIELD, field), callback);
+    return sendCommandAsynch(createCommand(CommandType.ReadArrayUnsigned, 
+            GUID, guid, FIELD, field,
+            READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET)), callback);
   }
 
   /**

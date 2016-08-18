@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdateList;
 
 /**
  *
  * @author westy
  */
-public class AppendWithDuplicationSelf extends AbstractUpdate {
+@Deprecated
+public class ReplaceOrCreateListSelf extends AbstractUpdateList {
 
   /**
    *
    * @param module
    */
-  public AppendWithDuplicationSelf(CommandModule module) {
+  public ReplaceOrCreateListSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.AppendWithDuplicationSelf;
+    return CommandType.Unknown;
+    //return CommandType.ReplaceOrCreateListSelf;
   }
 
   /**
@@ -50,12 +53,12 @@ public class AppendWithDuplicationSelf extends AbstractUpdate {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION;
+    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return APPEND_WITH_DUPLICATION;
+//    return REPLACE_OR_CREATE_LIST;
 //  }
 
   @Override
@@ -65,6 +68,8 @@ public class AppendWithDuplicationSelf extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates.";
+    return "Adds a key value pair to the GNS for the given GUID if it does not exist otherwise "
+            + "replaces the value of this key value pair for the given GUID with the value. "
+            + "Value is a list of items formated as a JSON list.";
   }
 }

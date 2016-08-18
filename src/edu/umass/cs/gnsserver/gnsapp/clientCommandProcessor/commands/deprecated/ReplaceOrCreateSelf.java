@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class SubstituteListSelf extends AbstractUpdateList {
+@Deprecated
+public class ReplaceOrCreateSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public SubstituteListSelf(CommandModule module) {
+  public ReplaceOrCreateSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.SubstituteListSelf;
+    return CommandType.Unknown;
+    //return CommandType.ReplaceOrCreateSelf;
   }
 
   /**
@@ -50,22 +53,22 @@ public class SubstituteListSelf extends AbstractUpdateList {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_SUBSTITUTE;
+    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return SUBSTITUTE_LIST;
+//    return REPLACE_OR_CREATE;
 //  }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, OLD_VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
-            + "Value is a list of items formated as a JSON list.";
+    return "Adds a key value pair to the GNS for the given GUID if it doesn not exist otherwise "
+            + "replaces the value of this key value pair for the given GUID.";
   }
 }

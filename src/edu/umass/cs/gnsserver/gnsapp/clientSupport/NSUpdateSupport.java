@@ -21,9 +21,11 @@ import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
+import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -81,9 +83,11 @@ public class NSUpdateSupport {
             "Processing local update {0} / {1} {2} {3}",
             new Object[]{guid, field, operation, updateValue});
     GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
-    if (writer != null) {
+    // writer will the INTERNAL_OP_SECRET for internal system reads
+    // Fixme: get rid of null writer uses
+    if (writer != null && !writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
       if (field != null) {
-        // writer will be null for internal system reads
+        
         errorCode = NSAuthentication.signatureAndACLCheck(guid,
                 field, null,
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
@@ -96,6 +100,7 @@ public class NSUpdateSupport {
                 "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
         return GNSResponseCode.ACCESS_ERROR;
       }
+    } else {
     }
     // Check for stale commands.
     if (timestamp != null) {

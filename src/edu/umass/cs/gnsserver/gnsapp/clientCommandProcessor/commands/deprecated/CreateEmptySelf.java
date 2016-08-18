@@ -17,56 +17,47 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create;
 
 /**
- *
+ * Command that adds an empty field to the GNS for the given GUID.
+ * 
  * @author westy
  */
-public class ReplaceOrCreateListSelf extends AbstractUpdateList {
+@Deprecated
+public class CreateEmptySelf extends Create {
 
   /**
    *
    * @param module
    */
-  public ReplaceOrCreateListSelf(CommandModule module) {
+  public CreateEmptySelf(CommandModule module) {
     super(module);
   }
-
+  
   @Override
   public CommandType getCommandType() {
-    return CommandType.ReplaceOrCreateListSelf;
+    return CommandType.Unknown;
+    //return CommandType.CreateEmptySelf;
   }
 
-  /**
-   * Return the update operation.
-   *
-   * @return an {@link UpdateOperation}
-   */
   @Override
-  public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE;
+  public String[] getCommandParameters() {
+    return new String[]{GUID, FIELD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return REPLACE_OR_CREATE_LIST;
+//    return CREATE;
 //  }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
   public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID if it does not exist otherwise "
-            + "replaces the value of this key value pair for the given GUID with the value. "
-            + "Value is a list of items formated as a JSON list.";
+    return "Adds an empty field to the GNS for the given GUID.";
   }
 }

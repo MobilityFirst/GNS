@@ -496,7 +496,9 @@ public class ThroughputAsynchMultiClientTest {
   private static CommandPacket createReadCommandPacket(GNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(CommandType.ReadUnsigned, GUID, targetGuid, FIELD, field);
+      command = createCommand(CommandType.ReadUnsigned, 
+              GUID, targetGuid, FIELD, field,
+              READER, null);
     } else {
       command = createAndSignCommand(CommandType.Read,
               reader.getPrivateKey(),

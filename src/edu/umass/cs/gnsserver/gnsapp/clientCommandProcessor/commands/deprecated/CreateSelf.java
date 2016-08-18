@@ -17,54 +17,46 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Create;
 
 /**
  *
  * @author westy
  */
-public class AppendSelf extends AbstractUpdate {
+@Deprecated
+public class CreateSelf extends Create {
 
   /**
    *
    * @param module
    */
-  public AppendSelf(CommandModule module) {
+  public CreateSelf(CommandModule module) {
     super(module);
   }
-
+  
   @Override
   public CommandType getCommandType() {
-    return CommandType.AppendSelf;
+    return CommandType.Unknown;
+    //return CommandType.CreateSelf;
   }
-
-  /**
-   * Return the update operation.
-   *
-   * @return an {@link UpdateOperation}
-   */
-  @Override
-  public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_APPEND;
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return APPEND;
-//  }
 
   @Override
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
+//  @Override
+//  public String getCommandName() {
+//    return CREATE;
+//  }
+
   @Override
   public String getCommandDescription() {
-    return "Appends the value onto the key value pair for the given GUID. Treats the list as a set, removing duplicates";
+    return "Adds a key value pair to the GNS for the given GUID.";
   }
 }

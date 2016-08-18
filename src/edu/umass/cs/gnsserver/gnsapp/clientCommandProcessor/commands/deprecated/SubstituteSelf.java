@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class AppendListSelf extends AbstractUpdateList {
+@Deprecated
+public class SubstituteSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public AppendListSelf(CommandModule module) {
+  public SubstituteSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.AppendListSelf;
+    return CommandType.Unknown;
+    //return CommandType.SubstituteSelf;
   }
 
   /**
@@ -50,21 +53,21 @@ public class AppendListSelf extends AbstractUpdateList {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_APPEND;
+    return UpdateOperation.SINGLE_FIELD_SUBSTITUTE;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return APPEND_LIST;
+//    return SUBSTITUTE;
 //  }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, VALUE, OLD_VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list.";
+    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. See below for more on the signature.";
   }
 }

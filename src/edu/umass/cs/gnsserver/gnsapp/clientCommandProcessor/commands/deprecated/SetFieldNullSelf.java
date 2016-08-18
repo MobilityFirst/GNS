@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class ReplaceListSelf extends AbstractUpdateList {
+@Deprecated
+public class SetFieldNullSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public ReplaceListSelf(CommandModule module) {
+  public SetFieldNullSelf(CommandModule module) {
     super(module);
   }
   
   @Override
   public CommandType getCommandType() {
-    return CommandType.ReplaceListSelf;
+    return CommandType.Unknown;
+    //return CommandType.SetFieldNullSelf;
   }
 
   /**
@@ -50,21 +53,22 @@ public class ReplaceListSelf extends AbstractUpdateList {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;
+    return UpdateOperation.SINGLE_FIELD_SET_FIELD_NULL;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return REPLACE_LIST;
+//    return SET_FIELD_NULL;
 //  }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{GUID, FIELD, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Replaces the current value key value pair from the GNS for the given guid with the given values.";
+    return "Sets the field to contain a null value.";
+            
   }
 }

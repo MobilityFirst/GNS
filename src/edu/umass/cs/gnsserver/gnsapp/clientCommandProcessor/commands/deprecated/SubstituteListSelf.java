@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdateList;
 
 /**
  *
  * @author westy
  */
-public class SubstituteSelf extends AbstractUpdate {
+@Deprecated
+public class SubstituteListSelf extends AbstractUpdateList {
 
   /**
    *
    * @param module
    */
-  public SubstituteSelf(CommandModule module) {
+  public SubstituteListSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.SubstituteSelf;
+    return CommandType.Unknown;
+    //return CommandType.SubstituteListSelf;
   }
 
   /**
@@ -55,7 +58,7 @@ public class SubstituteSelf extends AbstractUpdate {
 
 //  @Override
 //  public String getCommandName() {
-//    return SUBSTITUTE;
+//    return SUBSTITUTE_LIST;
 //  }
 
   @Override
@@ -65,6 +68,7 @@ public class SubstituteSelf extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. See below for more on the signature.";
+    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
+            + "Value is a list of items formated as a JSON list.";
   }
 }

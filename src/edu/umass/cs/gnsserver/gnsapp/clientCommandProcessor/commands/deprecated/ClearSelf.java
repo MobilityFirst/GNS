@@ -17,30 +17,49 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class ReadSelf extends Read {
+@Deprecated
+public class ClearSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public ReadSelf(CommandModule module) {
+  public ClearSelf(CommandModule module) {
     super(module);
   }
   
   @Override
   public CommandType getCommandType() {
-    return CommandType.ReadSelf;
+    return CommandType.Unknown;
+    //return CommandType.ClearSelf;
   }
+
+  /**
+   * Return the update operation.
+   * 
+   * @return an {@link UpdateOperation}
+   */
+  @Override
+  public UpdateOperation getUpdateOperation() {
+    return UpdateOperation.SINGLE_FIELD_CLEAR;
+  }
+
+//  @Override
+//  public String getCommandName() {
+//    return CLEAR;
+//  }
 
   @Override
   public String[] getCommandParameters() {
@@ -49,7 +68,7 @@ public class ReadSelf extends Read {
 
   @Override
   public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
+    return "Clears the key value pair from the GNS for the given guid after "
+            + "authenticating that GUID making request has access authority.";
   }
 }

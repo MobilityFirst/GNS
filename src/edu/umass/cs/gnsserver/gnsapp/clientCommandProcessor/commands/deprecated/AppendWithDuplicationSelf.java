@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class ReplaceSelf extends AbstractUpdate {
+@Deprecated
+public class AppendWithDuplicationSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public ReplaceSelf(CommandModule module) {
+  public AppendWithDuplicationSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.ReplaceSelf;
+    return CommandType.Unknown;
+    //return CommandType.AppendWithDuplicationSelf;
   }
 
   /**
@@ -50,12 +53,12 @@ public class ReplaceSelf extends AbstractUpdate {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;
+    return UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return REPLACE;
+//    return APPEND_WITH_DUPLICATION;
 //  }
 
   @Override
@@ -65,6 +68,6 @@ public class ReplaceSelf extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Replaces the current value key value pair from the GNS for the given guid.";
+    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates.";
   }
 }

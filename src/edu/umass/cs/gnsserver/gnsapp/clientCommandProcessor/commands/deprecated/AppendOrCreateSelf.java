@@ -17,30 +17,33 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
 
 /**
  *
  * @author westy
  */
-public class AppendListWithDuplicationSelf extends AbstractUpdateList {
+@Deprecated
+public class AppendOrCreateSelf extends AbstractUpdate {
 
   /**
    *
    * @param module
    */
-  public AppendListWithDuplicationSelf(CommandModule module) {
+  public AppendOrCreateSelf(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.AppendListWithDuplicationSelf;
+    return CommandType.Unknown;
+    //return CommandType.AppendOrCreateSelf;
   }
 
   /**
@@ -50,12 +53,12 @@ public class AppendListWithDuplicationSelf extends AbstractUpdateList {
    */
   @Override
   public UpdateOperation getUpdateOperation() {
-    return UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION;
+    return UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE;
   }
 
 //  @Override
 //  public String getCommandName() {
-//    return APPEND_LIST_WITH_DUPLICATION;
+//    return APPEND_OR_CREATE;
 //  }
 
   @Override
@@ -65,7 +68,6 @@ public class AppendListWithDuplicationSelf extends AbstractUpdateList {
 
   @Override
   public String getCommandDescription() {
-    return "Appends the values onto of this key value pair for the given GUID. Treats the list as a list, allows dupicate. "
-            + "Value is a list of items formated as a JSON list.";
+    return "Adds a key value pair to the GNS for the given GUID if it doesn't not exist otherwise append value onto existing value.";
   }
 }

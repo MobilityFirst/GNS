@@ -47,18 +47,18 @@ public enum CommandType {
   AppendList(111, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendList.class,
           GNSCommand.ResultType.NULL, true, false),
-  AppendListSelf(112, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  AppendListSelf(112, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   AppendListUnsigned(113, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
   AppendListWithDuplication(114, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplication.class,
           GNSCommand.ResultType.NULL, true, false),
-  AppendListWithDuplicationSelf(115, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  AppendListWithDuplicationSelf(115, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   AppendListWithDuplicationUnsigned(116, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendListWithDuplicationUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -69,31 +69,31 @@ public enum CommandType {
   AppendOrCreateList(121, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateList.class,
           GNSCommand.ResultType.NULL, true, false),
-  AppendOrCreateListSelf(122, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  AppendOrCreateListSelf(122, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateListUnsigned(123, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateListUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
-  AppendOrCreateSelf(124, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  AppendOrCreateSelf(124, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   AppendOrCreateUnsigned(125, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendOrCreateUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
   //
-  AppendSelf(130, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  AppendSelf(130, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   AppendUnsigned(131, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
   AppendWithDuplication(132, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplication.class,
           GNSCommand.ResultType.NULL, true, false),
-  AppendWithDuplicationSelf(133, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  AppendWithDuplicationSelf(133, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   AppendWithDuplicationUnsigned(134, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AppendWithDuplicationUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -101,9 +101,9 @@ public enum CommandType {
   Clear(140, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Clear.class,
           GNSCommand.ResultType.NULL, true, false),
-  ClearSelf(141, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  ClearSelf(141, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   ClearUnsigned(142, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ClearUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -114,25 +114,25 @@ public enum CommandType {
   CreateEmpty(151, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmpty.class,
           GNSCommand.ResultType.NULL, true, false),
-  CreateEmptySelf(152, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmptySelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  CreateEmptySelf(152, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateEmptySelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   CreateList(153, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateList.class,
           GNSCommand.ResultType.NULL, true, false),
-  CreateListSelf(154, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateListSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
-  CreateSelf(155, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  CreateListSelf(154, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateListSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
+  //  CreateSelf(155, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   //
   Read(160, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Read.class,
           GNSCommand.ResultType.MAP, true, false),
-  ReadSelf(161, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadSelf.class,
-          GNSCommand.ResultType.MAP, true, false),
+  //  ReadSelf(161, Type.READ,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadSelf.class,
+  //          GNSCommand.ResultType.MAP, true, false),
   ReadUnsigned(162, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadUnsigned.class,
           GNSCommand.ResultType.MAP, true, false),
@@ -149,15 +149,15 @@ public enum CommandType {
   ReadArrayOne(171, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOne.class,
           GNSCommand.ResultType.STRING, true, false),
-  ReadArrayOneSelf(172, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneSelf.class,
-          GNSCommand.ResultType.STRING, true, false),
+  //  ReadArrayOneSelf(172, Type.READ,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneSelf.class,
+  //          GNSCommand.ResultType.STRING, true, false),
   ReadArrayOneUnsigned(173, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayOneUnsigned.class,
           GNSCommand.ResultType.STRING, true, false),
-  ReadArraySelf(174, Type.READ,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArraySelf.class,
-          GNSCommand.ResultType.LIST, true, false),
+  //  ReadArraySelf(174, Type.READ,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArraySelf.class,
+  //          GNSCommand.ResultType.LIST, true, false),
   ReadArrayUnsigned(175, Type.READ,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReadArrayUnsigned.class,
           GNSCommand.ResultType.LIST, true, false),
@@ -168,15 +168,15 @@ public enum CommandType {
   RemoveList(181, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveList.class,
           GNSCommand.ResultType.NULL, true, false),
-  RemoveListSelf(182, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  RemoveListSelf(182, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   RemoveListUnsigned(183, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveListUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
-  RemoveSelf(184, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  RemoveSelf(184, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   RemoveUnsigned(185, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -187,9 +187,9 @@ public enum CommandType {
   ReplaceList(191, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceList.class,
           GNSCommand.ResultType.NULL, true, false),
-  ReplaceListSelf(192, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  ReplaceListSelf(192, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   ReplaceListUnsigned(193, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceListUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -200,21 +200,21 @@ public enum CommandType {
   ReplaceOrCreateList(211, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateList.class,
           GNSCommand.ResultType.NULL, true, false),
-  ReplaceOrCreateListSelf(212, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  ReplaceOrCreateListSelf(212, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   ReplaceOrCreateListUnsigned(213, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateListUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
-  ReplaceOrCreateSelf(214, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  ReplaceOrCreateSelf(214, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   ReplaceOrCreateUnsigned(215, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceOrCreateUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
-  ReplaceSelf(216, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  ReplaceSelf(216, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   ReplaceUnsigned(217, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.ReplaceUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -236,15 +236,15 @@ public enum CommandType {
   SubstituteList(232, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteList.class,
           GNSCommand.ResultType.NULL, true, false),
-  SubstituteListSelf(233, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  SubstituteListSelf(233, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   SubstituteListUnsigned(234, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteListUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
-  SubstituteSelf(235, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  SubstituteSelf(235, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   SubstituteUnsigned(236, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SubstituteUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -252,9 +252,9 @@ public enum CommandType {
   RemoveField(240, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveField.class,
           GNSCommand.ResultType.NULL, true, false),
-  RemoveFieldSelf(241, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  RemoveFieldSelf(241, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   RemoveFieldUnsigned(242, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.RemoveFieldUnsigned.class,
           GNSCommand.ResultType.NULL, true, false),
@@ -262,15 +262,15 @@ public enum CommandType {
   Set(250, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.Set.class,
           GNSCommand.ResultType.NULL, true, false),
-  SetSelf(251, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  SetSelf(251, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   SetFieldNull(252, Type.UPDATE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNull.class,
           GNSCommand.ResultType.NULL, true, false),
-  SetFieldNullSelf(253, Type.UPDATE,
-          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNullSelf.class,
-          GNSCommand.ResultType.NULL, true, false),
+  //  SetFieldNullSelf(253, Type.UPDATE,
+  //          edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.SetFieldNullSelf.class,
+  //          GNSCommand.ResultType.NULL, true, false),
   //
   // Select Commands - not sure about the coordination of any of the select commands
   //
@@ -540,30 +540,31 @@ public enum CommandType {
     }
   }
 
-  /* Westy: please fill these in. The chain of any command must contain a list
-	 * of all commands that the execution of that command MAY invoke. For
-	 * example, if AddGuid may (not necessarily every time) invoke LookupGuid as
-	 * a step, LookupGuid belongs to AddGuid's chain. The list interpretation is
-	 * somewhat loose as the call chain is really a DAG, but it is good to
-	 * flatten the DAG in breadth-first order, e.g., if A->B and B->C and B->D
-	 * and D->E, where "->" means "invokes", the chain of A is {B,C,D,E}. It is
-	 * okay to stop recursively unraveling a chain, e.g., stop at A->B, if what
-	 * follows is identical to B's chain.
-	 * 
-	 * Hopefully there are no cycles in these chains. Assume standard execution
-	 * for all commands, i.e., with no active code enabled, while listing chains.
+  /**
+   * The chain of any command must contain a list
+   * of all commands that the execution of that command MAY invoke. For
+   * example, if AddGuid may (not necessarily every time) invoke LookupGuid as
+   * a step, LookupGuid belongs to AddGuid's chain. The list interpretation is
+   * somewhat loose as the call chain is really a DAG, but it is good to
+   * flatten the DAG in breadth-first order, e.g., if A->B and B->C and B->D
+   * and D->E, where "->" means "invokes", the chain of A is {B,C,D,E}. It is
+   * okay to stop recursively unraveling a chain, e.g., stop at A->B, if what
+   * follows is identical to B's chain.
+   *
+   * Hopefully there are no cycles in these chains. Assume standard execution
+   * for all commands, i.e., with no active code enabled, while listing chains.
    */
   static {
     Read.setChain(ReadUnsigned);
-    ReadSelf.setChain(ReadUnsigned);
+    //ReadSelf.setChain(ReadUnsigned);
     ReadUnsigned.setChain();
     ReadMultiField.setChain(ReadUnsigned);
     ReadMultiFieldUnsigned.setChain(ReadUnsigned);
     ReadArray.setChain(ReadUnsigned);
     ReadArrayOne.setChain(ReadUnsigned);
-    ReadArrayOneSelf.setChain(ReadUnsigned);
+    //ReadArrayOneSelf.setChain(ReadUnsigned);
     ReadArrayOneUnsigned.setChain();
-    ReadArraySelf.setChain(ReadUnsigned);
+    //ReadArraySelf.setChain(ReadUnsigned);
     ReadArrayUnsigned.setChain();
     // Every command that is a subclass of AbstractUpdate could potentially call ReadUnsigned 
     // because of the group guid check in NSAuthentication.signatureAndACLCheck.
@@ -571,65 +572,65 @@ public enum CommandType {
     // which is most of them.
     Append.setChain(ReadUnsigned);
     AppendList.setChain(ReadUnsigned);
-    AppendListSelf.setChain(ReadUnsigned);
+    //AppendListSelf.setChain(ReadUnsigned);
     AppendListUnsigned.setChain(ReadUnsigned);
     AppendListWithDuplication.setChain(ReadUnsigned);
-    AppendListWithDuplicationSelf.setChain(ReadUnsigned);
+    //AppendListWithDuplicationSelf.setChain(ReadUnsigned);
     AppendListWithDuplicationUnsigned.setChain(ReadUnsigned);
     AppendOrCreate.setChain(ReadUnsigned);
     AppendOrCreateList.setChain(ReadUnsigned);
-    AppendOrCreateListSelf.setChain(ReadUnsigned);
+    //AppendOrCreateListSelf.setChain(ReadUnsigned);
     AppendOrCreateListUnsigned.setChain(ReadUnsigned);
-    AppendOrCreateSelf.setChain(ReadUnsigned);
+    //AppendOrCreateSelf.setChain(ReadUnsigned);
     AppendOrCreateUnsigned.setChain(ReadUnsigned);
-    AppendSelf.setChain(ReadUnsigned);
+    //AppendSelf.setChain(ReadUnsigned);
     AppendUnsigned.setChain(ReadUnsigned);
     AppendWithDuplication.setChain(ReadUnsigned);
-    AppendWithDuplicationSelf.setChain(ReadUnsigned);
+    //AppendWithDuplicationSelf.setChain(ReadUnsigned);
     AppendWithDuplicationUnsigned.setChain(ReadUnsigned);
     Clear.setChain(ReadUnsigned);
-    ClearSelf.setChain(ReadUnsigned);
+    //ClearSelf.setChain(ReadUnsigned);
     ClearUnsigned.setChain(ReadUnsigned);
     Create.setChain(ReadUnsigned);
     CreateEmpty.setChain(ReadUnsigned);
-    CreateEmptySelf.setChain(ReadUnsigned);
+    //CreateEmptySelf.setChain(ReadUnsigned);
     CreateList.setChain(ReadUnsigned);
-    CreateListSelf.setChain(ReadUnsigned);
-    CreateSelf.setChain(ReadUnsigned);
+    //CreateListSelf.setChain(ReadUnsigned);
+    //CreateSelf.setChain(ReadUnsigned);
     Remove.setChain(ReadUnsigned);
     RemoveList.setChain(ReadUnsigned);
-    RemoveListSelf.setChain(ReadUnsigned);
+    //RemoveListSelf.setChain(ReadUnsigned);
     RemoveListUnsigned.setChain(ReadUnsigned);
-    RemoveSelf.setChain(ReadUnsigned);
+    //RemoveSelf.setChain(ReadUnsigned);
     RemoveUnsigned.setChain(ReadUnsigned);
     Replace.setChain(ReadUnsigned);
     ReplaceList.setChain(ReadUnsigned);
-    ReplaceListSelf.setChain(ReadUnsigned);
+    //ReplaceListSelf.setChain(ReadUnsigned);
     ReplaceListUnsigned.setChain(ReadUnsigned);
     ReplaceOrCreate.setChain(ReadUnsigned);
     ReplaceOrCreateList.setChain(ReadUnsigned);
-    ReplaceOrCreateListSelf.setChain(ReadUnsigned);
+    //ReplaceOrCreateListSelf.setChain(ReadUnsigned);
     ReplaceOrCreateListUnsigned.setChain(ReadUnsigned);
-    ReplaceOrCreateSelf.setChain(ReadUnsigned);
+    //ReplaceOrCreateSelf.setChain(ReadUnsigned);
     ReplaceOrCreateUnsigned.setChain(ReadUnsigned);
-    ReplaceSelf.setChain(ReadUnsigned);
+    //ReplaceSelf.setChain(ReadUnsigned);
     ReplaceUnsigned.setChain(ReadUnsigned);
     ReplaceUserJSON.setChain(ReadUnsigned);
     ReplaceUserJSONUnsigned.setChain(ReadUnsigned);
     CreateIndex.setChain(ReadUnsigned);
     Substitute.setChain(ReadUnsigned);
     SubstituteList.setChain(ReadUnsigned);
-    SubstituteListSelf.setChain(ReadUnsigned);
+    //SubstituteListSelf.setChain(ReadUnsigned);
     SubstituteListUnsigned.setChain(ReadUnsigned);
-    SubstituteSelf.setChain(ReadUnsigned);
+    //SubstituteSelf.setChain(ReadUnsigned);
     SubstituteUnsigned.setChain(ReadUnsigned);
     RemoveField.setChain(ReadUnsigned);
-    RemoveFieldSelf.setChain(ReadUnsigned);
+    //RemoveFieldSelf.setChain(ReadUnsigned);
     RemoveFieldUnsigned.setChain(ReadUnsigned);
     Set.setChain(ReadUnsigned);
-    SetSelf.setChain(ReadUnsigned);
+    //SetSelf.setChain(ReadUnsigned);
     SetFieldNull.setChain(ReadUnsigned);
-    SetFieldNullSelf.setChain(ReadUnsigned);
+    //SetFieldNullSelf.setChain(ReadUnsigned);
     //
     Select.setChain();
     SelectGroupLookupQuery.setChain();
@@ -645,7 +646,7 @@ public enum CommandType {
     RemoveAccount.setChain(ReadUnsigned);
     SelectGroupSetupQuery.setChain(ReadUnsigned);
     VerifyAccount.setChain(ReplaceUserJSONUnsigned);
-    
+
     AddAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
     AddMultipleGuids.setChain(ReadUnsigned);
     AddMultipleGuidsFast.setChain(ReadUnsigned);
@@ -655,7 +656,7 @@ public enum CommandType {
     LookupAccountRecord.setChain();
     LookupRandomGuids.setChain();
     LookupGuid.setChain();
-    LookupPrimaryGuid.setChain(ReadUnsigned); 
+    LookupPrimaryGuid.setChain(ReadUnsigned);
     LookupGuidRecord.setChain();
     RegisterAccount.setChain(ReadUnsigned);
     RegisterAccountUnsigned.setChain(ReadUnsigned);
@@ -708,7 +709,7 @@ public enum CommandType {
     GetTagged.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
- 
+
   }
 
   public enum Type {
@@ -730,13 +731,12 @@ public enum CommandType {
 
   }
 
+  // In general, isCoordinated is not equivalent to isUpdate()
+  private boolean isCoordinated() {
+    return this.isUpdate();
+  }
 
-	// In general, isCoordinated is not equivalent to isUpdate()
-	private boolean isCoordinated() {
-		return this.isUpdate();
-	}
-
-public int getInt() {
+  public int getInt() {
     return number;
   }
 
@@ -838,52 +838,58 @@ public int getInt() {
     }
     return result.toString();
   }
+
   private static void enforceChecks() {
-	  HashSet<CommandType> curLevel, nextLevel = new HashSet<CommandType>(), cumulative = new HashSet<CommandType>();
+    HashSet<CommandType> curLevel, nextLevel = new HashSet<CommandType>(), cumulative = new HashSet<CommandType>();
 
-	  for (CommandType ctype : CommandType.values()) {
-		  curLevel = new HashSet<CommandType>(Arrays.asList(ctype));
-		  nextLevel.clear();
-		  cumulative.clear();
+    for (CommandType ctype : CommandType.values()) {
+      curLevel = new HashSet<CommandType>(Arrays.asList(ctype));
+      nextLevel.clear();
+      cumulative.clear();
 
-		  while (!curLevel.isEmpty()) {
-			  nextLevel.clear();
-			  for (CommandType curLevelType : curLevel)
-				  nextLevel.addAll(new HashSet<CommandType>(Arrays
-						  .asList(curLevelType.invokedCommands)));
-			  curLevel = nextLevel;
-			  cumulative.addAll(nextLevel);
-			  if (curLevel.size() > 256)
-				  Util.suicide("Likely cycle in chain for command "
-						  + ctype);
+      while (!curLevel.isEmpty()) {
+        nextLevel.clear();
+        for (CommandType curLevelType : curLevel) {
+          nextLevel.addAll(new HashSet<CommandType>(Arrays
+                  .asList(curLevelType.invokedCommands)));
+        }
+        curLevel = nextLevel;
+        cumulative.addAll(nextLevel);
+        if (curLevel.size() > 256) {
+          Util.suicide("Likely cycle in chain for command "
+                  + ctype);
+        }
 
-			  GNSConfig.getLogger().log(Level.FINE,
-					  "{0} expanding next level {1}",
-					  new Object[] { ctype, nextLevel });
-		  }
-		  GNSConfig.getLogger().log(Level.INFO,
-				  "Cumulative chain for {0} = {1}",
-				  new Object[] { ctype, cumulative });
+        GNSConfig.getLogger().log(Level.FINE,
+                "{0} expanding next level {1}",
+                new Object[]{ctype, nextLevel});
+      }
+      GNSConfig.getLogger().log(Level.INFO,
+              "Cumulative chain for {0} = {1}",
+              new Object[]{ctype, cumulative});
 
-			for (CommandType downstream : cumulative)
-				if ((ctype.isUpdate() && downstream.isCoordinated()))
-					throw new RuntimeException("Coordinated " + ctype
-							+ " is invoking another coordinated command "
-							+ downstream);
+      for (CommandType downstream : cumulative) {
+        if ((ctype.isUpdate() && downstream.isCoordinated())) {
+          throw new RuntimeException("Coordinated " + ctype
+                  + " is invoking another coordinated command "
+                  + downstream);
+        }
+      }
 
-	  }
+    }
   }
 
-	public static class CommandTypeTest extends DefaultTest {
-		@Test
-		public void enforceChecks() {
-			CommandType.enforceChecks();
-		}
-	}
-  
+  public static class CommandTypeTest extends DefaultTest {
+
+    @Test
+    public void enforceChecks() {
+      CommandType.enforceChecks();
+    }
+  }
+
   public static void main(String args[]) {
-	  CommandType.enforceChecks();
-    System.out.println(generateEmptySetChains());
-    //System.out.println(generateSwiftConstants());
+    CommandType.enforceChecks();
+    //System.out.println(generateEmptySetChains());
+    System.out.println(generateSwiftConstants());
   }
 }
