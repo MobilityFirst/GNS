@@ -197,7 +197,6 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    //assert(false);
     // Run the server.
 	  String waitString = System.getProperty("waitTillAllServersReady");
 	  if (waitString != null) {
@@ -516,7 +515,6 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception during create field: ", e);
-      System.exit(1);
     }
   }
 
