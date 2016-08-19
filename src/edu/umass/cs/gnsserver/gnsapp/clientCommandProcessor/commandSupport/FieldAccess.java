@@ -672,8 +672,6 @@ public class FieldAccess {
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
 
-  private static final int OLD_COMMAND_TIME = -30; // how far back is old?
-
   public static GNSResponseCode signatureAndACLCheckForRead(String guid,
           String field, List<String> fields,
           String reader, String signature, String message,
@@ -690,7 +688,8 @@ public class FieldAccess {
       }
       // Check for stale commands.
       if (timestamp != null) {
-        if (timestamp.before(DateUtils.addMinutes(new Date(), OLD_COMMAND_TIME))) {
+        if (timestamp.before(DateUtils.addMinutes(new Date(), 
+                -Config.getGlobalInt(GNSConfig.GNSC.STALE_COMMAND_INTERVAL_IN_MINUTES)))) {
           errorCode = GNSResponseCode.STALE_COMMAND_VALUE;
         }
       }

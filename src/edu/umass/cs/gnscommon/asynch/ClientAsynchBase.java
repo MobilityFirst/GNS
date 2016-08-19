@@ -83,39 +83,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-import static edu.umass.cs.gnsclient.client.CommandUtils.signDigestOfMessage;
-
 /**
  * This class defines a basic asynchronous client to communicate with a GNS instance over TCP.
  *
@@ -689,7 +656,7 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
       result.put(GNSCommandProtocol.NONCE, CommandUtils.getRandomRequestNonce());
 
       String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-      String signatureString = signDigestOfMessage(privateKey, canonicalJSON);
+      String signatureString = CommandUtils.signDigestOfMessage(privateKey, canonicalJSON);
       result.put(GNSCommandProtocol.SIGNATURE, signatureString);
       return result;
     } catch (JSONException | NoSuchAlgorithmException | InvalidKeyException | SignatureException | UnsupportedEncodingException e) {

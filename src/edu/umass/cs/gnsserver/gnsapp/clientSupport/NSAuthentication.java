@@ -86,7 +86,7 @@ public class NSAuthentication {
     boolean aclCheckPassed = false;
     if (accessorGuid.equals(targetGuid)) {
       // This handles the simple case where we're accessing our own guid. 
-      // Access is always allowed to our own guid so we just need to get
+      // Access to all of our fields is always allowed to our own guid so we just need to get
       // the public key out of the guid - possibly from the cache.
       publicKey = lookupPublicKeyFromGuidLocallyWithCacheing(targetGuid, gnsApp);
       // Return an error immediately here because if we can't find the public key 

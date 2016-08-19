@@ -43,8 +43,6 @@ import org.json.JSONException;
  */
 public class NSUpdateSupport {
 
-  private static final int OLD_COMMAND_TIME = -30; // how far back is old?
-
   /**
    * Executes a local updateEntireValuesMap operation.
    *
@@ -83,11 +81,9 @@ public class NSUpdateSupport {
             "Processing local update {0} / {1} {2} {3}",
             new Object[]{guid, field, operation, updateValue});
     GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
-    // writer will be the INTERNAL_OP_SECRET for internal system reads
-    // Fixme: get rid of null writer uses
-    if (writer != null && !writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
+    // writer will be the INTERNAL_OP_SECRET for internal system accesses
+    if (!writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
       if (field != null) {
-        
         errorCode = NSAuthentication.signatureAndACLCheck(guid,
                 field, null,
                 writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, app);
@@ -104,7 +100,8 @@ public class NSUpdateSupport {
     }
     // Check for stale commands.
     if (timestamp != null) {
-      if (timestamp.before(DateUtils.addMinutes(new Date(), OLD_COMMAND_TIME))) {
+      if (timestamp.before(DateUtils.addMinutes(new Date(), 
+              -Config.getGlobalInt(GNSConfig.GNSC.STALE_COMMAND_INTERVAL_IN_MINUTES)))) {
         errorCode = GNSResponseCode.STALE_COMMAND_VALUE;
       }
     }
@@ -119,7 +116,8 @@ public class NSUpdateSupport {
               app.getDB(), app.getActiveCodeHandler());
       return GNSResponseCode.NO_ERROR;
     } else // Handle special case of a create index
-     if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
+    {
+      if (!updateValue.isEmpty() && updateValue.get(0) instanceof String) {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "Creating index for {0} {1}", new Object[]{field, updateValue});
         app.getDB().createIndex(field, (String) updateValue.get(0));
@@ -129,6 +127,7 @@ public class NSUpdateSupport {
         ClientSupportConfig.getLogger().log(Level.SEVERE, "Invalid index value:{0}", updateValue);
         return GNSResponseCode.UPDATE_ERROR;
       }
+    }
   }
 
   private static NameRecord getNameRecord(String guid, String field, UpdateOperation operation, BasicRecordMap db) throws RecordNotFoundException, FailedDBOperationException {
@@ -136,12 +135,14 @@ public class NSUpdateSupport {
       // some operations don't require a read first
       return new NameRecord(db, guid);
     } else //try {
-     if (field == null) {
+    {
+      if (field == null) {
         return NameRecord.getNameRecord(db, guid);
       } else {
-        return NameRecord.getNameRecordMultiUserFields(db, guid, 
+        return NameRecord.getNameRecordMultiUserFields(db, guid,
                 ColumnFieldType.LIST_STRING, field);
       }
+    }
   }
 
   private static void updateNameRecord(InternalRequestHeader header, NameRecord nameRecord, String guid, String field,
@@ -183,11 +184,11 @@ public class NSUpdateSupport {
         ClientSupportConfig.getLogger().log(Level.FINE, "AC--->>> {0}", activeCodeNameRecord.toString());
       }
       ValuesMap codeMap = null;
-		try {
-			codeMap = activeCodeNameRecord.getValuesMap();
-		} catch (FieldNotFoundException e) {
-			// do nothing
-		}
+      try {
+        codeMap = activeCodeNameRecord.getValuesMap();
+      } catch (FieldNotFoundException e) {
+        // do nothing
+      }
       int hopLimit = 1;
       if (activeCodeNameRecord != null
               && activeCodeHandler.hasCode(codeMap, ActiveCode.WRITE_ACTION)) {
