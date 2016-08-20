@@ -36,7 +36,7 @@ public class PacketUtils {
 	 * @return The originatingGUID for {@code CommandPacket}.
 	 */
 	public static String getOriginatingGUID(CommandPacket commandPacket) {
-			return commandPacket.getServiceName();
+			return commandPacket!=null ? commandPacket.getServiceName() : null;
 	}
 
 	/**
