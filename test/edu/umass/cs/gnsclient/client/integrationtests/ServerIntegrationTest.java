@@ -193,12 +193,16 @@ public class ServerIntegrationTest extends DefaultTest {
 	 * tests, i.e., every request should be retransmitted until success
 	 * assuming that any server can fail at any time.
    */
-  private static final long WAIT_TILL_ALL_SERVERS_READY = 15000;
+  private static long WAIT_TILL_ALL_SERVERS_READY = 5000;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    //assert(false);
     // Run the server.
+	  String waitString = System.getProperty("waitTillAllServersReady");
+	  if (waitString != null) {
+		  WAIT_TILL_ALL_SERVERS_READY = Integer.parseInt(waitString);
+	  }
+	  
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
 
@@ -511,7 +515,6 @@ public class ServerIntegrationTest extends DefaultTest {
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception during create field: ", e);
-      System.exit(1);
     }
   }
 
