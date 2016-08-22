@@ -476,15 +476,19 @@ public enum CommandType {
   ChangeLogLevel(730, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ChangeLogLevel.class,
           GNSCommand.ResultType.NULL, true, true),
+  @Deprecated
   AddTag(731, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.AddTag.class,
           GNSCommand.ResultType.NULL, true, false),
+  @Deprecated
   RemoveTag(732, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RemoveTag.class,
           GNSCommand.ResultType.NULL, true, false),
+  @Deprecated
   ClearTagged(733, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearTagged.class,
           GNSCommand.ResultType.NULL, true, false),
+  @Deprecated
   GetTagged(734, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetTagged.class,
           GNSCommand.ResultType.STRING, true, false),

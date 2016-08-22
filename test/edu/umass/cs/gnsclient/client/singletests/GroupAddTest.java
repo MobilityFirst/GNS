@@ -73,8 +73,8 @@ public class GroupAddTest {
   @Test
   public void test_01_testCreateGuids() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -93,8 +93,8 @@ public class GroupAddTest {
         fail(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
-      guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
-      mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
+      guidToDeleteEntry = client.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
+      mygroupEntry = client.guidCreate(masterGuid, mygroupName);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }

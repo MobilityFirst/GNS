@@ -69,7 +69,7 @@ public class PerformanceTest {
       try {
         String guidName = "testGUID" + RandomString.randomString(20);
         System.out.println("Creating guid: " + guidName);
-        tempEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, guidName);
+        tempEntry = client.guidCreate(masterGuid, guidName);
       } catch (Exception e) {
         fail("Exception creating guid: " + e);
       }

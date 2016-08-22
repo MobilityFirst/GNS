@@ -106,10 +106,6 @@ public class Admin extends BasicCommand {
     return new String[]{PASSKEY};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return ADMIN;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {

@@ -87,8 +87,8 @@ public class SelectTest {
   @Test
   public void test_1_CreateGuids() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -156,7 +156,7 @@ public class SelectTest {
   public void test_4_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "geoTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = client.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(6));
         client.setLocation(testEntry, 0.0, 0.0);
       }
     } catch (Exception e) {
@@ -199,7 +199,7 @@ public class SelectTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }

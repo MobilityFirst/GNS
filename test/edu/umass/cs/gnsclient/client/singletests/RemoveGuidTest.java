@@ -67,7 +67,7 @@ public class RemoveGuidTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
+      testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }
@@ -94,7 +94,7 @@ public class RemoveGuidTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
+      testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }

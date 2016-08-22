@@ -88,7 +88,7 @@ public class CreateMultipleGuidsTest {
   public void test_01_SetupGuids() {
     try {
       for (int cnt = 0; cnt < 10; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
         members.add(testEntry);
         // make unique name based on the guid
         client.fieldUpdate(testEntry, fieldName, "value for " + testEntry.getEntityName());

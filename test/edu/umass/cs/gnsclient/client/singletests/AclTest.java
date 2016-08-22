@@ -74,17 +74,17 @@ public class AclTest {
   }
 
   @Test
-  public void test_01_CreateField() {
+  public void test_01_ACLCreateAndTestField() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while creating guids: " + e);
     }
     try {
-      // remove default read acces for this test
+      // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
@@ -94,10 +94,17 @@ public class AclTest {
       // read my own field
       assertEquals("work",
               client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
-      // read another field
+      // read another one of my fields field
       assertEquals("000-00-0000",
               client.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
 
+       } catch (Exception e) {
+      fail("Exception when we were not expecting it: " + e);
+    }
+  }
+  @Test
+  public void test_02_ACLNotReadOtherGuidFieldTest() {
+    try {
       try {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment",
                 samEntry);
@@ -111,12 +118,8 @@ public class AclTest {
   }
 
   @Test
-  public void test_02_ACLPartOne() {
-    //testCreateField();
-
+  public void test_03_ACLPartOne() {
     try {
-      System.out.println("Using:" + westyEntry);
-      System.out.println("Using:" + samEntry);
       try {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment",
                 samEntry.getGuid());
@@ -138,7 +141,7 @@ public class AclTest {
   }
 
   @Test
-  public void test_03_ACLPartTwo() {
+  public void test_04_ACLPartTwo() {
     try {
       String barneyName = "barney" + RandomString.randomString(6);
       try {
@@ -149,7 +152,7 @@ public class AclTest {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
-      barneyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, barneyName);
+      barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
@@ -198,7 +201,7 @@ public class AclTest {
   }
 
   @Test
-  public void test_04_ACLALLFields() {
+  public void test_05_ACLALLFields() {
     //testACL();
     String superUserName = "superuser" + RandomString.randomString(6);
     try {
@@ -208,7 +211,7 @@ public class AclTest {
       } catch (ClientException e) {
       }
 
-      GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);
+      GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
       client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
@@ -224,7 +227,7 @@ public class AclTest {
   }
 
   @Test
-  public void test_05_CreateDeeperField() {
+  public void test_06_CreateDeeperField() {
     try {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);

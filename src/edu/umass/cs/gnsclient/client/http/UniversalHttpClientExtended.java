@@ -290,6 +290,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param tag
    * @throws Exception
    */
+  @Deprecated
   public void removeTag(GuidEntry guid, String tag) throws Exception {
     String command = createAndSignQuery(guid, 
             CommandType.RemoveTag,
@@ -306,6 +307,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @return
    * @throws Exception
    */
+  @Deprecated
   public JSONArray retrieveTagged(String tag) throws Exception {
     String command = createQuery(
             CommandType.Dump,
@@ -323,6 +325,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param tag
    * @throws Exception
    */
+  @Deprecated
   public void clearTagged(String tag) throws Exception {
     String command = createQuery(
             CommandType.ClearTagged, GNSCommandProtocol.NAME, tag);

@@ -69,7 +69,7 @@ public class ReadTest {
   @Test
   public void test_01_CreateEntity() {
     try {
-      GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID" + RandomString.randomString(6));
+      client.guidCreate(masterGuid, "testGUID" + RandomString.randomString(6));
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }
@@ -78,8 +78,8 @@ public class ReadTest {
   @Test
   public void test_02_CreateField() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {

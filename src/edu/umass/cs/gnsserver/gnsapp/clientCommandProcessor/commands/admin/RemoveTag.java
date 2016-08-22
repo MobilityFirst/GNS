@@ -46,6 +46,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RemoveTag extends BasicCommand {
 
   /**

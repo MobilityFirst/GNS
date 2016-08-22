@@ -1469,8 +1469,7 @@ public class ServerIntegrationTest extends DefaultTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client,
-                masterGuid,
+        GuidEntry testEntry = client.guidCreate(masterGuid,
                 "queryTest-" + RandomString.randomString(12));
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName,

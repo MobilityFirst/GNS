@@ -42,6 +42,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class GetTagged extends BasicCommand {
 
   /**

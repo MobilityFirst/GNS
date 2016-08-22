@@ -72,7 +72,7 @@ public class MultiFieldLookupTest {
   @Test
   public void test_01_JSONUpdate() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

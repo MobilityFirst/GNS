@@ -1481,7 +1481,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param tag
    * @throws Exception
    */
-  //@Override
+  @Deprecated
   public void addTag(GuidEntry guid, String tag) throws Exception {
     String command = createAndSignQuery(guid,
             CommandType.AddTag,

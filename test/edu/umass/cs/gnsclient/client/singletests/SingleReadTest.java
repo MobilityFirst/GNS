@@ -65,7 +65,7 @@ public class SingleReadTest {
   @Test
   public void test_01_CreateEntity() {
     try {
-      GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID" + RandomString.randomString(6));
+      client.guidCreate(masterGuid, "testGUID" + RandomString.randomString(6));
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }
@@ -74,7 +74,7 @@ public class SingleReadTest {
   @Test
   public void test_02_CreateSubGuid() {
     try {
-      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
+      subGuidEntry = client.guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

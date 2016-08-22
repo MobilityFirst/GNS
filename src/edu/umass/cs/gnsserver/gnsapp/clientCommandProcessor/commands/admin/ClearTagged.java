@@ -49,6 +49,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class ClearTagged extends BasicCommand {
 
   /**

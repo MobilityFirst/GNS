@@ -116,7 +116,7 @@ public class ClientCoreTest {
     String localAlias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
-      guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, localAlias);
+      guidEntry = client.guidCreate(masterGuid, localAlias);
     } catch (Exception e) {
       fail("Exception while creating guid: " + e);
     }
@@ -129,7 +129,7 @@ public class ClientCoreTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
+      testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }
@@ -153,7 +153,7 @@ public class ClientCoreTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
+      testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }
@@ -177,7 +177,7 @@ public class ClientCoreTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(client, masterGuid, testGuidName);
+      testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }
@@ -191,7 +191,7 @@ public class ClientCoreTest {
   @Test
   public void test_050_CreateSubGuid() {
     try {
-      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
+      subGuidEntry = client.guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception creating subguid: " + e);
@@ -241,8 +241,8 @@ public class ClientCoreTest {
   @Test
   public void test_100_CreateFields() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -315,7 +315,7 @@ public class ClientCoreTest {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
-      barneyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, barneyName);
+      barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
@@ -374,7 +374,7 @@ public class ClientCoreTest {
       } catch (ClientException e) {
       }
 
-      GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, superUserName);
+      GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
       client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
@@ -537,7 +537,7 @@ public class ClientCoreTest {
     try {
       //Utils.clearTestGuids(client);
       //System.out.println("cleared old GUIDs");
-      testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, testSubstituteGuid);
+      testEntry = client.guidCreate(masterGuid, testSubstituteGuid);
       System.out.println("created test guid: " + testEntry);
     } catch (Exception e) {
       fail("Exception during init: " + e);
@@ -579,7 +579,7 @@ public class ClientCoreTest {
     try {
       //Utils.clearTestGuids(client);
       //System.out.println("cleared old GUIDs");
-      testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, testSubstituteListGuid);
+      testEntry = client.guidCreate(masterGuid, testSubstituteListGuid);
       System.out.println("created test guid: " + testEntry);
     } catch (Exception e) {
       fail("Exception during init: " + e);
@@ -625,8 +625,8 @@ public class ClientCoreTest {
         fail(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
-      guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "deleteMe" + RandomString.randomString(6));
-      mygroupEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, mygroupName);
+      guidToDeleteEntry = client.guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
+      mygroupEntry = client.guidCreate(masterGuid, mygroupName);
     } catch (Exception e) {
       fail("Exception while creating guids: " + e);
     }
@@ -691,7 +691,7 @@ public class ClientCoreTest {
     }
 
     try {
-      groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, groupAccessUserName);
+      groupAccessUserEntry = client.guidCreate(masterGuid, groupAccessUserName);
       // remove all fields read by all
       client.aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
@@ -919,7 +919,7 @@ public class ClientCoreTest {
   @Test
   public void test_280_ListOrderAndSetElement() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
     } catch (Exception e) {
       fail("Exception during creation of westyEntry: " + e);
     }
@@ -964,7 +964,7 @@ public class ClientCoreTest {
   public void test_320_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "geoTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = client.guidCreate(masterGuid, "geoTest-" + RandomString.randomString(6));
         client.setLocation(testEntry, 0.0, 0.0);
       }
     } catch (Exception e) {
@@ -1007,7 +1007,7 @@ public class ClientCoreTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(25));
         client.fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
@@ -1050,7 +1050,7 @@ public class ClientCoreTest {
   public void test_400_SetFieldNull() {
     String field = "fieldToSetToNull";
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -1082,7 +1082,7 @@ public class ClientCoreTest {
   @Test
   public void test_410_JSONUpdate() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "westy" + RandomString.randomString(6));
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

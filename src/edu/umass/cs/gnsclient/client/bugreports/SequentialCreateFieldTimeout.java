@@ -127,7 +127,7 @@ public class SequentialCreateFieldTimeout {
 			}
 			String alias = "testGUID" + RandomString.randomString(12);
 			GuidEntry guidEntry = null;
-				guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
+				guidEntry = client.guidCreate(masterGuid,
 						alias);
 			assertNotNull(guidEntry);
 			assertEquals(alias, guidEntry.getEntityName());

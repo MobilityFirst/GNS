@@ -68,7 +68,7 @@ public class CreateGuidTest {
     String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
-      guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, alias);
+      guidEntry = client.guidCreate(masterGuid, alias);
     } catch (Exception e) {
       fail("Exception while creating guid: " + e);
     }
