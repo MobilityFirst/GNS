@@ -321,20 +321,20 @@ public enum CommandType {
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.AddMultipleGuidsFastRandom.class,
           GNSCommand.ResultType.NULL, false, false),
   // These should all be coordinatable.
-  LookupAccountRecord(420, Type.OTHER,
+  LookupAccountRecord(420, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
           GNSCommand.ResultType.MAP, true, false),
-  LookupRandomGuids(421, Type.OTHER,
+  LookupRandomGuids(421, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
           GNSCommand.ResultType.LIST, true, false), // for testing
 
-  LookupGuid(422, Type.OTHER,
+  LookupGuid(422, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
           GNSCommand.ResultType.STRING, true, false),
-  LookupPrimaryGuid(423, Type.OTHER,
+  LookupPrimaryGuid(423, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupPrimaryGuid.class,
           GNSCommand.ResultType.STRING, true, false),
-  LookupGuidRecord(424, Type.OTHER,
+  LookupGuidRecord(424, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuidRecord.class,
           GNSCommand.ResultType.MAP, true, false),
   //
@@ -357,7 +357,7 @@ public enum CommandType {
   RemoveGuidNoAccount(443, Type.CREATE_DELETE,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RemoveGuidNoAccount.class,
           GNSCommand.ResultType.NULL, false, false),
-  RetrieveAliases(444, Type.OTHER,
+  RetrieveAliases(444, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.RetrieveAliases.class,
           GNSCommand.ResultType.LIST, true, false),
   //
@@ -409,16 +409,16 @@ public enum CommandType {
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.AddToGroupSelf.class,
           GNSCommand.ResultType.NULL, false, false),
   //
-  GetGroupMembers(614, Type.OTHER,
+  GetGroupMembers(614, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembers.class,
           GNSCommand.ResultType.LIST, true, false),
-  GetGroupMembersSelf(615, Type.OTHER,
+  GetGroupMembersSelf(615, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupMembersSelf.class,
           GNSCommand.ResultType.LIST, true, false),
-  GetGroups(616, Type.OTHER,
+  GetGroups(616, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroups.class,
           GNSCommand.ResultType.LIST, true, false),
-  GetGroupsSelf(617, Type.OTHER,
+  GetGroupsSelf(617, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.group.GetGroupsSelf.class,
           GNSCommand.ResultType.LIST, true, false),
   //
@@ -514,7 +514,6 @@ public enum CommandType {
   private final Type category;
   private final Class<?> commandClass;
   private final GNSCommand.ResultType returnType;
-
   /* arun: Adding more fields below for documentation and invariant assertion
 	 * purposes. */
   /**
@@ -717,7 +716,7 @@ public enum CommandType {
   }
 
   public enum Type {
-    READ, UPDATE, CREATE_DELETE, SELECT, OTHER
+    READ, UPDATE, CREATE_DELETE, SELECT, OTHER, SYSTEM_LOOKUP
   }
 
   private CommandType(int number, Type category, Class<?> commandClass,
@@ -763,6 +762,10 @@ public enum CommandType {
   public boolean isSelect() {
     return category.equals(Type.SELECT);
   }
+  
+  public boolean isSystemLookup() {
+	    return category.equals(Type.SYSTEM_LOOKUP);
+	  }
 
   private static final Map<Integer, CommandType> map = new HashMap<Integer, CommandType>();
 
