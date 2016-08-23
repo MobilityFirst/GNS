@@ -28,9 +28,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -39,7 +36,8 @@ import org.json.JSONObject;
  * <p>
  * Note: This example assumes that the verification step (e.g., via email) to
  * verify an account GUID's human-readable name has been disabled on the server
- * using the ENABLE_EMAIL_VERIFICATION=false option.
+ * using the ENABLE_EMAIL_VERIFICATION=false option. This option is set in the
+ * default gigapaxos.properties file.
  * 
  * @author arun, westy, mdews
  */
@@ -48,7 +46,7 @@ public class ClientACLExample {
   // replace with your account alias
   private static String ACCOUNT_ALIAS = "admin@gns.name";
   private static GNSClientCommands client;
-  private static GuidEntry myGuid;
+  private static GuidEntry guid;
   private static GuidEntry phoneGuid;
   
   /**
@@ -69,20 +67,11 @@ public class ClientACLExample {
     System.out.println("[Client connected to GNS]\n");
 
     try {
-      /**
-       * Create an account GUID if one doesn't already exists. The true
-       * flag makes it verbosely print out what it is doing. The password
-       * is for future use and is needed mainly if the keypair is
-       * generated on the server in order to retrieve the private key.
-       * lookupOrCreateAccountGuid "cheats" by bypassing email-based or
-       * other verification mechanisms using a shared secret between the
-       * server and the client.
-       * */
       System.out
           .println("// account GUID creation\n"
               + "GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,"
               + " \"password\", true)");
-      myGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
+      guid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS,
           "password", true);
     } catch (Exception | Error e) {
       System.out.println("Exception during accountGuid creation: " + e);
@@ -94,63 +83,71 @@ public class ClientACLExample {
     JSONObject json = new JSONObject("{\"name\":\"me\",\"location\":\"work\"}");
 
     // Write out the JSON Object
-    client.update(myGuid, json);
-    System.out.println("\n// Record update\n"
-        + "client.update(GUID, record) // record=" + json);
+    client.update(guid, json);
+    System.out.println("\n// Update guid record\n"
+        + "client.update(guid, record) // record=" + json);
     
-    // Remove default read access from myGuid
-    System.out.println("\n// Remove default read access from myGuid");
-    client.aclRemove(AclAccessType.READ_WHITELIST, myGuid, 
+    // Remove default read access from guid
+    client.aclRemove(AclAccessType.READ_WHITELIST, guid, 
         GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
-
+    System.out.println("\n// Remove default read access from guid\n"
+        + "client.aclRemove(READ_WHITELIST, guid, ALL_FIELDS, ALL_GUIDS)");
+    
     // Create phoneGuid
-    System.out.println("\n// Create phoneGuid");
-    phoneGuid = client.guidCreate(myGuid, "phone" + RandomString.randomString(12));
+    String phoneAlias = "phone" + RandomString.randomString(12);
+    phoneGuid = client.guidCreate(guid, phoneAlias);
+    System.out.println("\n// Create phoneGuid\n"
+        + "client.guidCreate(guid, phoneAlias) // phoneAlias=" + phoneAlias);
     
-    // Give phoneGuid read access to fields in myGuid
-    // If we had not removed the default read access from myGuid this step would be unnecessary
-    System.out.println("\n// Give phoneGuid read access to fields in myGuid");
-    client.aclAdd(AclAccessType.READ_WHITELIST, myGuid, GNSCommandProtocol.ALL_FIELDS, phoneGuid.getGuid());
-    
-    // Verify that phoneGuid can read the fields in myGuid
-    JSONObject result = client.read(myGuid.getGuid(), phoneGuid);
-    System.out.println("\n// phoneGuid read from myGuid: " + result);
+    // Give phoneGuid read access to fields in guid
+    // If we had not removed the default read access from guid this step would be unnecessary
+    client.aclAdd(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ALL_FIELDS, phoneGuid.getGuid());
+    JSONObject result = client.read(guid.getGuid(), phoneGuid);
+    System.out.println("\n// Give phoneGuid read access to fields in guid and read guid entry as phoneGuid\n"
+        + "client.aclAdd(READ_WHITELIST, guid, ALL_FIELDS, phoneGuid)\n"
+        + "client.read(guid, phoneGuid) -> " + result);
      
-    // Allow phoneGuid to write to the location field of myGuid
-    System.out.println("\n// Give phoneGuid write access to \"location\" field of myGuid");
-    client.aclAdd(AclAccessType.WRITE_WHITELIST, myGuid, "location", phoneGuid.getGuid());
+    // Allow phoneGuid to write to the location field of guid
+    client.aclAdd(AclAccessType.WRITE_WHITELIST, guid, "location", phoneGuid.getGuid());
+    System.out.println("\n// Give phoneGuid write access to \"location\" field of guid\n"
+        + "client.aclAdd(WRITE_WHITELIST, guid, \"location\", phoneGuid)");
     
-    // As phoneGuid, update the location field on myGuid
-    System.out.println("\n// Use phoneGuid to update \"location\" field of myGuid");
-    client.fieldUpdate(myGuid.getGuid(), "location", "home", phoneGuid);
-    result = client.read(myGuid.getGuid(), phoneGuid);
-    System.out.println("// Updated myGuid: " + result);
+    // As phoneGuid, update the location field on guid   
+    client.fieldUpdate(guid.getGuid(), "location", "home", phoneGuid);
+    String field_result = client.fieldRead(guid.getGuid(), "location", phoneGuid);
+    System.out.println("\n// Use phoneGuid to update \"location\" field of guid\n"
+        + "client.fieldUpdate(guid, \"location\", \"home\", phoneGuid)\n"
+        + "client.fieldRead(guid.getGuid(), \"location\", phoneGuid) -> " + field_result);
 
     // Remove phoneGuid from ACL
-    System.out.println("\n// Remove phoneGuid from read and write list");
-    client.aclRemove(AclAccessType.READ_WHITELIST, myGuid, GNSCommandProtocol.ALL_FIELDS, phoneGuid.getGuid());
-    client.aclRemove(AclAccessType.WRITE_WHITELIST, myGuid, "location", phoneGuid.getGuid());
-
-    // Verify phoneGuid can't read myGuid
+    client.aclRemove(AclAccessType.READ_WHITELIST, guid, GNSCommandProtocol.ALL_FIELDS, phoneGuid.getGuid());
+    client.aclRemove(AclAccessType.WRITE_WHITELIST, guid, "location", phoneGuid.getGuid());
+    System.out.println("\n// Remove phoneGuid from guid's read and write whitelists \n"
+        + "client.aclRemove(READ_WHITELIST, guid, ALL_FIELDS, phoneGuid))\n"
+        + "client.aclRemove(WRITE_WHITELIST, guid, \"location\", phoneGuid);");
+    
+    // Verify phoneGuid can't read guid (exception expected)
     try {
-      result = client.read(myGuid.getGuid(), phoneGuid);
-      System.out.println("\n// phoneGuid read from myGuid (unexpected): " + result);
-      System.out.println("\nFAIL");
+      result = client.read(guid.getGuid(), phoneGuid);
+      System.out.println("\nSOMETHING WENT WRONG. An exception should have been thrown. Terminating.");
       client.close();
       System.exit(1);
     } catch (Exception e) {
-      System.out.println("\n// phoneGuid failed to read from myGuid (expected)");
+      System.out.println("\n// phoneGuid failed to read from guid (exception expected)\n"
+          + "client.read(guid, phoneGuid)\n"
+          + e.getMessage());
     }
     
-    // Verify phoneGuid can't write to "location" field of myGuid 
+    // Verify phoneGuid can't write to "location" field of guid (exception expected) 
     try {
-      client.fieldUpdate(myGuid.getGuid(), "location", "vacation", phoneGuid);
-      System.out.println("\n// Use phoneGuid to update \"location\" field of myGuid (unexpected)");
-      System.out.println("\nFAIL");
+      client.fieldUpdate(guid.getGuid(), "location", "vacation", phoneGuid);
+      System.out.println("\nSOMETHING WENT WRONG. An exception should have been thrown. Terminating.");
       client.close();
       System.exit(1);
     } catch (Exception e) {
-      System.out.println("\n// Using phoneGuid to update \"location\" field of myGuid failed (expected)");
+      System.out.println("\n// Using phoneGuid to update \"location\" field of guid (exception expected)\n"
+          + "client.fieldUpdate(guid.getGuid(), \"location\", \"vacation\", phoneGuid)\n"
+          + e.getMessage());
     }
     
     client.close();

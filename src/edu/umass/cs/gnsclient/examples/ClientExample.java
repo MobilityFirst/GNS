@@ -187,7 +187,7 @@ public class ClientExample {
 						new ArrayList<String>(Arrays.asList("name",
 								"occupation")))).getResultJSONObject();
 		System.out.println("\n// multi-field read\n"
-				+ "client.fieldRead(GUID, [\"name\",\"occupation\"] -> "
+				+ "client.fieldRead(GUID, [\"name\",\"occupation\"]) -> "
 				+ result);
 
 		// Read the entire object back in
