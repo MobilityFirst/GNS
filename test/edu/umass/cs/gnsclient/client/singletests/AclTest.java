@@ -19,22 +19,23 @@
  */
 package edu.umass.cs.gnsclient.client.singletests;
 
-
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 
+import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.json.JSONArray;
 
+import org.json.JSONObject;
 import static org.junit.Assert.*;
 
 import org.junit.FixMethodOrder;
@@ -64,33 +65,76 @@ public class AclTest {
       } catch (IOException e) {
         fail("Exception creating client: " + e);
       }
-    try {
-      masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
+      try {
+        masterGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, PASSWORD, true);
 
-    } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
-    }
+      } catch (Exception e) {
+        fail("Exception when we were not expecting it: " + e);
+      }
     }
   }
 
   @Test
-  public void test_01_ACLCreateAndTestField() {
+  public void test_100_ACLCreateGuids() {
     try {
       westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
       samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      fail("Exception while creating guids: " + e);
+      fail("Exception registering guids in ACLCreateGuids: " + e);
+      e.printStackTrace();
     }
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+    } catch (Exception e) {
+      fail("Exception while removing ACL in ACLCreateGuids: " + e);
+      e.printStackTrace();
+    }
+    try {
+      JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+              GNSCommandProtocol.ALL_FIELDS, westyEntry.getGuid());
+      JSONAssert.assertEquals(expected, actual, true);
+    } catch (Exception e) {
+      fail("Exception while retrieving ACL in ACLCreateGuids: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_101_ACLCreateFields() {
+    try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
+    } catch (Exception e) {
+      fail("Exception while creating fields in ACLCreateFields: " + e);
+      e.printStackTrace();
+    }
+  }
 
+  @Test
+  public void test_102_ACLReadAllFields() {
+    try {
+      JSONObject expected = new JSONObject();
+      expected.put("environment", new JSONArray(new ArrayList<String>(Arrays.asList("work"))));
+      expected.put("password", new JSONArray(new ArrayList<String>(Arrays.asList("666flapJack"))));
+      expected.put("ssn", new JSONArray(new ArrayList<String>(Arrays.asList("000-00-0000"))));
+      expected.put("address", new JSONArray(new ArrayList<String>(Arrays.asList("100 Hinkledinkle Drive"))));
+      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, masterGuid));
+      JSONAssert.assertEquals(expected, actual, true);
+    } catch (Exception e) {
+      fail("Exception while reading all fields in ACLReadAllFields: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_104_ACLReadMyFields() {
+    try {
       // read my own field
       assertEquals("work",
               client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
@@ -98,12 +142,29 @@ public class AclTest {
       assertEquals("000-00-0000",
               client.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
 
-       } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+    } catch (Exception e) {
+      fail("Exception while reading fields in ACLReadMyFields: " + e);
+      e.printStackTrace();
     }
   }
+
   @Test
-  public void test_02_ACLNotReadOtherGuidFieldTest() {
+  public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
+    try {
+      try {
+        String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, samEntry);
+        fail("Result of read of all of westy's fields by sam is " + result
+                + " which is wrong because it should have been rejected.");
+      } catch (ClientException e) {
+      }
+    } catch (Exception e) {
+      fail("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_106_ACLNotReadOtherGuidFieldTest() {
     try {
       try {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment",
@@ -113,16 +174,16 @@ public class AclTest {
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception while reading fields in ACLNotReadOtherGuidFieldTest: " + e);
+      e.printStackTrace();
     }
   }
 
   @Test
-  public void test_03_ACLPartOne() {
+  public void test_110_ACLPartOne() {
     try {
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment",
-                samEntry.getGuid());
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
       } catch (Exception e) {
         fail("Exception adding Sam to Westy's readlist: " + e);
         e.printStackTrace();
@@ -135,13 +196,13 @@ public class AclTest {
         e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it in ACLPartOne: " + e);
       e.printStackTrace();
     }
   }
 
   @Test
-  public void test_04_ACLPartTwo() {
+  public void test_120_ACLPartTwo() {
     try {
       String barneyName = "barney" + RandomString.randomString(6);
       try {
@@ -154,7 +215,8 @@ public class AclTest {
       }
       barneyEntry = client.guidCreate(masterGuid, barneyName);
       // remove default read access for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+      client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
       client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
@@ -189,19 +251,26 @@ public class AclTest {
         fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
+        if (e.getCode() == GNSResponseCode.ACCESS_ERROR) {
+          System.out
+                  .print("This was expected for null querier trying to ReadUnsigned "
+                          + barneyEntry.getGuid()
+                          + "'s address: "
+                          + e);
+        }
       } catch (Exception e) {
         fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
       }
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it in ACLPartTwo: " + e);
       e.printStackTrace();
     }
   }
 
   @Test
-  public void test_05_ACLALLFields() {
+  public void test_130_ACLALLFields() {
     //testACL();
     String superUserName = "superuser" + RandomString.randomString(6);
     try {
@@ -222,34 +291,38 @@ public class AclTest {
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it in ACLALLFields: " + e);
+      e.printStackTrace();
     }
   }
 
   @Test
-  public void test_06_CreateDeeperField() {
+  public void test_140_ACLCreateDeeperField() {
     try {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
       } catch (Exception e) {
         fail("Problem updating field: " + e);
+        e.printStackTrace();
       }
       try {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
       } catch (Exception e) {
         fail("Problem adding acl: " + e);
+        e.printStackTrace();
       }
       try {
         JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
                 "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList(Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
+        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
         fail("Problem reading acl: " + e);
+        e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: " + e);
+      fail("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      e.printStackTrace();
     }
   }
-
 }

@@ -529,77 +529,128 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   @Test
-  public void test_100_CreateFields() {
+  public void test_100_ACLCreateGuids() {
     try {
-      westyEntry = client.guidCreate(masterGuid,
-              "westy" + RandomString.randomString(12));
-      samEntry = client.guidCreate(masterGuid,
-              "sam" + RandomString.randomString(12));
-      System.out.print("Created: " + westyEntry);
-      System.out.print("; Created: " + samEntry);
+      westyEntry = client.guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = client.guidCreate(masterGuid, "sam" + RandomString.randomString(6));
+      System.out.println("Created: " + westyEntry);
+      System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      fail("Exception registering guids for create fields: ", e);
+      fail("Exception registering guids in ACLCreateGuids: " + e);
+      e.printStackTrace();
     }
-    waitSettle();
     try {
-      // remove default read acces for this test
-      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry,
-              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
-      client.fieldCreateOneElementList(westyEntry.getGuid(),
-              "environment", "work", westyEntry);
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn",
-              "000-00-0000", westyEntry);
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "password",
-              "666flapJack", westyEntry);
-      client.fieldCreateOneElementList(westyEntry.getGuid(), "address",
-              "100 Hinkledinkle Drive", westyEntry);
+      // remove default read access for this test
+      client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+    } catch (Exception e) {
+      fail("Exception while removing ACL in ACLCreateGuids: " + e);
+      e.printStackTrace();
+    }
+    try {
+      JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+              GNSCommandProtocol.ALL_FIELDS, westyEntry.getGuid());
+      JSONAssert.assertEquals(expected, actual, true);
+    } catch (Exception e) {
+      fail("Exception while retrieving ACL in ACLCreateGuids: " + e);
+      e.printStackTrace();
+    }
+  }
 
+  @Test
+  public void test_101_ACLCreateFields() {
+    try {
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "environment", "work", westyEntry);
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "ssn", "000-00-0000", westyEntry);
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
+      client.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
+    } catch (IOException | ClientException e) {
+      fail("Exception while creating fields in ACLCreateFields: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_102_ACLReadAllFields() {
+    try {
+      JSONObject expected = new JSONObject();
+      expected.put("environment", new JSONArray(new ArrayList<>(Arrays.asList("work"))));
+      expected.put("password", new JSONArray(new ArrayList<>(Arrays.asList("666flapJack"))));
+      expected.put("ssn", new JSONArray(new ArrayList<>(Arrays.asList("000-00-0000"))));
+      expected.put("address", new JSONArray(new ArrayList<>(Arrays.asList("100 Hinkledinkle Drive"))));
+      JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, masterGuid));
+      JSONAssert.assertEquals(expected, actual, true);
+    } catch (Exception e) {
+      fail("Exception while reading all fields in ACLReadAllFields: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_104_ACLReadMyFields() {
+    try {
       // read my own field
-      assertEquals("work", client.fieldReadArrayFirstElement(
-              westyEntry.getGuid(), "environment", westyEntry));
-      // read another field
-      assertEquals("000-00-0000", client.fieldReadArrayFirstElement(
-              westyEntry.getGuid(), "ssn", westyEntry));
+      assertEquals("work",
+              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", westyEntry));
+      // read another one of my fields field
+      assertEquals("000-00-0000",
+              client.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
 
-      waitSettle();
+    } catch (Exception e) {
+      fail("Exception while reading fields in ACLReadMyFields: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
+    try {
       try {
-        String result = client.fieldReadArrayFirstElement(
-                westyEntry.getGuid(), "environment", samEntry);
-        fail("Result of read of westy's environment by sam is "
-                + result
+        String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, samEntry);
+        fail("Result of read of all of westy's fields by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it in create fields", e);
+      fail("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: " + e);
+      e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void test_106_ACLNotReadOtherGuidFieldTest() {
+    try {
+      try {
+        String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment",
+                samEntry);
+        fail("Result of read of westy's environment by sam is " + result
+                + " which is wrong because it should have been rejected.");
+      } catch (ClientException e) {
+      }
+    } catch (Exception e) {
+      fail("Exception while reading fields in ACLNotReadOtherGuidFieldTest: " + e);
+      e.printStackTrace();
     }
   }
 
   @Test
   public void test_110_ACLPartOne() {
-    // testCreateField();
-
     try {
-      System.out.print("Using:" + westyEntry);
-      System.out.print("; Using:" + samEntry);
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
-                "environment", samEntry.getGuid());
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
       } catch (Exception e) {
-        fail("Exception adding Sam to Westy's readlist: ", e);
+        fail("Exception adding Sam to Westy's readlist: " + e);
         e.printStackTrace();
       }
-      waitSettle();
       try {
-        assertEquals("work", client.fieldReadArrayFirstElement(
-                westyEntry.getGuid(), "environment", samEntry));
+        assertEquals("work",
+                client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry));
       } catch (Exception e) {
-        fail("Exception while Sam reading Westy's field: ", e);
+        fail("Exception while Sam reading Westy's field: " + e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it testing ACL part one: ",
-              e);
+      fail("Exception when we were not expecting it in ACLPartOne: " + e);
       e.printStackTrace();
     }
   }
@@ -607,69 +658,51 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_120_ACLPartTwo() {
     try {
-      String barneyName = "barney" + RandomString.randomString(12);
+      String barneyName = "barney" + RandomString.randomString(6);
       try {
-        String result = client.lookupGuid(barneyName);
-        fail(barneyName + " entity should not exist: " + result);
+        client.lookupGuid(barneyName);
+        fail(barneyName + " entity should not exist");
       } catch (ClientException e) {
       } catch (Exception e) {
-        fail("Exception looking up Barney: ", e);
+        fail("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
       barneyEntry = client.guidCreate(masterGuid, barneyName);
-      waitSettle();
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, barneyEntry,
               GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
-      client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell",
-              "413-555-1234", barneyEntry);
-      client.fieldCreateOneElementList(barneyEntry.getGuid(), "address",
-              "100 Main Street", barneyEntry);
+      client.fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
+      client.fieldCreateOneElementList(barneyEntry.getGuid(), "address", "100 Main Street", barneyEntry);
 
       try {
         // let anybody read barney's cell field
-        client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry,
-                "cell", GNSCommandProtocol.ALL_GUIDS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
+                GNSCommandProtocol.ALL_GUIDS);
       } catch (Exception e) {
-        fail("Exception creating ALLUSERS access for Barney's cell: ",
-                e);
-        e.printStackTrace();
-      }
-      waitSettle();
-
-      try {
-        assertEquals("413-555-1234", client.fieldReadArrayFirstElement(
-                barneyEntry.getGuid(), "cell", samEntry));
-      } catch (Exception e) {
-        fail("Exception while Sam reading Barney' cell: ", e);
+        fail("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
       }
 
       try {
-        assertEquals("413-555-1234", client.fieldReadArrayFirstElement(
-                barneyEntry.getGuid(), "cell", westyEntry));
+        assertEquals("413-555-1234",
+                client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", samEntry));
       } catch (Exception e) {
-        fail("Exception while Westy reading Barney' cell: ", e);
+        fail("Exception while Sam reading Barney' cell: " + e);
         e.printStackTrace();
       }
 
       try {
-        String result = client.fieldReadArrayFirstElement(
-                barneyEntry.getGuid(), "address", samEntry);
-        fail("Result of read of barney's address by sam is "
-                + result
-                + " which is wrong because it should have been rejected.");
-      } catch (ClientException e) {
+        assertEquals("413-555-1234",
+                client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", westyEntry));
       } catch (Exception e) {
-        fail("Exception while Sam reading Barney' address: ", e);
+        fail("Exception while Westy reading Barney' cell: " + e);
         e.printStackTrace();
       }
 
       try {
-        String result = client.fieldRead(
-                barneyEntry.getGuid(), "address", null);
-        fail("Result of read of barney's address by null querier is "
-                + result
+        String result = client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address",
+                samEntry);
+        fail("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
         if (e.getCode() == GNSResponseCode.ACCESS_ERROR) {
@@ -680,21 +713,20 @@ public class ServerIntegrationTest extends DefaultTest {
                           + e);
         }
       } catch (Exception e) {
-        fail("Unexpected exception while null querier reading Barney' address: ", e);
+        fail("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
       }
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it testing ACL part two: ",
-              e);
+      fail("Exception when we were not expecting it in ACLPartTwo: " + e);
       e.printStackTrace();
     }
   }
 
   @Test
   public void test_130_ACLALLFields() {
-    // testACL();
-    String superUserName = "superuser" + RandomString.randomString(12);
+    //testACL();
+    String superUserName = "superuser" + RandomString.randomString(6);
     try {
       try {
         client.lookupGuid(superUserName);
@@ -702,21 +734,19 @@ public class ServerIntegrationTest extends DefaultTest {
       } catch (ClientException e) {
       }
 
-      GuidEntry superuserEntry = client.guidCreate(masterGuid,
-              superUserName);
+      GuidEntry superuserEntry = client.guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
-      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry,
-              GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
+      client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
 
-      assertEquals("413-555-1234", client.fieldReadArrayFirstElement(
-              barneyEntry.getGuid(), "cell", superuserEntry));
-      assertEquals("100 Main Street", client.fieldReadArrayFirstElement(
-              barneyEntry.getGuid(), "address", superuserEntry));
+      assertEquals("413-555-1234",
+              client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", superuserEntry));
+      assertEquals("100 Main Street",
+              client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it testing ACL all fields: ",
-              e);
+      fail("Exception when we were not expecting it in ACLALLFields: " + e);
+      e.printStackTrace();
     }
   }
 
@@ -724,30 +754,29 @@ public class ServerIntegrationTest extends DefaultTest {
   public void test_140_ACLCreateDeeperField() {
     try {
       try {
-        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field",
-                "fieldValue", westyEntry);
-      } catch (Exception e) {
-        fail("Problem updating field: ", e);
+        client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
+      } catch (IOException | ClientException | JSONException e) {
+        fail("Problem updating field: " + e);
+        e.printStackTrace();
       }
-      waitSettle();
       try {
-        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
-                "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
+        client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
       } catch (Exception e) {
-        fail("Problem adding acl: ", e);
+        fail("Problem adding acl: " + e);
+        e.printStackTrace();
       }
-      waitSettle();
       try {
-        JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST,
-                westyEntry, "test.deeper.field", westyEntry.getGuid());
-        JSONArray expected = new JSONArray(new ArrayList(
-                Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
+        JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, westyEntry,
+                "test.deeper.field", westyEntry.getGuid());
+        JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
-        fail("Problem reading acl: ", e);
+        fail("Problem reading acl: " + e);
+        e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      fail("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      e.printStackTrace();
     }
   }
 
@@ -1570,7 +1599,7 @@ public class ServerIntegrationTest extends DefaultTest {
       json.put("occupation", "busboy");
       json.put("location", "work");
       json.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1586,7 +1615,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("occupation", "busboy");
       expected.put("location", "work");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1614,7 +1643,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("occupation", "rocket scientist");
       expected.put("location", "work");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1644,7 +1673,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("einy", "floop");
       subJson.put("meiny", "bloop");
@@ -1670,7 +1699,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject actual = client.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
@@ -1704,7 +1733,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1763,7 +1792,7 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy", "green");
       JSONObject subsubJson = new JSONObject();
@@ -1780,7 +1809,7 @@ public class ServerIntegrationTest extends DefaultTest {
     }
     try {
       client.fieldUpdate(westyEntry.getGuid(), "flapjack.sammy",
-              new ArrayList(Arrays.asList("One", "Ready", "Frap")),
+              new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")),
               westyEntry);
     } catch (Exception e) {
       fail("Exception while updating field \"flapjack.sammy\": ", e);
@@ -1792,10 +1821,10 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject subJson = new JSONObject();
       subJson.put("sammy",
-              new ArrayList(Arrays.asList("One", "Ready", "Frap")));
+              new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")));
       JSONObject subsubJson = new JSONObject();
       subsubJson.put("right", "crank");
       subsubJson.put("left", "eight");
@@ -1813,7 +1842,7 @@ public class ServerIntegrationTest extends DefaultTest {
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
       moreJson.put("crash",
-              new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+              new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       client.fieldUpdate(westyEntry.getGuid(), "flapjack", moreJson,
               westyEntry);
     } catch (Exception e) {
@@ -1826,12 +1855,12 @@ public class ServerIntegrationTest extends DefaultTest {
       expected.put("location", "work");
       expected.put("ip address", "127.0.0.1");
       expected.put("friends",
-              new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+              new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
       JSONObject moreJson = new JSONObject();
       moreJson.put("name", "dog");
       moreJson.put("flyer", "shattered");
       moreJson.put("crash",
-              new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+              new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
       expected.put("flapjack", moreJson);
       JSONObject actual = client.read(westyEntry);
       JSONAssert.assertEquals(expected, actual,

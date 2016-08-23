@@ -106,8 +106,8 @@ public class NSFieldAccess {
     try {
       // Check for the case where we're returning all the fields the entire record.
       if (GNSCommandProtocol.ALL_FIELDS.equals(field)) {
-        ClientSupportConfig.getLogger().log(Level.FINE, "Field={0} Format={1}",
-                new Object[]{field, returnFormat});
+        ClientSupportConfig.getLogger().log(Level.FINE, "ALL FIELDS: Format={0}",
+                new Object[]{returnFormat});
         // need everything so just grab all the fields
         nameRecord = NameRecord.getNameRecord(database, guid);
         // Otherwise if field is specified we're just looking up that single field.
@@ -122,6 +122,8 @@ public class NSFieldAccess {
         	DelayProfiler.updateDelayNano("getNameRecordMultiUserFields", t);
       }
       if (nameRecord != null) {
+         ClientSupportConfig.getLogger().log(Level.FINE, "VALUES MAP={0}",
+                new Object[]{nameRecord.getValuesMap().toString()});
         return nameRecord.getValuesMap();
       }
     } catch (RecordNotFoundException e) {
