@@ -445,36 +445,36 @@ public enum CommandType {
   HelpTcpWiki(712, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.HelpTcpWiki.class,
           GNSCommand.ResultType.STRING, true, false),
-  Admin(715, Type.OTHER,
+  Admin(715, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin.class,
           GNSCommand.ResultType.NULL, true, true),
-  Dump(716, Type.OTHER,
+  Dump(716, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
           GNSCommand.ResultType.STRING, true, true),
   //
-  GetParameter(720, Type.OTHER,
+  GetParameter(720, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
           GNSCommand.ResultType.STRING, true, true),
-  SetParameter(721, Type.OTHER,
+  SetParameter(721, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.SetParameter.class,
           GNSCommand.ResultType.NULL, true, true),
-  ListParameters(722, Type.OTHER,
+  ListParameters(722, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ListParameters.class,
           GNSCommand.ResultType.STRING, true, true),
-  DeleteAllRecords(723, Type.OTHER,
+  DeleteAllRecords(723, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DeleteAllRecords.class,
           GNSCommand.ResultType.NULL, true, true),
-  ResetDatabase(724, Type.OTHER,
+  ResetDatabase(724, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ResetDatabase.class,
           GNSCommand.ResultType.NULL, true, true),
-  ClearCache(725, Type.OTHER,
+  ClearCache(725, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
           GNSCommand.ResultType.NULL, true, true),
   DumpCache(726, Type.OTHER,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
           GNSCommand.ResultType.STRING, true, false),
   //
-  ChangeLogLevel(730, Type.OTHER,
+  ChangeLogLevel(730, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ChangeLogLevel.class,
           GNSCommand.ResultType.NULL, true, true),
   @Deprecated
@@ -717,7 +717,7 @@ public enum CommandType {
   }
 
   public enum Type {
-    READ, UPDATE, CREATE_DELETE, SELECT, OTHER, SYSTEM_LOOKUP
+    READ, UPDATE, CREATE_DELETE, SELECT, OTHER, SYSTEM_LOOKUP, MUTUAL_AUTH
   }
 
   private CommandType(int number, Type category, Class<?> commandClass,
@@ -767,6 +767,10 @@ public enum CommandType {
   public boolean isSystemLookup() {
 	    return category.equals(Type.SYSTEM_LOOKUP);
 	  }
+  
+  public boolean isMutualAuth(){
+	  return category.equals(Type.MUTUAL_AUTH);
+  }
 
   private static final Map<Integer, CommandType> map = new HashMap<Integer, CommandType>();
 

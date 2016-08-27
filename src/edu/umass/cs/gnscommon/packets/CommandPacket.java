@@ -116,6 +116,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		this.setType(PacketType.COMMAND);
 		this.clientRequestId = requestId;
 		this.command = command;
+		assert(!this.getCommandType().isMutualAuth());
 
 	}
 
@@ -131,6 +132,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		this.command = json.getJSONObject(COMMAND);
 		this.forceCoordination = json.has(GNSCommandProtocol.FORCE_COORDINATE_READS) ? 
 				json.getBoolean(GNSCommandProtocol.FORCE_COORDINATE_READS) : false;
+		assert(!this.getCommandType().isMutualAuth());
 
 	}
 
@@ -162,6 +164,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 				(int) buf.get());
 		// JSON command
 		this.command = getJSONObject(buf, mode);
+		assert(!this.getCommandType().isMutualAuth());
 	}
 
 	private static JSONObject fromBytesStringerHack(ByteBuffer buf)

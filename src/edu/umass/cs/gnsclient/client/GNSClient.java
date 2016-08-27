@@ -397,7 +397,7 @@ public class GNSClient {
 		@Override
 		public Set<IntegerPacketType> getMutualAuthRequestTypes() {
 			Set<IntegerPacketType> types = new HashSet<IntegerPacketType>(
-					Arrays.asList(Packet.PacketType.ADMIN_REQUEST));
+					Arrays.asList(Packet.PacketType.ADMIN_REQUEST, Packet.PacketType.ADMIN_COMMAND));
 			if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE)
 				types.add(Packet.PacketType.INTERNAL_COMMAND);
 			return types;

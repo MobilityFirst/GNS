@@ -80,6 +80,12 @@ public class Packet {
      * internal requests spawned by chains in {@link CommandType}.
      */
     INTERNAL_COMMAND(9, InternalCommandPacket.class.getCanonicalName()),
+    
+    /**
+     * ADMIN_COMMAND
+     * A variant of {@link CommandPacket} that is used for client requests that require mutual authentication.
+     */
+    ADMIN_COMMAND(10, CommandPacket.class.getCanonicalName()),
 
     
     /**
