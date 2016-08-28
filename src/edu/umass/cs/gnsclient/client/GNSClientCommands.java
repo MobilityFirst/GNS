@@ -2113,9 +2113,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws Exception
    */
   @Deprecated
-  public String adminEnable(String passkey) throws Exception {
+  public String adminEnable() throws Exception {
     return getResponse(CommandType.Admin, NAME,
-            RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);
+            RC.BROADCAST_NAME.getDefaultValue());
   }
 
   /**
@@ -2125,11 +2125,11 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws Exception
    */
   @Deprecated
-  public void parameterSet(String field, Object value, String passkey)
+  public void parameterSet(String field, Object value)
           throws Exception {
     getResponse(CommandType.SetParameter, NAME,
             RC.BROADCAST_NAME.getDefaultValue(), FIELD, field, VALUE,
-            value, PASSKEY, passkey);
+            value);
   }
 
   /**
@@ -2140,10 +2140,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    *
    */
   @Deprecated
-  public String parameterGet(String name, String passkey) throws Exception {
+  public String parameterGet(String name) throws Exception {
     return getResponse(CommandType.GetParameter, NAME,
-            RC.BROADCAST_NAME.getDefaultValue(), FIELD, name, PASSKEY,
-            passkey);
+            RC.BROADCAST_NAME.getDefaultValue(), FIELD, name);
   }
 
   @Override

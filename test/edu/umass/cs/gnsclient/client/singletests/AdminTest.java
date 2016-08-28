@@ -107,7 +107,7 @@ public class AdminTest {
   @Test
   public void test_01_AdminEnter() {
     try {
-      client.adminEnable("shabiz");
+      client.adminEnable();
     } catch (Exception e) {
       fail("Exception while enabling admin mode: " + e);
     }
@@ -116,7 +116,7 @@ public class AdminTest {
   @Test
   public void test_02_ParameterGet() {
     try {
-      String result = client.parameterGet("email_verification", "shabiz");
+      String result = client.parameterGet("email_verification");
       assertEquals("true", result);
     } catch (Exception e) {
       fail("Exception while enabling admin mode: " + e);
@@ -126,12 +126,12 @@ public class AdminTest {
   @Test
   public void test_03_ParameterSet() {
     try {
-      client.parameterSet("max_guids", 2000, "shabiz");
+      client.parameterSet("max_guids", 2000);
     } catch (Exception e) {
       fail("Exception while enabling admin mode: " + e);
     }
     try {
-      String result = client.parameterGet("max_guids", "shabiz");
+      String result = client.parameterGet("max_guids");
       assertEquals("2000", result);
     } catch (Exception e) {
       fail("Exception while enabling admin mode: " + e);
