@@ -291,14 +291,6 @@ public class CommandModule {
     return JSONMissing(json, parameters) == null;
   }
 
-  /**
-   * Return true if we are in admin mode.
-   *
-   * @return true if we are in admin mode
-   */
-  public boolean isAdminMode() {
-    return adminMode;
-  }
 
   /**
    * Set admin mode.

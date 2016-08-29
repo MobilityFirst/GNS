@@ -2011,9 +2011,9 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static final CommandPacket adminEnable(String passkey)
+  public static final CommandPacket adminEnable()
           throws ClientException {
-    return getCommand(CommandType.Admin, PASSKEY, passkey);
+    return getCommand(CommandType.Admin);
   }
 
   /**

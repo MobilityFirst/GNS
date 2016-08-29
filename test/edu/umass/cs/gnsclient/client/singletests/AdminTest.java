@@ -137,5 +137,17 @@ public class AdminTest {
       fail("Exception while enabling admin mode: " + e);
     }
   }
+  
+  @Test
+  public void test_04_ParameterList() {
+    try {
+      String result = client.parameterList();
+      assertEquals("true", result);
+    } catch (Exception e) {
+      fail("Exception while enabling admin mode: " + e);
+    }
+  }
+  
+  
 
 }

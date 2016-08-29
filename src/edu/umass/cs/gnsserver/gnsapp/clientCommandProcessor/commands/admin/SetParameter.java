@@ -71,24 +71,14 @@ public class SetParameter extends BasicCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(FIELD);
     String value = json.getString(VALUE);
-    if (module.isAdminMode()) {
-  	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
-  	  String passkey = json.getString(PASSKEY);
-  	  if (!Admin.authenticate(passkey)){
-  		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
-  		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
-  	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
-  	  }
       try {
         SystemParameter.valueOf(parameterString.toUpperCase()).setFieldValue(value);
         return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
       } catch (Exception e) {
         System.out.println("Problem setting parameter: " + e);
+        return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " "
+                + " Couldn't set parameter " + CommandType.SetParameter.toString() + " " + parameterString);
       }
-    }
-    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand "
-            + CommandType.SetParameter.toString() + " " + parameterString + " " + VALUE + " " + value);
   }
 
   @Override

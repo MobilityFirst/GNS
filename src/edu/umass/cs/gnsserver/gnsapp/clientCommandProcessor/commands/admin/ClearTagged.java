@@ -78,13 +78,6 @@ public class ClearTagged extends BasicCommand {
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
-	  String passkey = json.getString(PASSKEY);
-	  if (!Admin.authenticate(passkey)){
-		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
-		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
-	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
-	  }
     String tagName = json.getString(NAME);
     try {
       for (Iterator<?> it = handler.getAdmintercessor().collectTaggedGuids(tagName, handler).iterator(); it.hasNext();) {

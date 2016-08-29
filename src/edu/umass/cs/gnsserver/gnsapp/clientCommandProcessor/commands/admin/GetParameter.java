@@ -70,22 +70,13 @@ public class GetParameter extends BasicCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(FIELD);
-    if (module.isAdminMode()) {
       try {
-    	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
-    	  String passkey = json.getString(PASSKEY);
-    	  if (!Admin.authenticate(passkey)){
-    		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
-    		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
-    	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
-    	  }
         return new CommandResponse(GNSResponseCode.NO_ERROR, SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString());
       } catch (Exception e) {
         System.out.println("Problem getting parameter: " + e);
       }
-    }
-    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand " + CommandType.GetParameter.toString() + " " + parameterString);
+    return new CommandResponse(GNSResponseCode.QUERY_PROCESSING_ERROR, BAD_RESPONSE + " "
+            + " Couldn't get parameter " + CommandType.GetParameter.toString() + " " + parameterString);
   }
 
   @Override

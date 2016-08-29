@@ -2113,9 +2113,9 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws Exception
    */
   @Deprecated
-  public String adminEnable() throws Exception {
+  public String adminEnable(String onOrOff) throws Exception {
     return getResponse(CommandType.Admin, NAME,
-            RC.BROADCAST_NAME.getDefaultValue());
+            RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, onOrOff);
   }
 
   /**
