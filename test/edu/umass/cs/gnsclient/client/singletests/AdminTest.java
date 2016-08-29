@@ -104,14 +104,6 @@ public class AdminTest {
 	}
 
 
-  @Test
-  public void test_01_AdminEnter() {
-    try {
-      client.adminEnable();
-    } catch (Exception e) {
-      fail("Exception while enabling admin mode: " + e);
-    }
-  }
 
   @Test
   public void test_02_ParameterGet() {
@@ -138,15 +130,7 @@ public class AdminTest {
     }
   }
   
-  @Test
-  public void test_04_ParameterList() {
-    try {
-      String result = client.parameterList();
-      assertEquals("true", result);
-    } catch (Exception e) {
-      fail("Exception while enabling admin mode: " + e);
-    }
-  }
+
   
   
 
