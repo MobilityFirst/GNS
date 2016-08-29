@@ -61,6 +61,7 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WITHIN;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.LOG_LEVEL;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 import org.json.JSONArray;
@@ -2108,23 +2109,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * @param passkey
-   * @return ???
-   * @throws Exception
-   */
-  @Deprecated
-  public String adminEnable(String onOrOff) throws Exception {
-    return getResponse(CommandType.Admin, NAME,
-            RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, onOrOff);
-  }
-
-  /**
    * @param field
    * @param value
-   * @param passkey
    * @throws Exception
    */
-  @Deprecated
   public void parameterSet(String field, Object value)
           throws Exception {
     getResponse(CommandType.SetParameter, NAME,
@@ -2134,16 +2122,66 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * @param name
-   * @param passkey
    * @return ???
    * @throws Exception
    *
    */
-  @Deprecated
   public String parameterGet(String name) throws Exception {
     return getResponse(CommandType.GetParameter, NAME,
             RC.BROADCAST_NAME.getDefaultValue(), FIELD, name);
   }
+  
+  /**
+   * @return All system parameters and their values?
+   * @throws Exception
+   *
+   */
+  public String parameterList() throws Exception {
+    return getResponse(CommandType.ListParameters, NAME,
+            RC.BROADCAST_NAME.getDefaultValue());
+  }
+  /**
+   * 
+   * @return The contents of the GNS.
+   * @throws Exception
+   */
+  public String dump() throws Exception {
+    return getResponse(CommandType.Dump, NAME,
+            RC.BROADCAST_NAME.getDefaultValue());
+  }
+  
+  /**
+   *  Clears the local name server cache.
+   * @return 
+   * @throws Exception
+   */
+  public String clearCache() throws Exception {
+    return getResponse(CommandType.ClearCache, NAME,
+            RC.BROADCAST_NAME.getDefaultValue());
+  }
+  
+  /**
+   * 
+   * @return  Returns the contents of the local name server cache.
+   * @throws Exception
+   */
+  public String dumpCache() throws Exception {
+    return getResponse(CommandType.DumpCache, NAME,
+            RC.BROADCAST_NAME.getDefaultValue());
+  }
+  
+  /**
+   * "Changes the log level."
+   * @param level
+   * @return
+   * @throws Exception
+   */
+  public String changeLogLevel(String level) throws Exception {
+	    return getResponse(CommandType.DumpCache, NAME,
+	            RC.BROADCAST_NAME.getDefaultValue(), LOG_LEVEL, level);
+  }
+
+
 
   @Override
   public void close() {

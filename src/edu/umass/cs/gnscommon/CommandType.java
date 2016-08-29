@@ -451,7 +451,6 @@ public enum CommandType {
   Dump(716, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Dump.class,
           GNSCommand.ResultType.STRING, true, true),
-  //
   GetParameter(720, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetParameter.class,
           GNSCommand.ResultType.STRING, true, true),
