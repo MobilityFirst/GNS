@@ -169,7 +169,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   private String getResponse(CommandType commandType, GuidEntry querier,
           Object... keysAndValues) throws ClientException, IOException {
-    GNSCommand commandPacket = null;
+    CommandPacket commandPacket = null;
     return record(// just instrumentation
             commandType,
             CommandUtils.checkResponse(this
@@ -226,11 +226,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @return Constructed CommandPacket
    * @throws ClientException
    */
-  private static GNSCommand getCommand(CommandType type, GuidEntry querier,
+  private static CommandPacket getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
-    GNSCommand packet = new GNSCommand(
+    //GNSCommand packet = new GNSCommand(
             //CommandPacket(randomLong(),
-            CommandUtils.createAndSignCommand(type, querier, keysAndValues));
+            //CommandUtils.createAndSignCommand(type, querier, keysAndValues));
+	  CommandPacket packet = GNSCommand.getCommand(type, querier, keysAndValues);
     return packet;
   }
 

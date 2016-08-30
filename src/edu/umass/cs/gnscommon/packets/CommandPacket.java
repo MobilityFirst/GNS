@@ -116,7 +116,7 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		this.setType(PacketType.COMMAND);
 		this.clientRequestId = requestId;
 		this.command = command;
-		assert(!this.getCommandType().isMutualAuth());
+		validateCommandType();
 
 	}
 
@@ -132,8 +132,18 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 		this.command = json.getJSONObject(COMMAND);
 		this.forceCoordination = json.has(GNSCommandProtocol.FORCE_COORDINATE_READS) ? 
 				json.getBoolean(GNSCommandProtocol.FORCE_COORDINATE_READS) : false;
-		assert(!this.getCommandType().isMutualAuth());
+		validateCommandType();
+		
 
+	}
+	
+	/**
+	 * Checks that the command type of the packet is not MUTUAL_AUTH as those should be AdminCommandPacket instead.
+	 * This being a separate method allows AdminCommandPacket to override it to change its validation while still reusing the constructor code here.
+	 */
+	protected void validateCommandType(){
+		//Note this method is intentionally protected rather than private so that the subclass AdminCommandPacket may override it!
+		assert(!this.getCommandType().isMutualAuth());
 	}
 
 	/**
@@ -478,6 +488,14 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * @return CommandType
 	 */
 	public CommandType getCommandType() {
+		return getJSONCommandType(command);
+	}
+	
+	/**
+	 * Used to determine the type of a JSONObject formatted command.
+	 * @return CommandType
+	 */
+	public static CommandType getJSONCommandType(JSONObject command) {
 		try {
 			if (command != null) {
 				if (command.has(GNSCommandProtocol.COMMAND_INT)) {

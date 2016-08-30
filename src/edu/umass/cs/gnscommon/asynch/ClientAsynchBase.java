@@ -35,6 +35,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
@@ -188,7 +190,8 @@ public class ClientAsynchBase extends ReconfigurableAppClientAsync<Request> {
    */
   private long sendCommandAsynch(JSONObject command, RequestCallback callback) throws IOException, JSONException {
     long id = generateNextRequestID();
-    CommandPacket packet = new CommandPacket(id, command);
+    CommandPacket packet = CommandPacket.getJSONCommandType(command).isMutualAuth() ? 
+    		new AdminCommandPacket(id, command) : new CommandPacket(id, command);
     ClientSupportConfig.getLogger().log(Level.FINER, "{0} sending remote query {1}", new Object[]{this, packet.getSummary()});
     sendRequest(
             packet.setForceCoordinatedReads(true),

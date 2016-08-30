@@ -68,6 +68,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -161,10 +162,14 @@ public class GNSCommand extends CommandPacket {
    * @return A {@link CommandPacket} constructed using the supplied arguments.
    * @throws ClientException
    */
-  public static GNSCommand getCommand(CommandType type, GuidEntry querier,
+  public static CommandPacket getCommand(CommandType type, GuidEntry querier,
           Object... keysAndValues) throws ClientException {
-    return new GNSCommand(CommandUtils.createAndSignCommand(type, querier,
-            keysAndValues));
+	  JSONObject command = CommandUtils.createAndSignCommand(type, querier,
+	            keysAndValues);
+	  if (CommandPacket.getJSONCommandType(command).isMutualAuth()){
+		  return new AdminCommandPacket(randomLong(), command);
+	  }
+    return new GNSCommand(command);
   }
 
   /**
@@ -173,7 +178,7 @@ public class GNSCommand extends CommandPacket {
    * @return CommandPacket
    * @throws ClientException
    */
-  public static GNSCommand getCommand(CommandType type,
+  public static CommandPacket getCommand(CommandType type,
           Object... keysAndValues) throws ClientException {
     return getCommand(type, null, keysAndValues);
   }
