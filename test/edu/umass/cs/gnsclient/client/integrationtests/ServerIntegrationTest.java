@@ -571,6 +571,9 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   @Test
+  /**
+   * This one insures that we can use ALL_FIELDS to read all the fields of another guid.
+   */
   public void test_102_ACLReadAllFields() {
     try {
       JSONObject expected = new JSONObject();
@@ -603,6 +606,9 @@ public class ServerIntegrationTest extends DefaultTest {
   }
 
   @Test
+  /**
+   * This one insures that we can't read using ALL_FIELDS when the other guid hasn't given us access.
+   */
   public void test_105_ACLNotReadOtherGuidAllFieldsTest() {
     try {
       try {
