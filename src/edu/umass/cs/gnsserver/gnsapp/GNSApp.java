@@ -32,6 +32,7 @@ import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
@@ -277,7 +278,10 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 				CommandHandler.handleCommandPacket((CommandPacket) request,
 						doNotReplyToClient, this);
 				break;
-
+			case ADMIN_COMMAND:
+				CommandHandler.handleCommandPacket((AdminCommandPacket) request,
+						doNotReplyToClient, this);
+				break;
 			/* arun: COMMAND_RETURN_VALUE should never have been an expected
 			 * type here as GNSApp should never be getting responses. STOP and
 			 * NOOP are no longer necessary. */
