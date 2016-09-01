@@ -469,7 +469,7 @@ public enum CommandType {
   ClearCache(725, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
           GNSCommand.ResultType.NULL, true, true),
-  DumpCache(726, Type.OTHER,
+  DumpCache(726, Type.MUTUAL_AUTH,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DumpCache.class,
           GNSCommand.ResultType.STRING, true, false),
   //

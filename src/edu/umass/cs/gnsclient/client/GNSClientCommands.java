@@ -2178,7 +2178,7 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    * @throws Exception
    */
   public String changeLogLevel(String level) throws Exception {
-	    return getResponse(CommandType.DumpCache, NAME,
+	    return getResponse(CommandType.ChangeLogLevel, NAME,
 	            RC.BROADCAST_NAME.getDefaultValue(), LOG_LEVEL, level);
   }
 
