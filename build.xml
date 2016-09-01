@@ -240,11 +240,12 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
 
   <target name="startServer" depends="compile" description="Forceclears and (re)starts a server for testing purposes.">
 	<property name="gigapaxosConfig" value="conf/gnsserver.3local.properties"/>
+	<property name="java.util.logging.config.file" value="conf/logging.gns.startServer.properties"/>
 	<exec executable="/bin/bash">
 		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} foreclear all"/>
 	</exec>
 	<exec executable="/bin/bash">
-		<arg line="bin/gpServer.sh -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
+		<arg line="bin/gpServer.sh -Djava.util.logging.config.file=${java.util.logging.config.file} -DgigapaxosConfig=${gigapaxosConfig} restart all"/>
 	</exec>
 	<sleep seconds="10"/>
   </target>
