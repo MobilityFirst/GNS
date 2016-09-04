@@ -83,9 +83,9 @@ public class RemoteQuery extends ClientAsynchBase {
 
   public static interface RequestCallbackWithRequest extends RequestCallback {
 
-    public RequestCallbackWithRequest setRequest(CommandPacket request);
+    public RequestCallbackWithRequest setRequest(Request request);
 
-    public CommandPacket getRequest();
+    public Request getRequest();
 
     public Request getResponse();
   }
@@ -115,7 +115,7 @@ public class RemoteQuery extends ClientAsynchBase {
 
   private RequestCallbackWithRequest getRequestCallback(Object monitor) {
     return new RequestCallbackWithRequest() {
-      CommandPacket request = null;
+      Request request = null;
       Request response = null;
 
       public void handleResponse(Request response) {
@@ -127,13 +127,13 @@ public class RemoteQuery extends ClientAsynchBase {
       }
 
       @Override
-      public RequestCallbackWithRequest setRequest(CommandPacket request) {
+      public RequestCallbackWithRequest setRequest(Request request) {
         this.request = request;
         return this;
       }
 
       @Override
-      public CommandPacket getRequest() {
+      public Request getRequest() {
         return this.request;
       }
 
@@ -189,7 +189,7 @@ public class RemoteQuery extends ClientAsynchBase {
           // TODO: arun
           ClientException e = new ClientException(
                   this + ": Timed out on active replica response after waiting for "
-                  + timeout + "ms for response packet for response for " + (callback != null ? callback.getRequest().getSummary() : id));
+                  + timeout + "ms for response packet for response for " + (callback != null && callback.getRequest()!=null ? callback.getRequest().getSummary() : id));
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
@@ -425,7 +425,7 @@ public class RemoteQuery extends ClientAsynchBase {
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} received {1}", new Object[]{this, packet.getSummary()});
-        return CommandUtils.checkResponse(packet, callback.getRequest()).getReturnValue();
+        return CommandUtils.checkResponse(packet, ((CommandPacket)callback.getRequest())).getReturnValue();
       }
     } catch (ActiveReplicaException e) {
       return notFoundReponse;
@@ -646,7 +646,7 @@ public class RemoteQuery extends ClientAsynchBase {
 
     Object monitor = new Object();
     RequestCallbackWithRequest callback = null;
-    long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor));
+    long requestId = sendSelectPacket(packet, callback = this.getRequestCallback(monitor).setRequest(packet));
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> reponsePacket = (SelectResponsePacket<String>) waitForReplicaResponse(requestId, monitor, callback);
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(reponsePacket.getResponseCode())) {
