@@ -19,6 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.packet;
 
+import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.CommandType;
 
@@ -85,7 +86,7 @@ public class Packet {
      * ADMIN_COMMAND
      * A variant of {@link CommandPacket} that is used for client requests that require mutual authentication.
      */
-    ADMIN_COMMAND(10, CommandPacket.class.getCanonicalName()),
+    ADMIN_COMMAND(10, AdminCommandPacket.class.getCanonicalName()),
 
     
     /**
