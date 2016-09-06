@@ -18,9 +18,10 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.AbstractUpdate;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
+
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.GNSApp;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.InternalRequestException;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
@@ -29,7 +30,6 @@ import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
@@ -147,18 +147,18 @@ public class CommandHandler {
 		// reply to client is true, this means this is the active replica
 		// that recvd the request from the gnsClient. So, let's check for
 		// sending trigger to Context service here.
-<<<<<<< HEAD
-		if (AppReconfigurableNodeOptions.enableContextService) 
-		{
-			if (!doNotReplyToClient) 
-			{
-				if (command.getClass().getSuperclass() == AbstractUpdate.class) {
-=======
+////<<<<<<< HEAD
+//		if (AppReconfigurableNodeOptions.enableContextService) 
+//		{
+//			if (!doNotReplyToClient) 
+//			{
+//				if (command.getClass().getSuperclass() == AbstractUpdate.class) {
+////=======
 		if (AppOptionsOld.enableContextService) {
 			if (!doNotReplyToClient) {
 
 				if (commandHandler.getClass().getSuperclass() == AbstractUpdate.class) {
->>>>>>> upstream/master
+//>>>>>>> upstream/master
 					GNSConfig
 							.getLogger()
 							.log(Level.FINE,

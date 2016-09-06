@@ -2,8 +2,7 @@ package edu.umass.cs.gnsclient.benchmarking;
 
 import java.sql.SQLException;
 
-
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 
 public class InsertTask implements Runnable
