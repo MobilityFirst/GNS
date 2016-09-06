@@ -25,16 +25,19 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
+import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import java.text.ParseException;
 import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,13 +67,13 @@ public class ReadArray extends BasicCommand {
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-
+  
 //  @Override
 //  public String getCommandName() {
 //    return READ_ARRAY;
 //  }
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -86,20 +89,21 @@ public class ReadArray extends BasicCommand {
     } else {
       timestamp = null;
     }
-    if (reader.equals(MAGIC_STRING)) {
+    if (reader.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
       reader = null;
     }
 
     if (getCommandType().equals(CommandType.ReadArrayOne)
             || getCommandType().equals(CommandType.ReadArrayOneUnsigned)
-            || getCommandType().equals(CommandType.ReadArrayOneSelf)) {
+            //|| getCommandType().equals(CommandType.ReadArrayOneSelf)
+            ) {
       if (ALL_FIELDS.equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {
         return FieldAccess.lookupOne(guid, field, reader, signature, message, timestamp, handler);
       }
     } else if (ALL_FIELDS.equals(field)) {
-      return FieldAccess.lookupMultipleValues(guid, reader, signature, message, timestamp, handler);
+      return FieldAccess.lookupMultipleValues(header, guid, reader, signature, message, timestamp, handler);
     } else {
       return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, timestamp, handler);
     }

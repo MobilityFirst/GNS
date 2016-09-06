@@ -30,8 +30,9 @@ import java.util.logging.Logger;
 
 
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.msocket.common.Constants;
 
 /**

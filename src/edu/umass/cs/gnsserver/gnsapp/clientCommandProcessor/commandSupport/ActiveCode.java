@@ -92,7 +92,7 @@ public class ActiveCode {
     } catch (JSONException e) {
       return GNSResponseCode.JSON_PARSE_ERROR;
     }
-    GNSResponseCode response = FieldAccess.updateUserJSON(guid, json,
+    GNSResponseCode response = FieldAccess.updateUserJSON(null, guid, json,
             writer, signature, message, timestamp, handler);
     return response;
   }
@@ -114,7 +114,7 @@ public class ActiveCode {
           Date timestamp, ClientRequestHandlerInterface handler) {
     String field = getCodeField(action);
 
-    GNSResponseCode response = FieldAccess.update(guid, field, "", null, -1,
+    GNSResponseCode response = FieldAccess.update(null, guid, field, "", null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, 
             message, timestamp, handler);
     return response;
@@ -142,7 +142,7 @@ public class ActiveCode {
       return GNSCommandProtocol.NULL_RESPONSE;
     }
     try {
-      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(guid, field,
+      ValuesMap result = NSFieldAccess.lookupJSONFieldLocalNoAuth(null, guid, field,
               handler.getApp(), false);
       return result.getString(field);
     } catch (FailedDBOperationException | JSONException e) {

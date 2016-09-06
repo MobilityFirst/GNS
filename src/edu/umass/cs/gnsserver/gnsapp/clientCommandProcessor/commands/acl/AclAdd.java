@@ -66,10 +66,6 @@ public class AclAdd extends BasicCommand {
     return new String[]{GUID, FIELD, ACCESSER, WRITER, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return ACL_ADD;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
@@ -89,17 +85,19 @@ public class AclAdd extends BasicCommand {
       return new CommandResponse(GNSResponseCode.BAD_ACL_TYPE_ERROR, BAD_RESPONSE
               + " " + BAD_ACL_TYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
+    // Lookup the public key of the guid that we're giving access to the field.
     String accessorPublicKey;
     if (EVERYONE.equals(accesser)) {
       accessorPublicKey = EVERYONE;
     } else {
       GuidInfo accessorGuidInfo;
-      if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler, true)) == null) {
+      if ((accessorGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accesser, handler)) == null) {
         return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + accesser);
       } else {
         accessorPublicKey = accessorGuidInfo.getPublicKey();
       }
     }
+    // This is where we update the ACL. Put the public key of the accessing guid in the appropriate ACL list.
     GNSResponseCode responseCode;
     if (!(responseCode = FieldMetaData.add(access, guid, field,
             accessorPublicKey, writer, signature, message, timestamp, handler)).isExceptionOrError()) {

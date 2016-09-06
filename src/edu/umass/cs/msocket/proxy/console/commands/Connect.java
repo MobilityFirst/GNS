@@ -24,8 +24,8 @@ package edu.umass.cs.msocket.proxy.console.commands;
 
 import java.util.StringTokenizer;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -97,7 +97,7 @@ public class Connect extends ConsoleCommand
         console.printString("Connected to GNS at " + gnsHost + ":" + gnsPort + "\n");
 
       module.setGnsClient(gnsClient);
-      GuidEntry accountGuidEntry = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), accountGuid);
+      GuidEntry accountGuidEntry = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSProvider(), accountGuid);
       if (accountGuidEntry == null)
       {
         console.printString("No information found for GUID " + accountGuidEntry);

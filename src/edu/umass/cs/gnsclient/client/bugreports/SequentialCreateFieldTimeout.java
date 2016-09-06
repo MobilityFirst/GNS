@@ -24,8 +24,8 @@ import org.junit.runners.MethodSorters;
 
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.testing.GNSClientCapacityTest;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -127,7 +127,7 @@ public class SequentialCreateFieldTimeout {
 			}
 			String alias = "testGUID" + RandomString.randomString(12);
 			GuidEntry guidEntry = null;
-				guidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid,
+				guidEntry = client.guidCreate(masterGuid,
 						alias);
 			assertNotNull(guidEntry);
 			assertEquals(alias, guidEntry.getEntityName());

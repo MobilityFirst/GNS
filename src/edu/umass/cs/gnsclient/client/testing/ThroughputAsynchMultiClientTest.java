@@ -19,12 +19,13 @@
  */
 package edu.umass.cs.gnsclient.client.testing;
 
-import edu.umass.cs.gnsclient.client.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUIDCNT;
-import edu.umass.cs.gnsclient.client.GuidEntry;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.utils.Format;
+import edu.umass.cs.gnsclient.client.deprecated.AbstractGNSClient;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
@@ -37,6 +38,7 @@ import edu.umass.cs.utils.DelayProfiler;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.CommandType;
+
 import java.net.InetSocketAddress;
 import java.awt.HeadlessException;
 import java.io.IOException;
@@ -47,6 +49,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -329,7 +332,10 @@ public class ThroughputAsynchMultiClientTest {
         try {
           JSONObject command = createCommand(CommandType.LookupRandomGuids,
                   GUID, masterGuid.getGuid(), GUIDCNT, numberOfGuids);
-          String result = checkResponse(clients[0].sendCommandAndWait(command));
+					String result = clients[0].execute(
+							new CommandPacket(
+									(long) (Math.random() * Long.MAX_VALUE),
+									command)).getResultString();// checkResponse(clients[0].sendCommandAndWait(command));
           if (!result.startsWith(GNSCommandProtocol.BAD_RESPONSE)) {
             existingGuids = new JSONArray(result);
           } else {
@@ -422,9 +428,10 @@ public class ThroughputAsynchMultiClientTest {
    * @param requestsPerClient
    */
   private void ramp(int startRate, int increment, int requestsPerClient) {
+	  if(true) throw new RuntimeException("Disabled");
     for (int ratePerSec = startRate;; ratePerSec = ratePerSec + increment) {
       for (int i = 0; i < numberOfClients; i++) {
-        clients[0].resetInstrumentation();
+        //clients[0].resetInstrumentation();
       }
       System.out.print(Format.formatDateTimeOnly(new Date()) + " Attempted rate/s " + ratePerSec);
       // the calculated delay after sending a burst of requests
@@ -464,9 +471,9 @@ public class ThroughputAsynchMultiClientTest {
       int totalErrors = 0;
       double latencySum = 0;
       for (int i = 0; i < numberOfClients; i++) {
-        outstandingPacketCount += clients[i].outstandingAsynchPacketCount();
-        totalErrors += clients[i].getTotalAsynchErrors();
-        latencySum += clients[i].getMovingAvgLatency();
+        outstandingPacketCount += 0;//clients[i].outstandingAsynchPacketCount();
+        //totalErrors += clients[i].getTotalAsynchErrors();
+        //latencySum += clients[i].getMovingAvgLatency();
       }
       System.out.println("\n" + Format.formatDateTimeOnly(new Date())
               + " Actual rate/s: " + numberSent / (elapsedTimeInMilleSeconds / 1000.0)
@@ -486,13 +493,16 @@ public class ThroughputAsynchMultiClientTest {
   //
   // Stuff below here is mostly currently for testing only
   //
-  private static CommandPacket createReadCommandPacket(AbstractGNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
+  private static CommandPacket createReadCommandPacket(GNSClient client, String targetGuid, String field, GuidEntry reader) throws Exception {
     JSONObject command;
     if (reader == null) {
-      command = createCommand(CommandType.ReadUnsigned, GUID, targetGuid, FIELD, field);
+      command = createCommand(CommandType.ReadUnsigned, 
+              GUID, targetGuid, FIELD, field,
+              READER, null);
     } else {
       command = createAndSignCommand(CommandType.Read,
               reader.getPrivateKey(),
+              reader.getPublicKey(),
               GUID, targetGuid, FIELD, field,
               READER, reader.getGuid());
     }
@@ -500,10 +510,11 @@ public class ThroughputAsynchMultiClientTest {
     return new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command);
   }
 
-  private static CommandPacket createUpdateCommandPacket(AbstractGNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
+  private static CommandPacket createUpdateCommandPacket(GNSClient client, String targetGuid, JSONObject json, GuidEntry writer) throws Exception {
     JSONObject command;
     command = createAndSignCommand(CommandType.ReplaceUserJSON,
             writer.getPrivateKey(),
+            writer.getPublicKey(),
             GUID, targetGuid, json.toString(),
             WRITER, writer.getGuid());
     return new CommandPacket(-1, command);
@@ -522,6 +533,7 @@ public class ThroughputAsynchMultiClientTest {
 
     @Override
     public void run() {
+    	
       try {
         for (int j = 0; j < requests; j++) {
           int index;
@@ -531,8 +543,13 @@ public class ThroughputAsynchMultiClientTest {
           chosen.add(index);
           // important to set the request id to something unique for the client
           // arun: nope, requestID is final, can not change
-          //commmandPackets[index][clientNumber].setClientRequestId(clients[clientNumber].generateNextRequestID());
-          clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index][clientNumber]);
+
+          // arun: disabled
+          if (true)
+        	  throw new RuntimeException("disabled");
+          // commmandPackets[index][clientNumber].setClientRequestId(clients[clientNumber].generateNextRequestID());
+          
+          //clients[clientNumber].sendCommandPacketAsynch(commmandPackets[index][clientNumber]);
           // clear this out if we have used all the guids
           if (chosen.size() == numberOfGuids) {
             chosen.clear();

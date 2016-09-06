@@ -30,7 +30,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -111,26 +110,26 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
    * @param hostsFile
    * @throws java.io.IOException
    */
-  public LNSNodeConfig(String hostsFile) throws IOException {
-    this.hostsFile = hostsFile;
-    if (isOldStyleFile(hostsFile)) {
-      throw new UnsupportedOperationException(
-              "THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: "
-              + hostsFile);
-      // initFromOldStyleFile(hostsFile, nameServerID);
-    }
-    readHostsFile(hostsFile);
-    // Informational purposes
-    for (Entry<Object, LNSNodeInfo> hostInfoEntry : hostInfoMapping
-            .entrySet()) {
-      GNSConfig.getLogger().log(Level.INFO, "For LNS "
-              + " Id: {0} Host:{1} Start Port:{2}",
-              new Object[]{hostInfoEntry.getValue().getId().toString(),
-                hostInfoEntry.getValue().getIpAddress(),
-                hostInfoEntry.getValue().getStartingPortNumber()});
-    }
-    startCheckingForUpdates();
-  }
+//  public LNSNodeConfig(String hostsFile) throws IOException {
+//    this.hostsFile = hostsFile;
+//    if (isOldStyleFile(hostsFile)) {
+//      throw new UnsupportedOperationException(
+//              "THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: "
+//              + hostsFile);
+//      // initFromOldStyleFile(hostsFile, nameServerID);
+//    }
+//    readHostsFile(hostsFile);
+//    // Informational purposes
+//    for (Entry<Object, LNSNodeInfo> hostInfoEntry : hostInfoMapping
+//            .entrySet()) {
+//      GNSConfig.getLogger().log(Level.INFO, "For LNS "
+//              + " Id: {0} Host:{1} Start Port:{2}",
+//              new Object[]{hostInfoEntry.getValue().getId().toString(),
+//                hostInfoEntry.getValue().getIpAddress(),
+//                hostInfoEntry.getValue().getStartingPortNumber()});
+//    }
+//    startCheckingForUpdates();
+//  }
 
   /**
    * Returns the set of active replica addresses.
@@ -419,23 +418,6 @@ public class LNSNodeConfig implements NodeConfig<InetSocketAddress>,
   public String toString() {
     return "LNSNodeConfig{" + "version=" + version + ", hostInfoMapping="
             + hostInfoMapping + '}';
-  }
-
-  /**
-   * The main routine. For testing only.
-   *
-   * @param args
-   * @throws java.lang.Exception
-   */
-  @SuppressWarnings("unchecked")
-  public static void main(String[] args) throws Exception {
-    String filename = GNSConfig.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    LNSNodeConfig gnsNodeConfig = new LNSNodeConfig(filename);
-    System.out.println(gnsNodeConfig.hostInfoMapping.toString());
-    System.out.println(gnsNodeConfig.getNumberOfNodes());
-    System.out.println(gnsNodeConfig.getActiveReplicas());
-    System.out.println(gnsNodeConfig.getReconfigurators());
-    System.exit(0);
   }
 
   @Override

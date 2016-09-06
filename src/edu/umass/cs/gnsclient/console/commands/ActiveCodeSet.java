@@ -106,7 +106,7 @@ public class ActiveCodeSet extends ConsoleCommand
       
       String action = st.nextToken();
       String filename = st.nextToken();
-      byte[] code = Files.readAllBytes(Paths.get(filename));
+      String code = new String(Files.readAllBytes(Paths.get(filename)));
      
       gnsClient.activeCodeSet(guid, action, code, module.getCurrentGuid());
       

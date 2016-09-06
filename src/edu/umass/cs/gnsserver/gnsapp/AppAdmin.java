@@ -27,13 +27,16 @@ import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -199,11 +202,13 @@ public class AppAdmin extends Thread implements Shutdownable {
                   GNSConfig.getLogger().log(Level.WARNING,
                           "NSListenerAdmin ({0}) : Ignoring CLEARCACHE request", app.getNodeID());
                   break;
+                case DUMPCACHE:
+                  GNSConfig.getLogger().log(Level.WARNING,
+                          "NSListenerAdmin ({0}) : Ignoring DUMPCACHE request", app.getNodeID());
+                  break;
 
               }
               break;
-//          case STATUS_INIT:
-//            break;
           }
         }
       } catch (IOException | JSONException | FailedDBOperationException | ParseException | IllegalArgumentException | SecurityException e) {

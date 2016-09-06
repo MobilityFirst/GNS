@@ -28,9 +28,11 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.database.AbstractRecordCursor;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Random;
@@ -38,9 +40,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
+
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.RemoteQuery;
-import edu.umass.cs.gnsserver.gnsapp.packet.ResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectOperation;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
@@ -48,6 +51,7 @@ import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.utils.Util;
+
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashSet;
@@ -145,7 +149,7 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
                   "GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for {0}", packet.getGuid());
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app.getRequestHandler());
           InetSocketAddress iDontKnowMyListeningAddress = null;
-          sendReponsePacketToCaller(packet.getId(), packet.getCcpQueryId(), packet.getClientAddress(), result.toStringSet(), app, iDontKnowMyListeningAddress);
+          sendReponsePacketToCaller(packet.getId(), packet.getClientAddress(), result.toStringSet(), app, iDontKnowMyListeningAddress);
           return;
         }
       } else {
@@ -225,7 +229,7 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
               e.getMessage());
       //e.printStackTrace();
       response = SelectResponsePacket.makeFailPacket(request.getId(), request.getClientAddress(),
-              request.getCcpQueryId(), request.getNsQueryId(), app.getNodeID(), e.getMessage());
+              request.getNsQueryId(), app.getNodeID(), e.getMessage());
     }
     return response;
   }
@@ -266,7 +270,7 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
       e.printStackTrace();
       SelectResponsePacket<String> failResponse = SelectResponsePacket.makeFailPacket(request.getId(),
               request.getClientAddress(),
-              request.getCcpQueryId(), request.getNsQueryId(), app.getNodeID(), e.getMessage());
+              request.getNsQueryId(), app.getNodeID(), e.getMessage());
       try {
         app.sendToID(request.getNameServerID(), failResponse.toJSONObject());
       } catch (IOException f) {
@@ -299,7 +303,7 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
       return;
     }
     // if there is no error update our results list
-    if (ResponseCode.NOERROR.equals(packet.getResponseCode())) {
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
       // stuff all the unique records into the info structure
       processJSONRecords(packet.getRecords(), info, replica);
     } else {
@@ -326,12 +330,12 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
                 new Object[]{replica.getNodeID(), info.serversYetToRespond()});
   }
 
-  private static void sendReponsePacketToCaller(long id, long lnsQueryId,
+  private static void sendReponsePacketToCaller(long id,
           InetSocketAddress address, Set<String> guids,
           GNSApplicationInterface<String> app, InetSocketAddress myListeningAddress) throws JSONException {
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> response
-            = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
+            = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null,
                     -1, null, new JSONArray(guids));
     GNSConfig.getLogger().log(Level.FINE,
             "NS {0} 888888888 sending response to client address {1}: {2}",
@@ -361,7 +365,7 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
 		QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
 
     // Pull the records out of the info structure and send a response back to the caller
-    sendReponsePacketToCaller(packet.getId(), packet.getLnsQueryId(), packet.getReturnAddress(), guids, replica, iDontKnowMyListeningAddress);
+    sendReponsePacketToCaller(packet.getId(), packet.getReturnAddress(), guids, replica, iDontKnowMyListeningAddress);
     // Now we update any group guid stuff
     if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP)) {
       GNSConfig.getLogger().log(Level.FINE,

@@ -21,9 +21,9 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.AclAccessType;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
@@ -31,6 +31,7 @@ import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -39,10 +40,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
 import static org.hamcrest.Matchers.*;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import static org.junit.Assert.*;
+
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -106,7 +111,7 @@ public class MultipleClientTest {
     String alias = "testGUID" + RandomString.randomString(6);
     GuidEntry guidEntry = null;
     try {
-      guidEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, alias);
+      guidEntry = getRandomClient().guidCreate(masterGuid, alias);
     } catch (Exception e) {
       fail("Exception while creating guid: " + e);
     }
@@ -119,7 +124,7 @@ public class MultipleClientTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, testGuidName);
+      testGuid = getRandomClient().guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }
@@ -160,7 +165,7 @@ public class MultipleClientTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, testGuidName);
+      testGuid = getRandomClient().guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }
@@ -184,7 +189,7 @@ public class MultipleClientTest {
     String testGuidName = "testGUID" + RandomString.randomString(6);
     GuidEntry testGuid = null;
     try {
-      testGuid = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, testGuidName);
+      testGuid = getRandomClient().guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
       fail("Exception while creating testGuid: " + e);
     }
@@ -198,7 +203,7 @@ public class MultipleClientTest {
   @Test
   public void test_05_CreateSubGuid() {
     try {
-      subGuidEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "subGuid" + RandomString.randomString(6));
+      subGuidEntry = getRandomClient().guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -248,8 +253,8 @@ public class MultipleClientTest {
   @Test
   public void test_10_CreateFields() {
     try {
-      westyEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "westy" + RandomString.randomString(6));
-      samEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "sam" + RandomString.randomString(6));
+      westyEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(6));
+      samEntry = getRandomClient().guidCreate(masterGuid, "sam" + RandomString.randomString(6));
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
@@ -321,7 +326,7 @@ public class MultipleClientTest {
         fail("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
-      barneyEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, barneyName);
+      barneyEntry = getRandomClient().guidCreate(masterGuid, barneyName);
       // remove default read access for this test
       getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
       getRandomClient().fieldCreateOneElementList(barneyEntry.getGuid(), "cell", "413-555-1234", barneyEntry);
@@ -380,7 +385,7 @@ public class MultipleClientTest {
       } catch (ClientException e) {
       }
 
-      GuidEntry superuserEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, superUserName);
+      GuidEntry superuserEntry = getRandomClient().guidCreate(masterGuid, superUserName);
 
       // let superuser read any of barney's fields
       getRandomClient().aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, GNSCommandProtocol.ALL_FIELDS, superuserEntry.getGuid());
@@ -515,7 +520,7 @@ public class MultipleClientTest {
     try {
       //Utils.clearTestGuids(client);
       //System.out.println("cleared old GUIDs");
-      testEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, testSubstituteGuid);
+      testEntry = getRandomClient().guidCreate(masterGuid, testSubstituteGuid);
       System.out.println("created test guid: " + testEntry);
     } catch (Exception e) {
       fail("Exception during init: " + e);
@@ -557,7 +562,7 @@ public class MultipleClientTest {
     try {
       //Utils.clearTestGuids(client);
       //System.out.println("cleared old GUIDs");
-      testEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, testSubstituteListGuid);
+      testEntry = getRandomClient().guidCreate(masterGuid, testSubstituteListGuid);
       System.out.println("created test guid: " + testEntry);
     } catch (Exception e) {
       fail("Exception during init: " + e);
@@ -603,8 +608,8 @@ public class MultipleClientTest {
         fail(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
-      guidToDeleteEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "deleteMe" + RandomString.randomString(6));
-      mygroupEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, mygroupName);
+      guidToDeleteEntry = getRandomClient().guidCreate(masterGuid, "deleteMe" + RandomString.randomString(6));
+      mygroupEntry = getRandomClient().guidCreate(masterGuid, mygroupName);
 
       getRandomClient().groupAddGuid(mygroupEntry.getGuid(), westyEntry.getGuid(), mygroupEntry);
       getRandomClient().groupAddGuid(mygroupEntry.getGuid(), samEntry.getGuid(), mygroupEntry);
@@ -665,7 +670,7 @@ public class MultipleClientTest {
     GuidEntry groupAccessUserEntry = null;
 
     try {
-      groupAccessUserEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, groupAccessUserName);
+      groupAccessUserEntry = getRandomClient().guidCreate(masterGuid, groupAccessUserName);
       // remove all fields read by all
       getRandomClient().aclRemove(AclAccessType.READ_WHITELIST, groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
@@ -794,7 +799,7 @@ public class MultipleClientTest {
   public void test_32_GeoSpatialSelect() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "geoTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "geoTest-" + RandomString.randomString(6));
         getRandomClient().setLocation(testEntry, 0.0, 0.0);
       }
     } catch (Exception e) {
@@ -837,7 +842,7 @@ public class MultipleClientTest {
     String fieldName = "testQuery";
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
         JSONArray array = new JSONArray(Arrays.asList(25));
         getRandomClient().fieldReplaceOrCreateList(testEntry.getGuid(), fieldName, array, testEntry);
       }
@@ -998,7 +1003,7 @@ public class MultipleClientTest {
   @Test
   public void test_48_ListOrderAndSetElement() {
 //    try {
-//      westyEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "westy" + RandomString.randomString(6));
+//      westyEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(6));
 //    } catch (Exception e) {
 //      fail("Exception during creation of westyEntry: " + e);
 //    }
@@ -1055,12 +1060,12 @@ public class MultipleClientTest {
 //  public void test_51_QuerySetupGuids() {
 //    try {
 //      for (int cnt = 0; cnt < 5; cnt++) {
-//        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "queryTest-" + RandomString.randomString(6));
+//        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
 //        JSONArray array = new JSONArray(Arrays.asList(25));
 //        getRandomClient().fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
 //      }
 //      for (int cnt = 0; cnt < 5; cnt++) {
-//        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "queryTest-" + RandomString.randomString(6));
+//        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
 //        JSONArray array = new JSONArray(Arrays.asList(10));
 //        getRandomClient().fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
 //      }
@@ -1071,7 +1076,7 @@ public class MultipleClientTest {
 //      // the HRN is a hash of the query
 //      String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne.getBytes()), false);
 //      groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, getRandomClient().getGnsRemoteHost(), getRandomClient().getGnsRemotePort());
-//      //groupGuid = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, groupGuidName + RandomString.randomString(6));
+//      //groupGuid = getRandomClient().guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
 //    } catch (Exception e) {
 //      e.printStackTrace();
 //      fail("Exception while trying to create the guids: " + e);
@@ -1080,7 +1085,7 @@ public class MultipleClientTest {
 //      // the HRN is a hash of the query
 //      String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo.getBytes()), false);
 //      groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, getRandomClient().getGnsRemoteHost(), getRandomClient().getGnsRemotePort());
-//      //groupTwoGuid = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, groupTwoGuidName + RandomString.randomString(6));
+//      //groupTwoGuid = getRandomClient().guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
 //    } catch (Exception e) {
 //      e.printStackTrace();
 //      fail("Exception while trying to create the guids: " + e);
@@ -1238,7 +1243,7 @@ public class MultipleClientTest {
   public void test_70_SetFieldNull() {
     String field = "fieldToSetToNull";
 //    try {
-//      westyEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "westy" + RandomString.randomString(6));
+//      westyEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(6));
 //      System.out.println("Created: " + westyEntry);
 //    } catch (Exception e) {
 //      fail("Exception when we were not expecting it: " + e);
@@ -1272,7 +1277,7 @@ public class MultipleClientTest {
   @Test
   public void test_71_JSONUpdate() {
     try {
-      updateEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "westy" + RandomString.randomString(6));
+      updateEntry = getRandomClient().guidCreate(masterGuid, "westy" + RandomString.randomString(6));
       System.out.println("Created: " + updateEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
@@ -1541,7 +1546,7 @@ public class MultipleClientTest {
   public void test_75_IndirectionSetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
-        GuidEntry testEntry = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "queryTest-" + RandomString.randomString(6));
+        GuidEntry testEntry = getRandomClient().guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
         indirectionGroupMembers.put(testEntry.getGuid());
         JSONArray array = new JSONArray(Arrays.asList(25));
         getRandomClient().fieldReplaceOrCreateList(testEntry, indirectionGroupTestFieldName, array);
@@ -1550,7 +1555,7 @@ public class MultipleClientTest {
       fail("Exception while trying to create the guids: " + e);
     }
     try {
-      indirectionGroupGuid = GuidUtils.registerGuidWithTestTag(getRandomClient(), masterGuid, "queryTestGroup-" + RandomString.randomString(6));
+      indirectionGroupGuid = getRandomClient().guidCreate(masterGuid, "queryTestGroup-" + RandomString.randomString(6));
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception while trying to create the guids: " + e);

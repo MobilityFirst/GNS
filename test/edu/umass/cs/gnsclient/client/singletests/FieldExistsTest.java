@@ -21,12 +21,15 @@ package edu.umass.cs.gnsclient.client.singletests;
 
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
+
 import java.io.IOException;
+
 import static org.junit.Assert.*;
+
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -63,7 +66,7 @@ public class FieldExistsTest {
   @Test
   public void test_01_CreateEntity() {
     try {
-      GuidUtils.registerGuidWithTestTag(client, masterGuid, "testGUID" + RandomString.randomString(6));
+      client.guidCreate(masterGuid, "testGUID" + RandomString.randomString(6));
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);
     }
@@ -72,7 +75,7 @@ public class FieldExistsTest {
   @Test
   public void test_02_CreateSubGuid() {
     try {
-      subGuidEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, "subGuid" + RandomString.randomString(6));
+      subGuidEntry = client.guidCreate(masterGuid, "subGuid" + RandomString.randomString(6));
       System.out.println("Created: " + subGuidEntry);
     } catch (Exception e) {
       fail("Exception when we were not expecting it: " + e);

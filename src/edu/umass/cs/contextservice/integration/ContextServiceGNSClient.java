@@ -2,7 +2,6 @@ package edu.umass.cs.contextservice.integration;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.MAGIC_STRING;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.N;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
@@ -10,12 +9,16 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
+
 import org.json.JSONObject;
+
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopCallBack;
 import edu.umass.cs.contextservice.client.callback.implementations.NoopUpdateReply;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
+import edu.umass.cs.utils.Config;
+
 import java.util.logging.Level;
 
 /**
@@ -65,7 +68,7 @@ public class ContextServiceGNSClient implements ContextServiceGNSInterface {
       String signature = jsonFormattedCommand.optString(SIGNATURE, null);
       String message = jsonFormattedCommand.optString(SIGNATUREFULLMESSAGE, null);
 
-      if (writer.equals(MAGIC_STRING)) {
+      if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
         writer = null;
       }
 

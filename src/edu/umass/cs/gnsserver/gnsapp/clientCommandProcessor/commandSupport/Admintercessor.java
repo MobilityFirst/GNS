@@ -22,6 +22,7 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.exceptions.server.FieldNotFoundException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ListenerAdmin;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientCommandProcessorConfig;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
@@ -29,16 +30,19 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.NameRecord;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+
 import edu.umass.cs.gnsserver.utils.Util;
+
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Map;
@@ -46,6 +50,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.getPacketType;
 
 /**
@@ -138,13 +144,14 @@ public class Admintercessor {
    * @param handler
    * @return true if we were successful
    */
+  // Keep this around for future use.
   public boolean sendClearCache(ClientRequestHandlerInterface handler) {
-    try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
-      return true;
-    } catch (JSONException | IOException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending CLEARCACHE request: {0}", e);
-    }
+//    try {
+//      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
+//      return true;
+//    } catch (JSONException | IOException e) {
+//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending CLEARCACHE request: {0}", e);
+//    }
     return false;
   }
 
@@ -154,21 +161,23 @@ public class Admintercessor {
    * @param handler
    * @return a string containing the cache
    */
+  // Keep this around for future use.
   public String sendDumpCache(ClientRequestHandlerInterface handler) {
-    int id = nextAdminRequestID();
-    try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
-      waitForAdminResponse(id);
-      JSONObject json = adminResult.get(id);
-      if (json != null) {
-        return json.getString("CACHE");
-      } else {
-        return null;
-      }
-    } catch (JSONException | IOException e) {
-      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending DUMPCACHE request: {0}", e);
-      return null;
-    }
+//    int id = nextAdminRequestID();
+//    try {
+//      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
+//      waitForAdminResponse(id);
+//      JSONObject json = adminResult.get(id);
+//      if (json != null) {
+//        return json.getString("CACHE");
+//      } else {
+//        return null;
+//      }
+//    } catch (JSONException | IOException e) {
+//      ClientCommandProcessorConfig.getLogger().log(Level.WARNING, "Ignoring error while sending DUMPCACHE request: {0}", e);
+//      return null;
+//    }
+  return "Currently not supported.";
   }
 
   /**
@@ -244,7 +253,7 @@ public class Admintercessor {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
       return new CommandResponse(      GNSResponseCode.QUERY_PROCESSING_ERROR, GNSCommandProtocol.BAD_RESPONSE 
-              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to LNS");
+              + " " + GNSCommandProtocol.QUERY_PROCESSING_ERROR + " " + "Error sending dump command to replica");
     }
     waitForDumpResponse(id);
     Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);

@@ -34,16 +34,19 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.prefs.Preferences;
+
 import jline.ArgumentCompletor;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.FileNameCompletor;
 import jline.SimpleCompletor;
+
 import org.json.JSONObject;
+
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.commands.ConsoleCommand;
 import edu.umass.cs.gnsclient.console.commands.Connect;
@@ -52,8 +55,10 @@ import edu.umass.cs.gnsclient.console.commands.Help;
 import edu.umass.cs.gnsclient.console.commands.History;
 import edu.umass.cs.gnsclient.console.commands.Quit;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
+
 import org.json.JSONException;
 
 /**
@@ -685,7 +690,7 @@ public class ConsoleModule {
     if (gnsClient == null) {
       return null;
     } else {
-      return gnsClient.getGNSInstance();
+      return gnsClient.getGNSProvider();
     }
   }
 

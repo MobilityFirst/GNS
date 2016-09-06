@@ -20,11 +20,15 @@
 package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
+
 import java.io.IOException;
+
 import org.json.JSONArray;
+
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.DisabledClasses;
 
 /**
  * This class defines an extension to AbstractGnrsClient to communicate with a GNS instance
@@ -33,6 +37,7 @@ import edu.umass.cs.gnscommon.exceptions.client.ClientException;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
+@Deprecated
 public class UniversalHttpClientExtended extends UniversalHttpClient {
 
   /**
@@ -285,6 +290,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param tag
    * @throws Exception
    */
+  @Deprecated
   public void removeTag(GuidEntry guid, String tag) throws Exception {
     String command = createAndSignQuery(guid, 
             CommandType.RemoveTag,
@@ -301,6 +307,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @return
    * @throws Exception
    */
+  @Deprecated
   public JSONArray retrieveTagged(String tag) throws Exception {
     String command = createQuery(
             CommandType.Dump,
@@ -318,6 +325,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    * @param tag
    * @throws Exception
    */
+  @Deprecated
   public void clearTagged(String tag) throws Exception {
     String command = createQuery(
             CommandType.ClearTagged, GNSCommandProtocol.NAME, tag);

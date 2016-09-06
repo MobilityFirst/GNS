@@ -21,9 +21,8 @@ package edu.umass.cs.gnsclient.client.http;
 
 import edu.umass.cs.gnsclient.client.CommandUtils;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GNSClientInterface;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -41,11 +40,16 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.http.android.DownloadTask;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnscommon.utils.DisabledClasses;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
@@ -59,6 +63,7 @@ import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnscommon.CommandType;
+
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
@@ -67,10 +72,15 @@ import java.util.logging.Level;
  * over HTTP. This class works on both Android and Desktop platforms.
  * This class contains a subset of all available server operations.
  * For a more complete set see UniversalGnsClientExtended.
- *
+ * 
+ *  arun: This class is deprecated. It is unclear who if anyone is using it anyway. 
+ *  This class does does not satisfy the security and fault-tolerance requirements
+ *  of a GNS client.
+ *  
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
+@Deprecated
 public class UniversalHttpClient implements GNSClientInterface {
 
   /**
@@ -112,6 +122,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param port Port number of the GNS instance
    */
   public UniversalHttpClient(String host, int port) {
+	
+	  // arun: disabled
+	  DisabledClasses.checkDisabled(getClass());
     this.host = host;
     this.port = port;
   }
@@ -140,7 +153,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @return Returns the host.
    */
   @Override
-  public String getGNSInstance() {
+  public String getGNSProvider() {
     return host + ":" + port;
   }
 
@@ -1175,16 +1188,19 @@ public class UniversalHttpClient implements GNSClientInterface {
     byte[] publicKeyBytes = publicKey.getEncoded();
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command;
-    if (password != null) {
+    //if (password != null) {
       command = createQuery(
               CommandType.RegisterAccount, GNSCommandProtocol.NAME,
               URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString,
-              GNSCommandProtocol.PASSWORD, Base64.encodeToString(Password.encryptPassword(password, alias), false));
-    } else {
-      command = createQuery(
-              CommandType.RegisterAccountSansPassword, GNSCommandProtocol.NAME,
-              URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString);
-    }
+              GNSCommandProtocol.PASSWORD, 
+              password != null ?
+              Base64.encodeToString(Password.encryptPassword(password, alias), false)
+                      : "");
+//    } else {
+//      command = createQuery(
+//              CommandType.RegisterAccountSansPassword, GNSCommandProtocol.NAME,
+//              URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString);
+//    }
     return checkResponse(command, sendGetCommand(command));
 
   }
@@ -1465,7 +1481,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param tag
    * @throws Exception
    */
-  //@Override
+  @Deprecated
   public void addTag(GuidEntry guid, String tag) throws Exception {
     String command = createAndSignQuery(guid,
             CommandType.AddTag,

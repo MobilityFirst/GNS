@@ -27,6 +27,7 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 
+import edu.umass.cs.utils.Config;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -71,7 +72,7 @@ public class GroupAccess {
    */
   public static GNSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws IOException, JSONException, ClientException {
-
+    // Fixme: This isn't doing any kind of signature or acl check!
     handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, new ResultValue(Arrays.asList(memberGuid)));
     handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
     return GNSResponseCode.NO_ERROR;
@@ -93,6 +94,8 @@ public class GroupAccess {
    */
   public static GNSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+    // Fixme: This isn't doing any kind of signature or acl check!
+    // The remote querys don't authenticate.
     handler.getRemoteQuery().fieldAppendToArray(guid, GROUP, members);
     for (String memberGuid : members.toStringSet()) {
       handler.getRemoteQuery().fieldAppendToArray(memberGuid, GROUPS, new ResultValue(Arrays.asList(guid)));
@@ -116,6 +119,8 @@ public class GroupAccess {
    */
   public static GNSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+    // Fixme: This isn't doing any kind of signature or acl check!
+    // The remote querys don't authenticate.
     handler.getRemoteQuery().fieldRemove(guid, GroupAccess.GROUP, memberGuid);
     handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
     return GNSResponseCode.NO_ERROR;
@@ -137,6 +142,8 @@ public class GroupAccess {
    */
   public static GNSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) throws ClientException, IOException, JSONException {
+    // Fixme: This isn't doing any kind of signature or acl check!
+    // The remote querys don't authenticate.
     handler.getRemoteQuery().fieldRemoveMultiple(guid, GroupAccess.GROUP, members);
     for (String memberGuid : members.toStringSet()) {
       handler.getRemoteQuery().fieldRemove(memberGuid, GroupAccess.GROUPS, guid);
@@ -217,11 +224,14 @@ public class GroupAccess {
 
     GNSConfig.getLogger().log(Level.FINE, "DELETE CLEANUP: {0}", guid);
     try {
-      // just so you know all the nulls mean we're ignoring signatures and authentication
-      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, null, null, null,
+      // We're ignoring signatures and authentication
+      for (String groupGuid : GroupAccess.lookupGroupsAnywhere(guid, 
+              Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null,
               null, handler, true).toStringSet()) {
         GNSConfig.getLogger().log(Level.FINE, "GROUP CLEANUP: {0}", groupGuid);
-        removeFromGroup(groupGuid, guid, null, null, null, handler);
+        removeFromGroup(groupGuid, guid,  
+                Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, 
+                handler);
       }
     } catch (FailedDBOperationException e) {
       GNSConfig.getLogger().log(Level.SEVERE, "Unabled to remove guid from groups:{0}", e);

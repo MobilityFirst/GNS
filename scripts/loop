@@ -36,4 +36,6 @@ while [[ $i -lt $RUNS ]]; do
     sleep $SLEEP
   fi
 done
-
+if [[ $failures -gt 0 ]]; then
+	exit 1;
+fi

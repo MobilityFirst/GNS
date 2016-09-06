@@ -1,4 +1,8 @@
 #!/bin/bash
+
+echo "This script is outdated and can not be used anymore."
+exit
+
 SCRIPTS="`dirname \"$0\"`"
 GNS=$SCRIPTS/../..
 # to use IDE auto-build instead of ant
@@ -13,7 +17,7 @@ java -Xms2048M -ea \
 -Djavax.net.ssl.keyStorePassword=qwerty \
 -Djavax.net.ssl.keyStore=$GNS/conf/keyStore/node100.jks \
 edu.umass.cs.reconfiguration.ReconfigurableNode \
--test -disableEmailVerification -configFile \
+-configFile \
 $SCRIPTS/ns.properties \
 START_ALL &
 # START_ALL starts all nodes for a single node test; else should

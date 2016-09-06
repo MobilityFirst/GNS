@@ -20,17 +20,22 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.PacketUtils;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import static edu.umass.cs.gnsserver.httpserver.Defs.*;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -121,9 +126,36 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    * @throws java.io.UnsupportedEncodingException
    * @throws java.text.ParseException
    */
-  public abstract CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
-          UnsupportedEncodingException, ParseException;
+          UnsupportedEncodingException, ParseException {
+	  throw new RuntimeException("This method should never have been called");
+  }
+
+  /**
+   * 
+   * This method by default simply calls {@link #execute(JSONObject, ClientRequestHandlerInterface)}
+   * but Read and Update queries need to be adapted to drag {@link CommandPacket} for longer to use
+   * {@link InternalRequestHeader} information inside them.
+ * @param internalHeader 
+ * @param command 
+   * 
+   * @param handler
+   * @return Result of executing {@code commandPacket}
+   * @throws InvalidKeyException
+   * @throws InvalidKeySpecException
+   * @throws JSONException
+   * @throws NoSuchAlgorithmException
+   * @throws SignatureException
+   * @throws UnsupportedEncodingException
+   * @throws ParseException
+   */
+	public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
+			ClientRequestHandlerInterface handler) throws InvalidKeyException,
+			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
+			SignatureException, UnsupportedEncodingException, ParseException {
+		return this.execute(command, handler);
+	}
 
   /**
    * Get the description of the command

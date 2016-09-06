@@ -21,7 +21,7 @@ package edu.umass.cs.gnsclient.console.commands;
 
 import java.util.List;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnsclient.console.ConsoleModule;
 
@@ -86,7 +86,7 @@ public class GuidList extends ConsoleCommand
     if (!commandText.isEmpty())
       gnsName = commandText;
     else
-      gnsName = module.getGnsClient().getGNSInstance();
+      gnsName = module.getGnsClient().getGNSProvider();
 
     // Lookup user preferences
     console.printString("GUIDs stored locally for GNS " + gnsName + ":\n");

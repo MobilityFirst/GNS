@@ -22,8 +22,10 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 
+import edu.umass.cs.utils.Config;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -60,17 +62,12 @@ public class FieldMetaData {
    * @param handler
    * @return a {@link GNSResponseCode}
    */
-  public static GNSResponseCode add(MetaDataTypeName type, String guid, 
+  public static GNSResponseCode add(MetaDataTypeName type, String guid,
           String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-    return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, 
+    return FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message,
             timestamp, handler);
-    
-//    return handler.getIntercessor().sendUpdateRecord(guid, 
-//            makeFieldMetaDataKey(type, key), value, null, -1,
-//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
-//            writer, signature, message);
   }
 
   /**
@@ -86,12 +83,12 @@ public class FieldMetaData {
    * @param handler
    * @return a set of strings
    */
-  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, 
-          String reader, String signature, 
+  public static Set<String> lookup(MetaDataTypeName type, String guid, String key,
+          String reader, String signature,
           String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
     String field = makeFieldMetaDataKey(type, key);
-    GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null, 
+    GNSResponseCode errorCode = FieldAccess.signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
       return new HashSet<>();
@@ -110,14 +107,12 @@ public class FieldMetaData {
    * @param timestamp
    * @param handler
    */
-  public static void add(MetaDataTypeName type, String guid, 
+  public static void add(MetaDataTypeName type, String guid,
           String key, String value, Date timestamp, ClientRequestHandlerInterface handler) {
-    FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, null, null, null, timestamp, handler);
-
-//    handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid,
-//            makeFieldMetaDataKey(type, key), value, null,
-//            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+    FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, 
+            Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET), null, null, 
+            timestamp, handler);
   }
 
   /**
@@ -135,11 +130,8 @@ public class FieldMetaData {
    */
   public static GNSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, Date timestamp, ClientRequestHandlerInterface handler) {
-     return FieldAccess.update(guid, makeFieldMetaDataKey(type, key), value, null, -1,
+    return FieldAccess.update(null, guid, makeFieldMetaDataKey(type, key), value, null, -1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, timestamp, handler);
-     
-//    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1,
-//            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
 }

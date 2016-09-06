@@ -48,8 +48,8 @@ import jline.SimpleCompletor;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.msocket.proxy.ProxyPublisher;
@@ -794,7 +794,7 @@ public class ConsoleModule {
    * @param guid the GUID to set as default GUID
    */
   public void setDefaultGuidAndCheckForVerified(GuidEntry guid) {
-    KeyPairUtils.setDefaultGuidEntry(gnsClient.getGNSInstance(), guid.getEntityName());
+    KeyPairUtils.setDefaultGuidEntry(gnsClient.getGNSProvider(), guid.getEntityName());
     if (gnsClient != null) {
       accountVerified = isAccountVerified(currentGuid);
     }
@@ -812,7 +812,7 @@ public class ConsoleModule {
     if (gnsClient == null) {
       return null;
     } else {
-      return gnsClient.getGNSInstance();
+      return gnsClient.getGNSProvider();
     }
   }
 

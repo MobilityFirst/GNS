@@ -48,6 +48,9 @@ import java.util.logging.Level;
  */
 public class CommandModule {
 
+  // Indicates if we're using the new command enums
+  private static boolean useCommandEnums = true;
+
   private Map<CommandType, BasicCommand> commandLookupTable;
 
   public void addCommand(CommandType commandType, BasicCommand command) {
@@ -58,6 +61,7 @@ public class CommandModule {
     commandLookupTable.put(commandType, command);
   }
 
+  // Used only for generating the description of all commands
   private TreeSet<BasicCommand> commands;
   private boolean adminMode = false;
 
@@ -70,11 +74,36 @@ public class CommandModule {
 
   private void initCommands() {
     commandLookupTable = new HashMap<>();
-    // Legacy code
+    // Used only for generating the description of all commands
     this.commands = new TreeSet<>();
-    addCommands(CommandDefs.getCommandDefs(), commands);
+    if (useCommandEnums) {
+      addCommands(CommandType.getCommandClasses(), commands);
+    } else {
+      addCommands(CommandDefs.getCommandDefs(), commands);
+    }
     ClientCommandProcessorConfig.getLogger().log(Level.INFO,
             "{0} commands added.", commands.size());
+  }
+  
+  /**
+   *
+   * Add commands to this module. Commands instances are created by reflection
+   * based on the command class names passed in parameter
+   *
+   * @param commandClasses a String[] containing the class names of the command
+   * to instantiate
+   * @param commands Set where the commands are added
+   */
+  protected void addCommands(List<Class<?>> commandClasses, Set<BasicCommand> commands) {
+    for (int i = 0; i < commandClasses.size(); i++) {
+      Class<?> clazz = commandClasses.get(i);
+      BasicCommand command = createCommandInstance(clazz);
+      if (command != null) {
+        commandLookupTable.put(command.getCommandType(), command);
+        // Used only for generating the description of all commands
+        commands.add(command);
+      }
+    }
   }
 
   /**
@@ -92,7 +121,7 @@ public class CommandModule {
       BasicCommand command = createCommandInstance(clazz);
       if (command != null) {
         commandLookupTable.put(command.getCommandType(), command);
-        // Legacy
+        // Legacy - used only for generating the description of all commands
         commands.add(command);
       }
     }
@@ -143,7 +172,7 @@ public class CommandModule {
    * @param json
    * @return the command or null if the command indicator is not valid
    */
-  public BasicCommand lookupCommand(JSONObject json) {
+  public BasicCommand lookupCommandHandler(JSONObject json) {
     BasicCommand command = null;
     if (json.has(COMMAND_INT)) {
       try {
@@ -160,14 +189,15 @@ public class CommandModule {
         }
         if (command != null && !JSONContains(json, command.getCommandParameters())) {
           ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
-                  "For {0} missing parameter {1}",
-                  new Object[]{commandName, JSONMissing(json, command.getCommandParameters())});
+                  "For command {0} missing parameter {1}",
+                  new Object[]{command.getCommandType(), JSONMissing(json, command.getCommandParameters())});
           command = null;
         }
       } catch (JSONException e) {
         // do nothing
       }
     }
+    else ClientCommandProcessorConfig.getLogger().warning("No command int in command " + json);
     if (command != null) {
       ClientCommandProcessorConfig.getLogger().log(Level.FINE,
               "Found {0} using table lookup", command);
@@ -182,7 +212,7 @@ public class CommandModule {
    * Finds the command that corresponds to the COMMANDNAME in the json.
    * Old method for backward compatibility with older clients that
    * aren't using the COMMAND_INT field.
-   * 
+   *
    * @param json
    * @return the command or null if the COMMANDNAME is not valid
    */
@@ -192,7 +222,7 @@ public class CommandModule {
       action = json.getString(COMMANDNAME);
     } catch (JSONException e) {
       ClientCommandProcessorConfig.getLogger().log(Level.WARNING,
-              "Unable find " + COMMANDNAME + " key in JSON command: {0}", e);
+              "Unable to find " + COMMANDNAME + " key in JSON command: {0} : {1}", new Object[]{json, e});
       return null;
     }
     return lookupCommand(action);

@@ -68,10 +68,23 @@ public class GNSClientConfig {
 		 * A secret shared between the server and client in order to circumvent
 		 * account verification. Must be changed using properties file if 
 		 * manual verification is disabled.
+		 * 
+		 * Security requirements:
+		 * 
+		 * (1) The security of the account verification depends on the secrecy of
+		 * this secret, so the default value must be changed via the properties
+		 * file in a production setting.
+		 * 
+		 * (2) SERVER_AUTH SSL must be enabled between clients and servers.
 		 */
 		VERIFICATION_SECRET(
-				"AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
-						+ "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri")
+				"EXPOSED_SECRET"),
+				
+		/**
+		 * Byteification mode for "important" packets like CommandPacket,
+		 * CommandValueReturnPacket, etc.
+		 */
+		BYTE_MODE(0),
 
 		;
 

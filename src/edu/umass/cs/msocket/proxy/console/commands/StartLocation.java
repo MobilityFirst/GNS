@@ -23,7 +23,7 @@
 package edu.umass.cs.msocket.proxy.console.commands;
 
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.gns.DefaultGNSClient;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
@@ -93,7 +93,7 @@ public class StartLocation extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for location service  " + serviceName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), serviceName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSProvider(), serviceName);
 
       if (myGuid == null)
       {

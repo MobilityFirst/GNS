@@ -359,7 +359,7 @@ public class GNSCommandProtocol {
   /**
    * The sequence number field in a command packet.
    */
-  public final static String SEQUENCE_NUMBER = "seqnum";
+  public final static String NONCE = "seqnum";
   /**
    * The passkey number field in a command packet.
    */
@@ -368,14 +368,12 @@ public class GNSCommandProtocol {
    * The message that was signed field in a command packet.
    */
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
-  /**
-   * The magic string field in a command packet. The magic string indicates to the
-   * server that this command packet was sent by another server and does not
-   * need to be authenticated.
-   */
-  public final static String MAGIC_STRING = "magic";
+
 
   // Special fields for ACL
+  /**
+   * 
+   */
   public final static String GROUP_ACL = "+GROUP_ACL+";
   // Field names in guid record JSON Object
   /**
@@ -442,7 +440,7 @@ public class GNSCommandProtocol {
   /**
    * The aliases field in a account record.
    */
-  public static final String ACCOUNT_RECORD_ALIASED = "aliases";
+  public static final String ACCOUNT_RECORD_ALIASES = "aliases";
 
   // Blessed field names
   /**
@@ -469,7 +467,7 @@ public class GNSCommandProtocol {
   /**
    * If this exists in a command it indicates that coordinated reads should be used.
    */
-  public final static String COORDINATE_READS = "COORDREAD";
+  public final static String FORCE_COORDINATE_READS = "COORDREAD";
 
   /**
    * This member was not documented by it's creator.
@@ -484,12 +482,18 @@ public class GNSCommandProtocol {
    * The prefix used to hide GNS internal fields.
    */
   public static final String INTERNAL_PREFIX = "_GNS_";
-
+  
+  /**
+   * The error message used to indicate that an account is already verified.
+   */
+  @Deprecated
+  public static final String ACCOUNT_ALREADY_VERIFIED = "Account already verified";
+  
   /**
    * Creates a GNS field that is hidden from the user.
    *
    * @param string
-   * @return
+   * @return Hidden field
    */
   public static String makeInternalField(String string) {
     return INTERNAL_PREFIX + string;
@@ -499,7 +503,7 @@ public class GNSCommandProtocol {
    * Returns true if field is a GNS field that is hidden from the user.
    *
    * @param key
-   * @return
+   * @return True if hidden field
    */
   public static boolean isInternalField(String key) {
     return key.startsWith(INTERNAL_PREFIX);

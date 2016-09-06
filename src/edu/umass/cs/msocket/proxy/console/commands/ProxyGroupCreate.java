@@ -30,8 +30,9 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
@@ -105,7 +106,7 @@ public class ProxyGroupCreate extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for proxy group " + proxyGroupName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), proxyGroupName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSProvider(), proxyGroupName);
 
       if (myGuid == null)
       {

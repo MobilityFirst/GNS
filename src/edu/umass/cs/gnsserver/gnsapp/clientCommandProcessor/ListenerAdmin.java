@@ -26,8 +26,10 @@ import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.admin.SentinalPacket;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -38,7 +40,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- * A separate thread that runs in the CCP that handles administrative (AKA non-data related, non-user)
+ * A separate thread that runs in the replica that handles administrative (AKA non-data related, non-user)
  * type operations. All of the things in here are for server administration and debugging.
  *
  * @author Westy
@@ -78,7 +80,7 @@ public class ListenerAdmin extends Thread implements Shutdownable {
   public void run() {
     int numRequest = 0;
     ClientCommandProcessorConfig.getLogger().log(Level.INFO,
-            "CPP Node {0} starting Admin Server on port {1}", new Object[]{handler.getNodeAddress(), serverSocket.getLocalPort()});
+            "Server Node {0} starting Admin Server on port {1}", new Object[]{handler.getNodeAddress(), serverSocket.getLocalPort()});
     while (true) {
       Socket socket;
       JSONObject incomingJSON;
@@ -181,8 +183,6 @@ public class ListenerAdmin extends Thread implements Shutdownable {
           AdminResponsePacket responsePacket = new AdminResponsePacket(incomingJSON);
           handler.getAdmintercessor().handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
           break;
-//        case STATUS_INIT:
-//          break;
         default:
           ClientCommandProcessorConfig.getLogger().log(Level.SEVERE,
                   "Unknown packet type in packet: {0}", incomingJSON);

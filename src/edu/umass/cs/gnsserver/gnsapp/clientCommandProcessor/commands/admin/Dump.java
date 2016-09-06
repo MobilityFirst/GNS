@@ -20,12 +20,17 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+
+import java.util.logging.Level;
+
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -61,6 +66,13 @@ public class Dump extends BasicCommand {
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
+  	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
+  	  String passkey = json.getString(PASSKEY);
+  	  if (!Admin.authenticate(passkey)){
+  		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
+  		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
+  	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
+  	  }
       return handler.getAdmintercessor().sendDump(handler);
     }
     return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED

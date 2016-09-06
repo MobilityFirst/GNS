@@ -1,7 +1,7 @@
 package edu.umass.cs.gnsclient.client.testing.activecode;
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 
 /**
  * @author gaozy

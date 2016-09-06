@@ -21,11 +21,14 @@ package edu.umass.cs.gnsserver.localnameserver;
 
 import edu.umass.cs.gnsserver.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,7 +66,7 @@ public interface RequestHandlerInterface {
    * @param id
    * @param requestInfo
    */
-  public void addRequestInfo(long id, LNSRequestInfo requestInfo);
+  public void addRequestInfo(long id, LNSRequestInfo requestInfo, NIOHeader header);
 
   /**
    * Removes request info.

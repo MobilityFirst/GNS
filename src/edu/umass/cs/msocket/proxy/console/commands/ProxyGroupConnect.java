@@ -23,7 +23,7 @@
 package edu.umass.cs.msocket.proxy.console.commands;
 
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.msocket.proxy.console.ConsoleModule;
 
@@ -81,7 +81,7 @@ public class ProxyGroupConnect extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for proxy group " + proxyGroupName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), proxyGroupName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSProvider(), proxyGroupName);
 
       if (myGuid == null)
       {

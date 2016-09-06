@@ -21,12 +21,16 @@ package edu.umass.cs.gnsserver.gnsapp.clientSupport;
 
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
+
 import org.json.JSONException;
+
 import java.text.ParseException;
+
+import java.util.logging.Level;
 import org.json.JSONObject;
 
 /**
@@ -37,33 +41,42 @@ import org.json.JSONObject;
 public class NSAccountAccess {
 
   /**
-   * Obtains the guid info record from the database for GUID given.
+   * Obtains the guid info record from the local database for GUID given.
    * <p>
    * GUID = Globally Unique Identifier<br>
    *
    * @param guid
+   * @param gnsApp
    * @return an {@link edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo} instance
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfoLocally(String guid,  GNSApplicationInterface<String> gnsApp) 
           throws FailedDBOperationException {
-    // Only look locally
-    return NSAccountAccess.lookupGuidInfo(guid, false, gnsApp);
+   ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldLocally(null, guid, 
+            AccountAccess.GUID_INFO, gnsApp);
+    if (valuesMap.has(AccountAccess.GUID_INFO)) {
+      try {
+        // Something simpler here?
+        return new GuidInfo(new JSONObject(valuesMap.get(AccountAccess.GUID_INFO).toString()));
+      } catch (JSONException | ParseException e) {
+        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing guidinfo: {0}", e);
+      }
+    }
+    return null;
   }
-
+  
   /**
-   * Obtains the guid info record from the database for GUID given.
-   * If allowQueryToOtherNSs is true and the record is not available locally
-   * a query will be sent another name server to find the record.
+   * Obtains the guid info record from the local database or remotely if necessary for GUID given.
+   * <p>
+   * GUID = Globally Unique Identifier<br>
    *
    * @param guid
-   * @param allowQueryToOtherNSs
    * @param gnsApp
-   * @return a {@link GuidInfo} instance or null
+   * @return an {@link edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo} instance
    * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
    */
-  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, 
-           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+  public static GuidInfo lookupGuidInfoAnywhere(String guid, GNSApplicationInterface<String> gnsApp) 
+          throws FailedDBOperationException {
     ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, 
             AccountAccess.GUID_INFO, gnsApp);
     if (valuesMap.has(AccountAccess.GUID_INFO)) {
@@ -71,9 +84,35 @@ public class NSAccountAccess {
         // Something simpler here?
         return new GuidInfo(new JSONObject(valuesMap.get(AccountAccess.GUID_INFO).toString()));
       } catch (JSONException | ParseException e) {
-        GNSConfig.getLogger().severe("Problem parsing guidinfo: " + e);
+        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing guidinfo: {0}", e);
       }
     }
     return null;
   }
+
+//  /**
+//   * Obtains the guid info record from the database for GUID given.
+//   * If allowQueryToOtherNSs is true and the record is not available locally
+//   * a query will be sent another name server to find the record.
+//   *
+//   * @param guid
+//   * @param allowQueryToOtherNSs
+//   * @param gnsApp
+//   * @return a {@link GuidInfo} instance or null
+//   * @throws edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException
+//   */
+//  private static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, 
+//           GNSApplicationInterface<String> gnsApp) throws FailedDBOperationException {
+//    ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, 
+//            AccountAccess.GUID_INFO, gnsApp);
+//    if (valuesMap.has(AccountAccess.GUID_INFO)) {
+//      try {
+//        // Something simpler here?
+//        return new GuidInfo(new JSONObject(valuesMap.get(AccountAccess.GUID_INFO).toString()));
+//      } catch (JSONException | ParseException e) {
+//        GNSConfig.getLogger().severe("Problem parsing guidinfo: " + e);
+//      }
+//    }
+//    return null;
+//  }
 }

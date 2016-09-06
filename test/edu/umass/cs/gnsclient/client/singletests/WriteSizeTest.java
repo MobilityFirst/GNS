@@ -20,12 +20,16 @@
 package edu.umass.cs.gnsclient.client.singletests;
 
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
-import edu.umass.cs.gnsclient.client.GuidEntry;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
+
 import java.io.IOException;
+
 import org.json.JSONArray;
+
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 public class WriteSizeTest {
@@ -61,7 +65,7 @@ public class WriteSizeTest {
     try {
       String guidName = "testGUID" + RandomString.randomString(20);
       System.out.println("Creating guid: " + guidName);
-      tempEntry = GuidUtils.registerGuidWithTestTag(client, masterGuid, guidName);
+      tempEntry = client.guidCreate(masterGuid, guidName);
     } catch (Exception e) {
       fail("Exception creating guid: " + e);
     }

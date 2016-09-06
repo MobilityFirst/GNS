@@ -22,14 +22,13 @@ package edu.umass.cs.gnsserver.localnameserver;
 import edu.umass.cs.gigapaxos.interfaces.NearestServerSelector;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
-import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.reconfiguration.ReconfigurableAppClientAsync;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
@@ -57,14 +56,14 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   private final RequestHandlerInterface handler;
   private final Random random = new Random();
 
-  final ReconfigurableAppClientAsync asyncLNSClient;
+  final ReconfigurableAppClientAsync<Request> asyncLNSClient;
 
   /**
    * Create an instance of the LNSPacketDemultiplexer.
    *
    * @param handler
    */
-  public LNSPacketDemultiplexer(RequestHandlerInterface handler, ReconfigurableAppClientAsync asyncClient) {
+  public LNSPacketDemultiplexer(RequestHandlerInterface handler, ReconfigurableAppClientAsync<Request> asyncClient) {
     this.handler = handler;
     this.asyncLNSClient = asyncClient;
     register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
@@ -82,7 +81,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * @return false if an invalid packet type is received
    */
   @Override
-  public boolean handleMessage(JSONObject json) {
+  public boolean handleMessage(JSONObject json, NIOHeader header) {
     GNSConfig.getLogger().log(Level.INFO, ">>>>>>>>>>>>>>>>>>>>> Incoming packet: {0}", json);
     boolean isPacketTypeFound = true;
     try {
@@ -99,9 +98,9 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
         switch (Packet.getPacketType(json)) {
           case COMMAND:
             if (USE_NEW_LNS_COMMAND_HANDLER) {
-              handleCommandPacket(json);
+              handleCommandPacket(json, header);
             } else {
-              handleCommandPacketOld(json);
+              handleCommandPacketOld(json, header);
             }
             break;
           case COMMAND_RETURN_VALUE:
@@ -157,13 +156,16 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * @throws JSONException
    * @throws IOException
    */
-  public void handleCommandPacket(JSONObject json) throws JSONException,
+  public void handleCommandPacket(JSONObject json, NIOHeader header) throws JSONException,
           IOException {
 
     CommandPacket packet = new CommandPacket(json);
     LNSRequestInfo requestInfo = new LNSRequestInfo(packet.getRequestID(),
-            packet);
-    handler.addRequestInfo(packet.getRequestID(), requestInfo);
+            packet, header.sndr);
+    GNSConfig.getLogger().log(Level.INFO,
+            "{0} inserting outgoing request {1} with header {2}",
+            new Object[]{this, json,  header});
+    handler.addRequestInfo(packet.getRequestID(), requestInfo, header);
     packet = removeSenderInfo(json);
 
     if (requestInfo.getCommandType().isCreateDelete()
@@ -189,14 +191,14 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    * @throws JSONException
    * @throws IOException
    */
-  public void handleCommandPacketOld(JSONObject json) throws JSONException, IOException {
+  public void handleCommandPacketOld(JSONObject json, NIOHeader header) throws JSONException, IOException {
 
     CommandPacket packet = new CommandPacket(json);
     int requestId = random.nextInt();
-    packet.setLNSRequestId(requestId);
+//    packet.setLNSRequestId(requestId);
     // Squirrel away the host and port so we know where to send the command return value
-    LNSRequestInfo requestInfo = new LNSRequestInfo(requestId, packet);
-    handler.addRequestInfo(requestId, requestInfo);
+    LNSRequestInfo requestInfo = new LNSRequestInfo(requestId, packet, null);
+    handler.addRequestInfo(requestId, requestInfo, header);
 
     // Send it to the client command handler
     Set<InetSocketAddress> actives;
@@ -236,7 +238,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    */
   public void handleCommandReturnValuePacket(JSONObject json)
           throws JSONException, IOException {
-    this.handleCommandReturnValuePacket(new CommandValueReturnPacket(json), json);
+    this.handleCommandReturnValuePacket(new ResponsePacket(json), json);
   }
 
   /**
@@ -248,7 +250,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
    */
   private void handleCommandReturnValuePacket(Request response,
           JSONObject json) throws JSONException, IOException {
-    CommandValueReturnPacket returnPacket = response instanceof CommandValueReturnPacket ? (CommandValueReturnPacket) response
+    ResponsePacket returnPacket = response instanceof ResponsePacket ? (ResponsePacket) response
             : null;
     ActiveReplicaError error = response instanceof ActiveReplicaError ? (ActiveReplicaError) response
             : null;
@@ -259,7 +261,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
               this,
               returnPacket != null ? returnPacket : error.getSummary()});
     assert (returnPacket != null || error != null);
-    long id = returnPacket != null ? returnPacket.getLNSRequestId() : error.getRequestID();
+    long id = returnPacket != null ? returnPacket.getRequestID() : error.getRequestID();
     String serviceName = returnPacket != null ? returnPacket.getServiceName() : error.getServiceName();
     LNSRequestInfo sentInfo;
     GNSConfig.getLogger().log(Level.INFO, "{0} matching {1} with {2}",

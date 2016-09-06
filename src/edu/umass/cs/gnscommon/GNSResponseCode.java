@@ -16,11 +16,14 @@
  */
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnsserver.gnsapp.QueryResult;
+import edu.umass.cs.gnsserver.gnsapp.deprecated.QueryResult;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * This class describes the error and exception codes for GNS packets that get
@@ -64,7 +67,7 @@ public enum GNSResponseCode implements Serializable {
   /**
    * Stale signature or key. An access or signature error.
    * This will happen when a command packet arrives that is too old.
-   * 
+   *
    * See {@link edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication#signatureAndACLCheck}
    */
   STALE_COMMAND_VALUE(6, GNSCommandProtocol.STALE_COMMMAND, TYPE.ERROR),
@@ -72,7 +75,7 @@ public enum GNSResponseCode implements Serializable {
    * Access denied. An access or signature error.
    * This will happen when a command packet arrives that tries to access a field
    * for which it does not have the correct access control.
-   * 
+   *
    * See {@link edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication#signatureAndACLCheck}
    */
   ACCESS_ERROR(7, GNSCommandProtocol.ACCESS_DENIED, TYPE.ERROR),
@@ -95,7 +98,7 @@ public enum GNSResponseCode implements Serializable {
   VERIFICATION_ERROR(10, GNSCommandProtocol.VERIFICATION_ERROR, TYPE.ERROR),
   /**
    * Account guid does not exist.
-   * 
+   *
    */
   BAD_ACCOUNT_ERROR(11, GNSCommandProtocol.BAD_ACCOUNT, TYPE.ERROR),
   /**
@@ -106,12 +109,10 @@ public enum GNSResponseCode implements Serializable {
   /* Errors above, exceptions below. The distinction is that the former is
 	 * more serious and irrecoverable for that operation, but the latter may
 	 * sometimes happen in the otherwise normal course of events. */
-          
-          /**
-           * Account has already been verified.
-           */
-          ALREADY_VERIFIED_EXCEPTION(12, GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION, TYPE.EXCEPTION),
-          
+  /**
+   * Account has already been verified.
+   */
+  ALREADY_VERIFIED_EXCEPTION(12, GNSCommandProtocol.ALREADY_VERIFIED_EXCEPTION, TYPE.EXCEPTION),
   /**
    * Duplicate GUID or HRN.
    */
@@ -195,26 +196,35 @@ public enum GNSResponseCode implements Serializable {
   /**
    * An error occurred during the processing of a command query.
    */
-  
   QUERY_PROCESSING_ERROR(405, GNSCommandProtocol.QUERY_PROCESSING_ERROR, TYPE.ERROR),
   /**
    * A timeout occurred.
    */
   TIMEOUT(408, GNSCommandProtocol.TIMEOUT, TYPE.EXCEPTION),
+  /**
+   * A remote query failed on the server side.
+   */
+  REMOTE_QUERY_EXCEPTION(410, GNSCommandProtocol.REMOTE_QUERY_EXCEPTION, TYPE.EXCEPTION),
   
 	/**
-	 * A remote query failed on the server side.
+	 * An internal request, possibly an active request, failed probably because the TTL expired
+	 * or it was attempting to cause a cycle.
 	 */
-	REMOTE_QUERY_EXCEPTION(410, GNSCommandProtocol.REMOTE_QUERY_EXCEPTION, TYPE.EXCEPTION), 
-	
-	;
+	INTERNAL_REQUEST_EXCEPTION(411, GNSProtocol.INTERNAL_REQUEST_EXCEPTION
+			.toString(), TYPE.EXCEPTION),
+  
+  ;
 
   // stash the codes in a lookup table
-  private static final Map<Integer, GNSResponseCode> responseCodes = new HashMap<Integer, GNSResponseCode>();
+  private static final Map<Integer, GNSResponseCode> responseCodes = new HashMap<>();
 
   static {
     for (GNSResponseCode code : GNSResponseCode.values()) {
-      assert (responseCodes.put(code.getCodeValue(), code) == null);
+      if (responseCodes.get(code.getCodeValue()) != null) {
+        GNSConfig.getLogger().log(Level.INFO, "DUPLICATE RESPONSE CODE {0} : {1}",
+                new Object[]{code.name(), code.getCodeValue()});
+      }
+      responseCodes.put(code.getCodeValue(), code);
     }
   }
 
@@ -234,7 +244,7 @@ public enum GNSResponseCode implements Serializable {
   private final int codeValue;
   private final String protocolCode;
   private final TYPE type;
-  private String message=null;
+  private String message = null;
 
   /**
    * The response code category.
@@ -259,26 +269,26 @@ public enum GNSResponseCode implements Serializable {
     this.protocolCode = protocolCode;
     this.type = type;
   }
-  
-	/**
-	 * Used to attach a message with the code when we want to return a code
-	 * rather than throw an exception; the code and message are expected to be
-	 * used upstream for possibly throwing an exception.
-	 * 
-	 * @param msg
-	 * @return this
-	 */
-	public GNSResponseCode setMessage(String msg) {
-		this.message = msg;
-		return this;
-	}
-	
-	/**
-	 * @return Message attached to this code.
-	 */
-	public String getMessage() {
-		return this.message;
-	}
+
+  /**
+   * Used to attach a message with the code when we want to return a code
+   * rather than throw an exception; the code and message are expected to be
+   * used upstream for possibly throwing an exception.
+   *
+   * @param msg
+   * @return this
+   */
+  public GNSResponseCode setMessage(String msg) {
+    this.message = msg;
+    return this;
+  }
+
+  /**
+   * @return Message attached to this code.
+   */
+  public String getMessage() {
+    return this.message;
+  }
 
   /**
    * Returns the integer equivalent of the code.
@@ -306,16 +316,17 @@ public enum GNSResponseCode implements Serializable {
   public boolean isExceptionOrError() {
     return type == TYPE.ERROR || type == TYPE.EXCEPTION;
   }
-  
+
   /**
    * Is this NOT an exception or error code.
    * Convenience method. See {@link #isExceptionOrError()}.
-   * @return 
+   *
+   * @return True if no exception or error.
    */
   public boolean isOKResult() {
     return !isExceptionOrError();
   }
-  
+
   /**
    * Is this an error code. Some aren't, some are.
    *

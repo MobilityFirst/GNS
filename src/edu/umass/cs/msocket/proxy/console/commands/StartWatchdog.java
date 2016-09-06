@@ -31,8 +31,9 @@ import org.json.JSONArray;
 
 
 
-import edu.umass.cs.gnsclient.client.GuidEntry;
+
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.msocket.common.Constants;
@@ -130,7 +131,7 @@ public class StartWatchdog extends ConsoleCommand
 
       if (!module.isSilent())
         console.printString("Looking for watchdog  " + watchdogName + " GUID and certificates...\n");
-      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSInstance(), watchdogName);
+      GuidEntry myGuid = KeyPairUtils.getGuidEntry(module.getGnsClient().getGNSProvider(), watchdogName);
       final GNSClientCommands gnsClient = module.getGnsClient();
 
       if (myGuid == null)

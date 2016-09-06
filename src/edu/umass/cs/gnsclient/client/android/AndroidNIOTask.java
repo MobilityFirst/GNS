@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsclient.client.android;
 
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
 import android.os.AsyncTask;
 
 /**

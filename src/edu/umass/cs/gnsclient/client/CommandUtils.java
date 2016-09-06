@@ -4,6 +4,7 @@
 package edu.umass.cs.gnsclient.client;
 
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.GNSResponseCode;
@@ -15,13 +16,13 @@ import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
 import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
+import edu.umass.cs.gnscommon.packets.CommandPacket;
+import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
 import edu.umass.cs.gnscommon.utils.CanonicalJSON;
 import edu.umass.cs.gnscommon.utils.Format;
-import edu.umass.cs.gnscommon.CommandValueReturnPacket;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import edu.umass.cs.gnscommon.exceptions.client.OperationNotSupportedException;
-import edu.umass.cs.gnsserver.gnsapp.packet.CommandPacket;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.utils.Config;
@@ -55,7 +56,7 @@ import org.json.JSONObject;
 
 /**
  *
- * @author westy, arun
+ * @author arun, westy
  */
 public class CommandUtils {
 
@@ -91,12 +92,11 @@ public class CommandUtils {
 	 *
 	 * @param keysAndValues
 	 * @return the query string
-	 * @throws edu.umass.cs.gnscommon.exceptions.client.ClientException
+	 * @throws JSONException 
 	 */
 	public static JSONObject createCommand(CommandType commandType,
-			Object... keysAndValues) throws ClientException {
+			Object... keysAndValues) throws JSONException {
 		long startTime = System.currentTimeMillis();
-		try {
 			JSONObject result = new JSONObject();
 			String key;
 			Object value;
@@ -105,28 +105,10 @@ public class CommandUtils {
 				key = (String) keysAndValues[i];
 				value = keysAndValues[i + 1];
 				result.put(key, value);
-				try {
-				assert(key==null || key instanceof String 
-						|| value==null
-						|| value instanceof String
-						|| value instanceof JSONArray)
-						: key.getClass().getSimpleName() + ":" + value.getClass().getSimpleName();
-				} catch(Throwable e) {
-					e.printStackTrace();
-					throw e;
-				}
 			}
-
-			// arun: made this static for now
-			if (GNSClientCommands.USE_OLD_SEND)
-				if (AbstractGNSClient.isForceCoordinatedReads())
-					result.put(GNSCommandProtocol.COORDINATE_READS, true);
 
 			DelayProfiler.updateDelay("createCommand", startTime);
 			return result;
-		} catch (JSONException e) {
-			throw new ClientException("Error encoding message", e);
-		}
 	}
 
 	/**
@@ -136,7 +118,7 @@ public class CommandUtils {
 	 * @return Single value string if response is JSONObject with a single
 	 *         key-value piar.
 	 */
-	public static String specialCaseSingleField(String response) {
+	protected static String specialCaseSingleField(String response) {
 		if (JSONPacket.couldBeJSON(response) && response.startsWith("{"))
 			try {
 				JSONObject json = new JSONObject(response);
@@ -147,42 +129,6 @@ public class CommandUtils {
 				e.printStackTrace();
 			}
 		return response;
-	}
-
-	/**
-	 * Creates a command object from the given action string and a variable
-	 * number of key and value pairs with a signature parameter. The signature
-	 * is generated from the query signed by the given guid.
-	 *
-	 * @param commandType
-	 * @param privateKey
-	 * @param keysAndValues
-	 * @return the query string
-	 * @throws ClientException
-	 */
-	public static JSONObject createAndSignCommand(CommandType commandType,
-			PrivateKey privateKey, Object... keysAndValues)
-			throws ClientException {
-		try {
-			JSONObject result = createCommand(commandType, keysAndValues);
-			result.put(GNSCommandProtocol.TIMESTAMP,
-					Format.formatDateISO8601UTC(new Date()));
-			result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
-			String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
-			long t = System.nanoTime();
-			String signatureString = signDigestOfMessage(privateKey,
-					canonicalJSON);
-			result.put(GNSCommandProtocol.SIGNATURE, signatureString);
-			if (edu.umass.cs.utils.Util.oneIn(10)) {
-				DelayProfiler.updateDelayNano("signing", t);
-			}
-
-			return result;
-		} catch (ClientException | NoSuchAlgorithmException
-				| InvalidKeyException | SignatureException | JSONException
-				| UnsupportedEncodingException e) {
-			throw new ClientException("Error encoding message", e);
-		}
 	}
 
 	/**
@@ -270,7 +216,7 @@ public class CommandUtils {
 	 * @throws BadPaddingException
 	 * @throws NoSuchPaddingException
 	 */
-	public static String signDigestOfMessage(PrivateKey privateKey,
+	private static String signDigestOfMessage(PrivateKey privateKey,
 			PublicKey publicKey, String message)
 			throws NoSuchAlgorithmException, InvalidKeyException,
 			SignatureException, UnsupportedEncodingException,
@@ -315,13 +261,14 @@ public class CommandUtils {
 	 * @return Response
 	 * @throws ClientException
 	 */
-	public static CommandValueReturnPacket oldCheckResponse(CommandValueReturnPacket cvrp) throws ClientException {
+	protected static ResponsePacket oldCheckResponse(ResponsePacket cvrp) throws ClientException {
 		oldCheckResponse(cvrp.getReturnValue());
 		return cvrp;
 	}
 	/**
 	 * Checks the response from a command request for proper syntax as well as
 	 * converting error responses into the appropriate thrown GNS exceptions.
+	 * This method is only used by the HTTP server. 
 	 *
 	 * In the original protocol the string response was modeled after other
 	 * simple string-based response protocols. Responses were either:<br>
@@ -413,21 +360,8 @@ public class CommandUtils {
 		}
 	}
 
-	/**
-	 * @param response
-	 * @return Response as String
-	 * @throws ClientException
-	 */
-	public static String checkResponse(CommandValueReturnPacket response)
-			throws ClientException {
-		return checkResponse(response, null).getReturnValue();
-	}
-
-	private static final boolean USE_OLD_CHECK_RESPONSE = false;
 
 	/**
-	 * arun: This checkResponse method will replace the old one. There is no
-	 * reason to not directly use the received CommandValueReturnPacket.
 	 * 
 	 * @param command
 	 *
@@ -435,10 +369,8 @@ public class CommandUtils {
 	 * @return Response as a string.
 	 * @throws ClientException
 	 */
-	public static CommandValueReturnPacket checkResponse(
-			CommandValueReturnPacket responsePacket, CommandPacket command) throws ClientException {
-		if (USE_OLD_CHECK_RESPONSE) 
-			return oldCheckResponse(responsePacket);
+	public static ResponsePacket checkResponse(
+			ResponsePacket responsePacket, CommandPacket command) throws ClientException {
 
 		GNSResponseCode code = responsePacket.getErrorCode();
 		String returnValue = responsePacket.getReturnValue();
@@ -499,8 +431,8 @@ public class CommandUtils {
 	/**
 	 * @return Random long.
 	 */
-	public static long getRandomRequestId() {
-		return random.nextLong();
+	public static String getRandomRequestNonce() {
+		return (random.nextLong()+"").toString();
 	}
 
 	/**
@@ -518,7 +450,7 @@ public class CommandUtils {
 			JSONObject result = createCommand(commandType, keysAndValues);
 			result.put(GNSCommandProtocol.TIMESTAMP,
 					Format.formatDateISO8601UTC(new Date()));
-			result.put(GNSCommandProtocol.SEQUENCE_NUMBER, getRandomRequestId());
+			result.put(GNSCommandProtocol.NONCE, getRandomRequestNonce());
 
 			String canonicalJSON = CanonicalJSON.getCanonicalForm(result);
 			String signatureString = null;
@@ -551,9 +483,12 @@ public class CommandUtils {
 	 */
 	public static JSONObject createAndSignCommand(CommandType commandType,
 			GuidEntry querier, Object... keysAndValues) throws ClientException {
-		return querier != null ? createAndSignCommand(commandType,
-				querier.getPrivateKey(), querier.getPublicKey(), keysAndValues)
-				: createCommand(commandType, keysAndValues);
+		try {
+			return querier != null ? createAndSignCommand(commandType,
+					querier.getPrivateKey(), querier.getPublicKey(), keysAndValues)
+					: createCommand(commandType, keysAndValues);
+		} catch (JSONException e) {
+			throw new ClientException("Error encoding message", e);
+		}
 	}
-
 }

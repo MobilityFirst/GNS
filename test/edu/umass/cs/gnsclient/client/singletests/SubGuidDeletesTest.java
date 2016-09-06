@@ -20,8 +20,8 @@ import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosMain;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
-import edu.umass.cs.gnsclient.client.GuidEntry;
 import edu.umass.cs.gnsclient.client.testing.GNSTestingConfig.GNSTC;
+import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.reconfiguration.testing.TESTReconfigurationConfig;
@@ -84,7 +84,7 @@ public class SubGuidDeletesTest extends DefaultTest {
 		clients = new GNSClientCommands[numClients];
 		for (int i = 0; i < numClients; i++)
 			clients[i] = new GNSClientCommands();
-		String gnsInstance = clients[0].getGNSInstance();
+		String gnsInstance = clients[0].getGNSProvider();
 		accountGuidEntries = new GuidEntry[numAccountGuids];
 
 		for (int i = 0; i < numAccountGuids; i++) {
