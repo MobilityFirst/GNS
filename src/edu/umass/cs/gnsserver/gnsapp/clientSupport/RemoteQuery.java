@@ -638,11 +638,12 @@ public class RemoteQuery extends ClientAsynchBase {
    */
   public JSONArray sendSelectQuery(String query) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
-    try {
-      createRecord(packet.getServiceName(), new JSONObject());
-    } catch (Exception e) {
-      GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
-    }
+    // aditya commented it.
+//    try {
+//      createRecord(packet.getServiceName(), new JSONObject());
+//    } catch (Exception e) {
+//      GNSConfig.getLogger().log(Level.WARNING, "{0} incurred name creation exception {1}", new Object[]{this, e});
+//    }
 
     Object monitor = new Object();
     RequestCallbackWithRequest callback = null;
