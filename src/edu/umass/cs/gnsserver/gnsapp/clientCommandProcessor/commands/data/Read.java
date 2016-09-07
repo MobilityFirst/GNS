@@ -69,6 +69,8 @@ public class Read extends BasicCommand {
   public String[] getCommandParameters() {
     return PARAMS;
   }
+  
+  private static final boolean HACK_WESTY_SHOULD_FIX = true;
 
   @Override
   public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -80,7 +82,7 @@ public class Read extends BasicCommand {
     ArrayList<String> fields = json.has(GNSCommandProtocol.FIELDS)
             ? JSONUtils.JSONArrayToArrayListString(json.getJSONArray(GNSCommandProtocol.FIELDS)) : null;
 
-    String reader = json.getString(GNSCommandProtocol.READER);
+    String reader = json.has(GNSCommandProtocol.READER) ? json.getString(GNSCommandProtocol.READER) : HACK_WESTY_SHOULD_FIX ? guid : null;
     // signature and message can be empty for unsigned cases
     String signature = json.optString(GNSCommandProtocol.SIGNATURE, null);
     String message = json.optString(GNSCommandProtocol.SIGNATUREFULLMESSAGE, null);
