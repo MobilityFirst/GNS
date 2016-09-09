@@ -205,28 +205,30 @@ public class GNSHttpServer {
     BasicCommand command;
     try {
       command = commandModule.lookupCommand(CommandType.valueOf(action));
-    // handle actions that valueOf can't parse
+      // handle actions that valueOf can't parse
+      if (command != null) {
+        return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler);
+      }
+      LOG.log(Level.FINE, "lookupCommand returned null for {0}", action);
     } catch (IllegalArgumentException e) {
-      return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED,
-              BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-              + " Don't understand " + action + QUERYPREFIX + queryString);
+      LOG.log(Level.FINE, "lookupCommand failed for {0}", action);
     }
-    // Now we execute the command
-    //BasicCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    return CommandHandler.executeCommand(command, jsonFormattedCommand, requestHandler);
+    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED,
+            BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+            + " Sorry, don't understand " + action + QUERYPREFIX + queryString);
   }
-  
-	private CommandPacket getResponseUsingGNSClient(GNSClient client,
-			JSONObject jsonFormattedCommand) throws ClientException, IOException {
-		CommandPacket commandPacket = client.execute(new CommandPacket(
-				(long) (Math.random() * Long.MAX_VALUE), jsonFormattedCommand));
-		/**
-		 * Can also invoke getResponse(), getResponseString(), getResponseJSONObject()
-		 * etc. on {@link CommandPacket} as documented in {@link GNSCommand}.
-		 */
-		return commandPacket;
 
-	}
+  private CommandPacket getResponseUsingGNSClient(GNSClient client,
+          JSONObject jsonFormattedCommand) throws ClientException, IOException {
+    CommandPacket commandPacket = client.execute(new CommandPacket(
+            (long) (Math.random() * Long.MAX_VALUE), jsonFormattedCommand));
+    /**
+     * Can also invoke getResponse(), getResponseString(), getResponseJSONObject()
+     * etc. on {@link CommandPacket} as documented in {@link GNSCommand}.
+     */
+    return commandPacket;
+
+  }
 
   /**
    * Returns info about the server.

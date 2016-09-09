@@ -278,9 +278,9 @@ public class NSFieldAccess {
 
   /**
    * Looks up the value of a field in the guid.
-   * If allowQueryToOtherNSs is true and guid doesn't exists on this Name Server,
+   * If guid doesn't exists on this Name Server,
    * sends a read query from this Name Server to a Local Name Server.
-   * Returns the value of a field in a GUID as a ResultValue.
+   * Returns the value of a field in a GUID as a ValuesMap
    *
    * @param guid
    * @param field

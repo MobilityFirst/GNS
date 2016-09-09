@@ -90,6 +90,7 @@ import java.util.HashSet;
  *
  * @author westy
  */
+@Deprecated
 public class SelectOld {
 
   private static final Random RANDOM_ID = new Random();

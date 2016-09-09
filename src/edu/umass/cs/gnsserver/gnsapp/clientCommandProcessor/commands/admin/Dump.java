@@ -55,25 +55,26 @@ public class Dump extends BasicCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{};
+    return new String[]{PASSKEY};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return DUMP;
-//  }
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
-  	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
-  	  String passkey = json.getString(PASSKEY);
-  	  if (!Admin.authenticate(passkey)){
-  		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
-  		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
-  	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
-  	  }
-      return handler.getAdmintercessor().sendDump(handler);
+      if (json.has(PASSKEY)) {
+        //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
+        String passkey = json.getString(PASSKEY);
+        if (!Admin.authenticate(passkey)) {
+          GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for " + getCommandType().toString() + " : " + json.toString());
+          return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
+                  + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
+        }
+        return handler.getAdmintercessor().sendDump(handler);
+      } else {
+        return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
+                + " " + getCommandType().toString() + " requires " + PASSKEY);
+      }
     }
     return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
             + " Don't understand " + getCommandType().toString());

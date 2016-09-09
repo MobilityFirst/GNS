@@ -55,8 +55,12 @@ public class SelectAutoGroupTest {
   private static final String groupTestFieldName = "_SelectAutoGroupTestQueryField_";
   private static GuidEntry groupOneGuid;
   private static GuidEntry groupTwoGuid;
+  private static final String TEST_HIGH_VALUE = "25";
+  private static final String TEST_LOW_VALUE = "10";
   private String queryOne = "~" + groupTestFieldName + " : {$gt: 20}";
   private String queryTwo = "~" + groupTestFieldName + " : 0";
+  
+  
 
   public SelectAutoGroupTest() {
     if (client == null) {
@@ -96,12 +100,12 @@ public class SelectAutoGroupTest {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
-        JSONArray array = new JSONArray(Arrays.asList(25));
+        JSONArray array = new JSONArray(Arrays.asList(Integer.parseInt(TEST_HIGH_VALUE)));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
-        JSONArray array = new JSONArray(Arrays.asList(10));
+        JSONArray array = new JSONArray(Arrays.asList(Integer.parseInt(TEST_LOW_VALUE)));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
     } catch (Exception e) {
@@ -240,7 +244,7 @@ public class SelectAutoGroupTest {
 //        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
 //        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
 //        String value = client.fieldReadArrayFirstElement(entry, fieldName);
-//        assertEquals("25", value);
+//        assertEquals(TEST_HIGH_VALUE, value);
 //      }
 //    } catch (Exception e) {
 //      e.printStackTrace();
@@ -279,7 +283,7 @@ public class SelectAutoGroupTest {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
       GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
-      assertEquals("25", value);
+      assertEquals(TEST_HIGH_VALUE, value);
     }
   }
 
