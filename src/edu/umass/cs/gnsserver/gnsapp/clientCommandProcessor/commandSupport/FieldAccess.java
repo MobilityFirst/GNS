@@ -52,9 +52,9 @@ import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
 import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -531,20 +531,22 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
-//    try {
-//      SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, SelectOperation.EQUALS,
-//              SelectGroupBehavior.NONE, key, value, null);
-//      Select.handleSelectRequestFromClient(packet, handler.getApp());
-//    } catch (JSONException | FailedDBOperationException | UnknownHostException e) {
-//      return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
-//    }
-
+    JSONArray result = null;
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
+      if (Select.USE_LOCAL_SELECT) {
+        SelectRequestPacket<String> packet
+                = new SelectRequestPacket<>(-1, SelectOperation.EQUALS, SelectGroupBehavior.NONE, key, value, null);
+        SelectResponsePacket<String> responsePacket = Select.handleSelectRequestFromClient(packet, handler.getApp());
+        if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+          result = responsePacket.getGuids();
+        }
+      } else {
+        result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -559,14 +561,20 @@ public class FieldAccess {
    */
   public static CommandResponse selectWithin(String key, String value,
           ClientRequestHandlerInterface handler) {
+    JSONArray result = null;
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
+      if (Select.USE_LOCAL_SELECT) {
+        result = null; // stub
+      } else {
+        result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
     } catch (ClientException | IOException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+
   }
 
   /**
@@ -580,8 +588,14 @@ public class FieldAccess {
    */
   public static CommandResponse selectNear(String key, String value, String maxDistance,
           ClientRequestHandlerInterface handler) {
+    JSONArray result = null;
+
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
+      if (Select.USE_LOCAL_SELECT) {
+        result = null; // stub
+      } else {
+        result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
+      }
       //String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
@@ -599,8 +613,14 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
+    JSONArray result = null;
+
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelectQuery(query);
+      if (Select.USE_LOCAL_SELECT) {
+        result = null; // stub
+      } else {
+        result = handler.getRemoteQuery().sendSelectQuery(query);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
@@ -655,9 +675,14 @@ public class FieldAccess {
         }
       }
     }
-    // We either found or created the guid above so now we set up the actual query structure.
+    JSONArray result = null;
+
     try {
-      JSONArray result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
+      if (Select.USE_LOCAL_SELECT) {
+        result = null; // stub
+      } else {
+        result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
@@ -674,8 +699,13 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
+    JSONArray result = null;
     try {
-      JSONArray result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
+      if (Select.USE_LOCAL_SELECT) {
+        result = null; // stub
+      } else {
+        result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }

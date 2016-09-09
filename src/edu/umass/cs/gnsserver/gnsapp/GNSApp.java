@@ -262,12 +262,18 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
       switch (packetType) {
         case SELECT_REQUEST:
-          /* FIXED: arun: this needs to be a blocking call, otherwise you
-				 * are violating execute(.)'s semantics. */
-          Select.handleSelectRequest((SelectRequestPacket<String>) request, this);
+          if (Select.USE_LOCAL_SELECT) {
+            Select.handleSelectRequest((SelectRequestPacket<String>) request, this);
+          } else {
+            SelectOld.handleSelectRequest((SelectRequestPacket<String>) request, this);
+          }
           break;
         case SELECT_RESPONSE:
-          Select.handleSelectResponse((SelectResponsePacket<String>) request, this);
+          if (Select.USE_LOCAL_SELECT) {
+            Select.handleSelectResponse((SelectResponsePacket<String>) request, this);
+          } else {
+            SelectOld.handleSelectResponse((SelectResponsePacket<String>) request, this);
+          }
           break;
         case COMMAND:
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
@@ -689,7 +695,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
   }
 
   @Override
-  // Currently only used by Select
+  // Currently only used by SelectOld
   public void sendToID(String id, JSONObject msg) throws IOException {
     // arun: active replica accepts app packets only on client-facing port
     messenger.sendToAddress(
