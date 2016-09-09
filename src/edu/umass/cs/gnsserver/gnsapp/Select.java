@@ -124,14 +124,14 @@ public class Select {
    * Handle a select request from a client.
    * This node is the broadcaster and selector.
    *
-   * @param incomingJSON
+   * @param packet
    * @param app
    * @throws JSONException
    * @throws UnknownHostException
    * @throws FailedDBOperationException
    */
   @SuppressWarnings("unchecked")
-private static void handleSelectRequestFromClient(SelectRequestPacket<String> packet,
+  public static void handleSelectRequestFromClient(SelectRequestPacket<String> packet,
           GNSApplicationInterface<String> app) throws JSONException, UnknownHostException, FailedDBOperationException {
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
@@ -148,8 +148,7 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
           GNSConfig.getLogger().log(Level.FINE,
                   "GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for {0}", packet.getGuid());
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app.getRequestHandler());
-          InetSocketAddress iDontKnowMyListeningAddress = null;
-          sendReponsePacketToCaller(packet.getId(), packet.getClientAddress(), result.toStringSet(), app, iDontKnowMyListeningAddress);
+          sendReponsePacketToCaller(packet.getId(), packet.getClientAddress(), result.toStringSet(), app);
           return;
         }
       } else {
@@ -176,17 +175,16 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
     packet.setNameServerID(app.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
-    GNSConfig.getLogger().log(
-            Level.FINE,
-            "NS {0} sending select {1} to {2}",
+    GNSConfig.getLogger().log(Level.FINE, "NS {0} sending select {1} to {2}",
             new Object[]{app.getNodeID(), packet.getSummary(),
               Util.getOtherThan(serverIds, app.getNodeID())});
     try {
-    	// forward to all but self
-      for (String serverId : (Set<String>)Util.getOtherThan(serverIds, app.getNodeID())) 
-//        if (!serverId.equals(app.getNodeID())) 
-          app.sendToID(serverId, outgoingJSON);
-      
+      // forward to all but self
+      for (String serverId : (Set<String>) Util.getOtherThan(serverIds, app.getNodeID()))
+      {
+        app.sendToID(serverId, outgoingJSON);
+      }
+
       // arun: locally get self-select records
       handleSelectResponse(getMySelectedRecords(packet, app), app);
       /* FIXED: arun: need to synchronously wait for responses. Otherwise
@@ -317,22 +315,22 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
     /* arun: synchronization needed, otherwise assertion in app.sendToClient
      * implying that an outstanding request is always found gets violated. */
     synchronized (info) {
-    	// Remove the NS ID from the list to keep track of who has responded
-    	info.removeServerID(packet.getNameServerID());
-    	allServersResponded = info.allServersResponded();
+      // Remove the NS ID from the list to keep track of who has responded
+      info.removeServerID(packet.getNameServerID());
+      allServersResponded = info.allServersResponded();
     }
     if (allServersResponded) {
       handledAllServersResponded(packet, info, replica);
+    } else {
+      GNSConfig.getLogger().log(Level.FINE,
+              "NS{0} servers yet to respond:{1}",
+              new Object[]{replica.getNodeID(), info.serversYetToRespond()});
     }
-    else 
-        GNSConfig.getLogger().log(Level.FINE,
-                "NS{0} servers yet to respond:{1}",
-                new Object[]{replica.getNodeID(), info.serversYetToRespond()});
   }
 
   private static void sendReponsePacketToCaller(long id,
           InetSocketAddress address, Set<String> guids,
-          GNSApplicationInterface<String> app, InetSocketAddress myListeningAddress) throws JSONException {
+          GNSApplicationInterface<String> app) throws JSONException {
     @SuppressWarnings("unchecked")
     SelectResponsePacket<String> response
             = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null,
@@ -358,14 +356,13 @@ private static void handleSelectRequestFromClient(SelectRequestPacket<String> pa
           GNSApplicationInterface<String> replica) throws JSONException, ClientException, IOException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
-    InetSocketAddress iDontKnowMyListeningAddress = null;
 
-		// arun: remove must be before the notify in sendReponsePacketToCaller
-		// we're done processing this select query
-		QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
+    // arun: remove must be before the notify in sendReponsePacketToCaller
+    // we're done processing this select query
+    QUERIES_IN_PROGRESS.remove(packet.getNsQueryId());
 
     // Pull the records out of the info structure and send a response back to the caller
-    sendReponsePacketToCaller(packet.getId(), packet.getReturnAddress(), guids, replica, iDontKnowMyListeningAddress);
+    sendReponsePacketToCaller(packet.getId(), packet.getReturnAddress(), guids, replica);
     // Now we update any group guid stuff
     if (info.getGroupBehavior().equals(SelectGroupBehavior.GROUP_SETUP)) {
       GNSConfig.getLogger().log(Level.FINE,

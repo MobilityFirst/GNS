@@ -55,11 +55,6 @@ public class SelectWithin extends BasicCommand {
     return new String[]{FIELD, WITHIN};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return SELECT;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String field = json.getString(FIELD);

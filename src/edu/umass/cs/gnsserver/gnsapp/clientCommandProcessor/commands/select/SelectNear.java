@@ -55,11 +55,6 @@ public class SelectNear extends BasicCommand {
     return new String[]{FIELD, NEAR, MAX_DISTANCE};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return SELECT;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String field = json.getString(FIELD);
