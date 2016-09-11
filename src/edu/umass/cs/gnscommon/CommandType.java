@@ -322,14 +322,14 @@ public enum CommandType {
           GNSCommand.ResultType.NULL, false, false),
   // These should all be coordinatable.
   //FIXME:This command was failing tests when set to Type.SYSTEM_LOOKUP
-  LookupAccountRecord(420, Type.OTHER,
+  LookupAccountRecord(420, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupAccountRecord.class,
           GNSCommand.ResultType.MAP, true, false),
   LookupRandomGuids(421, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupRandomGuids.class,
           GNSCommand.ResultType.LIST, true, false), // for testing
   //FIXME:This command was failing tests when set to Type.SYSTEM_LOOKUP
-  LookupGuid(422, Type.OTHER,
+  LookupGuid(422, Type.SYSTEM_LOOKUP,
           edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account.LookupGuid.class,
           GNSCommand.ResultType.STRING, true, false),
   LookupPrimaryGuid(423, Type.SYSTEM_LOOKUP,
