@@ -23,7 +23,6 @@ import edu.umass.cs.gigapaxos.interfaces.ClientRequest;
 import edu.umass.cs.gigapaxos.interfaces.Replicable;
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.gigapaxos.interfaces.RequestIdentifier;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.activecode.ActiveCodeHandler;
 import edu.umass.cs.gnsserver.database.ColumnField;
@@ -34,7 +33,6 @@ import edu.umass.cs.gnscommon.exceptions.server.RecordExistsException;
 import edu.umass.cs.gnscommon.exceptions.server.RecordNotFoundException;
 import edu.umass.cs.gnscommon.packets.AdminCommandPacket;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.PacketUtils;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnsserver.database.NoSQLRecords;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -109,43 +107,43 @@ import java.util.logging.Level;
  * @author Westy, arun
  */
 public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
-		GNSApplicationInterface<String>, Replicable, Reconfigurable,
-		ClientMessenger, AppRequestParserBytes, Shutdownable {
+        GNSApplicationInterface<String>, Replicable, Reconfigurable,
+        ClientMessenger, AppRequestParserBytes, Shutdownable {
 
-	private String nodeID;
-	private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
-	private boolean constructed = false;
-	/**
-	 * Object provides interface to the database table storing name records
-	 */
-	private BasicRecordMap nameRecordDB;
-	/**
-	 * The Nio server
-	 */
-	private SSLMessenger<String, JSONObject> messenger;
-	private ClientRequestHandlerInterface requestHandler;
-	private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
-	private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<>(
-			new GCConcurrentHashMapCallback() {
-				@Override
-				public void callbackGC(Object key, Object value) {
-				}
-			}, DEFAULT_REQUEST_TIMEOUT);
-	/**
-	 * Active code handler
-	 */
-	private ActiveCodeHandler activeCodeHandler;
+  private String nodeID;
+  private GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
+  private boolean constructed = false;
+  /**
+   * Object provides interface to the database table storing name records
+   */
+  private BasicRecordMap nameRecordDB;
+  /**
+   * The Nio server
+   */
+  private SSLMessenger<String, JSONObject> messenger;
+  private ClientRequestHandlerInterface requestHandler;
+  private static final long DEFAULT_REQUEST_TIMEOUT = 8000;
+  private final GCConcurrentHashMap<Long, Request> outstanding = new GCConcurrentHashMap<>(
+          new GCConcurrentHashMapCallback() {
+    @Override
+    public void callbackGC(Object key, Object value) {
+    }
+  }, DEFAULT_REQUEST_TIMEOUT);
+  /**
+   * Active code handler
+   */
+  private ActiveCodeHandler activeCodeHandler;
 
-	/**
-	 * context service interface
-	 */
-	private ContextServiceGNSInterface contextServiceGNSClient;
+  /**
+   * context service interface
+   */
+  private ContextServiceGNSInterface contextServiceGNSClient;
 
-	/**
+  /**
    *
    */
-	GNSHttpServer httpServer = null;
-	/**
+  GNSHttpServer httpServer = null;
+  /**
    *
    */
 	LocalNameServer localNameServer = null;
@@ -239,100 +237,93 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 		return false;
 	}
 
-	@SuppressWarnings("unchecked")
-	// we explicitly check type
-	@Override
-	public boolean execute(Request request, boolean doNotReplyToClient) {
-		boolean executed = false;
-		if (executeNoop(request)) {
-			return true;
-		}
-		try {
-			Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
-					.getRequestType() : null;
-			GNSConfig.getLogger().log(Level.FINE, "{0} &&&&&&& handling {1} ",
-					new Object[] { this, request.getSummary() });
-			Request prev = null;
-			// arun: enqueue request, dequeue before returning
-			if (request instanceof RequestIdentifier) {
-				prev = this.outstanding.putIfAbsent(
-						((RequestIdentifier) request).getRequestID(), request);
-			} else {
-				assert (false) : this
-						+ " should not be getting requests that do not implement "
-						+ RequestIdentifier.class;
-			}
+  @SuppressWarnings("unchecked")
+  // we explicitly check type
+  @Override
+  public boolean execute(Request request, boolean doNotReplyToClient) {
+    boolean executed = false;
+    if (executeNoop(request)) {
+      return true;
+    }
+    try {
+      Packet.PacketType packetType = request.getRequestType() instanceof Packet.PacketType ? (Packet.PacketType) request
+              .getRequestType() : null;
+      GNSConfig.getLogger().log(Level.FINE, "{0} &&&&&&& handling {1} ",
+              new Object[]{this, request.getSummary()});
+      Request prev = null;
+      // arun: enqueue request, dequeue before returning
+      if (request instanceof RequestIdentifier) {
+        prev = this.outstanding.putIfAbsent(
+                ((RequestIdentifier) request).getRequestID(), request);
+      } else {
+        assert (false) : this
+                + " should not be getting requests that do not implement "
+                + RequestIdentifier.class;
+      }
 
-			switch (packetType) {
-			case SELECT_REQUEST:
-				/* FIXED: arun: this needs to be a blocking call, otherwise you
-				 * are violating execute(.)'s semantics. */
-				Select.handleSelectRequest(
-						(SelectRequestPacket<String>) request, this);
-				break;
-			case SELECT_RESPONSE:
-				Select.handleSelectResponse(
-						(SelectResponsePacket<String>) request, this);
-				break;
-			case COMMAND:
-				CommandHandler.handleCommandPacket((CommandPacket) request,
-						doNotReplyToClient, this);
-				break;
-			case ADMIN_COMMAND:
-				CommandHandler.handleCommandPacket((AdminCommandPacket) request,
-						doNotReplyToClient, this);
-				break;
-			/* arun: COMMAND_RETURN_VALUE should never have been an expected
-			 * type here as GNSApp should never be getting responses. STOP and
-			 * NOOP are no longer necessary. */
-			case COMMAND_RETURN_VALUE:
-			case STOP:
-			case NOOP:
-			default:
-				assert (false) : (this
-						+ " should not be getting packets of type "
-						+ packetType + "; exiting");
-				GNSConfig.getLogger().log(Level.SEVERE,
-						" Packet type not found: {0}", request.getSummary());
-				return false;
-			}
-			executed = true;
+      switch (packetType) {
+        case SELECT_REQUEST:
+          if (Select.useLocalSelect()) {
+            Select.handleSelectRequest((SelectRequestPacket<String>) request, this);
+          } else {
+            SelectOld.handleSelectRequest((SelectRequestPacket<String>) request, this);
+          }
+          break;
+        case SELECT_RESPONSE:
+          if (Select.useLocalSelect()) {
+            Select.handleSelectResponse((SelectResponsePacket<String>) request, this);
+          } else {
+            SelectOld.handleSelectResponse((SelectResponsePacket<String>) request, this);
+          }
+          break;
+        case COMMAND:
+          CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
+          break;
+        case ADMIN_COMMAND:
+			CommandHandler.handleCommandPacket((AdminCommandPacket) request,
+					doNotReplyToClient, this);
+        default:
+          assert (false) : (this
+                  + " should not be getting packets of type "
+                  + packetType + "; exiting");
+          GNSConfig.getLogger().log(Level.SEVERE, " Packet type not found: {0}", request.getSummary());
+          return false;
+      }
+      executed = true;
 
-			// arun: always clean up all created state upon exiting
-			if (request instanceof RequestIdentifier && prev == null) {
-				GNSConfig
-						.getLogger()
-						.log(Level.FINE,
-								"{0} dequeueing request {1}; response={2}",
-								new Object[] {
-										this,
-										request.getSummary(),
-										request instanceof ClientRequest
-												&& ((ClientRequest) request)
-														.getResponse() != null ? ((ClientRequest) request)
-												.getResponse().getSummary()
-												: null });
-				this.outstanding.remove(request);
-			}
+      // arun: always clean up all created state upon exiting
+      if (request instanceof RequestIdentifier && prev == null) {
+        GNSConfig.getLogger().log(Level.FINE,
+                "{0} dequeueing request {1}; response={2}",
+                new Object[]{
+                  this,
+                  request.getSummary(),
+                  request instanceof ClientRequest
+                  && ((ClientRequest) request)
+                  .getResponse() != null ? ((ClientRequest) request)
+                          .getResponse().getSummary()
+                          : null});
+        this.outstanding.remove(request);
+      }
 
-		} catch (JSONException | IOException | ClientException e) {
-			e.printStackTrace();
-		} catch (FailedDBOperationException e) {
-			// all database operations throw this exception, therefore we keep
-			// throwing this exception upwards and catch this
-			// here.
-			// A database operation error would imply that the application
-			// hasn't been able to successfully execute
-			// the request. therefore, this method returns 'false', hoping that
-			// whoever calls handleDecision would retry
-			// the request.
-			GNSConfig.getLogger().log(Level.SEVERE,
-					"Error handling request: {0}", request.toString());
-			e.printStackTrace();
-		}
+    } catch (JSONException | IOException | ClientException e) {
+      e.printStackTrace();
+    } catch (FailedDBOperationException e) {
+      // all database operations throw this exception, therefore we keep
+      // throwing this exception upwards and catch this
+      // here.
+      // A database operation error would imply that the application
+      // hasn't been able to successfully execute
+      // the request. therefore, this method returns 'false', hoping that
+      // whoever calls handleDecision would retry
+      // the request.
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Error handling request: {0}", request.toString());
+      e.printStackTrace();
+    }
 
-		return executed;
-	}
+    return executed;
+  }
 
   @Override
   public void shutdown() {
@@ -421,363 +412,366 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
     constructed = true;
   }
 
-	// For InterfaceApplication
-	@Override
-	public Request getRequest(String string) throws RequestParseException {
-		GNSConfig.getLogger().log(Level.FINE,
-				">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
-		// Special case handling of NoopPacket packets
-		if (Request.NO_OP.equals(string)) {
-			throw new RuntimeException("Should never be here");//new NoopPacket();
-		}
-		try {
-			long t = System.nanoTime();
-			JSONObject json = new JSONObject(string);
-			if (Util.oneIn(1000)) {
-				DelayProfiler.updateDelayNano("jsonificationApp", t);
-			}
-			Request request = (Request) Packet.createInstance(json, nodeConfig);
-			return request;
-		} catch (JSONException e) {
-			throw new RequestParseException(e);
-		}
-	}
+  // For InterfaceApplication
+  @Override
+  public Request getRequest(String string) throws RequestParseException {
+    GNSConfig.getLogger().log(Level.FINE,
+            ">>>>>>>>>>>>>>> GET REQUEST: {0}", string);
+    // Special case handling of NoopPacket packets
+    if (Request.NO_OP.equals(string)) {
+      throw new RuntimeException("Should never be here");//new NoopPacket();
+    }
+    try {
+      long t = System.nanoTime();
+      JSONObject json = new JSONObject(string);
+      if (Util.oneIn(1000)) {
+        DelayProfiler.updateDelayNano("jsonificationApp", t);
+      }
+      Request request = (Request) Packet.createInstance(json, nodeConfig);
+      return request;
+    } catch (JSONException e) {
+      throw new RequestParseException(e);
+    }
+  }
 
-	/**
-	 * This method avoids an unnecessary restringification (as is the case with
-	 * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
-	 * the sender information, and then creating a packet out of it.
-	 *
-	 * @param msgBytes
-	 * @param header
-	 * @param unstringer
-	 * @return Request constructed from msgBytes.
-	 * @throws RequestParseException
-	 */
-	public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
-			Stringifiable<String> unstringer) throws RequestParseException {
-		Request request = null;
-		try {
-			long t = System.nanoTime();
-			if (JSONPacket.couldBeJSON(msgBytes)) {
-				JSONObject json = new JSONObject(new String(msgBytes,
-						NIOHeader.CHARSET));
-				MessageExtractor.stampAddressIntoJSONObject(header.sndr,
-						header.rcvr, json);
-				request = (Request) Packet.createInstance(json, unstringer);
-			} else {
-				// parse non-JSON byteified form
-				return fromBytes(msgBytes);
-			}
-			if (Util.oneIn(100)) {
-				DelayProfiler.updateDelayNano(
-						"getRequest." + request.getRequestType(), t);
-			}
-		} catch (JSONException | UnsupportedEncodingException e) {
-			throw new RequestParseException(e);
-		}
-		return request;
-	}
+  /**
+   * This method avoids an unnecessary restringification (as is the case with
+   * {@link #getRequest(String)} above) by decoding the JSON, stamping it with
+   * the sender information, and then creating a packet out of it.
+   *
+   * @param msgBytes
+   * @param header
+   * @param unstringer
+   * @return Request constructed from msgBytes.
+   * @throws RequestParseException
+   */
+  public static Request getRequestStatic(byte[] msgBytes, NIOHeader header,
+          Stringifiable<String> unstringer) throws RequestParseException {
+    Request request = null;
+    try {
+      long t = System.nanoTime();
+      if (JSONPacket.couldBeJSON(msgBytes)) {
+        JSONObject json = new JSONObject(new String(msgBytes,
+                NIOHeader.CHARSET));
+        MessageExtractor.stampAddressIntoJSONObject(header.sndr,
+                header.rcvr, json);
+        request = (Request) Packet.createInstance(json, unstringer);
+      } else {
+        // parse non-JSON byteified form
+        return fromBytes(msgBytes);
+      }
+      if (Util.oneIn(100)) {
+        DelayProfiler.updateDelayNano(
+                "getRequest." + request.getRequestType(), t);
+      }
+    } catch (JSONException | UnsupportedEncodingException e) {
+      throw new RequestParseException(e);
+    }
+    return request;
+  }
 
-	/**
-	 * This method should invert the implementation of the
-	 * {@link Byteable#toBytes()} method for GNSApp packets.
-	 *
-	 * @param msgBytes
-	 * @return
-	 * @throws RequestParseException
-	 */
-	private static Request fromBytes(byte[] msgBytes)
-			throws RequestParseException {
-		switch (Packet.PacketType.getPacketType(ByteBuffer.wrap(msgBytes)
-				.getInt())) {
-		case COMMAND:
-			return new CommandPacket(msgBytes);
-			/* Currently only CommandPacket is Byteable, so we shouldn't come
+  /**
+   * This method should invert the implementation of the
+   * {@link Byteable#toBytes()} method for GNSApp packets.
+   *
+   * @param msgBytes
+   * @return
+   * @throws RequestParseException
+   */
+  private static Request fromBytes(byte[] msgBytes)
+          throws RequestParseException {
+    switch (Packet.PacketType.getPacketType(ByteBuffer.wrap(msgBytes)
+            .getInt())) {
+      case COMMAND:
+        return new CommandPacket(msgBytes);
+      /* Currently only CommandPacket is Byteable, so we shouldn't come
 			 * here for anything else. */
-		default:
-			throw new RequestParseException(new RuntimeException(
-					"Unrecognizable request type"));
-		}
-	}
+      default:
+        throw new RequestParseException(new RuntimeException(
+                "Unrecognizable request type"));
+    }
+  }
 
-	@Override
-	public Request getRequest(byte[] msgBytes, NIOHeader header)
-			throws RequestParseException {
-		return getRequestStatic(msgBytes, header, nodeConfig);
-	}
+  @Override
+  public Request getRequest(byte[] msgBytes, NIOHeader header)
+          throws RequestParseException {
+    return getRequestStatic(msgBytes, header, nodeConfig);
+  }
 
-	@Override
-	public Set<IntegerPacketType> getRequestTypes() {
-		return new HashSet<>(Arrays.asList(types));
-	}
-	
-	@Override
-	public Set<IntegerPacketType> getMutualAuthRequestTypes() {
-		Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(types));
-		if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE)
-			maTypes.add(PacketType.INTERNAL_COMMAND);
-		return maTypes;
-	}
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    return new HashSet<>(Arrays.asList(types));
+  }
 
-	@Override
-	public boolean execute(Request request) {
-		return this.execute(request, false);
-	}
+  @Override
+  public Set<IntegerPacketType> getMutualAuthRequestTypes() {
+    Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(types));
+    if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE) {
+      maTypes.add(PacketType.INTERNAL_COMMAND);
+    }
+    return maTypes;
+  }
 
-	private final static ArrayList<ColumnField> curValueRequestFields = new ArrayList<>();
+  @Override
+  public boolean execute(Request request) {
+    return this.execute(request, false);
+  }
 
-	static {
-		curValueRequestFields.add(NameRecord.VALUES_MAP);
-	}
+  private final static ArrayList<ColumnField> curValueRequestFields = new ArrayList<>();
 
-	@Override
-	public String checkpoint(String name) {
-		try {
-			NameRecord nameRecord = NameRecord
-					.getNameRecord(nameRecordDB, name);
-			GNSConfig.getLogger().log(
-					Level.FINE,
-					"&&&&&&& {0} getting state for {1} : {2} ",
-					new Object[] { this, name,
-							nameRecord.getValuesMap().getSummary() });
-			return nameRecord.getValuesMap().toString();
-		} catch (RecordNotFoundException e) {
-			// the above RecordNotFoundException is a normal result
-		} catch (FieldNotFoundException e) {
-			GNSConfig.getLogger().log(Level.SEVERE,
-					"Field not found exception: {0}", e.getMessage());
-			e.printStackTrace();
-		} catch (FailedDBOperationException e) {
-			GNSConfig.getLogger().log(Level.SEVERE,
-					"State not read from DB: {0}", e.getMessage());
-			e.printStackTrace();
-		}
-		return null;
-	}
+  static {
+    curValueRequestFields.add(NameRecord.VALUES_MAP);
+  }
 
-	/**
-	 * Updates the state for the given named record.
-	 *
-	 * @param name
-	 * @param state
-	 * @return true if we were able to updateEntireRecord the state
-	 */
-	@Override
-	public boolean restore(String name, String state) {
-		GNSConfig.getLogger().log(Level.FINE,
-				"&&&&&&& {0} updating {1} with state [{2}]",
-				new Object[] { this, name, Util.truncate(state, 32, 32) });
-		try {
-			if (state == null) {
-				// If state is null the only thing it means is that we need to
-				// delete
-				// the record. If the record does not exists this is just a
-				// noop.
-				NameRecord.removeNameRecord(nameRecordDB, name);
-			} else // state does not equal null so we either create a new record
-					// or update the existing one
-			if (!NameRecord.containsRecord(nameRecordDB, name)) {
-				// create a new record
-				try {
-					ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
-					NameRecord nameRecord = new NameRecord(nameRecordDB, name,
-							valuesMap);
-					NameRecord.addNameRecord(nameRecordDB, nameRecord);
-				} catch (RecordExistsException | JSONException e) {
-					GNSConfig.getLogger().log(Level.SEVERE,
-							"Problem updating state: {0}", e.getMessage());
-				}
-			} else { // update the existing record
-				try {
-					NameRecord nameRecord = NameRecord.getNameRecord(
-							nameRecordDB, name);
-					nameRecord
-							.updateState(new ValuesMap(new JSONObject(state)));
-				} catch (JSONException | FieldNotFoundException
-						| RecordNotFoundException | FailedDBOperationException e) {
-					GNSConfig.getLogger().log(Level.SEVERE,
-							"Problem updating state: {0}", e.getMessage());
-				}
-			}
-			return true;
-		} catch (FailedDBOperationException e) {
-			GNSConfig.getLogger().log(Level.SEVERE,
-					"Failed update exception: {0}", e.getMessage());
-			e.printStackTrace();
-		}
-		return false;
-	}
+  @Override
+  public String checkpoint(String name) {
+    try {
+      NameRecord nameRecord = NameRecord
+              .getNameRecord(nameRecordDB, name);
+      GNSConfig.getLogger().log(
+              Level.FINE,
+              "&&&&&&& {0} getting state for {1} : {2} ",
+              new Object[]{this, name,
+                nameRecord.getValuesMap().getSummary()});
+      return nameRecord.getValuesMap().toString();
+    } catch (RecordNotFoundException e) {
+      // the above RecordNotFoundException is a normal result
+    } catch (FieldNotFoundException e) {
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Field not found exception: {0}", e.getMessage());
+      e.printStackTrace();
+    } catch (FailedDBOperationException e) {
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "State not read from DB: {0}", e.getMessage());
+      e.printStackTrace();
+    }
+    return null;
+  }
 
-	/**
-	 * Returns a stop request packet.
-	 *
-	 * @param name
-	 * @param epoch
-	 * @return the stop request packet
-	 */
-	@Override
-	public ReconfigurableRequest getStopRequest(String name, int epoch) {
-		/* A nontrivial stop request is not needed unless the app wants to do
+  /**
+   * Updates the state for the given named record.
+   *
+   * @param name
+   * @param state
+   * @return true if we were able to updateEntireRecord the state
+   */
+  @Override
+  public boolean restore(String name, String state) {
+    GNSConfig.getLogger().log(Level.FINE,
+            "&&&&&&& {0} updating {1} with state [{2}]",
+            new Object[]{this, name, Util.truncate(state, 32, 32)});
+    try {
+      if (state == null) {
+        // If state is null the only thing it means is that we need to
+        // delete
+        // the record. If the record does not exists this is just a
+        // noop.
+        NameRecord.removeNameRecord(nameRecordDB, name);
+      } else // state does not equal null so we either create a new record
+      // or update the existing one
+      {
+        if (!NameRecord.containsRecord(nameRecordDB, name)) {
+          // create a new record
+          try {
+            ValuesMap valuesMap = new ValuesMap(new JSONObject(state));
+            NameRecord nameRecord = new NameRecord(nameRecordDB, name,
+                    valuesMap);
+            NameRecord.addNameRecord(nameRecordDB, nameRecord);
+          } catch (RecordExistsException | JSONException e) {
+            GNSConfig.getLogger().log(Level.SEVERE,
+                    "Problem updating state: {0}", e.getMessage());
+          }
+        } else { // update the existing record
+          try {
+            NameRecord nameRecord = NameRecord.getNameRecord(
+                    nameRecordDB, name);
+            nameRecord
+                    .updateState(new ValuesMap(new JSONObject(state)));
+          } catch (JSONException | FieldNotFoundException | RecordNotFoundException | FailedDBOperationException e) {
+            GNSConfig.getLogger().log(Level.SEVERE,
+                    "Problem updating state: {0}", e.getMessage());
+          }
+        }
+      }
+      return true;
+    } catch (FailedDBOperationException e) {
+      GNSConfig.getLogger().log(Level.SEVERE,
+              "Failed update exception: {0}", e.getMessage());
+      e.printStackTrace();
+    }
+    return false;
+  }
+
+  /**
+   * Returns a stop request packet.
+   *
+   * @param name
+   * @param epoch
+   * @return the stop request packet
+   */
+  @Override
+  public ReconfigurableRequest getStopRequest(String name, int epoch) {
+    /* A nontrivial stop request is not needed unless the app wants to do
 		 * specific cleanup activities in case of a stop. The default action of
 		 * restoring state to null is automatically done by gigapaxos. */
-		return null; // new StopPacket(name, epoch);
-	}
+    return null; // new StopPacket(name, epoch);
+  }
 
-	@Override
-	public String getFinalState(String name, int epoch) {
-		throw new RuntimeException("This method should not have been called");
-	}
+  @Override
+  public String getFinalState(String name, int epoch) {
+    throw new RuntimeException("This method should not have been called");
+  }
 
-	@Override
-	public void putInitialState(String name, int epoch, String state) {
-		throw new RuntimeException("This method should not have been called");
-	}
+  @Override
+  public void putInitialState(String name, int epoch, String state) {
+    throw new RuntimeException("This method should not have been called");
+  }
 
-	@Override
-	public boolean deleteFinalState(String name, int epoch) {
-		throw new RuntimeException("This method should not have been called");
-	}
+  @Override
+  public boolean deleteFinalState(String name, int epoch) {
+    throw new RuntimeException("This method should not have been called");
+  }
 
-	@Override
-	public Integer getEpoch(String name) {
-		throw new RuntimeException("This method should not have been called");
-	}
+  @Override
+  public Integer getEpoch(String name) {
+    throw new RuntimeException("This method should not have been called");
+  }
 
-	//
-	// GnsApplicationInterface implementation
-	//
-	@Override
-	public String getNodeID() {
-		return nodeID;
-	}
+  //
+  // GnsApplicationInterface implementation
+  //
+  @Override
+  public String getNodeID() {
+    return nodeID;
+  }
 
-	@Override
-	public BasicRecordMap getDB() {
-		return nameRecordDB;
-	}
+  @Override
+  public BasicRecordMap getDB() {
+    return nameRecordDB;
+  }
 
-	@Override
-	public ReconfigurableNodeConfig<String> getGNSNodeConfig() {
-		return nodeConfig;
-	}
+  @Override
+  public ReconfigurableNodeConfig<String> getGNSNodeConfig() {
+    return nodeConfig;
+  }
 
-	protected static final boolean DELEGATE_CLIENT_MESSAGING = true;
+  protected static final boolean DELEGATE_CLIENT_MESSAGING = true;
 
-	/**
-	 * Delegates client messaging to gigapaxos.
-	 *
-	 * @param responseJSON
-	 * @throws java.io.IOException
-	 */
-	@Override
-	public void sendToClient(Request response, JSONObject responseJSON)
-			throws IOException {
+  /**
+   * Delegates client messaging to gigapaxos.
+   *
+   * @param responseJSON
+   * @throws java.io.IOException
+   */
+  @Override
+  public void sendToClient(Request response, JSONObject responseJSON)
+          throws IOException {
 
-		if (DELEGATE_CLIENT_MESSAGING) {
-			assert (response instanceof ClientRequest);
-			Request originalRequest = this.outstanding
-					.remove(((RequestIdentifier) response).getRequestID());
-			assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response)
-					.getSummary();
-			if (originalRequest != null
-					&& originalRequest instanceof BasicPacketWithClientAddress) {
-				((BasicPacketWithClientAddress) originalRequest)
-						.setResponse((ClientRequest) response);
-				incrResponseCount((ClientRequest) response);
-			}
-			GNSConfig
-					.getLogger()
-					.log(Level.FINE,
-							"{0} set response {1} for requesting client {2} for request {3}",
-							new Object[] {
-									this,
-									response.getSummary(),
-									((BasicPacketWithClientAddress) originalRequest)
-											.getClientAddress(),
-									originalRequest.getSummary() });
-			return;
-		} // else
-	}
+    if (DELEGATE_CLIENT_MESSAGING) {
+      assert (response instanceof ClientRequest);
+      Request originalRequest = this.outstanding
+              .remove(((RequestIdentifier) response).getRequestID());
+      assert (originalRequest != null && originalRequest instanceof BasicPacketWithClientAddress) : ((ClientRequest) response)
+              .getSummary();
+      if (originalRequest != null
+              && originalRequest instanceof BasicPacketWithClientAddress) {
+        ((BasicPacketWithClientAddress) originalRequest)
+                .setResponse((ClientRequest) response);
+        incrResponseCount((ClientRequest) response);
+      }
+      GNSConfig
+              .getLogger()
+              .log(Level.FINE,
+                      "{0} set response {1} for requesting client {2} for request {3}",
+                      new Object[]{
+                        this,
+                        response.getSummary(),
+                        ((BasicPacketWithClientAddress) originalRequest)
+                        .getClientAddress(),
+                        originalRequest.getSummary()});
+      return;
+    } // else
+  }
 
-	@Override
-	public String toString() {
-		return this.getClass().getSimpleName() + ":" + this.nodeID;
-	}
+  @Override
+  public String toString() {
+    return this.getClass().getSimpleName() + ":" + this.nodeID;
+  }
 
-	@Override
-	// Currently only used by Select
-	public void sendToID(String id, JSONObject msg) throws IOException {
-		// arun: active replica accepts app packets only on client-facing port
-		messenger.sendToAddress(
-				new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
-						ReconfigurationConfig
-								.getClientFacingPort(this.nodeConfig
-										.getNodePort(id))), msg);
-	}
+  @Override
+  // Currently only used by SelectOld
+  public void sendToID(String id, JSONObject msg) throws IOException {
+    // arun: active replica accepts app packets only on client-facing port
+    messenger.sendToAddress(
+            new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
+                    ReconfigurationConfig
+                    .getClientFacingPort(this.nodeConfig
+                            .getNodePort(id))), msg);
+  }
 
-	@Override
-	public ActiveCodeHandler getActiveCodeHandler() {
-		return activeCodeHandler;
-	}
+  @Override
+  public ActiveCodeHandler getActiveCodeHandler() {
+    return activeCodeHandler;
+  }
 
-	@Override
-	public ClientRequestHandlerInterface getRequestHandler() {
-		return requestHandler;
-	}
+  @Override
+  public ClientRequestHandlerInterface getRequestHandler() {
+    return requestHandler;
+  }
 
-	/**
-	 * @return ContextServiceGNSInterface
-	 */
-	public ContextServiceGNSInterface getContextServiceGNSClient() {
-		return contextServiceGNSClient;
-	}
+  /**
+   * @return ContextServiceGNSInterface
+   */
+  public ContextServiceGNSInterface getContextServiceGNSClient() {
+    return contextServiceGNSClient;
+  }
 
-	private void startDNS() throws SecurityException, SocketException,
-			UnknownHostException {
-		try {
-			if (Config.getGlobalBoolean(GNSConfig.GNSC.DNS_GNS_ONLY)) {
-				dnsTranslator = new DnsTranslator(
-						Inet4Address.getByName("0.0.0.0"), 53, requestHandler);
-				dnsTranslator.start();
-			} else if (Config.getGlobalBoolean(GNSConfig.GNSC.DNS_ONLY)) {
-				if (Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP) == "none") {
-					GNSConfig
-							.getLogger()
-							.severe("FAILED TO START DNS SERVER: GNS Server IP must be specified");
-					return;
-				}
-				GNSConfig
-						.getLogger()
-						.info("GNS Server IP"
-								+ Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP));
-				udpDnsServer = new UdpDnsServer(
-						Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8",
-						Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP),
-						requestHandler);
-				udpDnsServer.start();
-			} else {
-				udpDnsServer = new UdpDnsServer(
-						Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null,
-						requestHandler);
-				udpDnsServer.start();
-			}
-		} catch (BindException e) {
-			GNSConfig.getLogger().warning(
-					"Not running DNS Service because it needs root permission! "
-							+ "If you want DNS run the server using sudo.");
-		}
-	}
+  private void startDNS() throws SecurityException, SocketException,
+          UnknownHostException {
+    try {
+      if (Config.getGlobalBoolean(GNSConfig.GNSC.DNS_GNS_ONLY)) {
+        dnsTranslator = new DnsTranslator(
+                Inet4Address.getByName("0.0.0.0"), 53, requestHandler);
+        dnsTranslator.start();
+      } else if (Config.getGlobalBoolean(GNSConfig.GNSC.DNS_ONLY)) {
+        if (Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP) == "none") {
+          GNSConfig
+                  .getLogger()
+                  .severe("FAILED TO START DNS SERVER: GNS Server IP must be specified");
+          return;
+        }
+        GNSConfig
+                .getLogger()
+                .info("GNS Server IP"
+                        + Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP));
+        udpDnsServer = new UdpDnsServer(
+                Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8",
+                Config.getGlobalString(GNSConfig.GNSC.GNS_SERVER_IP),
+                requestHandler);
+        udpDnsServer.start();
+      } else {
+        udpDnsServer = new UdpDnsServer(
+                Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null,
+                requestHandler);
+        udpDnsServer.start();
+      }
+    } catch (BindException e) {
+      GNSConfig.getLogger().warning(
+              "Not running DNS Service because it needs root permission! "
+              + "If you want DNS run the server using sudo.");
+    }
+  }
 
-	/**
-	 * @param header
-	 * @return Gets the originating request corresponding to {@code header}.
-	 */
-	public CommandPacket getOriginRequest(InternalRequestHeader header) {
-		Request request = this.outstanding
-				.get(header.getOriginatingRequestID());
-		if (request instanceof CommandPacket)
-			return (CommandPacket) request;
-		return null;
-	}
+  /**
+   * @param header
+   * @return Gets the originating request corresponding to {@code header}.
+   */
+  public CommandPacket getOriginRequest(InternalRequestHeader header) {
+    Request request = this.outstanding
+            .get(header.getOriginatingRequestID());
+    if (request instanceof CommandPacket) {
+      return (CommandPacket) request;
+    }
+    return null;
+  }
 }

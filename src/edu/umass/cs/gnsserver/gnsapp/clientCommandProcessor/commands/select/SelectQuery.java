@@ -55,11 +55,6 @@ public class SelectQuery extends BasicCommand {
     return new String[]{QUERY};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return SELECT;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String query = json.getString(QUERY);

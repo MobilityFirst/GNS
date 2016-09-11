@@ -55,13 +55,9 @@ public class Dump extends BasicCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{};
+    return new String[]{PASSKEY};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return DUMP;
-//  }
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

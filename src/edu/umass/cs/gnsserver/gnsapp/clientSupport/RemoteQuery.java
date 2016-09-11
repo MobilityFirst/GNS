@@ -605,6 +605,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendSelect(SelectOperation operation, String key, Object value, Object otherValue)
           throws IOException, ClientException {
     SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
@@ -636,6 +637,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendSelectQuery(String query) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
     try {
@@ -666,6 +668,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid, int interval)
           throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
@@ -697,6 +700,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid)
           throws IOException, ClientException {
     return sendGroupGuidSetupSelectQuery(query, guid, ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT);
@@ -710,6 +714,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
     try {

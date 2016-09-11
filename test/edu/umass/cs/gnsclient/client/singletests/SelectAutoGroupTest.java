@@ -55,8 +55,12 @@ public class SelectAutoGroupTest {
   private static final String groupTestFieldName = "_SelectAutoGroupTestQueryField_";
   private static GuidEntry groupOneGuid;
   private static GuidEntry groupTwoGuid;
+  private static final String TEST_HIGH_VALUE = "25";
+  private static final String TEST_LOW_VALUE = "10";
   private String queryOne = "~" + groupTestFieldName + " : {$gt: 20}";
   private String queryTwo = "~" + groupTestFieldName + " : 0";
+  
+  
 
   public SelectAutoGroupTest() {
     if (client == null) {
@@ -75,7 +79,7 @@ public class SelectAutoGroupTest {
   }
 
   @Test
-  public void test_01_QueryRemovePreviousTestFields() {
+  public void test_551_QueryRemovePreviousTestFields() {
     // find all the guids that have our field and remove it from them
     try {
       String query = "~" + groupTestFieldName + " : {$exists: true}";
@@ -92,16 +96,16 @@ public class SelectAutoGroupTest {
   }
 
   @Test
-  public void test_02_QuerySetupGuids() {
+  public void test_552_QuerySetupGuids() {
     try {
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
-        JSONArray array = new JSONArray(Arrays.asList(25));
+        JSONArray array = new JSONArray(Arrays.asList(Integer.parseInt(TEST_HIGH_VALUE)));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
       for (int cnt = 0; cnt < 5; cnt++) {
         GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
-        JSONArray array = new JSONArray(Arrays.asList(10));
+        JSONArray array = new JSONArray(Arrays.asList(Integer.parseInt(TEST_LOW_VALUE)));
         client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
       }
     } catch (Exception e) {
@@ -128,7 +132,7 @@ public class SelectAutoGroupTest {
   }
 
   @Test
-  public void test_03_QuerySetupGroup() {
+  public void test_553_QuerySetupGroup() {
     try {
       String query = "~" + groupTestFieldName + " : {$gt: 20}";
       JSONArray result = client.selectSetupGroupQuery(masterGuid, groupOneGuid.getPublicKeyString(), query, 0); // make the min refresh 0 seconds so the test will never fail
@@ -146,7 +150,7 @@ public class SelectAutoGroupTest {
 
   // make a second group that is empty
   @Test
-  public void test_04_QuerySetupSecondGroup() {
+  public void test_554_QuerySetupSecondGroup() {
     try {
       String query = "~" + groupTestFieldName + " : 0";
       JSONArray result = client.selectSetupGroupQuery(masterGuid, groupTwoGuid.getPublicKeyString(), query, 0); // make the min refresh 0 seconds so the test will never fail
@@ -163,115 +167,109 @@ public class SelectAutoGroupTest {
   }
 
   @Test
-  public void test_05_QueryLookupGroup() {
+  public void test_555_QueryLookupGroup() {
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
-      checkTheReturnValues(result);
+      checkSelectTheReturnValues(result);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Exception executing selectLookupGroupQuery: " + e);
     }
   }
-//
-//  @Test
-//  @Order(6)
-//  public void testQueryLookupGroupAgain() {
-//    try {
-//      JSONArray result = client.selectLookupGroupQuery(groupGuid.getGuid());
-//      checkTheReturnValues(result);
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      fail("Exception executing selectLookupGroupQuery: " + e);
-//    }
-//  }
-//
-//  @Test
-//  @Order(7)
-//  public void testQueryLookupGroupAgain2() {
-//    try {
-//      JSONArray result = client.selectLookupGroupQuery(groupGuid.getGuid());
-//      checkTheReturnValues(result);
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      fail("Exception executing selectLookupGroupQuery: " + e);
-//    }
-//  }
-//
-//  @Test
-//  @Order(8)
-//  public void testQueryLookupGroupAgain3() {
-//    try {
-//      JSONArray result = client.selectLookupGroupQuery(groupGuid.getGuid());
-//      checkTheReturnValues(result);
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      fail("Exception executing selectLookupGroupQuery: " + e);
-//    }
-//  }
-//
-//  @Test
-//  @Order(9)
-//  // Change all the testQuery fields except 1 to be equal to zero
-//  public void testQueryAlterGroup() {
-//    try {
-//      JSONArray result = client.selectLookupGroupQuery(groupGuid.getGuid());
-//      // change ALL BUT ONE to be ZERO
-//      for (int i = 0; i < result.length() - 1; i++) {
-//        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
-//        JSONArray array = new JSONArray(Arrays.asList(0));
-//        client.fieldReplaceOrCreateList(entry, fieldName, array);
-//      }
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      fail("Exception while trying to alter the fields: " + e);
-//    }
-//  }
-//
-//  @Test
-//  @Order(10)
-//  public void testQueryLookupGroupAfterAlterations() {
-//    try {
-//      JSONArray result = client.selectLookupGroupQuery(groupGuid.getGuid());
-//      // should only be one
-//      assertThat(result.length(), equalTo(1));
-//      // look up the individual values
-//      for (int i = 0; i < result.length(); i++) {
-//        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
-//        String value = client.fieldReadArrayFirstElement(entry, fieldName);
-//        assertEquals("25", value);
-//      }
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      fail("Exception executing selectLookupGroupQuery: " + e);
-//    }
-//  }
-//
-//  @Test
-//  @Order(11)
-//  // Check to see if the second group has members now... it should.
-//  public void testQueryLookupSecondGroup() {
-//    try {
-//      JSONArray result = client.selectLookupGroupQuery(groupTwoGuid.getGuid());
-//      // should be 4 now
-//      assertThat(result.length(), equalTo(4));
-//      // look up the individual values
-//      for (int i = 0; i < result.length(); i++) {
-//        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
-//        GuidEntry entry = RandomString.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
-//        String value = client.fieldReadArrayFirstElement(entry, fieldName);
-//        assertEquals("0", value);
-//      }
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//      fail("Exception executing selectLookupGroupQuery: " + e);
-//    }
-//  }
-//  
-//  
 
-  private void checkTheReturnValues(JSONArray result) throws Exception {
+  @Test
+  public void test_556_QueryLookupGroupAgain() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      checkSelectTheReturnValues(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  public void test_557_LookupGroupAgain2() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      checkSelectTheReturnValues(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  public void test_558_QueryLookupGroupAgain3() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      checkSelectTheReturnValues(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  // Change all the testQuery fields except 1 to be equal to zero
+  public void test_559_QueryAlterGroup() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      // change ALL BUT ONE to be ZERO
+      for (int i = 0; i < result.length() - 1; i++) {
+        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+        JSONArray array = new JSONArray(Arrays.asList(0));
+        client.fieldReplaceOrCreateList(entry, groupTestFieldName, array);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception while trying to alter the fields: " + e);
+    }
+  }
+
+  @Test
+  public void test_560_QueryLookupGroupAfterAlterations() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      // should only be one
+      assertThat(result.length(), equalTo(1));
+      // look up the individual values
+      for (int i = 0; i < result.length(); i++) {
+        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+        String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
+        assertEquals(TEST_HIGH_VALUE, value);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  // Check to see if the second group has members now... it should.
+  public void test_561_QueryLookupSecondGroup() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupTwoGuid.getGuid());
+      // should be 4 now
+      assertThat(result.length(), equalTo(4));
+      // look up the individual values
+      for (int i = 0; i < result.length(); i++) {
+        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+        String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
+        assertEquals("0", value);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+  
+  
+
+  private void checkSelectTheReturnValues(JSONArray result) throws Exception {
     // should be 5
     assertThat(result.length(), equalTo(5));
     // look up the individual values
@@ -279,7 +277,7 @@ public class SelectAutoGroupTest {
       BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
       GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
       String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
-      assertEquals("25", value);
+      assertEquals(TEST_HIGH_VALUE, value);
     }
   }
 

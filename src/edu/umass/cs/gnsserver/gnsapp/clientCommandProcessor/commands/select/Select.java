@@ -26,7 +26,6 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Field
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,11 +53,6 @@ public class Select extends BasicCommand {
   public String[] getCommandParameters() {
     return new String[]{FIELD, VALUE};
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return SELECT;
-//  }
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

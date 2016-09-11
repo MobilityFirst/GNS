@@ -30,6 +30,8 @@ import edu.umass.cs.gnsserver.database.ColumnFieldType;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnscommon.utils.Base64;
+import edu.umass.cs.gnsserver.gnsapp.GNSApp;
+import edu.umass.cs.gnsserver.gnsapp.Select;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAuthentication;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSFieldAccess;
@@ -49,8 +51,12 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.ClientSupportConfig;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectGroupBehavior;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectRequestPacket;
+import edu.umass.cs.gnsserver.gnsapp.packet.SelectResponsePacket;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.utils.Config;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -452,7 +458,7 @@ public class FieldAccess {
    * @param handler
    * @return an NSResponseCode
    */
-  private static GNSResponseCode update(InternalRequestHeader header, 
+  private static GNSResponseCode update(InternalRequestHeader header,
           String guid, JSONObject json, UpdateOperation operation,
           String writer, String signature, String message,
           Date timestamp, ClientRequestHandlerInterface handler) {
@@ -518,6 +524,23 @@ public class FieldAccess {
             timestamp, handler);
   }
 
+  private static JSONArray executeSelect(SelectOperation operation, String key, Object value, Object otherValue, GNSApp app)
+          throws FailedDBOperationException, JSONException, UnknownHostException {
+    SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
+            SelectGroupBehavior.NONE, key, value, otherValue);
+    return executeSelectHelper(packet, app);
+  }
+
+  private static JSONArray executeSelectHelper(SelectRequestPacket<String> packet, GNSApp app)
+          throws FailedDBOperationException, JSONException, UnknownHostException {
+    SelectResponsePacket<String> responsePacket = Select.handleSelectRequestFromClient(packet, app);
+    if (SelectResponsePacket.ResponseCode.NOERROR.equals(responsePacket.getResponseCode())) {
+      return responsePacket.getGuids();
+    } else {
+      return null;
+    }
+  }
+
   /**
    * Sends a select request to the server to retrieve all the guids matching the request.
    *
@@ -527,12 +550,17 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
+    JSONArray result;
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
+      if (Select.useLocalSelect()) {
+        result = executeSelect(SelectOperation.EQUALS, key, value, null, handler.getApp());
+      } else {
+        result = handler.getRemoteQuery().sendSelect(SelectOperation.EQUALS, key, value, null);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -547,14 +575,20 @@ public class FieldAccess {
    */
   public static CommandResponse selectWithin(String key, String value,
           ClientRequestHandlerInterface handler) {
+    JSONArray result;
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
+      if (Select.useLocalSelect()) {
+        result = executeSelect(SelectOperation.WITHIN, key, value, null, handler.getApp());
+      } else {
+        result = handler.getRemoteQuery().sendSelect(SelectOperation.WITHIN, key, value, null);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
+
   }
 
   /**
@@ -568,13 +602,17 @@ public class FieldAccess {
    */
   public static CommandResponse selectNear(String key, String value, String maxDistance,
           ClientRequestHandlerInterface handler) {
+    JSONArray result;
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
-      //String result = SelectHandler.sendSelectRequest(SelectOperation.EQUALS, key, value, null, handler);
+      if (Select.useLocalSelect()) {
+        result = executeSelect(SelectOperation.NEAR, key, value, maxDistance, handler.getApp());
+      } else {
+        result = handler.getRemoteQuery().sendSelect(SelectOperation.NEAR, key, value, maxDistance);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -587,12 +625,18 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
+    JSONArray result;
     try {
-      JSONArray result = handler.getRemoteQuery().sendSelectQuery(query);
+      if (Select.useLocalSelect()) {
+        SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
+        result = executeSelectHelper(packet, handler.getApp());
+      } else {
+        result = handler.getRemoteQuery().sendSelectQuery(query);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | JSONException | FailedDBOperationException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -618,19 +662,19 @@ public class FieldAccess {
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfoAnywhere(accountGuid, handler)) == null) {
-        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, GNSCommandProtocol.BAD_RESPONSE 
+        return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.BAD_GUID + " " + accountGuid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(accountGuid, handler);
       if (accountInfo == null) {
-        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, GNSCommandProtocol.BAD_RESPONSE 
+        return new CommandResponse(GNSResponseCode.BAD_ACCOUNT_ERROR, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.BAD_ACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE 
+        return new CommandResponse(GNSResponseCode.VERIFICATION_ERROR, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.VERIFICATION_ERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > GNSConfig.MAXGUIDS) {
-        return new CommandResponse(GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE 
+        return new CommandResponse(GNSResponseCode.TOO_MANY_GUIDS_EXCEPTION, GNSCommandProtocol.BAD_RESPONSE
                 + " " + GNSCommandProtocol.TOO_MANY_GUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
@@ -643,13 +687,20 @@ public class FieldAccess {
         }
       }
     }
-    // We either found or created the guid above so now we set up the actual query structure.
+    JSONArray result;
+
     try {
-      JSONArray result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
+      if (Select.useLocalSelect()) {
+        SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
+                query, guid, interval);
+        result = executeSelectHelper(packet, handler.getApp());
+      } else {
+        result = handler.getRemoteQuery().sendGroupGuidSetupSelectQuery(query, guid, interval);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -662,12 +713,18 @@ public class FieldAccess {
    * @return a command response
    */
   public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
+    JSONArray result;
     try {
-      JSONArray result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
+      if (Select.useLocalSelect()) {
+        SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
+        result = executeSelectHelper(packet, handler.getApp());
+      } else {
+        result = handler.getRemoteQuery().sendGroupGuidLookupSelectQuery(guid);
+      }
       if (result != null) {
         return new CommandResponse(GNSResponseCode.NO_ERROR, result.toString());
       }
-    } catch (ClientException | IOException e) {
+    } catch (ClientException | IOException | FailedDBOperationException | JSONException e) {
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, EMPTY_JSON_ARRAY_STRING);
   }
@@ -688,7 +745,7 @@ public class FieldAccess {
       }
       // Check for stale commands.
       if (timestamp != null) {
-        if (timestamp.before(DateUtils.addMinutes(new Date(), 
+        if (timestamp.before(DateUtils.addMinutes(new Date(),
                 -Config.getGlobalInt(GNSConfig.GNSC.STALE_COMMAND_INTERVAL_IN_MINUTES)))) {
           errorCode = GNSResponseCode.STALE_COMMAND_VALUE;
         }

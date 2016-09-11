@@ -55,11 +55,6 @@ public class SelectGroupSetupQuery extends BasicCommand {
     return new String[]{GUID, QUERY};
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return SELECT_GROUP;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String accountGuid = json.getString(GUID);
