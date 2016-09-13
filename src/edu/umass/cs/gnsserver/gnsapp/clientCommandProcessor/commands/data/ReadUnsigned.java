@@ -21,7 +21,9 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 
 /**
  *
@@ -44,13 +46,13 @@ public class ReadUnsigned extends Read {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GNSCommandProtocol.GUID, GNSCommandProtocol.FIELD};
+    return new String[]{GUID, FIELD};
   }
 
   @Override
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS. Does not require authentication but "
             + "field must be set to be readable by everyone or the magic token needs to be supplied."
-            + " Specify " + GNSCommandProtocol.ALL_FIELDS + " as the <field> to return all fields. ";
+            + " Specify " + ALL_FIELDS + " as the <field> to return all fields. ";
   }
 }

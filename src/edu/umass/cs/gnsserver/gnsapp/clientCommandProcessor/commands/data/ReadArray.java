@@ -19,13 +19,19 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -67,7 +73,7 @@ public class ReadArray extends BasicCommand {
   public String[] getCommandParameters() {
     return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
-  
+
 //  @Override
 //  public String getCommandName() {
 //    return READ_ARRAY;
@@ -77,9 +83,12 @@ public class ReadArray extends BasicCommand {
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
-    // the opt hair below is for the subclasses... cute, huh?
-    // reader might be same as guid
-    String reader = json.optString(READER, guid);
+
+    // Reader can be one of three things:
+    // 1) a guid - the guid attempting access
+    // 2) the value GNSConfig.GNSC.INTERNAL_OP_SECRET - which means this is a request from another server
+    // 3) null (or missing from the JSON) - this is an unsigned read 
+    String reader = json.optString(READER, null);
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
@@ -89,14 +98,9 @@ public class ReadArray extends BasicCommand {
     } else {
       timestamp = null;
     }
-    if (reader.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
-      reader = null;
-    }
 
     if (getCommandType().equals(CommandType.ReadArrayOne)
-            || getCommandType().equals(CommandType.ReadArrayOneUnsigned)
-            //|| getCommandType().equals(CommandType.ReadArrayOneSelf)
-            ) {
+            || getCommandType().equals(CommandType.ReadArrayOneUnsigned)) {
       if (ALL_FIELDS.equals(field)) {
         return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, timestamp, handler);
       } else {

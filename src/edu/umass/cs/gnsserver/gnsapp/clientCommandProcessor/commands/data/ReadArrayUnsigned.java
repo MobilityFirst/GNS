@@ -62,15 +62,6 @@ public class ReadArrayUnsigned extends ReadArray {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
-    // Tells the lookup handler that we don't need to authenticate.
-    // Will be moved to the client and will something more secure in the future.
-    json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-    return super.execute(json, handler);
-  }
-
-  @Override
   public String getCommandDescription() {
     return "Returns one key value pair from the GNS. Does not require authentication but field must be set to be readable by everyone."
             + " Values are always returned as a JSON list."
