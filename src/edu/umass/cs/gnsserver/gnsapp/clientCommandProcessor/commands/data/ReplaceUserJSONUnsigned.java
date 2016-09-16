@@ -58,16 +58,7 @@ public class ReplaceUserJSONUnsigned extends AbstractUpdate {
 //    return REPLACE_USER_JSON;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, USER_JSON, WRITER};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces existing fields in JSON record with the given JSONObject's fields. "
-            + " Field must be world writeable or magic must be supplied "
-            + "as this command does not specify the writer and is not signed."
-            + "Doesn't touch top-level fields that aren't in the given JSONObject.";
-  }
+  
 }

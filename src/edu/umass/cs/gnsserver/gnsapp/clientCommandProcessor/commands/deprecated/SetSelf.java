@@ -61,14 +61,7 @@ public class SetSelf extends AbstractUpdate {
 //    return SET;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, N, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces element N with newvalue in the key value pair for the given GUID. See below for more on the signature.";
-
-  }
+  
 }

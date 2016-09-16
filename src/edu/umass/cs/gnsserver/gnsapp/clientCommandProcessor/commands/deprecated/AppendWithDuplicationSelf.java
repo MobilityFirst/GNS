@@ -61,13 +61,7 @@ public class AppendWithDuplicationSelf extends AbstractUpdate {
 //    return APPEND_WITH_DUPLICATION;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Appends the values onto this key value pair for the given GUID. Treats the list as a list, allows dupicates.";
-  }
+  
 }

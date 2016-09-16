@@ -58,17 +58,7 @@ public class AppendOrCreateList extends AbstractUpdateList {
 //    return APPEND_OR_CREATE_LIST;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID if it doesn not exist "
-            + "otherwise appends values onto existing value."
-            + "Value is a list of items formated as a JSON list."
-            + " Field must be writeable by the WRITER guid.";
-
-  }
+  
 }

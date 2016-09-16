@@ -58,15 +58,7 @@ public class SubstituteListUnsigned extends AbstractUpdateList {
 //    return SUBSTITUTE_LIST;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, OLD_VALUE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
-            + "Value is a list of items formated as a JSON list."
-            + " Field must be world writeable as this command does not specify the writer and is not signed.";
-  }
+  
 }

@@ -43,15 +43,7 @@ public class ReadMultiFieldUnsigned extends Read {
     return CommandType.ReadMultiFieldUnsigned;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELDS};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns multiple key value pairs from the GNS for the given guid after authenticating that READER making request has access authority."
-            + " Fields can use dot notation to access subfields.";
-
-  }
+  
 }

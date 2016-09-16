@@ -101,10 +101,7 @@ public class Admin extends BasicCommand {
     return CommandType.Admin;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{PASSKEY};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -128,8 +125,5 @@ public class Admin extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Turns on admin mode.";
-  }
+  
 }

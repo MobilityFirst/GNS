@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 
@@ -46,17 +45,4 @@ public class AddMultipleGuidsFastRandom extends AddMultipleGuids {
     return CommandType.AddMultipleGuidsFastRandom;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUIDCNT, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Creates multiple guids for the account associated with the account guid. "
-            + "Must be signed by the account guid. "
-            + "The created guids can only be accessed using the account guid because the have"
-            + "no private key info stored on the client."
-            + "Returns " + BAD_GUID + " if the account guid has not been registered.";
-  }
 }

@@ -53,14 +53,7 @@ public class Replace extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces the current value key value pair from the GNS for the given guid."
-             + " Field must be writeable by the WRITER guid.";
-  }
+  
 }

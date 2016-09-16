@@ -45,18 +45,12 @@ public class CreateSelf extends Create {
     //return CommandType.CreateSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return CREATE;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID.";
-  }
+  
 }

@@ -62,10 +62,7 @@ public class RemoveTag extends BasicCommand {
     return CommandType.RemoveTag;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -94,9 +91,5 @@ public class RemoveTag extends BasicCommand {
     return AccountAccess.removeTag(guidInfo, tag, guid, signature, message, timestamp, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes a tag from the guid. Must be signed by the guid. "
-            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
-  }
+  
 }

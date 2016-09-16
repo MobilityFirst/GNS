@@ -22,10 +22,12 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 
 import org.json.JSONException;
@@ -51,15 +53,6 @@ public class LookupPrimaryGuid extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return LOOKUP_PRIMARY_GUID;
-//  }
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     String result = AccountAccess.lookupPrimaryGuid(guid, handler, false);
@@ -71,9 +64,4 @@ public class LookupPrimaryGuid extends BasicCommand {
 
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the account guid associated the guid. "
-            + "Returns " + BAD_GUID + " if the GUID does not exist.";
-  }
 }

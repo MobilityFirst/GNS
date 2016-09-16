@@ -55,10 +55,7 @@ public class VerifyAccount extends BasicCommand {
     return CommandType.VerifyAccount;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, CODE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -73,8 +70,5 @@ public class VerifyAccount extends BasicCommand {
     return AccountAccess.verifyAccount(guid, code, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Handles the completion of the verification process for a guid by supplying the correct code.";
-  }
+  
 }

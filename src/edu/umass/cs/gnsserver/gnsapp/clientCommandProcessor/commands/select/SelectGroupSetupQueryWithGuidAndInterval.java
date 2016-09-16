@@ -43,17 +43,7 @@ public class SelectGroupSetupQueryWithGuidAndInterval extends SelectGroupSetupQu
     return CommandType.SelectGroupSetupQueryWithGuidAndInterval;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, QUERY, INTERVAL};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Initializes the group guid to automatically update and maintain all records that satisfy the query."
-            + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this"
-            + "interval will retrieve a stale value."
-            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-            + "Values are returned as a JSON array of JSON Objects.";
-  }
+  
 }

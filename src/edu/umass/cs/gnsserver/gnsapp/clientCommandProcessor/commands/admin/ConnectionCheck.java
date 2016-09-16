@@ -49,10 +49,7 @@ public class ConnectionCheck extends BasicCommand {
     return CommandType.ConnectionCheck;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -64,8 +61,5 @@ public class ConnectionCheck extends BasicCommand {
     return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Checks connectivity.";
-  }
+  
 }

@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 
@@ -44,21 +44,4 @@ public class RegisterAccountUnsigned extends RegisterAccount {
     return CommandType.RegisterAccountUnsigned;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{NAME, PUBLIC_KEY, PASSWORD};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return REGISTER_ACCOUNT;
-//  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Creates an account GUID associated with the human readable name and the supplied public key. "
-            + "Must be sign dwith the public key. "
-            + "Returns a guid.";
-
-  }
 }

@@ -58,14 +58,7 @@ public class SetFieldNull extends AbstractUpdate {
 //    return SET_FIELD_NULL;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Sets the field to contain a null value."
-            + " Field must be writeable by the WRITER guid.";
-  }
+  
 }

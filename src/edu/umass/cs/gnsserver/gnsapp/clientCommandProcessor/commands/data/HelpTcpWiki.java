@@ -42,18 +42,12 @@ public class HelpTcpWiki extends Help {
     return CommandType.HelpTcpWiki;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{"tcpwiki"};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return HELP;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the help message for TCP commands in wiki format";
-  }
+  
 }

@@ -54,10 +54,7 @@ public class DeleteAllRecords extends BasicCommand {
     return CommandType.DeleteAllRecords;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -79,8 +76,5 @@ public class DeleteAllRecords extends BasicCommand {
             + " Don't understand " + getCommandType().toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Deletes all records.";
-  }
+  
 }

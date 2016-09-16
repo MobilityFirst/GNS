@@ -49,10 +49,7 @@ public class Select extends BasicCommand {
     return CommandType.Select;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{FIELD, VALUE};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
@@ -61,8 +58,5 @@ public class Select extends BasicCommand {
     return FieldAccess.select(field, value, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns all records that have a field with the given value.";
-  }
+  
 }

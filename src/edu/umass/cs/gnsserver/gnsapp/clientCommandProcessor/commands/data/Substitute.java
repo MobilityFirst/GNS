@@ -58,15 +58,7 @@ public class Substitute extends AbstractUpdate {
 //    return SUBSTITUTE;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, OLD_VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. See below for more on the signature."
-             + " Field must be writeable by the WRITER guid.";
-            
-  }
+  
 }

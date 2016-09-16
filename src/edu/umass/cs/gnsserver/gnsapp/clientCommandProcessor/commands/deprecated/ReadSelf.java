@@ -45,14 +45,7 @@ public class ReadSelf extends Read {
     //return CommandType.ReadSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
-  }
+  
 }

@@ -59,10 +59,7 @@ public class GetGroupMembers extends BasicCommand {
     return CommandType.GetGroupMembers;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -78,8 +75,5 @@ public class GetGroupMembers extends BasicCommand {
             reader, signature, message, timestamp, handler)).toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the members of the group formatted as a JSON Array. Reader guid needs to have read access and sign the command.";
-  }
+  
 }

@@ -61,14 +61,7 @@ public class RemoveFieldSelf extends AbstractUpdate {
 //    return REMOVE_FIELD;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes the key value pair from the GNS for the given guid after "
-            + "authenticating that GUID making request has access authority.";
-  }
+  
 }

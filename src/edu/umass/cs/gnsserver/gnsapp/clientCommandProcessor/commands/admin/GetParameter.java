@@ -57,10 +57,7 @@ public class GetParameter extends BasicCommand {
     return CommandType.GetParameter;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{FIELD};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -88,10 +85,5 @@ public class GetParameter extends BasicCommand {
             + " Don't understand " + CommandType.GetParameter.toString() + " " + parameterString);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that GUID making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
-  }
+  
 }

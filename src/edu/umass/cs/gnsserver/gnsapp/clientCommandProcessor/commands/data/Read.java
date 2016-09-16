@@ -72,10 +72,7 @@ public class Read extends BasicCommand {
     return CommandType.Read;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return PARAMS;
-  }
+  
   
   @Override
   public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -115,10 +112,5 @@ public class Read extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns a key value pair from the GNS for the given guid after authenticating that READER making request has access authority."
-            + " Field can use dot notation to access subfields."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
-  }
+  
 }

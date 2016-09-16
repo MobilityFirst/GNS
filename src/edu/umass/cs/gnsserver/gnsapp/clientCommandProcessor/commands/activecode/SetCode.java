@@ -60,10 +60,7 @@ public class SetCode extends BasicCommand {
     return CommandType.SetCode;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, WRITER, AC_ACTION, AC_CODE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json,
@@ -87,10 +84,6 @@ public class SetCode extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Sets the given active code for the specified GUID and action,"
-            + "ensuring the writer has permission";
-  }
+  
 
 }

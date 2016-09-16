@@ -61,10 +61,7 @@ public class Create extends BasicCommand {
     return CommandType.Create;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -98,9 +95,5 @@ public class Create extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID."
-            + " Field must be writeable by the WRITER guid.";
-  }
+  
 }

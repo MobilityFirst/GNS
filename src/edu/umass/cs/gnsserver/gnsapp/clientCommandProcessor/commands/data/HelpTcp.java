@@ -45,18 +45,12 @@ public class HelpTcp extends Help {
     return CommandType.HelpTcp;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{"tcp"};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return HELP;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the help message for TCP commands";
-  }
+  
 }

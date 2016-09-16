@@ -54,10 +54,7 @@ public class ListParameters extends BasicCommand {
     return CommandType.ListParameters;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -79,8 +76,5 @@ public class ListParameters extends BasicCommand {
             + " Don't understand " + CommandType.ListParameters.toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Lists all parameter values.";
-  }
+  
 }

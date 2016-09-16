@@ -42,19 +42,12 @@ public class AclRetrieveSelf extends AclRetrieve {
     return CommandType.AclRetrieveSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return ACL_RETRIEVE;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the access control list for a guids's field.";
-
-  }
+  
 }

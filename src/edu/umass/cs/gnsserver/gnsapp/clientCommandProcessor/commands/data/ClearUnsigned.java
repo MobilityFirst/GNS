@@ -58,15 +58,7 @@ public class ClearUnsigned extends AbstractUpdate {
 //    return CLEAR;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, WRITER};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Clears the key value pair from the GNS for the given guid after "
-            + "authenticating that GUID making request has access authority."
-            + " Field must be world writeable as this command does not specify the writer and is not signed.";
-  }
+  
 }

@@ -61,14 +61,7 @@ public class AppendListWithDuplicationSelf extends AbstractUpdateList {
 //    return APPEND_LIST_WITH_DUPLICATION;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Appends the values onto of this key value pair for the given GUID. Treats the list as a list, allows dupicate. "
-            + "Value is a list of items formated as a JSON list.";
-  }
+  
 }

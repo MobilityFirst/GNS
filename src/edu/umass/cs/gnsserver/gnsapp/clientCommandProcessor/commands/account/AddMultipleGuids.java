@@ -77,11 +77,6 @@ public class AddMultipleGuids extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{NAMES, GUID, PUBLIC_KEYS, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 
@@ -128,10 +123,4 @@ public class AddMultipleGuids extends BasicCommand {
     //}
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Creates multiple guids for the account associated with the account guid. Must be signed by the account guid. "
-            + "Returns " + BAD_GUID + " if the account guid has not been registered.";
-
-  }
 }

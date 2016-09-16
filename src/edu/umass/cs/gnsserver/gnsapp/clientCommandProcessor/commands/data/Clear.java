@@ -58,15 +58,7 @@ public class Clear extends AbstractUpdate {
 //    return CLEAR;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Clears the key value pair from the GNS for the given GUID."
-            + " Field must be writeable by the WRITER guid.";
-
-  }
+  
 }

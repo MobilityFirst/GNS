@@ -61,14 +61,7 @@ public class RemoveSelf extends AbstractUpdate {
 //    return REMOVE;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes the value from the key value pair for the given GUID. See below for more on the signature.";
-
-  }
+  
 }

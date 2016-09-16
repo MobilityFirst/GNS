@@ -54,10 +54,7 @@ public class ResetDatabase extends BasicCommand {
     return CommandType.ResetDatabase;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -79,8 +76,5 @@ public class ResetDatabase extends BasicCommand {
             + " Don't understand " + getCommandType().toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Rests the GNS to an initialized state. The nuclear option.";
-  }
+  
 }

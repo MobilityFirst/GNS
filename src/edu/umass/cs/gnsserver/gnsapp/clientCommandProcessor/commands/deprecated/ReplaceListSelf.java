@@ -61,13 +61,7 @@ public class ReplaceListSelf extends AbstractUpdateList {
 //    return REPLACE_LIST;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces the current value key value pair from the GNS for the given guid with the given values.";
-  }
+  
 }

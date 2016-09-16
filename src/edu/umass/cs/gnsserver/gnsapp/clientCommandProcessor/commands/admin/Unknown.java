@@ -55,10 +55,7 @@ public class Unknown extends BasicCommand {
     return CommandType.Unknown;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler)
@@ -67,9 +64,6 @@ public class Unknown extends BasicCommand {
     throw new UnsupportedOperationException("No implementation.");
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Null command";
-  }
+  
 
 }

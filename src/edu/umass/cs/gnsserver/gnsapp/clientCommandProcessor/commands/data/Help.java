@@ -49,10 +49,7 @@ public class Help extends BasicCommand {
     return CommandType.Help;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -78,8 +75,5 @@ public class Help extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns this help message";
-  }
+  
 }

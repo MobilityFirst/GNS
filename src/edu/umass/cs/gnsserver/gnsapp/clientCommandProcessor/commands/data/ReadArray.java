@@ -34,8 +34,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import edu.umass.cs.gnsserver.main.GNSConfig;
-import edu.umass.cs.utils.Config;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -69,10 +67,7 @@ public class ReadArray extends BasicCommand {
     return CommandType.ReadArray;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -113,10 +108,5 @@ public class ReadArray extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that READER making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
-  }
+  
 }

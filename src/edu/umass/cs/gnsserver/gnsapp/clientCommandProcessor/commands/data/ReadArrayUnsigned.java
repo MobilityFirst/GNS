@@ -56,15 +56,7 @@ public class ReadArrayUnsigned extends ReadArray {
     return CommandType.ReadArrayUnsigned;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns one key value pair from the GNS. Does not require authentication but field must be set to be readable by everyone."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields. ";
-  }
+  
 }

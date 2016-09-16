@@ -81,7 +81,7 @@ public class CommandModule {
     } else {
       addCommands(CommandDefs.getCommandDefs(), commands);
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.INFO,
+    ClientCommandProcessorConfig.getLogger().log(Level.FINE,
             "{0} commands added.", commands.size());
   }
   

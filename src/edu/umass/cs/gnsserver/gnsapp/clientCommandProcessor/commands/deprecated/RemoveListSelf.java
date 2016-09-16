@@ -61,13 +61,7 @@ public class RemoveListSelf extends AbstractUpdateList {
 //    return REMOVE_LIST;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes all the values from the key value pair for the given GUID. Value is a list of items formated as a JSON list.";
-  }
+  
 }

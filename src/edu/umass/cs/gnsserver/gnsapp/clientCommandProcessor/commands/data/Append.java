@@ -58,14 +58,7 @@ public class Append extends AbstractUpdate {
 //    return APPEND;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Appends the value onto the key value pair for the given GUID. Treats the list as a set, removing duplicates."
-            + " Field must be writeable by the WRITER guid.";
-  }
+  
 }

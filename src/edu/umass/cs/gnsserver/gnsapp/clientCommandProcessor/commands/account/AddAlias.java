@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -27,18 +26,24 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Accou
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.TOO_MANY_ALIASES;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.VERIFICATION_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupAccountInfoFromGuidAnywhere;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Date;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,11 +68,6 @@ public class AddAlias extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
     // The guid of the account we are adding the alias to
@@ -89,12 +89,5 @@ public class AddAlias extends BasicCommand {
     } else {
       return AccountAccess.addAlias(accountInfo, name, guid, signature, message, timestamp, handler);
     }
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Adds a additional human readble name to the account associated with the GUID. "
-            + "Must be signed by the guid. Returns " + BAD_GUID + " if the GUID has not been registered.";
-
   }
 }

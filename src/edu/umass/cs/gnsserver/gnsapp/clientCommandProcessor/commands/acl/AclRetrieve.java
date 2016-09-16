@@ -61,10 +61,7 @@ public class AclRetrieve extends BasicCommand {
     return CommandType.AclRetrieve;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACL_TYPE, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -92,9 +89,5 @@ public class AclRetrieve extends BasicCommand {
     return new CommandResponse(GNSResponseCode.NO_ERROR, guids.toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the access control list for a guids's field.";
-
-  }
+  
 }

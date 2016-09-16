@@ -58,14 +58,7 @@ public class ReplaceListUnsigned extends AbstractUpdateList {
 //    return REPLACE_LIST;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces the current value key value pair from the GNS for the given guid with the given values."
-            + " Field must be world writeable as this command does not specify the writer and is not signed.";
-  }
+  
 }

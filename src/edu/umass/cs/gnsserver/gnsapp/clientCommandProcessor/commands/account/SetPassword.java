@@ -60,10 +60,7 @@ public class SetPassword extends BasicCommand {
     return CommandType.SetPassword;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, PASSWORD, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -86,9 +83,5 @@ public class SetPassword extends BasicCommand {
     return AccountAccess.setPassword(accountInfo, password, guid, signature, message, timestamp, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Sets the password. Must be signed by the guid. Returns " + BAD_GUID + " if the GUID has not been registered.";
-
-  }
+  
 }

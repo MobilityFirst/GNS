@@ -46,18 +46,12 @@ public class CreateEmptySelf extends Create {
     //return CommandType.CreateEmptySelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return CREATE;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds an empty field to the GNS for the given GUID.";
-  }
+  
 }

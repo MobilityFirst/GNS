@@ -58,10 +58,7 @@ public class GetTagged extends BasicCommand {
     return CommandType.GetTagged;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{NAME};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -82,8 +79,5 @@ public class GetTagged extends BasicCommand {
     return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns all guids that contain the tag.";
-  }
+  
 }

@@ -56,10 +56,7 @@ public class ChangeLogLevel extends BasicCommand {
     return CommandType.ChangeLogLevel;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{LOG_LEVEL};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -93,8 +90,5 @@ public class ChangeLogLevel extends BasicCommand {
             + " Don't understand " + getCommandType().toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Changes the log level.";
-  }
+  
 }

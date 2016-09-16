@@ -58,14 +58,7 @@ public class AppendListUnsigned extends AbstractUpdateList {
 //    return APPEND_LIST;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Appends the value onto of this key value pair for the given GUID. Value is a list of items formated as a JSON list."
-            + " Field must be world writeable as this command does not specify the writer and is not signed.";
-  }
+  
 }

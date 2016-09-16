@@ -62,10 +62,7 @@ public class AddTag extends BasicCommand {
     return CommandType.AddTag;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -94,9 +91,5 @@ public class AddTag extends BasicCommand {
     return AccountAccess.addTag(guidInfo, tag, guid, signature, message, timestamp, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds a tag to the guid. Must be signed by the guid. "
-            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
-  }
+  
 }

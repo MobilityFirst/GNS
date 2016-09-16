@@ -58,14 +58,7 @@ public class RemoveUnsigned extends AbstractUpdate {
 //    return REMOVE;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes the value from the key value pair for the given GUID."
-            + " Field must be world writeable as this command does not specify the writer and is not signed.";
-  }
+  
 }

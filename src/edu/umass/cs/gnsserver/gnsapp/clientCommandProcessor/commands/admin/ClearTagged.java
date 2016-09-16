@@ -65,10 +65,7 @@ public class ClearTagged extends BasicCommand {
     return CommandType.ClearTagged;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{NAME};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -100,8 +97,5 @@ public class ClearTagged extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes all guids that contain the tag.";
-  }
+  
 }

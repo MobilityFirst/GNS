@@ -53,10 +53,7 @@ public class Dump extends BasicCommand {
     return CommandType.Dump;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{PASSKEY};
-  }
+  
 
   @Override
   @SuppressWarnings("unchecked")
@@ -80,8 +77,5 @@ public class Dump extends BasicCommand {
             + " Don't understand " + getCommandType().toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Returns the contents of the GNS.";
-  }
+  
 }

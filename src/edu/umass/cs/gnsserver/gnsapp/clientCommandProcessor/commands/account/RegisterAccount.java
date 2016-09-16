@@ -23,12 +23,18 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandler
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnscommon.SharedGuidUtils;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
-import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSWORD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEY;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
@@ -62,15 +68,6 @@ public class RegisterAccount extends BasicCommand {
     return CommandType.RegisterAccount;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{NAME, PUBLIC_KEY, PASSWORD, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return REGISTER_ACCOUNT;
-//  }
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
@@ -106,11 +103,4 @@ public class RegisterAccount extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Creates an account GUID associated with the human readable name and the supplied public key. "
-            + "Must be sign dwith the public key. "
-            + "Returns a guid.";
-
-  }
 }

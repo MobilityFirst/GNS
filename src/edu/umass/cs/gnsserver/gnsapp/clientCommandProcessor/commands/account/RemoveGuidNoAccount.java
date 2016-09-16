@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
 
@@ -41,23 +40,5 @@ public class RemoveGuidNoAccount extends RemoveGuid {
   @Override
   public CommandType getCommandType() {
     return CommandType.RemoveGuidNoAccount;
-  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return REMOVE_GUID;
-//  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Removes the GUID. "
-            + "Must be signed by the guid. "
-            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
-
   }
 }

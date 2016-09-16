@@ -42,21 +42,12 @@ public class AclAddSelf extends AclAdd {
     return CommandType.AclAddSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACCESSER, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return ACL_ADD;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Updates the access control list of the given GUID's field to include the accesser guid. " + NEWLINE
-            + "Accessor should a guid or group guid or " + EVERYONE + " which means anyone." + NEWLINE
-            + "Field can be also be " + ALL_FIELDS + " which means all fields can be read by the accessor." + NEWLINE
-            + "See below for description of ACL type and signature.";
-  }
+  
 }

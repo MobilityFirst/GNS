@@ -58,15 +58,7 @@ public class Set extends AbstractUpdate {
 //    return SET;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, N, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces element N with newvalue in the key value pair for the given GUID."
-            + " Field must be writeable by the WRITER guid.";
-
-  }
+  
 }

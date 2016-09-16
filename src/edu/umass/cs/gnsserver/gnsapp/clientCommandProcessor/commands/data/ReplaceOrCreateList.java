@@ -58,17 +58,7 @@ public class ReplaceOrCreateList extends AbstractUpdateList {
 //    return REPLACE_OR_CREATE_LIST;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID if it does not exist otherwise "
-            + "replaces the value of this key value pair for the given GUID with the value. "
-            + "Value is a list of items formated as a JSON list."
-            + " Field must be writeable by the WRITER guid.";
-
-  }
+  
 }

@@ -62,10 +62,7 @@ public class RetrieveAliases extends BasicCommand {
     return CommandType.RetrieveAliases;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -96,10 +93,5 @@ public class RetrieveAliases extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Retrieves all aliases for the account associated with the GUID. Must be signed by the guid. Returns "
-            + BAD_GUID + " if the GUID has not been registered.";
-
-  }
+  
 }

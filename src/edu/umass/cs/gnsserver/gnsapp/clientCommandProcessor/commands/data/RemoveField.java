@@ -58,14 +58,7 @@ public class RemoveField extends AbstractUpdate {
 //    return REMOVE_FIELD;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes the key value pair from the GNS for the given guid "
-            + "after authenticating that WRITER making request has access authority.";
-  }
+  
 }

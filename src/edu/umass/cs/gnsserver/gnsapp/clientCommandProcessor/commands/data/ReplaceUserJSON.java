@@ -58,14 +58,7 @@ public class ReplaceUserJSON extends AbstractUpdate {
 //    return REPLACE_USER_JSON;
 //  }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, USER_JSON, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Replaces existing fields in JSON record with the given JSONObject's fields. "
-            + "Doesn't touch top-level fields that aren't in the given JSONObject.";
-  }
+  
 }

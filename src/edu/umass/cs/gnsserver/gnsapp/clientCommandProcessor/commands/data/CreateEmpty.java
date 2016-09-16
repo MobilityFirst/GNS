@@ -43,19 +43,12 @@ public class CreateEmpty extends Create {
     return CommandType.CreateEmpty;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return CREATE;
 //  }
   
-  @Override
-  public String getCommandDescription() {
-    return "Adds an empty field to the GNS for the given GUID."
-             + " Field must be writeable by the WRITER guid.";
-  }
+  
 }
