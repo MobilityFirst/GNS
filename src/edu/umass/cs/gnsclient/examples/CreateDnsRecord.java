@@ -35,7 +35,7 @@ import java.security.spec.InvalidKeySpecException;
  *
  * @author westy
  */
-public class CreateSomeRecordsForDns {
+public class CreateDnsRecord {
   private static final String ACCOUNT_ALIAS = "admin@gns.name"; // REPLACE THIS WITH YOUR ACCOUNT ALIAS
   private static GNSClientCommands client;
   private static GuidEntry accountGuid;
@@ -44,6 +44,10 @@ public class CreateSomeRecordsForDns {
           InvalidKeySpecException, NoSuchAlgorithmException, ClientException,
           InvalidKeyException, SignatureException, Exception {
 
+    if (args.length != 2) { 
+      System.out.println("Usage: edu.umass.cs.gnsclient.examples.CreateDnsRecord <host> <address>");
+      System.exit(0);
+    }
     client = new GNSClientCommands();
     try {
       accountGuid = GuidUtils.lookupOrCreateAccountGuid(client, ACCOUNT_ALIAS, "password", true);
@@ -52,10 +56,8 @@ public class CreateSomeRecordsForDns {
       System.exit(1);
     }
     System.out.println("Client connected to GNS");
-
-    createAnARecord("westy.gns.", "173.236.153.191");
     
-    createAnARecord("mobilityfirst.gns.", "128.119.240.104");
+    createAnARecord(args[0], args[1]);
     
     client.close();
     
@@ -66,8 +68,7 @@ public class CreateSomeRecordsForDns {
   private static void createAnARecord(String domain, String address) throws Exception {
     // domains need to end with a period
     if (!domain.endsWith(".")) {
-      domain = domain + ".";
-      
+      domain += ".";
     }
     GuidEntry guid = GuidUtils.lookupOrCreateGuid(client, accountGuid, domain);
     client.fieldUpdate(guid, "A", address);
