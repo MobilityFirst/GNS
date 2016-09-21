@@ -2218,6 +2218,12 @@ public class ServerIntegrationTest extends DefaultTest {
 
   @Test
   public void test_560_QueryLookupGroupAfterAlterations() {
+    // Westy - Added this to see if it helps with failures...
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     try {
       JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
       // should only be one
