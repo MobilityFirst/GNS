@@ -412,6 +412,7 @@ public enum CommandType {
           new String[]{GNSCommandProtocol.GUID,
             GNSCommandProtocol.USER_JSON,
             GNSCommandProtocol.WRITER}),
+  //Fixme: CREATE_INDEX should be an ADMIN_UPDATE command.
   CreateIndex(230, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data.CreateIndex.class,
           GNSCommand.ResultType.NULL, true, false,
           "Creates an index for field. The value is a string containing the index type.",
@@ -920,16 +921,6 @@ public enum CommandType {
           GNSCommand.ResultType.STRING, true, true,
           "[ONLY IN ADMIN MODE] Lists all parameter values.",
           new String[]{}),
-  @Deprecated
-  DeleteAllRecords(723, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.DeleteAllRecords.class,
-          GNSCommand.ResultType.NULL, true, true,
-          "[ONLY IN ADMIN MODE] Deletes all records.",
-          new String[]{}),
-  @Deprecated
-  ResetDatabase(724, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ResetDatabase.class,
-          GNSCommand.ResultType.NULL, true, true,
-          "[ONLY IN ADMIN MODE] Rests the GNS to an initialized state. The nuclear option.",
-          new String[]{}),
   ClearCache(725, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearCache.class,
           GNSCommand.ResultType.NULL, true, true,
           "[ONLY IN ADMIN MODE] Clears the local name server cache.",
@@ -938,38 +929,6 @@ public enum CommandType {
           GNSCommand.ResultType.STRING, true, false,
           "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.",
           new String[]{}),
-  ChangeLogLevel(730, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ChangeLogLevel.class,
-          GNSCommand.ResultType.NULL, true, true,
-          "Changes the log level.",
-          new String[]{GNSCommandProtocol.LOG_LEVEL}),
-  @Deprecated
-  AddTag(731, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.AddTag.class,
-          GNSCommand.ResultType.NULL, true, false,
-          "Adds a tag to the guid. Must be signed by the guid. "
-          + "Returns +BADGUID+ if the GUID has not been registered.",
-          new String[]{GNSCommandProtocol.GUID,
-            GNSCommandProtocol.NAME,
-            GNSCommandProtocol.SIGNATURE,
-            GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-  @Deprecated
-  RemoveTag(732, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.RemoveTag.class,
-          GNSCommand.ResultType.NULL, true, false,
-          "Removes a tag from the guid. Must be signed by the guid. "
-          + "Returns +BADGUID+ if the GUID has not been registered.",
-          new String[]{GNSCommandProtocol.GUID,
-            GNSCommandProtocol.NAME,
-            GNSCommandProtocol.SIGNATURE,
-            GNSCommandProtocol.SIGNATUREFULLMESSAGE}),
-  @Deprecated
-  ClearTagged(733, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ClearTagged.class,
-          GNSCommand.ResultType.NULL, true, false,
-          "Removes all guids that contain the tag.",
-          new String[]{GNSCommandProtocol.NAME}),
-  @Deprecated
-  GetTagged(734, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.GetTagged.class,
-          GNSCommand.ResultType.STRING, true, false,
-          "Returns all guids that contain the tag.",
-          new String[]{GNSCommandProtocol.NAME}),
   ConnectionCheck(737, CommandCategory.OTHER, edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.ConnectionCheck.class,
           GNSCommand.ResultType.STRING, true, false,
           "Checks connectivity.",
@@ -1309,15 +1268,8 @@ public enum CommandType {
     GetParameter.setChain();
     SetParameter.setChain();
     ListParameters.setChain();
-    DeleteAllRecords.setChain();
-    ResetDatabase.setChain();
     ClearCache.setChain();
     DumpCache.setChain();
-    ChangeLogLevel.setChain();
-    AddTag.setChain();
-    RemoveTag.setChain();
-    ClearTagged.setChain();
-    GetTagged.setChain();
     ConnectionCheck.setChain();
     Unknown.setChain();
 

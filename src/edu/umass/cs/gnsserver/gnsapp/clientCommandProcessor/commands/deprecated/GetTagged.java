@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -28,12 +28,14 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,53 +43,41 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ChangeLogLevel extends BasicCommand {
+@Deprecated
+public class GetTagged extends BasicCommand {
 
   /**
    *
    * @param module
    */
-  public ChangeLogLevel(CommandModule module) {
+  public GetTagged(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.ChangeLogLevel;
+    return CommandType.Unknown;
   }
 
   
 
 //  @Override
 //  public String getCommandName() {
-//    return CHANGE_LOG_LEVEL;
+//    return GET_TAGGED;
 //  }
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String levelString = json.getString(LOG_LEVEL);
-    if (module.isAdminMode()) {
-  	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
-  	  String passkey = json.getString(PASSKEY);
-  	  if (!Admin.authenticate(passkey)){
-  		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
-  		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
-  	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
-  	  }
-      try {
-        Level level = Level.parse(levelString);
-        if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
-          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
-        } else {
-          return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE);
-        }
-      } catch (IllegalArgumentException e) {
-        return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString);
-      }
-    }
-    return new CommandResponse(GNSResponseCode.OPERATION_NOT_SUPPORTED, BAD_RESPONSE + " " + OPERATION_NOT_SUPPORTED
-            + " Don't understand " + getCommandType().toString());
+	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
+	  String passkey = json.getString(PASSKEY);
+	  if (!Admin.authenticate(passkey)){
+		  GNSConfig.getLogger().log(Level.INFO, "A client failed to authenticate for "+ getCommandType().toString()+ " : " + json.toString());
+		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
+	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
+	  }
+    String tagName = json.getString(NAME);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
   }
 
   
