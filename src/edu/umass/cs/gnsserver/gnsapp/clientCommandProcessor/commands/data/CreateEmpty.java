@@ -42,12 +42,4 @@ public class CreateEmpty extends Create {
     return CommandType.CreateEmpty;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return CREATE;
-//  }
-  
-  
 }

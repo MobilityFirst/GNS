@@ -19,11 +19,21 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ARGUMENT;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OK_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
@@ -81,10 +91,6 @@ public abstract class AbstractUpdateList extends BasicCommand {
       timestamp = null;
     }
     GNSResponseCode responseCode;
-//    if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
-//      writer = null;
-//    }
-
     if (!(responseCode = FieldAccess.update(header, guid, field,
             JSONUtils.JSONArrayToResultValue(new JSONArray(value)),
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,

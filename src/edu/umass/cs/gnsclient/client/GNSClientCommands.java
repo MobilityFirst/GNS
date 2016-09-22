@@ -1411,7 +1411,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Reads all the values for a key from the GNS server for the given guid.
+   * Reads all the values for a key from the GNS server for the given guid
+   * (assumes that value is a array).
    * The guid of the user attempting access is also needed. Signs the query
    * using the private key of the user associated with the reader guid
    * (unsigned if reader is null).
@@ -1442,8 +1443,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Sets the nth value (zero-based) indicated by index in the list contained
-   * in field to newValue. Index must be less than the current size of the
-   * list.
+   * in field to newValue (assumes that value is a array). Index must be less
+   * than the current size of the list.
    *
    * @param targetGuid
    * @param field
@@ -1915,8 +1916,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Replaces all the first element of field with the value. If the writer is
-   * different use addToACL first to allow other the guid to write this field.
+   * Replaces all the first element of field with the value (assuming that value is a array).
+   * If the writer is different use addToACL first to allow other the guid to write this field.
    * If writer is null the command is sent unsigned.
    *
    * @param targetGuid
@@ -1958,7 +1959,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Replaces the first element of field in target with the value.
+   * Replaces the first element of field in target with the value 
+   * (assuming that value is a array).
    *
    * @param target
    * @param field
@@ -2056,9 +2058,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Reads the first value for a key from the GNS server for the given guid.
+   * Reads the first value (assuming that value is a array) for a key 
+   * from the GNS server for the given guid.
    * The guid of the user attempting access is also needed. Signs the query
-   * using the private key of the user associated with the reader guid
+   * using the private key of the reader guid
    * (unsigned if reader is null).
    *
    * @param guid
@@ -2076,7 +2079,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Reads the first value for a key in the guid.
+   * Reads the first value for a key in the guid. Assuming that value is a array.
+   * Signs the query using the private key of the guid.
    *
    * @param guid
    * @param field
@@ -2108,11 +2112,12 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
+   * Enables admin mode on the server.
+   * 
    * @param passkey
    * @return ???
    * @throws Exception
    */
-  @Deprecated
   public String adminEnable(String passkey) throws Exception {
     return getResponse(CommandType.Admin, NAME,
             RC.BROADCAST_NAME.getDefaultValue(), PASSKEY, passkey);

@@ -21,9 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 
 /**
  *
@@ -43,8 +40,5 @@ public class ReadUnsigned extends Read {
   public CommandType getCommandType() {
     return CommandType.ReadUnsigned;
   }
-
-  
-
-  
+ 
 }

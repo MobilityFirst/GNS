@@ -101,8 +101,6 @@ public class Admin extends BasicCommand {
     return CommandType.Admin;
   }
 
-  
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {

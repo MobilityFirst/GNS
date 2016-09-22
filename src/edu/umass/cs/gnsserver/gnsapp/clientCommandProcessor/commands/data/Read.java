@@ -72,8 +72,6 @@ public class Read extends BasicCommand {
     return CommandType.Read;
   }
 
-  
-  
   @Override
   public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
@@ -111,6 +109,5 @@ public class Read extends BasicCommand {
               message, timestamp, handler);
     }
   }
-
-  
+ 
 }

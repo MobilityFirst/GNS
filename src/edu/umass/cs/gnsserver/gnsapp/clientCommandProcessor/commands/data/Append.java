@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
@@ -53,12 +52,4 @@ public class Append extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_APPEND;
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return APPEND;
-//  }
-
-  
-
-  
 }

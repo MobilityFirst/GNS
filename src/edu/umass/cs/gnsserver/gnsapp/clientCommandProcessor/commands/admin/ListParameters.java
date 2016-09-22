@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+
 
 import java.util.logging.Level;
 
@@ -29,6 +29,10 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Syste
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESS_DENIED;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 

@@ -21,8 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELDS;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
 
 /**
  *
@@ -43,7 +41,4 @@ public class ReadMultiFieldUnsigned extends Read {
     return CommandType.ReadMultiFieldUnsigned;
   }
 
-  
-
-  
 }

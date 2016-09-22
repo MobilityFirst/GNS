@@ -61,12 +61,7 @@ public class Create extends BasicCommand {
     return CommandType.Create;
   }
 
-  
 
-//  @Override
-//  public String getCommandName() {
-//    return CREATE;
-//  }
   @Override
   public CommandResponse execute(InternalRequestHeader header, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException {

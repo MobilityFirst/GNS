@@ -1289,6 +1289,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param timestamp
    * @param handler
    * @return status result
    */

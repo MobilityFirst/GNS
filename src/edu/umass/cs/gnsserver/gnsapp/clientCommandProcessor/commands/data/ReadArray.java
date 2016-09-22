@@ -107,6 +107,4 @@ public class ReadArray extends BasicCommand {
       return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, timestamp, handler);
     }
   }
-
-  
 }

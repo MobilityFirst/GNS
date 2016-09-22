@@ -51,13 +51,5 @@ public class Set extends AbstractUpdate {
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_SET;
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return SET;
-//  }
-
-  
-
-  
+ 
 }

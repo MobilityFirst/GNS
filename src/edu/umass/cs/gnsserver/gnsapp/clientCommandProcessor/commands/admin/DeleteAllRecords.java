@@ -39,6 +39,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class DeleteAllRecords extends BasicCommand {
 
   /**
