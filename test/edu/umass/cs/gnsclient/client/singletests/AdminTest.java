@@ -26,6 +26,7 @@ import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
+import edu.umass.cs.utils.DefaultTest;
 
 import java.io.IOException;
 import static org.junit.Assert.*;
@@ -40,7 +41,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AdminTest {
+public class AdminTest extends DefaultTest{
 
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;

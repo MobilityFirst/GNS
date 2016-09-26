@@ -189,6 +189,8 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 	private static PacketType[] types = { PacketType.COMMAND,
 			PacketType.SELECT_REQUEST, PacketType.SELECT_RESPONSE, 
 			PacketType.ADMIN_REQUEST, PacketType.INTERNAL_COMMAND};
+	
+	private static PacketType[] mutualAuthTypes = {PacketType.ADMIN_COMMAND};
 
 	/**
 	 * arun: The code below {@link #incrResponseCount(ClientRequest)} and
@@ -280,8 +282,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
           CommandHandler.handleCommandPacket((CommandPacket) request, doNotReplyToClient, this);
           break;
         case ADMIN_COMMAND:
-			CommandHandler.handleCommandPacket((AdminCommandPacket) request,
-					doNotReplyToClient, this);
+			CommandHandler.handleCommandPacket((AdminCommandPacket) request, doNotReplyToClient, this);
         default:
           assert (false) : (this
                   + " should not be getting packets of type "
@@ -505,7 +506,7 @@ public class GNSApp extends AbstractReconfigurablePaxosApp<String> implements
 
   @Override
   public Set<IntegerPacketType> getMutualAuthRequestTypes() {
-    Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(types));
+    Set<IntegerPacketType> maTypes = new HashSet<>(Arrays.asList(mutualAuthTypes));
     if (InternalCommandPacket.SEPARATE_INTERNAL_TYPE) {
       maTypes.add(PacketType.INTERNAL_COMMAND);
     }
