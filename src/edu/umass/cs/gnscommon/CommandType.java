@@ -1233,7 +1233,7 @@ public enum CommandType {
     RemoveAlias.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
     RemoveGuidNoAccount.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
     RetrieveAliases.setChain(ReadUnsigned);
-    SetPassword.setChain(ReadUnsigned, ReplaceUserJSONUnsigned);
+    SetPassword.setChain(ReadUnsigned);
     ResetKey.setChain(ReadUnsigned);
     //
     AclAdd.setChain(ReadUnsigned);
@@ -1436,9 +1436,9 @@ public enum CommandType {
   }
 
   public static void main(String args[]) {
-    //CommandType.enforceChecks();
+    CommandType.enforceChecks();
     //System.out.println(generateEmptySetChains());
     //System.out.println(generateSwiftConstants());
-    System.out.println(generateCommandTypeCode());
+    //System.out.println(generateCommandTypeCode());
   }
 }

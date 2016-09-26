@@ -69,27 +69,22 @@ import org.json.JSONObject;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.Util;
 
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -746,7 +741,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   public String accountGuidVerify(GuidEntry guid, String code)
           throws Exception {
-    //GNSClientConfig.getLogger().log(Level.INFO, "VERIFICATION CODE= {0}", code);
     return getResponse(CommandType.VerifyAccount, guid, GUID,
             guid.getGuid(), CODE, code);
   }

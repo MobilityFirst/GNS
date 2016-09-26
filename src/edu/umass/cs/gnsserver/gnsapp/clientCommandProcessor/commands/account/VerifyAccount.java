@@ -55,13 +55,6 @@ public class VerifyAccount extends BasicCommand {
     return CommandType.VerifyAccount;
   }
 
-  
-
-//  @Override
-//  public String getCommandName() {
-//    return VERIFY_ACCOUNT;
-//  }
-
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
