@@ -50,7 +50,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAME;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NAMES;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.NEAR;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSWORD;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEY;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.PUBLIC_KEYS;
@@ -61,7 +60,6 @@ import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WITHIN;
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.LOG_LEVEL;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
 
 import org.json.JSONArray;
@@ -75,24 +73,19 @@ import edu.umass.cs.gnscommon.packets.CommandPacket;
 import edu.umass.cs.gnscommon.packets.ResponsePacket;
 import edu.umass.cs.gnscommon.utils.Base64;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.Util;
 
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -750,7 +743,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
    */
   public String accountGuidVerify(GuidEntry guid, String code)
           throws Exception {
-    //GNSClientConfig.getLogger().log(Level.INFO, "VERIFICATION CODE= {0}", code);
     return getResponse(CommandType.VerifyAccount, guid, GUID,
             guid.getGuid(), CODE, code);
   }
@@ -1415,7 +1407,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Reads all the values for a key from the GNS server for the given guid.
+   * Reads all the values for a key from the GNS server for the given guid
+   * (assumes that value is a array).
    * The guid of the user attempting access is also needed. Signs the query
    * using the private key of the user associated with the reader guid
    * (unsigned if reader is null).
@@ -1446,8 +1439,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
 
   /**
    * Sets the nth value (zero-based) indicated by index in the list contained
-   * in field to newValue. Index must be less than the current size of the
-   * list.
+   * in field to newValue (assumes that value is a array). Index must be less
+   * than the current size of the list.
    *
    * @param targetGuid
    * @param field
@@ -1919,8 +1912,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Replaces all the first element of field with the value. If the writer is
-   * different use addToACL first to allow other the guid to write this field.
+   * Replaces all the first element of field with the value (assuming that value is a array).
+   * If the writer is different use addToACL first to allow other the guid to write this field.
    * If writer is null the command is sent unsigned.
    *
    * @param targetGuid
@@ -1962,7 +1955,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Replaces the first element of field in target with the value.
+   * Replaces the first element of field in target with the value 
+   * (assuming that value is a array).
    *
    * @param target
    * @param field
@@ -2060,9 +2054,10 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Reads the first value for a key from the GNS server for the given guid.
+   * Reads the first value (assuming that value is a array) for a key 
+   * from the GNS server for the given guid.
    * The guid of the user attempting access is also needed. Signs the query
-   * using the private key of the user associated with the reader guid
+   * using the private key of the reader guid
    * (unsigned if reader is null).
    *
    * @param guid
@@ -2080,7 +2075,8 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
   }
 
   /**
-   * Reads the first value for a key in the guid.
+   * Reads the first value for a key in the guid. Assuming that value is a array.
+   * Signs the query using the private key of the guid.
    *
    * @param guid
    * @param field
@@ -2214,25 +2210,6 @@ public class GNSClientCommands extends GNSClient //implements GNSClientInterface
             "Admin");
   }
   
-  /**
-   * "Changes the log level."
-   * @param level
-   * @return
-   * @throws Exception
-   */
-  public String changeLogLevel(String level) throws Exception {
-	  //Create the admin account if it doesn't already exist.
-	  try{
-	  accountGuidCreate("Admin", Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-	  }
-	  catch(DuplicateNameException dne){
-		  //Do nothing if it already exists.
-	  }
-	    return getResponse(CommandType.ChangeLogLevel, NAME,
-	    		"Admin", LOG_LEVEL, level);
-  }
-
-
 
   @Override
   public void close() {

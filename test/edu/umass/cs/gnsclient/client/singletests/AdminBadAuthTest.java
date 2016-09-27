@@ -126,10 +126,6 @@ public class AdminBadAuthTest {
       String result = client.dumpCache();
   }
   
-  @Test(expected=ClientException.class)
-  public void test_07_ChangeLogLevel() throws Exception {
-      String result = client.changeLogLevel("INFO");
-  }
   
   
 

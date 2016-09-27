@@ -22,11 +22,14 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.JSON_PARSE_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 
 import org.json.JSONException;
@@ -53,15 +56,6 @@ public class LookupGuidRecord extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return LOOKUP_GUID_RECORD;
-//  }
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     GuidInfo guidInfo;
@@ -79,10 +73,4 @@ public class LookupGuidRecord extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns human readable name and public key associated with the given GUID. "
-            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
-
-  }
 }

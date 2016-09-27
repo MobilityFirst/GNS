@@ -72,11 +72,11 @@ import java.util.logging.Level;
  * over HTTP. This class works on both Android and Desktop platforms.
  * This class contains a subset of all available server operations.
  * For a more complete set see UniversalGnsClientExtended.
- * 
- *  arun: This class is deprecated. It is unclear who if anyone is using it anyway. 
- *  This class does does not satisfy the security and fault-tolerance requirements
- *  of a GNS client.
- *  
+ *
+ * arun: This class is deprecated. It is unclear who if anyone is using it anyway.
+ * This class does does not satisfy the security and fault-tolerance requirements
+ * of a GNS client.
+ *
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
@@ -122,9 +122,9 @@ public class UniversalHttpClient implements GNSClientInterface {
    * @param port Port number of the GNS instance
    */
   public UniversalHttpClient(String host, int port) {
-	
-	  // arun: disabled
-	  DisabledClasses.checkDisabled(getClass());
+
+    // arun: disabled
+    DisabledClasses.checkDisabled(getClass());
     this.host = host;
     this.port = port;
   }
@@ -1189,13 +1189,13 @@ public class UniversalHttpClient implements GNSClientInterface {
     String publicKeyString = Base64.encodeToString(publicKeyBytes, false);
     String command;
     //if (password != null) {
-      command = createQuery(
-              CommandType.RegisterAccount, GNSCommandProtocol.NAME,
-              URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString,
-              GNSCommandProtocol.PASSWORD, 
-              password != null ?
-              Base64.encodeToString(Password.encryptPassword(password, alias), false)
-                      : "");
+    command = createQuery(
+            CommandType.RegisterAccount, GNSCommandProtocol.NAME,
+            URIEncoderDecoder.quoteIllegal(alias, ""), GNSCommandProtocol.PUBLIC_KEY, publicKeyString,
+            GNSCommandProtocol.PASSWORD,
+            password != null
+                    ? Base64.encodeToString(Password.encryptPassword(password, alias), false)
+                    : "");
 //    } else {
 //      command = createQuery(
 //              CommandType.RegisterAccountSansPassword, GNSCommandProtocol.NAME,
@@ -1483,12 +1483,7 @@ public class UniversalHttpClient implements GNSClientInterface {
    */
   @Deprecated
   public void addTag(GuidEntry guid, String tag) throws Exception {
-    String command = createAndSignQuery(guid,
-            CommandType.AddTag,
-            GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.NAME, tag);
-    String response = sendGetCommand(command);
-
-    checkResponse(command, response);
+    throw new UnsupportedOperationException();
   }
 
   private class AndroidHttpGet extends DownloadTask {

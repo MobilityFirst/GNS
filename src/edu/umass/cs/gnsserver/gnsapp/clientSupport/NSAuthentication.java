@@ -155,7 +155,25 @@ public class NSAuthentication {
           GNSApplicationInterface<String> gnsApp)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
-    // First we do the ACL check. By doing this now we also look up the public key as
+    // Do a check for unsigned reads if there is no signature
+    if (signature == null) {
+      if (NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
+        return GNSResponseCode.NO_ERROR;
+      } else {
+        ClientSupportConfig.getLogger().log(Level.FINE,
+                "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
+        return GNSResponseCode.ACCESS_ERROR;
+      }
+    }
+    // If the signature isn't null a null accessorGuid is also an access failure because
+    // only unsigned reads (handled above) can have a null accessorGuid
+    if (accessorGuid == null) {
+      ClientSupportConfig.getLogger().log(Level.WARNING,
+              "Name {0} key={1} : NULL accessorGuid", new Object[]{guid, field});
+      return GNSResponseCode.ACCESS_ERROR;
+    }
+
+    // Now we do the ACL check. By doing this now we also look up the public key as
     // side effect which we need for the signing check below.
     AclResult aclResult = null;
     if (field != null) {
@@ -175,21 +193,15 @@ public class NSAuthentication {
     if (aclResult == null) {
       assert (false) : "Should never come here";
       // Something went wrong above, but we shouldn't really get here.
-      ClientSupportConfig.getLogger().log(Level.FINE,
-              "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
+      ClientSupportConfig.getLogger().log(Level.WARNING,
+              "Name {0} key={1} : UNEXPECTED ACCESS_ERROR", new Object[]{guid, field});
       return GNSResponseCode.ACCESS_ERROR;
     }
 
     String publicKey = aclResult.getPublicKey();
     boolean aclCheckPassed = aclResult.isAclCheckPassed();
     // now check signatures
-    if (signature == null) {
-      if (!NSAccessSupport.fieldAccessibleByEveryone(access, guid, field, gnsApp)) {
-        ClientSupportConfig.getLogger().log(Level.FINE,
-                "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
-        return GNSResponseCode.ACCESS_ERROR;
-      }
-    } else if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
+    if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
       ClientSupportConfig.getLogger().log(Level.FINE,
               "Name {0} key={1} : SIGNATURE_ERROR", new Object[]{guid, field});
       return GNSResponseCode.SIGNATURE_ERROR;
@@ -198,7 +210,7 @@ public class NSAuthentication {
               "Name {0} key={1} : ACCESS_ERROR", new Object[]{guid, field});
       return GNSResponseCode.ACCESS_ERROR;
     }
-
+    // otherwise everything passed and we return a happy result
     return GNSResponseCode.NO_ERROR;
   }
 

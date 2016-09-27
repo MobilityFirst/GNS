@@ -42,20 +42,12 @@ public class AclRemoveSelf extends AclRemove {
     return CommandType.AclRemoveSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACCESSER, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return ACL_REMOVE;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Updates the access control list of the given GUID's field to remove the accesser guid."
-            + "Accessor should be the guid or group guid to be removed.";
-
-  }
+  
 }

@@ -36,7 +36,6 @@ import edu.umass.cs.utils.Util;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSCommand;
 import edu.umass.cs.gnsclient.client.GNSClientConfig.GNSCC;
-import edu.umass.cs.gnsclient.client.android.AndroidNIOTask;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;

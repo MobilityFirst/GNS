@@ -17,15 +17,15 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -39,29 +39,27 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ResetDatabase extends BasicCommand {
+@Deprecated
+public class DeleteAllRecords extends BasicCommand {
 
   /**
    *
    * @param module
    */
-  public ResetDatabase(CommandModule module) {
+  public DeleteAllRecords(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.ResetDatabase;
+    return CommandType.Unknown;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
-//    return RESET_DATABASE;
+//    return DELETE_ALL_RECORDS;
 //  }
   @Override
   @SuppressWarnings("unchecked")
@@ -69,7 +67,7 @@ public class ResetDatabase extends BasicCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     // DISABLE THIS COMMAND
 //    if (module.isAdminMode()) {
-//      if (handler.getAdmintercessor().sendResetDB(handler)) {
+//      if (handler.getAdmintercessor().sendDeleteAllRecords(handler)) {
 //        return new CommandResponse(OK_RESPONSE);
 //      } else {
 //        return new CommandResponse(BAD_RESPONSE);
@@ -79,8 +77,5 @@ public class ResetDatabase extends BasicCommand {
             + " Don't understand " + getCommandType().toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Rests the GNS to an initialized state. The nuclear option.";
-  }
+  
 }

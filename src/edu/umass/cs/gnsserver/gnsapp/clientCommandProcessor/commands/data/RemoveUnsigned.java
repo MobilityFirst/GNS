@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
 
 /**
@@ -52,20 +51,5 @@ public class RemoveUnsigned extends AbstractUpdate {
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REMOVE;
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return REMOVE;
-//  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Removes the value from the key value pair for the given GUID."
-            + " Field must be world writeable as this command does not specify the writer and is not signed.";
-  }
+ 
 }

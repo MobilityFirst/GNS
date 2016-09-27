@@ -42,18 +42,12 @@ public class AddToGroupSelf extends AddToGroup {
     return CommandType.AddToGroupSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return ADD_TO_GROUP;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds the member guid to the group specified by guid.";
-  }
+  
 }

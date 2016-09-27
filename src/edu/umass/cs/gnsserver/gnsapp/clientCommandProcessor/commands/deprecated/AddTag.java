@@ -17,21 +17,27 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -41,49 +47,43 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class ChangeLogLevel extends BasicCommand {
+@Deprecated
+public class AddTag extends BasicCommand {
 
   /**
    *
    * @param module
    */
-  public ChangeLogLevel(CommandModule module) {
+  public AddTag(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.ChangeLogLevel;
+    return CommandType.Unknown;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{LOG_LEVEL};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
-//    return CHANGE_LOG_LEVEL;
+//    return ADD_TAG;
 //  }
   @Override
-  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
-    String levelString = json.getString(LOG_LEVEL);
-      try {
-        Level level = Level.parse(levelString);
-        if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
-          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
-        } else {
-          return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE);
-        }
-      } catch (IllegalArgumentException e) {
-        return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString);
-      }
+          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    String guid = json.getString(GUID);
+    String tag = json.getString(NAME);
+    // signature and message can be empty for unsigned cases
+    String signature = json.optString(SIGNATURE, null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
+    }
+    return AccountAccess.addTag(guidInfo, tag, guid, signature, message, timestamp, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Changes the log level.";
-  }
+  
 }

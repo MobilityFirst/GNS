@@ -41,7 +41,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class AdminTest extends DefaultTest{
+public class AdminTestSuite extends DefaultTest{
 
   private static GNSClientCommands client;
   private static GuidEntry masterGuid;
@@ -136,12 +136,6 @@ public class AdminTest extends DefaultTest{
   public void test_06_DumpCache() throws Exception {
       String result = client.dumpCache();
   }
-  
-  @Test
-  public void test_07_ChangeLogLevel() throws Exception {
-      String result = client.changeLogLevel("INFO");
-  }
-  
   
 
 }

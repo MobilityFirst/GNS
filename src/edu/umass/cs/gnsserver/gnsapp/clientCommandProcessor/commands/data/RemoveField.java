@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
 
 /**
@@ -52,20 +51,5 @@ public class RemoveField extends AbstractUpdate {
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REMOVE_FIELD;
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return REMOVE_FIELD;
-//  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Removes the key value pair from the GNS for the given guid "
-            + "after authenticating that WRITER making request has access authority.";
-  }
+ 
 }

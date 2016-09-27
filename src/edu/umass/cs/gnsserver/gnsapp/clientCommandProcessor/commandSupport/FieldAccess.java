@@ -122,7 +122,6 @@ public class FieldAccess {
   public static CommandResponse lookupSingleField(InternalRequestHeader header, String guid, String field,
           String reader, String signature, String message, Date timestamp,
           ClientRequestHandlerInterface handler) {
-//    ClientSupportConfig.getLogger().log(Level.FINER, "Lookup: " + guid + "/" + field);
     GNSResponseCode errorCode = signatureAndACLCheckForRead(guid, field, null,
             reader, signature, message, timestamp, handler.getApp());
     if (errorCode.isExceptionOrError()) {
@@ -131,9 +130,9 @@ public class FieldAccess {
     ValuesMap valuesMap;
     try {
       valuesMap = NSFieldAccess.lookupJSONFieldLocally(header, guid, field, handler.getApp());
-      if (reader != null) {
-        // read is null means a magic internal request so we
-        // only strip internal fields when read is not null
+      // note: reader can also be null here
+      if (!Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET).equals(reader)) {
+        // don't strip internal fields when doing a read for other servers
         valuesMap = valuesMap.removeInternalFields();
       }
       if (valuesMap != null) {
@@ -193,9 +192,9 @@ public class FieldAccess {
     ValuesMap valuesMap;
     try {
       valuesMap = NSFieldAccess.lookupFieldsLocalNoAuth(header, guid, fields, ColumnFieldType.USER_JSON, handler);
-      if (reader != null) {
-        // read is null means a magic internal request so we
-        // only strip internal fields when read is not null
+      // note: reader can also be null here
+      if (!Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET).equals(reader)) {
+        // don't strip internal fields when doing a read for other servers
         valuesMap = valuesMap.removeInternalFields();
       }
       return new CommandResponse(GNSResponseCode.NO_ERROR, valuesMap.toString()); // multiple field return
@@ -234,14 +233,12 @@ public class FieldAccess {
     String resultString;
     ResultValue value = NSFieldAccess.lookupListFieldLocallyNoAuth(guid, field, handler.getApp().getDB());
     if (!value.isEmpty()) {
-      //resultString = new JSONArray(value).toString();
       try {
         resultString = new JSONObject().put(field, value).toString();
       } catch (JSONException e) {
         return new CommandResponse(GNSResponseCode.JSON_PARSE_ERROR, GNSCommandProtocol.BAD_RESPONSE + " " + GNSResponseCode.JSON_PARSE_ERROR);
       }
     } else {
-      //resultString = EMPTY_JSON_ARRAY_STRING;
       resultString = new JSONObject().toString();
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
@@ -278,8 +275,7 @@ public class FieldAccess {
         responseCode = GNSResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        // arun:
-        responseCode = GNSResponseCode.BAD_GUID_ERROR;//.UNSPECIFIED_ERROR;
+        responseCode = GNSResponseCode.BAD_GUID_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;
@@ -318,7 +314,8 @@ public class FieldAccess {
         resultString = (String) value.get(0);
       }
     } else {
-      return new CommandResponse(GNSResponseCode.FIELD_NOT_FOUND_ERROR, GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.FIELD_NOT_FOUND);
+      return new CommandResponse(GNSResponseCode.FIELD_NOT_FOUND_ERROR,
+              GNSCommandProtocol.BAD_RESPONSE + " " + GNSCommandProtocol.FIELD_NOT_FOUND);
     }
     return new CommandResponse(GNSResponseCode.NO_ERROR, resultString);
   }
@@ -354,8 +351,7 @@ public class FieldAccess {
         responseCode = GNSResponseCode.NO_ERROR;
       } else {
         resultString = GNSCommandProtocol.BAD_RESPONSE;
-        // arun: changed to BAD_GUID_ERROR
-        responseCode = GNSResponseCode.BAD_GUID_ERROR;//UNSPECIFIED_ERROR;
+        responseCode = GNSResponseCode.BAD_GUID_ERROR;
       }
     } catch (FailedDBOperationException e) {
       resultString = GNSCommandProtocol.BAD_RESPONSE;
@@ -735,10 +731,14 @@ public class FieldAccess {
           Date timestamp,
           GNSApplicationInterface<String> app) {
     GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
+    ClientSupportConfig.getLogger().log(Level.FINE,
+            "signatureAndACLCheckForRead guid: {0} field: {1} reader: {2} signature: {3}",
+            new Object[]{guid, field, reader, signature});
     try {
       // if reader is the internal secret this means that this is an internal
       // request that doesn't need to be authenticated
-      if (!reader.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))
+      // note: reader can also be null here
+      if (!Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET).equals(reader)
               && (field != null || fields != null)) {
         errorCode = NSAuthentication.signatureAndACLCheck(guid, field, fields, reader,
                 signature, message, MetaDataTypeName.READ_WHITELIST, app);

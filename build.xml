@@ -368,7 +368,7 @@ resource="gns-cli-${build.major.number}.${build.minor.number}.${build.revision.n
       <formatter type="plain" usefile="false"/>
       <batchtest>
         <fileset dir="${test.dir}">
-          <include name="**/AdminTest.java"/>
+          <include name="**/AdminTestSuite.java"/>
         </fileset>
       </batchtest>
     </junit>

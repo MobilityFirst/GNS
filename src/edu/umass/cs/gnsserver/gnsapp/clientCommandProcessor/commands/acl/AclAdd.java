@@ -61,10 +61,7 @@ public class AclAdd extends BasicCommand {
     return CommandType.AclAdd;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACCESSER, WRITER, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
@@ -107,11 +104,5 @@ public class AclAdd extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Updates the access control list of the given GUID's field to include the accesser guid. " + NEWLINE
-            + "Accessor guid can be guid or group guid or " + EVERYONE + " which means anyone." + NEWLINE
-            + "Field can be also be " + ALL_FIELDS + " which means all fields can be read by the accessor." + NEWLINE
-            + "See below for description of ACL type and signature.";
-  }
+  
 }

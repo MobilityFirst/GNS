@@ -260,9 +260,21 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws ClientException
    */
   private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
+    return sendReconRequest(request, DEFAULT_RECON_TIMEOUT);
+  }
+  /**
+   * Sends a ClientReconfigurationPacket to a reconfigurator.
+   * Returns true if the request was successful.
+   *
+   * @param request
+   * @return true if the request was successful
+   * @throws IOException
+   * @throws ClientException
+   */
+  private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request, long timeout) throws IOException, ClientException {
     Object monitor = new Object();
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));
-    ClientReconfigurationPacket response = waitForReconResponse(request, monitor);
+    ClientReconfigurationPacket response = waitForReconResponse(request, monitor, timeout);
     // FIXME: return better error codes.
     if (response.isFailed()) {
       // arun: return duplicate error if name already exists
@@ -294,6 +306,10 @@ public class RemoteQuery extends ClientAsynchBase {
       throw new ClientException(GNSResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
   }
+  
+  // Ballpark number of request we can do per second on a slow machine
+  // Fixme: Could make this a config parameter.
+  private static final long REQUESTS_PER_SECOND = 50;
 
   /**
    * Creates multiple records at the appropriate reconfigurators.
@@ -311,7 +327,9 @@ public class RemoteQuery extends ClientAsynchBase {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} sending create for NAME = ",
                 new Object[]{this, create.getServiceName()});
-        sendReconRequest(create);
+        // Make a timeout that somewhat reflects the amount of work we're going to do.
+        long timeout = Math.max(DEFAULT_RECON_TIMEOUT, (create.getNameStates().size() / REQUESTS_PER_SECOND) * 1000);
+        sendReconRequest(create, timeout);
       }
       return GNSResponseCode.NO_ERROR;
     } catch (JSONException | IOException | ClientException e) {

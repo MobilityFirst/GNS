@@ -50,22 +50,9 @@ public class ConnectionCheck extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return CONNECTION_CHECK;
-//  }
-
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Checks connectivity.";
-  }
+  
 }

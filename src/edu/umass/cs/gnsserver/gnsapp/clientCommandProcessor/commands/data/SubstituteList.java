@@ -19,7 +19,6 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
@@ -52,22 +51,5 @@ public class SubstituteList extends AbstractUpdateList {
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_SUBSTITUTE;
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return SUBSTITUTE_LIST;
-//  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, OLD_VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Replaces OLD_VALUE with newvalue in the key value pair for the given GUID. "
-            + "Value is a list of items formated as a JSON list."
-            + " Field must be writeable by the WRITER guid.";
-
-  }
+  
 }

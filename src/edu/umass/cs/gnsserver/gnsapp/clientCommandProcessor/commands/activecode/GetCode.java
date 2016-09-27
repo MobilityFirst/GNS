@@ -60,10 +60,7 @@ public class GetCode extends BasicCommand {
     return CommandType.GetCode;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, READER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json,
@@ -81,10 +78,6 @@ public class GetCode extends BasicCommand {
             reader, signature, message, timestamp, handler));
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the active code for the specified action,"
-            + "ensuring the reader has permission";
-  }
+  
 
 }

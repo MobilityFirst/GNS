@@ -57,10 +57,7 @@ public class SetParameter extends BasicCommand {
     return CommandType.SetParameter;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{FIELD, VALUE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -81,8 +78,5 @@ public class SetParameter extends BasicCommand {
       }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Changes a parameter value.";
-  }
+  
 }

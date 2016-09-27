@@ -17,27 +17,27 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnscommon.exceptions.client.ClientException;
+import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupAccountInfoFromGuidAnywhere;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
-import java.io.IOException;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Iterator;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -45,56 +45,45 @@ import org.json.JSONObject;
 
 /**
  *
- * Note: Currently doesn't handle subGuids that are tagged! Only deletes account GUIDs that are tagged.
- *
  * @author westy
  */
 @Deprecated
-public class ClearTagged extends BasicCommand {
+public class RemoveTag extends BasicCommand {
 
   /**
    *
    * @param module
    */
-  public ClearTagged(CommandModule module) {
+  public RemoveTag(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.ClearTagged;
+    return CommandType.Unknown;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{NAME};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
-//    return CLEAR_TAGGED;
+//    return REMOVE_TAG;
 //  }
   @Override
-  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
-    String tagName = json.getString(NAME);
-    try {
-      for (Iterator<?> it = handler.getAdmintercessor().collectTaggedGuids(tagName, handler).iterator(); it.hasNext();) {
-        String guid = (String) it.next();
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuidAnywhere(guid, handler);
-        if (accountInfo != null) {
-          AccountAccess.removeAccount(accountInfo, handler);
-        }
-      }
-      return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
-    } catch (ClientException | IOException e) {
-      return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
+          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+    String guid = json.getString(GUID);
+    String tag = json.getString(NAME);
+    // signature and message can be empty for unsigned cases
+    String signature = json.optString(SIGNATURE, null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
+    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
+    GuidInfo guidInfo;
+    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
+      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
     }
+    return AccountAccess.removeTag(guidInfo, tag, guid, signature, message, timestamp, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes all guids that contain the tag.";
-  }
+  
 }

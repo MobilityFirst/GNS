@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
 
 /**
@@ -52,22 +51,5 @@ public class AppendOrCreate extends AbstractUpdate {
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE;
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return APPEND_OR_CREATE;
-//  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Adds a key value pair to the GNS for the given GUID if it doesn't not exist "
-            + "otherwise append value onto existing value."
-            + " Field must be writeable by the WRITER guid.";
-
-  }
+ 
 }

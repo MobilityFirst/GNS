@@ -42,18 +42,12 @@ public class AddMembersToGroupSelf extends AddMembersToGroup {
     return CommandType.AddMembersToGroupSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBERS, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return ADD_TO_GROUP;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds the member guids to the group specified by guid. Writer guid needs to have write access and sign the command.";
-  }
+  
 }

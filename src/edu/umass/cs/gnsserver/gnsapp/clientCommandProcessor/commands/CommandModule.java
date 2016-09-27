@@ -79,9 +79,10 @@ public class CommandModule {
     if (useCommandEnums) {
       addCommands(CommandType.getCommandClasses(), commands);
     } else {
-      addCommands(CommandDefs.getCommandDefs(), commands);
+      throw new UnsupportedOperationException("Old style command init has been deprecated.");
+      //addCommands(CommandDefs.getCommandDefs(), commands);
     }
-    ClientCommandProcessorConfig.getLogger().log(Level.INFO,
+    ClientCommandProcessorConfig.getLogger().log(Level.FINE,
             "{0} commands added.", commands.size());
   }
   

@@ -50,10 +50,7 @@ public class SelectQuery extends BasicCommand {
     return CommandType.SelectQuery;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{QUERY};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
@@ -61,10 +58,5 @@ public class SelectQuery extends BasicCommand {
     return FieldAccess.selectQuery(query, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns all records that satisfy the query. "
-            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-            + "Values are returned as a JSON array of JSON Objects.";
-  }
+  
 }

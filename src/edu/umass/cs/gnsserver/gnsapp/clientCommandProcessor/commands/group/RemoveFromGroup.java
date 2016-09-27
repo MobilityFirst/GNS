@@ -57,10 +57,7 @@ public class RemoveFromGroup extends BasicCommand {
     return CommandType.RemoveFromGroup;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBER, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -89,8 +86,5 @@ public class RemoveFromGroup extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes the member guid from the group specified by guid. Writer guid needs to have write access and sign the command.";
-  }
+  
 }

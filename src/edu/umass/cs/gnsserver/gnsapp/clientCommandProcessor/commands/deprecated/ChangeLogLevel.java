@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -28,13 +28,13 @@ import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -42,41 +42,43 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-@Deprecated
-public class GetTagged extends BasicCommand {
+public class ChangeLogLevel extends BasicCommand {
 
   /**
    *
    * @param module
    */
-  public GetTagged(CommandModule module) {
+  public ChangeLogLevel(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.GetTagged;
+    return CommandType.Unknown;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{NAME};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
-//    return GET_TAGGED;
+//    return CHANGE_LOG_LEVEL;
 //  }
   @Override
   @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-    String tagName = json.getString(NAME);
-    return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
+    String levelString = json.getString(LOG_LEVEL);
+      try {
+        Level level = Level.parse(levelString);
+        if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
+          return new CommandResponse(GNSResponseCode.NO_ERROR, OK_RESPONSE);
+        } else {
+          return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE);
+        }
+      } catch (IllegalArgumentException e) {
+        return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " Bad level " + levelString);
+      }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns all guids that contain the tag.";
-  }
+  
 }

@@ -21,14 +21,15 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.packets.CommandPacket;
-import edu.umass.cs.gnscommon.packets.PacketUtils;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gigapaxos.interfaces.Summarizable;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.NEWLINE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
+import static edu.umass.cs.gnsserver.httpserver.Defs.KEYSEP;
+import static edu.umass.cs.gnsserver.httpserver.Defs.QUERYPREFIX;
+import static edu.umass.cs.gnsserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
-import static edu.umass.cs.gnsserver.httpserver.Defs.*;
-
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -43,7 +44,7 @@ import org.json.JSONObject;
  * This class helps to implement a unified set of client support commands that translate
  * between client support requests and core GNS commands that are sent to the server.
  * Specifically the BasicCommand is the superclass for all other commands.
- It supports command sorting to facilitate command lookup. It also supports command documentation.
+ * It supports command sorting to facilitate command lookup. It also supports command documentation.
  *
  * @author westy, arun
  */
@@ -101,16 +102,19 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    *
    * @return argument parameters
    */
-  // FIXME: This could be reimplemented using the CommandType enum
-  public abstract String[] getCommandParameters();
+  public String[] getCommandParameters() {
+    return getCommandType().getCommandParameters();
+  }
+  
+   /**
+   * Get the description of the command
+   *
+   * @return <code>String</code> of the command description
+   */
+  public String getCommandDescription() {
+    return getCommandType().getCommandDescription();
+  }
 
-//  /**
-//   * Returns the name of the command as a string. This is 
-//   * currently maintained for backward compatibility with older clients.
-//   *
-//   * @return
-//   */
-//  public abstract String getCommandName();
 
   /**
    * Executes the command. Arguments are passed in the JSONObject.
@@ -129,17 +133,18 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException,
           UnsupportedEncodingException, ParseException {
-	  throw new RuntimeException("This method should never have been called");
+    throw new RuntimeException("This method should never have been called");
   }
 
   /**
-   * 
+   *
    * This method by default simply calls {@link #execute(JSONObject, ClientRequestHandlerInterface)}
    * but Read and Update queries need to be adapted to drag {@link CommandPacket} for longer to use
    * {@link InternalRequestHeader} information inside them.
- * @param internalHeader 
- * @param command 
-   * 
+   *
+   * @param internalHeader
+   * @param command
+   *
    * @param handler
    * @return Result of executing {@code commandPacket}
    * @throws InvalidKeyException
@@ -150,20 +155,12 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
    * @throws UnsupportedEncodingException
    * @throws ParseException
    */
-	public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
-			ClientRequestHandlerInterface handler) throws InvalidKeyException,
-			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-			SignatureException, UnsupportedEncodingException, ParseException {
-		return this.execute(command, handler);
-	}
-
-  /**
-   * Get the description of the command
-   *
-   * @return <code>String</code> of the command description
-   */
-  // FIXME: This could be reimplemented using the CommandType enum
-  public abstract String getCommandDescription();
+  public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject command,
+          ClientRequestHandlerInterface handler) throws InvalidKeyException,
+          InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
+          SignatureException, UnsupportedEncodingException, ParseException {
+    return this.execute(command, handler);
+  }
 
   /**
    * Get the usage of the command.
@@ -275,7 +272,7 @@ public abstract class BasicCommand implements Comparable<BasicCommand>, Summariz
   public String toString() {
     return this.getClass().getSimpleName()
             + ":" + getCommandType().toString()
-            +":" + getCommandType().getInt() + " ["
+            + ":" + getCommandType().getInt() + " ["
             + getCommandParametersString() + "]";
   }
 

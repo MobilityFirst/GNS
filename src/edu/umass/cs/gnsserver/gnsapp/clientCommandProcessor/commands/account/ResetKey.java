@@ -56,16 +56,6 @@ public class ResetKey extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, PUBLIC_KEY, PASSWORD};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return RESET_KEY;
-//  }
-
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
@@ -74,9 +64,4 @@ public class ResetKey extends BasicCommand {
     return AccountAccess.resetPublicKey(guid, password, publicKey, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Resets the publickey for the account guid.";
-
-  }
 }

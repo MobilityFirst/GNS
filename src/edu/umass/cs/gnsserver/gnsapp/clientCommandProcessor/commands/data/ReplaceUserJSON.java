@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
 
 /**
@@ -52,20 +51,5 @@ public class ReplaceUserJSON extends AbstractUpdate {
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.USER_JSON_REPLACE;
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return REPLACE_USER_JSON;
-//  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, USER_JSON, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Replaces existing fields in JSON record with the given JSONObject's fields. "
-            + "Doesn't touch top-level fields that aren't in the given JSONObject.";
-  }
+  
 }
