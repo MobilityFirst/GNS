@@ -17,7 +17,7 @@
  *  Initial developer(s): Westy, Emmanuel Cecchet
  *
  */
-package edu.umass.cs.gnsclient.client.android;
+package edu.umass.cs.gnsclient.client.deprecated;
 
 import edu.umass.cs.gnscommon.packets.CommandPacket;
 import android.os.AsyncTask;
@@ -28,6 +28,7 @@ import android.os.AsyncTask;
  * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
  * @version 1.0
  */
+@Deprecated
 public class AndroidNIOTask extends AsyncTask<Object, Void, String>
 {
   // Needed to pass back to caller.
