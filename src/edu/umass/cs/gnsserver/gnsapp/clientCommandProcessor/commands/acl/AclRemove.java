@@ -61,10 +61,7 @@ public class AclRemove extends BasicCommand {
     return CommandType.AclRemove;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, ACCESSER, WRITER, ACL_TYPE, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -111,10 +108,5 @@ public class AclRemove extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Updates the access control list of the given GUID's field to remove the accesser guid."
-            + "Accessor should be the guid or group guid to be removed.";
-
-  }
+  
 }

@@ -64,14 +64,14 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   public void fieldCreateSingleElementArray(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, 
+    String command = createAndSignQuery(writer,
             CommandType.CreateList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value, GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
 
     checkResponse(command, response);
   }
-  
+
   /**
    * Creates a new one element field in the given guid with single element value being the string.
    *
@@ -101,7 +101,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
           throws IOException, ClientException {
     String command = createAndSignQuery(writer,
             CommandType.AppendOrCreateList, GNSCommandProtocol.GUID, targetGuid,
-            GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value, 
+            GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value,
             GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
     checkResponse(command, response);
@@ -122,7 +122,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
           throws IOException, ClientException {
     String command = createAndSignQuery(writer,
             CommandType.ReplaceOrCreateList, GNSCommandProtocol.GUID, targetGuid,
-            GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value, 
+            GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value,
             GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
     checkResponse(command, response);
@@ -140,7 +140,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   public void fieldAppend(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, 
+    String command = createAndSignQuery(writer,
             CommandType.AppendListWithDuplication, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value, GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -160,7 +160,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, JSONArray value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, 
+    String command = createAndSignQuery(writer,
             CommandType.AppendList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -180,7 +180,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   public void fieldAppendWithSetSemantics(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, 
+    String command = createAndSignQuery(writer,
             CommandType.AppendList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value.toString(), GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -200,7 +200,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   public void fieldReplaceFirstElement(String targetGuid, String field, String value, GuidEntry writer) throws IOException,
           ClientException {
-    String command = createAndSignQuery(writer, 
+    String command = createAndSignQuery(writer,
             CommandType.ReplaceList, GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, value, GNSCommandProtocol.WRITER, writer.getGuid());
     String response = sendGetCommand(command);
@@ -221,9 +221,9 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   public void fieldSubstitute(String targetGuid, String field, String newValue,
           String oldValue, GuidEntry writer) throws IOException, ClientException {
-    String command = createAndSignQuery(writer, 
+    String command = createAndSignQuery(writer,
             CommandType.SubstituteList,
-            GNSCommandProtocol.GUID, targetGuid, 
+            GNSCommandProtocol.GUID, targetGuid,
             GNSCommandProtocol.FIELD, field, GNSCommandProtocol.VALUE, newValue,
             GNSCommandProtocol.OLD_VALUE, oldValue);
     String response = sendGetCommand(command);
@@ -233,14 +233,14 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
 
   /**
    * Pairwise substitutes all the values for the oldValues in the list of values of a field.
-   * 
+   *
    * @param targetGuid GUID where the field is stored
    * @param field
    * @param newValue list of new values
    * @param oldValue list of old values
    * @param writer GUID entry of the writer
    * @throws IOException
-   * @throws ClientException 
+   * @throws ClientException
    */
   public void fieldSubstitute(String targetGuid, String field,
           JSONArray newValue, JSONArray oldValue, GuidEntry writer) throws IOException, ClientException {
@@ -272,7 +272,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
               CommandType.ReadArrayOneUnsigned,
               GNSCommandProtocol.GUID, guid, GNSCommandProtocol.FIELD, field);
     } else {
-      command = createAndSignQuery(reader, 
+      command = createAndSignQuery(reader,
               CommandType.ReadArrayOne,
               GNSCommandProtocol.GUID, guid, GNSCommandProtocol.FIELD, field,
               GNSCommandProtocol.READER, reader.getGuid());
@@ -292,12 +292,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   @Deprecated
   public void removeTag(GuidEntry guid, String tag) throws Exception {
-    String command = createAndSignQuery(guid, 
-            CommandType.RemoveTag,
-            GNSCommandProtocol.GUID, guid.getGuid(), GNSCommandProtocol.NAME, tag);
-    String response = sendGetCommand(command);
-
-    checkResponse(command, response);
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -309,12 +304,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   @Deprecated
   public JSONArray retrieveTagged(String tag) throws Exception {
-    String command = createQuery(
-            CommandType.Dump,
-            GNSCommandProtocol.NAME, tag);
-    String response = sendGetCommand(command);
-
-    return new JSONArray(checkResponse(command, response));
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -327,11 +317,7 @@ public class UniversalHttpClientExtended extends UniversalHttpClient {
    */
   @Deprecated
   public void clearTagged(String tag) throws Exception {
-    String command = createQuery(
-            CommandType.ClearTagged, GNSCommandProtocol.NAME, tag);
-    String response = sendGetCommand(command);
-
-    checkResponse(command, response);
+    throw new UnsupportedOperationException();
   }
 
 }

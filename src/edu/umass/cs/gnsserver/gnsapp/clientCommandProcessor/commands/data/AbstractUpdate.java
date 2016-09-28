@@ -19,7 +19,18 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.N;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OK_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OLD_VALUE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.USER_JSON;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.VALUE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.WRITER;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
@@ -77,11 +88,6 @@ public abstract class AbstractUpdate extends BasicCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp = json.has(TIMESTAMP) ? 
             Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-//    if (writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
-//      // This should be the only way that writer can be set to null. 
-//      // If it is null no acl or signature checks will not be done.
-//      writer = null;
-//    }
 
     GNSResponseCode responseCode;
     if (field == null) {

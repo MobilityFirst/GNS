@@ -80,9 +80,13 @@ public class ResultValue extends ArrayList<Object> {
    */
   public ResultValueString toResultValueString() {
     ResultValueString result = new ResultValueString();
-    this.stream().forEach((element) -> {
+    for (Object element : this) {
       result.add((String) element);
-    });
+    }
+// Android doesn't like lambdas as of 9-16
+//    this.stream().forEach((element) -> {
+//      result.add((String) element);
+//    });
     return result;
   }
 
@@ -93,9 +97,13 @@ public class ResultValue extends ArrayList<Object> {
    */
   public Set<String> toStringSet() {
     Set<String> result = new HashSet<>();
-    this.stream().forEach((element) -> {
+    for (Object element : this) {
       result.add((String) element);
-    });
+    }
+// Android doesn't like lambdas as of 9-16
+//    this.stream().forEach((element) -> {
+//      result.add((String) element);
+//    });
     return result;
   }
   

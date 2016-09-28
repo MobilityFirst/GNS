@@ -17,8 +17,6 @@ package edu.umass.cs.gnscommon.packets;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
@@ -34,39 +32,23 @@ import edu.umass.cs.gnsserver.gnsapp.packet.BasicPacketWithClientAddress;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet;
 import edu.umass.cs.gnsserver.gnsapp.packet.Packet.PacketType;
 import static edu.umass.cs.gnsserver.gnsapp.packet.Packet.putPacketType;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.interfaces.Byteable;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.interfaces.ReplicableRequest;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReplicableClientRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.DefaultTest;
 import edu.umass.cs.utils.Util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.logging.Level;
-
-import junit.framework.Assert;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.junit.Test;
-import org.msgpack.core.MessageBufferPacker;
-import org.msgpack.core.MessagePack;
-import org.msgpack.core.MessageUnpacker;
-import org.msgpack.value.ImmutableValue;
-import org.msgpack.value.Value;
-import org.msgpack.value.ValueType;
 
 /**
  * @author arun
@@ -501,12 +483,9 @@ public class CommandPacket extends BasicPacketWithClientAddress implements
 	 * @return Set coordination mode to true if this is a read command.
 	 */
 	public ClientRequest setForceCoordinatedReads(boolean force) {
-		if ((force && getCommandType().isRead() || getCommandType().isSystemLookup())
-				&& (this.forceCoordination = true))
-			/* The wrap makes it forcibly coordinated but it not necessary, so
-			 * it is okay to comment out the first return clause below. */
-			return ReplicableClientRequest.wrap(this, true);
-		// else
+		if (force && (getCommandType().isRead() || getCommandType().isSystemLookup())){
+			this.forceCoordination = true;
+		}
 		return this;
 	}
 

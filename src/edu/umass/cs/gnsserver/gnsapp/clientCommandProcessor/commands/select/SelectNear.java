@@ -50,15 +50,7 @@ public class SelectNear extends BasicCommand {
     return CommandType.SelectNear;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{FIELD, NEAR, MAX_DISTANCE};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return SELECT;
-//  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
@@ -68,9 +60,5 @@ public class SelectNear extends BasicCommand {
     return FieldAccess.selectNear(field, value, maxDistance, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Key must be a GeoSpatial field. Return all fields that are within max distance of value."
-            + "Value is a point specified as a JSONArray string tuple: [LONG, LAT]. Max Distance is in meters.";
-  }
+  
 }

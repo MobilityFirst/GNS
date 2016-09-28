@@ -58,10 +58,7 @@ public class AddMembersToGroup extends BasicCommand {
     return CommandType.AddMembersToGroup;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBERS, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -90,8 +87,5 @@ public class AddMembersToGroup extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Adds the member guids to the group specified by guid. Writer guid needs to have write access and sign the command.";
-  }
+  
 }

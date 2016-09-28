@@ -43,18 +43,12 @@ public class GetGroupsSelf extends GetGroups {
     return CommandType.GetGroupsSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return GET_GROUPS;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the groups that a guid is a member of formatted as a JSON Array.";
-  }
+  
 }

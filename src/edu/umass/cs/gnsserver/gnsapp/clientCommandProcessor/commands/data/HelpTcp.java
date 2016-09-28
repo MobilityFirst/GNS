@@ -19,12 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
-
-;
 
 /**
  *
@@ -45,18 +41,4 @@ public class HelpTcp extends Help {
     return CommandType.HelpTcp;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{"tcp"};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return HELP;
-//  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Returns the help message for TCP commands";
-  }
 }

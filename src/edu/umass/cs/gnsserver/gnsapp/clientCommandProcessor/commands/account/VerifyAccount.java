@@ -56,16 +56,6 @@ public class VerifyAccount extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, CODE};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return VERIFY_ACCOUNT;
-//  }
-
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
@@ -73,8 +63,5 @@ public class VerifyAccount extends BasicCommand {
     return AccountAccess.verifyAccount(guid, code, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Handles the completion of the verification process for a guid by supplying the correct code.";
-  }
+  
 }

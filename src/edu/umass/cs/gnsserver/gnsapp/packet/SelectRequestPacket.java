@@ -63,7 +63,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNs<NodeIDTyp
   private int minRefreshInterval; // minimum time between allowed refreshes of the guid
 
   /**
-   * Constructs a new QueryResponsePacket
+   * Constructs a new SelectRequestPacket
    *
    * @param id
    * @param selectOperation

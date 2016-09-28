@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
 
 /**
@@ -53,20 +52,4 @@ public class ClearUnsigned extends AbstractUpdate {
     return UpdateOperation.SINGLE_FIELD_CLEAR;
   }
 
-//  @Override
-//  public String getCommandName() {
-//    return CLEAR;
-//  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, WRITER};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Clears the key value pair from the GNS for the given guid after "
-            + "authenticating that GUID making request has access authority."
-            + " Field must be world writeable as this command does not specify the writer and is not signed.";
-  }
 }

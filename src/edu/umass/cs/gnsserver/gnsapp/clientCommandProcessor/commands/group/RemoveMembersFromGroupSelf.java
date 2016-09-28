@@ -42,18 +42,12 @@ public class RemoveMembersFromGroupSelf extends RemoveMembersFromGroup {
     return CommandType.RemoveFromGroupSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, MEMBERS, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return REMOVE_FROM_GROUP;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes the member guids from the group specified by guid.";
-  }
+  
 }

@@ -19,11 +19,15 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCESS_DENIED;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OK_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.PASSKEY;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.main.GNSConfig;
@@ -67,7 +71,7 @@ public class Admin extends BasicCommand {
    * @param	passkey	The passkey to be verified
    * @return Returns true if the passkey is valid and should provide admin access, and false otherwise.
    */
-  protected static boolean authenticate(String passkey) {
+  public static boolean authenticate(String passkey) {
     //If adminAuthStrings has not yet been initialized then read in the admin passkeys from the file specified by the system property "admin.file"
     if (adminAuthStrings == null) {
       //Parse the file specified by admin.file for admin authorization strings.  Each line is a new string that can grant admin access if any correspond to the client provided passkey.
@@ -102,11 +106,6 @@ public class Admin extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return new String[]{PASSKEY};
-  }
-
-  @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
@@ -128,8 +127,5 @@ public class Admin extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Turns on admin mode.";
-  }
+  
 }

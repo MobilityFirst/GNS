@@ -19,7 +19,7 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.account;
 
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
+
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -28,8 +28,16 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ACCOUNT_GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_ACCOUNT;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.UNSPECIFIED_ERROR;
 import edu.umass.cs.gnscommon.GNSResponseCode;
-import static edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess.lookupAccountInfoFromGuidAnywhere;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.gnsapp.clientSupport.NSAccessSupport;
 
@@ -61,11 +69,6 @@ public class RemoveGuid extends BasicCommand {
   @Override
   public CommandType getCommandType() {
     return CommandType.RemoveGuid;
-  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{ACCOUNT_GUID, GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -102,13 +105,5 @@ public class RemoveGuid extends BasicCommand {
     } catch (ClientException | IOException e) {
       return new CommandResponse(GNSResponseCode.UNSPECIFIED_ERROR, BAD_RESPONSE + " " + UNSPECIFIED_ERROR + " " + e.getMessage());
     }
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Removes the GUID from the account associated with the ACCOUNT_GUID. "
-            + "Must be signed by the account guid or the guid if account guid is not provided. "
-            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
-
   }
 }

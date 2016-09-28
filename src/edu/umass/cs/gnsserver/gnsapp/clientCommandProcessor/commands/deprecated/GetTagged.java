@@ -17,28 +17,25 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
 
 import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnscommon.utils.Format;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
 import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin.Admin;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.text.ParseException;
-import java.util.Date;
 import java.util.logging.Level;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,33 +44,31 @@ import org.json.JSONObject;
  * @author westy
  */
 @Deprecated
-public class RemoveTag extends BasicCommand {
+public class GetTagged extends BasicCommand {
 
   /**
    *
    * @param module
    */
-  public RemoveTag(CommandModule module) {
+  public GetTagged(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.RemoveTag;
+    return CommandType.Unknown;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, NAME, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
-//    return REMOVE_TAG;
+//    return GET_TAGGED;
 //  }
   @Override
+  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException {
+          JSONException, NoSuchAlgorithmException, SignatureException {
 	  //If the user cannot be authenticated, return an ACCESS_ERROR and abort.
 	  String passkey = json.getString(PASSKEY);
 	  if (!Admin.authenticate(passkey)){
@@ -81,22 +76,9 @@ public class RemoveTag extends BasicCommand {
 		  return new CommandResponse(GNSResponseCode.ACCESS_ERROR, BAD_RESPONSE + " " + ACCESS_DENIED
 	              + " Failed to authenticate " + getCommandType().toString() + " with key : " + passkey);
 	  }
-    String guid = json.getString(GUID);
-    String tag = json.getString(NAME);
-    // signature and message can be empty for unsigned cases
-    String signature = json.optString(SIGNATURE, null);
-    String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    Date timestamp = json.has(TIMESTAMP) ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
-    GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfoLocally(guid, handler)) == null) {
-      return new CommandResponse(GNSResponseCode.BAD_GUID_ERROR, BAD_RESPONSE + " " + BAD_GUID + " " + guid);
-    }
-    return AccountAccess.removeTag(guidInfo, tag, guid, signature, message, timestamp, handler);
+    String tagName = json.getString(NAME);
+    return new CommandResponse(GNSResponseCode.NO_ERROR, new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Removes a tag from the guid. Must be signed by the guid. "
-            + "Returns " + BAD_GUID + " if the GUID has not been registered.";
-  }
+  
 }

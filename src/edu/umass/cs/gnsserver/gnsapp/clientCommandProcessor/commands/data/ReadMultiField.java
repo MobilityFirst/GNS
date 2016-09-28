@@ -20,7 +20,6 @@
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
 
 /**
@@ -42,15 +41,4 @@ public class ReadMultiField extends Read {
     return CommandType.ReadMultiField;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELDS, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Returns multiple key value pairs from the GNS for the given guid after authenticating that READER making request has access authority."
-            + " Fields can use dot notation to access subfields.";
-
-  }
 }

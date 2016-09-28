@@ -56,10 +56,7 @@ public class DumpCache extends BasicCommand {
     return CommandType.DumpCache;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -83,8 +80,5 @@ public class DumpCache extends BasicCommand {
             + " Don't understand " + getCommandType().toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Returns the contents of the local name server cache.";
-  }
+  
 }

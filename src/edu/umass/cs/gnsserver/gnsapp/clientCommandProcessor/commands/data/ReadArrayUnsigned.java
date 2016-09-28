@@ -19,23 +19,8 @@
  */
 package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.utils.Config;
-
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
-import java.text.ParseException;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  *
@@ -54,26 +39,5 @@ public class ReadArrayUnsigned extends ReadArray {
   @Override
   public CommandType getCommandType() {
     return CommandType.ReadArrayUnsigned;
-  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD};
-  }
-
-  @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
-    // Tells the lookup handler that we don't need to authenticate.
-    // Will be moved to the client and will something more secure in the future.
-    json.put(READER, Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET));
-    return super.execute(json, handler);
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Returns one key value pair from the GNS. Does not require authentication but field must be set to be readable by everyone."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields. ";
   }
 }

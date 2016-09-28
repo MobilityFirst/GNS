@@ -96,14 +96,20 @@ public class DiskMapRecords implements NoSQLRecords {
    * arun: The methods below copy a JSONObject recursively without stringification while
    * converting BasicDBObject and BasicDBList as needed. As in any JSONObject, it is assumed
    * that there are no cyclic pointers.
+   *
+   * @param record
+   * @return
+   * @throws org.json.JSONException
    */
   protected static JSONObject recursiveCopyJSONObject(JSONObject record)
           throws JSONException {
-	String[] keys = JSONObject.getNames(record);
+    String[] keys = JSONObject.getNames(record);
     JSONObject copy = new JSONObject();
-    if(keys!=null) // oddly, empty returns null
-    	for (String key : JSONObject.getNames(record)) 
-    		copy.put(key, recursiveCopyObject(record.get(key)));
+    if (keys != null) { // oddly, empty returns null
+      for (String key : JSONObject.getNames(record)) {
+        copy.put(key, recursiveCopyObject(record.get(key)));
+      }
+    }
     return copy;
   }
 

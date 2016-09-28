@@ -24,7 +24,6 @@ import edu.umass.cs.gnsclient.client.util.KeyPairUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.util.ListIterator;
 import jline.ConsoleReader;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -92,7 +91,7 @@ public class CommandLineInterface {
     commandLineOptions.addOption(silent);
     commandLineOptions.addOption(noDefaults);
 
-    CommandLineParser parser = new ExtendedGnuParser(true);
+    CommandLineParser parser = new GnuParser();
     return parser.parse(commandLineOptions, args, false);
   }
 

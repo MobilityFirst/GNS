@@ -50,15 +50,7 @@ public class SelectGroupSetupQuery extends BasicCommand {
     return CommandType.SelectGroupSetupQuery;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, QUERY};
-  }
-
-//  @Override
-//  public String getCommandName() {
-//    return SELECT_GROUP;
-//  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
@@ -70,10 +62,5 @@ public class SelectGroupSetupQuery extends BasicCommand {
     return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKey, interval, handler);
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Initializes a new group guid to automatically update and maintain all records that satisfy the query."
-            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-            + "Values are returned as a JSON array of JSON Objects.";
-  }
+  
 }

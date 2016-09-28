@@ -81,8 +81,8 @@ public class NSUpdateSupport {
             "Processing local update {0} / {1} {2} {3}",
             new Object[]{guid, field, operation, updateValue});
     GNSResponseCode errorCode = GNSResponseCode.NO_ERROR;
-    // writer will be the INTERNAL_OP_SECRET for internal system accesses
-    if (!writer.equals(Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET))) {
+    // writer will be the INTERNAL_OP_SECRET for super secret internal system accesses
+    if (!Config.getGlobalString(GNSConfig.GNSC.INTERNAL_OP_SECRET).equals(writer)) {
       if (field != null) {
         errorCode = NSAuthentication.signatureAndACLCheck(guid,
                 field, null,

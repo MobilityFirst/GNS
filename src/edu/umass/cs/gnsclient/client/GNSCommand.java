@@ -626,9 +626,9 @@ public class GNSCommand extends CommandPacket {
    * The name of the GNS service instance.
    *
    * @param accountGUID
-   * The account GUID being created.
+   * The account GUID under which the GUID is being created.
    * @param alias
-   * The alias for the account GUID.
+   * The alias assigned to the GUID being created.
    * @return CommandPacket
    * @throws ClientException
    */

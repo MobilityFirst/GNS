@@ -43,15 +43,7 @@ public class SelectGroupSetupQueryWithGuid extends SelectGroupSetupQuery {
     return CommandType.SelectGroupSetupQueryWithGuid;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{QUERY, GUID};
-  }
+  
 
-  @Override
-  public String getCommandDescription() {
-    return "Initializes the given group guid to automatically update and maintain all records that satisfy the query."
-            + "For details see http://gns.name/wiki/index.php/Query_Syntax "
-            + "Values are returned as a JSON array of JSON Objects.";
-  }
+  
 }

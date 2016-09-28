@@ -23,22 +23,21 @@ import edu.umass.cs.gnscommon.GNSResponseCode;
 import edu.umass.cs.contextservice.client.ContextServiceClient;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
+import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
 import edu.umass.cs.gnsclient.client.util.JSONUtils;
+import edu.umass.cs.gnsclient.client.util.SHA1HashFunction;
 import edu.umass.cs.gnscommon.utils.RandomString;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.client.FieldNotFoundException;
 import edu.umass.cs.gnsclient.jsonassert.JSONAssert;
 import edu.umass.cs.gnsclient.jsonassert.JSONCompareMode;
 import edu.umass.cs.gnscommon.utils.Base64;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import static org.hamcrest.Matchers.*;
@@ -55,7 +54,6 @@ import org.junit.runner.notification.Failure;
 import org.junit.runners.MethodSorters;
 import edu.umass.cs.gnscommon.utils.ThreadUtils;
 import edu.umass.cs.gnsserver.database.MongoRecords;
-import edu.umass.cs.gnsserver.gnsapp.deprecated.AppOptionsOld;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.utils.DefaultTest;
@@ -176,7 +174,7 @@ public class ServerIntegrationTest extends DefaultTest {
             GP_SERVER);
   }
 
-  private static final void fail(String message, Exception... e) {
+  private static final void failWithStackTrace(String message, Exception... e) {
     if (e != null && e.length > 0) {
       e[0].printStackTrace();
     }
@@ -198,11 +196,11 @@ public class ServerIntegrationTest extends DefaultTest {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     // Run the server.
-	  String waitString = System.getProperty("waitTillAllServersReady");
-	  if (waitString != null) {
-		  WAIT_TILL_ALL_SERVERS_READY = Integer.parseInt(waitString);
-	  }
-	  
+    String waitString = System.getProperty("waitTillAllServersReady");
+    if (waitString != null) {
+      WAIT_TILL_ALL_SERVERS_READY = Integer.parseInt(waitString);
+    }
+
     if (System.getProperty("startServer") != null
             && System.getProperty("startServer").equals("true")) {
 
@@ -246,7 +244,7 @@ public class ServerIntegrationTest extends DefaultTest {
           System.out.println(line);
         }
       } else {
-        fail("Server command failure: ; aborting all tests.");
+        failWithStackTrace("Server command failure: ; aborting all tests.");
       }
     }
 
@@ -280,7 +278,7 @@ public class ServerIntegrationTest extends DefaultTest {
       }
     } while (!accountCreated && --tries > 0);
     if (accountCreated == false) {
-      fail("Failure setting up account guid; aborting all tests.");
+      failWithStackTrace("Failure setting up account guid; aborting all tests.");
     }
 
     while (System.currentTimeMillis() - t < WAIT_TILL_ALL_SERVERS_READY) {
@@ -395,7 +393,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       guidEntry = client.guidCreate(masterGuid, alias);
     } catch (Exception e) {
-      fail("Exception while creating guid: ", e);
+      failWithStackTrace("Exception while creating guid: ", e);
     }
     assertNotNull(guidEntry);
     assertEquals(alias, guidEntry.getEntityName());
@@ -408,22 +406,22 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
-      fail("Exception while creating testGuid: ", e);
+      failWithStackTrace("Exception while creating testGuid: ", e);
     }
     waitSettle();
     try {
       client.guidRemove(masterGuid, testGuid.getGuid());
     } catch (Exception e) {
-      fail("Exception while removing testGuid: ", e);
+      failWithStackTrace("Exception while removing testGuid: ", e);
     }
     waitSettle();
     try {
       client.lookupGuidRecord(testGuid.getGuid());
-      fail("Lookup testGuid should have throw an exception.");
+      failWithStackTrace("Lookup testGuid should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      fail("Exception while doing Lookup testGuid: ", e);
+      failWithStackTrace("Exception while doing Lookup testGuid: ", e);
     }
   }
 
@@ -434,22 +432,22 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
-      fail("Exception while creating testGuid: ", e);
+      failWithStackTrace("Exception while creating testGuid: ", e);
     }
     waitSettle();
     try {
       client.guidRemove(testGuid);
     } catch (Exception e) {
-      fail("Exception while removing testGuid: ", e);
+      failWithStackTrace("Exception while removing testGuid: ", e);
     }
     waitSettle();
     try {
       client.lookupGuidRecord(testGuid.getGuid());
-      fail("Lookup testGuid should have throw an exception.");
+      failWithStackTrace("Lookup testGuid should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      fail("Exception while doing Lookup testGuid: ", e);
+      failWithStackTrace("Exception while doing Lookup testGuid: ", e);
     }
   }
 
@@ -460,14 +458,14 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       testGuid = client.guidCreate(masterGuid, testGuidName);
     } catch (Exception e) {
-      fail("Exception while creating testGuid: ", e);
+      failWithStackTrace("Exception while creating testGuid: ", e);
     }
     waitSettle();
     try {
       assertEquals(masterGuid.getGuid(),
               client.lookupPrimaryGuid(testGuid.getGuid()));
     } catch (Exception e) {
-      fail("Exception while looking up primary guid for testGuid: ", e);
+      failWithStackTrace("Exception while looking up primary guid for testGuid: ", e);
     }
   }
 
@@ -478,7 +476,7 @@ public class ServerIntegrationTest extends DefaultTest {
               + RandomString.randomString(12));
       System.out.print("Created: " + subGuidEntry);
     } catch (Exception e) {
-      fail("Exception creating subguid: ", e);
+      failWithStackTrace("Exception creating subguid: ", e);
     }
   }
 
@@ -487,7 +485,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.fieldReadArrayFirstElement(subGuidEntry.getGuid(),
               "environment", subGuidEntry);
-      fail("Should have thrown an exception.");
+      failWithStackTrace("Should have thrown an exception.");
     } catch (FieldNotFoundException e) {
       System.out.print("This was expected: " + e);
     } catch (Exception e) {
@@ -514,7 +512,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "environment", "work", subGuidEntry);
     } catch (Exception e) {
       e.printStackTrace();
-      fail("Exception during create field: ", e);
+      failWithStackTrace("Exception during create field: ", e);
     }
   }
 
@@ -536,14 +534,14 @@ public class ServerIntegrationTest extends DefaultTest {
       System.out.println("Created: " + westyEntry);
       System.out.println("Created: " + samEntry);
     } catch (Exception e) {
-      fail("Exception registering guids in ACLCreateGuids: " + e);
+      failWithStackTrace("Exception registering guids in ACLCreateGuids: " + e);
       e.printStackTrace();
     }
     try {
       // remove default read access for this test
       client.aclRemove(AclAccessType.READ_WHITELIST, westyEntry, GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
-      fail("Exception while removing ACL in ACLCreateGuids: " + e);
+      failWithStackTrace("Exception while removing ACL in ACLCreateGuids: " + e);
       e.printStackTrace();
     }
     try {
@@ -552,7 +550,7 @@ public class ServerIntegrationTest extends DefaultTest {
               GNSCommandProtocol.ALL_FIELDS, westyEntry.getGuid());
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
-      fail("Exception while retrieving ACL in ACLCreateGuids: " + e);
+      failWithStackTrace("Exception while retrieving ACL in ACLCreateGuids: " + e);
       e.printStackTrace();
     }
   }
@@ -565,7 +563,7 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldCreateOneElementList(westyEntry.getGuid(), "password", "666flapJack", westyEntry);
       client.fieldCreateOneElementList(westyEntry.getGuid(), "address", "100 Hinkledinkle Drive", westyEntry);
     } catch (IOException | ClientException e) {
-      fail("Exception while creating fields in ACLCreateFields: " + e);
+      failWithStackTrace("Exception while creating fields in ACLCreateFields: " + e);
       e.printStackTrace();
     }
   }
@@ -584,7 +582,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONObject actual = new JSONObject(client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, masterGuid));
       JSONAssert.assertEquals(expected, actual, true);
     } catch (Exception e) {
-      fail("Exception while reading all fields in ACLReadAllFields: " + e);
+      failWithStackTrace("Exception while reading all fields in ACLReadAllFields: " + e);
       e.printStackTrace();
     }
   }
@@ -600,7 +598,7 @@ public class ServerIntegrationTest extends DefaultTest {
               client.fieldReadArrayFirstElement(westyEntry.getGuid(), "ssn", westyEntry));
 
     } catch (Exception e) {
-      fail("Exception while reading fields in ACLReadMyFields: " + e);
+      failWithStackTrace("Exception while reading fields in ACLReadMyFields: " + e);
       e.printStackTrace();
     }
   }
@@ -613,12 +611,12 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       try {
         String result = client.fieldRead(westyEntry.getGuid(), GNSCommandProtocol.ALL_FIELDS, samEntry);
-        fail("Result of read of all of westy's fields by sam is " + result
+        failWithStackTrace("Result of read of all of westy's fields by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: " + e);
+      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidAllFieldsTest: " + e);
       e.printStackTrace();
     }
   }
@@ -629,12 +627,12 @@ public class ServerIntegrationTest extends DefaultTest {
       try {
         String result = client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment",
                 samEntry);
-        fail("Result of read of westy's environment by sam is " + result
+        failWithStackTrace("Result of read of westy's environment by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception while reading fields in ACLNotReadOtherGuidFieldTest: " + e);
+      failWithStackTrace("Exception while reading fields in ACLNotReadOtherGuidFieldTest: " + e);
       e.printStackTrace();
     }
   }
@@ -645,18 +643,18 @@ public class ServerIntegrationTest extends DefaultTest {
       try {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "environment", samEntry.getGuid());
       } catch (Exception e) {
-        fail("Exception adding Sam to Westy's readlist: " + e);
+        failWithStackTrace("Exception adding Sam to Westy's readlist: " + e);
         e.printStackTrace();
       }
       try {
         assertEquals("work",
                 client.fieldReadArrayFirstElement(westyEntry.getGuid(), "environment", samEntry));
       } catch (Exception e) {
-        fail("Exception while Sam reading Westy's field: " + e);
+        failWithStackTrace("Exception while Sam reading Westy's field: " + e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it in ACLPartOne: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartOne: " + e);
       e.printStackTrace();
     }
   }
@@ -667,10 +665,10 @@ public class ServerIntegrationTest extends DefaultTest {
       String barneyName = "barney" + RandomString.randomString(6);
       try {
         client.lookupGuid(barneyName);
-        fail(barneyName + " entity should not exist");
+        failWithStackTrace(barneyName + " entity should not exist");
       } catch (ClientException e) {
       } catch (Exception e) {
-        fail("Exception looking up Barney: " + e);
+        failWithStackTrace("Exception looking up Barney: " + e);
         e.printStackTrace();
       }
       barneyEntry = client.guidCreate(masterGuid, barneyName);
@@ -685,7 +683,7 @@ public class ServerIntegrationTest extends DefaultTest {
         client.aclAdd(AclAccessType.READ_WHITELIST, barneyEntry, "cell",
                 GNSCommandProtocol.ALL_GUIDS);
       } catch (Exception e) {
-        fail("Exception creating ALLUSERS access for Barney's cell: " + e);
+        failWithStackTrace("Exception creating ALLUSERS access for Barney's cell: " + e);
         e.printStackTrace();
       }
 
@@ -693,7 +691,7 @@ public class ServerIntegrationTest extends DefaultTest {
         assertEquals("413-555-1234",
                 client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", samEntry));
       } catch (Exception e) {
-        fail("Exception while Sam reading Barney' cell: " + e);
+        failWithStackTrace("Exception while Sam reading Barney' cell: " + e);
         e.printStackTrace();
       }
 
@@ -701,14 +699,14 @@ public class ServerIntegrationTest extends DefaultTest {
         assertEquals("413-555-1234",
                 client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "cell", westyEntry));
       } catch (Exception e) {
-        fail("Exception while Westy reading Barney' cell: " + e);
+        failWithStackTrace("Exception while Westy reading Barney' cell: " + e);
         e.printStackTrace();
       }
 
       try {
         String result = client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address",
                 samEntry);
-        fail("Result of read of barney's address by sam is " + result
+        failWithStackTrace("Result of read of barney's address by sam is " + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
         if (e.getCode() == GNSResponseCode.ACCESS_ERROR) {
@@ -719,12 +717,12 @@ public class ServerIntegrationTest extends DefaultTest {
                           + e);
         }
       } catch (Exception e) {
-        fail("Exception while Sam reading Barney' address: " + e);
+        failWithStackTrace("Exception while Sam reading Barney' address: " + e);
         e.printStackTrace();
       }
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it in ACLPartTwo: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLPartTwo: " + e);
       e.printStackTrace();
     }
   }
@@ -736,7 +734,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       try {
         client.lookupGuid(superUserName);
-        fail(superUserName + " entity should not exist");
+        failWithStackTrace(superUserName + " entity should not exist");
       } catch (ClientException e) {
       }
 
@@ -751,7 +749,7 @@ public class ServerIntegrationTest extends DefaultTest {
               client.fieldReadArrayFirstElement(barneyEntry.getGuid(), "address", superuserEntry));
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it in ACLALLFields: " + e);
+      failWithStackTrace("Exception when we were not expecting it in ACLALLFields: " + e);
       e.printStackTrace();
     }
   }
@@ -762,13 +760,13 @@ public class ServerIntegrationTest extends DefaultTest {
       try {
         client.fieldUpdate(westyEntry.getGuid(), "test.deeper.field", "fieldValue", westyEntry);
       } catch (IOException | ClientException | JSONException e) {
-        fail("Problem updating field: " + e);
+        failWithStackTrace("Problem updating field: " + e);
         e.printStackTrace();
       }
       try {
         client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry, "test.deeper.field", GNSCommandProtocol.ALL_FIELDS);
       } catch (Exception e) {
-        fail("Problem adding acl: " + e);
+        failWithStackTrace("Problem adding acl: " + e);
         e.printStackTrace();
       }
       try {
@@ -777,11 +775,11 @@ public class ServerIntegrationTest extends DefaultTest {
         JSONArray expected = new JSONArray(new ArrayList<String>(Arrays.asList(GNSCommandProtocol.ALL_FIELDS)));
         JSONAssert.assertEquals(expected, actual, true);
       } catch (Exception e) {
-        fail("Problem reading acl: " + e);
+        failWithStackTrace("Problem reading acl: " + e);
         e.printStackTrace();
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it ACLCreateDeeperField: " + e);
+      failWithStackTrace("Exception when we were not expecting it ACLCreateDeeperField: " + e);
       e.printStackTrace();
     }
   }
@@ -855,7 +853,7 @@ public class ServerIntegrationTest extends DefaultTest {
               westyEntry.getGuid(), "cats", westyEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("Exception when we were not expecting testing DB: ", e);
+      failWithStackTrace("Exception when we were not expecting testing DB: ", e);
     }
   }
 
@@ -874,7 +872,7 @@ public class ServerIntegrationTest extends DefaultTest {
       assertEquals(expected, actual);
 
     } catch (Exception e) {
-      fail("1) Looking for bear: ", e);
+      failWithStackTrace("1) Looking for bear: ", e);
     }
     try {
       client.fieldAppendOrCreateList(westyEntry.getGuid(), "dogs",
@@ -886,7 +884,7 @@ public class ServerIntegrationTest extends DefaultTest {
               westyEntry.getGuid(), "dogs", westyEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("2) Looking for bear, wags, tucker: ", e);
+      failWithStackTrace("2) Looking for bear, wags, tucker: ", e);
     }
     try {
       client.fieldReplaceOrCreate(westyEntry.getGuid(), "goats", "sue",
@@ -897,7 +895,7 @@ public class ServerIntegrationTest extends DefaultTest {
               westyEntry.getGuid(), "goats", westyEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("3) Looking for sue: ", e);
+      failWithStackTrace("3) Looking for sue: ", e);
     }
     try {
       client.fieldReplaceOrCreate(westyEntry.getGuid(), "goats",
@@ -908,7 +906,7 @@ public class ServerIntegrationTest extends DefaultTest {
               westyEntry.getGuid(), "goats", westyEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("4) Looking for william: ", e);
+      failWithStackTrace("4) Looking for william: ", e);
     }
     try {
       client.fieldReplaceOrCreateList(westyEntry.getGuid(), "goats",
@@ -919,7 +917,7 @@ public class ServerIntegrationTest extends DefaultTest {
               westyEntry.getGuid(), "goats", westyEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("5) Looking for dink, tink: ", e);
+      failWithStackTrace("5) Looking for dink, tink: ", e);
     }
   }
 
@@ -935,7 +933,7 @@ public class ServerIntegrationTest extends DefaultTest {
       testEntry = client.guidCreate(masterGuid, testSubstituteGuid);
       System.out.print("created test guid: " + testEntry);
     } catch (Exception e) {
-      fail("Exception during init: ", e);
+      failWithStackTrace("Exception during init: ", e);
     }
     try {
       client.fieldAppendOrCreateList(
@@ -945,7 +943,7 @@ public class ServerIntegrationTest extends DefaultTest {
                       .asList("Frank", "Joe", "Sally", "Rita")),
               testEntry);
     } catch (Exception e) {
-      fail("Exception during create: ", e);
+      failWithStackTrace("Exception during create: ", e);
     }
 
     try {
@@ -955,14 +953,14 @@ public class ServerIntegrationTest extends DefaultTest {
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
 
     try {
       client.fieldSubstitute(testEntry.getGuid(), field, "Christy",
               "Sally", testEntry);
     } catch (Exception e) {
-      fail("Exception during substitute: ", e);
+      failWithStackTrace("Exception during substitute: ", e);
     }
 
     try {
@@ -972,7 +970,7 @@ public class ServerIntegrationTest extends DefaultTest {
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
   }
 
@@ -988,7 +986,7 @@ public class ServerIntegrationTest extends DefaultTest {
       testEntry = client.guidCreate(masterGuid, testSubstituteListGuid);
       System.out.print("created test guid: " + testEntry);
     } catch (Exception e) {
-      fail("Exception during init: ", e);
+      failWithStackTrace("Exception during init: ", e);
     }
     try {
       client.fieldAppendOrCreateList(
@@ -998,7 +996,7 @@ public class ServerIntegrationTest extends DefaultTest {
                       .asList("Frank", "Joe", "Sally", "Rita")),
               testEntry);
     } catch (Exception e) {
-      fail("Exception during create: ", e);
+      failWithStackTrace("Exception during create: ", e);
     }
 
     this.waitSettle();
@@ -1009,7 +1007,7 @@ public class ServerIntegrationTest extends DefaultTest {
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
 
     try {
@@ -1017,7 +1015,7 @@ public class ServerIntegrationTest extends DefaultTest {
               Arrays.asList("BillyBob", "Hank")),
               new JSONArray(Arrays.asList("Frank", "Joe")), testEntry);
     } catch (Exception e) {
-      fail("Exception during substitute: ", e);
+      failWithStackTrace("Exception during substitute: ", e);
     }
 
     try {
@@ -1027,7 +1025,7 @@ public class ServerIntegrationTest extends DefaultTest {
               .fieldReadArray(testEntry.getGuid(), field, testEntry));
       assertEquals(expected, actual);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
   }
 
@@ -1037,7 +1035,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       try {
         client.lookupGuid(mygroupName);
-        fail(mygroupName + " entity should not exist");
+        failWithStackTrace(mygroupName + " entity should not exist");
       } catch (ClientException e) {
       }
       guidToDeleteEntry = client.guidCreate(masterGuid, "deleteMe"
@@ -1045,7 +1043,7 @@ public class ServerIntegrationTest extends DefaultTest {
       this.waitSettle();
       mygroupEntry = client.guidCreate(masterGuid, mygroupName);
     } catch (Exception e) {
-      fail("Exception while creating guids: ", e);
+      failWithStackTrace("Exception while creating guids: ", e);
     }
   }
 
@@ -1059,7 +1057,7 @@ public class ServerIntegrationTest extends DefaultTest {
       client.groupAddGuid(mygroupEntry.getGuid(),
               guidToDeleteEntry.getGuid(), mygroupEntry);
     } catch (Exception e) {
-      fail("Exception while adding to groups: ", e);
+      failWithStackTrace("Exception while adding to groups: ", e);
     }
     try {
       HashSet<String> expected = new HashSet<String>(Arrays.asList(
@@ -1076,7 +1074,7 @@ public class ServerIntegrationTest extends DefaultTest {
       assertEquals(expected, actual);
 
     } catch (Exception e) {
-      fail("Exception while getting members and groups: ", e);
+      failWithStackTrace("Exception while getting members and groups: ", e);
     }
   }
 
@@ -1086,15 +1084,15 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.guidRemove(masterGuid, guidToDeleteEntry.getGuid());
     } catch (Exception e) {
-      fail("Exception while removing testGuid: ", e);
+      failWithStackTrace("Exception while removing testGuid: ", e);
     }
     try {
       client.lookupGuidRecord(guidToDeleteEntry.getGuid());
-      fail("Lookup testGuid should have throw an exception.");
+      failWithStackTrace("Lookup testGuid should have throw an exception.");
     } catch (ClientException e) {
 
     } catch (IOException e) {
-      fail("Exception while doing Lookup testGuid: ", e);
+      failWithStackTrace("Exception while doing Lookup testGuid: ", e);
     }
   }
 
@@ -1108,11 +1106,11 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       try {
         client.lookupGuid(groupAccessUserName);
-        fail(groupAccessUserName + " entity should not exist");
+        failWithStackTrace(groupAccessUserName + " entity should not exist");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Checking for existence of group user: ", e);
+      failWithStackTrace("Checking for existence of group user: ", e);
     }
 
     try {
@@ -1123,7 +1121,7 @@ public class ServerIntegrationTest extends DefaultTest {
               groupAccessUserEntry, GNSCommandProtocol.ALL_FIELDS,
               GNSCommandProtocol.ALL_GUIDS);
     } catch (Exception e) {
-      fail("Exception creating group user: ", e);
+      failWithStackTrace("Exception creating group user: ", e);
     }
 
     try {
@@ -1134,13 +1132,13 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldCreateOneElementList(groupAccessUserEntry.getGuid(),
               "hometown", "whoville", groupAccessUserEntry);
     } catch (Exception e) {
-      fail("Exception creating group user fields: ", e);
+      failWithStackTrace("Exception creating group user fields: ", e);
     }
     try {
       client.aclAdd(AclAccessType.READ_WHITELIST, groupAccessUserEntry,
               "hometown", mygroupEntry.getGuid());
     } catch (Exception e) {
-      fail("Exception adding mygroup to acl for group user hometown field: ",
+      failWithStackTrace("Exception adding mygroup to acl for group user hometown field: ",
               e);
     }
   }
@@ -1151,13 +1149,13 @@ public class ServerIntegrationTest extends DefaultTest {
       try {
         String result = client.fieldReadArrayFirstElement(
                 groupAccessUserEntry.getGuid(), "address", westyEntry);
-        fail("Result of read of groupAccessUser's age by sam is "
+        failWithStackTrace("Result of read of groupAccessUser's age by sam is "
                 + result
                 + " which is wrong because it should have been rejected.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception while attempting a failing read of groupAccessUser's age by sam: ",
+      failWithStackTrace("Exception while attempting a failing read of groupAccessUser's age by sam: ",
               e);
     }
   }
@@ -1168,7 +1166,7 @@ public class ServerIntegrationTest extends DefaultTest {
       assertEquals("whoville", client.fieldReadArrayFirstElement(
               groupAccessUserEntry.getGuid(), "hometown", westyEntry));
     } catch (Exception e) {
-      fail("Exception while attempting read of groupAccessUser's hometown by westy: ",
+      failWithStackTrace("Exception while attempting read of groupAccessUser's hometown by westy: ",
               e);
     }
   }
@@ -1180,7 +1178,7 @@ public class ServerIntegrationTest extends DefaultTest {
         client.groupRemoveGuid(mygroupEntry.getGuid(),
                 westyEntry.getGuid(), mygroupEntry);
       } catch (Exception e) {
-        fail("Exception removing westy from mygroup: ", e);
+        failWithStackTrace("Exception removing westy from mygroup: ", e);
       }
 
       HashSet<String> expected = new HashSet<String>(
@@ -1190,7 +1188,7 @@ public class ServerIntegrationTest extends DefaultTest {
       assertEquals(expected, actual);
 
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
   }
 
@@ -1206,7 +1204,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // lookup the guid using the alias
       assertEquals(masterGuid.getGuid(), client.lookupGuid(alias));
     } catch (Exception e) {
-      fail("Exception while adding alias: ", e);
+      failWithStackTrace("Exception while adding alias: ", e);
     }
   }
 
@@ -1219,15 +1217,15 @@ public class ServerIntegrationTest extends DefaultTest {
 
       /* arun: This test has no reason to succeed because getAliases is
 			 * not coordinated or forceCoordinateable.
-			 */
-			// make sure our new one is in there
-			assertThat(actual, hasItem(alias));
-			// now remove it
-			client.removeAlias(masterGuid, alias);
-		} catch (Exception e) {
-			fail("Exception removing alias: ", e);
-		}
-	}
+       */
+      // make sure our new one is in there
+      assertThat(actual, hasItem(alias));
+      // now remove it
+      client.removeAlias(masterGuid, alias);
+    } catch (Exception e) {
+      failWithStackTrace("Exception removing alias: ", e);
+    }
+  }
 
   @Test
   public void test_232_AliasCheck() {
@@ -1235,11 +1233,11 @@ public class ServerIntegrationTest extends DefaultTest {
       // an make sure it is gone
       try {
         client.lookupGuid(alias);
-        fail(alias + " should not exist");
+        failWithStackTrace(alias + " should not exist");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception while checking alias: ", e);
+      failWithStackTrace("Exception while checking alias: ", e);
     }
   }
 
@@ -1251,7 +1249,7 @@ public class ServerIntegrationTest extends DefaultTest {
         client.aclAdd(AclAccessType.WRITE_WHITELIST, westyEntry,
                 fieldName, samEntry.getGuid());
       } catch (Exception e) {
-        fail("Exception adding Sam to Westy's writelist: ", e);
+        failWithStackTrace("Exception adding Sam to Westy's writelist: ", e);
         e.printStackTrace();
       }
       this.waitSettle();
@@ -1260,7 +1258,7 @@ public class ServerIntegrationTest extends DefaultTest {
         client.fieldReplaceFirstElement(westyEntry.getGuid(),
                 fieldName, "shopping", westyEntry);
       } catch (Exception e) {
-        fail("Exception while Westy's writing own field: ", e);
+        failWithStackTrace("Exception while Westy's writing own field: ", e);
         e.printStackTrace();
       }
       this.waitSettle();
@@ -1272,7 +1270,7 @@ public class ServerIntegrationTest extends DefaultTest {
         client.fieldReplaceFirstElement(westyEntry.getGuid(),
                 fieldName, "driving", samEntry);
       } catch (Exception e) {
-        fail("Exception while Sam writing Westy's field: ", e);
+        failWithStackTrace("Exception while Sam writing Westy's field: ", e);
         e.printStackTrace();
       }
       this.waitSettle();
@@ -1283,48 +1281,116 @@ public class ServerIntegrationTest extends DefaultTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(),
                 fieldName, "driving", barneyEntry);
-        fail("Write by barney should have failed!");
+        failWithStackTrace("Write by barney should have failed!");
       } catch (ClientException e) {
       } catch (Exception e) {
         e.printStackTrace();
-        fail("Exception during read of westy's " + fieldName
+        failWithStackTrace("Exception during read of westy's " + fieldName
                 + " by sam: ", e);
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
+      e.printStackTrace();
+    }
+  }
+
+  private static GuidEntry unsignedReadTestGuid;
+
+  // Creating 4 fields
+  private static final String unsignedReadFieldName = "allreadaccess";
+  private static final String standardReadFieldName = "standardreadaccess";
+  private static final String unsignedOneReadFieldName = "allonereadaccess";
+  private static final String standardOneReadFieldName = "standardonereadaccess";
+
+  @Test
+  public void test_250_UnsignedReadCreateGuids() {
+    try {
+      unsignedReadTestGuid = client.guidCreate(masterGuid, "unsignedReadTestGuid" + RandomString.randomString(6));
+      System.out.println("Created: " + unsignedReadTestGuid);
+    } catch (Exception e) {
+      failWithStackTrace("Exception registering guids in UnsignedReadCreateGuids: ", e);
+    }
+    try {
+      // For this test we remove default all access for reading
+      client.aclRemove(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
+              GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+    } catch (Exception e) {
+      failWithStackTrace("Exception while removing ACL in UnsignedReadCreateGuids: ", e);
+    }
+    // Only the account guid should be in the ACL - check this here
+    try {
+      JSONArray expected = new JSONArray(new ArrayList<>(Arrays.asList(masterGuid.getGuid())));
+      JSONArray actual = client.aclGet(AclAccessType.READ_WHITELIST, unsignedReadTestGuid,
+              GNSCommandProtocol.ALL_FIELDS, unsignedReadTestGuid.getGuid());
+      JSONAssert.assertEquals(expected, actual, true);
+    } catch (Exception e) {
+      failWithStackTrace("Exception while retrieving ACL in UnsignedReadCreateGuids: ", e);
       e.printStackTrace();
     }
   }
 
   @Test
-  public void test_250_UnsignedRead() {
-    String unsignedReadFieldName = "allreadaccess";
-    String standardReadFieldName = "standardreadaccess";
-    try {
-      client.fieldCreateOneElementList(westyEntry.getGuid(),
-              unsignedReadFieldName, "funkadelicread", westyEntry);
-      client.aclAdd(AclAccessType.READ_WHITELIST, westyEntry,
-              unsignedReadFieldName, GNSCommandProtocol.ALL_GUIDS);
-      assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
-              westyEntry.getGuid(), unsignedReadFieldName, null));
+  public void test_251_UnsignedRead() {
 
-      client.fieldCreateOneElementList(westyEntry.getGuid(),
-              standardReadFieldName, "bummer", westyEntry);
-      // already did this above... doing it again gives us a paxos error
-      // client.removeFromACL(AclAccessType.READ_WHITELIST, westyEntry,
-      // GNSCommandProtocol.ALL_FIELDS, GNSCommandProtocol.ALL_GUIDS);
+    // Insures that we can read a world readable field without a guid
+    try {
+      client.fieldUpdate(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, "funkadelicread", unsignedReadTestGuid);
+      // Add all access to this field
+      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedReadFieldName, GNSCommandProtocol.ALL_GUIDS);
+      assertEquals("funkadelicread", client.fieldRead(unsignedReadTestGuid.getGuid(), unsignedReadFieldName, null));
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for unsigned access in UnsignedRead: ", e);
+    }
+    // Insures that we can't read non-world-readable field without a guid
+    try {
+      client.fieldUpdate(unsignedReadTestGuid.getGuid(), standardReadFieldName, "bummer", unsignedReadTestGuid);
       try {
-        String result = client.fieldReadArrayFirstElement(
-                westyEntry.getGuid(), standardReadFieldName, null);
-        fail("Result of read of westy's "
+        String result = client.fieldRead(unsignedReadTestGuid.getGuid(), standardReadFieldName, null);
+        failWithStackTrace("Result of read of westy's "
                 + standardReadFieldName
+                + " in "
+                + unsignedReadTestGuid.entityName
                 + " as world readable was "
                 + result
-                + " which is wrong because it should have been rejected.");
+                + " which is wrong because it should have been rejected in UnsignedRead.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception while testing for denied unsigned access in UnsignedRead: ", e);
+    }
+  }
+
+  @Test
+  public void test_252_UnsignedReadOne() {
+    try {
+      // Insures that we can read a world readable field without a guid
+      client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
+              unsignedOneReadFieldName, "funkadelicread", unsignedReadTestGuid);
+      client.aclAdd(AclAccessType.READ_WHITELIST, unsignedReadTestGuid, unsignedOneReadFieldName, GNSCommandProtocol.ALL_GUIDS);
+      assertEquals("funkadelicread", client.fieldReadArrayFirstElement(
+              unsignedReadTestGuid.getGuid(), unsignedOneReadFieldName, null));
+
+    } catch (Exception e) {
+      failWithStackTrace("Exception while testing for unsigned access in UnsignedReadOne: ", e);
+    }
+    try {
+      // Insures that we can't read non-world-readable field without a guid
+      try {
+        client.fieldCreateOneElementList(unsignedReadTestGuid.getGuid(),
+                standardOneReadFieldName, "bummer", unsignedReadTestGuid);
+        String result = client.fieldReadArrayFirstElement(
+                unsignedReadTestGuid.getGuid(), standardOneReadFieldName, null);
+        failWithStackTrace("Result of read of "
+                + standardOneReadFieldName
+                + " in "
+                + unsignedReadTestGuid.entityName
+                + " as world readable was '"
+                + result
+                + "' which is wrong because it should have been rejected.");
+      } catch (ClientException e) {
+      }
+    } catch (Exception e) {
+      failWithStackTrace("Exception when we were not expecting it in UnsignedReadOne: ", e);
     }
   }
 
@@ -1348,12 +1414,12 @@ public class ServerIntegrationTest extends DefaultTest {
       try {
         client.fieldReplaceFirstElement(westyEntry.getGuid(),
                 standardWriteFieldName, "funkadelicwrite", null);
-        fail("Write of westy's field " + standardWriteFieldName
+        failWithStackTrace("Write of westy's field " + standardWriteFieldName
                 + " as world readable should have been rejected.");
       } catch (ClientException e) {
       }
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
   }
 
@@ -1364,30 +1430,30 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldCreateOneElementList(westyEntry.getGuid(),
               fieldToDelete, "work", westyEntry);
     } catch (Exception e) {
-      fail("Exception while creating the field: ", e);
+      failWithStackTrace("Exception while creating the field: ", e);
     }
     try {
       // read my own field
       assertEquals("work", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldToDelete, westyEntry));
     } catch (Exception e) {
-      fail("Exception while reading the field " + fieldToDelete + ": ", e);
+      failWithStackTrace("Exception while reading the field " + fieldToDelete + ": ", e);
     }
     try {
       client.fieldRemove(westyEntry.getGuid(), fieldToDelete, westyEntry);
     } catch (Exception e) {
-      fail("Exception while removing field: ", e);
+      failWithStackTrace("Exception while removing field: ", e);
     }
 
     try {
       String result = client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), fieldToDelete, westyEntry);
 
-      fail("Result of read of westy's " + fieldToDelete + " is " + result
+      failWithStackTrace("Result of read of westy's " + fieldToDelete + " is " + result
               + " which is wrong because it should have been deleted.");
     } catch (ClientException e) {
     } catch (Exception e) {
-      fail("Exception while removing field: ", e);
+      failWithStackTrace("Exception while removing field: ", e);
     }
 
   }
@@ -1398,7 +1464,7 @@ public class ServerIntegrationTest extends DefaultTest {
       westyEntry = client.guidCreate(masterGuid,
               "westy" + RandomString.randomString(12));
     } catch (Exception e) {
-      fail("Exception during creation of westyEntry: ", e);
+      failWithStackTrace("Exception during creation of westyEntry: ", e);
     }
     try {
 
@@ -1434,7 +1500,7 @@ public class ServerIntegrationTest extends DefaultTest {
       assertEquals(expected, actual);
 
     } catch (Exception e) {
-      fail("Unexpected exception during test: ", e);
+      failWithStackTrace("Unexpected exception during test: ", e);
     }
   }
 
@@ -1464,7 +1530,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // Thread.sleep(2000); // wait a bit to make sure everything is
       // updated
     } catch (Exception e) {
-      fail("Exception while writing fields for GeoSpatialSelect: ", e);
+      failWithStackTrace("Exception while writing fields for GeoSpatialSelect: ", e);
     }
 
     try {
@@ -1478,7 +1544,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
-      fail("Exception executing selectNear: ", e);
+      failWithStackTrace("Exception executing selectNear: ", e);
     }
 
     try {
@@ -1498,7 +1564,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
-      fail("Exception executing selectWithin: ", e);
+      failWithStackTrace("Exception executing selectWithin: ", e);
     }
   }
 
@@ -1514,7 +1580,7 @@ public class ServerIntegrationTest extends DefaultTest {
                 array, testEntry);
       }
     } catch (Exception e) {
-      fail("Exception while tryint to create the guids: ", e);
+      failWithStackTrace("Exception while tryint to create the guids: ", e);
     }
 
     try {
@@ -1527,7 +1593,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
-      fail("Exception executing selectNear: ", e);
+      failWithStackTrace("Exception executing selectNear: ", e);
     }
 
     try {
@@ -1547,7 +1613,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // results
       assertThat(result.length(), greaterThanOrEqualTo(5));
     } catch (Exception e) {
-      fail("Exception executing selectWithin: ", e);
+      failWithStackTrace("Exception executing selectWithin: ", e);
     }
   }
 
@@ -1559,14 +1625,14 @@ public class ServerIntegrationTest extends DefaultTest {
               "westy" + RandomString.randomString(12));
       System.out.print("Created: " + westyEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
     this.waitSettle();
     try {
       client.fieldCreateOneElementList(westyEntry.getGuid(), field,
               "work", westyEntry);
     } catch (Exception e) {
-      fail("Exception while creating the field: ", e);
+      failWithStackTrace("Exception while creating the field: ", e);
     }
     this.waitSettle();
     try {
@@ -1574,19 +1640,19 @@ public class ServerIntegrationTest extends DefaultTest {
       assertEquals("work", client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), field, westyEntry));
     } catch (Exception e) {
-      fail("Exception while reading the field " + field + ": ", e);
+      failWithStackTrace("Exception while reading the field " + field + ": ", e);
     }
     try {
       client.fieldSetNull(westyEntry.getGuid(), field, westyEntry);
     } catch (Exception e) {
-      fail("Exception while setting field to null field: ", e);
+      failWithStackTrace("Exception while setting field to null field: ", e);
     }
     this.waitSettle();
     try {
       assertEquals(null, client.fieldReadArrayFirstElement(
               westyEntry.getGuid(), field, westyEntry));
     } catch (Exception e) {
-      fail("Exception while reading the field " + field + ": ", e);
+      failWithStackTrace("Exception while reading the field " + field + ": ", e);
     }
   }
 
@@ -1597,7 +1663,7 @@ public class ServerIntegrationTest extends DefaultTest {
               "westy" + RandomString.randomString(12));
       System.out.print("Created: " + westyEntry);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
     try {
       JSONObject json = new JSONObject();
@@ -1612,7 +1678,7 @@ public class ServerIntegrationTest extends DefaultTest {
       json.put("gibberish", subJson);
       client.update(westyEntry, json);
     } catch (Exception e) {
-      fail("Exception while updating JSON: ", e);
+      failWithStackTrace("Exception while updating JSON: ", e);
     }
 
     try {
@@ -1631,7 +1697,7 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading JSON: ", e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
 
     try {
@@ -1639,7 +1705,7 @@ public class ServerIntegrationTest extends DefaultTest {
       json.put("occupation", "rocket scientist");
       client.update(westyEntry, json);
     } catch (Exception e) {
-      fail("Exception while changing \"occupation\" to \"rocket scientist\": ",
+      failWithStackTrace("Exception while changing \"occupation\" to \"rocket scientist\": ",
               e);
     }
 
@@ -1659,7 +1725,7 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading change of \"occupation\" to \"rocket scientist\": ",
+      failWithStackTrace("Exception while reading change of \"occupation\" to \"rocket scientist\": ",
               e);
     }
 
@@ -1668,7 +1734,7 @@ public class ServerIntegrationTest extends DefaultTest {
       json.put("ip address", "127.0.0.1");
       client.update(westyEntry, json);
     } catch (Exception e) {
-      fail("Exception while adding field \"ip address\" with value \"127.0.0.1\": ",
+      failWithStackTrace("Exception while adding field \"ip address\" with value \"127.0.0.1\": ",
               e);
     }
 
@@ -1689,13 +1755,13 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading JSON: ", e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
 
     try {
       client.fieldRemove(westyEntry.getGuid(), "gibberish", westyEntry);
     } catch (Exception e) {
-      fail("Exception during remove field \"gibberish\": ", e);
+      failWithStackTrace("Exception during remove field \"gibberish\": ", e);
     }
 
     try {
@@ -1711,7 +1777,7 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading JSON: ", e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
   }
 
@@ -1729,7 +1795,7 @@ public class ServerIntegrationTest extends DefaultTest {
       json.put("flapjack", subJson);
       client.update(westyEntry, json);
     } catch (Exception e) {
-      fail("Exception while adding field \"flapjack\": ", e);
+      failWithStackTrace("Exception while adding field \"flapjack\": ", e);
     }
 
     try {
@@ -1752,14 +1818,14 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading JSON: ", e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
     try {
       String actual = client.fieldRead(westyEntry.getGuid(),
               "flapjack.sally.right", westyEntry);
       assertEquals("seven", actual);
     } catch (Exception e) {
-      fail("Exception while reading \"flapjack.sally.right\": ", e);
+      failWithStackTrace("Exception while reading \"flapjack.sally.right\": ", e);
     }
     try {
       String actual = client.fieldRead(westyEntry.getGuid(),
@@ -1768,7 +1834,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
     } catch (Exception e) {
-      fail("Exception while reading \"flapjack.sally\": ", e);
+      failWithStackTrace("Exception while reading \"flapjack.sally\": ", e);
     }
 
     try {
@@ -1778,7 +1844,7 @@ public class ServerIntegrationTest extends DefaultTest {
       JSONAssert.assertEquals(expected, actual,
               JSONCompareMode.NON_EXTENSIBLE);
     } catch (Exception e) {
-      fail("Exception while reading \"flapjack\": ", e);
+      failWithStackTrace("Exception while reading \"flapjack\": ", e);
     }
   }
 
@@ -1788,7 +1854,7 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldUpdate(westyEntry.getGuid(), "flapjack.sally.right",
               "crank", westyEntry);
     } catch (Exception e) {
-      fail("Exception while updating field \"flapjack.sally.right\": ", e);
+      failWithStackTrace("Exception while updating field \"flapjack.sally.right\": ", e);
     }
     this.waitSettle();
     try {
@@ -1811,14 +1877,14 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading JSON: ", e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
     try {
       client.fieldUpdate(westyEntry.getGuid(), "flapjack.sammy",
               new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")),
               westyEntry);
     } catch (Exception e) {
-      fail("Exception while updating field \"flapjack.sammy\": ", e);
+      failWithStackTrace("Exception while updating field \"flapjack.sammy\": ", e);
     }
     try {
       JSONObject expected = new JSONObject();
@@ -1841,7 +1907,7 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading JSON: ", e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
     try {
       JSONObject moreJson = new JSONObject();
@@ -1852,7 +1918,7 @@ public class ServerIntegrationTest extends DefaultTest {
       client.fieldUpdate(westyEntry.getGuid(), "flapjack", moreJson,
               westyEntry);
     } catch (Exception e) {
-      fail("Exception while updating field \"flapjack\": ", e);
+      failWithStackTrace("Exception while updating field \"flapjack\": ", e);
     }
     try {
       JSONObject expected = new JSONObject();
@@ -1873,7 +1939,7 @@ public class ServerIntegrationTest extends DefaultTest {
               JSONCompareMode.NON_EXTENSIBLE);
       System.out.println(actual);
     } catch (Exception e) {
-      fail("Exception while reading JSON: ", e);
+      failWithStackTrace("Exception while reading JSON: ", e);
     }
   }
 
@@ -1888,7 +1954,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // System.out.println("Encoded string: " + encodedValue);
       client.fieldUpdate(masterGuid, BYTE_TEST_FIELD, encodedValue);
     } catch (IOException | ClientException | JSONException e) {
-      fail("Exception during create field: ", e);
+      failWithStackTrace("Exception during create field: ", e);
     }
   }
 
@@ -1899,7 +1965,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // System.out.println("Read string: " + string);
       assertArrayEquals(byteTestValue, Base64.decode(string));
     } catch (Exception e) {
-      fail("Exception while reading field: ", e);
+      failWithStackTrace("Exception while reading field: ", e);
     }
   }
 
@@ -1919,7 +1985,7 @@ public class ServerIntegrationTest extends DefaultTest {
       accountGuidForBatch = GuidUtils.lookupOrCreateAccountGuid(client,
               batchAccountAlias, "password", true);
     } catch (Exception e) {
-      fail("Exception when we were not expecting it: ", e);
+      failWithStackTrace("Exception when we were not expecting it: ", e);
     }
   }
 
@@ -1936,7 +2002,7 @@ public class ServerIntegrationTest extends DefaultTest {
       result = client.guidBatchCreate(accountGuidForBatch, aliases);
       client.setReadTimeout(oldTimeout);
     } catch (Exception e) {
-      fail("Exception while creating guids: ", e);
+      failWithStackTrace("Exception while creating guids: ", e);
     }
     assertEquals(GNSCommandProtocol.OK_RESPONSE, result);
   }
@@ -1948,7 +2014,7 @@ public class ServerIntegrationTest extends DefaultTest {
               .lookupAccountRecord(accountGuidForBatch.getGuid());
       assertEquals(numberTocreate, accountRecord.getInt("guidCnt"));
     } catch (JSONException | ClientException | IOException e) {
-      fail("Exception while fetching account record: ", e);
+      failWithStackTrace("Exception while fetching account record: ", e);
     }
   }
 
@@ -1962,17 +2028,232 @@ public class ServerIntegrationTest extends DefaultTest {
               createGeoJSONPolygon(AREA_EXTENT));
     } catch (Exception e) {
       e.printStackTrace();
-      fail("Exception during create field: ", e);
+      failWithStackTrace("Exception during create field: ", e);
     }
   }
 
   @Test
-  public void test_550_CreateIndex() {
+  public void test_541_CreateIndex() {
     try {
       client.fieldCreateIndex(masterGuid, createIndexTestField,
               "2dsphere");
     } catch (Exception e) {
-      fail("Exception while creating index: ", e);
+      failWithStackTrace("Exception while creating index: ", e);
+    }
+  }
+
+  private static String groupTestFieldName = "_SelectAutoGroupTestQueryField_";
+  private static GuidEntry groupOneGuid;
+  private static GuidEntry groupTwoGuid;
+  private static final String TEST_HIGH_VALUE = "25";
+  private static final String TEST_LOW_VALUE = "10";
+  private static String queryOne = "~" + groupTestFieldName + " : {$gt: 20}";
+  private static String queryTwo = "~" + groupTestFieldName + " : 0";
+
+  private static void checkSelectTheReturnValues(JSONArray result) throws Exception {
+    // should be 5
+    assertThat(result.length(), equalTo(5));
+    // look up the individual values
+    for (int i = 0; i < result.length(); i++) {
+      BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+      GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+      String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
+      assertEquals(TEST_HIGH_VALUE, value);
+    }
+  }
+
+  @Test
+  public void test_551_QueryRemovePreviousTestFields() {
+    // find all the guids that have our field and remove it from them
+    try {
+      String query = "~" + groupTestFieldName + " : {$exists: true}";
+      JSONArray result = client.selectQuery(query);
+      for (int i = 0; i < result.length(); i++) {
+        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+        GuidEntry guidEntry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+        System.out.println("Removing from " + guidEntry.getEntityName());
+        client.fieldRemove(guidEntry, groupTestFieldName);
+      }
+    } catch (Exception e) {
+      failWithStackTrace("Trying to remove previous test's fields: " + e);
+    }
+  }
+
+  @Test
+  public void test_552_QuerySetupGuids() {
+    try {
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
+        JSONArray array = new JSONArray(Arrays.asList(Integer.parseInt(TEST_HIGH_VALUE)));
+        client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
+      }
+      for (int cnt = 0; cnt < 5; cnt++) {
+        GuidEntry testEntry = client.guidCreate(masterGuid, "queryTest-" + RandomString.randomString(6));
+        JSONArray array = new JSONArray(Arrays.asList(Integer.parseInt(TEST_LOW_VALUE)));
+        client.fieldReplaceOrCreateList(testEntry, groupTestFieldName, array);
+      }
+    } catch (Exception e) {
+      failWithStackTrace("Exception while trying to create the guids: " + e);
+    }
+    try {
+      // the HRN is a hash of the query
+      String groupOneGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryOne), false);
+      groupOneGuid = GuidUtils.lookupOrCreateGuidEntry(groupOneGuidName, client.getGNSProvider());
+      //groupGuid = client.guidCreate(masterGuid, groupGuidName + RandomString.randomString(6));
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception while trying to create the guids: " + e);
+    }
+    try {
+      // the HRN is a hash of the query
+      String groupTwoGuidName = Base64.encodeToString(SHA1HashFunction.getInstance().hash(queryTwo), false);
+      groupTwoGuid = GuidUtils.lookupOrCreateGuidEntry(groupTwoGuidName, client.getGNSProvider());
+      //groupTwoGuid = client.guidCreate(masterGuid, groupTwoGuidName + RandomString.randomString(6));
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception while trying to create the guids: " + e);
+    }
+  }
+
+  @Test
+  public void test_553_QuerySetupGroup() {
+    try {
+      String query = "~" + groupTestFieldName + " : {$gt: 20}";
+      JSONArray result = client.selectSetupGroupQuery(masterGuid, groupOneGuid.getPublicKeyString(), query, 0); // make the min refresh 0 seconds so the test will never fail
+      System.out.println("*****SETUP guid named " + groupOneGuid.getEntityName() + ": ");
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // best we can do should be at least 5, but possibly more objects in results
+      assertThat(result.length(), greaterThanOrEqualTo(5));
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing selectSetupGroupQuery: " + e);
+    }
+  }
+
+  // make a second group that is empty
+  @Test
+  public void test_554_QuerySetupSecondGroup() {
+    try {
+      String query = "~" + groupTestFieldName + " : 0";
+      JSONArray result = client.selectSetupGroupQuery(masterGuid, groupTwoGuid.getPublicKeyString(), query, 0); // make the min refresh 0 seconds so the test will never fail
+      System.out.println("*****SETUP SECOND guid named " + groupTwoGuid.getEntityName() + ": (should be empty) ");
+      for (int i = 0; i < result.length(); i++) {
+        System.out.println(result.get(i).toString());
+      }
+      // should be nothing in this group now
+      assertThat(result.length(), equalTo(0));
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing second selectSetupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  public void test_555_QueryLookupGroup() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      checkSelectTheReturnValues(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  public void test_556_QueryLookupGroupAgain() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      checkSelectTheReturnValues(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  public void test_557_LookupGroupAgain2() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      checkSelectTheReturnValues(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  public void test_558_QueryLookupGroupAgain3() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      checkSelectTheReturnValues(result);
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  // Change all the testQuery fields except 1 to be equal to zero
+  public void test_559_QueryAlterGroup() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      // change ALL BUT ONE to be ZERO
+      for (int i = 0; i < result.length() - 1; i++) {
+        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+        JSONArray array = new JSONArray(Arrays.asList(0));
+        client.fieldReplaceOrCreateList(entry, groupTestFieldName, array);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception while trying to alter the fields: " + e);
+    }
+  }
+
+  @Test
+  public void test_560_QueryLookupGroupAfterAlterations() {
+    // Westy - Added this to see if it helps with failures...
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupOneGuid.getGuid());
+      // should only be one
+      assertThat(result.length(), equalTo(1));
+      // look up the individual values
+      for (int i = 0; i < result.length(); i++) {
+        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+        String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
+        assertEquals(TEST_HIGH_VALUE, value);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
+    }
+  }
+
+  @Test
+  // Check to see if the second group has members now... it should.
+  public void test_561_QueryLookupSecondGroup() {
+    try {
+      JSONArray result = client.selectLookupGroupQuery(groupTwoGuid.getGuid());
+      // should be 4 now
+      assertThat(result.length(), equalTo(4));
+      // look up the individual values
+      for (int i = 0; i < result.length(); i++) {
+        BasicGuidEntry guidInfo = new BasicGuidEntry(client.lookupGuidRecord(result.getString(i)));
+        GuidEntry entry = GuidUtils.lookupGuidEntryFromDatabase(client, guidInfo.getEntityName());
+        String value = client.fieldReadArrayFirstElement(entry, groupTestFieldName);
+        assertEquals("0", value);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      failWithStackTrace("Exception executing selectLookupGroupQuery: " + e);
     }
   }
 
@@ -1988,7 +2269,7 @@ public class ServerIntegrationTest extends DefaultTest {
       // results
       assertThat(result.length(), greaterThanOrEqualTo(1));
     } catch (Exception e) {
-      fail("Exception executing second selectNear: ", e);
+      failWithStackTrace("Exception executing second selectNear: ", e);
     }
   }
 
@@ -1997,20 +2278,11 @@ public class ServerIntegrationTest extends DefaultTest {
   @Test
   public void test_620_contextServiceTest() {
     // run it only when CS is enabled
-    // FIXME: right now options are not shared, so just reading the
-    // ns.properties file
-    // to check if context service is enabled.
-    HashMap<String, String> propMap = readingOptionsFromNSProperties();
+    // FIXME: Not sure how to read options here
+	  // so this test is disabled here
+	  
     boolean enableContextService = false;
     String csIPPort = "";
-    if (propMap
-            .containsKey(AppOptionsOld.ENABLE_CONTEXT_SERVICE)) {
-      enableContextService = Boolean.parseBoolean(propMap
-              .get(AppOptionsOld.ENABLE_CONTEXT_SERVICE));
-
-      csIPPort = propMap
-              .get(AppOptionsOld.CONTEXT_SERVICE_IP_PORT);
-    }
 
     if (enableContextService) {
       try {
@@ -2042,7 +2314,7 @@ public class ServerIntegrationTest extends DefaultTest {
 
       } catch (Exception e) {
         e.printStackTrace();
-        fail("Exception during contextServiceTest: ", e);
+        failWithStackTrace("Exception during contextServiceTest: ", e);
       }
     }
   }
@@ -2058,20 +2330,20 @@ public class ServerIntegrationTest extends DefaultTest {
       InetAddress lnsAddress = PaxosConfig.getActives().values().iterator().next().getAddress();
       client.setGNSProxy(new InetSocketAddress(lnsAddress, 24598));
     } catch (Exception e) {
-      fail("Exception while setting proxy: " + e);
+      failWithStackTrace("Exception while setting proxy: " + e);
     }
     String guidString = null;
     try {
       guidString = client.lookupGuid(accountAlias);
     } catch (Exception e) {
-      fail("Exception while looking up guid: " + e);
+      failWithStackTrace("Exception while looking up guid: " + e);
     }
     JSONObject json = null;
     if (guidString != null) {
       try {
         json = client.lookupAccountRecord(guidString);
       } catch (Exception e) {
-        fail("Exception while looking up account record: " + e);
+        failWithStackTrace("Exception while looking up account record: " + e);
       }
     }
     assertNotNull("Account record is null", json);
@@ -2079,47 +2351,9 @@ public class ServerIntegrationTest extends DefaultTest {
       assertEquals("Account name doesn't match",
               accountAlias, json.getString(GNSCommandProtocol.ACCOUNT_RECORD_USERNAME));
     } catch (JSONException e) {
-      fail("Exception while looking up account name: " + e);
+      failWithStackTrace("Exception while looking up account name: " + e);
     }
     client.setGNSProxy(null);
-  }
-
-  private HashMap<String, String> readingOptionsFromNSProperties() {
-    HashMap<String, String> propMap = new HashMap<String, String>();
-
-    BufferedReader br = null;
-    try {
-      String sCurrentLine;
-
-      String filename = new File(
-              System.getProperty(DefaultProps.SERVER_COMMAND.key))
-              .getParent()
-              + "/ns.properties";
-      if (!new File(filename).exists()) {
-        return propMap;
-      }
-
-      br = new BufferedReader(new FileReader(filename));
-
-      while ((sCurrentLine = br.readLine()) != null) {
-        String[] parsed = sCurrentLine.split("=");
-
-        if (parsed.length == 2) {
-          propMap.put(parsed[0].trim(), parsed[1].trim());
-        }
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        if (br != null) {
-          br.close();
-        }
-      } catch (IOException ex) {
-        ex.printStackTrace();
-      }
-    }
-    return propMap;
   }
 
   // HELPER STUFF
@@ -2177,7 +2411,7 @@ public class ServerIntegrationTest extends DefaultTest {
     try {
       client.close();
     } catch (Exception e) {
-      fail("Exception during stop: ", e);
+      failWithStackTrace("Exception during stop: ", e);
     }
   }
 

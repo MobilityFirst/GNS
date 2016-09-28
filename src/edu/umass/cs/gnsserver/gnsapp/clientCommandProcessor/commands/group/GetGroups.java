@@ -60,10 +60,7 @@ public class GetGroups extends BasicCommand {
     return CommandType.GetGroups;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, READER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
@@ -83,8 +80,5 @@ public class GetGroups extends BasicCommand {
             signature, message, timestamp, handler)).toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the groups that a guid is a member of formatted as a JSON Array. Reader guid needs to have read access and sign the command.";
-  }
+  
 }

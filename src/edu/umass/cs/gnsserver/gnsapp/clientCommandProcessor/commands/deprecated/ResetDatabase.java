@@ -17,15 +17,17 @@
  *  Initial developer(s): Westy
  *
  */
-package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.admin;
+package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.deprecated;
+
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnscommon.CommandType;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.BAD_RESPONSE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.OPERATION_NOT_SUPPORTED;
 import edu.umass.cs.gnscommon.GNSResponseCode;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -39,29 +41,27 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class DeleteAllRecords extends BasicCommand {
+@Deprecated
+public class ResetDatabase extends BasicCommand {
 
   /**
    *
    * @param module
    */
-  public DeleteAllRecords(CommandModule module) {
+  public ResetDatabase(CommandModule module) {
     super(module);
   }
 
   @Override
   public CommandType getCommandType() {
-    return CommandType.DeleteAllRecords;
+    return CommandType.Unknown;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
-//    return DELETE_ALL_RECORDS;
+//    return RESET_DATABASE;
 //  }
   @Override
   @SuppressWarnings("unchecked")
@@ -69,7 +69,7 @@ public class DeleteAllRecords extends BasicCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     // DISABLE THIS COMMAND
 //    if (module.isAdminMode()) {
-//      if (handler.getAdmintercessor().sendDeleteAllRecords(handler)) {
+//      if (handler.getAdmintercessor().sendResetDB(handler)) {
 //        return new CommandResponse(OK_RESPONSE);
 //      } else {
 //        return new CommandResponse(BAD_RESPONSE);
@@ -79,8 +79,5 @@ public class DeleteAllRecords extends BasicCommand {
             + " Don't understand " + getCommandType().toString());
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "[ONLY IN ADMIN MODE] Deletes all records.";
-  }
+  
 }

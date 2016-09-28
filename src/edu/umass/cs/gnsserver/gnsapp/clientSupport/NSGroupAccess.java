@@ -25,15 +25,19 @@ import edu.umass.cs.gnscommon.asynch.ClientAsynchBase;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
 import edu.umass.cs.gnscommon.exceptions.server.FailedDBOperationException;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GroupAccess;
+import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gnsserver.gnsapp.deprecated.GNSApplicationInterface;
 import edu.umass.cs.gnsserver.gnsapp.recordmap.BasicRecordMap;
+import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.gnsserver.utils.ResultValue;
 import edu.umass.cs.gnsserver.utils.ValuesMap;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
@@ -41,6 +45,7 @@ import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * GroupAccess provides an interface to the group information in the GNS.
@@ -248,11 +253,9 @@ public class NSGroupAccess {
    */
   public static Date getLastUpdate(String guid, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_LAST_UPDATE,
-            true, handler);
-    ClientSupportConfig.getLogger().log(Level.FINE, "++++ResultValue = {0}", resultValue);
-    if (!resultValue.isEmpty()) {
-      return new Date(Long.parseLong((String) resultValue.get(0)));
+    Number result = getGroupFieldAsNumber(guid, GROUP_LAST_UPDATE, -1, handler);
+    if (!result.equals(-1)) {
+      return new Date(result.longValue());
     } else {
       return null;
     }
@@ -268,13 +271,10 @@ public class NSGroupAccess {
    */
   public static int getMinRefresh(String guid, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_MIN_REFRESH_INTERVAL,
-            true, handler);
-    ClientSupportConfig.getLogger().log(Level.FINE, "++++ResultValue = {0}", resultValue);
-    if (!resultValue.isEmpty()) {
-      return Integer.parseInt((String) resultValue.get(0));
+    Number result = getGroupFieldAsNumber(guid, GROUP_MIN_REFRESH_INTERVAL, -1, handler);
+    if (!result.equals(-1)) {
+      return result.intValue();
     } else {
-      // if we can't get it just return the default. No harm, no foul.
       return ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT;
     }
   }
@@ -284,19 +284,42 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param handler
-   * @return the query string
+   * @return the query string or null if it can't be found
    * @throws FailedDBOperationException
    */
   public static String getQueryString(String guid, ClientRequestHandlerInterface handler)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_QUERY_STRING,
-            true, handler);
-    ClientSupportConfig.getLogger().log(Level.FINE, "++++ResultValue = {0}", resultValue);
-    if (!resultValue.isEmpty()) {
-      return (String) resultValue.get(0);
-    } else {
-      return null;
+    return getGroupFieldAsString(guid, GROUP_QUERY_STRING, handler);
+  }
+
+  public static String getGroupFieldAsString(String guid, String field, ClientRequestHandlerInterface handler)
+          throws FailedDBOperationException {
+    ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, field, handler.getApp());
+    ClientSupportConfig.getLogger().log(Level.FINE, "++++valuesMap = {0}", valuesMap);
+    if (valuesMap.has(field)) {
+      try {
+        // Something simpler here?
+        return (String) valuesMap.get(field);
+      } catch (JSONException e) {
+        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing GROUP_QUERY_STRING for {0}: {1}", new Object[]{field, e});
+      }
     }
+    return null;
+  }
+  
+  public static Number getGroupFieldAsNumber(String guid, String field, Number defaultValue, ClientRequestHandlerInterface handler)
+          throws FailedDBOperationException {
+    ValuesMap valuesMap = NSFieldAccess.lookupJSONFieldAnywhere(guid, field, handler.getApp());
+    ClientSupportConfig.getLogger().log(Level.FINE, "++++valuesMap = {0}", valuesMap);
+    if (valuesMap.has(field)) {
+      try {
+        // Something simpler here?
+        return (Number) valuesMap.get(field);
+      } catch (JSONException e) {
+        GNSConfig.getLogger().log(Level.SEVERE, "Problem parsing GROUP_QUERY_STRING for {0}: {1}", new Object[]{field, e});
+      }
+    }
+    return defaultValue;
   }
 
   /**

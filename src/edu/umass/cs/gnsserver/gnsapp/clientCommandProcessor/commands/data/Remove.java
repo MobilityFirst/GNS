@@ -21,7 +21,6 @@ package edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gnscommon.GNSCommandProtocol.*;
 import edu.umass.cs.gnscommon.CommandType;
 
 /**
@@ -52,21 +51,5 @@ public class Remove extends AbstractUpdate {
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REMOVE;
   }
-
-//  @Override
-//  public String getCommandName() {
-//    return REMOVE;
-//  }
-
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, FIELD, VALUE, WRITER, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
-
-  @Override
-  public String getCommandDescription() {
-    return "Returns one key value pair from the GNS for the given guid after authenticating that WRITER making request has access authority."
-            + " Values are always returned as a JSON list."
-            + " Specify " + ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
-  }
+ 
 }

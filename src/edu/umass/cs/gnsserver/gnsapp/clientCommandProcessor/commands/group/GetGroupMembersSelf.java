@@ -42,18 +42,12 @@ public class GetGroupMembersSelf extends GetGroupMembers {
     return CommandType.GetGroupMembersSelf;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
 //  @Override
 //  public String getCommandName() {
 //    return GET_GROUP_MEMBERS;
 //  }
 
-  @Override
-  public String getCommandDescription() {
-    return "Returns the members of the group formatted as a JSON Array.";
-  }
+  
 }

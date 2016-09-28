@@ -61,10 +61,7 @@ public class ClearCode extends BasicCommand {
     return CommandType.ClearCode;
   }
 
-  @Override
-  public String[] getCommandParameters() {
-    return new String[]{GUID, WRITER, AC_ACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
-  }
+  
 
   @Override
   public CommandResponse execute(JSONObject json,
@@ -87,9 +84,5 @@ public class ClearCode extends BasicCommand {
     }
   }
 
-  @Override
-  public String getCommandDescription() {
-    return "Clears the active code for the specified GUID and action,"
-            + "ensuring the writer has permission";
-  }
+  
 }

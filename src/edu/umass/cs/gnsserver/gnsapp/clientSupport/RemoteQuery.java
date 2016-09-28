@@ -97,20 +97,23 @@ public class RemoteQuery extends ClientAsynchBase {
    * whole RemoteQuery/ClientAsyncBase crap needs a major cleanup just like GNSClient and
    * ideally just reuse GNSClient.
    */
-  private final RequestCallback replicaCommandCallback = (Request response) -> {
+  private final RequestCallback replicaCommandCallback = new RequestCallback() {
 
-    long requestId;
-    if (response instanceof ActiveReplicaError) {
-      requestId = ((ActiveReplicaError) response).getRequestID();
-    } else if (response instanceof ClientRequest) {
-      requestId = ((RequestIdentifier) response).getRequestID();
-    } else {
-      ClientSupportConfig.getLogger().log(Level.SEVERE,
-              "Bad response type: {0}", response.getClass());
-      return;
+    @Override
+    public void handleResponse(Request response) {
+      long requestId;
+      if (response instanceof ActiveReplicaError) {
+        requestId = ((ActiveReplicaError) response).getRequestID();
+      } else if (response instanceof ClientRequest) {
+        requestId = ((RequestIdentifier) response).getRequestID();
+      } else {
+        ClientSupportConfig.getLogger().log(Level.SEVERE,
+                "Bad response type: {0}", response.getClass());
+        return;
+      }
+
+      replicaResultMap.put(requestId, response);
     }
-
-    replicaResultMap.put(requestId, response);
   };
 
   private RequestCallbackWithRequest getRequestCallback(Object monitor) {
@@ -148,23 +151,32 @@ public class RemoteQuery extends ClientAsynchBase {
   /**
    * A callback that notifys any waits and records the response from a reconfigurator.
    */
-  private final RequestCallback reconCallback = (Request response) -> {
-    reconResultMap.put(response.getServiceName(),
-            (ClientReconfigurationPacket) response);
+  private final RequestCallback reconCallback = new RequestCallback() {
+
+    @Override
+    public void handleResponse(Request response) {
+      reconResultMap.put(response.getServiceName(),
+              (ClientReconfigurationPacket) response);
+    }
   };
 
   private RequestCallback getReconfiguratoRequestCallback(Object monitor) {
-    return (Request arg0) -> {
-      reconCallback.handleResponse(arg0);
-      synchronized (monitor) {
-        monitor.notifyAll();
+    return new RequestCallback() {
+      @Override
+      public void handleResponse(Request arg0) {
+        reconCallback.handleResponse(arg0);
+        synchronized (monitor) {
+          monitor.notifyAll();
+        }
       }
     };
-  }
-
-  private ClientRequest waitForReplicaResponse(long id, Object monitor)
-          throws ClientException, ActiveReplicaException {
-    return waitForReplicaResponse(id, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT);
+    // Use of lambda causes a problem in Android.
+//    return (Request arg0) -> {
+//      reconCallback.handleResponse(arg0);
+//      synchronized (monitor) {
+//        monitor.notifyAll();
+//      }
+//    };
   }
 
   private ClientRequest waitForReplicaResponse(long id, Object monitor, RequestCallbackWithRequest callback)
@@ -189,7 +201,7 @@ public class RemoteQuery extends ClientAsynchBase {
           // TODO: arun
           ClientException e = new ClientException(
                   this + ": Timed out on active replica response after waiting for "
-                  + timeout + "ms for response packet for response for " + (callback != null && callback.getRequest()!=null ? callback.getRequest().getSummary() : id));
+                  + timeout + "ms for response packet for response for " + (callback != null && callback.getRequest() != null ? callback.getRequest().getSummary() : id));
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
@@ -260,9 +272,22 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws ClientException
    */
   private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
+    return sendReconRequest(request, DEFAULT_RECON_TIMEOUT);
+  }
+
+  /**
+   * Sends a ClientReconfigurationPacket to a reconfigurator.
+   * Returns true if the request was successful.
+   *
+   * @param request
+   * @return true if the request was successful
+   * @throws IOException
+   * @throws ClientException
+   */
+  private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request, long timeout) throws IOException, ClientException {
     Object monitor = new Object();
     sendRequest(request, this.getReconfiguratoRequestCallback(monitor));
-    ClientReconfigurationPacket response = waitForReconResponse(request, monitor);
+    ClientReconfigurationPacket response = waitForReconResponse(request, monitor, timeout);
     // FIXME: return better error codes.
     if (response.isFailed()) {
       // arun: return duplicate error if name already exists
@@ -295,6 +320,10 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   }
 
+  // Ballpark number of request we can do per second on a slow machine
+  // Fixme: Could make this a config parameter.
+  private static final long REQUESTS_PER_SECOND = 50;
+
   /**
    * Creates multiple records at the appropriate reconfigurators.
    *
@@ -311,7 +340,9 @@ public class RemoteQuery extends ClientAsynchBase {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} sending create for NAME = ",
                 new Object[]{this, create.getServiceName()});
-        sendReconRequest(create);
+        // Make a timeout that somewhat reflects the amount of work we're going to do.
+        long timeout = Math.max(DEFAULT_RECON_TIMEOUT, (create.getNameStates().size() / REQUESTS_PER_SECOND) * 1000);
+        sendReconRequest(create, timeout);
       }
       return GNSResponseCode.NO_ERROR;
     } catch (JSONException | IOException | ClientException e) {
@@ -400,7 +431,7 @@ public class RemoteQuery extends ClientAsynchBase {
     return handleQueryResponse(requestId, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
   }
 
-  private String handleQueryResponse(long requestId, Object monitor, 
+  private String handleQueryResponse(long requestId, Object monitor,
           RequestCallbackWithRequest callback, String notFoundReponse) throws ClientException {
     return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
   }
@@ -415,7 +446,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @return the response from the query
    * @throws ClientException
    */
-  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, 
+  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback,
           long timeout, String notFoundReponse) throws ClientException {
     try {
       ResponsePacket packet
@@ -425,7 +456,7 @@ public class RemoteQuery extends ClientAsynchBase {
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} received {1}", new Object[]{this, packet.getSummary()});
-        return CommandUtils.checkResponse(packet, ((CommandPacket)callback.getRequest())).getReturnValue();
+        return CommandUtils.checkResponse(packet, ((CommandPacket) callback.getRequest())).getReturnValue();
       }
     } catch (ActiveReplicaException e) {
       return notFoundReponse;
@@ -605,6 +636,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendSelect(SelectOperation operation, String key, Object value, Object otherValue)
           throws IOException, ClientException {
     SelectRequestPacket<String> packet = new SelectRequestPacket<>(-1, operation,
@@ -636,6 +668,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendSelectQuery(String query) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeQueryRequest(-1, query);
     // aditya commented it.
@@ -667,6 +700,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid, int interval)
           throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupSetupRequest(-1,
@@ -698,6 +732,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendGroupGuidSetupSelectQuery(String query, String guid)
           throws IOException, ClientException {
     return sendGroupGuidSetupSelectQuery(query, guid, ClientAsynchBase.DEFAULT_MIN_REFRESH_INTERVAL_FOR_SELECT);
@@ -711,6 +746,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @throws IOException
    * @throws ClientException
    */
+  @Deprecated
   public JSONArray sendGroupGuidLookupSelectQuery(String guid) throws IOException, ClientException {
     SelectRequestPacket<String> packet = SelectRequestPacket.MakeGroupLookupRequest(-1, guid);
     try {

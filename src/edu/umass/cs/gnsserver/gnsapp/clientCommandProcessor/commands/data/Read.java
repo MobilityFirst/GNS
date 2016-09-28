@@ -25,7 +25,14 @@ import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.Comma
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gnscommon.CommandType;
-import edu.umass.cs.gnscommon.GNSCommandProtocol;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.ALL_FIELDS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELD;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.FIELDS;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.GUID;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.READER;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATURE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.SIGNATUREFULLMESSAGE;
+import static edu.umass.cs.gnscommon.GNSCommandProtocol.TIMESTAMP;
 import edu.umass.cs.gnsserver.gnsapp.clientCommandProcessor.commands.BasicCommand;
 import edu.umass.cs.gnsserver.interfaces.InternalRequestHeader;
 import edu.umass.cs.gnsserver.utils.JSONUtils;
@@ -49,8 +56,8 @@ public class Read extends BasicCommand {
   /**
    * Necessary parameters
    */
-  public static final String[] PARAMS = {GNSCommandProtocol.GUID, GNSCommandProtocol.FIELD, 
-    GNSCommandProtocol.READER, GNSCommandProtocol.SIGNATURE, GNSCommandProtocol.SIGNATUREFULLMESSAGE};
+  public static final String[] PARAMS = {GUID, FIELD, 
+    READER, SIGNATURE, SIGNATUREFULLMESSAGE};
 
   /**
    *
@@ -66,35 +73,32 @@ public class Read extends BasicCommand {
   }
 
   @Override
-  public String[] getCommandParameters() {
-    return PARAMS;
-  }
-  
-  private static final boolean HACK_WESTY_SHOULD_FIX = true;
-
-  @Override
   public CommandResponse execute(InternalRequestHeader internalHeader, JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, ParseException, UnsupportedEncodingException {
-    String guid = json.getString(GNSCommandProtocol.GUID);
+    String guid = json.getString(GUID);
 
     // the opt hair below is for the subclasses... cute, huh?
-    String field = json.optString(GNSCommandProtocol.FIELD, null);
-    ArrayList<String> fields = json.has(GNSCommandProtocol.FIELDS)
-            ? JSONUtils.JSONArrayToArrayListString(json.getJSONArray(GNSCommandProtocol.FIELDS)) : null;
+    String field = json.optString(FIELD, null);
+    ArrayList<String> fields = json.has(FIELDS)
+            ? JSONUtils.JSONArrayToArrayListString(json.getJSONArray(FIELDS)) : null;
 
-    String reader = json.has(GNSCommandProtocol.READER) ? json.getString(GNSCommandProtocol.READER) : HACK_WESTY_SHOULD_FIX ? guid : null;
-    // signature and message can be empty for unsigned cases
-    String signature = json.optString(GNSCommandProtocol.SIGNATURE, null);
-    String message = json.optString(GNSCommandProtocol.SIGNATUREFULLMESSAGE, null);
+    // Reader can be one of three things:
+    // 1) a guid - the guid attempting access
+    // 2) the value GNSConfig.GNSC.INTERNAL_OP_SECRET - which means this is a request from another server
+    // 3) null (or missing from the JSON) - this is an unsigned read 
+    String reader = json.optString(READER, null);
+    // signature and message can be empty for unsigned cases (reader should be null as well)
+    String signature = json.optString(SIGNATURE, null);
+    String message = json.optString(SIGNATUREFULLMESSAGE, null);
     Date timestamp;
-    if (json.has(GNSCommandProtocol.TIMESTAMP)) {
-      timestamp = json.has(GNSCommandProtocol.TIMESTAMP)
-              ? Format.parseDateISO8601UTC(json.getString(GNSCommandProtocol.TIMESTAMP)) : null; // can be null on older client
+    if (json.has(TIMESTAMP)) {
+      timestamp = json.has(TIMESTAMP)
+              ? Format.parseDateISO8601UTC(json.getString(TIMESTAMP)) : null; // can be null on older client
     } else {
       timestamp = null;
     }
 
-    if (GNSCommandProtocol.ALL_FIELDS.equals(field)) {
+    if (ALL_FIELDS.equals(field)) {
       return FieldAccess.lookupMultipleValues(internalHeader, guid, reader,
               signature, message, timestamp, handler);
     } else if (field != null) {
@@ -105,11 +109,5 @@ public class Read extends BasicCommand {
               message, timestamp, handler);
     }
   }
-
-  @Override
-  public String getCommandDescription() {
-    return "Returns a key value pair from the GNS for the given guid after authenticating that READER making request has access authority."
-            + " Field can use dot notation to access subfields."
-            + " Specify " + GNSCommandProtocol.ALL_FIELDS + " as the <field> to return all fields as a JSON object.";
-  }
+ 
 }
