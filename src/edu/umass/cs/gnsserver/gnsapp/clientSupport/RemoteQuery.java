@@ -97,22 +97,40 @@ public class RemoteQuery extends ClientAsynchBase {
    * whole RemoteQuery/ClientAsyncBase crap needs a major cleanup just like GNSClient and
    * ideally just reuse GNSClient.
    */
-  private final RequestCallback replicaCommandCallback = (Request response) -> {
+  private final RequestCallback replicaCommandCallback = new RequestCallback() {
 
-    long requestId;
-    if (response instanceof ActiveReplicaError) {
-      requestId = ((ActiveReplicaError) response).getRequestID();
-    } else if (response instanceof ClientRequest) {
-      requestId = ((RequestIdentifier) response).getRequestID();
-    } else {
-      ClientSupportConfig.getLogger().log(Level.SEVERE,
-              "Bad response type: {0}", response.getClass());
-      return;
+    @Override
+    public void handleResponse(Request response) {
+      long requestId;
+      if (response instanceof ActiveReplicaError) {
+        requestId = ((ActiveReplicaError) response).getRequestID();
+      } else if (response instanceof ClientRequest) {
+        requestId = ((RequestIdentifier) response).getRequestID();
+      } else {
+        ClientSupportConfig.getLogger().log(Level.SEVERE,
+                "Bad response type: {0}", response.getClass());
+        return;
+      }
+
+      replicaResultMap.put(requestId, response);
     }
-
-    replicaResultMap.put(requestId, response);
   };
 
+//  private final RequestCallback replicaCommandCallback = (Request response) -> {
+//
+//    long requestId;
+//    if (response instanceof ActiveReplicaError) {
+//      requestId = ((ActiveReplicaError) response).getRequestID();
+//    } else if (response instanceof ClientRequest) {
+//      requestId = ((RequestIdentifier) response).getRequestID();
+//    } else {
+//      ClientSupportConfig.getLogger().log(Level.SEVERE,
+//              "Bad response type: {0}", response.getClass());
+//      return;
+//    }
+//
+//    replicaResultMap.put(requestId, response);
+//  };
   private RequestCallbackWithRequest getRequestCallback(Object monitor) {
     return new RequestCallbackWithRequest() {
       Request request = null;
@@ -148,25 +166,41 @@ public class RemoteQuery extends ClientAsynchBase {
   /**
    * A callback that notifys any waits and records the response from a reconfigurator.
    */
-  private final RequestCallback reconCallback = (Request response) -> {
-    reconResultMap.put(response.getServiceName(),
-            (ClientReconfigurationPacket) response);
+  private final RequestCallback reconCallback = new RequestCallback() {
+
+    @Override
+    public void handleResponse(Request response) {
+      reconResultMap.put(response.getServiceName(),
+              (ClientReconfigurationPacket) response);
+    }
   };
 
+//  private final RequestCallback reconCallback = (Request response) -> {
+//    reconResultMap.put(response.getServiceName(),
+//            (ClientReconfigurationPacket) response);
+//  };
   private RequestCallback getReconfiguratoRequestCallback(Object monitor) {
-    return (Request arg0) -> {
-      reconCallback.handleResponse(arg0);
-      synchronized (monitor) {
-        monitor.notifyAll();
+    return new RequestCallback() {
+      @Override
+      public void handleResponse(Request arg0) {
+        reconCallback.handleResponse(arg0);
+        synchronized (monitor) {
+          monitor.notifyAll();
+        }
       }
     };
+//    return (Request arg0) -> {
+//      reconCallback.handleResponse(arg0);
+//      synchronized (monitor) {
+//        monitor.notifyAll();
+//      }
+//    };
   }
 
-  private ClientRequest waitForReplicaResponse(long id, Object monitor)
-          throws ClientException, ActiveReplicaException {
-    return waitForReplicaResponse(id, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT);
-  }
-
+//  private ClientRequest waitForReplicaResponse(long id, Object monitor)
+//          throws ClientException, ActiveReplicaException {
+//    return waitForReplicaResponse(id, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT);
+//  }
   private ClientRequest waitForReplicaResponse(long id, Object monitor, RequestCallbackWithRequest callback)
           throws ClientException, ActiveReplicaException {
     return waitForReplicaResponse(id, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT);
@@ -189,7 +223,7 @@ public class RemoteQuery extends ClientAsynchBase {
           // TODO: arun
           ClientException e = new ClientException(
                   this + ": Timed out on active replica response after waiting for "
-                  + timeout + "ms for response packet for response for " + (callback != null && callback.getRequest()!=null ? callback.getRequest().getSummary() : id));
+                  + timeout + "ms for response packet for response for " + (callback != null && callback.getRequest() != null ? callback.getRequest().getSummary() : id));
           ClientSupportConfig.getLogger().log(Level.WARNING, "\n\n\n\n{0}", e.getMessage());
           e.printStackTrace();
           throw e;
@@ -262,6 +296,7 @@ public class RemoteQuery extends ClientAsynchBase {
   private GNSResponseCode sendReconRequest(ClientReconfigurationPacket request) throws IOException, ClientException {
     return sendReconRequest(request, DEFAULT_RECON_TIMEOUT);
   }
+
   /**
    * Sends a ClientReconfigurationPacket to a reconfigurator.
    * Returns true if the request was successful.
@@ -306,7 +341,7 @@ public class RemoteQuery extends ClientAsynchBase {
       throw new ClientException(GNSResponseCode.UNSPECIFIED_ERROR, e.getMessage());
     }
   }
-  
+
   // Ballpark number of request we can do per second on a slow machine
   // Fixme: Could make this a config parameter.
   private static final long REQUESTS_PER_SECOND = 50;
@@ -418,7 +453,7 @@ public class RemoteQuery extends ClientAsynchBase {
     return handleQueryResponse(requestId, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
   }
 
-  private String handleQueryResponse(long requestId, Object monitor, 
+  private String handleQueryResponse(long requestId, Object monitor,
           RequestCallbackWithRequest callback, String notFoundReponse) throws ClientException {
     return handleQueryResponse(requestId, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT, notFoundReponse);
   }
@@ -433,7 +468,7 @@ public class RemoteQuery extends ClientAsynchBase {
    * @return the response from the query
    * @throws ClientException
    */
-  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback, 
+  private String handleQueryResponse(long requestId, Object monitor, RequestCallbackWithRequest callback,
           long timeout, String notFoundReponse) throws ClientException {
     try {
       ResponsePacket packet
@@ -443,7 +478,7 @@ public class RemoteQuery extends ClientAsynchBase {
       } else {
         ClientSupportConfig.getLogger().log(Level.FINE,
                 "{0} received {1}", new Object[]{this, packet.getSummary()});
-        return CommandUtils.checkResponse(packet, ((CommandPacket)callback.getRequest())).getReturnValue();
+        return CommandUtils.checkResponse(packet, ((CommandPacket) callback.getRequest())).getReturnValue();
       }
     } catch (ActiveReplicaException e) {
       return notFoundReponse;

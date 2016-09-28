@@ -85,7 +85,7 @@ public class CommandModule {
     ClientCommandProcessorConfig.getLogger().log(Level.FINE,
             "{0} commands added.", commands.size());
   }
-  
+
   /**
    *
    * Add commands to this module. Commands instances are created by reflection
@@ -197,8 +197,10 @@ public class CommandModule {
       } catch (JSONException e) {
         // do nothing
       }
+    } else {
+      ClientCommandProcessorConfig.getLogger().warning("No command int in command "
+              + json.optString(COMMANDNAME, "also missing command name!"));
     }
-    else ClientCommandProcessorConfig.getLogger().warning("No command int in command " + json);
     if (command != null) {
       ClientCommandProcessorConfig.getLogger().log(Level.FINE,
               "Found {0} using table lookup", command);
