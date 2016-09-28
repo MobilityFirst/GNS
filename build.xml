@@ -95,7 +95,8 @@
   
   <fileset id="client.keystore" dir="${conf.dir}" includes="trustStore/**, keystore/**" />
   
-  <!-- gigapaxos below could probably be nio; 
+  <!-- gigapaxos below could probably be nio, but nio has half of gigpaxos anyway so just use it
+  - see the comment in the build.xml in gigapaxos
   also commons-cli and derby are already in gigapaxos
   -->
   <zipfileset id="client.lib" dir="${lib.dir}" 

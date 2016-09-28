@@ -116,21 +116,6 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   };
 
-//  private final RequestCallback replicaCommandCallback = (Request response) -> {
-//
-//    long requestId;
-//    if (response instanceof ActiveReplicaError) {
-//      requestId = ((ActiveReplicaError) response).getRequestID();
-//    } else if (response instanceof ClientRequest) {
-//      requestId = ((RequestIdentifier) response).getRequestID();
-//    } else {
-//      ClientSupportConfig.getLogger().log(Level.SEVERE,
-//              "Bad response type: {0}", response.getClass());
-//      return;
-//    }
-//
-//    replicaResultMap.put(requestId, response);
-//  };
   private RequestCallbackWithRequest getRequestCallback(Object monitor) {
     return new RequestCallbackWithRequest() {
       Request request = null;
@@ -175,10 +160,6 @@ public class RemoteQuery extends ClientAsynchBase {
     }
   };
 
-//  private final RequestCallback reconCallback = (Request response) -> {
-//    reconResultMap.put(response.getServiceName(),
-//            (ClientReconfigurationPacket) response);
-//  };
   private RequestCallback getReconfiguratoRequestCallback(Object monitor) {
     return new RequestCallback() {
       @Override
@@ -189,6 +170,7 @@ public class RemoteQuery extends ClientAsynchBase {
         }
       }
     };
+    // Use of lambda causes a problem in Android.
 //    return (Request arg0) -> {
 //      reconCallback.handleResponse(arg0);
 //      synchronized (monitor) {
@@ -197,10 +179,6 @@ public class RemoteQuery extends ClientAsynchBase {
 //    };
   }
 
-//  private ClientRequest waitForReplicaResponse(long id, Object monitor)
-//          throws ClientException, ActiveReplicaException {
-//    return waitForReplicaResponse(id, monitor, null, DEFAULT_REPLICA_READ_TIMEOUT);
-//  }
   private ClientRequest waitForReplicaResponse(long id, Object monitor, RequestCallbackWithRequest callback)
           throws ClientException, ActiveReplicaException {
     return waitForReplicaResponse(id, monitor, callback, DEFAULT_REPLICA_READ_TIMEOUT);

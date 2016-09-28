@@ -20,6 +20,7 @@
 package edu.umass.cs.gnsclient.client.deprecated.examples;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
+import edu.umass.cs.gigapaxos.interfaces.RequestCallback;
 import edu.umass.cs.gnsclient.client.GNSClient;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
@@ -107,13 +108,22 @@ public class ClientAsynchExample {
     }
     // Create the command packet with a bogus id
     // arun: can not change request ID
-    CommandPacket commandPacket = new CommandPacket((long)(Math.random()*Long.MAX_VALUE), command);
+    CommandPacket commandPacket = new CommandPacket((long) (Math.random() * Long.MAX_VALUE), command);
     // Keep track of what we've sent for the other thread to look at.
     Set<Long> pendingIds = Collections.newSetFromMap(new ConcurrentHashMap<Long, Boolean>());
     // Create and run another thread to pick up the responses
-    Runnable companion = () -> {
-      lookForResponses(client, pendingIds);
+    Runnable companion = new Runnable() {
+      @Override
+      public void run() {
+        lookForResponses(client, pendingIds);
+      }
     };
+    //Does this on Android as of 9/16:
+    //ERROR: ClientAsynchExample.java:114: Lambda coming from jar file need their interfaces 
+    //on the classpath to be compiled, unknown interfaces are java.lang.Runnable
+//    Runnable companion = () -> {
+//      lookForResponses(client, pendingIds);
+//    };
     new Thread(companion).start();
     while (true) {
       //long id = client.generateNextRequestID();
@@ -122,7 +132,9 @@ public class ClientAsynchExample {
       // Record what we're sending
       pendingIds.add(commandPacket.getRequestID());
       // arun: disabled
-      if(true) throw new RuntimeException("disabled");
+      if (true) {
+        throw new RuntimeException("disabled");
+      }
       // Actually send out the packet
       //client.sendCommandPacketAsynch(commandPacket);
       ThreadUtils.sleep(100); // if you generate them too fast you'll clog things up 
@@ -135,22 +147,23 @@ public class ClientAsynchExample {
       ThreadUtils.sleep(10);
       // Loop through all the ones we've sent
       for (Long id : pendingIds) {
-        if (true
-        		//client.isAsynchResponseReceived(id)
-        		) {
-        	// arun: disabled
-        	if(true) throw new RuntimeException("disabled");
+        if (true //client.isAsynchResponseReceived(id)
+                ) {
+          // arun: disabled
+          if (true) {
+            throw new RuntimeException("disabled");
+          }
           pendingIds.remove(id);
           Request removed = null;//client.removeAsynchResponse(id);
-          if(removed instanceof ResponsePacket) {
-        	  ResponsePacket commandResult = ((ResponsePacket)removed);
-          System.out.println("commandResult for  " + id + " is "
-                  + (commandResult.getErrorCode().equals(GNSResponseCode.NO_ERROR)
-                  ? commandResult.getReturnValue()
-                  : commandResult.getErrorCode().toString())
-//                  + "\n"
-//                  + "Latency is " + commandResult.getClientLatency()
-          );
+          if (removed instanceof ResponsePacket) {
+            ResponsePacket commandResult = ((ResponsePacket) removed);
+            System.out.println("commandResult for  " + id + " is "
+                    + (commandResult.getErrorCode().equals(GNSResponseCode.NO_ERROR)
+                    ? commandResult.getReturnValue()
+                    : commandResult.getErrorCode().toString())
+            //                  + "\n"
+            //                  + "Latency is " + commandResult.getClientLatency()
+            );
           }
         }
       }

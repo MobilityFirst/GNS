@@ -45,14 +45,6 @@ public class ClientAsynchTest {
     }
   };
 
-  // This was generating an error in the android test
-//  private static final RequestCallback CALLBACK = (Request response) -> {
-//    synchronized (MONITOR) {
-//      MONITOR.notifyAll();
-//    }
-//    receivedResponse = response;
-//  };
-
   public static void main(String args[]) {
     ClientAsynchBase client;
     try {
