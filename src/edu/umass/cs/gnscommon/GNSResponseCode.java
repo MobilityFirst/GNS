@@ -16,7 +16,6 @@
  */
 package edu.umass.cs.gnscommon;
 
-import edu.umass.cs.gnsserver.gnsapp.deprecated.QueryResult;
 import edu.umass.cs.gnsserver.main.GNSConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 
@@ -30,9 +29,7 @@ import java.util.logging.Level;
  * sent back to the server and the client.
  *
  * These codes are used by the GNS to communicate via response packets why a
- * value could not be returned from the server(s) to the client. * This class is
- * a sibling to {@link QueryResult} which is used when we're returning a value
- * and not just whether the request was successful.
+ * value could not be returned from the server(s) to the client.
  *
  * @author arun, westy
  *

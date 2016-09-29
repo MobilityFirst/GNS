@@ -55,12 +55,8 @@ import edu.umass.cs.gnsclient.client.util.Password;
 import edu.umass.cs.gnscommon.AclAccessType;
 import edu.umass.cs.gnscommon.utils.URIEncoderDecoder;
 import edu.umass.cs.gnscommon.exceptions.client.EncryptionException;
-import edu.umass.cs.gnscommon.exceptions.client.AclException;
-import edu.umass.cs.gnscommon.exceptions.client.DuplicateNameException;
 import edu.umass.cs.gnscommon.exceptions.client.ClientException;
-import edu.umass.cs.gnscommon.exceptions.client.InvalidFieldException;
 import edu.umass.cs.gnscommon.exceptions.client.InvalidGuidException;
-import edu.umass.cs.gnscommon.exceptions.client.VerificationException;
 import static edu.umass.cs.gnsclient.client.CommandUtils.*;
 import edu.umass.cs.gnscommon.CommandType;
 

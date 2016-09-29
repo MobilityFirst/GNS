@@ -22,7 +22,6 @@ package edu.umass.cs.gnsclient.client.deprecated.examples;
 import edu.umass.cs.gnsclient.client.GNSClientConfig;
 import edu.umass.cs.gnsclient.client.GNSClientCommands;
 import edu.umass.cs.gnscommon.utils.ByteUtils;
-import edu.umass.cs.gnsclient.client.deprecated.GNSClientInterface;
 import edu.umass.cs.gnsclient.client.util.BasicGuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidEntry;
 import edu.umass.cs.gnsclient.client.util.GuidUtils;
