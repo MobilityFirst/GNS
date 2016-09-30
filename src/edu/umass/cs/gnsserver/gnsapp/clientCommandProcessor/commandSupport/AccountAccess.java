@@ -428,17 +428,37 @@ public class AccountAccess {
   }
 
   private static final String VERIFY_COMMAND = "account_verify";
-  private static final String EMAIL_BODY = "This is an automated message informing you "
-          + "that %s has created an account for %s on the GNS server.\n\n"
-          + "This is your verification code: %s\n\n"
-          + "To verify this account you can click on the link below or enter this query into a browser:\n\n"
-          + "http://%s/"
+  private static final String EMAIL_BODY
+          = "Hi %2$s,\n\n"
+          + "This is an automated message informing you that %1$s has created\n"
+          + "an account for %2$s on the GNS server. You were sent this message\n"
+          + "to insure that the person that created this account actually has\n"
+          + "access to this email address.\n\n"
+          + "To verify this is your email address you can click on the link below.\n"
+          + "If you are unable to click on the link, you can complete your email address\n"
+          + "verification by copying and pasting the URL into your web browser:\n\n"
+          + "http://%3$s/"
           + GNSConfig.GNS_URL_PATH
-          + "/VerifyAccount?guid=%s&code=%s\n\n"
-          + "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
-          + VERIFY_COMMAND
-          + " %s %s\n\n"
-          + "If you did not create this account please ignore this message.";
+          + "/VerifyAccount?guid=%4$s&code=%5$s\n\n"
+          // TODO: add this back in with a conditional config parameter
+          //+ "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
+          //+ VERIFY_COMMAND
+          //+ " %2$s %5$s\n\n"
+          + "If you did not create this account you can just ignore this email and nothing bad will happen.\n\n"
+          + "Thank you,\nThe CASA Team.";
+  
+//  private static final String EMAIL_BODY_OLD = "This is an automated message informing you "
+//          + "that %s has created an account for %s on the GNS server.\n\n"
+//          + "This is your verification code: %s\n\n"
+//          + "To verify this account you can click on the link below or enter this query into a browser:\n\n"
+//          + "http://%s/"
+//          + GNSConfig.GNS_URL_PATH
+//          + "/VerifyAccount?guid=%s&code=%s\n\n"
+//          + "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
+//          + VERIFY_COMMAND
+//          + " %s %s\n\n"
+//          + "If you did not create this account please ignore this message.";
+  
   private static final String SUCCESS_NOTICE = "A confirmation email has been sent to %s. "
           + "Please follow the instructions in that email to verify your account.\n";
   private static final String PROBLEM_NOTICE = "There is some system problem in sending "
@@ -481,10 +501,15 @@ public class AccountAccess {
       if (GNSConfig.GNSC.isEmailAuthenticationEnabled()) {
         //if (GNSConfig.enableEmailAccountVerification) {
         // Send out the confirmation email with a verification code
+        String emailBody = String.format(EMAIL_BODY,
+                GNSConfig.GNSC.getApplicationName(), //1$
+                name, //2$
+                hostPortString, //3$
+                guid, //4$
+                verifyCode //5$
+        );
         boolean emailOK = Email.email("GNS Account Verification", name,
-                String.format(EMAIL_BODY, GNSConfig.GNSC.getApplicationName(),
-                        name, verifyCode, hostPortString, guid, verifyCode,
-                        name, verifyCode));
+                emailBody);
         // do the admin email in another thread so it's faster and
         // because we don't care if it completes
         (new Thread() {
@@ -1522,5 +1547,42 @@ public class AccountAccess {
       result.put("WRITE_WHITELIST", writeWhiteList);
     }
     return result;
+  }
+
+  // test code
+  private static final String EMAIL_BODY_TEST
+          = "Hi %2$s,\n\n"
+          + "This is an automated message informing you that %1$s has created\n"
+          + "an account for %2$s on the GNS server. You were sent this message\n"
+          + "to insure that the person that created this account actually has\n"
+          + "access to this email address.\n\n"
+          + "To verify this is your email address you can click on the link below.\n"
+          + "If you are unable to click on the link, you can complete your email address\n"
+          + "verification by copying and pasting the URL into your web browser:\n\n"
+          + "http://%3$s/"
+          + GNSConfig.GNS_URL_PATH
+          + "/VerifyAccount?guid=%4$s&code=%5$s\n\n"
+          //+ "For GNS CLI users only: enter this command into the CLI that you used to create the account:\n\n"
+          //+ VERIFY_COMMAND
+          //+ " %2$s %5$s\n\n"
+          + "If you did not create this account you can just ignore this email and nothing bad will happen.\n\n"
+          + "Thank you,\nThe CASA Team.";
+
+  // test code
+  public static void main(String[] args) {
+    String name = "westy@cs.umass.edu";
+    String verifyCode = "000000";
+    String hostPortString = "128.119.44.108:8080";
+    String guid = "0FC2D9931712BCF6B7FEC5E6B09CF03483068DE";
+    String emailBody = String.format(EMAIL_BODY_TEST,
+            GNSConfig.GNSC.getApplicationName(), //1$
+            name, //2$
+            hostPortString, //3$
+            guid, //4$
+            verifyCode //5$
+    );
+    System.out.println(emailBody);
+    boolean emailOK = Email.email("GNS Account Verification", name, emailBody);
+
   }
 }
