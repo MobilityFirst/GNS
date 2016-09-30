@@ -599,10 +599,10 @@ integration tests sequentially"
   description="Build both mSocket and proxy jars" />-->
 
   <target name="msocket-jar"
-          depends="clean,compile,msocketdoc"
+          depends="compile,msocketdoc"
           description="Builds the mSocket Jar">
     <mkdir dir="${build.jar.dir}"/>
-    <jar jarfile="${build.jar.dir}/msocket-${VERSION}-${RELEASE}.jar">
+    <jar jarfile="${build.jar.dir}/msocket.jar">
 		
       <!-- including gns client -->
       <fileset refid="client.includes"/>
@@ -621,15 +621,16 @@ integration tests sequentially"
       </fileset>
 		
       <!-- including context service messages -->
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/contextservice/messages/*.class"/>
+      <!--<fileset dir="${build.classes.dir}" includes="edu/umass/cs/contextservice/messages/*.class"/>-->
 		
       <!-- including config files -->
       <fileset dir="${conf.dir}/msocketFiles">
         <include name="topLevelDomainNames.txt" />
       </fileset>
-	 
-      <fileset dir="${conf.dir}/msocketFiles">
-        <include name="contextServiceNodeSetup.txt" />
+	
+      <fileset dir="${conf.dir}">
+        <include name="trustStore.jks" />
+        <include name="keyStore.jks" />
       </fileset>
 	  
       <manifest>
@@ -645,10 +646,10 @@ integration tests sequentially"
   </target>
 	
   <target name="msocket-proxy-console-jar"
-          depends="clean,compile,msocketdoc"
+          depends="compile,msocketdoc"
           description="Builds the mSocket proxy console Jar">
     <mkdir dir="${build.jar.dir}"/>
-    <jar jarfile="${build.jar.dir}/msocket-proxy-console-${VERSION}-${RELEASE}.jar">
+    <jar jarfile="${build.jar.dir}/msocket-proxy-console.jar">
 			
       <!-- including gns client -->
       <fileset refid="client.includes"/>
@@ -664,16 +665,16 @@ integration tests sequentially"
       </fileset>
 			
       <!-- including context service messages -->
-      <fileset dir="${build.classes.dir}" includes="edu/umass/cs/contextservice/messages/*.class"/>
+      <!--<fileset dir="${build.classes.dir}" includes="edu/umass/cs/contextservice/messages/*.class"/>-->
 			
       <!-- including config files -->
       <fileset dir="${conf.dir}/msocketFiles">
         <include name="topLevelDomainNames.txt" />
       </fileset>
 		 
-      <fileset dir="${conf.dir}/msocketFiles">
+      <!--<fileset dir="${conf.dir}/msocketFiles">
         <include name="contextServiceNodeSetup.txt" />
-      </fileset>
+      </fileset>-->
 			
       <fileset dir="${src.dir}">
         <include name="edu/umass/cs/msocket/proxy/console/console.ini" />

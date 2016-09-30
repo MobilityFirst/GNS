@@ -55,7 +55,6 @@ import edu.umass.cs.msocket.SetupControlMessage;
  */
 public class ProxyForwarder
 {
-
   public static final int                   LISTEN_THREAD          = 1;                                               // Proxy
                                                                                                                        // thread
                                                                                                                        // types,
@@ -163,7 +162,7 @@ public class ProxyForwarder
 
   public ProxyForwarder(String ProxyName, int ProxyPort) throws SocketException, IOException
   {
-    this.ProxyName = ProxyName;
+	this.ProxyName = ProxyName;
     this.ProxyPort = ProxyPort;
     ProxyControlChannelMap = new HashMap<String, ProxyMSocket>();
     pServerSocket = new ProxyServerSocket(this.ProxyName, this.ProxyPort, this);
